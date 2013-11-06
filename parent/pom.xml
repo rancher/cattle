@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<!-- 
+  Why does this parent pom exist and not just have the root as the parent?  The reason is because
+  of IDEs.  You want to have all the poms open in your IDE so that you can quickly change things, but
+  if the root directory is the parent, you have to open the root directory in your IDE.  This means
+  that one project will have all your resources in it.  Then if you have projects for the submodules
+  in your IDE, you end up with the resource/file in two places.  So that's why.
+-->
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.apache.cloudstack</groupId>
+	<artifactId>dstack-parent</artifactId>
+	<version>0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<properties>
+		<acs.version>4.3.0-SNAPSHOT</acs.version>
+		<mysql.version>5.1.21</mysql.version>
+		<jetty.version>8.1.11.v20130520</jetty.version>
+	</properties>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5.1</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

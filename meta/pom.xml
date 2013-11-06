@@ -1,0 +1,303 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>dstack-meta</artifactId>
+  <parent>
+    <artifactId>dstack-parent</artifactId>
+    <groupId>org.apache.cloudstack</groupId>
+    <version>0.1-SNAPSHOT</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+  <packaging>jar</packaging>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-resources</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-framework-spring-module</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-framework-spring-lifecycle</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-storage-volume-solidfire</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-server</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-acl-static-role-based</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-dedicated-resources</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-api-limit-account-based</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-api-discovery</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-user-authenticator-ldap</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-user-authenticator-md5</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+    <!--
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-user-authenticator-plaintext</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    -->
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-user-authenticator-sha256salted</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-network-nvp</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-network-ovs</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-network-elb</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-network-vns</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-network-midonet</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-network-ssp</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-network-internallb</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-network-vxlan</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-hypervisor-xen</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-hypervisor-baremetal</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-hypervisor-ucs</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-hypervisor-ovm</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-hypervisor-kvm</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--       <exclusions> -->
+<!--         <exclusion> -->
+<!--           <groupId>org.mortbay.jetty</groupId> -->
+<!--           <artifactId>servlet-api</artifactId> -->
+<!--         </exclusion> -->
+<!--       </exclusions> -->
+<!--     </dependency> -->
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-storage-allocator-random</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-planner-user-dispersing</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-planner-user-concentrated-pod</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-planner-implicit-dedication</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-explicit-dedication</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-host-allocator-random</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-mom-rabbitmq</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>${mysql.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-framework-ipc</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-api</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-components-api</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-network</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-orchestration</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-schema</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-storage</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-storage-cache</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-storage-image</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-storage-datamotion</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-storage-snapshot</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-engine-storage-volume</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-storage-volume-default</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cloudstack</groupId>
+      <artifactId>cloud-plugin-storage-image-default</artifactId>
+      <version>${acs.version}</version>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-storage-image-s3</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-storage-image-swift</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-syslog-alerts</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-snmp-alerts</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+<!--     <dependency> -->
+<!--       <groupId>org.apache.cloudstack</groupId> -->
+<!--       <artifactId>cloud-plugin-host-anti-affinity</artifactId> -->
+<!--       <version>${acs.version}</version> -->
+<!--     </dependency> -->
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>${jetty.version}</version>
+        <configuration>
+          <scanIntervalSeconds>10</scanIntervalSeconds>
+          <webApp>
+            <contextPath>/client</contextPath>
+          </webApp>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
