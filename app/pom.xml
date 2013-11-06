@@ -14,6 +14,12 @@
             <groupId>org.apache.cloudstack</groupId>
             <artifactId>launcher</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jstl</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cloudstack</groupId>
@@ -24,16 +30,24 @@
             <groupId>org.apache.cloudstack</groupId>
             <artifactId>dstack-meta</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>jstl</groupId>
-                    <artifactId>jstl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.owasp.esapi</groupId>
-                    <artifactId>esapi</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jsp</artifactId>
+            <version>${jetty.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-websocket</artifactId>
+            <version>${jetty.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>
