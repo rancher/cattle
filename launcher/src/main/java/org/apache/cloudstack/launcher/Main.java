@@ -7,14 +7,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 public class Main {
@@ -56,10 +59,29 @@ public class Main {
 		mainMethod.invoke(null, (Object)args);
 	}
 	
+	protected boolean isJar(URL url) {
+	    JarFile jarFile = null;
+	    try {
+    	    File file = new File(url.getPath());
+    	    jarFile = new JarFile(file);
+    	    jarFile.getManifest();
+    	    return true;
+	    } catch ( IOException e ) {
+	        return false;
+	    } finally {
+	        if ( jarFile != null ) {
+	            try {
+                    jarFile.close();
+                } catch (IOException e) {
+                }
+	        }
+	    }
+	}
+	
 	protected ClassLoader getClassLoader() throws Exception {
 		URL thisLocation = getThisLocation();
 		
-		if ( ! thisLocation.getProtocol().equals("jar") ) {
+		if ( ! isJar(thisLocation) ) {
 			return this.getClass().getClassLoader();
 		}
 		
@@ -72,10 +94,8 @@ public class Main {
 		urls.add(0, thisLocation);
 		
 		URL[] urlArray = urls.toArray(new URL[urls.size()]);
-		
-		URL.setURLStreamHandlerFactory(factory);
 
-		return new URLClassLoader(urlArray, Main.class.getClassLoader(), factory);
+		return new URLClassLoader(urlArray, null, factory);
 	}
 	
 
@@ -96,6 +116,7 @@ public class Main {
 					continue;
 				
 				if ( name.startsWith(LIB_PREFIX) || name.startsWith(JETTY_PREFIX) ) {
+				    factory.register();
 					jarsInJar.add(JarInJarHandler.createJarInJar(jarUrl, name));
 				}
 			}
@@ -138,7 +159,12 @@ public class Main {
 			if ( path.length() == 0 )
 				continue;
 			
-			traverse(path, result);
+			File file = new File(path);
+
+	        if ( file.exists() ) {
+	            System.out.println("Scanning [" + path + "] for plugins");
+	            traverse(path, result);
+	        }
 		}
 		
 		return result;

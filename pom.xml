@@ -12,6 +12,7 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>app</module>
+		<module>db-loader</module>
 		<module>parent</module>
 		<module>launcher</module>
 		<module>meta</module>

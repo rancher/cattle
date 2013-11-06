@@ -1,7 +1,10 @@
 package org.apache.cloudstack.launcher.jetty;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.TimeZone;
 
 import org.eclipse.jetty.server.Server;
@@ -27,6 +30,17 @@ public class Main {
 
 		return null;
 	}
+	
+	protected static URL getContextRoot(URL webXml) throws IOException {
+	    if ( webXml != null ) {
+    	    URLConnection connection = webXml.openConnection();
+            if ( connection instanceof JarURLConnection ) {
+                URL war = ((JarURLConnection)connection).getJarFileURL();
+                return new URL("jar", "", war.toExternalForm() + "!/WEB-INF/content");
+            }
+	    }
+        return Main.class.getResource("");
+	}
 
 	public static void main(String... args) {
 		/* The world is better place without time zones.  Well, at least for computers */
@@ -43,7 +57,7 @@ public class Main {
 			File webXmlFile = getWebXml();
 
 			URL webXml = webXmlFile == null ? Main.class.getResource(WEB_XML) : webXmlFile.toURI().toURL();
-			URL contextRoot = webXmlFile == null ? Main.class.getResource("") :
+			URL contextRoot = webXmlFile == null ? getContextRoot(webXml) :
 				webXmlFile.getParentFile().getParentFile().toURI().toURL();
 
 			if ( webXml != null ) {
