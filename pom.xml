@@ -39,7 +39,6 @@
         <module>upstream/cloudstack/framework/ipc</module>
         <module>upstream/cloudstack/framework/jobs</module>
         <module>upstream/cloudstack/framework/managed-context</module>
-        <module>upstream/cloudstack/framework/rest</module>
         <module>upstream/cloudstack/framework/spring/lifecycle</module>
         <module>upstream/cloudstack/framework/spring/module</module>
         <module>upstream/cloudstack/maven-standard</module>

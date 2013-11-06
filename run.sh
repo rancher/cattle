@@ -2,6 +2,6 @@
 set -x
 
 export MAVEN_OPTS="-XX:MaxPermSize=256m"
-mvn -DskipTests=true -pl app -am  install
+mvn -DskipTests=true install
 cd app
-mvn -X -Dexec.mainClass=org.apache.cloudstack.launcher.Main exec:java "$@"
+mvn jetty:run "$@"

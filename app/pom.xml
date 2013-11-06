@@ -53,7 +53,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
+                <groupId>org.mortbay.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
                 <configuration>
@@ -91,11 +91,6 @@
                             <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/jetty</outputDirectory>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
                     <execution>
                         <id>copy main</id>
                         <phase>generate-resources</phase>
