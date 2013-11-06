@@ -61,7 +61,6 @@
         <module>upstream/cloudstack/services/console-proxy/plugin</module>
         <module>upstream/cloudstack/services/console-proxy/server</module>
         <module>upstream/cloudstack/services/secondary-storage</module>
-        <module>upstream/cloudstack/systemvm</module>
         <module>upstream/cloudstack/utils</module>
 	</modules>
 </project>
