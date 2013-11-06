@@ -7,5 +7,6 @@
 
     <include file="db/dstack-001.xml"/>
     <include file="db/dstack-002.sql"/>
+    <include file="db/dstack-003.sql"/>
 
 </databaseChangeLog>
