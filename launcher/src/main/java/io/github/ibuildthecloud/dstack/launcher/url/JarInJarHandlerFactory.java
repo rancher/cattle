@@ -1,4 +1,4 @@
-package org.apache.cloudstack.launcher.url;
+package io.github.ibuildthecloud.dstack.launcher.url;
 
 import java.net.URL;
 import java.net.URLStreamHandler;

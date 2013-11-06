@@ -8,7 +8,7 @@
   in your IDE, you end up with the resource/file in two places.  So that's why.
 -->
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.apache.cloudstack</groupId>
+    <groupId>io.github.ibuildthecloud</groupId>
     <artifactId>dstack-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>

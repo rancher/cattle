@@ -4,15 +4,15 @@
     <artifactId>dstack-app</artifactId>
     <parent>
         <artifactId>dstack-parent</artifactId>
-        <groupId>org.apache.cloudstack</groupId>
+        <groupId>io.github.ibuildthecloud</groupId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../parent/pom.xml</relativePath>
     </parent>
     <packaging>war</packaging>
     <dependencies>
         <dependency>
-            <groupId>org.apache.cloudstack</groupId>
-            <artifactId>launcher</artifactId>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-launcher</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -22,12 +22,12 @@
             <version>1.2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.cloudstack</groupId>
-            <artifactId>db-loader</artifactId>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-db-loader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.cloudstack</groupId>
+            <groupId>io.github.ibuildthecloud</groupId>
             <artifactId>dstack-meta</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -112,7 +112,7 @@
                     <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
                     <archive>
                         <manifest>
-                            <mainClass>org.apache.cloudstack.launcher.Main</mainClass>
+                            <mainClass>io.github.ibuildthecloud.dstack.launcher.Main</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Implementation-Version>${project.version}</Implementation-Version>

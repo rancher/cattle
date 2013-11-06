@@ -39,41 +39,54 @@
     </filter-mapping>
 -->
 
-	<servlet>
-		<servlet-name>cloudStartupServlet</servlet-name>
-		<servlet-class>com.cloud.servlet.CloudStartupServlet</servlet-class>
-		<load-on-startup>4</load-on-startup>
-	</servlet>
+    <filter>
+        <filter-name>ApiFilter</filter-name>
+        <filter-class>io.github.ibuildthecloud.dstack.api.servlet.ApiRequestFilter</filter-class>
+        <init-param>
+            <param-name>module</param-name>
+            <param-value>dstack-api</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>ApiFilter</filter-name>
+        <url-pattern>/v1/*</url-pattern>
+    </filter-mapping>
 
-	<servlet>
-		<servlet-name>apiServlet</servlet-name>
-		<servlet-class>com.cloud.api.ApiServlet</servlet-class>
-		<load-on-startup>5</load-on-startup>
-	</servlet>
+<!-- 	<servlet> -->
+<!-- 		<servlet-name>cloudStartupServlet</servlet-name> -->
+<!-- 		<servlet-class>com.cloud.servlet.CloudStartupServlet</servlet-class> -->
+<!-- 		<load-on-startup>4</load-on-startup> -->
+<!-- 	</servlet> -->
 
-	<servlet>
-		<servlet-name>consoleServlet</servlet-name>
-		<servlet-class>com.cloud.servlet.ConsoleProxyServlet</servlet-class>
-		<load-on-startup>6</load-on-startup>
-	</servlet>
+<!-- 	<servlet> -->
+<!-- 		<servlet-name>apiServlet</servlet-name> -->
+<!-- 		<servlet-class>com.cloud.api.ApiServlet</servlet-class> -->
+<!-- 		<load-on-startup>5</load-on-startup> -->
+<!-- 	</servlet> -->
 
-	<servlet>
-		<servlet-name>registerCompleteServlet</servlet-name>
-		<servlet-class>com.cloud.servlet.RegisterCompleteServlet</servlet-class>
-	</servlet>
+<!-- 	<servlet> -->
+<!-- 		<servlet-name>consoleServlet</servlet-name> -->
+<!-- 		<servlet-class>com.cloud.servlet.ConsoleProxyServlet</servlet-class> -->
+<!-- 		<load-on-startup>6</load-on-startup> -->
+<!-- 	</servlet> -->
 
-	<servlet-mapping>
-		<servlet-name>apiServlet</servlet-name>
-		<url-pattern>/api/*</url-pattern>
-	</servlet-mapping>
+<!-- 	<servlet> -->
+<!-- 		<servlet-name>registerCompleteServlet</servlet-name> -->
+<!-- 		<servlet-class>com.cloud.servlet.RegisterCompleteServlet</servlet-class> -->
+<!-- 	</servlet> -->
 
-	<servlet-mapping>
-		<servlet-name>consoleServlet</servlet-name>
-		<url-pattern>/console</url-pattern>
-	</servlet-mapping>
+<!-- 	<servlet-mapping> -->
+<!-- 		<servlet-name>apiServlet</servlet-name> -->
+<!-- 		<url-pattern>/api/*</url-pattern> -->
+<!-- 	</servlet-mapping> -->
 
-	<servlet-mapping>
-		<servlet-name>registerCompleteServlet</servlet-name>
-		<url-pattern>/mycloud/complete</url-pattern>
-	</servlet-mapping>
+<!-- 	<servlet-mapping> -->
+<!-- 		<servlet-name>consoleServlet</servlet-name> -->
+<!-- 		<url-pattern>/console</url-pattern> -->
+<!-- 	</servlet-mapping> -->
+
+<!-- 	<servlet-mapping> -->
+<!-- 		<servlet-name>registerCompleteServlet</servlet-name> -->
+<!-- 		<url-pattern>/mycloud/complete</url-pattern> -->
+<!-- 	</servlet-mapping> -->
 </web-app>

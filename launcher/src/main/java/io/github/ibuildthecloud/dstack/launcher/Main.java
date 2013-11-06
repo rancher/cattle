@@ -1,17 +1,15 @@
-package org.apache.cloudstack.launcher;
+package io.github.ibuildthecloud.dstack.launcher;
 
-import org.apache.cloudstack.launcher.url.JarInJarHandler;
-import org.apache.cloudstack.launcher.url.JarInJarHandlerFactory;
+import io.github.ibuildthecloud.dstack.launcher.url.JarInJarHandler;
+import io.github.ibuildthecloud.dstack.launcher.url.JarInJarHandlerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.URLConnection;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
@@ -29,7 +27,7 @@ public class Main {
 //	
 	public static final String LIB_PREFIX = "WEB-INF/lib";
 	public static final String JETTY_PREFIX = "WEB-INF/jetty";
-	public static final String JETTY_LAUNCHER = "org.apache.cloudstack.launcher.jetty.Main";
+	public static final String JETTY_LAUNCHER = "io.github.ibuildthecloud.dstack.launcher.jetty.Main";
 	
 	JarInJarHandlerFactory factory = new JarInJarHandlerFactory();
 	

@@ -1,4 +1,4 @@
-<beans profile="dbload" xmlns="http://www.springframework.org/schema/beans"
+<beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:task="http://www.springframework.org/schema/task"
     xmlns:tx="http://www.springframework.org/schema/tx"
@@ -12,10 +12,10 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-	<bean id="JarInJarServiceLocator" class="io.github.ibuildthecloud.dstack.liquibase.JarInJarServiceLocator" />
-	<bean id="liquibase-core" class="liquibase.integration.spring.SpringLiquibase" depends-on="JarInJarServiceLocator" >
-		<property name="dataSource" ref="DataSource" />
-		<property name="changeLog" value="classpath:db/changelog.xml" />
-	</bean>
+    <bean id="DataSource" class="com.cloud.utils.db.TransactionLegacy" factory-method="getDataSource">
+        <constructor-arg>
+            <util:constant static-field="com.cloud.utils.db.TransactionLegacy.CLOUD_DB"/>
+        </constructor-arg>
+    </bean>
 
 </beans>
