@@ -10,6 +10,7 @@
 	<artifactId>dstack</artifactId>
 	<packaging>pom</packaging>
 	<modules>
+		<module>gdapi-java-server</module>
 		<module>api</module>
 		<module>app</module>
 		<module>db-loader</module>
