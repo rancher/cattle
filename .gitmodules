@@ -1,0 +1,3 @@
+[submodule "gdapi-java-server"]
+	path = gdapi-java-server
+	url = https://github.com/ibuildthecloud/gdapi-java-server.git
