@@ -12,6 +12,11 @@
   <dependencies>
     <dependency>
       <groupId>io.github.ibuildthecloud</groupId>
+      <artifactId>dstack-jooq</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.ibuildthecloud</groupId>
       <artifactId>dstack-api</artifactId>
       <version>${project.version}</version>
     </dependency>
