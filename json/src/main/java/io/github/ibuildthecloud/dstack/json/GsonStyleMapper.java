@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Extends the default the DefaultJsonMapper to be more compatible with GSON.
  * Specifically this means doing serialization based on fields and not getters.
  */
-public class GsonStyleMapper extends DefaultJsonMapper {
+public class GsonStyleMapper extends JacksonJsonMapper {
 
     public GsonStyleMapper() {
         super();

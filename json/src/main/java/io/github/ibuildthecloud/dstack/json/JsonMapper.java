@@ -24,6 +24,8 @@ public interface JsonMapper {
     <T> T convertValue(Object fromValue, Class<T> toValueType);
 
     /**
+     * @deprecated
+     * 
      * This method provides a toJson() method to match Gson. It is preferable to
      * use writeValueAsString() as that method throws an IOException.
      * 
@@ -33,6 +35,8 @@ public interface JsonMapper {
     String toJson(Object object);
     
     /**
+     * @deprecated
+     * 
      * This method provides a toJson() method to match Gson.
      * 
      * @param object
@@ -41,6 +45,8 @@ public interface JsonMapper {
     void toJson(Object object, Writer os);
 
     /**
+     * @deprecated
+     * 
      * This method provides a fromJson() method to match Gson. It is preferable
      * to use readValue() as that method throws an IOException.
      * 

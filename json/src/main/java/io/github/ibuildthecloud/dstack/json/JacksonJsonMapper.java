@@ -20,11 +20,11 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
  * supports JAXB annotations.
  * 
  */
-public class DefaultJsonMapper implements JsonMapper {
+public class JacksonJsonMapper implements JsonMapper {
 
     ObjectMapper mapper;
 
-    public DefaultJsonMapper() {
+    public JacksonJsonMapper() {
         mapper = new ObjectMapper();
         mapper.setSerializationInclusion(Include.NON_NULL);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -36,7 +36,7 @@ public class DefaultJsonMapper implements JsonMapper {
         mapper.setAnnotationIntrospector(pair);
     }
 
-    public DefaultJsonMapper(ObjectMapper mapper) {
+    public JacksonJsonMapper(ObjectMapper mapper) {
         this.mapper = mapper;
     }
 
