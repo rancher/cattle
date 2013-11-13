@@ -3,15 +3,15 @@
   <!-- Configure the database connection here -->
   <jdbc>
     <driver>com.mysql.jdbc.Driver</driver>
-    <url>jdbc:mysql://localhost:3306/cloud</url>
-    <user>cloud</user>
-    <password>cloud</password>
+    <url>jdbc:mysql://localhost:3306/dstack</url>
+    <user>dstack</user>
+    <password>dstack</password>
   </jdbc>
 
   <generator>
     <!-- The default code generator. You can override this one, to generate your own code style
          Defaults to org.jooq.util.DefaultGenerator -->
-    <name>org.jooq.util.DefaultGenerator</name>
+    <name>io.github.ibuildthecloud.dstack.db.jooq.generator.JavaGenerator</name>
 
     <database>
       <!-- The database type. The format here is:
@@ -20,7 +20,7 @@
 
       <!-- The database schema (or in the absence of schema support, in your RDBMS this
            can be the owner, user, database name) to be generated -->
-      <inputSchema>cloud</inputSchema>
+      <inputSchema>dstack</inputSchema>
 
       <!-- All elements that are generated from your schema 
            (A Java regular expression. Use the pipe to separate several expressions)
@@ -30,22 +30,23 @@
       <!-- All elements that are excluded from your schema 
            (A Java regular expression. Use the pipe to separate several expressions).
            Excludes match before includes -->
-      <excludes>.*proc.*</excludes>
+      <excludes>.*proc</excludes>
 
       <unsignedTypes>false</unsignedTypes>
     </database>
 
     <target>
       <!-- The destination package of your generated classes (within the destination directory) -->
-      <packageName>org.apache.cloudstack.db.jooq.generated</packageName>
+      <packageName>io.github.ibuildthecloud.dstack.db.jooq.generated</packageName>
 
       <!-- The destination directory of your generated classes -->
       <directory>src/main/java</directory>
     </target>
     <generate>
-      <pojos>true</pojos>
-      <daos>true</daos>
+      <pojos>false</pojos>
+      <daos>false</daos>
       <jpaAnnotations>true</jpaAnnotations>
+      <fluentSetters>true</fluentSetters>
     </generate>
   </generator>
 </configuration>
