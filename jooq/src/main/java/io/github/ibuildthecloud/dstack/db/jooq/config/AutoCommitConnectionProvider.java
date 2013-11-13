@@ -1,4 +1,4 @@
-package org.apache.cloudstack.db.jooq.mapper;
+package io.github.ibuildthecloud.dstack.db.jooq.config;
 
 import java.sql.Connection;
 import java.sql.SQLException;

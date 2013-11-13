@@ -15,6 +15,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
         </dependency>
@@ -31,9 +37,9 @@
             <artifactId>javax.persistence</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cloudstack</groupId>
-            <artifactId>cloud-framework-db</artifactId>
-            <version>${acs.version}</version>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-archaius</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

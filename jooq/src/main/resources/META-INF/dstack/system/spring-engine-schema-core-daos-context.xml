@@ -27,8 +27,8 @@
                       http://www.springframework.org/schema/context/spring-context-3.0.xsd"
                       default-lazy-init="true" >
 
-    <!-- TODO: Move to common-core -->
-    <bean class="org.apache.cloudstack.db.jooq.mapper.Configuration" />
-    <bean class="org.apache.cloudstack.db.jooq.mapper.CloudStackRecordMapperProvider" />
+    <bean id="JooqConfiguration" class="io.github.ibuildthecloud.dstack.db.jooq.config.Configuration" >
+        <property name="name" value="dstack" />
+    </bean>
 
 </beans>
