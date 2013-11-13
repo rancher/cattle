@@ -1,0 +1,39 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean class="io.github.ibuildthecloud.dstack.json.JacksonJsonMapper" />
+    <bean class="io.github.ibuildthecloud.dstack.engine.repository.impl.jooq.JooqProcessRecordDao" />
+    <bean id="ProcessServerImpl" class="io.github.ibuildthecloud.dstack.engine.server.impl.ProcessServerImpl" />
+
+    <task:scheduler id="TaskScheduler" />
+    <task:scheduled-tasks scheduler="TaskScheduler" >
+        <task:scheduled ref="ProcessServerImpl" method="runOutstandingJobs" 
+            initial-delay="0" fixed-delay="15000" />
+    </task:scheduled-tasks>
+
+    <bean class="io.github.ibuildthecloud.dstack.engine.repository.impl.DefaultProcessRepository" >
+        <property name="definitions">
+            <map>
+                <entry key="START_VIRTUAL_MACHINE">
+                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.StartVirtualMachineProcessDefinition" />
+                </entry>
+            </map>
+        </property>
+        <property name="factories">
+            <map>
+                <entry key="START_VIRTUAL_MACHINE">
+                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.StartVirtualMachineProcessStateFactory" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean class="io.github.ibuildthecloud.dstack.engine.server.impl.SequentialDispatcher" />
+</beans>
