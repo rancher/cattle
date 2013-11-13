@@ -28,6 +28,8 @@
         <module>upstream/cloudstack/framework/managed-context</module>
         <module>upstream/cloudstack/framework/spring/lifecycle</module>
         <module>upstream/cloudstack/framework/spring/module</module>
+        <module>upstream/cloudstack/framework/db>
+        <module>upstream/cloudstack/framework/config</module>
         <module>upstream/cloudstack/utils</module>
         <module>utils</module>
 	</modules>
