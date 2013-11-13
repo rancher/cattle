@@ -16,23 +16,18 @@
         <acs.version>4.3.0-SNAPSHOT</acs.version>
         <mysql.version>5.1.21</mysql.version>
         <jetty.version>8.1.11.v20130520</jetty.version>
+        <slf4j.version>1.7.5</slf4j.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <version>1</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

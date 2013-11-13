@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.dstack.json;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Collection;
@@ -38,6 +39,11 @@ public class JacksonJsonMapper implements JsonMapper {
 
     public JacksonJsonMapper(ObjectMapper mapper) {
         this.mapper = mapper;
+    }
+
+    @Override
+    public <T> T readValue(InputStream is, Class<T> type) throws IOException {
+        return mapper.readValue(is, type);
     }
 
     @Override

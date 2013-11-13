@@ -8,6 +8,16 @@ public class DelayedObject<T> implements Delayed {
     Long whenToRunMillis;
     T object;
 
+    public DelayedObject(Long whenToRunMillis, T object) {
+        super();
+        this.whenToRunMillis = whenToRunMillis;
+        this.object = object;
+    }
+
+    public T getObject() {
+        return object;
+    }
+
     @Override
     public int compareTo(Delayed o) {
         long thisVal = getDelay(TimeUnit.MILLISECONDS);
@@ -17,12 +27,12 @@ public class DelayedObject<T> implements Delayed {
             return -1;
         }
 
-        return if (thisVal == anotherVal ) ? 0 : 1 
+        return (thisVal == anotherVal ) ? 0 : 1; 
     }
 
     @Override
     public long getDelay(TimeUnit unit) {
-        return TimeUnit.MILLISECONDS.;
+        return unit.convert(whenToRunMillis - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
 
 }

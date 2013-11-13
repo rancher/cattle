@@ -39,11 +39,11 @@ public class LockManagerImplTest {
 
         lockManager = new LockManagerImpl();
         lockManager.setLockProviders(Arrays.asList(lockProvider));
-        lockManager.start();
+        lockManager.init();
 
         verify(lockProvider, times(1)).activate();
     }
-    
+
     @Test
     public void test_bad_multilock() {
         MultiLockDefinition def = new TestMultiLockDefinition(goodLockDef, badLockDef, good2LockDef);

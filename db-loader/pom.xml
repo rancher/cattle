@@ -10,12 +10,27 @@
     <artifactId>dstack-db-loader</artifactId>
     <dependencies>
         <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-archaius</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.8.3</version>
         </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>

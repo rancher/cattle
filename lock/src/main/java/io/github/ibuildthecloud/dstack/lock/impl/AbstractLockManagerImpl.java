@@ -13,7 +13,8 @@ public abstract class AbstractLockManagerImpl implements LockManager {
         return doLock(lockDef, callback, new WithLock() {
             @Override
             public boolean withLock(Lock lock) {
-                lock.lock();
+                if ( lock != null )
+                    lock.lock();
                 return true;
             }
         });
@@ -24,7 +25,9 @@ public abstract class AbstractLockManagerImpl implements LockManager {
         return doLock(lockDef, callback, new WithLock() {
             @Override
             public boolean withLock(Lock lock) {
-                return lock.tryLock();
+                if ( lock != null )
+                    return lock.tryLock();
+                return true;
             }
         });
     }

@@ -1,11 +1,14 @@
 package io.github.ibuildthecloud.dstack.json;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Collection;
 
 public interface JsonMapper {
+
+    <T> T readValue(InputStream is, Class<T> type) throws IOException;
 
     <T> T readValue(byte[] bytes, Class<T> type) throws IOException;
 

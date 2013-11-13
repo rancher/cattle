@@ -6,16 +6,17 @@ import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.lock.definition.MultiLockDefinition;
 import io.github.ibuildthecloud.dstack.lock.provider.LockProvider;
-import io.github.ibuildthecloud.dstack.util.lifecycle.LifeCycle;
+import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LockManagerImpl extends AbstractLockManagerImpl implements LockManager, LifeCycle {
+public class LockManagerImpl extends AbstractLockManagerImpl implements LockManager {
 
     private static final Logger log = LoggerFactory.getLogger(LockManagerImpl.class);
 
@@ -78,17 +79,18 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
         return lockProvider;
     }
 
-    @Override
-    public void start() {
-        if ( lockProviders.size() == 0 )
-            throw new IllegalStateException("Failed to find lock provider");
+    @PostConstruct
+    public void init() {
+        InitializationUtils.onInitialization(lockProviders, new Runnable() {
+            @Override
+            public void run() {
+                if ( lockProviders.size() == 0 )
+                    throw new IllegalStateException("Failed to find lock provider");
 
-        lockProvider = lockProviders.get(0);
-        lockProvider.activate();
-    }
-
-    @Override
-    public void stop() {
+                lockProvider = lockProviders.get(0);
+                lockProvider.activate();
+            }
+        });
     }
 
     public List<LockProvider> getLockProviders() {

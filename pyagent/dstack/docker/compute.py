@@ -30,22 +30,35 @@ class Container(object):
         return not self._get_container() is None
 
 
-    def create(self):
+    def create(self, start=True):
         self._container = self._client.create_container_from_config(self._container)
+        self._container = self._get_container(prefix=True)
+        if start:
+            self.start()
+        return self._container
 
 
     def start(self):
         self._client.start(self._container.get("Id"))
         self._container = self._get_container()
+        return self._container
 
-    def _get_container(self, id=None):
+    def stop(self):
+        self._client.stop(self._container.get("Id"))
+        self._container = self._get_container()
+        return self._container
+
+    def _get_container(self, id=None, prefix=False):
         if id is None:
-            id = self._lookup_data()
+            id = self._container.get("Id")
 
         if id is None:
             return None
 
-        containers = filter(lambda x: x.get("Id") == id, self._client.containers(all=True))
+        all_containers = self._client.containers(all=True)
+        containers = filter(lambda x: x.get("Id") == id, all_containers)
+        if len(containers) == 0 and prefix:
+            containers = filter(lambda x: x.get("Id").startswith(id), all_containers)
 
         if len(containers) > 2:
             log.error("Multiple containers returned for id [%s] : %s" % (id, containers))
@@ -55,10 +68,6 @@ class Container(object):
 
         return containers[0]
 
-    def _lookup_data(self):
-        container = utils.get_data(self._container, prefix="docker.container")
-        return container.get("Id")
-
 
 class DockerCompute(object):
     def start(self, virtual_machine=None, **kw):
@@ -66,8 +75,8 @@ class DockerCompute(object):
 
         if container.exists():
             log.info("Starting container")
-            container.start()
+            return container.start()
         else:
             log.info("Creating container")
-            container.create()
+            return container.create()
 

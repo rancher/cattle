@@ -19,12 +19,15 @@ public class InMemoryLockProvider implements LockProvider {
 
     @Override
     public synchronized Lock getLock(LockDefinition lockDefinition) {
+        if ( lockDefinition == null )
+            return null;
+
         StandardLock lock = locks.get(lockDefinition.getLockId());
-        
+
         if ( lock == null ) {
             lock = new StandardLock(lockDefinition, new ReentrantLock());
         }
-        
+
         lock.incrementReference();
         return lock;
     }

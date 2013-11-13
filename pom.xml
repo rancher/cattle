@@ -12,56 +12,24 @@
 	<modules>
 		<module>api</module>
 		<module>app</module>
+		<module>archaius</module>
 		<module>db-loader</module>
-		<module>parent</module>
+		<module>engine</module>
+		<module>engine-jooq</module>
+		<module>jooq</module>
+		<module>json</module>
 		<module>launcher</module>
+		<module>lock</module>
 		<module>meta</module>
+		<module>parent</module>
+		<module>processes</module>
 		<module>resources</module>
-        <module>upstream/cloudstack/agent</module>
-        <module>upstream/cloudstack/api</module>
-        <module>upstream/cloudstack/core</module>
-        <module>upstream/cloudstack/deps/XenServerJava</module>
-        <module>upstream/cloudstack/engine/api</module>
-        <module>upstream/cloudstack/engine/components-api</module>
-        <module>upstream/cloudstack/engine/network</module>
-        <module>upstream/cloudstack/engine/orchestration</module>
-        <module>upstream/cloudstack/engine/schema</module>
-        <module>upstream/cloudstack/engine/storage/core</module>
-        <module>upstream/cloudstack/engine/storage/cache</module>
-        <module>upstream/cloudstack/engine/storage/datamotion</module>
-        <module>upstream/cloudstack/engine/storage/image</module>
-        <module>upstream/cloudstack/engine/storage/snapshot</module>
-        <module>upstream/cloudstack/engine/storage/volume</module>
-        <module>upstream/cloudstack/framework/cluster</module>
-        <module>upstream/cloudstack/framework/config</module>
-        <module>upstream/cloudstack/framework/db</module>
-        <module>upstream/cloudstack/framework/events</module>
-        <module>upstream/cloudstack/framework/ipc</module>
-        <module>upstream/cloudstack/framework/jobs</module>
+		<module>schema</module>
         <module>upstream/cloudstack/framework/managed-context</module>
         <module>upstream/cloudstack/framework/spring/lifecycle</module>
         <module>upstream/cloudstack/framework/spring/module</module>
-        <module>upstream/cloudstack/maven-standard</module>
-        <module>upstream/cloudstack/plugins/acl/static-role-based</module>
-        <module>upstream/cloudstack/plugins/api/discovery</module>
-        <module>upstream/cloudstack/plugins/deployment-planners/implicit-dedication</module>
-        <module>upstream/cloudstack/plugins/deployment-planners/user-concentrated-pod</module>
-        <module>upstream/cloudstack/plugins/deployment-planners/user-dispersing</module>
-        <module>upstream/cloudstack/plugins/event-bus/rabbitmq</module>
-        <module>upstream/cloudstack/plugins/host-allocators/random</module>
-        <module>upstream/cloudstack/plugins/network-elements/ovs</module>
-        <module>upstream/cloudstack/plugins/network-elements/internal-loadbalancer</module>
-        <module>upstream/cloudstack/plugins/hypervisors/kvm</module>
-        <module>upstream/cloudstack/plugins/hypervisors/xen</module>
-        <module>upstream/cloudstack/plugins/storage-allocators/random</module>
-        <module>upstream/cloudstack/plugins/storage/image/default</module>
-        <module>upstream/cloudstack/plugins/storage/volume/default</module>
-        <module>upstream/cloudstack/plugins/user-authenticators/sha256salted</module>
-        <module>upstream/cloudstack/server</module>
-        <module>upstream/cloudstack/services/console-proxy/plugin</module>
-        <module>upstream/cloudstack/services/console-proxy/server</module>
-        <module>upstream/cloudstack/services/secondary-storage</module>
         <module>upstream/cloudstack/utils</module>
+        <module>utils</module>
 	</modules>
     <profiles>
         <profile>
