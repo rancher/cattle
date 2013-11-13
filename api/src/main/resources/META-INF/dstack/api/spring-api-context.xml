@@ -32,12 +32,5 @@
     <bean class="io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser" />
     <bean class="io.github.ibuildthecloud.gdapi.auth.NoOpApiAuthenticator" />
     <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
-    <bean class="io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl">
-        <property name="types">
-            <list>
-                <value>org.apache.cloudstack.db.jooq.generated.tables.records.VmInstanceRecord</value>
-            </list>
-        </property>
-    </bean>
 
 </beans>

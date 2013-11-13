@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.api.resource;
 
+import io.github.ibuildthecloud.dstack.db.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -12,8 +13,6 @@ import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
-import org.jooq.TableField;
-import org.jooq.UniqueKey;
 import org.jooq.UpdatableRecord;
 import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultConfiguration;
@@ -48,30 +47,19 @@ public class DefaultJooqResourceManager implements ResourceManager {
     }
 
     @Override
+    public Class<?>[] getTypeClasses() {
+        return new Class<?>[0];
+    }
+
+
+    @Override
     public Object getById(String id, ApiRequest request) {
         Class<?> clz = schemaFactory.getSchemaClass(request.getType());
         if ( clz == null ) {
             return null;
         }
 
-        Table<?> table = getTable(clz);
-        if ( table == null )
-            return null;
-
-        UniqueKey<?> key = table.getPrimaryKey();
-        if ( key == null || key.getFieldsArray().length != 1 )
-            return null;
-
-        @SuppressWarnings("unchecked")
-        TableField<?, Object> keyField = (TableField<?, Object>)key.getFieldsArray()[0];
-
-        /* Convert object because we are abusing type safety here */
-        Object converted = keyField.getDataType().convert(id);
-
-        return create().select()
-                .from(table)
-                .where(keyField.eq(converted))
-                .fetchOneInto(clz);
+        return JooqUtils.findById(create(), clz, id);
     }
 
     @Override
