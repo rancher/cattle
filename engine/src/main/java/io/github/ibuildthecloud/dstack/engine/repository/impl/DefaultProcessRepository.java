@@ -9,111 +9,116 @@ import io.github.ibuildthecloud.dstack.engine.process.ProcessStateFactory;
 import io.github.ibuildthecloud.dstack.engine.process.impl.DefaultProcessImpl;
 import io.github.ibuildthecloud.dstack.engine.repository.FailedToCreateProcess;
 import io.github.ibuildthecloud.dstack.engine.repository.ProcessRepository;
-import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
-import io.github.ibuildthecloud.dstack.util.lifecycle.LifeCycle;
-import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
+import io.github.ibuildthecloud.dstack.util.concurrent.DelayedObject;
+import io.github.ibuildthecloud.dstack.util.exception.NoExceptionRunnable;
+import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.Delayed;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import com.netflix.config.DynamicLongProperty;
 
-public class DefaultProcessRepository implements ProcessRepository, LifeCycle {
+public class DefaultProcessRepository implements ProcessRepository {
 
     private static final DynamicLongProperty EXECUTION_DELAY = ArchaiusUtil.getLongProperty("process.log.save.interval.ms");
 
     ProcessRecordDao processRecordDao;
-    JsonMapper jsonMapper;
-    List<ProcessDefinition> definitions;
-    List<ProcessStateFactory> processStateFactories;
-    Map<String, ProcessDefinition> definitionsByName;
-    Map<String, ProcessStateFactory> factoriesByName;
+    Map<String, ProcessDefinition> definitions;
+    Map<String, ProcessStateFactory> factories;
     LockManager lockManager;
-    DelayQueue<Delayed> toPersist;
+    DelayQueue<DelayedObject<DefaultProcessImpl>> toPersist = new DelayQueue<DelayedObject<DefaultProcessImpl>>();
     ScheduledExecutorService executor;
 
     @Override
-    public ProcessInstance getProcess(LaunchConfiguration config) {
-        ProcessDefinition processDef = definitionsByName.get(config.getProcessName());
-
-        if ( processDef == null )
-            throw new FailedToCreateProcess("Failed to find ProcessDefinition for [" + processDef.getName() + "]");
-
-        ProcessStateFactory factory = factoriesByName.get(config.getProcessName());
-        if ( factory == null )
-            throw new FailedToCreateProcess("Failed to find ProcessStateFactory for [" + processDef.getName() + "]");
-
-        ProcessState state = factory.constructProcessState(config);
-        if ( state == null )
-            throw new FailedToCreateProcess("Failed to construct ProcessState for [" + processDef.getName() + "]");
-
-        return new DefaultProcessImpl(this, lockManager, new ProcessRecord(), processDef, state);
+    public ProcessInstance createProcessInstance(LaunchConfiguration config) {
+        return createProcessInstance(new ProcessRecord(config, null, null));
     }
 
+    protected ProcessInstance createProcessInstance(ProcessRecord record) {
+        if ( record == null )
+            return null;
+
+        ProcessDefinition processDef = definitions.get(record.getProcessName());
+
+        if ( processDef == null )
+            throw new FailedToCreateProcess("Failed to find ProcessDefinition for [" + record.getProcessName() + "]");
+
+        ProcessStateFactory factory = factories.get(record.getProcessName());
+        if ( factory == null )
+            throw new FailedToCreateProcess("Failed to find ProcessStateFactory for [" + record.getProcessName() + "]");
+
+        ProcessState state = factory.constructProcessState(record);
+        if ( state == null )
+            throw new FailedToCreateProcess("Failed to construct ProcessState for [" + record.getProcessName() + "]");
+
+        DefaultProcessImpl process = new DefaultProcessImpl(this, lockManager, record, processDef, state);
+        toPersist.put(new DelayedObject<DefaultProcessImpl>(System.currentTimeMillis() + EXECUTION_DELAY.get(), process));
+
+        return process;
+    }
     @Override
     public void persistState(ProcessInstance process) {
         if ( ! ( process instanceof DefaultProcessImpl ) ) {
             throw new IllegalArgumentException("Can only persist ProcessInstances that are created by this repository");
         }
 
-        synchronized (process) {
+        DefaultProcessImpl processImpl = (DefaultProcessImpl)process;
 
+        synchronized (processImpl) {
+            ProcessRecord record = processImpl.getProcessRecord();
+            if ( record.getId() != null )
+                processRecordDao.update(record);
+        }
+    }
+
+    @Override
+    public List<Long> pendingTasks() {
+        return processRecordDao.pendingTasks();
+    }
+
+    @Override
+    public ProcessInstance loadProcess(Long id) {
+        ProcessRecord record = processRecordDao.getRecord(id);
+        return createProcessInstance(record);
+    }
+    
+    protected void persistInProgress() throws InterruptedException {
+        while ( true ) {
+            ProcessInstance process = toPersist.take().getObject();
+            synchronized (process) {
+                if ( process.isRunningLogic() ) {
+                    persistState(process);
+                }
+            }
         }
     }
 
     @PostConstruct
     public void init() {
         if ( executor == null ) {
-            executor = Executors.newSingleThreadScheduledExecutor()();
+            executor = Executors.newSingleThreadScheduledExecutor();
         }
-        definitionsByName = NamedUtils.createMapByName(definitions);
-        factoriesByName = NamedUtils.createMapByName(processStateFactories);
 
-        if ( toPersist == null ) {
-            toPersist = new DelayQueue<Delayed>();
-            executor.
-        }
-    }
-
-    public List<ProcessDefinition> getDefinitions() {
-        return definitions;
-    }
-
-    @Inject
-    public void setDefinitions(List<ProcessDefinition> definitions) {
-        this.definitions = definitions;
-    }
-
-    @Override
-    public void start() {
-        init();
-    }
-
-    @PreDestroy
-    @Override
-    public void stop() {
-        if ( executor != null ) {
-            executor.shutdownNow();
-        }
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
+        InitializationUtils.onInitialization(definitions, new Runnable() {
+            @Override
+            public void run() {
+                executor.scheduleAtFixedRate(new NoExceptionRunnable() {
+                    @Override
+                    public void doRun() throws Exception {
+                        /* This really blocks forever, but just in case it fails we restart */
+                        persistInProgress();
+                    }
+                }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);
+            }
+        });
     }
 
     public ProcessRecordDao getProcessRecordDao() {
@@ -140,6 +145,24 @@ public class DefaultProcessRepository implements ProcessRepository, LifeCycle {
 
     public void setExecutor(ScheduledExecutorService executor) {
         this.executor = executor;
+    }
+
+    public Map<String, ProcessDefinition> getDefinitions() {
+        return definitions;
+    }
+
+    @Inject
+    public void setDefinitions(Map<String, ProcessDefinition> definitions) {
+        this.definitions = definitions;
+    }
+
+    public Map<String, ProcessStateFactory> getFactories() {
+        return factories;
+    }
+
+    @Inject
+    public void setFactories(Map<String, ProcessStateFactory> factories) {
+        this.factories = factories;
     }
 
 }

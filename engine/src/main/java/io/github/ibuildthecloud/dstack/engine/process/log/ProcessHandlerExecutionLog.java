@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.engine.process.log;
 
-public class ProcessHandlerExecutionLog {
+public class ProcessHandlerExecutionLog extends AbstractParentLog implements ParentLog {
 
     String name;
     long startTime;

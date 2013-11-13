@@ -8,10 +8,10 @@ import io.github.ibuildthecloud.dstack.engine.process.ProcessStateTransition;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProcessExecutionLog {
+public class ProcessExecutionLog extends AbstractParentLog implements ParentLog {
 
     long startTime;
-    long stopTime;
+    Long stopTime;
     String processLock;
     Long transitionToActivating;
     Long transitionToActive;
@@ -19,11 +19,15 @@ public class ProcessExecutionLog {
     Long lockAcquired;
     Long lockAcquireEnd;
     Long lockAcquireFailed;
+    String failedToAcquireLock;
     Long lockHoldTime;
     Long processingServerId;
     List<ProcessStateTransition> transitions = new ArrayList<ProcessStateTransition>();
     List<ProcessHandlerExecutionLog> processHandlerExecutions = new ArrayList<ProcessHandlerExecutionLog>();
     ExceptionLog exception;
+
+    List<ProcessHandlerExecutionLog> handlerExecutions = new ArrayList<ProcessHandlerExecutionLog>();
+    List<ProcessExecutionLog> executions = new ArrayList<ProcessExecutionLog>();
 
     ExitReason exitReason;
 
@@ -63,12 +67,8 @@ public class ProcessExecutionLog {
     }
 
     /* Standard Accessors below */
-    public long getStartTime() {
+    public Long getStartTime() {
         return startTime;
-    }
-
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
     }
 
     public ExitReason getExitReason() {
@@ -79,11 +79,11 @@ public class ProcessExecutionLog {
         this.exitReason = exitReason;
     }
 
-    public long getStopTime() {
+    public Long getStopTime() {
         return stopTime;
     }
 
-    public void setStopTime(long stopTime) {
+    public void setStopTime(Long stopTime) {
         this.stopTime = stopTime;
     }
 
@@ -181,5 +181,41 @@ public class ProcessExecutionLog {
 
     public void setException(ExceptionLog exception) {
         this.exception = exception;
+    }
+
+    public List<ProcessHandlerExecutionLog> getHandlerExecutions() {
+        return handlerExecutions;
+    }
+
+    public void setHandlerExecutions(List<ProcessHandlerExecutionLog> handlerExecutions) {
+        this.handlerExecutions = handlerExecutions;
+    }
+
+    public List<ProcessLog> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<ProcessLog> children) {
+        this.children = children;
+    }
+
+    public String getFailedToAcquireLock() {
+        return failedToAcquireLock;
+    }
+
+    public void setFailedToAcquireLock(String failedToAcquireLock) {
+        this.failedToAcquireLock = failedToAcquireLock;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public List<ProcessExecutionLog> getExecutions() {
+        return executions;
+    }
+
+    public void setExecutions(List<ProcessExecutionLog> executions) {
+        this.executions = executions;
     }
 }

@@ -1,7 +1,9 @@
 package io.github.ibuildthecloud.dstack.engine.context;
 
-import io.github.ibuildthecloud.dstack.engine.process.log.ProcessLog;
+import io.github.ibuildthecloud.dstack.engine.process.log.ParentLog;
+import io.github.ibuildthecloud.dstack.engine.server.ProcessServer;
 
+import java.util.EmptyStackException;
 import java.util.Stack;
 
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
@@ -15,25 +17,44 @@ public class EngineContext {
         }
     };
 
-    Stack<ProcessLog> currentProcess = new Stack<ProcessLog>();
+    Stack<ParentLog> currentLog = new Stack<ParentLog>();
+    ProcessServer processServer;
 
     public Long getProcessingServerId() {
         return null;
     }
 
-    public void pushProcessLog(ProcessLog log) {
-        currentProcess.push(log);
+    public void pushLog(ParentLog log) {
+        currentLog.push(log);
     }
 
-    public void popProcessLog() {
-        currentProcess.pop();
+    public void popLog() {
+        currentLog.pop();
     }
 
-    public ProcessLog peekProcessLog() {
-        return currentProcess.peek();
+    public ParentLog peekLog() {
+        try {
+            return currentLog.peek();
+        } catch ( EmptyStackException e ) {
+            return null;
+        }
     }
 
     public static EngineContext getEngineContext() {
         return TL.get();
+    }
+
+    public ProcessServer getProcessServer() {
+        return processServer;
+    }
+
+    public void setProcessServer(ProcessServer processServer) {
+        this.processServer = processServer;
+    }
+
+    public static Long getProcessServerId() {
+        EngineContext context = EngineContext.getEngineContext();
+        ProcessServer server = context.getProcessServer();
+        return server == null ? null : server.getId();
     }
 }

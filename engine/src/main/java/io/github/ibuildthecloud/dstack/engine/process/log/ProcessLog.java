@@ -7,9 +7,10 @@ import java.util.List;
 
 public class ProcessLog {
 
-    List<ProcessHandlerExecutionLog> handlerExecutions = new ArrayList<ProcessHandlerExecutionLog>();
+    Long startTime;
+    Long endTime;
+
     List<ProcessExecutionLog> executions = new ArrayList<ProcessExecutionLog>();
-    List<ProcessLog> children = new ArrayList<ProcessLog>();
 
     public ProcessExecutionLog newExecution() {
         ProcessExecutionLog execution = new ProcessExecutionLog();
@@ -17,12 +18,6 @@ public class ProcessLog {
         execution.setProcessingServerId(EngineContext.getEngineContext().getProcessingServerId());
         executions.add(execution);
         return execution;
-    }
-
-    public ProcessLog newChildLog() {
-        ProcessLog log = new ProcessLog();
-        children.add(log);
-        return log;
     }
 
     public List<ProcessExecutionLog> getExecutions() {
@@ -33,20 +28,20 @@ public class ProcessLog {
         this.executions = executions;
     }
 
-    public List<ProcessHandlerExecutionLog> getHandlerExecutions() {
-        return handlerExecutions;
+    public Long getStartTime() {
+        return startTime;
     }
 
-    public void setHandlerExecutions(List<ProcessHandlerExecutionLog> handlerExecutions) {
-        this.handlerExecutions = handlerExecutions;
+    public void setStartTime(Long startTime) {
+        this.startTime = startTime;
     }
 
-    public List<ProcessLog> getChildren() {
-        return children;
+    public Long getEndTime() {
+        return endTime;
     }
 
-    public void setChildren(List<ProcessLog> children) {
-        this.children = children;
+    public void setEndTime(Long endTime) {
+        this.endTime = endTime;
     }
 
 }

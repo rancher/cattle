@@ -11,6 +11,7 @@ import io.github.ibuildthecloud.dstack.engine.process.ProcessPhase;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessStateTransition;
 import io.github.ibuildthecloud.dstack.engine.process.log.ExceptionLog;
+import io.github.ibuildthecloud.dstack.engine.process.log.ParentLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessExecutionLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessHandlerExecutionLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessLog;
@@ -22,10 +23,16 @@ import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.lock.exception.FailedToAcquireLockException;
 import io.github.ibuildthecloud.dstack.lock.util.LockUtils;
 
+import java.util.Date;
 import java.util.List;
 
 public class DefaultProcessImpl implements ProcessInstance {
 
+    private static final LogicPhase[] PHASES = new LogicPhase[] {
+        new LogicPhase(ProcessPhase.PRE_HANDLER_DONE, ExitReason.PRE_HANDLER_EXCEPTION,  ExitReason.PRE_HANDLER_DELAYED),
+        new LogicPhase(ProcessPhase.HANDLER_DONE,     ExitReason.HANDLER_EXCEPTION,      ExitReason.HANDLER_DELAYED),
+        new LogicPhase(ProcessPhase.PRE_HANDLER_DONE, ExitReason.POST_HANDLER_EXCEPTION, ExitReason.POST_HANDLER_DELAYED)
+    };
 
     ProcessRepository repository;
     LockManager lockManager;
@@ -39,6 +46,7 @@ public class DefaultProcessImpl implements ProcessInstance {
     LockDefinition processLock;
     ProcessPhase phase;
     ExitReason finalReason;
+    ProcessRecord record;
     volatile boolean inLogic = false;
 
     public DefaultProcessImpl(ProcessRepository repository, LockManager lockManager, ProcessRecord record,
@@ -51,6 +59,7 @@ public class DefaultProcessImpl implements ProcessInstance {
         this.state = state;
         this.log = record.getProcessLog();
         this.phase = record.getPhase();
+        this.record = record;
     }
 
     @Override
@@ -58,7 +67,7 @@ public class DefaultProcessImpl implements ProcessInstance {
         EngineContext engineContext = EngineContext.getEngineContext();
         try {
             if ( log == null ) {
-                ProcessLog parentLog = engineContext.peekProcessLog();
+                ParentLog parentLog = engineContext.peekLog();
                 if ( parentLog == null ) {
                     log = new ProcessLog();
                 } else {
@@ -66,16 +75,20 @@ public class DefaultProcessImpl implements ProcessInstance {
                 }
             }
 
-            engineContext.pushProcessLog(log);
-            return finalReason = executeInternal();
+            return lockManager.lock(new ProcessLock(this), new LockCallback<ExitReason>() {
+                @Override
+                public ExitReason doWithLock() {
+                    return finalReason = executeInternal();
+                }
+            });
         } finally {
-            engineContext.popProcessLog();
             repository.persistState(this);
         }
     }
 
     protected ExitReason executeInternal() {
         execution = log.newExecution();
+        EngineContext.getEngineContext().pushLog(execution);
 
         try {
             ExitReason reason = preRunStateCheck();
@@ -89,6 +102,7 @@ public class DefaultProcessImpl implements ProcessInstance {
             return exit(UNKNOWN_EXCEPTION);
         } finally {
             execution.close();
+            EngineContext.getEngineContext().popLog();
         }
     }
 
@@ -102,11 +116,7 @@ public class DefaultProcessImpl implements ProcessInstance {
                 }
             });
         } catch ( FailedToAcquireLockException e ) {
-            if ( e.getLockDefition() == processLock ) {
-                return lockFailed();
-            } else {
-                throw e;
-            }
+            return lockFailed(e.getLockDefition());
         } finally {
             lockAcquireEnd();
         }
@@ -135,6 +145,7 @@ public class DefaultProcessImpl implements ProcessInstance {
         }
 
         if ( phase == ProcessPhase.REQUESTED ) {
+            phase = ProcessPhase.STARTED;
             repository.persistState(this);
         }
 
@@ -155,26 +166,14 @@ public class DefaultProcessImpl implements ProcessInstance {
         inLogic = true;
         try {
             ExitReason reason = null;
-            if ( phase.ordinal() < ProcessPhase.PRE_HANDLER_DONE.ordinal() ) {
-                reason = runHandlers(processDefinition.getPreProcessHandlers(), PRE_HANDLER_EXCEPTION, PRE_HANDLER_DELAYED);
-                if ( reason != null )
-                    return reason;
+            for ( LogicPhase logicPhase : PHASES ) {
+                if ( phase.ordinal() < logicPhase.phase.ordinal() ) {
+                    reason = runHandlers(processDefinition.getPreProcessHandlers(), logicPhase);
+                    if ( reason != null )
+                        return reason;
 
-                phase = ProcessPhase.PRE_HANDLER_DONE;
-            }
-
-            if ( phase.ordinal() < ProcessPhase.HANDLER_DONE.ordinal() ) {
-                reason = runHandlers(processDefinition.getProcessHandlers(), HANDLER_EXCEPTION, HANDLER_DELAYED);
-                if ( reason != null )
-                    return reason;
-                phase = ProcessPhase.HANDLER_DONE;
-            }
-
-            if ( phase.ordinal() < ProcessPhase.POST_HANDLER_DONE.ordinal() ) {
-                reason = runHandlers(processDefinition.getProcessHandlers(), POST_HANDLER_EXCEPTION, POST_HANDLER_DELAYED);
-                if ( reason != null )
-                    return reason;
-                phase = ProcessPhase.HANDLER_DONE;
+                    phase = logicPhase.phase;
+                }
             }
 
             return reason;
@@ -183,22 +182,46 @@ public class DefaultProcessImpl implements ProcessInstance {
         }
     }
 
-    protected ExitReason runHandlers(List<? extends ProcessHandler> handlers,
-            ExitReason exceptionReason, ExitReason delayReason) {
+    protected ExitReason runHandlers(List<? extends ProcessHandler> handlers, LogicPhase logicPhase) {
+        EngineContext context = EngineContext.getEngineContext();
         for ( ProcessHandler handler : handlers ) {
             ProcessHandlerExecutionLog processExecution = execution.newProcessHandlerExecution(handler);
+            context.pushLog(processExecution);
             try {
                 handler.handle(this);
             } catch ( Throwable t ) {
                 processExecution.setException(new ExceptionLog(t));
-                if ( exceptionReason != null )
-                    return exceptionReason;
+                if ( logicPhase.exceptionReason != null )
+                    return logicPhase.exceptionReason;
             } finally {
                 processExecution.setStopTime(now());
+                context.popLog();
             }
         }
 
         return null;
+    }
+
+    public ProcessRecord getProcessRecord() {
+        record.setPhase(phase);
+        record.setProcessLog(log);
+        record.setExitReason(finalReason);
+
+        if ( execution == null ) {
+            record.setRunningProcessServerId(null);
+        } else {
+            record.setRunningProcessServerId(execution.getProcessingServerId());
+        }
+
+        if ( finalReason != null ) {
+            if ( finalReason.isTerminating() && execution != null && execution.getStopTime() != null ) {
+                record.setEndTime(new Date(execution.getStopTime()));
+            }
+
+            record.setResult(finalReason.getResult());
+        }
+
+        return record;
     }
 
     protected void setActivating() {
@@ -226,7 +249,8 @@ public class DefaultProcessImpl implements ProcessInstance {
             execution.setLockAcquireEnd(now());
     }
 
-    protected ExitReason lockFailed() {
+    protected ExitReason lockFailed(LockDefinition lockDef) {
+        execution.setFailedToAcquireLock(LockUtils.serializeLock(lockDef));
         execution.setLockAcquireFailed(now());
         return exit(FAILED_TO_ACQUIRE_LOCK);
     }
@@ -250,4 +274,16 @@ public class DefaultProcessImpl implements ProcessInstance {
         return finalReason;
     }
 
+    private static final class LogicPhase {
+        ProcessPhase phase;
+        ExitReason exceptionReason;
+        ExitReason delayReason;
+
+        public LogicPhase(ProcessPhase phase, ExitReason exceptionReason, ExitReason delayReason) {
+            super();
+            this.phase = phase;
+            this.exceptionReason = exceptionReason;
+            this.delayReason = delayReason;
+        }
+    }
 }

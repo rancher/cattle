@@ -34,4 +34,12 @@ public enum ExitReason {
                     + " have a result set");
         }
     }
+
+    public boolean isTerminating() {
+        return terminating;
+    }
+
+    public ProcessResult getResult() {
+        return result;
+    }
 }

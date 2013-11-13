@@ -9,6 +9,16 @@ public class LaunchConfiguration {
     String resourceId;
     Map<String, Object> data;
 
+    public LaunchConfiguration() {
+    }
+
+    public LaunchConfiguration(LaunchConfiguration config) {
+        this.processName = config.getProcessName();
+        this.resourceType = config.getResourceType();
+        this.resourceId = config.getResourceId();
+        this.data = config.getData();
+    }
+
     public String getResourceType() {
         return resourceType;
     }

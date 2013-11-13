@@ -9,6 +9,9 @@ public class ExceptionLog {
     String cause;
     String stackTrace;
 
+    public ExceptionLog() {
+    }
+
     public ExceptionLog(Throwable t) {
         this.message = t.getMessage();
         this.clz = t.getClass().getName();
@@ -41,6 +44,14 @@ public class ExceptionLog {
 
     public void setStackTrace(String stackTrace) {
         this.stackTrace = stackTrace;
+    }
+
+    public String getCause() {
+        return cause;
+    }
+
+    public void setCause(String cause) {
+        this.cause = cause;
     }
 
 }
