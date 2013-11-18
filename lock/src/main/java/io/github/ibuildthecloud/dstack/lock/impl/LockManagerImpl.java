@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.lock.definition.MultiLockDefinition;
 import io.github.ibuildthecloud.dstack.lock.provider.LockProvider;
+import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
 import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
 
 import java.util.List;
@@ -81,16 +82,16 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
 
     @PostConstruct
     public void init() {
-        InitializationUtils.onInitialization(lockProviders, new Runnable() {
-            @Override
-            public void run() {
-                if ( lockProviders.size() == 0 )
-                    throw new IllegalStateException("Failed to find lock provider");
+        InitializationUtils.onInitialization(this, lockProviders);
+    }
 
-                lockProvider = lockProviders.get(0);
-                lockProvider.activate();
-            }
-        });
+    @AfterExtensionInitialization
+    public void activateLockProvider() {
+        if ( lockProviders.size() == 0 )
+            throw new IllegalStateException("Failed to find lock provider");
+
+        lockProvider = lockProviders.get(0);
+        lockProvider.activate();        
     }
 
     public List<LockProvider> getLockProviders() {

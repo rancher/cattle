@@ -1,17 +1,18 @@
 package io.github.ibuildthecloud.dstack.engine.repository.impl;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+import io.github.ibuildthecloud.dstack.engine.context.EngineContext;
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessStateFactory;
 import io.github.ibuildthecloud.dstack.engine.process.impl.DefaultProcessImpl;
-import io.github.ibuildthecloud.dstack.engine.repository.FailedToCreateProcess;
-import io.github.ibuildthecloud.dstack.engine.repository.ProcessRepository;
+import io.github.ibuildthecloud.dstack.engine.repository.ProcessNotFoundException;
+import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.util.concurrent.DelayedObject;
-import io.github.ibuildthecloud.dstack.util.exception.NoExceptionRunnable;
+import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
 import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
 
 import java.util.List;
@@ -24,9 +25,11 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+
 import com.netflix.config.DynamicLongProperty;
 
-public class DefaultProcessRepository implements ProcessRepository {
+public class DefaultProcessManager implements ProcessManager {
 
     private static final DynamicLongProperty EXECUTION_DELAY = ArchaiusUtil.getLongProperty("process.log.save.interval.ms");
 
@@ -49,21 +52,25 @@ public class DefaultProcessRepository implements ProcessRepository {
         ProcessDefinition processDef = definitions.get(record.getProcessName());
 
         if ( processDef == null )
-            throw new FailedToCreateProcess("Failed to find ProcessDefinition for [" + record.getProcessName() + "]");
+            throw new ProcessNotFoundException("Failed to find ProcessDefinition for [" + record.getProcessName() + "]");
 
         ProcessStateFactory factory = factories.get(record.getProcessName());
         if ( factory == null )
-            throw new FailedToCreateProcess("Failed to find ProcessStateFactory for [" + record.getProcessName() + "]");
+            throw new ProcessNotFoundException("Failed to find ProcessStateFactory for [" + record.getProcessName() + "]");
 
         ProcessState state = factory.constructProcessState(record);
         if ( state == null )
-            throw new FailedToCreateProcess("Failed to construct ProcessState for [" + record.getProcessName() + "]");
+            throw new ProcessNotFoundException("Failed to construct ProcessState for [" + record.getProcessName() + "]");
+
+        if ( record.getId() == null && ! EngineContext.hasParentProcess() )
+            record = processRecordDao.insert(record);
 
         DefaultProcessImpl process = new DefaultProcessImpl(this, lockManager, record, processDef, state);
         toPersist.put(new DelayedObject<DefaultProcessImpl>(System.currentTimeMillis() + EXECUTION_DELAY.get(), process));
 
         return process;
     }
+
     @Override
     public void persistState(ProcessInstance process) {
         if ( ! ( process instanceof DefaultProcessImpl ) ) {
@@ -107,18 +114,18 @@ public class DefaultProcessRepository implements ProcessRepository {
             executor = Executors.newSingleThreadScheduledExecutor();
         }
 
-        InitializationUtils.onInitialization(definitions, new Runnable() {
+        InitializationUtils.onInitialization(this, definitions);
+    }
+
+    @AfterExtensionInitialization
+    protected void schedule() {
+        executor.scheduleAtFixedRate(new NoExceptionRunnable() {
             @Override
-            public void run() {
-                executor.scheduleAtFixedRate(new NoExceptionRunnable() {
-                    @Override
-                    public void doRun() throws Exception {
-                        /* This really blocks forever, but just in case it fails we restart */
-                        persistInProgress();
-                    }
-                }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);
+            public void doRun() throws Exception {
+                /* This really blocks forever, but just in case it fails we restart */
+                persistInProgress();
             }
-        });
+        }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);        
     }
 
     public ProcessRecordDao getProcessRecordDao() {

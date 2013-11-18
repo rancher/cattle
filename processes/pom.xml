@@ -24,5 +24,10 @@
             <artifactId>dstack-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-transport</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

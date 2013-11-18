@@ -2,7 +2,7 @@ package io.github.ibuildthecloud.dstack.engine.server;
 
 import io.github.ibuildthecloud.dstack.engine.context.EngineContext;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
-import io.github.ibuildthecloud.dstack.engine.repository.ProcessRepository;
+import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
@@ -13,10 +13,10 @@ public class ServerProcessInstanceExecutor extends NoExceptionRunnable {
     private static final Logger log = LoggerFactory.getLogger(ServerProcessInstanceExecutor.class);
 
     long id;
-    ProcessRepository repository;
+    ProcessManager repository;
     ProcessServer processServer;
 
-    public ServerProcessInstanceExecutor(long id, ProcessRepository repository, ProcessServer processServer) {
+    public ServerProcessInstanceExecutor(long id, ProcessManager repository, ProcessServer processServer) {
         super();
         this.id = id;
         this.repository = repository;

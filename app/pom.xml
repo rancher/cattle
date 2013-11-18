@@ -85,8 +85,8 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>org.apache.cloudstack</includeGroupIds>
-                            <includeArtifactIds>launcher</includeArtifactIds>
+                            <includeGroupIds>io.github.ibuildthecloud</includeGroupIds>
+                            <includeArtifactIds>dstack-launcher</includeArtifactIds>
                             <scope>provided</scope>
                             <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/jetty</outputDirectory>
                         </configuration>
@@ -98,8 +98,8 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>org.apache.cloudstack</includeGroupIds>
-                            <includeArtifactIds>launcher</includeArtifactIds>
+                            <includeGroupIds>io.github.ibuildthecloud</includeGroupIds>
+                            <includeArtifactIds>dstack-launcher</includeArtifactIds>
                             <includes>**/*.class</includes>
                             <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
                         </configuration>

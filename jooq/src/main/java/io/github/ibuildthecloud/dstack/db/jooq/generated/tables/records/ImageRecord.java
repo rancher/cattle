@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "image", schema = "dstack")
 public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ImageRecord> implements org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp> {
 
-	private static final long serialVersionUID = -346759610;
+	private static final long serialVersionUID = 1673383020;
 
 	/**
 	 * Setter for <code>dstack.image.id</code>. 
 	 */
-	public ImageRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.name</code>. 
 	 */
-	public ImageRecord setName(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.uuid</code>. 
 	 */
-	public ImageRecord setUuid(java.lang.String value) {
+	public void setUuid(java.lang.String value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.account_id</code>. 
 	 */
-	public ImageRecord setAccountId(java.lang.Long value) {
+	public void setAccountId(java.lang.Long value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.url</code>. 
 	 */
-	public ImageRecord setUrl(java.lang.String value) {
+	public void setUrl(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.description</code>. 
 	 */
-	public ImageRecord setDescription(java.lang.String value) {
+	public void setDescription(java.lang.String value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.is_public</code>. 
 	 */
-	public ImageRecord setIsPublic(java.lang.Boolean value) {
+	public void setIsPublic(java.lang.Boolean value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -131,9 +124,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.state</code>. 
 	 */
-	public ImageRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**
@@ -147,9 +139,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.prepopulate</code>. 
 	 */
-	public ImageRecord setPrepopulate(java.lang.Boolean value) {
+	public void setPrepopulate(java.lang.Boolean value) {
 		setValue(8, value);
-		return this;
 	}
 
 	/**
@@ -163,9 +154,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.prepopulate_stamp</code>. 
 	 */
-	public ImageRecord setPrepopulateStamp(java.lang.String value) {
+	public void setPrepopulateStamp(java.lang.String value) {
 		setValue(9, value);
-		return this;
 	}
 
 	/**
@@ -179,9 +169,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.physical_size_bytes</code>. 
 	 */
-	public ImageRecord setPhysicalSizeBytes(java.lang.Long value) {
+	public void setPhysicalSizeBytes(java.lang.Long value) {
 		setValue(10, value);
-		return this;
 	}
 
 	/**
@@ -195,9 +184,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.virtual_size_bytes</code>. 
 	 */
-	public ImageRecord setVirtualSizeBytes(java.lang.Long value) {
+	public void setVirtualSizeBytes(java.lang.Long value) {
 		setValue(11, value);
-		return this;
 	}
 
 	/**
@@ -211,9 +199,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.checksum</code>. 
 	 */
-	public ImageRecord setChecksum(java.lang.String value) {
+	public void setChecksum(java.lang.String value) {
 		setValue(12, value);
-		return this;
 	}
 
 	/**
@@ -227,9 +214,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.created</code>. 
 	 */
-	public ImageRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(13, value);
-		return this;
 	}
 
 	/**
@@ -243,9 +229,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.removed</code>. 
 	 */
-	public ImageRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(14, value);
-		return this;
 	}
 
 	/**
@@ -259,9 +244,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Setter for <code>dstack.image.remove_time</code>. 
 	 */
-	public ImageRecord setRemoveTime(java.sql.Timestamp value) {
+	public void setRemoveTime(java.sql.Timestamp value) {
 		setValue(15, value);
-		return this;
 	}
 
 	/**

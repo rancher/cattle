@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "vnet", schema = "dstack")
 public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.VnetRecord> implements org.jooq.Record5<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String> {
 
-	private static final long serialVersionUID = 1103329144;
+	private static final long serialVersionUID = 779553251;
 
 	/**
 	 * Setter for <code>dstack.vnet.id</code>. 
 	 */
-	public VnetRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.vnet.uri</code>. 
 	 */
-	public VnetRecord setUri(java.lang.String value) {
+	public void setUri(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.vnet.scope</code>. 
 	 */
-	public VnetRecord setScope(java.lang.String value) {
+	public void setScope(java.lang.String value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.vnet.ip_pool_qualifier</code>. 
 	 */
-	public VnetRecord setIpPoolQualifier(java.lang.String value) {
+	public void setIpPoolQualifier(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.vnet.ip_pool_segment</code>. 
 	 */
-	public VnetRecord setIpPoolSegment(java.lang.String value) {
+	public void setIpPoolSegment(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**

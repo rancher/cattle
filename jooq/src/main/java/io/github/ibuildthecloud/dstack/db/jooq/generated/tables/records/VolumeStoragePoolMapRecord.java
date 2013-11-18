@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "volume_storage_pool_map", schema = "dstack")
 public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.VolumeStoragePoolMapRecord> implements org.jooq.Record6<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp> {
 
-	private static final long serialVersionUID = 1253160698;
+	private static final long serialVersionUID = 354807382;
 
 	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.id</code>. 
 	 */
-	public VolumeStoragePoolMapRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.volume_id</code>. 
 	 */
-	public VolumeStoragePoolMapRecord setVolumeId(java.lang.Long value) {
+	public void setVolumeId(java.lang.Long value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>. 
 	 */
-	public VolumeStoragePoolMapRecord setStoragePoolId(java.lang.Long value) {
+	public void setStoragePoolId(java.lang.Long value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>. 
 	 */
-	public VolumeStoragePoolMapRecord setStoragePoolLocation(java.lang.Long value) {
+	public void setStoragePoolLocation(java.lang.Long value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.state</code>. 
 	 */
-	public VolumeStoragePoolMapRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.removed</code>. 
 	 */
-	public VolumeStoragePoolMapRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**

@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "image_storage_pool_map", schema = "dstack")
 public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ImageStoragePoolMapRecord> implements org.jooq.Record13<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.Boolean> {
 
-	private static final long serialVersionUID = -1442678436;
+	private static final long serialVersionUID = 1328629808;
 
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.id</code>. 
 	 */
-	public ImageStoragePoolMapRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.template_id</code>. 
 	 */
-	public ImageStoragePoolMapRecord setTemplateId(java.lang.Long value) {
+	public void setTemplateId(java.lang.Long value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.storage_pool_id</code>. 
 	 */
-	public ImageStoragePoolMapRecord setStoragePoolId(java.lang.Long value) {
+	public void setStoragePoolId(java.lang.Long value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.progress</code>. 
 	 */
-	public ImageStoragePoolMapRecord setProgress(java.lang.String value) {
+	public void setProgress(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.resource_state</code>. 
 	 */
-	public ImageStoragePoolMapRecord setResourceState(java.lang.String value) {
+	public void setResourceState(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.location</code>. 
 	 */
-	public ImageStoragePoolMapRecord setLocation(java.lang.String value) {
+	public void setLocation(java.lang.String value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.created</code>. 
 	 */
-	public ImageStoragePoolMapRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -131,9 +124,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.billing_start</code>. 
 	 */
-	public ImageStoragePoolMapRecord setBillingStart(java.sql.Timestamp value) {
+	public void setBillingStart(java.sql.Timestamp value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**
@@ -147,9 +139,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.billing_end</code>. 
 	 */
-	public ImageStoragePoolMapRecord setBillingEnd(java.sql.Timestamp value) {
+	public void setBillingEnd(java.sql.Timestamp value) {
 		setValue(8, value);
-		return this;
 	}
 
 	/**
@@ -163,9 +154,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.removed</code>. 
 	 */
-	public ImageStoragePoolMapRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(9, value);
-		return this;
 	}
 
 	/**
@@ -179,9 +169,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.resource_remove_schedule</code>. 
 	 */
-	public ImageStoragePoolMapRecord setResourceRemoveSchedule(java.sql.Timestamp value) {
+	public void setResourceRemoveSchedule(java.sql.Timestamp value) {
 		setValue(10, value);
-		return this;
 	}
 
 	/**
@@ -195,9 +184,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.resource_removed</code>. 
 	 */
-	public ImageStoragePoolMapRecord setResourceRemoved(java.sql.Timestamp value) {
+	public void setResourceRemoved(java.sql.Timestamp value) {
 		setValue(11, value);
-		return this;
 	}
 
 	/**
@@ -211,9 +199,8 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.remove_locked</code>. 
 	 */
-	public ImageStoragePoolMapRecord setRemoveLocked(java.lang.Boolean value) {
+	public void setRemoveLocked(java.lang.Boolean value) {
 		setValue(12, value);
-		return this;
 	}
 
 	/**

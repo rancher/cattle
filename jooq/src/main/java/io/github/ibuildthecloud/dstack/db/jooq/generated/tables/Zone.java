@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Zone extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ZoneRecord> {
 
-	private static final long serialVersionUID = -2067094698;
+	private static final long serialVersionUID = -676073744;
 
 	/**
 	 * The singleton instance of <code>dstack.zone</code>
@@ -50,6 +50,11 @@ public class Zone extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstac
 	 * The column <code>dstack.zone.data</code>. 
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ZoneRecord, java.lang.String> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215), this);
+
+	/**
+	 * The column <code>dstack.zone.state</code>. 
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ZoneRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this);
 
 	/**
 	 * Create a <code>dstack.zone</code> table reference

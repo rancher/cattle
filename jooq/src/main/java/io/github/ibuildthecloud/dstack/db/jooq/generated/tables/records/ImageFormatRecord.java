@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "image_format", schema = "dstack")
 public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ImageFormatRecord> implements org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String> {
 
-	private static final long serialVersionUID = 609572551;
+	private static final long serialVersionUID = -1151092843;
 
 	/**
 	 * Setter for <code>dstack.image_format.id</code>. 
 	 */
-	public ImageFormatRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.image_format.template_id</code>. 
 	 */
-	public ImageFormatRecord setTemplateId(java.lang.Long value) {
+	public void setTemplateId(java.lang.Long value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.image_format.format</code>. 
 	 */
-	public ImageFormatRecord setFormat(java.lang.String value) {
+	public void setFormat(java.lang.String value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.image_format.data</code>. 
 	 */
-	public ImageFormatRecord setData(java.lang.String value) {
+	public void setData(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**

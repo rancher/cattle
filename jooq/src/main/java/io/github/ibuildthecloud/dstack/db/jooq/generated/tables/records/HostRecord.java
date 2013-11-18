@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "host", schema = "dstack")
 public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord> implements org.jooq.Record10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String, java.lang.String> {
 
-	private static final long serialVersionUID = -2009303778;
+	private static final long serialVersionUID = 1800545308;
 
 	/**
 	 * Setter for <code>dstack.host.id</code>. 
 	 */
-	public HostRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.name</code>. 
 	 */
-	public HostRecord setName(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.host_group_id</code>. 
 	 */
-	public HostRecord setHostGroupId(java.lang.Long value) {
+	public void setHostGroupId(java.lang.Long value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.kind</code>. 
 	 */
-	public HostRecord setKind(java.lang.String value) {
+	public void setKind(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.state</code>. 
 	 */
-	public HostRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.created</code>. 
 	 */
-	public HostRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.removed</code>. 
 	 */
-	public HostRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -131,9 +124,8 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.data</code>. 
 	 */
-	public HostRecord setData(java.lang.String value) {
+	public void setData(java.lang.String value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**
@@ -147,9 +139,8 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.uuid</code>. 
 	 */
-	public HostRecord setUuid(java.lang.String value) {
+	public void setUuid(java.lang.String value) {
 		setValue(8, value);
-		return this;
 	}
 
 	/**
@@ -163,9 +154,8 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.description</code>. 
 	 */
-	public HostRecord setDescription(java.lang.String value) {
+	public void setDescription(java.lang.String value) {
 		setValue(9, value);
-		return this;
 	}
 
 	/**

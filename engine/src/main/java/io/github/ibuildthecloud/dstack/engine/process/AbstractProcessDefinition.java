@@ -26,4 +26,16 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition {
         return postProcessHandlers;
     }
 
+    public void setPreProcessHandlers(List<ProcessHandler> preProcessHandlers) {
+        this.preProcessHandlers = preProcessHandlers;
+    }
+
+    public void setProcessHandlers(List<ProcessHandler> processHandlers) {
+        this.processHandlers = processHandlers;
+    }
+
+    public void setPostProcessHandlers(List<ProcessHandler> postProcessHandlers) {
+        this.postProcessHandlers = postProcessHandlers;
+    }
+
 }

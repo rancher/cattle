@@ -15,7 +15,7 @@ import io.github.ibuildthecloud.dstack.engine.process.log.ParentLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessExecutionLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessHandlerExecutionLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessLog;
-import io.github.ibuildthecloud.dstack.engine.repository.ProcessRepository;
+import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.repository.impl.ProcessRecord;
 import io.github.ibuildthecloud.dstack.lock.LockCallback;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
@@ -34,7 +34,7 @@ public class DefaultProcessImpl implements ProcessInstance {
         new LogicPhase(ProcessPhase.PRE_HANDLER_DONE, ExitReason.POST_HANDLER_EXCEPTION, ExitReason.POST_HANDLER_DELAYED)
     };
 
-    ProcessRepository repository;
+    ProcessManager repository;
     LockManager lockManager;
 
     ProcessDefinition processDefinition;
@@ -49,7 +49,7 @@ public class DefaultProcessImpl implements ProcessInstance {
     ProcessRecord record;
     volatile boolean inLogic = false;
 
-    public DefaultProcessImpl(ProcessRepository repository, LockManager lockManager, ProcessRecord record,
+    public DefaultProcessImpl(ProcessManager repository, LockManager lockManager, ProcessRecord record,
             ProcessDefinition processDefinition, ProcessState state) {
         super();
         this.id = record.getId();
@@ -166,14 +166,30 @@ public class DefaultProcessImpl implements ProcessInstance {
         inLogic = true;
         try {
             ExitReason reason = null;
+            int i = 0;
             for ( LogicPhase logicPhase : PHASES ) {
                 if ( phase.ordinal() < logicPhase.phase.ordinal() ) {
-                    reason = runHandlers(processDefinition.getPreProcessHandlers(), logicPhase);
+                    List<? extends ProcessHandler> handlers = null;
+                    switch (i) {
+                    case 0:
+                        handlers = processDefinition.getPreProcessHandlers();
+                        break;
+                    case 1:
+                        handlers = processDefinition.getProcessHandlers();
+                        break;
+                    case 2:
+                        handlers = processDefinition.getPostProcessHandlers();
+                        break;
+                    default:
+                        break;
+                    }
+                    reason = runHandlers(handlers, logicPhase);
                     if ( reason != null )
                         return reason;
 
                     phase = logicPhase.phase;
                 }
+                i++;
             }
 
             return reason;
@@ -188,7 +204,7 @@ public class DefaultProcessImpl implements ProcessInstance {
             ProcessHandlerExecutionLog processExecution = execution.newProcessHandlerExecution(handler);
             context.pushLog(processExecution);
             try {
-                handler.handle(this);
+                handler.handle(state, this);
             } catch ( Throwable t ) {
                 processExecution.setException(new ExceptionLog(t));
                 if ( logicPhase.exceptionReason != null )

@@ -1,15 +1,50 @@
 package io.github.ibuildthecloud.dstack.util.init;
 
-import io.github.ibuildthecloud.dstack.util.type.DelayInitialization;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 public class InitializationUtils {
 
-    public static void onInitialization(Object obj, Runnable runnable) {
-        if ( obj instanceof DelayInitialization ) {
-            ((DelayInitialization)obj).onInitialized(runnable);
-        } else {
-            runnable.run();
+    public static void onInitialization(final Object thisObj, final Object... objs) { 
+        try {
+            final List<Method> methods = new ArrayList<Method>();
+            for ( Method method : thisObj.getClass().getDeclaredMethods() ) {
+                AfterExtensionInitialization init = method.getAnnotation(AfterExtensionInitialization.class);
+                if ( init != null && method.getParameterTypes().length == 0 ) {
+                    method.setAccessible(true);
+                    methods.add(method);
+                }
+            }
+
+            if ( methods.size() == 0 ) {
+                throw new IllegalArgumentException("No methods with @AfterExtensionInitialization are found on [" + thisObj + "]");
+            }
+
+            onInitialization(thisObj, new Runnable() {
+                @Override
+                public void run() {
+                    for ( Method method : methods ) {
+                        try {
+                            method.invoke(thisObj);
+                        } catch (IllegalArgumentException e) {
+                            throw new IllegalStateException("Failed to initialize [" + method + "]", e);
+                        } catch (IllegalAccessException e) {
+                            throw new IllegalStateException("Failed to initialize [" + method + "]", e);
+                        } catch (InvocationTargetException e) {
+                            throw new IllegalStateException("Failed to initialize [" + method + "]", e);
+                        }
+                    }
+                }
+            }, objs);
+        } catch (SecurityException e) {
+            throw new IllegalStateException("Failed to initialize [" + thisObj + "]", e);
         }
+    }
+
+    public static void onInitialization(Object thisObj, Runnable runnable, Object... objs) {
+        runnable.run();
     }
 
 }

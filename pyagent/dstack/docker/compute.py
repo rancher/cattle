@@ -2,6 +2,7 @@ import dstack.docker
 from dstack import log
 from dstack import utils
 from dstack.storage import BaseStoragePool
+from dstack.compute import BaseComputeDriver
 from docker import Client
 import json
 
@@ -31,6 +32,7 @@ class Container(object):
 
 
     def create(self, start=True):
+        log.info("Creating from config " + str(self._container))
         self._container = self._client.create_container_from_config(self._container)
         self._container = self._get_container(prefix=True)
         if start:
@@ -69,9 +71,10 @@ class Container(object):
         return containers[0]
 
 
-class DockerCompute(object):
-    def start(self, virtual_machine=None, **kw):
-        container = Container.from_virtual_machine(virtual_machine)
+
+class DockerCompute(BaseComputeDriver):
+    def start(self, instance=None, **kw):
+        container = Container.from_virtual_machine(instance)
 
         if container.exists():
             log.info("Starting container")

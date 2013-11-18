@@ -18,14 +18,18 @@ class Agent(object):
         print "Name:", n, req
 
         if req.name.startswith("storage."):
-            pool = self._storage_manager.find_pool(req.data.storagePool)
+            storage_pool = req.data.get("storagePool")
+            pool = self._storage_manager.find_pool(storage_pool)
+            if pool is None:
+                raise Exception("Failed to find pool")
             pool.handle(req)
 
 
         if req.name.startswith("compute."):
-            compute_driver = TypeFactory.get_compute_driver(req.host, req)
+            host = req.get("host")
+            compute_driver = TypeFactory.get_compute_driver(host, req)
             if compute_driver is None:
-                raise 
+                raise Exception("Failed to find compute driver")
+            compute_driver.handle(req)
 
-        resp = object()
-        return self._marshaller.to_string(resp)
+        return """{ "ok" : true }"""

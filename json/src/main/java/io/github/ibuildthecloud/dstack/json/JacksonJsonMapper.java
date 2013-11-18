@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -129,6 +130,32 @@ public class JacksonJsonMapper implements JsonMapper {
         } catch (IOException e) {
             throw new JsonProcessingException(e);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> readValue(InputStream is) throws IOException {
+        return (Map<String, Object>)readValue(is, Map.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> readValue(byte[] bytes) throws IOException {
+        return (Map<String, Object>)readValue(bytes, Map.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> readValue(String text) throws IOException {
+        return (Map<String, Object>)readValue(text, Map.class);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public <T> T readCollectionValue(InputStream is, Class<? extends Collection> collectionClass, Class<?> elementsClass)
+            throws IOException {
+        CollectionType type = mapper.getTypeFactory().constructCollectionType(collectionClass, elementsClass);
+        return (T) mapper.readValue(is, type);
     }
 
 }

@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "DATABASECHANGELOG", schema = "dstack")
 public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.DatabasechangelogRecord> implements org.jooq.Record11<java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> {
 
-	private static final long serialVersionUID = 383234107;
+	private static final long serialVersionUID = -262552556;
 
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.ID</code>. 
 	 */
-	public DatabasechangelogRecord setId(java.lang.String value) {
+	public void setId(java.lang.String value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -34,9 +33,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.AUTHOR</code>. 
 	 */
-	public DatabasechangelogRecord setAuthor(java.lang.String value) {
+	public void setAuthor(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -50,9 +48,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.FILENAME</code>. 
 	 */
-	public DatabasechangelogRecord setFilename(java.lang.String value) {
+	public void setFilename(java.lang.String value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -66,9 +63,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.DATEEXECUTED</code>. 
 	 */
-	public DatabasechangelogRecord setDateexecuted(java.sql.Timestamp value) {
+	public void setDateexecuted(java.sql.Timestamp value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -82,9 +78,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.ORDEREXECUTED</code>. 
 	 */
-	public DatabasechangelogRecord setOrderexecuted(java.lang.Integer value) {
+	public void setOrderexecuted(java.lang.Integer value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -98,9 +93,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.EXECTYPE</code>. 
 	 */
-	public DatabasechangelogRecord setExectype(java.lang.String value) {
+	public void setExectype(java.lang.String value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -114,9 +108,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.MD5SUM</code>. 
 	 */
-	public DatabasechangelogRecord setMd5sum(java.lang.String value) {
+	public void setMd5sum(java.lang.String value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -130,9 +123,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.DESCRIPTION</code>. 
 	 */
-	public DatabasechangelogRecord setDescription(java.lang.String value) {
+	public void setDescription(java.lang.String value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**
@@ -146,9 +138,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.COMMENTS</code>. 
 	 */
-	public DatabasechangelogRecord setComments(java.lang.String value) {
+	public void setComments(java.lang.String value) {
 		setValue(8, value);
-		return this;
 	}
 
 	/**
@@ -162,9 +153,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.TAG</code>. 
 	 */
-	public DatabasechangelogRecord setTag(java.lang.String value) {
+	public void setTag(java.lang.String value) {
 		setValue(9, value);
-		return this;
 	}
 
 	/**
@@ -178,9 +168,8 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.LIQUIBASE</code>. 
 	 */
-	public DatabasechangelogRecord setLiquibase(java.lang.String value) {
+	public void setLiquibase(java.lang.String value) {
 		setValue(10, value);
-		return this;
 	}
 
 	/**

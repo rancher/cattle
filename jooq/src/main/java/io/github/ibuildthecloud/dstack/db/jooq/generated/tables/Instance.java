@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Instance extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = -437855481;
+	private static final long serialVersionUID = -163947258;
 
 	/**
 	 * The singleton instance of <code>dstack.instance</code>
@@ -84,7 +84,7 @@ public class Instance extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.d
 	/**
 	 * The column <code>dstack.instance.offering_id</code>. 
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceRecord, java.lang.Long> OFFERING_ID = createField("offering_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceRecord, java.lang.Long> OFFERING_ID = createField("offering_id", org.jooq.impl.SQLDataType.BIGINT, this);
 
 	/**
 	 * The column <code>dstack.instance.requested_offering_id</code>. 

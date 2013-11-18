@@ -12,7 +12,11 @@
     <bean class="io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl">
         <property name="types">
             <list>
-                <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.VmInstanceRecord</value>
+                <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.OfferingRecord</value>
+                <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.AccountRecord</value>
+                <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ZoneRecord</value>
+                <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceRecord</value>
+                <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.DataRecord</value>
             </list>
         </property>
         <property name="typeNames">

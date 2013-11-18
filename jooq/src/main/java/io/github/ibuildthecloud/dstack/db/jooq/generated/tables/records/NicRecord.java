@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "nic", schema = "dstack")
 public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.NicRecord> implements org.jooq.Record11<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.Integer, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp> {
 
-	private static final long serialVersionUID = -1627059988;
+	private static final long serialVersionUID = -264136606;
 
 	/**
 	 * Setter for <code>dstack.nic.id</code>. 
 	 */
-	public NicRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.instance_id</code>. 
 	 */
-	public NicRecord setInstanceId(java.lang.Long value) {
+	public void setInstanceId(java.lang.Long value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.network_id</code>. 
 	 */
-	public NicRecord setNetworkId(java.lang.Long value) {
+	public void setNetworkId(java.lang.Long value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.account_id</code>. 
 	 */
-	public NicRecord setAccountId(java.lang.Long value) {
+	public void setAccountId(java.lang.Long value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.state</code>. 
 	 */
-	public NicRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.mac_address</code>. 
 	 */
-	public NicRecord setMacAddress(java.lang.String value) {
+	public void setMacAddress(java.lang.String value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.device_number</code>. 
 	 */
-	public NicRecord setDeviceNumber(java.lang.Integer value) {
+	public void setDeviceNumber(java.lang.Integer value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -131,9 +124,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.uuid</code>. 
 	 */
-	public NicRecord setUuid(java.lang.String value) {
+	public void setUuid(java.lang.String value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**
@@ -147,9 +139,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.created</code>. 
 	 */
-	public NicRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(8, value);
-		return this;
 	}
 
 	/**
@@ -163,9 +154,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.removed</code>. 
 	 */
-	public NicRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(9, value);
-		return this;
 	}
 
 	/**
@@ -179,9 +169,8 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	/**
 	 * Setter for <code>dstack.nic.remove_time</code>. 
 	 */
-	public NicRecord setRemoveTime(java.sql.Timestamp value) {
+	public void setRemoveTime(java.sql.Timestamp value) {
 		setValue(10, value);
-		return this;
 	}
 
 	/**

@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.spring.module.web.ModuleBasedFilter;
 
 public class ApiRequestFilter extends ModuleBasedFilter {
@@ -17,9 +18,22 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     ApiRequestFilterDelegate delegate;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
+    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException,
             ServletException {
-        delegate.doFilter(request, response, chain);
+        new ManagedContextRunnable() {
+            @Override
+            protected void runInContext() {
+                try {
+                    delegate.doFilter(request, response, chain);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (ServletException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }.run();
     }
 
     public ApiRequestFilterDelegate getDelegate() {

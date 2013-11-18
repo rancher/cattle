@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.engine.repository.impl.jooq;
 
 import static io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstance.*;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
+import io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstance;
 import io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ProcessInstanceRecord;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessPhase;
@@ -69,6 +70,15 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     }
 
     @Override
+    public ProcessRecord insert(ProcessRecord record) {
+        ProcessInstanceRecord pi = create().newRecord(ProcessInstance.PROCESS_INSTANCE);
+        merge(pi, record);
+        pi.insert();
+
+        return getRecord(pi.getId());
+    }
+
+    @Override
     public void update(ProcessRecord record) {
         ProcessInstanceRecord pi = 
                 create().selectFrom(PROCESS_INSTANCE)
@@ -79,6 +89,12 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
             throw new IllegalStateException("Failed to find process instance for [" + record.getId() + "]");
         }
 
+        merge(pi, record);
+
+        pi.update();
+    }
+
+    protected void merge(ProcessInstanceRecord pi, ProcessRecord record) {
         pi.setStartTime(toTimestamp(record.getStartTime()));
         pi.setEndTime(toTimestamp(record.getEndTime()));
         pi.setLog(objToJson(record.getProcessLog()));
@@ -92,8 +108,6 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         pi.setResourceId(record.getResourceId());
         pi.setProcessName(record.getProcessName());
         pi.setData(objToJson(record.getData()));
-
-        pi.update();
     }
 
     protected Timestamp toTimestamp(Date date) {

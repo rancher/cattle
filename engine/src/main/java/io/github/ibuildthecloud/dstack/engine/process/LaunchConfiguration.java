@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.engine.process;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class LaunchConfiguration {
@@ -10,6 +11,17 @@ public class LaunchConfiguration {
     Map<String, Object> data;
 
     public LaunchConfiguration() {
+    }
+
+    public LaunchConfiguration(String processName, String resourceType, String resourceId) {
+        this(processName, resourceType, resourceId, new HashMap<String, Object>());
+    }
+
+    public LaunchConfiguration(String processName, String resourceType, String resourceId, Map<String, Object> data) {
+        this.processName = processName;
+        this.resourceType = resourceType;
+        this.resourceId = resourceId;
+        this.data = data;
     }
 
     public LaunchConfiguration(LaunchConfiguration config) {
@@ -49,6 +61,12 @@ public class LaunchConfiguration {
 
     public void setProcessName(String processName) {
         this.processName = processName;
+    }
+
+    @Override
+    public String toString() {
+        return "LaunchConfiguration [processName=" + processName + ", resourceType=" + resourceType + ", resourceId="
+                + resourceId + ", data=" + data + "]";
     }
 
 }

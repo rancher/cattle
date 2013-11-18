@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 
 import org.jooq.SQLDialect;
+import org.jooq.conf.RenderNameStyle;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DefaultConfiguration;
 
@@ -36,6 +37,7 @@ public class Configuration extends DefaultConfiguration {
 
         Settings settings = new Settings();
         settings.setRenderSchema(false);
+        settings.setRenderNameStyle(RenderNameStyle.UPPER);
         set(settings);
     }
 

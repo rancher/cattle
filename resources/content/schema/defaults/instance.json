@@ -1,0 +1,6 @@
+{
+    "kind" : "instance",
+    "allocationState" : "inactive",
+    "postComputeState" : "inactive",
+    "onCrash" : "stop"
+}

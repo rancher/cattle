@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "ip_assignment", schema = "dstack")
 public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.IpAssignmentRecord> implements org.jooq.Record7<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp> {
 
-	private static final long serialVersionUID = 526779185;
+	private static final long serialVersionUID = -1079823825;
 
 	/**
 	 * Setter for <code>dstack.ip_assignment.id</code>. 
 	 */
-	public IpAssignmentRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	/**
 	 * Setter for <code>dstack.ip_assignment.state</code>. 
 	 */
-	public IpAssignmentRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	/**
 	 * Setter for <code>dstack.ip_assignment.nic_id</code>. 
 	 */
-	public IpAssignmentRecord setNicId(java.lang.Long value) {
+	public void setNicId(java.lang.Long value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	/**
 	 * Setter for <code>dstack.ip_assignment.account_id</code>. 
 	 */
-	public IpAssignmentRecord setAccountId(java.lang.Long value) {
+	public void setAccountId(java.lang.Long value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	/**
 	 * Setter for <code>dstack.ip_assignment.ip_address_id</code>. 
 	 */
-	public IpAssignmentRecord setIpAddressId(java.lang.Long value) {
+	public void setIpAddressId(java.lang.Long value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	/**
 	 * Setter for <code>dstack.ip_assignment.created</code>. 
 	 */
-	public IpAssignmentRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	/**
 	 * Setter for <code>dstack.ip_assignment.removed</code>. 
 	 */
-	public IpAssignmentRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**

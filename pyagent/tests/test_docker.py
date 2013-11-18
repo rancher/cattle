@@ -44,7 +44,6 @@ def test_create_container(dockercompute, dockerpool):
         }
     })
 
-    import pdb; pdb.set_trace()
     container = dockercompute.start(vm)
     assert not container is None
     assert not container.get("Id") is None

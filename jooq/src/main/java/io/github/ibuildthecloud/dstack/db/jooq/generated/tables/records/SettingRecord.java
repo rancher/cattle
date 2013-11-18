@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "setting", schema = "dstack")
 public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.SettingRecord> implements org.jooq.Record4<java.lang.Long, java.lang.String, java.lang.Integer, java.lang.String> {
 
-	private static final long serialVersionUID = 1839859956;
+	private static final long serialVersionUID = -745014416;
 
 	/**
 	 * Setter for <code>dstack.setting.id</code>. 
 	 */
-	public SettingRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.setting.name</code>. 
 	 */
-	public SettingRecord setName(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.setting.sub_key</code>. 
 	 */
-	public SettingRecord setSubKey(java.lang.Integer value) {
+	public void setSubKey(java.lang.Integer value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.setting.value</code>. 
 	 */
-	public SettingRecord setValue(java.lang.String value) {
+	public void setValue(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**

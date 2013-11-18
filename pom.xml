@@ -16,15 +16,18 @@
 		<module>db-loader</module>
 		<module>engine</module>
 		<module>engine-jooq</module>
+		<module>eventing</module>
 		<module>jooq</module>
 		<module>json</module>
 		<module>launcher</module>
 		<module>lock</module>
+		<module>object</module>
 		<module>meta</module>
 		<module>parent</module>
 		<module>processes</module>
 		<module>resources</module>
 		<module>schema</module>
+		<module>transport</module>
         <module>upstream/cloudstack/framework/managed-context</module>
         <module>upstream/cloudstack/framework/spring/lifecycle</module>
         <module>upstream/cloudstack/framework/spring/module</module>

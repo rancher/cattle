@@ -1,7 +1,11 @@
-package io.github.ibuildthecloud.dstack.util.type;
+package io.github.ibuildthecloud.dstack.util.init;
 
-public interface DelayInitialization {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public void onInitialized(Runnable runnable);
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface AfterExtensionInitialization {
 }

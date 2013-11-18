@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "storage_pool", schema = "dstack")
 public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolRecord> implements org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp> {
 
-	private static final long serialVersionUID = 2020282564;
+	private static final long serialVersionUID = -1122399976;
 
 	/**
 	 * Setter for <code>dstack.storage_pool.id</code>. 
 	 */
-	public StoragePoolRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.uuid</code>. 
 	 */
-	public StoragePoolRecord setUuid(java.lang.String value) {
+	public void setUuid(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.name</code>. 
 	 */
-	public StoragePoolRecord setName(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.description</code>. 
 	 */
-	public StoragePoolRecord setDescription(java.lang.String value) {
+	public void setDescription(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.kind</code>. 
 	 */
-	public StoragePoolRecord setKind(java.lang.String value) {
+	public void setKind(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.content_type</code>. 
 	 */
-	public StoragePoolRecord setContentType(java.lang.String value) {
+	public void setContentType(java.lang.String value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.state</code>. 
 	 */
-	public StoragePoolRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -131,9 +124,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.physical_total_bytes</code>. 
 	 */
-	public StoragePoolRecord setPhysicalTotalBytes(java.lang.Long value) {
+	public void setPhysicalTotalBytes(java.lang.Long value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**
@@ -147,9 +139,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.physical_used_bytes</code>. 
 	 */
-	public StoragePoolRecord setPhysicalUsedBytes(java.lang.Long value) {
+	public void setPhysicalUsedBytes(java.lang.Long value) {
 		setValue(8, value);
-		return this;
 	}
 
 	/**
@@ -163,9 +154,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.virtual_total_bytes</code>. 
 	 */
-	public StoragePoolRecord setVirtualTotalBytes(java.lang.Long value) {
+	public void setVirtualTotalBytes(java.lang.Long value) {
 		setValue(9, value);
-		return this;
 	}
 
 	/**
@@ -179,9 +169,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.created</code>. 
 	 */
-	public StoragePoolRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(10, value);
-		return this;
 	}
 
 	/**
@@ -195,9 +184,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.storage_pool.removed</code>. 
 	 */
-	public StoragePoolRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(11, value);
-		return this;
 	}
 
 	/**

@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "offering", schema = "dstack")
 public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.OfferingRecord> implements org.jooq.Record8<java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.Boolean, java.lang.String, java.lang.String> {
 
-	private static final long serialVersionUID = 1965007036;
+	private static final long serialVersionUID = -645843414;
 
 	/**
 	 * Setter for <code>dstack.offering.id</code>. 
 	 */
-	public OfferingRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.offering.name</code>. 
 	 */
-	public OfferingRecord setName(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.offering.kind</code>. 
 	 */
-	public OfferingRecord setKind(java.lang.String value) {
+	public void setKind(java.lang.String value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.offering.created</code>. 
 	 */
-	public OfferingRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.offering.removed</code>. 
 	 */
-	public OfferingRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.offering.is_public</code>. 
 	 */
-	public OfferingRecord setIsPublic(java.lang.Boolean value) {
+	public void setIsPublic(java.lang.Boolean value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.offering.description</code>. 
 	 */
-	public OfferingRecord setDescription(java.lang.String value) {
+	public void setDescription(java.lang.String value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -131,9 +124,8 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.offering.uuid</code>. 
 	 */
-	public OfferingRecord setUuid(java.lang.String value) {
+	public void setUuid(java.lang.String value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**

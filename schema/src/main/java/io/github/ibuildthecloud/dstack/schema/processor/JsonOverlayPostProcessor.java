@@ -43,18 +43,26 @@ public class JsonOverlayPostProcessor implements SchemaPostProcessor {
         SchemaImpl override = schemas.get(schema.getId());
         try {
             if ( override != null ) {
-
                 Map<String,Field> originalFields = schema.getResourceFields();
                 Map<String,Field> overrideFields = override.getResourceFields();
 
                 PropertyUtils.copyProperties(schema, override);
+                schema.setResourceFields(originalFields);
+
+                // TODO: this is a hack
+                schema.setLinks(new HashMap<String, URL>());
 
                 for ( String field : overrideFields.keySet() ) {
                     Field originalField = originalFields.get(field);
                     Field overrideField = overrideFields.get(field);
 
                     if ( originalField == null ) {
+                        originalFields.put(field, overrideField);
                         continue;
+                    }
+
+                    if ( field.startsWith("-") ) {
+                        originalFields.remove(field);
                     }
 
                     for ( PropertyDescriptor desc : PropertyUtils.getPropertyDescriptors(overrideField) ) {
@@ -71,9 +79,8 @@ public class JsonOverlayPostProcessor implements SchemaPostProcessor {
                             PropertyUtils.setProperty(originalField, name, newValue);
                         }
                     }
-
-                    overrideFields.put(field, originalField);
                 }
+
             }
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);

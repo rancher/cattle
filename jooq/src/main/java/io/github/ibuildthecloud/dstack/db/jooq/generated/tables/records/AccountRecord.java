@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "account", schema = "dstack")
 public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.AccountRecord> implements org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> {
 
-	private static final long serialVersionUID = 1064217396;
+	private static final long serialVersionUID = -744447447;
 
 	/**
 	 * Setter for <code>dstack.account.id</code>. 
 	 */
-	public AccountRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.uuid</code>. 
 	 */
-	public AccountRecord setUuid(java.lang.String value) {
+	public void setUuid(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.kind</code>. 
 	 */
-	public AccountRecord setKind(java.lang.String value) {
+	public void setKind(java.lang.String value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.name</code>. 
 	 */
-	public AccountRecord setName(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.state</code>. 
 	 */
-	public AccountRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.hold_data</code>. 
 	 */
-	public AccountRecord setHoldData(java.lang.Boolean value) {
+	public void setHoldData(java.lang.Boolean value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.created</code>. 
 	 */
-	public AccountRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -131,9 +124,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.removed</code>. 
 	 */
-	public AccountRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**
@@ -147,9 +139,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.remove_time</code>. 
 	 */
-	public AccountRecord setRemoveTime(java.sql.Timestamp value) {
+	public void setRemoveTime(java.sql.Timestamp value) {
 		setValue(8, value);
-		return this;
 	}
 
 	/**
@@ -163,9 +154,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.data</code>. 
 	 */
-	public AccountRecord setData(java.lang.String value) {
+	public void setData(java.lang.String value) {
 		setValue(9, value);
-		return this;
 	}
 
 	/**
@@ -179,9 +169,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.description</code>. 
 	 */
-	public AccountRecord setDescription(java.lang.String value) {
+	public void setDescription(java.lang.String value) {
 		setValue(10, value);
-		return this;
 	}
 
 	/**

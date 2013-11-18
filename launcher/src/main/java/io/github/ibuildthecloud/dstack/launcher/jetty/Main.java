@@ -69,7 +69,7 @@ public class Main {
 			}
 
 			context.setClassLoader(new WebAppClassLoader(Main.class.getClassLoader(), context));
-			context.setContextPath("/client");
+			context.setContextPath("/");
 
 			s.setHandler(context);
 

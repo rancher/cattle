@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "instance_host_map", schema = "dstack")
 public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceHostMapRecord> implements org.jooq.Record5<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.sql.Timestamp> {
 
-	private static final long serialVersionUID = -1025699307;
+	private static final long serialVersionUID = 1548809210;
 
 	/**
 	 * Setter for <code>dstack.instance_host_map.id</code>. 
 	 */
-	public InstanceHostMapRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Setter for <code>dstack.instance_host_map.state</code>. 
 	 */
-	public InstanceHostMapRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Setter for <code>dstack.instance_host_map.instance_id</code>. 
 	 */
-	public InstanceHostMapRecord setInstanceId(java.lang.Long value) {
+	public void setInstanceId(java.lang.Long value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Setter for <code>dstack.instance_host_map.host_id</code>. 
 	 */
-	public InstanceHostMapRecord setHostId(java.lang.Long value) {
+	public void setHostId(java.lang.Long value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Setter for <code>dstack.instance_host_map.removed</code>. 
 	 */
-	public InstanceHostMapRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**

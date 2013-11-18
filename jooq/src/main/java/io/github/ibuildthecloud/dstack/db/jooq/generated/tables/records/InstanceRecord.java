@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "instance", schema = "dstack")
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceRecord> implements org.jooq.Record20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.Long> {
 
-	private static final long serialVersionUID = 2034162587;
+	private static final long serialVersionUID = 2117459612;
 
 	/**
 	 * Setter for <code>dstack.instance.id</code>. 
 	 */
-	public InstanceRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.name</code>. 
 	 */
-	public InstanceRecord setName(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.kind</code>. 
 	 */
-	public InstanceRecord setKind(java.lang.String value) {
+	public void setKind(java.lang.String value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.account_id</code>. 
 	 */
-	public InstanceRecord setAccountId(java.lang.Long value) {
+	public void setAccountId(java.lang.Long value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.uuid</code>. 
 	 */
-	public InstanceRecord setUuid(java.lang.String value) {
+	public void setUuid(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.description</code>. 
 	 */
-	public InstanceRecord setDescription(java.lang.String value) {
+	public void setDescription(java.lang.String value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.requested_state</code>. 
 	 */
-	public InstanceRecord setRequestedState(java.lang.String value) {
+	public void setRequestedState(java.lang.String value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -131,9 +124,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.state</code>. 
 	 */
-	public InstanceRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**
@@ -147,9 +139,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.allocation_state</code>. 
 	 */
-	public InstanceRecord setAllocationState(java.lang.String value) {
+	public void setAllocationState(java.lang.String value) {
 		setValue(8, value);
-		return this;
 	}
 
 	/**
@@ -163,9 +154,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.post_compute_state</code>. 
 	 */
-	public InstanceRecord setPostComputeState(java.lang.String value) {
+	public void setPostComputeState(java.lang.String value) {
 		setValue(9, value);
-		return this;
 	}
 
 	/**
@@ -179,9 +169,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.image_id</code>. 
 	 */
-	public InstanceRecord setImageId(java.lang.Long value) {
+	public void setImageId(java.lang.Long value) {
 		setValue(10, value);
-		return this;
 	}
 
 	/**
@@ -195,15 +184,14 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.offering_id</code>. 
 	 */
-	public InstanceRecord setOfferingId(java.lang.Long value) {
+	public void setOfferingId(java.lang.Long value) {
 		setValue(11, value);
-		return this;
 	}
 
 	/**
 	 * Getter for <code>dstack.instance.offering_id</code>. 
 	 */
-	@javax.persistence.Column(name = "offering_id", nullable = false, precision = 19)
+	@javax.persistence.Column(name = "offering_id", precision = 19)
 	public java.lang.Long getOfferingId() {
 		return (java.lang.Long) getValue(11);
 	}
@@ -211,9 +199,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.requested_offering_id</code>. 
 	 */
-	public InstanceRecord setRequestedOfferingId(java.lang.Long value) {
+	public void setRequestedOfferingId(java.lang.Long value) {
 		setValue(12, value);
-		return this;
 	}
 
 	/**
@@ -227,9 +214,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.on_crash</code>. 
 	 */
-	public InstanceRecord setOnCrash(java.lang.String value) {
+	public void setOnCrash(java.lang.String value) {
 		setValue(13, value);
-		return this;
 	}
 
 	/**
@@ -243,9 +229,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.hostname</code>. 
 	 */
-	public InstanceRecord setHostname(java.lang.String value) {
+	public void setHostname(java.lang.String value) {
 		setValue(14, value);
-		return this;
 	}
 
 	/**
@@ -259,9 +244,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.created</code>. 
 	 */
-	public InstanceRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(15, value);
-		return this;
 	}
 
 	/**
@@ -275,9 +259,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.removed</code>. 
 	 */
-	public InstanceRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(16, value);
-		return this;
 	}
 
 	/**
@@ -291,9 +274,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.remove_time</code>. 
 	 */
-	public InstanceRecord setRemoveTime(java.sql.Timestamp value) {
+	public void setRemoveTime(java.sql.Timestamp value) {
 		setValue(17, value);
-		return this;
 	}
 
 	/**
@@ -307,9 +289,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.data</code>. 
 	 */
-	public InstanceRecord setData(java.lang.String value) {
+	public void setData(java.lang.String value) {
 		setValue(18, value);
-		return this;
 	}
 
 	/**
@@ -323,9 +304,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Setter for <code>dstack.instance.zone_id</code>. 
 	 */
-	public InstanceRecord setZoneId(java.lang.Long value) {
+	public void setZoneId(java.lang.Long value) {
 		setValue(19, value);
-		return this;
 	}
 
 	/**

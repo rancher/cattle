@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "storage_pool_host_map", schema = "dstack")
 public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolHostMapRecord> implements org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String> {
 
-	private static final long serialVersionUID = -350824050;
+	private static final long serialVersionUID = -1706539242;
 
 	/**
 	 * Setter for <code>dstack.storage_pool_host_map.id</code>. 
 	 */
-	public StoragePoolHostMapRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	/**
 	 * Setter for <code>dstack.storage_pool_host_map.host_id</code>. 
 	 */
-	public StoragePoolHostMapRecord setHostId(java.lang.Long value) {
+	public void setHostId(java.lang.Long value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	/**
 	 * Setter for <code>dstack.storage_pool_host_map.storage_pool_id</code>. 
 	 */
-	public StoragePoolHostMapRecord setStoragePoolId(java.lang.Long value) {
+	public void setStoragePoolId(java.lang.Long value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	/**
 	 * Setter for <code>dstack.storage_pool_host_map.state</code>. 
 	 */
-	public StoragePoolHostMapRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**

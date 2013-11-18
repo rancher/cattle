@@ -40,6 +40,10 @@ public class EngineContext {
         }
     }
 
+    public static boolean hasParentProcess() {
+        return EngineContext.getEngineContext().peekLog() != null;
+    }
+
     public static EngineContext getEngineContext() {
         return TL.get();
     }

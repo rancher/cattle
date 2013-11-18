@@ -1,5 +1,3 @@
-
-
 class TypeFactory:
     @staticmethod
     def get_type(name, default=None):
@@ -16,8 +14,11 @@ class TypeFactory:
         except KeyError, e:
             raise Exception("Failed to find type [%s]" % name)
 
+    @staticmethod
     def get_compute_driver(host, req = None):
-        return None
+        from docker.compute import DockerCompute
+        return DockerCompute()
 
+    @staticmethod
     def get_storage_driver(pool, req = None):
         return None

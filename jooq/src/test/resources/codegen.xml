@@ -46,7 +46,6 @@
       <pojos>false</pojos>
       <daos>false</daos>
       <jpaAnnotations>true</jpaAnnotations>
-      <fluentSetters>true</fluentSetters>
     </generate>
   </generator>
 </configuration>

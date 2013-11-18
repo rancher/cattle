@@ -4,6 +4,8 @@ import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 
 public interface ProcessState extends ProcessStateOperations {
 
+    Object getResource();
+
     LockDefinition getProcessLock();
 
     LockDefinition getStateChangeLock();

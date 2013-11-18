@@ -74,7 +74,8 @@ public class GenericProcessState<T extends GenericProcessStateFactory> implement
         resource = factory.getDataAccess().load(resourceType, resourceId);
     }
 
-    protected Object getResource() {
+    @Override
+    public Object getResource() {
         if ( resource == null ) {
             reload();
         }

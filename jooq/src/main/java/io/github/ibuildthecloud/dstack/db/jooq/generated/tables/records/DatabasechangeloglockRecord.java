@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "DATABASECHANGELOGLOCK", schema = "dstack")
 public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.DatabasechangeloglockRecord> implements org.jooq.Record4<java.lang.Integer, java.lang.Boolean, java.sql.Timestamp, java.lang.String> {
 
-	private static final long serialVersionUID = -1545828067;
+	private static final long serialVersionUID = -599413855;
 
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.ID</code>. 
 	 */
-	public DatabasechangeloglockRecord setId(java.lang.Integer value) {
+	public void setId(java.lang.Integer value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.LOCKED</code>. 
 	 */
-	public DatabasechangeloglockRecord setLocked(java.lang.Boolean value) {
+	public void setLocked(java.lang.Boolean value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.LOCKGRANTED</code>. 
 	 */
-	public DatabasechangeloglockRecord setLockgranted(java.sql.Timestamp value) {
+	public void setLockgranted(java.sql.Timestamp value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.LOCKEDBY</code>. 
 	 */
-	public DatabasechangeloglockRecord setLockedby(java.lang.String value) {
+	public void setLockedby(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**

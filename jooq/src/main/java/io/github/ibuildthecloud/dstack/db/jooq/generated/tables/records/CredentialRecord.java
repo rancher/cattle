@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "credential", schema = "dstack")
 public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.CredentialRecord> implements org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> {
 
-	private static final long serialVersionUID = -431468886;
+	private static final long serialVersionUID = 2123270173;
 
 	/**
 	 * Setter for <code>dstack.credential.id</code>. 
 	 */
-	public CredentialRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.name</code>. 
 	 */
-	public CredentialRecord setName(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.account_id</code>. 
 	 */
-	public CredentialRecord setAccountId(java.lang.Long value) {
+	public void setAccountId(java.lang.Long value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.state</code>. 
 	 */
-	public CredentialRecord setState(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.kind</code>. 
 	 */
-	public CredentialRecord setKind(java.lang.String value) {
+	public void setKind(java.lang.String value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**
@@ -99,9 +94,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.public_value</code>. 
 	 */
-	public CredentialRecord setPublicValue(java.lang.String value) {
+	public void setPublicValue(java.lang.String value) {
 		setValue(5, value);
-		return this;
 	}
 
 	/**
@@ -115,9 +109,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.secret_value</code>. 
 	 */
-	public CredentialRecord setSecretValue(java.lang.String value) {
+	public void setSecretValue(java.lang.String value) {
 		setValue(6, value);
-		return this;
 	}
 
 	/**
@@ -131,9 +124,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.created</code>. 
 	 */
-	public CredentialRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(7, value);
-		return this;
 	}
 
 	/**
@@ -147,9 +139,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.removed</code>. 
 	 */
-	public CredentialRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(8, value);
-		return this;
 	}
 
 	/**
@@ -163,9 +154,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.data</code>. 
 	 */
-	public CredentialRecord setData(java.lang.String value) {
+	public void setData(java.lang.String value) {
 		setValue(9, value);
-		return this;
 	}
 
 	/**
@@ -179,9 +169,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.uuid</code>. 
 	 */
-	public CredentialRecord setUuid(java.lang.String value) {
+	public void setUuid(java.lang.String value) {
 		setValue(10, value);
-		return this;
 	}
 
 	/**

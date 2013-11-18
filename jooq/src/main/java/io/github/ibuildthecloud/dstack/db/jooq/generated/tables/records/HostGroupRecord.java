@@ -13,14 +13,13 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @javax.persistence.Table(name = "host_group", schema = "dstack")
 public class HostGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostGroupRecord> implements org.jooq.Record5<java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp> {
 
-	private static final long serialVersionUID = -1468826618;
+	private static final long serialVersionUID = 73705669;
 
 	/**
 	 * Setter for <code>dstack.host_group.id</code>. 
 	 */
-	public HostGroupRecord setId(java.lang.Long value) {
+	public void setId(java.lang.Long value) {
 		setValue(0, value);
-		return this;
 	}
 
 	/**
@@ -35,9 +34,8 @@ public class HostGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	/**
 	 * Setter for <code>dstack.host_group.name</code>. 
 	 */
-	public HostGroupRecord setName(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(1, value);
-		return this;
 	}
 
 	/**
@@ -51,9 +49,8 @@ public class HostGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	/**
 	 * Setter for <code>dstack.host_group.description</code>. 
 	 */
-	public HostGroupRecord setDescription(java.lang.String value) {
+	public void setDescription(java.lang.String value) {
 		setValue(2, value);
-		return this;
 	}
 
 	/**
@@ -67,9 +64,8 @@ public class HostGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	/**
 	 * Setter for <code>dstack.host_group.created</code>. 
 	 */
-	public HostGroupRecord setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.sql.Timestamp value) {
 		setValue(3, value);
-		return this;
 	}
 
 	/**
@@ -83,9 +79,8 @@ public class HostGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	/**
 	 * Setter for <code>dstack.host_group.removed</code>. 
 	 */
-	public HostGroupRecord setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.sql.Timestamp value) {
 		setValue(4, value);
-		return this;
 	}
 
 	/**

@@ -5,7 +5,7 @@ import java.util.List;
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 
-public interface ProcessRepository {
+public interface ProcessManager {
 
     List<Long> pendingTasks();
 

@@ -5,6 +5,8 @@ import java.util.List;
 
 public interface ProcessRecordDao {
 
+    ProcessRecord insert(ProcessRecord record);
+
     void update(ProcessRecord record);
 
     List<Long> pendingTasks();
