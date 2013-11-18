@@ -41,11 +41,11 @@
             <id>gdapi-java-server</id>
             <activation>
                 <file>
-                    <exists>gdapi-java-server</exists>
+                    <exists>deps/gdapi-java-server</exists>
                 </file>
             </activation>
             <modules>
-                <module>gdapi-java-server</module>
+                <module>deps/gdapi-java-server</module>
             </modules>
         </profile>
         <profile>
