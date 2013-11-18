@@ -48,5 +48,27 @@
                 <module>gdapi-java-server</module>
             </modules>
         </profile>
+        <profile>
+            <id>jooq</id>
+            <activation>
+                <file>
+                    <exists>deps/jooq</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>deps/jooq</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>liquibase</id>
+            <activation>
+                <file>
+                    <exists>deps/liquibase</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>deps/liquibase</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
