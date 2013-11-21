@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler.L
 import io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHandler;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +49,23 @@ public abstract class AbstractObjectManager implements ObjectManager {
     protected abstract <T> T instantiate(Class<T> clz, Object properties);
 
     protected abstract <T> T insert(T instance, Class<T> clz, Object properties);
+
+
+    @Override
+    public <T> T setFields(Object obj, Object key, Object... valueKeyValue) {
+        Map<Object,Object> values = new HashMap<Object, Object>();
+
+        if ( valueKeyValue == null || valueKeyValue.length % 2 == 0 ) {
+            throw new IllegalArgumentException("valueKeyValue must be an odd length and in the format value, key, value, key, value, etc.");
+        }
+
+        values.put(key, valueKeyValue[0]);
+        for ( int i = 1 ; i < valueKeyValue.length ; i+=2 ) {
+            values.put(valueKeyValue[i], valueKeyValue[i+1]);
+        }
+
+        return setFields(obj, values);
+    }
 
     public SchemaFactory getSchemaFactory() {
         return schemaFactory;

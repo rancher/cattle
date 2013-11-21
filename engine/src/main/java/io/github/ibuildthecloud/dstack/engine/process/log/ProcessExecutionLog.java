@@ -1,9 +1,9 @@
 package io.github.ibuildthecloud.dstack.engine.process.log;
 
 import static io.github.ibuildthecloud.dstack.util.time.TimeUtils.*;
-import io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessStateTransition;
+import io.github.ibuildthecloud.dstack.util.type.Named;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,28 +37,13 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         return reason;
     }
 
-    public void recordTransition(ProcessStateTransition transition) {
-        switch (transition) {
-        case ACTIVATING:
-            transitionToActivating = System.currentTimeMillis();
-            break;
-        case ACTIVE:
-            transitionToActive = System.currentTimeMillis();
-            break;
-        default:
-            break;
-        }
-
-        transitions.add(transition);
-    }
-
     public void close() {
         if ( processLock != null && lockAcquired != null && lockAcquireEnd != null ) {
             lockHoldTime = lockAcquireEnd - lockAcquired;
         }
     }
 
-    public ProcessHandlerExecutionLog newProcessHandlerExecution(ProcessHandler handler) {
+    public ProcessHandlerExecutionLog newProcessHandlerExecution(Named handler) {
         ProcessHandlerExecutionLog execution = new ProcessHandlerExecutionLog();
         execution.setStartTime(now());
         execution.setName(handler.getName());

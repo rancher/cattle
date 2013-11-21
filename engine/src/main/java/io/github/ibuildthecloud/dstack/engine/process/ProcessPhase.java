@@ -4,7 +4,7 @@ public enum ProcessPhase {
     /* The ordinal order of these is important */
     REQUESTED,
     STARTED,
-    PRE_HANDLER_DONE,
+    PRE_LISTENERS_DONE,
     HANDLER_DONE,
-    POST_HANDLER_DONE
+    POST_LISTENERS_DONE
 }

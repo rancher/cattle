@@ -5,7 +5,7 @@ import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
-import io.github.ibuildthecloud.dstack.process.lock.ResourceLock;
+import io.github.ibuildthecloud.dstack.process.lock.ResourceChangeLock;
 import io.github.ibuildthecloud.dstack.process.lock.UniqueStateChangeLock;
 
 public class StartVirtualMachineProcessState implements ProcessState {
@@ -34,7 +34,7 @@ public class StartVirtualMachineProcessState implements ProcessState {
 
     @Override
     public LockDefinition getProcessLock() {
-        return new ResourceLock("instance", instance.getId());
+        return new ResourceChangeLock("instance", instance.getId());
     }
 
     @Override
@@ -48,17 +48,17 @@ public class StartVirtualMachineProcessState implements ProcessState {
     }
 
     @Override
-    public boolean isActive() {
+    public boolean isDone() {
         return instance.getState().equals("running");
     }
 
     @Override
-    public boolean isInactive() {
+    public boolean isStart() {
         return instance.getState().equals("requested");
     }
 
     @Override
-    public boolean isActivating() {
+    public boolean isTransitioning() {
         return instance.getState().equals("starting");
     }
 

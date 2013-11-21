@@ -2,8 +2,8 @@ package io.github.ibuildthecloud.dstack.engine.process;
 
 public interface ProcessStateOperations {
 
-    void setActivating();
+    String setTransitioning();
 
-    void setActive();
+    String setDone();
 
 }

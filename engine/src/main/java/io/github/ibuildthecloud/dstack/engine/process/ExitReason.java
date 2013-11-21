@@ -5,8 +5,10 @@ import static io.github.ibuildthecloud.dstack.engine.process.ProcessResult.*;
 public enum ExitReason {
     ALREADY_ACTIVE(SUCCESS),
     CANCELED(ProcessResult.CANCELED),
+    STATE_CHANGED,
     ACTIVE(SUCCESS),
     FAILED_TO_ACQUIRE_LOCK,
+    //TODO rename to listener
     PRE_HANDLER_EXCEPTION,
     PRE_HANDLER_DELAYED,
     HANDLER_EXCEPTION,

@@ -11,6 +11,11 @@ public interface ObjectManager {
     <T> T persist(T obj);
 
     <T> T loadResource(String resourceType, String resourceId);
-    
+
     <T> T loadResource(String resourceType, Long resourceId);
+
+    <T> T setFields(Object obj, Map<Object,Object> values);
+
+    <T> T setFields(Object obj, Object key, Object... valueKeyValue);
+
 }

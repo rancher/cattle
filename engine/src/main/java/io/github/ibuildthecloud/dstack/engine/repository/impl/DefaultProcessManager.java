@@ -6,10 +6,9 @@ import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
-import io.github.ibuildthecloud.dstack.engine.process.ProcessStateFactory;
-import io.github.ibuildthecloud.dstack.engine.process.impl.DefaultProcessImpl;
-import io.github.ibuildthecloud.dstack.engine.repository.ProcessNotFoundException;
+import io.github.ibuildthecloud.dstack.engine.process.impl.DefaultProcessInstanceImpl;
 import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
+import io.github.ibuildthecloud.dstack.engine.repository.ProcessNotFoundException;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.util.concurrent.DelayedObject;
 import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
@@ -35,9 +34,8 @@ public class DefaultProcessManager implements ProcessManager {
 
     ProcessRecordDao processRecordDao;
     Map<String, ProcessDefinition> definitions;
-    Map<String, ProcessStateFactory> factories;
     LockManager lockManager;
-    DelayQueue<DelayedObject<DefaultProcessImpl>> toPersist = new DelayQueue<DelayedObject<DefaultProcessImpl>>();
+    DelayQueue<DelayedObject<DefaultProcessInstanceImpl>> toPersist = new DelayQueue<DelayedObject<DefaultProcessInstanceImpl>>();
     ScheduledExecutorService executor;
 
     @Override
@@ -54,30 +52,26 @@ public class DefaultProcessManager implements ProcessManager {
         if ( processDef == null )
             throw new ProcessNotFoundException("Failed to find ProcessDefinition for [" + record.getProcessName() + "]");
 
-        ProcessStateFactory factory = factories.get(record.getProcessName());
-        if ( factory == null )
-            throw new ProcessNotFoundException("Failed to find ProcessStateFactory for [" + record.getProcessName() + "]");
-
-        ProcessState state = factory.constructProcessState(record);
+        ProcessState state = processDef.constructProcessState(record);
         if ( state == null )
             throw new ProcessNotFoundException("Failed to construct ProcessState for [" + record.getProcessName() + "]");
 
         if ( record.getId() == null && ! EngineContext.hasParentProcess() )
             record = processRecordDao.insert(record);
 
-        DefaultProcessImpl process = new DefaultProcessImpl(this, lockManager, record, processDef, state);
-        toPersist.put(new DelayedObject<DefaultProcessImpl>(System.currentTimeMillis() + EXECUTION_DELAY.get(), process));
+        DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(this, lockManager, record, processDef, state);
+        toPersist.put(new DelayedObject<DefaultProcessInstanceImpl>(System.currentTimeMillis() + EXECUTION_DELAY.get(), process));
 
         return process;
     }
 
     @Override
     public void persistState(ProcessInstance process) {
-        if ( ! ( process instanceof DefaultProcessImpl ) ) {
+        if ( ! ( process instanceof DefaultProcessInstanceImpl ) ) {
             throw new IllegalArgumentException("Can only persist ProcessInstances that are created by this repository");
         }
 
-        DefaultProcessImpl processImpl = (DefaultProcessImpl)process;
+        DefaultProcessInstanceImpl processImpl = (DefaultProcessInstanceImpl)process;
 
         synchronized (processImpl) {
             ProcessRecord record = processImpl.getProcessRecord();
@@ -125,7 +119,7 @@ public class DefaultProcessManager implements ProcessManager {
                 /* This really blocks forever, but just in case it fails we restart */
                 persistInProgress();
             }
-        }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);        
+        }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);
     }
 
     public ProcessRecordDao getProcessRecordDao() {
@@ -161,15 +155,6 @@ public class DefaultProcessManager implements ProcessManager {
     @Inject
     public void setDefinitions(Map<String, ProcessDefinition> definitions) {
         this.definitions = definitions;
-    }
-
-    public Map<String, ProcessStateFactory> getFactories() {
-        return factories;
-    }
-
-    @Inject
-    public void setFactories(Map<String, ProcessStateFactory> factories) {
-        this.factories = factories;
     }
 
 }

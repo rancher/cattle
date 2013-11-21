@@ -8,15 +8,17 @@ public interface ProcessState extends ProcessStateOperations {
 
     LockDefinition getProcessLock();
 
-    LockDefinition getStateChangeLock();
+//    LockDefinition getStateChangeLock();
+
+    String getState();
 
     boolean shouldCancel();
 
-    boolean isActive();
+    boolean isDone();
 
-    boolean isInactive();
+    boolean isStart();
 
-    boolean isActivating();
+    boolean isTransitioning();
 
     void reload();
 

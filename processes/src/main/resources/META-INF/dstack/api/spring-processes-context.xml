@@ -32,13 +32,6 @@
                 </entry>
             </map>
         </property>
-        <property name="factories">
-            <map>
-                <entry key="CREATE_INSTANCE">
-                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.StartVirtualMachineProcessStateFactory" />
-                </entry>
-            </map>
-        </property>
     </bean>
 
     <bean class="io.github.ibuildthecloud.dstack.engine.server.impl.SequentialDispatcher" />

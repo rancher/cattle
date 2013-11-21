@@ -3,7 +3,7 @@
 	url = https://github.com/ibuildthecloud/jOOQ.git
 [submodule "deps/liquibase"]
 	path = deps/liquibase
-	url = https://github.com/liquibase/liquibase.git
+	url = https://github.com/ibuildthecloud/liquibase.git
 [submodule "deps/gdapi-java-server"]
 	path = deps/gdapi-java-server
 	url = https://github.com/ibuildthecloud/gdapi-java-server.git

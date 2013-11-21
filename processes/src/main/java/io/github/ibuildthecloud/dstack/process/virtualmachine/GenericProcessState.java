@@ -55,17 +55,17 @@ public class GenericProcessState<T extends GenericProcessStateFactory> implement
     }
 
     @Override
-    public boolean isActive() {
+    public boolean isDone() {
         return factory.getActiveStates().contains(getState());
     }
 
     @Override
-    public boolean isInactive() {
+    public boolean isStart() {
         return factory.getInactiveStates().contains(getState());
     }
 
     @Override
-    public boolean isActivating() {
+    public boolean isTransitioning() {
         return factory.getActivatingStates().contains(getState());
     }
 
