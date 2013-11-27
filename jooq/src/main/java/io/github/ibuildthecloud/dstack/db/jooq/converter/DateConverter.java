@@ -1,0 +1,32 @@
+package io.github.ibuildthecloud.dstack.db.jooq.converter;
+
+import java.sql.Timestamp;
+import java.util.Date;
+
+import org.jooq.Converter;
+
+public class DateConverter implements Converter<Timestamp, Date>{
+
+    private static final long serialVersionUID = -3093938632174221235L;
+
+    @Override
+    public Date from(Timestamp databaseObject) {
+        return new Date(databaseObject.getTime());
+    }
+
+    @Override
+    public Timestamp to(Date userObject) {
+        return new Timestamp(userObject.getTime());
+    }
+
+    @Override
+    public Class<Timestamp> fromType() {
+        return Timestamp.class;
+    }
+
+    @Override
+    public Class<Date> toType() {
+        return Date.class;
+    }
+
+}

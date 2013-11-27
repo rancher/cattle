@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "instance_host_map", schema = "dstack")
-public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceHostMapRecord> implements org.jooq.Record5<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.sql.Timestamp> {
+public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceHostMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record5<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.sql.Timestamp>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.InstanceHostMap {
 
-	private static final long serialVersionUID = 1548809210;
+	private static final long serialVersionUID = -404692257;
 
 	/**
 	 * Setter for <code>dstack.instance_host_map.id</code>. 
@@ -27,6 +27,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * Getter for <code>dstack.instance_host_map.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * Getter for <code>dstack.instance_host_map.instance_id</code>. 
 	 */
 	@javax.persistence.Column(name = "instance_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getInstanceId() {
 		return (java.lang.Long) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * Getter for <code>dstack.instance_host_map.host_id</code>. 
 	 */
 	@javax.persistence.Column(name = "host_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getHostId() {
 		return (java.lang.Long) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * Getter for <code>dstack.instance_host_map.removed</code>. 
 	 */
 	@javax.persistence.Column(name = "removed")
+	@Override
 	public java.sql.Timestamp getRemoved() {
 		return (java.sql.Timestamp) getValue(4);
 	}
@@ -128,7 +133,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMap.INSTANCE_HOST_MAP.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMapTable.INSTANCE_HOST_MAP.ID;
 	}
 
 	/**
@@ -136,7 +141,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMap.INSTANCE_HOST_MAP.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMapTable.INSTANCE_HOST_MAP.STATE;
 	}
 
 	/**
@@ -144,7 +149,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMap.INSTANCE_HOST_MAP.INSTANCE_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMapTable.INSTANCE_HOST_MAP.INSTANCE_ID;
 	}
 
 	/**
@@ -152,7 +157,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMap.INSTANCE_HOST_MAP.HOST_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMapTable.INSTANCE_HOST_MAP.HOST_ID;
 	}
 
 	/**
@@ -160,7 +165,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMap.INSTANCE_HOST_MAP.REMOVED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMapTable.INSTANCE_HOST_MAP.REMOVED;
 	}
 
 	/**
@@ -211,14 +216,14 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * Create a detached InstanceHostMapRecord
 	 */
 	public InstanceHostMapRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMap.INSTANCE_HOST_MAP);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMapTable.INSTANCE_HOST_MAP);
 	}
 
 	/**
 	 * Create a detached, initialised InstanceHostMapRecord
 	 */
 	public InstanceHostMapRecord(java.lang.Long id, java.lang.String state, java.lang.Long instanceId, java.lang.Long hostId, java.sql.Timestamp removed) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMap.INSTANCE_HOST_MAP);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMapTable.INSTANCE_HOST_MAP);
 
 		setValue(0, id);
 		setValue(1, state);

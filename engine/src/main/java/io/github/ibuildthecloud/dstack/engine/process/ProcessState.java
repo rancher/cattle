@@ -1,14 +1,14 @@
 package io.github.ibuildthecloud.dstack.engine.process;
 
+import java.util.Map;
+
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 
-public interface ProcessState extends ProcessStateOperations {
+public interface ProcessState<T> {
 
-    Object getResource();
+    T getResource();
 
     LockDefinition getProcessLock();
-
-//    LockDefinition getStateChangeLock();
 
     String getState();
 
@@ -21,5 +21,13 @@ public interface ProcessState extends ProcessStateOperations {
     boolean isTransitioning();
 
     void reload();
+
+    String setTransitioning();
+
+    String setDone();
+
+    Map<String,Object> convertData(Object data);
+
+    void applyData(Map<String,Object> data);
 
 }

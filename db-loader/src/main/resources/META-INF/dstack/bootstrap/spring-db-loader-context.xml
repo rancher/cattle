@@ -13,7 +13,7 @@
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 	<bean id="JarInJarServiceLocator" class="io.github.ibuildthecloud.dstack.liquibase.JarInJarServiceLocator" />
-	<bean id="liquibase-core" class="liquibase.integration.spring.SpringLiquibase" depends-on="JarInJarServiceLocator" >
+	<bean id="liquibase-core" class="io.github.ibuildthecloud.dstack.liquibase.Loader" depends-on="JarInJarServiceLocator" >
 		<property name="dataSource" ref="DataSource" />
 		<property name="changeLog" value="classpath:db/changelog.xml" />
 	</bean>

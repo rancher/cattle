@@ -52,35 +52,36 @@ public class JsonOverlayPostProcessor implements SchemaPostProcessor {
                 // TODO: this is a hack
                 schema.setLinks(new HashMap<String, URL>());
 
-                for ( String field : overrideFields.keySet() ) {
-                    Field originalField = originalFields.get(field);
-                    Field overrideField = overrideFields.get(field);
+                if ( overrideFields != null ) {
+                    for ( String field : overrideFields.keySet() ) {
+                        Field originalField = originalFields.get(field);
+                        Field overrideField = overrideFields.get(field);
 
-                    if ( originalField == null ) {
-                        originalFields.put(field, overrideField);
-                        continue;
-                    }
-
-                    if ( field.startsWith("-") ) {
-                        originalFields.remove(field);
-                    }
-
-                    for ( PropertyDescriptor desc : PropertyUtils.getPropertyDescriptors(overrideField) ) {
-                        String name = desc.getName();
-                        Method readMethod = desc.getReadMethod();
-                        Method writeMethod = desc.getWriteMethod();
-
-                        if ( readMethod == null || writeMethod == null ) {
+                        if ( originalField == null ) {
+                            originalFields.put(field, overrideField);
                             continue;
                         }
 
-                        Object newValue = PropertyUtils.getProperty(overrideField, name);
-                        if ( newValue != null ) {
-                            PropertyUtils.setProperty(originalField, name, newValue);
+                        if ( field.startsWith("-") ) {
+                            originalFields.remove(field);
+                        }
+
+                        for ( PropertyDescriptor desc : PropertyUtils.getPropertyDescriptors(overrideField) ) {
+                            String name = desc.getName();
+                            Method readMethod = desc.getReadMethod();
+                            Method writeMethod = desc.getWriteMethod();
+
+                            if ( readMethod == null || writeMethod == null ) {
+                                continue;
+                            }
+
+                            Object newValue = PropertyUtils.getProperty(overrideField, name);
+                            if ( newValue != null ) {
+                                PropertyUtils.setProperty(originalField, name, newValue);
+                            }
                         }
                     }
                 }
-
             }
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);

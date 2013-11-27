@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "DATABASECHANGELOG", schema = "dstack")
-public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.DatabasechangelogRecord> implements org.jooq.Record11<java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> {
+public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.DatabasechangelogRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Databasechangelog {
 
-	private static final long serialVersionUID = -262552556;
+	private static final long serialVersionUID = 784989107;
 
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOG.ID</code>. 
@@ -26,6 +26,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.ID</code>. 
 	 */
 	@javax.persistence.Column(name = "ID", nullable = false, length = 255)
+	@Override
 	public java.lang.String getId() {
 		return (java.lang.String) getValue(0);
 	}
@@ -41,6 +42,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.AUTHOR</code>. 
 	 */
 	@javax.persistence.Column(name = "AUTHOR", nullable = false, length = 255)
+	@Override
 	public java.lang.String getAuthor() {
 		return (java.lang.String) getValue(1);
 	}
@@ -56,6 +58,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.FILENAME</code>. 
 	 */
 	@javax.persistence.Column(name = "FILENAME", nullable = false, length = 255)
+	@Override
 	public java.lang.String getFilename() {
 		return (java.lang.String) getValue(2);
 	}
@@ -71,6 +74,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.DATEEXECUTED</code>. 
 	 */
 	@javax.persistence.Column(name = "DATEEXECUTED", nullable = false)
+	@Override
 	public java.sql.Timestamp getDateexecuted() {
 		return (java.sql.Timestamp) getValue(3);
 	}
@@ -86,6 +90,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.ORDEREXECUTED</code>. 
 	 */
 	@javax.persistence.Column(name = "ORDEREXECUTED", nullable = false, precision = 10)
+	@Override
 	public java.lang.Integer getOrderexecuted() {
 		return (java.lang.Integer) getValue(4);
 	}
@@ -101,6 +106,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.EXECTYPE</code>. 
 	 */
 	@javax.persistence.Column(name = "EXECTYPE", nullable = false, length = 10)
+	@Override
 	public java.lang.String getExectype() {
 		return (java.lang.String) getValue(5);
 	}
@@ -116,6 +122,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.MD5SUM</code>. 
 	 */
 	@javax.persistence.Column(name = "MD5SUM", length = 35)
+	@Override
 	public java.lang.String getMd5sum() {
 		return (java.lang.String) getValue(6);
 	}
@@ -131,6 +138,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.DESCRIPTION</code>. 
 	 */
 	@javax.persistence.Column(name = "DESCRIPTION", length = 255)
+	@Override
 	public java.lang.String getDescription() {
 		return (java.lang.String) getValue(7);
 	}
@@ -146,6 +154,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.COMMENTS</code>. 
 	 */
 	@javax.persistence.Column(name = "COMMENTS", length = 255)
+	@Override
 	public java.lang.String getComments() {
 		return (java.lang.String) getValue(8);
 	}
@@ -161,6 +170,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.TAG</code>. 
 	 */
 	@javax.persistence.Column(name = "TAG", length = 255)
+	@Override
 	public java.lang.String getTag() {
 		return (java.lang.String) getValue(9);
 	}
@@ -176,6 +186,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Getter for <code>dstack.DATABASECHANGELOG.LIQUIBASE</code>. 
 	 */
 	@javax.persistence.Column(name = "LIQUIBASE", length = 20)
+	@Override
 	public java.lang.String getLiquibase() {
 		return (java.lang.String) getValue(10);
 	}
@@ -205,7 +216,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.ID;
 	}
 
 	/**
@@ -213,7 +224,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.AUTHOR;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.AUTHOR;
 	}
 
 	/**
@@ -221,7 +232,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.FILENAME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.FILENAME;
 	}
 
 	/**
@@ -229,7 +240,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.DATEEXECUTED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.DATEEXECUTED;
 	}
 
 	/**
@@ -237,7 +248,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Integer> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.ORDEREXECUTED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.ORDEREXECUTED;
 	}
 
 	/**
@@ -245,7 +256,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.EXECTYPE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.EXECTYPE;
 	}
 
 	/**
@@ -253,7 +264,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field7() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.MD5SUM;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.MD5SUM;
 	}
 
 	/**
@@ -261,7 +272,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field8() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.DESCRIPTION;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.DESCRIPTION;
 	}
 
 	/**
@@ -269,7 +280,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field9() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.COMMENTS;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.COMMENTS;
 	}
 
 	/**
@@ -277,7 +288,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field10() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.TAG;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.TAG;
 	}
 
 	/**
@@ -285,7 +296,7 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field11() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG.LIQUIBASE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG.LIQUIBASE;
 	}
 
 	/**
@@ -384,14 +395,14 @@ public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.gi
 	 * Create a detached DatabasechangelogRecord
 	 */
 	public DatabasechangelogRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG);
 	}
 
 	/**
 	 * Create a detached, initialised DatabasechangelogRecord
 	 */
 	public DatabasechangelogRecord(java.lang.String id, java.lang.String author, java.lang.String filename, java.sql.Timestamp dateexecuted, java.lang.Integer orderexecuted, java.lang.String exectype, java.lang.String md5sum, java.lang.String description, java.lang.String comments, java.lang.String tag, java.lang.String liquibase) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG);
 
 		setValue(0, id);
 		setValue(1, author);

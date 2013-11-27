@@ -1,4 +1,7 @@
-package io.github.ibuildthecloud.dstack.db.jooq.utils;
+package io.github.ibuildthecloud.dstack.object.jooq.utils;
+
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import org.jooq.DSLContext;
 import org.jooq.Table;
@@ -56,17 +59,26 @@ public class JooqUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static Class<UpdatableRecord<?>> getRecordClass(Class<?> clz) {
-        if ( ! UpdatableRecord.class.isAssignableFrom(clz) ) {
-            throw new IllegalArgumentException("Class [" + clz + "] is not an instanceof UpdatableRecord");
+    public static Class<UpdatableRecord<?>> getRecordClass(SchemaFactory factory, Class<?> clz) {
+        if ( UpdatableRecord.class.isAssignableFrom(clz) ) {
+            return (Class<UpdatableRecord<?>>)clz;
         }
 
-        return (Class<UpdatableRecord<?>>)clz;
+        Schema schema = factory.getSchema(clz);
+        Class<?> testClz = factory.getSchemaClass(schema.getId());
+        if ( clz.isAssignableFrom(testClz) ) {
+            if ( ! UpdatableRecord.class.isAssignableFrom(testClz) ) {
+                throw new IllegalArgumentException("Class [" + testClz + "] is not an instanceof UpdatableRecord");
+            }
+            return (Class<UpdatableRecord<?>>) testClz;
+        }
+
+        throw new IllegalArgumentException("Failed to find UpdatableRecord class for [" + clz + "]");
     }
 
-    public static UpdatableRecord<?> getRecord(Class<?> clz) {
+    public static UpdatableRecord<?> getRecord(Class<UpdatableRecord<?>> clz) {
         try {
-            return getRecordClass(clz).newInstance();
+            return clz.newInstance();
         } catch (InstantiationException e) {
             throw new IllegalStateException("Failed to instantiate [" + clz + "]", e);
         } catch (IllegalAccessException e) {

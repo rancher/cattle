@@ -27,7 +27,7 @@ public class Configuration extends DefaultConfiguration {
         }
 
         try {
-            SQLDialect dialect = SQLDialect.valueOf(database.toUpperCase());
+            SQLDialect dialect = SQLDialect.valueOf(database.trim().toUpperCase());
             set(dialect);
         } catch ( IllegalArgumentException e ) {
             throw new IllegalArgumentException("Invalid SQLDialect [" + database.toUpperCase() + "]", e);
@@ -37,7 +37,12 @@ public class Configuration extends DefaultConfiguration {
 
         Settings settings = new Settings();
         settings.setRenderSchema(false);
-        settings.setRenderNameStyle(RenderNameStyle.UPPER);
+
+        String renderNameStyle = ArchaiusUtil.getStringProperty("db." + name + "." + database + ".render.name.style").get();
+        if ( renderNameStyle != null ) {
+            settings.setRenderNameStyle(RenderNameStyle.valueOf(renderNameStyle.trim().toUpperCase()));
+        }
+
         set(settings);
     }
 

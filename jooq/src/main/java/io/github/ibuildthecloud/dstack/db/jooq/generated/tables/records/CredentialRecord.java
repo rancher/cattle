@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "credential", schema = "dstack")
-public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.CredentialRecord> implements org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> {
+public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.CredentialRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Credential {
 
-	private static final long serialVersionUID = 2123270173;
+	private static final long serialVersionUID = 1737082315;
 
 	/**
 	 * Setter for <code>dstack.credential.id</code>. 
@@ -27,6 +27,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.name</code>. 
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
+	@Override
 	public java.lang.String getName() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.account_id</code>. 
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getAccountId() {
 		return (java.lang.Long) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.kind</code>. 
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
+	@Override
 	public java.lang.String getKind() {
 		return (java.lang.String) getValue(4);
 	}
@@ -102,6 +107,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.public_value</code>. 
 	 */
 	@javax.persistence.Column(name = "public_value", nullable = false, length = 16777215)
+	@Override
 	public java.lang.String getPublicValue() {
 		return (java.lang.String) getValue(5);
 	}
@@ -117,6 +123,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.secret_value</code>. 
 	 */
 	@javax.persistence.Column(name = "secret_value", length = 1024)
+	@Override
 	public java.lang.String getSecretValue() {
 		return (java.lang.String) getValue(6);
 	}
@@ -132,6 +139,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.created</code>. 
 	 */
 	@javax.persistence.Column(name = "created", nullable = false)
+	@Override
 	public java.sql.Timestamp getCreated() {
 		return (java.sql.Timestamp) getValue(7);
 	}
@@ -147,6 +155,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.removed</code>. 
 	 */
 	@javax.persistence.Column(name = "removed")
+	@Override
 	public java.sql.Timestamp getRemoved() {
 		return (java.sql.Timestamp) getValue(8);
 	}
@@ -154,7 +163,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Setter for <code>dstack.credential.data</code>. 
 	 */
-	public void setData(java.lang.String value) {
+	public void setData(java.util.Map<String,Object> value) {
 		setValue(9, value);
 	}
 
@@ -162,8 +171,9 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.data</code>. 
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
-	public java.lang.String getData() {
-		return (java.lang.String) getValue(9);
+	@Override
+	public java.util.Map<String,Object> getData() {
+		return (java.util.Map<String,Object>) getValue(9);
 	}
 
 	/**
@@ -177,6 +187,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Getter for <code>dstack.credential.uuid</code>. 
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@Override
 	public java.lang.String getUuid() {
 		return (java.lang.String) getValue(10);
 	}
@@ -201,7 +212,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.lang.String> fieldsRow() {
 		return (org.jooq.Row11) super.fieldsRow();
 	}
 
@@ -209,7 +220,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.lang.String> valuesRow() {
 		return (org.jooq.Row11) super.valuesRow();
 	}
 
@@ -218,7 +229,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.ID;
 	}
 
 	/**
@@ -226,7 +237,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.NAME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.NAME;
 	}
 
 	/**
@@ -234,7 +245,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.ACCOUNT_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.ACCOUNT_ID;
 	}
 
 	/**
@@ -242,7 +253,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.STATE;
 	}
 
 	/**
@@ -250,7 +261,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.KIND;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.KIND;
 	}
 
 	/**
@@ -258,7 +269,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.PUBLIC_VALUE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.PUBLIC_VALUE;
 	}
 
 	/**
@@ -266,7 +277,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field7() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.SECRET_VALUE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.SECRET_VALUE;
 	}
 
 	/**
@@ -274,7 +285,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field8() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.CREATED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.CREATED;
 	}
 
 	/**
@@ -282,15 +293,15 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field9() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.REMOVED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.REMOVED;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field10() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.DATA;
+	public org.jooq.Field<java.util.Map<String,Object>> field10() {
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.DATA;
 	}
 
 	/**
@@ -298,7 +309,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field11() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL.UUID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL.UUID;
 	}
 
 	/**
@@ -377,7 +388,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value10() {
+	public java.util.Map<String,Object> value10() {
 		return getData();
 	}
 
@@ -397,14 +408,14 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * Create a detached CredentialRecord
 	 */
 	public CredentialRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL);
 	}
 
 	/**
 	 * Create a detached, initialised CredentialRecord
 	 */
-	public CredentialRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String state, java.lang.String kind, java.lang.String publicValue, java.lang.String secretValue, java.sql.Timestamp created, java.sql.Timestamp removed, java.lang.String data, java.lang.String uuid) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL);
+	public CredentialRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String state, java.lang.String kind, java.lang.String publicValue, java.lang.String secretValue, java.sql.Timestamp created, java.sql.Timestamp removed, java.util.Map<String,Object> data, java.lang.String uuid) {
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL);
 
 		setValue(0, id);
 		setValue(1, name);

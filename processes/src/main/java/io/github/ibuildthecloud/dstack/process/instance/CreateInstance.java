@@ -1,61 +1,129 @@
-package io.github.ibuildthecloud.dstack.process.virtualmachine;
+package io.github.ibuildthecloud.dstack.process.instance;
 
-import io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceRecord;
-import io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler;
+import static io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.*;
+import static io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeTable.*;
+import io.github.ibuildthecloud.dstack.db.dynamicfield.InstanceFields;
+import io.github.ibuildthecloud.dstack.db.dynamicfield.VolumeFields;
+import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Instance;
+import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Nic;
+import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Volume;
+import io.github.ibuildthecloud.dstack.engine.handler.AbstractProcessHandler;
+import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
-import io.github.ibuildthecloud.dstack.eventing.model.impl.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
-import io.github.ibuildthecloud.dstack.transport.Transport;
+import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
+import io.github.ibuildthecloud.dstack.object.util.DataUtils;
 import io.github.ibuildthecloud.dstack.transport.TransportFactory;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
-public class StartVMHandler implements ProcessHandler {
+public class CreateInstance extends AbstractProcessHandler<Instance> {
 
     JsonMapper jsonMapper;
     TransportFactory transportFactory;
+    ObjectProcessManager processManager;
+    ObjectManager objectManager;
 
     @Override
-    public String getName() {
-        return "Start VM";
+    public HandlerResult handle(ProcessState<Instance> state, ProcessInstance process) {
+        Instance instance = state.getResource();
+        List<Volume> volumes = objectManager.children(instance, Volume.class);
+        List<Nic> nics = objectManager.children(instance, Nic.class);
+
+        defineVolumes(instance, volumes);
+        defineNics(instance, nics);
+
+        start(instance);
+
+        return HandlerResult.EMPTY_RESULT;
     }
 
-    @Override
-    public void handle(ProcessState state, ProcessInstance process) {
-        InstanceRecord instance = (InstanceRecord)state.getResource();
+    protected void start(Instance instance) {
+        Boolean doneStart = DataUtils.getField(instance.getData(), InstanceFields.START_ON_CREATE, Boolean.class);
 
-        try {
-            @SuppressWarnings("unchecked")
-            Map<String,Object> instanceData = jsonMapper.convertValue(instance, Map.class);
-            Map<String,Object> objData = jsonMapper.readValue(instanceData.get("data").toString());
+        if ( doneStart != null && ! doneStart.booleanValue() ) {
+            return;
+        }
 
-            @SuppressWarnings("unchecked")
-            Map<String,Object> fields = (Map<String,Object>)objData.get("fields");
-            objData.put("docker.container.Cmd", fields.get("cmd").toString().split(" "));
-            objData.put("docker.container.Image", fields.get("image"));
+        ProcessInstance process = processManager.createProcessInstance("start.instance", instance, null);
+        process.execute();
+    }
 
-            instanceData.put("data", objData);
+    protected void defineVolumes(Instance instance, List<Volume> volumes) {
+        long deviceId = 0;
+        if ( createRoot(instance, volumes) ) {
+            deviceId++;
+        }
 
-            Map<String,Object> data = new HashMap<String, Object>();
-            data.put("instance", instanceData);
+        List<Long> volumeOfferingIds = DataUtils.getFieldList(instance.getData(), InstanceFields.VOLUME_OFFERING_IDS, Long.class);
 
-            EventVO event = new EventVO();
-            event.setName("compute.start");
-            event.setData(data);
+        outer:
+        for ( int i = 0 ; i < volumeOfferingIds.size() ; i++ ) {
+            long deviceNumber = deviceId + i;
+            for ( Volume volume : volumes ) {
+                if ( volume.getDeviceNumber().intValue() == deviceNumber ) {
+                    continue outer;
+                }
+            }
 
-            Transport transport = transportFactory.getTransport(new HashMap<String, String>());
-            transport.connect();
-            String stringEvent = jsonMapper.writeValueAsString(event);
-            transport.send(stringEvent);
-            transport.disconnect();
-        } catch ( IOException e ) {
-            e.printStackTrace();
+            objectManager.create(Volume.class,
+                    VOLUME.ACCOUNT_ID, instance.getAccountId(),
+                    VOLUME.INSTANCE_ID, instance.getId(),
+                    VOLUME.OFFERING_ID, volumeOfferingIds.get(i),
+                    VOLUME.DEVICE_NUMBER, deviceNumber,
+                    VOLUME.ATTACHED_STATE, VolumeFields.STATE_ATTACHED
+                    );
+        }
+    }
+
+    protected boolean createRoot(Instance instance, List<Volume> volumes) {
+        if ( instance.getImageId() == null ) {
+            return false;
+        }
+
+        for ( Volume volume : volumes ) {
+            if ( volume.getDeviceNumber().intValue() == 0 ) {
+                return true;
+            }
+        }
+
+        objectManager.create(Volume.class,
+                VOLUME.ACCOUNT_ID, instance.getAccountId(),
+                VOLUME.INSTANCE_ID, instance.getId(),
+                VOLUME.IMAGE_ID, instance.getImageId(),
+                VOLUME.DEVICE_NUMBER, 0,
+                VOLUME.ATTACHED_STATE, VolumeFields.STATE_ATTACHED
+                );
+
+        return true;
+    }
+
+    protected void defineNics(Instance instance, List<Nic> nics) {
+        List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceFields.NETWORK_IDS, Long.class);
+        if ( networkIds == null )
+            return;
+
+        for ( int i = 0 ; i < networkIds.size() ; i++ ) {
+            Number createId = networkIds.get(i);
+            Nic existing = null;
+            for ( Nic nic : nics ) {
+                if ( nic.getNetworkId() == createId.longValue() ) {
+                    existing = nic;
+                    break;
+                }
+            }
+
+            if ( existing == null ) {
+                objectManager.create(Nic.class, 
+                        NIC.ACCOUNT_ID, instance.getAccountId(),
+                        NIC.NETWORK_ID, createId,
+                        NIC.INSTANCE_ID, instance.getId(),
+                        NIC.DEVICE_NUMBER, i);
+            }
         }
     }
 
@@ -75,6 +143,24 @@ public class StartVMHandler implements ProcessHandler {
     @Inject
     public void setTransportFactory(TransportFactory transportFactory) {
         this.transportFactory = transportFactory;
+    }
+
+    public ObjectManager getObjectManager() {
+        return objectManager;
+    }
+
+    @Inject
+    public void setObjectManager(ObjectManager objectManager) {
+        this.objectManager = objectManager;
+    }
+
+    public ObjectProcessManager getProcessManager() {
+        return processManager;
+    }
+
+    @Inject
+    public void setProcessManager(ObjectProcessManager processManager) {
+        this.processManager = processManager;
     }
 
 }

@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "zone", schema = "dstack")
-public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ZoneRecord> implements org.jooq.Record6<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> {
+public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ZoneRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record6<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Zone {
 
-	private static final long serialVersionUID = -1019145170;
+	private static final long serialVersionUID = -1634939180;
 
 	/**
 	 * Setter for <code>dstack.zone.id</code>. 
@@ -27,6 +27,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.zone.name</code>. 
 	 */
 	@javax.persistence.Column(name = "name", length = 128)
+	@Override
 	public java.lang.String getName() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.zone.description</code>. 
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
+	@Override
 	public java.lang.String getDescription() {
 		return (java.lang.String) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.zone.uuid</code>. 
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@Override
 	public java.lang.String getUuid() {
 		return (java.lang.String) getValue(3);
 	}
@@ -79,7 +83,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.zone.data</code>. 
 	 */
-	public void setData(java.lang.String value) {
+	public void setData(java.util.Map<String,Object> value) {
 		setValue(4, value);
 	}
 
@@ -87,8 +91,9 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.zone.data</code>. 
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
-	public java.lang.String getData() {
-		return (java.lang.String) getValue(4);
+	@Override
+	public java.util.Map<String,Object> getData() {
+		return (java.util.Map<String,Object>) getValue(4);
 	}
 
 	/**
@@ -102,6 +107,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.zone.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(5);
 	}
@@ -126,7 +132,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row6<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row6<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.String> fieldsRow() {
 		return (org.jooq.Row6) super.fieldsRow();
 	}
 
@@ -134,7 +140,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row6<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row6<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.String> valuesRow() {
 		return (org.jooq.Row6) super.valuesRow();
 	}
 
@@ -143,7 +149,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone.ZONE.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable.ZONE.ID;
 	}
 
 	/**
@@ -151,7 +157,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone.ZONE.NAME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable.ZONE.NAME;
 	}
 
 	/**
@@ -159,7 +165,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone.ZONE.DESCRIPTION;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable.ZONE.DESCRIPTION;
 	}
 
 	/**
@@ -167,15 +173,15 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone.ZONE.UUID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable.ZONE.UUID;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone.ZONE.DATA;
+	public org.jooq.Field<java.util.Map<String,Object>> field5() {
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable.ZONE.DATA;
 	}
 
 	/**
@@ -183,7 +189,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone.ZONE.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable.ZONE.STATE;
 	}
 
 	/**
@@ -222,7 +228,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value5() {
+	public java.util.Map<String,Object> value5() {
 		return getData();
 	}
 
@@ -242,14 +248,14 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Create a detached ZoneRecord
 	 */
 	public ZoneRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone.ZONE);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable.ZONE);
 	}
 
 	/**
 	 * Create a detached, initialised ZoneRecord
 	 */
-	public ZoneRecord(java.lang.Long id, java.lang.String name, java.lang.String description, java.lang.String uuid, java.lang.String data, java.lang.String state) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone.ZONE);
+	public ZoneRecord(java.lang.Long id, java.lang.String name, java.lang.String description, java.lang.String uuid, java.util.Map<String,Object> data, java.lang.String state) {
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable.ZONE);
 
 		setValue(0, id);
 		setValue(1, name);

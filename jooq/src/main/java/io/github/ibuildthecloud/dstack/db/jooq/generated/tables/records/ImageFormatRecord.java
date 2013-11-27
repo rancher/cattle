@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "image_format", schema = "dstack")
-public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ImageFormatRecord> implements org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String> {
+public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ImageFormatRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.ImageFormat {
 
-	private static final long serialVersionUID = -1151092843;
+	private static final long serialVersionUID = 773862423;
 
 	/**
 	 * Setter for <code>dstack.image_format.id</code>. 
@@ -27,6 +27,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * Getter for <code>dstack.image_format.template_id</code>. 
 	 */
 	@javax.persistence.Column(name = "template_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getTemplateId() {
 		return (java.lang.Long) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * Getter for <code>dstack.image_format.format</code>. 
 	 */
 	@javax.persistence.Column(name = "format", nullable = false, length = 128)
+	@Override
 	public java.lang.String getFormat() {
 		return (java.lang.String) getValue(2);
 	}
@@ -64,7 +67,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Setter for <code>dstack.image_format.data</code>. 
 	 */
-	public void setData(java.lang.String value) {
+	public void setData(java.util.Map<String,Object> value) {
 		setValue(3, value);
 	}
 
@@ -72,8 +75,9 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * Getter for <code>dstack.image_format.data</code>. 
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
-	public java.lang.String getData() {
-		return (java.lang.String) getValue(3);
+	@Override
+	public java.util.Map<String,Object> getData() {
+		return (java.util.Map<String,Object>) getValue(3);
 	}
 
 	// -------------------------------------------------------------------------
@@ -96,7 +100,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row4<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row4<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>> fieldsRow() {
 		return (org.jooq.Row4) super.fieldsRow();
 	}
 
@@ -104,7 +108,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row4<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row4<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>> valuesRow() {
 		return (org.jooq.Row4) super.valuesRow();
 	}
 
@@ -113,7 +117,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormat.IMAGE_FORMAT.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormatTable.IMAGE_FORMAT.ID;
 	}
 
 	/**
@@ -121,7 +125,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormat.IMAGE_FORMAT.TEMPLATE_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormatTable.IMAGE_FORMAT.TEMPLATE_ID;
 	}
 
 	/**
@@ -129,15 +133,15 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormat.IMAGE_FORMAT.FORMAT;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormatTable.IMAGE_FORMAT.FORMAT;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormat.IMAGE_FORMAT.DATA;
+	public org.jooq.Field<java.util.Map<String,Object>> field4() {
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormatTable.IMAGE_FORMAT.DATA;
 	}
 
 	/**
@@ -168,7 +172,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value4() {
+	public java.util.Map<String,Object> value4() {
 		return getData();
 	}
 
@@ -180,14 +184,14 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * Create a detached ImageFormatRecord
 	 */
 	public ImageFormatRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormat.IMAGE_FORMAT);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormatTable.IMAGE_FORMAT);
 	}
 
 	/**
 	 * Create a detached, initialised ImageFormatRecord
 	 */
-	public ImageFormatRecord(java.lang.Long id, java.lang.Long templateId, java.lang.String format, java.lang.String data) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormat.IMAGE_FORMAT);
+	public ImageFormatRecord(java.lang.Long id, java.lang.Long templateId, java.lang.String format, java.util.Map<String,Object> data) {
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormatTable.IMAGE_FORMAT);
 
 		setValue(0, id);
 		setValue(1, templateId);

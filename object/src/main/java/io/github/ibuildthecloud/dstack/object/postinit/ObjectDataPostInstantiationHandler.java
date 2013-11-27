@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.object.postinit;
 
+import static io.github.ibuildthecloud.dstack.object.util.DataUtils.*;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 
 import java.beans.PropertyDescriptor;
@@ -15,10 +16,6 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
 public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiationHandler {
-
-    public static final String DATA = "data";
-    public static final String OPTIONS = "options";
-    public static final String FIELDS = "fields";
 
     JsonMapper jsonMapper;
 
@@ -49,7 +46,7 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
             return false;
         }
 
-        if ( desc == null || desc.getReadMethod() == null || desc.getPropertyType() != String.class ) {
+        if ( desc == null || desc.getReadMethod() == null || desc.getPropertyType() != Map.class ) {
             return false;
         }
 
@@ -57,22 +54,22 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
     }
 
     protected void setData(Object instance, Map<String,Object> data) throws IOException {
-        String stringData = jsonMapper.writeValueAsString(data);
         try {
-            BeanUtils.setProperty(instance, DATA, stringData);
+            BeanUtils.setProperty(instance, DATA, data);
         } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Failed to set data [" + stringData + "] on [" + instance + "]", e);
+            throw new IllegalStateException("Failed to set data [" + data + "] on [" + instance + "]", e);
         } catch (InvocationTargetException e) {
-            throw new IllegalStateException("Failed to set data [" + stringData + "] on [" + instance + "]", e);
+            throw new IllegalStateException("Failed to set data [" + data + "] on [" + instance + "]", e);
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected Map<String,Object> getData(Object instance, Map<String,Object> properties) throws IOException {
-        String objectData = null;
+        Map<String,Object> objectData = null;
         Map<String,Object> inputData = getMap(properties.get(DATA));
 
         try {
-            objectData = BeanUtils.getProperty(instance, DATA);
+            objectData = (Map<String, Object>) PropertyUtils.getProperty(instance, DATA);
         } catch (IllegalAccessException e) {
         } catch (InvocationTargetException e) {
         } catch (NoSuchMethodException e) {
@@ -81,10 +78,8 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
         Map<String,Object> finalData = new TreeMap<String, Object>();
 
         if ( objectData != null ) {
-            Map<String,Object> existingData = jsonMapper.readValue(objectData);
-            finalData.putAll(existingData);
+            finalData.putAll(objectData);
         }
-
         finalData.putAll(inputData);
 
         overlay(finalData, OPTIONS, getMap(inputData.get(OPTIONS)));

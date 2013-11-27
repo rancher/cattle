@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "DATABASECHANGELOGLOCK", schema = "dstack")
-public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.DatabasechangeloglockRecord> implements org.jooq.Record4<java.lang.Integer, java.lang.Boolean, java.sql.Timestamp, java.lang.String> {
+public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.DatabasechangeloglockRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Integer, java.lang.Boolean, java.sql.Timestamp, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Databasechangeloglock {
 
-	private static final long serialVersionUID = -599413855;
+	private static final long serialVersionUID = -178504694;
 
 	/**
 	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.ID</code>. 
@@ -27,6 +27,7 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "ID", unique = true, nullable = false, precision = 10)
+	@Override
 	public java.lang.Integer getId() {
 		return (java.lang.Integer) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.LOCKED</code>. 
 	 */
 	@javax.persistence.Column(name = "LOCKED", nullable = false, precision = 1)
+	@Override
 	public java.lang.Boolean getLocked() {
 		return (java.lang.Boolean) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.LOCKGRANTED</code>. 
 	 */
 	@javax.persistence.Column(name = "LOCKGRANTED")
+	@Override
 	public java.sql.Timestamp getLockgranted() {
 		return (java.sql.Timestamp) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.LOCKEDBY</code>. 
 	 */
 	@javax.persistence.Column(name = "LOCKEDBY", length = 255)
+	@Override
 	public java.lang.String getLockedby() {
 		return (java.lang.String) getValue(3);
 	}
@@ -113,7 +117,7 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Integer> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangeloglock.DATABASECHANGELOGLOCK.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK.ID;
 	}
 
 	/**
@@ -121,7 +125,7 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Boolean> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangeloglock.DATABASECHANGELOGLOCK.LOCKED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK.LOCKED;
 	}
 
 	/**
@@ -129,7 +133,7 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangeloglock.DATABASECHANGELOGLOCK.LOCKGRANTED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK.LOCKGRANTED;
 	}
 
 	/**
@@ -137,7 +141,7 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangeloglock.DATABASECHANGELOGLOCK.LOCKEDBY;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK.LOCKEDBY;
 	}
 
 	/**
@@ -180,14 +184,14 @@ public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordIm
 	 * Create a detached DatabasechangeloglockRecord
 	 */
 	public DatabasechangeloglockRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangeloglock.DATABASECHANGELOGLOCK);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK);
 	}
 
 	/**
 	 * Create a detached, initialised DatabasechangeloglockRecord
 	 */
 	public DatabasechangeloglockRecord(java.lang.Integer id, java.lang.Boolean locked, java.sql.Timestamp lockgranted, java.lang.String lockedby) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangeloglock.DATABASECHANGELOGLOCK);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK);
 
 		setValue(0, id);
 		setValue(1, locked);

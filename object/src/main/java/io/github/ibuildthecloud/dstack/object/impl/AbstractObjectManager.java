@@ -4,9 +4,9 @@ import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler;
 import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler.LifeCycleEvent;
 import io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHandler;
+import io.github.ibuildthecloud.dstack.util.type.MapUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +27,13 @@ public abstract class AbstractObjectManager implements ObjectManager {
         instance = callLifeCycleHandlers(LifeCycleEvent.CREATE, instance, clz, properties);
 
         return instance;
+    }
+
+
+    @Override
+    public <T> T create(Class<T> clz, Object key, Object... valueKeyValue) {
+        Map<Object,Object> properties = MapUtils.asMap(key, valueKeyValue);
+        return create(clz, convert(clz, properties));
     }
 
     protected <T> T construct(Class<T> clz, Map<String,Object> properties) {
@@ -53,18 +60,9 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
     @Override
     public <T> T setFields(Object obj, Object key, Object... valueKeyValue) {
-        Map<Object,Object> values = new HashMap<Object, Object>();
+        Map<Object,Object> values = MapUtils.asMap(key, valueKeyValue);
 
-        if ( valueKeyValue == null || valueKeyValue.length % 2 == 0 ) {
-            throw new IllegalArgumentException("valueKeyValue must be an odd length and in the format value, key, value, key, value, etc.");
-        }
-
-        values.put(key, valueKeyValue[0]);
-        for ( int i = 1 ; i < valueKeyValue.length ; i+=2 ) {
-            values.put(valueKeyValue[i], valueKeyValue[i+1]);
-        }
-
-        return setFields(obj, values);
+        return setFields(obj, convert(obj, values));
     }
 
     public SchemaFactory getSchemaFactory() {

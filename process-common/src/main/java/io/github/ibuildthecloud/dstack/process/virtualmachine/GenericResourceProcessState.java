@@ -3,15 +3,17 @@ package io.github.ibuildthecloud.dstack.process.virtualmachine;
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.impl.AbstractStatesBasedProcessState;
 import io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition;
+import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
-import io.github.ibuildthecloud.dstack.process.lock.ResourceChangeLock;
+import io.github.ibuildthecloud.dstack.process.common.lock.ResourceChangeLock;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
 
-public class GenericResourceProcessState extends AbstractStatesBasedProcessState {
+public class GenericResourceProcessState extends AbstractStatesBasedProcessState<Object> {
 
     String resourceType;
     String resourceId;
@@ -20,8 +22,8 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     ObjectManager objectManager;
     LockDefinition processLock;
 
-    public GenericResourceProcessState(ResourceStatesDefinition stateDef, LaunchConfiguration config, ObjectManager objectManager) {
-        super(stateDef);
+    public GenericResourceProcessState(JsonMapper jsonMapper, ResourceStatesDefinition stateDef, LaunchConfiguration config, ObjectManager objectManager) {
+        super(jsonMapper, stateDef);
         this.objectManager = objectManager;
         this.resource = objectManager.loadResource(config.getResourceType(), config.getResourceId());
         this.processLock = new ResourceChangeLock(config.getResourceType(), config.getResourceId());
@@ -64,6 +66,16 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
             resource = newResource;
             return true;
         }
+    }
+
+    @Override
+    public void applyData(Map<String, Object> data) {
+        resource = objectManager.setFields(resource, data);
+    }
+
+    @Override
+    protected Map<String, Object> convertMap(Map<Object, Object> data) {
+        return objectManager.convert(resource, data);
     }
 
 }

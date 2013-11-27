@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "storage_pool_host_map", schema = "dstack")
-public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolHostMapRecord> implements org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String> {
+public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolHostMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.StoragePoolHostMap {
 
-	private static final long serialVersionUID = -1706539242;
+	private static final long serialVersionUID = -1552595226;
 
 	/**
 	 * Setter for <code>dstack.storage_pool_host_map.id</code>. 
@@ -27,6 +27,7 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 * Getter for <code>dstack.storage_pool_host_map.host_id</code>. 
 	 */
 	@javax.persistence.Column(name = "host_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getHostId() {
 		return (java.lang.Long) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 * Getter for <code>dstack.storage_pool_host_map.storage_pool_id</code>. 
 	 */
 	@javax.persistence.Column(name = "storage_pool_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getStoragePoolId() {
 		return (java.lang.Long) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 * Getter for <code>dstack.storage_pool_host_map.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(3);
 	}
@@ -113,7 +117,7 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMap.STORAGE_POOL_HOST_MAP.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.ID;
 	}
 
 	/**
@@ -121,7 +125,7 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMap.STORAGE_POOL_HOST_MAP.HOST_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.HOST_ID;
 	}
 
 	/**
@@ -129,7 +133,7 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMap.STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID;
 	}
 
 	/**
@@ -137,7 +141,7 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMap.STORAGE_POOL_HOST_MAP.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.STATE;
 	}
 
 	/**
@@ -180,14 +184,14 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 * Create a detached StoragePoolHostMapRecord
 	 */
 	public StoragePoolHostMapRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMap.STORAGE_POOL_HOST_MAP);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP);
 	}
 
 	/**
 	 * Create a detached, initialised StoragePoolHostMapRecord
 	 */
 	public StoragePoolHostMapRecord(java.lang.Long id, java.lang.Long hostId, java.lang.Long storagePoolId, java.lang.String state) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMap.STORAGE_POOL_HOST_MAP);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP);
 
 		setValue(0, id);
 		setValue(1, hostId);

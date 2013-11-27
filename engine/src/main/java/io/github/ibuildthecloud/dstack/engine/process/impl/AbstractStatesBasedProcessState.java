@@ -3,13 +3,18 @@ package io.github.ibuildthecloud.dstack.engine.process.impl;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessExecutionExitException;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
+import io.github.ibuildthecloud.dstack.json.JsonMapper;
 
-public abstract class AbstractStatesBasedProcessState implements ProcessState {
+import java.util.Map;
+
+public abstract class AbstractStatesBasedProcessState<T> implements ProcessState<T> {
 
     ResourceStatesDefinition statesDefinition;
+    JsonMapper jsonMapper;
 
-    public AbstractStatesBasedProcessState(ResourceStatesDefinition statesDef) {
+    public AbstractStatesBasedProcessState(JsonMapper jsonMapper, ResourceStatesDefinition statesDef) {
         this.statesDefinition = statesDef;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
@@ -40,7 +45,7 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
 
     @Override
     public boolean shouldCancel() {
-        return statesDefinition.isValidState(getState());
+        return ! statesDefinition.isValidState(getState());
     }
 
     @Override
@@ -60,6 +65,22 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
 
     public ResourceStatesDefinition getStatesDefinition() {
         return statesDefinition;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> convertData(Object data) {
+        if ( data instanceof Map ) {
+            return convertMap((Map<Object,Object>)data);
+        } else {
+            return jsonMapper.convertValue(data, Map.class);
+        }
+    }
+
+    protected abstract Map<String, Object> convertMap(Map<Object,Object> data);
+
+    public JsonMapper getJsonMapper() {
+        return jsonMapper;
     }
 
 }

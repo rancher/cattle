@@ -4,7 +4,7 @@ import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
-import io.github.ibuildthecloud.dstack.object.utils.ObjectLaunchConfigurationUtils;
+import io.github.ibuildthecloud.dstack.object.util.ObjectLaunchConfigurationUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 import java.util.Map;

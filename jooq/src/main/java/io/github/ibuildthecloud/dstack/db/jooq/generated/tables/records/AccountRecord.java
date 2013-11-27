@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "account", schema = "dstack")
-public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.AccountRecord> implements org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> {
+public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.AccountRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Account {
 
-	private static final long serialVersionUID = -744447447;
+	private static final long serialVersionUID = 1415080417;
 
 	/**
 	 * Setter for <code>dstack.account.id</code>. 
@@ -27,6 +27,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.uuid</code>. 
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@Override
 	public java.lang.String getUuid() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.kind</code>. 
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
+	@Override
 	public java.lang.String getKind() {
 		return (java.lang.String) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.name</code>. 
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
+	@Override
 	public java.lang.String getName() {
 		return (java.lang.String) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(4);
 	}
@@ -102,6 +107,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.hold_data</code>. 
 	 */
 	@javax.persistence.Column(name = "hold_data", nullable = false, precision = 1)
+	@Override
 	public java.lang.Boolean getHoldData() {
 		return (java.lang.Boolean) getValue(5);
 	}
@@ -117,6 +123,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.created</code>. 
 	 */
 	@javax.persistence.Column(name = "created")
+	@Override
 	public java.sql.Timestamp getCreated() {
 		return (java.sql.Timestamp) getValue(6);
 	}
@@ -132,6 +139,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.removed</code>. 
 	 */
 	@javax.persistence.Column(name = "removed")
+	@Override
 	public java.sql.Timestamp getRemoved() {
 		return (java.sql.Timestamp) getValue(7);
 	}
@@ -147,6 +155,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.remove_time</code>. 
 	 */
 	@javax.persistence.Column(name = "remove_time")
+	@Override
 	public java.sql.Timestamp getRemoveTime() {
 		return (java.sql.Timestamp) getValue(8);
 	}
@@ -154,7 +163,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.account.data</code>. 
 	 */
-	public void setData(java.lang.String value) {
+	public void setData(java.util.Map<String,Object> value) {
 		setValue(9, value);
 	}
 
@@ -162,8 +171,9 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.data</code>. 
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
-	public java.lang.String getData() {
-		return (java.lang.String) getValue(9);
+	@Override
+	public java.util.Map<String,Object> getData() {
+		return (java.util.Map<String,Object>) getValue(9);
 	}
 
 	/**
@@ -177,6 +187,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.account.description</code>. 
 	 */
 	@javax.persistence.Column(name = "description", length = 255)
+	@Override
 	public java.lang.String getDescription() {
 		return (java.lang.String) getValue(10);
 	}
@@ -201,7 +212,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.lang.String> fieldsRow() {
 		return (org.jooq.Row11) super.fieldsRow();
 	}
 
@@ -209,7 +220,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.lang.String> valuesRow() {
 		return (org.jooq.Row11) super.valuesRow();
 	}
 
@@ -218,7 +229,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.ID;
 	}
 
 	/**
@@ -226,7 +237,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.UUID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.UUID;
 	}
 
 	/**
@@ -234,7 +245,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.KIND;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.KIND;
 	}
 
 	/**
@@ -242,7 +253,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.NAME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.NAME;
 	}
 
 	/**
@@ -250,7 +261,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.STATE;
 	}
 
 	/**
@@ -258,7 +269,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Boolean> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.HOLD_DATA;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.HOLD_DATA;
 	}
 
 	/**
@@ -266,7 +277,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field7() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.CREATED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.CREATED;
 	}
 
 	/**
@@ -274,7 +285,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field8() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.REMOVED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.REMOVED;
 	}
 
 	/**
@@ -282,15 +293,15 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field9() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.REMOVE_TIME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.REMOVE_TIME;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field10() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.DATA;
+	public org.jooq.Field<java.util.Map<String,Object>> field10() {
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.DATA;
 	}
 
 	/**
@@ -298,7 +309,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field11() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT.DESCRIPTION;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT.DESCRIPTION;
 	}
 
 	/**
@@ -377,7 +388,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value10() {
+	public java.util.Map<String,Object> value10() {
 		return getData();
 	}
 
@@ -397,14 +408,14 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Create a detached AccountRecord
 	 */
 	public AccountRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT);
 	}
 
 	/**
 	 * Create a detached, initialised AccountRecord
 	 */
-	public AccountRecord(java.lang.Long id, java.lang.String uuid, java.lang.String kind, java.lang.String name, java.lang.String state, java.lang.Boolean holdData, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime, java.lang.String data, java.lang.String description) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT);
+	public AccountRecord(java.lang.Long id, java.lang.String uuid, java.lang.String kind, java.lang.String name, java.lang.String state, java.lang.Boolean holdData, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime, java.util.Map<String,Object> data, java.lang.String description) {
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT);
 
 		setValue(0, id);
 		setValue(1, uuid);

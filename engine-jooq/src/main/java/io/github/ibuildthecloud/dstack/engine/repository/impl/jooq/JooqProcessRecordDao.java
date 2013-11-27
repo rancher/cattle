@@ -1,8 +1,7 @@
 package io.github.ibuildthecloud.dstack.engine.repository.impl.jooq;
 
-import static io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstance.*;
+import static io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstanceTable.*;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
-import io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstance;
 import io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ProcessInstanceRecord;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessPhase;
@@ -12,7 +11,6 @@ import io.github.ibuildthecloud.dstack.engine.repository.impl.ProcessRecord;
 import io.github.ibuildthecloud.dstack.engine.repository.impl.ProcessRecordDao;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -22,12 +20,10 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessRecordDao {
 
-    private static final Logger log = LoggerFactory.getLogger(JooqProcessRecordDao.class);
+//    private static final Logger log = LoggerFactory.getLogger(JooqProcessRecordDao.class);
 
     JsonMapper jsonMapper;
 
@@ -41,10 +37,9 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
                 .fetch(PROCESS_INSTANCE.ID);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public ProcessRecord getRecord(Long id) {
-        ProcessInstanceRecord record = create()
+        io.github.ibuildthecloud.dstack.db.jooq.generated.model.ProcessInstance record = create()
                 .selectFrom(PROCESS_INSTANCE)
                 .where(PROCESS_INSTANCE.ID.eq(id))
                 .fetchOne();
@@ -54,7 +49,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         result.setId(record.getId());
         result.setStartTime(toTimestamp(record.getStartTime()));
         result.setEndTime(toTimestamp(record.getEndTime()));
-        result.setProcessLog(jsonToObj(record.getLog(), ProcessLog.class));
+        result.setProcessLog(convertToType(record.getLog(), ProcessLog.class));
         result.setResult(EnumUtils.getEnum(ProcessResult.class, record.getResult()));
         result.setExitReason(EnumUtils.getEnum(ExitReason.class, record.getExitReason()));
         result.setPhase(EnumUtils.getEnum(ProcessPhase.class, record.getPhase()));
@@ -64,14 +59,14 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         result.setResourceType(record.getResourceType());
         result.setResourceId(record.getResourceId());
         result.setProcessName(record.getProcessName());
-        result.setData(jsonToObj(record.getData(), Map.class));
+        result.setData(record.getData());
 
         return result;
     }
 
     @Override
     public ProcessRecord insert(ProcessRecord record) {
-        ProcessInstanceRecord pi = create().newRecord(ProcessInstance.PROCESS_INSTANCE);
+        ProcessInstanceRecord pi = create().newRecord(PROCESS_INSTANCE);
         merge(pi, record);
         pi.insert();
 
@@ -97,7 +92,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     protected void merge(ProcessInstanceRecord pi, ProcessRecord record) {
         pi.setStartTime(toTimestamp(record.getStartTime()));
         pi.setEndTime(toTimestamp(record.getEndTime()));
-        pi.setLog(objToJson(record.getProcessLog()));
+        pi.setLog(convertToMap(record.getProcessLog()));
         pi.setResult(ObjectUtils.toString(record.getResult()));
         pi.setExitReason(ObjectUtils.toString(record.getExitReason()));
         pi.setPhase(ObjectUtils.toString(record.getPhase()));
@@ -107,29 +102,20 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         pi.setResourceType(record.getResourceType());
         pi.setResourceId(record.getResourceId());
         pi.setProcessName(record.getProcessName());
-        pi.setData(objToJson(record.getData()));
+        pi.setData(record.getData());
     }
 
     protected Timestamp toTimestamp(Date date) {
         return date == null ? null : new Timestamp(date.getTime());
     }
 
-    protected <T> T jsonToObj(String string, Class<T> type) {
-        try {
-            return jsonMapper.readValue(string, type);
-        } catch (IOException e) {
-            log.error("Failed to unmarshall json for [{}]", string, e);
-            throw new IllegalStateException(e);
-        }
+    protected <T> T convertToType(Object obj, Class<T> type) {
+        return jsonMapper.convertValue(obj, type);
     }
 
-    protected String objToJson(Object obj) {
-        try {
-            return jsonMapper.writeValueAsString(obj);
-        } catch (IOException e) {
-            log.error("Failed to marshall json for [{}]", obj, e);
-            return "{}";
-        }
+    @SuppressWarnings("unchecked")
+    protected Map<String,Object> convertToMap(Object obj) {
+        return jsonMapper.convertValue(obj, Map.class);
     }
 
     public JsonMapper getJsonMapper() {

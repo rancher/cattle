@@ -5,22 +5,37 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.jooq.impl.DataSourceConnectionProvider;
+import org.jooq.ConnectionProvider;
+import org.jooq.exception.DataAccessException;
 
-public class AutoCommitConnectionProvider extends DataSourceConnectionProvider {
+public class AutoCommitConnectionProvider implements ConnectionProvider {
+
+    private final DataSource dataSource;
 
     public AutoCommitConnectionProvider(DataSource dataSource) {
-        super(dataSource);
+        this.dataSource = dataSource;
     }
 
     @Override
     public Connection acquire() {
-        Connection conn = super.acquire();
         try {
-            conn.setAutoCommit(true);
-        } catch (SQLException e) {
-            throw new IllegalStateException("Failed to set auto commit", e);
+            Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(true);
+            return connection;
         }
-        return conn;
+        catch (SQLException e) {
+            throw new DataAccessException("Error getting connection from data source " + dataSource, e);
+        }
     }
+
+    @Override
+    public void release(Connection released) {
+        try {
+            released.close();
+        }
+        catch (SQLException e) {
+            throw new DataAccessException("Error closing connection " + released, e);
+        }
+    }
+
 }

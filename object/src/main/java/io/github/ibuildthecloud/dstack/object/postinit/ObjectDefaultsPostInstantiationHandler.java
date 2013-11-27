@@ -36,7 +36,7 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
     }
 
     protected void applyDefaults(Class<?> clz, Object instance) throws IllegalAccessException, InvocationTargetException {
-        Map<String,Object> defaultValues = defaults.get(clz);
+        Map<String,Object> defaultValues = defaults.get(instance.getClass());
 
         if ( defaultValues == null ) {
             return;

@@ -1,16 +1,19 @@
 package io.github.ibuildthecloud.dstack.engine.process.impl;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class ResourceStatesDefinition {
 
-    String stateField;
-    Set<String> startStates;
-    Set<String> transitioningStates;
-    Set<String> doneStates;
-    Map<String,String> transitioningStatesMap;
-    Map<String,String> doneStatesMap;
+    String stateField = "state";
+    Set<String> startStates = new HashSet<String>();
+    Set<String> transitioningStates = new HashSet<String>();
+    Set<String> doneStates = new HashSet<String>();
+    Set<String> requiredFields = new HashSet<String>();
+    Map<String,String> transitioningStatesMap = new HashMap<String, String>();
+    Map<String,String> doneStatesMap = new HashMap<String, String>();
 
     public String getTransitioningState(String currentState) {
         String newState = transitioningStatesMap.get(currentState);
@@ -110,6 +113,14 @@ public class ResourceStatesDefinition {
 
     public void setStateField(String stateField) {
         this.stateField = stateField;
+    }
+
+    public Set<String> getRequiredFields() {
+        return requiredFields;
+    }
+
+    public void setRequiredFields(Set<String> requiredFields) {
+        this.requiredFields = requiredFields;
     }
 
 }

@@ -25,7 +25,7 @@ public class ProcessDelegateObjectLifeCycleHandler extends AbstractObjectLifeCyc
 
     @Override
     protected <T> T onCreate(T instance, Class<T> clz, Map<String, Object> properties) {
-        String processName = getProcessName("CREATE_", clz);
+        String processName = getProcessName("create.", clz);
         LaunchConfiguration config = processManager.createLaunchConfiguration(processName, instance, properties);
 
         try {
@@ -47,7 +47,7 @@ public class ProcessDelegateObjectLifeCycleHandler extends AbstractObjectLifeCyc
             throw new IllegalStateException("Failed to find schema for class [" + clz + "]");
         }
 
-        String suffix = schema.getId().replaceAll("([a-z])([A-Z])", "$1_$2").toUpperCase();
+        String suffix = schema.getId().replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
         return prefix + suffix;
     }
 

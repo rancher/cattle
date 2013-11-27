@@ -18,14 +18,15 @@ public class Main {
 
 	public static final String[] WEB_XML_PATHS = new String[] {
 			"app/src/main/webapp/WEB-INF/web.xml",
-			"src/main/webapp/WEB-INF/web.xml" };
+			"src/main/webapp/WEB-INF/web.xml",
+			"WEB-INF/web.xml" };
 
 	protected static File getWebXml() {
 		for (String webXmlPath : WEB_XML_PATHS) {
 			File webXml = new File(webXmlPath);
 
 			if (webXml.exists())
-				return webXml;
+				return new File(webXml.getAbsolutePath());
 		}
 
 		return null;

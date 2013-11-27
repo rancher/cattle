@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.object.utils;
+package io.github.ibuildthecloud.dstack.object.util;
 
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;

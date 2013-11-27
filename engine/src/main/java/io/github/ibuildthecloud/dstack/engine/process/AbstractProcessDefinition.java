@@ -5,6 +5,7 @@ import io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler;
 import io.github.ibuildthecloud.dstack.engine.handler.ProcessListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,6 +32,7 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition {
     DynamicStringProperty processHandlersSetting;
     DynamicStringProperty postProcessListenersSetting;
     ProcessLogicRegistry logicRegistry;
+    String name;
 
     @PostConstruct
     public void init() {
@@ -55,6 +57,18 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition {
     @Override
     public List<ProcessHandler> getProcessHandlers() {
         String[] names = getList(processHandlersSetting);
+
+        if ( names.length == 0 && processHandlersSetting.get() == null ) {
+            StringBuilder defaultHandler = new StringBuilder();
+            for ( String name : getName().split("[.]") ) {
+                defaultHandler.append(StringUtils.capitalize(name.toLowerCase()));
+            }
+            ProcessHandler handler = logicRegistry.getProcessHandler(defaultHandler.toString());
+            if ( handler != null ) {
+                return Arrays.asList(handler);
+            }
+        }
+
         if ( names.length == 0 )
             return Collections.emptyList();
 
@@ -97,6 +111,16 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition {
     @Override
     public List<ProcessListener> getPostProcessListeners() {
         return getListeners(postProcessListenersSetting);
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Inject
+    public void setName(String name) {
+        this.name = name;
     }
 
     public DynamicStringProperty getPreProcessListenersSetting() {

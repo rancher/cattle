@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.process.lock;
+package io.github.ibuildthecloud.dstack.process.common.lock;
 
 import io.github.ibuildthecloud.dstack.lock.definition.AbstractLockDefinition;
 

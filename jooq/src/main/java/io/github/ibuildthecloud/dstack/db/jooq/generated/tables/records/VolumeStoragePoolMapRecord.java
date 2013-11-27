@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "volume_storage_pool_map", schema = "dstack")
-public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.VolumeStoragePoolMapRecord> implements org.jooq.Record6<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp> {
+public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.VolumeStoragePoolMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record6<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.VolumeStoragePoolMap {
 
-	private static final long serialVersionUID = 354807382;
+	private static final long serialVersionUID = -581867888;
 
 	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.id</code>. 
@@ -27,6 +27,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * Getter for <code>dstack.volume_storage_pool_map.volume_id</code>. 
 	 */
 	@javax.persistence.Column(name = "volume_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getVolumeId() {
 		return (java.lang.Long) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>. 
 	 */
 	@javax.persistence.Column(name = "storage_pool_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getStoragePoolId() {
 		return (java.lang.Long) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>. 
 	 */
 	@javax.persistence.Column(name = "storage_pool_location", precision = 19)
+	@Override
 	public java.lang.Long getStoragePoolLocation() {
 		return (java.lang.Long) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * Getter for <code>dstack.volume_storage_pool_map.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(4);
 	}
@@ -102,6 +107,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * Getter for <code>dstack.volume_storage_pool_map.removed</code>. 
 	 */
 	@javax.persistence.Column(name = "removed")
+	@Override
 	public java.sql.Timestamp getRemoved() {
 		return (java.sql.Timestamp) getValue(5);
 	}
@@ -143,7 +149,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap.VOLUME_STORAGE_POOL_MAP.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.ID;
 	}
 
 	/**
@@ -151,7 +157,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap.VOLUME_STORAGE_POOL_MAP.VOLUME_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.VOLUME_ID;
 	}
 
 	/**
@@ -159,7 +165,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap.VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID;
 	}
 
 	/**
@@ -167,7 +173,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap.VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_LOCATION;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_LOCATION;
 	}
 
 	/**
@@ -175,7 +181,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap.VOLUME_STORAGE_POOL_MAP.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.STATE;
 	}
 
 	/**
@@ -183,7 +189,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap.VOLUME_STORAGE_POOL_MAP.REMOVED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.REMOVED;
 	}
 
 	/**
@@ -242,14 +248,14 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * Create a detached VolumeStoragePoolMapRecord
 	 */
 	public VolumeStoragePoolMapRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap.VOLUME_STORAGE_POOL_MAP);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP);
 	}
 
 	/**
 	 * Create a detached, initialised VolumeStoragePoolMapRecord
 	 */
 	public VolumeStoragePoolMapRecord(java.lang.Long id, java.lang.Long volumeId, java.lang.Long storagePoolId, java.lang.Long storagePoolLocation, java.lang.String state, java.sql.Timestamp removed) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap.VOLUME_STORAGE_POOL_MAP);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP);
 
 		setValue(0, id);
 		setValue(1, volumeId);

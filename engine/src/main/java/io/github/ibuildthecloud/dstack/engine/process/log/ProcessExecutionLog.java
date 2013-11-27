@@ -23,11 +23,11 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
     Long lockHoldTime;
     Long processingServerId;
     List<ProcessStateTransition> transitions = new ArrayList<ProcessStateTransition>();
-    List<ProcessHandlerExecutionLog> processHandlerExecutions = new ArrayList<ProcessHandlerExecutionLog>();
+    List<ProcessLogicExecutionLog> processHandlerExecutions = new ArrayList<ProcessLogicExecutionLog>();
     ExceptionLog exception;
 
-    List<ProcessHandlerExecutionLog> handlerExecutions = new ArrayList<ProcessHandlerExecutionLog>();
-    List<ProcessExecutionLog> executions = new ArrayList<ProcessExecutionLog>();
+//    List<ProcessLogicExecutionLog> handlerExecutions = new ArrayList<ProcessLogicExecutionLog>();
+//    List<ProcessExecutionLog> executions = new ArrayList<ProcessExecutionLog>();
 
     ExitReason exitReason;
 
@@ -43,8 +43,8 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         }
     }
 
-    public ProcessHandlerExecutionLog newProcessHandlerExecution(Named handler) {
-        ProcessHandlerExecutionLog execution = new ProcessHandlerExecutionLog();
+    public ProcessLogicExecutionLog newProcessLogicExecution(Named handler) {
+        ProcessLogicExecutionLog execution = new ProcessLogicExecutionLog();
         execution.setStartTime(now());
         execution.setName(handler.getName());
         processHandlerExecutions.add(execution);
@@ -152,11 +152,11 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.lockAcquireFailed = lockAcquireFailed;
     }
 
-    public List<ProcessHandlerExecutionLog> getProcessHandlerExecutions() {
+    public List<ProcessLogicExecutionLog> getProcessHandlerExecutions() {
         return processHandlerExecutions;
     }
 
-    public void setProcessHandlerExecutions(List<ProcessHandlerExecutionLog> processHandlerExecutions) {
+    public void setProcessHandlerExecutions(List<ProcessLogicExecutionLog> processHandlerExecutions) {
         this.processHandlerExecutions = processHandlerExecutions;
     }
 
@@ -168,13 +168,13 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.exception = exception;
     }
 
-    public List<ProcessHandlerExecutionLog> getHandlerExecutions() {
-        return handlerExecutions;
-    }
-
-    public void setHandlerExecutions(List<ProcessHandlerExecutionLog> handlerExecutions) {
-        this.handlerExecutions = handlerExecutions;
-    }
+//    public List<ProcessLogicExecutionLog> getHandlerExecutions() {
+//        return handlerExecutions;
+//    }
+//
+//    public void setHandlerExecutions(List<ProcessLogicExecutionLog> handlerExecutions) {
+//        this.handlerExecutions = handlerExecutions;
+//    }
 
     public List<ProcessLog> getChildren() {
         return children;
@@ -196,11 +196,11 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.startTime = startTime;
     }
 
-    public List<ProcessExecutionLog> getExecutions() {
-        return executions;
-    }
-
-    public void setExecutions(List<ProcessExecutionLog> executions) {
-        this.executions = executions;
-    }
+//    public List<ProcessExecutionLog> getExecutions() {
+//        return executions;
+//    }
+//
+//    public void setExecutions(List<ProcessExecutionLog> executions) {
+//        this.executions = executions;
+//    }
 }

@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "ip_address", schema = "dstack")
-public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.IpAddressRecord> implements org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> {
+public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.IpAddressRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.IpAddress {
 
-	private static final long serialVersionUID = 278054156;
+	private static final long serialVersionUID = 1457293544;
 
 	/**
 	 * Setter for <code>dstack.ip_address.id</code>. 
@@ -27,6 +27,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.address</code>. 
 	 */
 	@javax.persistence.Column(name = "address", nullable = false, length = 128)
+	@Override
 	public java.lang.String getAddress() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.account_id</code>. 
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getAccountId() {
 		return (java.lang.Long) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.netmask</code>. 
 	 */
 	@javax.persistence.Column(name = "netmask", length = 128)
+	@Override
 	public java.lang.String getNetmask() {
 		return (java.lang.String) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.gateway</code>. 
 	 */
 	@javax.persistence.Column(name = "gateway", length = 128)
+	@Override
 	public java.lang.String getGateway() {
 		return (java.lang.String) getValue(4);
 	}
@@ -102,6 +107,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.version</code>. 
 	 */
 	@javax.persistence.Column(name = "version", nullable = false, length = 255)
+	@Override
 	public java.lang.String getVersion() {
 		return (java.lang.String) getValue(5);
 	}
@@ -117,6 +123,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.vnet_id</code>. 
 	 */
 	@javax.persistence.Column(name = "vnet_id", precision = 19)
+	@Override
 	public java.lang.Long getVnetId() {
 		return (java.lang.Long) getValue(6);
 	}
@@ -132,6 +139,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.ip_assignment_type</code>. 
 	 */
 	@javax.persistence.Column(name = "ip_assignment_type", length = 255)
+	@Override
 	public java.lang.String getIpAssignmentType() {
 		return (java.lang.String) getValue(7);
 	}
@@ -147,6 +155,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.item_pool_id</code>. 
 	 */
 	@javax.persistence.Column(name = "item_pool_id", precision = 19)
+	@Override
 	public java.lang.Long getItemPoolId() {
 		return (java.lang.Long) getValue(8);
 	}
@@ -162,6 +171,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.created</code>. 
 	 */
 	@javax.persistence.Column(name = "created")
+	@Override
 	public java.sql.Timestamp getCreated() {
 		return (java.sql.Timestamp) getValue(9);
 	}
@@ -177,6 +187,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.removed</code>. 
 	 */
 	@javax.persistence.Column(name = "removed")
+	@Override
 	public java.sql.Timestamp getRemoved() {
 		return (java.sql.Timestamp) getValue(10);
 	}
@@ -192,6 +203,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.remove_time</code>. 
 	 */
 	@javax.persistence.Column(name = "remove_time")
+	@Override
 	public java.sql.Timestamp getRemoveTime() {
 		return (java.sql.Timestamp) getValue(11);
 	}
@@ -207,6 +219,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.name</code>. 
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
+	@Override
 	public java.lang.String getName() {
 		return (java.lang.String) getValue(12);
 	}
@@ -222,6 +235,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Getter for <code>dstack.ip_address.description</code>. 
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
+	@Override
 	public java.lang.String getDescription() {
 		return (java.lang.String) getValue(13);
 	}
@@ -263,7 +277,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.ID;
 	}
 
 	/**
@@ -271,7 +285,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.ADDRESS;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.ADDRESS;
 	}
 
 	/**
@@ -279,7 +293,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.ACCOUNT_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.ACCOUNT_ID;
 	}
 
 	/**
@@ -287,7 +301,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.NETMASK;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.NETMASK;
 	}
 
 	/**
@@ -295,7 +309,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.GATEWAY;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.GATEWAY;
 	}
 
 	/**
@@ -303,7 +317,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.VERSION;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.VERSION;
 	}
 
 	/**
@@ -311,7 +325,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field7() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.VNET_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.VNET_ID;
 	}
 
 	/**
@@ -319,7 +333,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field8() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.IP_ASSIGNMENT_TYPE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.IP_ASSIGNMENT_TYPE;
 	}
 
 	/**
@@ -327,7 +341,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field9() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.ITEM_POOL_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.ITEM_POOL_ID;
 	}
 
 	/**
@@ -335,7 +349,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field10() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.CREATED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.CREATED;
 	}
 
 	/**
@@ -343,7 +357,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field11() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.REMOVED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.REMOVED;
 	}
 
 	/**
@@ -351,7 +365,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field12() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.REMOVE_TIME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.REMOVE_TIME;
 	}
 
 	/**
@@ -359,7 +373,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field13() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.NAME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.NAME;
 	}
 
 	/**
@@ -367,7 +381,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field14() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS.DESCRIPTION;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS.DESCRIPTION;
 	}
 
 	/**
@@ -490,14 +504,14 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * Create a detached IpAddressRecord
 	 */
 	public IpAddressRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS);
 	}
 
 	/**
 	 * Create a detached, initialised IpAddressRecord
 	 */
 	public IpAddressRecord(java.lang.Long id, java.lang.String address, java.lang.Long accountId, java.lang.String netmask, java.lang.String gateway, java.lang.String version, java.lang.Long vnetId, java.lang.String ipAssignmentType, java.lang.Long itemPoolId, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime, java.lang.String name, java.lang.String description) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS);
 
 		setValue(0, id);
 		setValue(1, address);

@@ -16,135 +16,135 @@ public class Tables {
 	/**
 	 * The table dstack.account
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account ACCOUNT = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Account.ACCOUNT;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable ACCOUNT = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT;
 
 	/**
 	 * The table dstack.credential
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential CREDENTIAL = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Credential.CREDENTIAL;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable CREDENTIAL = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL;
 
 	/**
 	 * The table dstack.data
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Data DATA = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Data.DATA;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DataTable DATA = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DataTable.DATA;
 
 	/**
 	 * The table dstack.DATABASECHANGELOG
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog DATABASECHANGELOG = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangelog.DATABASECHANGELOG;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable DATABASECHANGELOG = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG;
 
 	/**
 	 * The table dstack.DATABASECHANGELOGLOCK
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangeloglock DATABASECHANGELOGLOCK = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Databasechangeloglock.DATABASECHANGELOGLOCK;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangeloglockTable DATABASECHANGELOGLOCK = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK;
 
 	/**
 	 * The table dstack.host
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host HOST = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable HOST = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST;
 
 	/**
 	 * The table dstack.host_group
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostGroup HOST_GROUP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostGroup.HOST_GROUP;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostGroupTable HOST_GROUP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostGroupTable.HOST_GROUP;
 
 	/**
 	 * The table dstack.image
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Image IMAGE = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Image.IMAGE;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageTable IMAGE = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageTable.IMAGE;
 
 	/**
 	 * The table dstack.image_format
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormat IMAGE_FORMAT = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormat.IMAGE_FORMAT;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormatTable IMAGE_FORMAT = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormatTable.IMAGE_FORMAT;
 
 	/**
 	 * The table dstack.image_storage_pool_map
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageStoragePoolMap IMAGE_STORAGE_POOL_MAP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageStoragePoolMap.IMAGE_STORAGE_POOL_MAP;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageStoragePoolMapTable IMAGE_STORAGE_POOL_MAP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP;
 
 	/**
 	 * The table dstack.instance
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Instance INSTANCE = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Instance.INSTANCE;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceTable INSTANCE = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceTable.INSTANCE;
 
 	/**
 	 * The table dstack.instance_host_map
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMap INSTANCE_HOST_MAP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMap.INSTANCE_HOST_MAP;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMapTable INSTANCE_HOST_MAP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 
 	/**
 	 * The table dstack.ip_address
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress IP_ADDRESS = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddress.IP_ADDRESS;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable IP_ADDRESS = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAddressTable.IP_ADDRESS;
 
 	/**
 	 * The table dstack.ip_assignment
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment IP_ASSIGNMENT = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable IP_ASSIGNMENT = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT;
 
 	/**
 	 * The table dstack.item_pool
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ItemPool ITEM_POOL = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ItemPool.ITEM_POOL;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ItemPoolTable ITEM_POOL = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ItemPoolTable.ITEM_POOL;
 
 	/**
 	 * The table dstack.item_pool_generator
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ItemPoolGenerator ITEM_POOL_GENERATOR = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ItemPoolGenerator.ITEM_POOL_GENERATOR;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ItemPoolGeneratorTable ITEM_POOL_GENERATOR = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ItemPoolGeneratorTable.ITEM_POOL_GENERATOR;
 
 	/**
 	 * The table dstack.network
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network NETWORK = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable NETWORK = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK;
 
 	/**
 	 * The table dstack.nic
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic NIC = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable NIC = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC;
 
 	/**
 	 * The table dstack.offering
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Offering OFFERING = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Offering.OFFERING;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.OfferingTable OFFERING = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.OfferingTable.OFFERING;
 
 	/**
 	 * The table dstack.process_instance
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstance PROCESS_INSTANCE = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstance.PROCESS_INSTANCE;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstanceTable PROCESS_INSTANCE = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstanceTable.PROCESS_INSTANCE;
 
 	/**
 	 * The table dstack.setting
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Setting SETTING = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Setting.SETTING;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.SettingTable SETTING = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.SettingTable.SETTING;
 
 	/**
 	 * The table dstack.storage_pool
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePool STORAGE_POOL = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePool.STORAGE_POOL;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolTable STORAGE_POOL = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolTable.STORAGE_POOL;
 
 	/**
 	 * The table dstack.storage_pool_host_map
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMap STORAGE_POOL_HOST_MAP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMap.STORAGE_POOL_HOST_MAP;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMapTable STORAGE_POOL_HOST_MAP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP;
 
 	/**
 	 * The table dstack.vnet
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Vnet VNET = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Vnet.VNET;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VnetTable VNET = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VnetTable.VNET;
 
 	/**
 	 * The table dstack.volume
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Volume VOLUME = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Volume.VOLUME;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeTable VOLUME = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeTable.VOLUME;
 
 	/**
 	 * The table dstack.volume_storage_pool_map
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap VOLUME_STORAGE_POOL_MAP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMap.VOLUME_STORAGE_POOL_MAP;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable VOLUME_STORAGE_POOL_MAP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
 
 	/**
 	 * The table dstack.zone
 	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone ZONE = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Zone.ZONE;
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable ZONE = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ZoneTable.ZONE;
 }

@@ -6,5 +6,6 @@ public enum ProcessPhase {
     STARTED,
     PRE_LISTENERS_DONE,
     HANDLER_DONE,
-    POST_LISTENERS_DONE
+    POST_LISTENERS_DONE,
+    DONE
 }

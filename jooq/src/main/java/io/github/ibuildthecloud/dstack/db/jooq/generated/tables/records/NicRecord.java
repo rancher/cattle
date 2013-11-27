@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "nic", schema = "dstack")
-public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.NicRecord> implements org.jooq.Record11<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.Integer, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp> {
+public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.NicRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.Integer, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Nic {
 
-	private static final long serialVersionUID = -264136606;
+	private static final long serialVersionUID = 223715054;
 
 	/**
 	 * Setter for <code>dstack.nic.id</code>. 
@@ -27,6 +27,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.instance_id</code>. 
 	 */
 	@javax.persistence.Column(name = "instance_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getInstanceId() {
 		return (java.lang.Long) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.network_id</code>. 
 	 */
 	@javax.persistence.Column(name = "network_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getNetworkId() {
 		return (java.lang.Long) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.account_id</code>. 
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getAccountId() {
 		return (java.lang.Long) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(4);
 	}
@@ -102,6 +107,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.mac_address</code>. 
 	 */
 	@javax.persistence.Column(name = "mac_address", length = 17)
+	@Override
 	public java.lang.String getMacAddress() {
 		return (java.lang.String) getValue(5);
 	}
@@ -117,6 +123,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.device_number</code>. 
 	 */
 	@javax.persistence.Column(name = "device_number", nullable = false, precision = 10)
+	@Override
 	public java.lang.Integer getDeviceNumber() {
 		return (java.lang.Integer) getValue(6);
 	}
@@ -132,6 +139,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.uuid</code>. 
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 255)
+	@Override
 	public java.lang.String getUuid() {
 		return (java.lang.String) getValue(7);
 	}
@@ -147,6 +155,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.created</code>. 
 	 */
 	@javax.persistence.Column(name = "created")
+	@Override
 	public java.sql.Timestamp getCreated() {
 		return (java.sql.Timestamp) getValue(8);
 	}
@@ -162,6 +171,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.removed</code>. 
 	 */
 	@javax.persistence.Column(name = "removed")
+	@Override
 	public java.sql.Timestamp getRemoved() {
 		return (java.sql.Timestamp) getValue(9);
 	}
@@ -177,6 +187,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Getter for <code>dstack.nic.remove_time</code>. 
 	 */
 	@javax.persistence.Column(name = "remove_time")
+	@Override
 	public java.sql.Timestamp getRemoveTime() {
 		return (java.sql.Timestamp) getValue(10);
 	}
@@ -218,7 +229,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.ID;
 	}
 
 	/**
@@ -226,7 +237,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.INSTANCE_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.INSTANCE_ID;
 	}
 
 	/**
@@ -234,7 +245,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.NETWORK_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.NETWORK_ID;
 	}
 
 	/**
@@ -242,7 +253,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.ACCOUNT_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.ACCOUNT_ID;
 	}
 
 	/**
@@ -250,7 +261,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.STATE;
 	}
 
 	/**
@@ -258,7 +269,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.MAC_ADDRESS;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.MAC_ADDRESS;
 	}
 
 	/**
@@ -266,7 +277,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Integer> field7() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.DEVICE_NUMBER;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.DEVICE_NUMBER;
 	}
 
 	/**
@@ -274,7 +285,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field8() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.UUID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.UUID;
 	}
 
 	/**
@@ -282,7 +293,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field9() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.CREATED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.CREATED;
 	}
 
 	/**
@@ -290,7 +301,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field10() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.REMOVED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.REMOVED;
 	}
 
 	/**
@@ -298,7 +309,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field11() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC.REMOVE_TIME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC.REMOVE_TIME;
 	}
 
 	/**
@@ -397,14 +408,14 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuil
 	 * Create a detached NicRecord
 	 */
 	public NicRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC);
 	}
 
 	/**
 	 * Create a detached, initialised NicRecord
 	 */
 	public NicRecord(java.lang.Long id, java.lang.Long instanceId, java.lang.Long networkId, java.lang.Long accountId, java.lang.String state, java.lang.String macAddress, java.lang.Integer deviceNumber, java.lang.String uuid, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Nic.NIC);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.NIC);
 
 		setValue(0, id);
 		setValue(1, instanceId);

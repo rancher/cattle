@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "setting", schema = "dstack")
-public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.SettingRecord> implements org.jooq.Record4<java.lang.Long, java.lang.String, java.lang.Integer, java.lang.String> {
+public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.SettingRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.String, java.lang.Integer, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Setting {
 
-	private static final long serialVersionUID = -745014416;
+	private static final long serialVersionUID = 1641055969;
 
 	/**
 	 * Setter for <code>dstack.setting.id</code>. 
@@ -27,6 +27,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.setting.name</code>. 
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
+	@Override
 	public java.lang.String getName() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.setting.sub_key</code>. 
 	 */
 	@javax.persistence.Column(name = "sub_key", nullable = false, precision = 10)
+	@Override
 	public java.lang.Integer getSubKey() {
 		return (java.lang.Integer) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.setting.value</code>. 
 	 */
 	@javax.persistence.Column(name = "value", nullable = false, length = 255)
+	@Override
 	public java.lang.String getValue() {
 		return (java.lang.String) getValue(3);
 	}
@@ -113,7 +117,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Setting.SETTING.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.SettingTable.SETTING.ID;
 	}
 
 	/**
@@ -121,7 +125,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Setting.SETTING.NAME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.SettingTable.SETTING.NAME;
 	}
 
 	/**
@@ -129,7 +133,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Integer> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Setting.SETTING.SUB_KEY;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.SettingTable.SETTING.SUB_KEY;
 	}
 
 	/**
@@ -137,7 +141,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Setting.SETTING.VALUE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.SettingTable.SETTING.VALUE;
 	}
 
 	/**
@@ -180,14 +184,14 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Create a detached SettingRecord
 	 */
 	public SettingRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Setting.SETTING);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.SettingTable.SETTING);
 	}
 
 	/**
 	 * Create a detached, initialised SettingRecord
 	 */
 	public SettingRecord(java.lang.Long id, java.lang.String name, java.lang.Integer subKey, java.lang.String value) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Setting.SETTING);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.SettingTable.SETTING);
 
 		setValue(0, id);
 		setValue(1, name);

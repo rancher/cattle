@@ -15,6 +15,14 @@
             "create" : true,
             "type" : "string"
         },
+        "networkIds" : {
+            "create" : true,
+            "type" : "array[reference[network]]"
+        },
+        "volumeOfferingIds" : {
+            "create" : true,
+            "type" : "array[reference[offering]]"
+        },
         "image" : {
             "create" : true,
             "type" : "string"
@@ -161,6 +169,42 @@
         "GET"
     ],
     "type": "schema"
+},
+{
+    "collectionMethods": [
+        "GET", "POST"
+    ],
+    "id": "network",
+    "resourceFields": {
+        "name": {
+            "create": true,
+            "type": "string"
+        }
+    }
+},
+{
+    "collectionMethods": [
+        "GET", "POST"
+    ],
+    "id": "image",
+    "resourceFields": {
+        "name": {
+            "create": true,
+            "type": "string"
+        }
+    }
+},
+{
+    "collectionMethods": [
+        "GET", "POST"
+    ],
+    "id": "offering",
+    "resourceFields": {
+        "name": {
+            "create": true,
+            "type": "string"
+        }
+    }
 }
     ]
 }

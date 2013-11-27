@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "host", schema = "dstack")
-public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord> implements org.jooq.Record10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String, java.lang.String> {
+public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Host {
 
-	private static final long serialVersionUID = 1800545308;
+	private static final long serialVersionUID = -1561726818;
 
 	/**
 	 * Setter for <code>dstack.host.id</code>. 
@@ -27,6 +27,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.host.name</code>. 
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
+	@Override
 	public java.lang.String getName() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.host.host_group_id</code>. 
 	 */
 	@javax.persistence.Column(name = "host_group_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getHostGroupId() {
 		return (java.lang.Long) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.host.kind</code>. 
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
+	@Override
 	public java.lang.String getKind() {
 		return (java.lang.String) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.host.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(4);
 	}
@@ -102,6 +107,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.host.created</code>. 
 	 */
 	@javax.persistence.Column(name = "created", nullable = false)
+	@Override
 	public java.sql.Timestamp getCreated() {
 		return (java.sql.Timestamp) getValue(5);
 	}
@@ -117,6 +123,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.host.removed</code>. 
 	 */
 	@javax.persistence.Column(name = "removed")
+	@Override
 	public java.sql.Timestamp getRemoved() {
 		return (java.sql.Timestamp) getValue(6);
 	}
@@ -124,7 +131,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Setter for <code>dstack.host.data</code>. 
 	 */
-	public void setData(java.lang.String value) {
+	public void setData(java.util.Map<String,Object> value) {
 		setValue(7, value);
 	}
 
@@ -132,8 +139,9 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.host.data</code>. 
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
-	public java.lang.String getData() {
-		return (java.lang.String) getValue(7);
+	@Override
+	public java.util.Map<String,Object> getData() {
+		return (java.util.Map<String,Object>) getValue(7);
 	}
 
 	/**
@@ -147,6 +155,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.host.uuid</code>. 
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@Override
 	public java.lang.String getUuid() {
 		return (java.lang.String) getValue(8);
 	}
@@ -162,6 +171,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.host.description</code>. 
 	 */
 	@javax.persistence.Column(name = "description", length = 255)
+	@Override
 	public java.lang.String getDescription() {
 		return (java.lang.String) getValue(9);
 	}
@@ -186,7 +196,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.lang.String, java.lang.String> fieldsRow() {
 		return (org.jooq.Row10) super.fieldsRow();
 	}
 
@@ -194,7 +204,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.lang.String, java.lang.String> valuesRow() {
 		return (org.jooq.Row10) super.valuesRow();
 	}
 
@@ -203,7 +213,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.ID;
 	}
 
 	/**
@@ -211,7 +221,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.NAME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.NAME;
 	}
 
 	/**
@@ -219,7 +229,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.HOST_GROUP_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.HOST_GROUP_ID;
 	}
 
 	/**
@@ -227,7 +237,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.KIND;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.KIND;
 	}
 
 	/**
@@ -235,7 +245,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.STATE;
 	}
 
 	/**
@@ -243,7 +253,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.CREATED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.CREATED;
 	}
 
 	/**
@@ -251,15 +261,15 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field7() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.REMOVED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.REMOVED;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field8() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.DATA;
+	public org.jooq.Field<java.util.Map<String,Object>> field8() {
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.DATA;
 	}
 
 	/**
@@ -267,7 +277,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field9() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.UUID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.UUID;
 	}
 
 	/**
@@ -275,7 +285,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field10() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST.DESCRIPTION;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST.DESCRIPTION;
 	}
 
 	/**
@@ -338,7 +348,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value8() {
+	public java.util.Map<String,Object> value8() {
 		return getData();
 	}
 
@@ -366,14 +376,14 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Create a detached HostRecord
 	 */
 	public HostRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST);
 	}
 
 	/**
 	 * Create a detached, initialised HostRecord
 	 */
-	public HostRecord(java.lang.Long id, java.lang.String name, java.lang.Long hostGroupId, java.lang.String kind, java.lang.String state, java.sql.Timestamp created, java.sql.Timestamp removed, java.lang.String data, java.lang.String uuid, java.lang.String description) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Host.HOST);
+	public HostRecord(java.lang.Long id, java.lang.String name, java.lang.Long hostGroupId, java.lang.String kind, java.lang.String state, java.sql.Timestamp created, java.sql.Timestamp removed, java.util.Map<String,Object> data, java.lang.String uuid, java.lang.String description) {
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST);
 
 		setValue(0, id);
 		setValue(1, name);

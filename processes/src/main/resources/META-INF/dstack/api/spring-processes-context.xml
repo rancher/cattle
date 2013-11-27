@@ -12,27 +12,46 @@
     <bean class="io.github.ibuildthecloud.dstack.engine.repository.impl.jooq.JooqProcessRecordDao" />
     <bean id="ProcessServerImpl" class="io.github.ibuildthecloud.dstack.engine.server.impl.ProcessServerImpl" />
 
-<!--     <task:scheduler id="TaskScheduler" /> -->
-<!--     <task:scheduled-tasks scheduler="TaskScheduler" > -->
-<!--         <task:scheduled ref="ProcessServerImpl" method="runOutstandingJobs"  -->
-<!--             initial-delay="0" fixed-delay="15000" /> -->
-<!--     </task:scheduled-tasks> -->
+    <task:scheduler id="TaskScheduler" />
+    <task:scheduled-tasks scheduler="TaskScheduler" >
+        <task:scheduled ref="ProcessServerImpl" method="runOutstandingJobs" 
+            initial-delay="0" fixed-delay="15000" />
+    </task:scheduled-tasks>
 
     <bean class="io.github.ibuildthecloud.dstack.engine.repository.impl.DefaultProcessManager" >
         <property name="definitions">
             <map>
-                <entry key="CREATE_INSTANCE">
-                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.StartVirtualMachineProcessDefinition" >
-                        <property name="processHandlers" >
-                            <list>
-                                <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.StartVMHandler" />
-                            </list>
+                <entry key="create.instance">
+                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition" >
+                        <property name="name" value="create.instance" />
+                        <property name="statesDefinition">
+                            <bean class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition" >
+                                <property name="startStates">
+                                    <list>
+                                        <value>requested</value>
+                                    </list>
+                                </property>
+                                <property name="transitioningStates">
+                                    <list>
+                                        <value>creating</value>
+                                    </list>
+                                </property>
+                                <property name="doneStates">
+                                    <list>
+                                        <value>running</value>
+                                    </list>
+                                </property>
+                            </bean>
                         </property>
                     </bean>
                 </entry>
             </map>
         </property>
     </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.engine.process.impl.DefaultProcessLogicRegistry" />
+
+    <bean id="CreateInstance" class="io.github.ibuildthecloud.dstack.process.instance.CreateInstance" />
 
     <bean class="io.github.ibuildthecloud.dstack.engine.server.impl.SequentialDispatcher" />
 

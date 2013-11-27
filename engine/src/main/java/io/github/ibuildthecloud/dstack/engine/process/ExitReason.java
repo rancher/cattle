@@ -15,7 +15,8 @@ public enum ExitReason {
     HANDLER_DELAYED,
     POST_HANDLER_EXCEPTION,
     POST_HANDLER_DELAYED,
-    UNKNOWN_EXCEPTION;
+    UNKNOWN_EXCEPTION,
+    MISSING_HANDLER_RESULT_FIELDS;
 
     boolean terminating;
     ProcessResult result;

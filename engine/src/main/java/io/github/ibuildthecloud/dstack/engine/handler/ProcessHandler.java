@@ -4,8 +4,8 @@ import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.util.type.Named;
 
-public interface ProcessHandler extends Named {
+public interface ProcessHandler<T> extends Named {
 
-    void handle(ProcessState state, ProcessInstance process);
+    HandlerResult handle(ProcessState<T> state, ProcessInstance process);
 
 }

@@ -24,6 +24,7 @@
 		<module>object</module>
 		<module>meta</module>
 		<module>parent</module>
+		<module>process-common</module>
 		<module>processes</module>
 		<module>resources</module>
 		<module>schema</module>

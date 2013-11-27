@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "vnet", schema = "dstack")
-public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.VnetRecord> implements org.jooq.Record5<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String> {
+public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.VnetRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record5<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Vnet {
 
-	private static final long serialVersionUID = 779553251;
+	private static final long serialVersionUID = 1432074784;
 
 	/**
 	 * Setter for <code>dstack.vnet.id</code>. 
@@ -27,6 +27,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.vnet.uri</code>. 
 	 */
 	@javax.persistence.Column(name = "uri", nullable = false, length = 128)
+	@Override
 	public java.lang.String getUri() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.vnet.scope</code>. 
 	 */
 	@javax.persistence.Column(name = "scope", nullable = false, length = 128)
+	@Override
 	public java.lang.String getScope() {
 		return (java.lang.String) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.vnet.ip_pool_qualifier</code>. 
 	 */
 	@javax.persistence.Column(name = "ip_pool_qualifier", length = 128)
+	@Override
 	public java.lang.String getIpPoolQualifier() {
 		return (java.lang.String) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Getter for <code>dstack.vnet.ip_pool_segment</code>. 
 	 */
 	@javax.persistence.Column(name = "ip_pool_segment", length = 128)
+	@Override
 	public java.lang.String getIpPoolSegment() {
 		return (java.lang.String) getValue(4);
 	}
@@ -128,7 +133,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Vnet.VNET.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VnetTable.VNET.ID;
 	}
 
 	/**
@@ -136,7 +141,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Vnet.VNET.URI;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VnetTable.VNET.URI;
 	}
 
 	/**
@@ -144,7 +149,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Vnet.VNET.SCOPE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VnetTable.VNET.SCOPE;
 	}
 
 	/**
@@ -152,7 +157,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Vnet.VNET.IP_POOL_QUALIFIER;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VnetTable.VNET.IP_POOL_QUALIFIER;
 	}
 
 	/**
@@ -160,7 +165,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Vnet.VNET.IP_POOL_SEGMENT;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VnetTable.VNET.IP_POOL_SEGMENT;
 	}
 
 	/**
@@ -211,14 +216,14 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * Create a detached VnetRecord
 	 */
 	public VnetRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Vnet.VNET);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VnetTable.VNET);
 	}
 
 	/**
 	 * Create a detached, initialised VnetRecord
 	 */
 	public VnetRecord(java.lang.Long id, java.lang.String uri, java.lang.String scope, java.lang.String ipPoolQualifier, java.lang.String ipPoolSegment) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Vnet.VNET);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VnetTable.VNET);
 
 		setValue(0, id);
 		setValue(1, uri);

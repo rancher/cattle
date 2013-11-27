@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "ip_assignment", schema = "dstack")
-public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.IpAssignmentRecord> implements org.jooq.Record7<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp> {
+public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.IpAssignmentRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record7<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.IpAssignment {
 
-	private static final long serialVersionUID = -1079823825;
+	private static final long serialVersionUID = 1922768313;
 
 	/**
 	 * Setter for <code>dstack.ip_assignment.id</code>. 
@@ -27,6 +27,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 * Getter for <code>dstack.ip_assignment.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 * Getter for <code>dstack.ip_assignment.nic_id</code>. 
 	 */
 	@javax.persistence.Column(name = "nic_id", precision = 19)
+	@Override
 	public java.lang.Long getNicId() {
 		return (java.lang.Long) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 * Getter for <code>dstack.ip_assignment.account_id</code>. 
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getAccountId() {
 		return (java.lang.Long) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 * Getter for <code>dstack.ip_assignment.ip_address_id</code>. 
 	 */
 	@javax.persistence.Column(name = "ip_address_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getIpAddressId() {
 		return (java.lang.Long) getValue(4);
 	}
@@ -102,6 +107,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 * Getter for <code>dstack.ip_assignment.created</code>. 
 	 */
 	@javax.persistence.Column(name = "created", nullable = false)
+	@Override
 	public java.sql.Timestamp getCreated() {
 		return (java.sql.Timestamp) getValue(5);
 	}
@@ -117,6 +123,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 * Getter for <code>dstack.ip_assignment.removed</code>. 
 	 */
 	@javax.persistence.Column(name = "removed")
+	@Override
 	public java.sql.Timestamp getRemoved() {
 		return (java.sql.Timestamp) getValue(6);
 	}
@@ -158,7 +165,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT.ID;
 	}
 
 	/**
@@ -166,7 +173,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT.STATE;
 	}
 
 	/**
@@ -174,7 +181,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT.NIC_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT.NIC_ID;
 	}
 
 	/**
@@ -182,7 +189,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT.ACCOUNT_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT.ACCOUNT_ID;
 	}
 
 	/**
@@ -190,7 +197,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT.IP_ADDRESS_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT.IP_ADDRESS_ID;
 	}
 
 	/**
@@ -198,7 +205,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT.CREATED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT.CREATED;
 	}
 
 	/**
@@ -206,7 +213,7 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field7() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT.REMOVED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT.REMOVED;
 	}
 
 	/**
@@ -273,14 +280,14 @@ public class IpAssignmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.git
 	 * Create a detached IpAssignmentRecord
 	 */
 	public IpAssignmentRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT);
 	}
 
 	/**
 	 * Create a detached, initialised IpAssignmentRecord
 	 */
 	public IpAssignmentRecord(java.lang.Long id, java.lang.String state, java.lang.Long nicId, java.lang.Long accountId, java.lang.Long ipAddressId, java.sql.Timestamp created, java.sql.Timestamp removed) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignment.IP_ASSIGNMENT);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.IpAssignmentTable.IP_ASSIGNMENT);
 
 		setValue(0, id);
 		setValue(1, state);

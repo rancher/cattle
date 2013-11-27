@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "network", schema = "dstack")
-public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.NetworkRecord> implements org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> {
+public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.NetworkRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.db.jooq.generated.model.Network {
 
-	private static final long serialVersionUID = -298725819;
+	private static final long serialVersionUID = -2095620196;
 
 	/**
 	 * Setter for <code>dstack.network.id</code>. 
@@ -27,6 +27,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
 	}
@@ -42,6 +43,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.name</code>. 
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
+	@Override
 	public java.lang.String getName() {
 		return (java.lang.String) getValue(1);
 	}
@@ -57,6 +59,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.uuid</code>. 
 	 */
 	@javax.persistence.Column(name = "uuid", length = 255)
+	@Override
 	public java.lang.String getUuid() {
 		return (java.lang.String) getValue(2);
 	}
@@ -72,6 +75,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.account_id</code>. 
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
+	@Override
 	public java.lang.Long getAccountId() {
 		return (java.lang.Long) getValue(3);
 	}
@@ -87,6 +91,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.is_public</code>. 
 	 */
 	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
+	@Override
 	public java.lang.Boolean getIsPublic() {
 		return (java.lang.Boolean) getValue(4);
 	}
@@ -102,6 +107,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.description</code>. 
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
+	@Override
 	public java.lang.String getDescription() {
 		return (java.lang.String) getValue(5);
 	}
@@ -117,6 +123,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.vnet_id</code>. 
 	 */
 	@javax.persistence.Column(name = "vnet_id", precision = 19)
+	@Override
 	public java.lang.Long getVnetId() {
 		return (java.lang.Long) getValue(6);
 	}
@@ -132,6 +139,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.offering_id</code>. 
 	 */
 	@javax.persistence.Column(name = "offering_id", precision = 19)
+	@Override
 	public java.lang.Long getOfferingId() {
 		return (java.lang.Long) getValue(7);
 	}
@@ -147,6 +155,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.state</code>. 
 	 */
 	@javax.persistence.Column(name = "state", length = 255)
+	@Override
 	public java.lang.String getState() {
 		return (java.lang.String) getValue(8);
 	}
@@ -162,6 +171,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.is_default</code>. 
 	 */
 	@javax.persistence.Column(name = "is_default", nullable = false, precision = 1)
+	@Override
 	public java.lang.Boolean getIsDefault() {
 		return (java.lang.Boolean) getValue(9);
 	}
@@ -177,6 +187,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.created</code>. 
 	 */
 	@javax.persistence.Column(name = "created")
+	@Override
 	public java.sql.Timestamp getCreated() {
 		return (java.sql.Timestamp) getValue(10);
 	}
@@ -192,6 +203,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.removed</code>. 
 	 */
 	@javax.persistence.Column(name = "removed")
+	@Override
 	public java.sql.Timestamp getRemoved() {
 		return (java.sql.Timestamp) getValue(11);
 	}
@@ -207,6 +219,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.remove_time</code>. 
 	 */
 	@javax.persistence.Column(name = "remove_time")
+	@Override
 	public java.sql.Timestamp getRemoveTime() {
 		return (java.sql.Timestamp) getValue(12);
 	}
@@ -222,6 +235,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.kind</code>. 
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 128)
+	@Override
 	public java.lang.String getKind() {
 		return (java.lang.String) getValue(13);
 	}
@@ -229,7 +243,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Setter for <code>dstack.network.data</code>. 
 	 */
-	public void setData(java.lang.String value) {
+	public void setData(java.util.Map<String,Object> value) {
 		setValue(14, value);
 	}
 
@@ -237,8 +251,9 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Getter for <code>dstack.network.data</code>. 
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
-	public java.lang.String getData() {
-		return (java.lang.String) getValue(14);
+	@Override
+	public java.util.Map<String,Object> getData() {
+		return (java.util.Map<String,Object>) getValue(14);
 	}
 
 	// -------------------------------------------------------------------------
@@ -261,7 +276,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.util.Map<String,Object>> fieldsRow() {
 		return (org.jooq.Row15) super.fieldsRow();
 	}
 
@@ -269,7 +284,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.util.Map<String,Object>> valuesRow() {
 		return (org.jooq.Row15) super.valuesRow();
 	}
 
@@ -278,7 +293,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.ID;
 	}
 
 	/**
@@ -286,7 +301,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.NAME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.NAME;
 	}
 
 	/**
@@ -294,7 +309,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field3() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.UUID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.UUID;
 	}
 
 	/**
@@ -302,7 +317,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field4() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.ACCOUNT_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.ACCOUNT_ID;
 	}
 
 	/**
@@ -310,7 +325,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Boolean> field5() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.IS_PUBLIC;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.IS_PUBLIC;
 	}
 
 	/**
@@ -318,7 +333,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field6() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.DESCRIPTION;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.DESCRIPTION;
 	}
 
 	/**
@@ -326,7 +341,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field7() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.VNET_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.VNET_ID;
 	}
 
 	/**
@@ -334,7 +349,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field8() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.OFFERING_ID;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.OFFERING_ID;
 	}
 
 	/**
@@ -342,7 +357,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field9() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.STATE;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.STATE;
 	}
 
 	/**
@@ -350,7 +365,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Boolean> field10() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.IS_DEFAULT;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.IS_DEFAULT;
 	}
 
 	/**
@@ -358,7 +373,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field11() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.CREATED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.CREATED;
 	}
 
 	/**
@@ -366,7 +381,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field12() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.REMOVED;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.REMOVED;
 	}
 
 	/**
@@ -374,7 +389,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.sql.Timestamp> field13() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.REMOVE_TIME;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.REMOVE_TIME;
 	}
 
 	/**
@@ -382,15 +397,15 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field14() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.KIND;
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.KIND;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field15() {
-		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK.DATA;
+	public org.jooq.Field<java.util.Map<String,Object>> field15() {
+		return io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK.DATA;
 	}
 
 	/**
@@ -509,7 +524,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value15() {
+	public java.util.Map<String,Object> value15() {
 		return getData();
 	}
 
@@ -521,14 +536,14 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * Create a detached NetworkRecord
 	 */
 	public NetworkRecord() {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK);
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK);
 	}
 
 	/**
 	 * Create a detached, initialised NetworkRecord
 	 */
-	public NetworkRecord(java.lang.Long id, java.lang.String name, java.lang.String uuid, java.lang.Long accountId, java.lang.Boolean isPublic, java.lang.String description, java.lang.Long vnetId, java.lang.Long offeringId, java.lang.String state, java.lang.Boolean isDefault, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime, java.lang.String kind, java.lang.String data) {
-		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.Network.NETWORK);
+	public NetworkRecord(java.lang.Long id, java.lang.String name, java.lang.String uuid, java.lang.Long accountId, java.lang.Boolean isPublic, java.lang.String description, java.lang.Long vnetId, java.lang.Long offeringId, java.lang.String state, java.lang.Boolean isDefault, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime, java.lang.String kind, java.util.Map<String,Object> data) {
+		super(io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NetworkTable.NETWORK);
 
 		setValue(0, id);
 		setValue(1, name);
