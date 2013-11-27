@@ -1,8 +1,8 @@
 package io.github.ibuildthecloud.dstack.api.resource;
 
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
-import io.github.ibuildthecloud.dstack.db.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -36,7 +36,8 @@ public abstract class AbstractJooqResourceManager implements ResourceManager {
             return null;
         }
 
-        UpdatableRecord<?> record = objectManager.create(JooqUtils.getRecordClass(clz),
+        Class<UpdatableRecord<?>> recordClass = JooqUtils.getRecordClass(schemaFactory, clz);
+        UpdatableRecord<?> record = objectManager.create(recordClass,
                 ApiUtils.getMap(request.getRequestObject()));
 
         return record;
