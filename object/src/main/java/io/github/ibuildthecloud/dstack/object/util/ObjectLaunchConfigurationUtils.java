@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.dstack.object.util;
 
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Schema;
@@ -17,7 +18,7 @@ public class ObjectLaunchConfigurationUtils {
             throw new IllegalArgumentException("Failed to find schema for [" + resource + "]");
         }
 
-        Field field = schema.getResourceFields().get("id");
+        Field field = schema.getResourceFields().get(ObjectMetaDataManager.ID_FIELD);
 
         if ( field == null ) {
             throw new IllegalStateException("Schema [" + schema.getId() + "] does not have an ID field so we can not launch a process for it");

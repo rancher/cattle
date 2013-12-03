@@ -21,7 +21,7 @@ public interface ObjectManager {
 
     <T> T setFields(Object obj, Object key, Object... valueKeyValue);
 
-    Map<String,Object> convert(Object obj, Map<Object,Object> object);
+    Map<String,Object> convertToPropertiesFor(Object obj, Map<Object,Object> object);
 
     <T> List<T> children(Object obj, Class<T> type);
 

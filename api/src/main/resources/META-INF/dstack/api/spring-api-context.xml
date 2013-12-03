@@ -9,18 +9,24 @@
                       http://www.springframework.org/schema/context/spring-context-3.0.xsd"
                       >
 
+    <bean class="io.github.ibuildthecloud.dstack.api.auth.dao.impl.AuthDaoImpl" />
+
     <bean class="io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate" >
         <property name="handlers">
             <list>
+                <bean class="io.github.ibuildthecloud.dstack.api.auth.impl.ApiAuthenticator" />
                 <bean class="io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler" />
                 <bean class="io.github.ibuildthecloud.gdapi.request.handler.SchemasHandler" />
-                <bean class="io.github.ibuildthecloud.gdapi.request.handler.ResourceManagerRequestHandler" >
-                    <property name="defaultResourceManager" ref="DefaultResourceManager" />
-                </bean>
+                <bean class="io.github.ibuildthecloud.gdapi.request.handler.ResourceManagerRequestHandler" />
+                <bean class="io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter" />
                 <bean class="io.github.ibuildthecloud.gdapi.response.JsonResponseWriter" />
                 <bean class="io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter" />
             </list>
         </property>
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.gdapi.request.resource.impl.ResourceManagerLocatorImpl" >
+        <property name="defaultResourceManager" ref="DefaultResourceManager" />
     </bean>
 
     <bean id="DefaultResourceManager" class="io.github.ibuildthecloud.dstack.api.resource.DefaultJooqResourceManager" />
@@ -30,7 +36,6 @@
         <property name="jsUrl" value="http://img1.wsimg.com/ucp/api/1.2.11/ui.js" />
     </bean>
     <bean class="io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser" />
-    <bean class="io.github.ibuildthecloud.gdapi.auth.NoOpApiAuthenticator" />
     <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
 
     <bean class="io.github.ibuildthecloud.dstack.object.impl.DefaultObjectManager" >

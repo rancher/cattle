@@ -33,7 +33,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
     @Override
     public <T> T create(Class<T> clz, Object key, Object... valueKeyValue) {
         Map<Object,Object> properties = MapUtils.asMap(key, valueKeyValue);
-        return create(clz, convert(clz, properties));
+        return create(clz, convertToPropertiesFor(clz, properties));
     }
 
     protected <T> T construct(Class<T> clz, Map<String,Object> properties) {
@@ -62,7 +62,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
     public <T> T setFields(Object obj, Object key, Object... valueKeyValue) {
         Map<Object,Object> values = MapUtils.asMap(key, valueKeyValue);
 
-        return setFields(obj, convert(obj, values));
+        return setFields(obj, convertToPropertiesFor(obj, values));
     }
 
     public SchemaFactory getSchemaFactory() {

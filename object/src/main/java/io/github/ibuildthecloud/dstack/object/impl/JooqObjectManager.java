@@ -3,24 +3,20 @@ package io.github.ibuildthecloud.dstack.object.impl;
 import io.github.ibuildthecloud.dstack.engine.idempotent.Idempotent;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecutionNoReturn;
 import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import javax.inject.Inject;
-import javax.persistence.Column;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.jooq.Configuration;
 import org.jooq.ForeignKey;
 import org.jooq.Table;
-import org.jooq.TableField;
 import org.jooq.UpdatableRecord;
 import org.jooq.exception.DataChangedException;
 import org.jooq.impl.DSL;
@@ -31,10 +27,10 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     private static final Logger log = LoggerFactory.getLogger(JooqObjectManager.class);
 
-    Map<FieldCacheKey, String> fieldCache = new WeakHashMap<FieldCacheKey, String>();
     Map<ChildReferenceCacheKey, ForeignKey<?, ?>> childReferenceCache = new WeakHashMap<ChildReferenceCacheKey, ForeignKey<?, ?>>();
     Configuration configuration;
     Configuration lockingConfiguration;
+    ObjectMetaDataManager metaDataManager;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -139,19 +135,19 @@ public class JooqObjectManager extends AbstractObjectManager {
             }
 
             if ( foreignKey == null ) {
-                throw new IllegalStateException("Failed to find a foreign key from [" + child + "] to [" + parent + "]");            
+                throw new IllegalStateException("Failed to find a foreign key from [" + child + "] to [" + parent + "]");
             }
 
             childReferenceCache.put(key, foreignKey);
         }
 
         recordObject.attach(getConfiguration());
-        return (List<T>) recordObject.fetchChildren((ForeignKey)foreignKey);
+        return recordObject.fetchChildren((ForeignKey)foreignKey);
     }
 
 
     @Override
-    public Map<String,Object> convert(Object obj, Map<Object,Object> values) {
+    public Map<String,Object> convertToPropertiesFor(Object obj, Map<Object,Object> values) {
         Map<String,Object> result = new LinkedHashMap<String, Object>();
         Class<?> recordClass = null;
 
@@ -163,7 +159,7 @@ public class JooqObjectManager extends AbstractObjectManager {
         }
 
         for ( Map.Entry<Object, Object> entry : values.entrySet() ) {
-            String name = resolveField(recordClass, entry.getKey());
+            String name = metaDataManager.convertPropertyNameFor(recordClass, entry.getKey());
             result.put(name, entry.getValue());
         }
 
@@ -180,49 +176,13 @@ public class JooqObjectManager extends AbstractObjectManager {
         }
     }
 
-    protected String resolveField(Class<?> recordClass, Object key) {
-        if ( key instanceof String ) {
-            return (String)key;
-        }
-
-        if ( key instanceof TableField ) {
-            TableField<?, ?> field = (TableField<?, ?>)key;
-            return getNameFromField(recordClass, field.getName());
-        }
-
-        return key == null ? null : key.toString();
-    }
-
-    protected String getNameFromField(Class<?> clz, String field) {
-        FieldCacheKey key = new FieldCacheKey(clz, field);
-        String cached = fieldCache.get(key);
-
-        if ( cached != null )
-            return cached;
-
-        for ( PropertyDescriptor desc : PropertyUtils.getPropertyDescriptors(clz) ) {
-            Method readMethod = desc.getReadMethod();
-            Method writeMethod = desc.getWriteMethod();
-
-            if ( readMethod == null || writeMethod == null ) {
-                continue;
-            }
-
-            Column column = readMethod.getAnnotation(Column.class);
-            if ( column != null && field.equals(column.name()) ) {
-                fieldCache.put(key, desc.getName());
-                return desc.getName();
-            }
-        }
-
-        throw new IllegalArgumentException("Failed to find bean property for table field [" + field + "] on [" + clz + "]");
-    }
 
     @Override
     public <T> T loadResource(String resourceType, String resourceId) {
         return loadResource(resourceType, (Object)resourceId);
     }
 
+    @Override
     public <T> T loadResource(String resourceType, Long resourceId) {
         return loadResource(resourceType, (Object)resourceId);
     }
@@ -249,6 +209,15 @@ public class JooqObjectManager extends AbstractObjectManager {
     @Inject
     public void setLockingConfiguration(Configuration lockingConfiguration) {
         this.lockingConfiguration = lockingConfiguration;
+    }
+
+    public ObjectMetaDataManager getMetaDataManager() {
+        return metaDataManager;
+    }
+
+    @Inject
+    public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
+        this.metaDataManager = metaDataManager;
     }
 
 }

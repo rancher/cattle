@@ -75,7 +75,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
 
     @Override
     protected Map<String, Object> convertMap(Map<Object, Object> data) {
-        return objectManager.convert(resource, data);
+        return objectManager.convertToPropertiesFor(resource, data);
     }
 
 }

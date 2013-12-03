@@ -6,6 +6,9 @@ public class ProcessStateTransition {
     String newProcessState;
     long time;
 
+    public ProcessStateTransition() {
+    }
+
     public ProcessStateTransition(String oldState, String newState, String newProcessState, long time) {
         super();
         this.oldState = oldState;

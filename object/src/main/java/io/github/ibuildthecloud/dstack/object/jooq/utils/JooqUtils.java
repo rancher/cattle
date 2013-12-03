@@ -64,13 +64,15 @@ public class JooqUtils {
             return (Class<UpdatableRecord<?>>)clz;
         }
 
-        Schema schema = factory.getSchema(clz);
-        Class<?> testClz = factory.getSchemaClass(schema.getId());
-        if ( clz.isAssignableFrom(testClz) ) {
-            if ( ! UpdatableRecord.class.isAssignableFrom(testClz) ) {
-                throw new IllegalArgumentException("Class [" + testClz + "] is not an instanceof UpdatableRecord");
+        if ( factory != null ) {
+            Schema schema = factory.getSchema(clz);
+            Class<?> testClz = factory.getSchemaClass(schema.getId());
+            if ( clz.isAssignableFrom(testClz) ) {
+                if ( ! UpdatableRecord.class.isAssignableFrom(testClz) ) {
+                    throw new IllegalArgumentException("Class [" + testClz + "] is not an instanceof UpdatableRecord");
+                }
+                return (Class<UpdatableRecord<?>>) testClz;
             }
-            return (Class<UpdatableRecord<?>>) testClz;
         }
 
         throw new IllegalArgumentException("Failed to find UpdatableRecord class for [" + clz + "]");

@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.object.impl;
+package io.github.ibuildthecloud.dstack.object.meta.impl;
 
 public class FieldCacheKey {
 
