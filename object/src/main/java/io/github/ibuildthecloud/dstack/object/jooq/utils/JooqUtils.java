@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 import org.jooq.DSLContext;
 import org.jooq.Table;
 import org.jooq.TableField;
+import org.jooq.TableRecord;
 import org.jooq.UniqueKey;
 import org.jooq.UpdatableRecord;
 import org.slf4j.Logger;
@@ -44,10 +45,10 @@ public class JooqUtils {
         if ( clz == null )
             return null;
 
-        if ( UpdatableRecord.class.isAssignableFrom(clz) ) {
+        if ( TableRecord.class.isAssignableFrom(clz) ) {
             try {
-                UpdatableRecord<?> record =
-                        ((Class<UpdatableRecord<?>>)clz).newInstance();
+                TableRecord<?> record =
+                        ((Class<TableRecord<?>>)clz).newInstance();
                 return record.getTable();
             } catch (InstantiationException e) {
                 log.error("Failed to determine table for [{}]", clz, e);

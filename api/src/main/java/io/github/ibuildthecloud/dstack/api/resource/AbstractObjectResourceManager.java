@@ -5,86 +5,59 @@ import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
+import io.github.ibuildthecloud.dstack.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
-import io.github.ibuildthecloud.gdapi.context.ApiContext;
-import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
-import io.github.ibuildthecloud.gdapi.model.Collection;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Field;
+import io.github.ibuildthecloud.gdapi.model.Include;
+import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
-import io.github.ibuildthecloud.gdapi.model.impl.CollectionImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
-import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
+import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractBaseResourceManager;
 
-import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
-public abstract class AbstractResourceManager implements ResourceManager {
+import org.apache.commons.collections.Transformer;
 
-    SchemaFactory schemaFactory;
+public abstract class AbstractObjectResourceManager extends AbstractBaseResourceManager {
+
     ObjectManager objectManager;
     ObjectMetaDataManager metaDataManager;
-    ResourceManagerLocator locator;
 
     @Override
-    public final Object getById(String type, String id) {
-        return ApiUtils.authorize(getByIdInternal(type, id));
-    }
-
-    protected Object getByIdInternal(String type, String id) {
-        Map<Object,Object> criteria = getDefaultCriteria(true);
-        criteria.put(ObjectMetaDataManager.ID_FIELD, id);
-
-        return ApiUtils.getFirstFromList(listInternal(type, criteria));
+    protected Object authorize(Object object) {
+        return ApiUtils.authorize(object);
     }
 
     @Override
-    public final Object list(String type, ApiRequest request) {
-        return ApiUtils.authorize(listInternal(type, request));
-    }
-
-    protected Object listInternal(String type, ApiRequest request) {
-        Map<Object,Object> criteria = getDefaultCriteria(false);
-        criteria.putAll(request.getConditions());
-        return listInternal(type, criteria);
-    }
-
-    @Override
-    public final Object list(String type, Map<Object, Object> criteria) {
-        return ApiUtils.authorize(listInternal(type, criteria));
-    }
-
-    protected abstract Object listInternal(String type, Map<Object, Object> criteria);
-
-    @Override
-    public final Object create(String type, ApiRequest request) {
-        return ApiUtils.authorize(createInternal(type, request));
-    }
-
-    protected final Object createInternal(String type, ApiRequest request) {
-        Class<?> clz = schemaFactory.getSchemaClass(request.getType());
+    protected Object createInternal(String type, ApiRequest request) {
+        Class<?> clz = schemaFactory.getSchemaClass(type);
         if ( clz == null ) {
             return null;
         }
 
         Object result = objectManager.create(clz, ApiUtils.getMap(request.getRequestObject()));
-        return ApiUtils.authorize(result);
+        return result;
     }
 
     @Override
-    public final Object getLink(String type, String id, String link, ApiRequest request) {
-        return ApiUtils.authorize(getLinkInternal(type, id, link, request));
+    protected Object updateInternal(String type, String id, Object obj, ApiRequest request) {
+        Map<String,Object> updates = ApiUtils.getMap(request.getRequestObject());
+        return objectManager.setFields(obj, updates);
     }
 
+    @Override
     protected Object getLinkInternal(String type, String id, String link, ApiRequest request) {
         Relationship relationship = metaDataManager.getRelationship(type, link);
 
@@ -108,7 +81,7 @@ public abstract class AbstractResourceManager implements ResourceManager {
             return Collections.EMPTY_LIST;
         }
 
-        Object currentObject = getById(type, id);
+        Object currentObject = getById(type, id, new ListOptions(request));
         if ( currentObject == null ) {
             return Collections.EMPTY_LIST;
         }
@@ -123,7 +96,7 @@ public abstract class AbstractResourceManager implements ResourceManager {
         criteria.put(relationship.getPropertyName(), id);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherType);
-        return resourceManager.list(otherType, criteria);
+        return resourceManager.list(otherType, criteria, null);
     }
 
     protected Object getReferenceLink(String type, String id, Relationship relationship, ApiRequest request) {
@@ -134,7 +107,8 @@ public abstract class AbstractResourceManager implements ResourceManager {
             return null;
         }
 
-        Object currentObject = getById(type, id);
+        ListOptions options = new ListOptions(request);
+        Object currentObject = getById(type, id, options);
         Object fieldValue = field.getValue(currentObject);
 
         if ( fieldValue == null ) {
@@ -145,9 +119,25 @@ public abstract class AbstractResourceManager implements ResourceManager {
         criteria.put(ObjectMetaDataManager.ID_FIELD, fieldValue);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherSchema.getId());
-        return ApiUtils.getFirstFromList(resourceManager.list(otherSchema.getId(), criteria));
+        return ApiUtils.getFirstFromList(resourceManager.list(otherSchema.getId(), criteria, options));
     }
 
+    protected Map<String,Relationship> getLinkRelationships(String type, Include include) {
+        if ( include == null )
+            return Collections.emptyMap();
+
+        Map<String,Relationship> result = new HashMap<String, Relationship>();
+        Map<String,Relationship> links = metaDataManager.getLinkRelationships(schemaFactory, type);
+        for ( String link : include.getLinks() ) {
+            if ( links.containsKey(link) ) {
+                result.put(link, links.get(link));
+            }
+        }
+
+        return result;
+    }
+
+    @Override
     protected Map<Object,Object> getDefaultCriteria(boolean byId) {
         Map<Object, Object> criteria = new HashMap<Object, Object>();
         Policy policy = ApiUtils.getPolicy();
@@ -170,75 +160,45 @@ public abstract class AbstractResourceManager implements ResourceManager {
     }
 
     @Override
-    public Collection convertResponse(List<?> list, ApiRequest request) {
-        return createCollection(list, request);
+    protected String getCollectionType(List<?> list, ApiRequest request) {
+        String link = request.getLink();
+        if ( link == null ) {
+            return request.getType();
+        } else {
+            Relationship relationship = metaDataManager.getRelationship(request.getType(), link);
+            return schemaFactory.getSchemaName(relationship.getObjectType());
+        }
     }
 
     @Override
-    public Resource convertResponse(Object obj, ApiRequest request) {
-        return createResource(obj);
-    }
+    protected Resource constructResource(final IdFormatter idFormatter, final Schema schema, Object obj) {
+        Map<String,Object> additionalFields = new LinkedHashMap<String, Object>();
+        additionalFields.putAll(DataUtils.getFields(obj));
 
-    protected Collection createCollection(List<?> list, ApiRequest request) {
-        CollectionImpl collection = new CollectionImpl();
-        if ( request != null ) {
-            String link = request.getLink();
-            if ( link == null ) {
-                collection.setResourceType(request.getType());
-            } else {
-                Relationship relationship = metaDataManager.getRelationship(request.getType(), link);
-                collection.setResourceType(schemaFactory.getSchemaName(relationship.getObjectType()));
-            }
-        }
+        Map<String,Object> attachments = ApiUtils.getAttachements(obj, new Transformer() {
+            @Override
+            public Object transform(Object input) {
+                input = ApiUtils.authorize(input);
+                if ( input == null )
+                    return null;
 
-        for ( Object obj : list ) {
-            Resource resource = createResource(obj);
-            if ( resource != null ) {
-                collection.getData().add(resource);
-                if ( collection.getResourceType() == null ) {
-                    collection.setResourceType(resource.getType());
+                Schema schema = schemaFactory.getSchema(input.getClass());
+                if ( schema == null ) {
+                    return null;
                 }
+
+                return new WrappedResource(idFormatter, schema, input, DataUtils.getFields(input));
             }
-        }
+        });
 
-        return collection;
+        additionalFields.putAll(attachments);
+
+        return new WrappedResource(idFormatter, schema, obj, additionalFields);
     }
 
-    protected Resource createResource(Object obj) {
-        if ( obj == null )
-            return null;
-
-        if ( obj instanceof Resource )
-            return (Resource)obj;
-
-        Schema schema = schemaFactory.getSchema(obj.getClass());
-        if ( schema == null ) {
-            return null;
-        }
-
-        WrappedResource resource = new WrappedResource(schema, obj);
-        addLinks(resource);
-
-        return resource;
-    }
-
-    protected void addLinks(WrappedResource resource) {
-        Map<String,URL> links = resource.getLinks();
-        for ( String linkName : metaDataManager.getLinks(schemaFactory, resource) ) {
-            URL link = ApiContext.getUrlBuilder().resourceLink(resource, linkName);
-            if ( link != null ) {
-                links.put(linkName, link);
-            }
-        }
-    }
-
-    public SchemaFactory getSchemaFactory() {
-        return schemaFactory;
-    }
-
-    @Inject
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
+    @Override
+    protected Map<String, String> getLinks(Resource resource) {
+        return metaDataManager.getLinks(schemaFactory, resource.getType());
     }
 
     public ObjectManager getObjectManager() {
@@ -257,15 +217,6 @@ public abstract class AbstractResourceManager implements ResourceManager {
     @Inject
     public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
         this.metaDataManager = metaDataManager;
-    }
-
-    public ResourceManagerLocator getLocator() {
-        return locator;
-    }
-
-    @Inject
-    public void setLocator(ResourceManagerLocator locator) {
-        this.locator = locator;
     }
 
 }

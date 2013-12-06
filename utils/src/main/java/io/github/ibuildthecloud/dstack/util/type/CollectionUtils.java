@@ -1,10 +1,36 @@
 package io.github.ibuildthecloud.dstack.util.type;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-public class MapUtils {
+public class CollectionUtils {
+
+    public static List<?> toList(Object obj) {
+        if ( obj instanceof List ) {
+            return (List<?>)obj;
+        } else if ( obj == null ) {
+            return Collections.emptyList();
+        } else {
+            return Arrays.asList(obj);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <K,V> Map<K,V> toMap(Object obj) {
+        if ( obj == null ) {
+            return new HashMap<K, V>();
+        }
+
+        if ( obj instanceof Map ) {
+            return (Map<K, V>) obj;
+        } else {
+            return new HashMap<K, V>();
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public static <K,V> Map<K,V> castMap(Object obj) {

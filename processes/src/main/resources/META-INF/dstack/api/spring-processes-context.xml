@@ -12,11 +12,11 @@
     <bean class="io.github.ibuildthecloud.dstack.engine.repository.impl.jooq.JooqProcessRecordDao" />
     <bean id="ProcessServerImpl" class="io.github.ibuildthecloud.dstack.engine.server.impl.ProcessServerImpl" />
 
-    <task:scheduler id="TaskScheduler" />
-    <task:scheduled-tasks scheduler="TaskScheduler" >
-        <task:scheduled ref="ProcessServerImpl" method="runOutstandingJobs" 
-            initial-delay="0" fixed-delay="15000" />
-    </task:scheduled-tasks>
+<!--     <task:scheduler id="TaskScheduler" /> -->
+<!--     <task:scheduled-tasks scheduler="TaskScheduler" > -->
+<!--         <task:scheduled ref="ProcessServerImpl" method="runOutstandingJobs"  -->
+<!--             initial-delay="0" fixed-delay="15000" /> -->
+<!--     </task:scheduled-tasks> -->
 
     <bean class="io.github.ibuildthecloud.dstack.engine.repository.impl.DefaultProcessManager" >
         <property name="definitions">

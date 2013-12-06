@@ -26,6 +26,9 @@
         "image" : {
             "create" : true,
             "type" : "string"
+        },
+        "imageId" : {
+            "create" : true
         }
     },
     "resourceMethods": [

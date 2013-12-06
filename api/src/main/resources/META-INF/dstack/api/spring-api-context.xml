@@ -1,27 +1,56 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-                      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-                      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-                      http://www.springframework.org/schema/context
-                      http://www.springframework.org/schema/context/spring-context-3.0.xsd"
-                      >
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <bean class="io.github.ibuildthecloud.dstack.api.auth.dao.impl.AuthDaoImpl" />
+
+    <bean id="Versions" class="io.github.ibuildthecloud.gdapi.version.Versions" >
+        <property name="versions">
+            <list>
+                <value type="java.lang.String">v1</value>
+            </list>
+        </property>
+        <property name="latest" value="v1" />
+    </bean>
 
     <bean class="io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate" >
         <property name="handlers">
             <list>
                 <bean class="io.github.ibuildthecloud.dstack.api.auth.impl.ApiAuthenticator" />
                 <bean class="io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler" />
+                <bean class="io.github.ibuildthecloud.gdapi.request.handler.ParseCollectionAttributes" />
+                <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler" />
+                <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionHandler" />
                 <bean class="io.github.ibuildthecloud.gdapi.request.handler.SchemasHandler" />
+                <bean class="io.github.ibuildthecloud.gdapi.validation.ValidationHandler" >
+                    <property name="referenceValidator" >
+                        <bean class="io.github.ibuildthecloud.gdapi.validation.ResourceManagerReferenceValidator" />
+                    </property>
+                </bean>
                 <bean class="io.github.ibuildthecloud.gdapi.request.handler.ResourceManagerRequestHandler" />
+                <bean class="io.github.ibuildthecloud.gdapi.request.handler.NotFoundHandler" />
                 <bean class="io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter" />
+                <bean class="io.github.ibuildthecloud.gdapi.request.handler.ExceptionHandler" >
+                    <property name="standardErrorCodes">
+                        <util:properties location="classpath:api/messages.properties" />
+                    </property>
+                    <property name="messageLocation" value="api/messages" />
+                </bean>
                 <bean class="io.github.ibuildthecloud.gdapi.response.JsonResponseWriter" />
                 <bean class="io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter" />
             </list>
+        </property>
+        <property name="version">
+            <bean factory-bean="Versions" factory-method="getLatest" />
+        </property>
+        <property name="idFormatter">
+            <bean class="io.github.ibuildthecloud.gdapi.id.TypeIdFormatter" />
         </property>
     </bean>
 
@@ -32,8 +61,8 @@
     <bean id="DefaultResourceManager" class="io.github.ibuildthecloud.dstack.api.resource.DefaultJooqResourceManager" />
 
     <bean class="io.github.ibuildthecloud.gdapi.response.impl.DefaultHtmlTemplate" >
-        <property name="cssUrl" value="http://img1.wsimg.com/ucp/api/1.2.11/ui.css" />
-        <property name="jsUrl" value="http://img1.wsimg.com/ucp/api/1.2.11/ui.js" />
+        <property name="cssUrl" value="http://img1.wsimg.com/ucp/api/1.2.13/ui.css" />
+        <property name="jsUrl" value="http://img1.wsimg.com/ucp/api/1.2.13/ui.js" />
     </bean>
     <bean class="io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser" />
     <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />

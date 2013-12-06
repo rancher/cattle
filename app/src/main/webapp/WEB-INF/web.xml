@@ -37,7 +37,16 @@
     </filter>
     <filter-mapping>
         <filter-name>ApiFilter</filter-name>
-        <url-pattern>/v1/*</url-pattern>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+    <error-page>
+        <error-code>500</error-code>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
+    <error-page>
+        <exception-type>java.lang.Throwable</exception-type>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
 
 </web-app>

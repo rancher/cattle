@@ -7,12 +7,13 @@ import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.meta.TypeSet;
 import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
 import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.model.Field;
-import io.github.ibuildthecloud.gdapi.model.Field.Type;
-import io.github.ibuildthecloud.gdapi.model.Resource;
+import io.github.ibuildthecloud.gdapi.model.FieldType;
+import io.github.ibuildthecloud.gdapi.model.Filter;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.model.impl.FieldImpl;
 import io.github.ibuildthecloud.model.impl.SchemaImpl;
@@ -21,11 +22,11 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 import java.util.WeakHashMap;
 
 import javax.annotation.PostConstruct;
@@ -43,9 +44,9 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     List<TypeSet> typeSets;
     Map<Class<?>,Map<String,Relationship>> relationships = new HashMap<Class<?>, Map<String,Relationship>>();
 
-    Map<FieldCacheKey, String> propertyCache = new WeakHashMap<FieldCacheKey, String>();
+    Map<String,Map<String,String>> linksCache = Collections.synchronizedMap(new WeakHashMap<String,Map<String,String>>());
+    Map<FieldCacheKey, String> propertyCache = Collections.synchronizedMap(new WeakHashMap<FieldCacheKey, String>());
     Map<FieldCacheKey, TableField<?, ?>> tableFields = new HashMap<FieldCacheKey, TableField<?,?>>();
-    Map<String,Set<String>> linksCache = new WeakHashMap<String, Set<String>>();
 
     @AfterExtensionInitialization
     public void postInit() {
@@ -146,8 +147,12 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
     @Override
     public Object convertFieldNameFor(String type, Object key) {
+        return getTableFieldFor(type, key);
+    }
+
+    protected TableField<?,?> getTableFieldFor(String type, Object key) {
         if ( key instanceof TableField<?, ?> )
-            return key;
+            return (TableField<?,?>)key;
 
         Class<?> clz = schemaFactory.getSchemaClass(type);
         FieldCacheKey cacheKey = new FieldCacheKey(clz, key.toString());
@@ -156,7 +161,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     }
 
     @Override
-    public String convertPropertyNameFor(Class<?> recordClass, Object key) {
+    public String convertToPropertyNameString(Class<?> recordClass, Object key) {
         if ( key instanceof String ) {
             return (String)key;
         }
@@ -167,6 +172,11 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         }
 
         return key == null ? null : key.toString();
+    }
+
+    @Override
+    public String lookupPropertyNameFromFieldName(Class<?> recordClass, String fieldName) {
+        return getNameFromField(recordClass, fieldName);
     }
 
     protected String getNameFromField(Class<?> clz, String field) {
@@ -206,9 +216,14 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
             return schema;
         }
 
-        for ( Relationship relationship : relationships.values() ) {
-            if ( relationship.getRelationshipType() != REFERENCE )
+        for ( Map.Entry<String,Relationship> entry : relationships.entrySet() ) {
+            String linkName = entry.getKey();
+            Relationship relationship = entry.getValue();
+
+            if ( relationship.getRelationshipType() != REFERENCE ) {
+                schema.getIncludeableLinks().add(linkName);
                 continue;
+            }
 
             Field field = schema.getResourceFields().get(relationship.getPropertyName());
             if ( ! ( field instanceof FieldImpl ) ) {
@@ -216,24 +231,78 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
             }
 
             FieldImpl fieldImpl = (FieldImpl)field;
-            fieldImpl.setType(null);
-            fieldImpl.setTypeEnum(Type.REFERENCE);
-            fieldImpl.setSubType(factory.getSchema(relationship.getObjectType()).getId());
+            fieldImpl.setType(FieldType.toString(FieldType.REFERENCE, factory.getSchema(relationship.getObjectType()).getId()));
+
+            schema.getIncludeableLinks().add(linkName);
+        }
+
+        Map<String,Filter> filters = schema.getCollectionFilters();
+
+        for ( Map.Entry<String,Field> entry : schema.getResourceFields().entrySet() ) {
+            String name = entry.getKey();
+            Field field = entry.getValue();
+            if ( ! ( field instanceof FieldImpl ) ) {
+                continue;
+            }
+
+            FieldImpl fieldImpl = (FieldImpl)field;
+            TableField<?, ?> tableField = getTableFieldFor(schema.getId(), name);
+
+            if ( tableField != null && ! filters.containsKey(name) ) {
+                List<String> modifiers = getModifiers(fieldImpl);
+                if ( modifiers.size() > 0 ) {
+                    filters.put(name, new Filter(modifiers));
+                }
+            }
         }
 
         return schema;
     }
 
+    protected List<String> getModifiers(FieldImpl field) {
+        FieldType type = field.getTypeEnum();
+        if ( type == null ) {
+            return Collections.emptyList();
+        }
+
+        List<String> conditions = new ArrayList<String>(type.getModifiers().size() + 2);
+        for ( ConditionType conditionType : type.getModifiers() ) {
+            conditions.add(conditionType.getExternalForm());
+        }
+
+        if ( field.isNullable() ) {
+            conditions.add(ConditionType.NULL.getExternalForm());
+            conditions.add(ConditionType.NOTNULL.getExternalForm());
+        }
+
+        return conditions;
+    }
 
     @Override
-    public Set<String> getLinks(SchemaFactory schemaFactory, Resource resource) {
-        String key = schemaFactory.getId() + "-" + resource.getType();
-        Set<String> links = linksCache.get(key);
+    public Map<String,Relationship> getLinkRelationships(SchemaFactory schemaFactory, String type) {
+        Map<String,Relationship> result = new HashMap<String, Relationship>();
+        Schema schema = schemaFactory.getSchema(type);
+
+        Map<String,Relationship> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId()));
+        for ( String link : getLinks(schemaFactory, type).keySet() ) {
+            Relationship rel = relationships.get(link);
+            if ( rel != null ) {
+                result.put(link, rel);
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<String,String> getLinks(SchemaFactory schemaFactory, String type) {
+        String key = schemaFactory.getId() + ":links:" + type;
+        Map<String,String> links = linksCache.get(key);
         if ( links != null )
             return links;
 
-        links = new TreeSet<String>();
-        Schema schema = schemaFactory.getSchema(resource.getType());
+        links = new TreeMap<String,String>();
+        Schema schema = schemaFactory.getSchema(type);
 
         Map<String,Relationship> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId()));
         if ( relationships == null || relationships.size() == 0 ) {
@@ -244,12 +313,12 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         for ( Relationship relationship : relationships.values() ) {
             if ( relationship.getRelationshipType() == REFERENCE ) {
                 if ( schema.getResourceFields().containsKey(relationship.getPropertyName()) ) {
-                    links.add(relationship.getName());
+                    links.put(relationship.getName(), relationship.getPropertyName());
                 }
             } else if ( relationship.getRelationshipType() == CHILD ) {
                 Schema other = schemaFactory.getSchema(relationship.getObjectType());
                 if ( other != null )
-                    links.add(relationship.getName());
+                    links.put(relationship.getName(), null);
             }
         }
 

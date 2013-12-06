@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     private static final Logger log = LoggerFactory.getLogger(JooqObjectManager.class);
 
-    Map<ChildReferenceCacheKey, ForeignKey<?, ?>> childReferenceCache = new WeakHashMap<ChildReferenceCacheKey, ForeignKey<?, ?>>();
+    Map<ChildReferenceCacheKey, ForeignKey<?, ?>> childReferenceCache = Collections.synchronizedMap(new WeakHashMap<ChildReferenceCacheKey, ForeignKey<?, ?>>());
     Configuration configuration;
     Configuration lockingConfiguration;
     ObjectMetaDataManager metaDataManager;
@@ -159,7 +160,7 @@ public class JooqObjectManager extends AbstractObjectManager {
         }
 
         for ( Map.Entry<Object, Object> entry : values.entrySet() ) {
-            String name = metaDataManager.convertPropertyNameFor(recordClass, entry.getKey());
+            String name = metaDataManager.convertToPropertyNameString(recordClass, entry.getKey());
             result.put(name, entry.getValue());
         }
 

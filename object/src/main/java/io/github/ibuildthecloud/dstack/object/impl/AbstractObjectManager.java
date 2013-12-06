@@ -4,7 +4,7 @@ import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler;
 import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler.LifeCycleEvent;
 import io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHandler;
-import io.github.ibuildthecloud.dstack.util.type.MapUtils;
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 import java.util.List;
@@ -32,7 +32,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
     @Override
     public <T> T create(Class<T> clz, Object key, Object... valueKeyValue) {
-        Map<Object,Object> properties = MapUtils.asMap(key, valueKeyValue);
+        Map<Object,Object> properties = CollectionUtils.asMap(key, valueKeyValue);
         return create(clz, convertToPropertiesFor(clz, properties));
     }
 
@@ -60,7 +60,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
     @Override
     public <T> T setFields(Object obj, Object key, Object... valueKeyValue) {
-        Map<Object,Object> values = MapUtils.asMap(key, valueKeyValue);
+        Map<Object,Object> values = CollectionUtils.asMap(key, valueKeyValue);
 
         return setFields(obj, convertToPropertiesFor(obj, values));
     }

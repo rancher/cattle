@@ -28,7 +28,7 @@
    </category>
 
    <logger name="org.jooq">
-      <level value="DEBUG"/>
+      <level value="INFO"/>
    </logger>
 
    <category name="org.springframework">
