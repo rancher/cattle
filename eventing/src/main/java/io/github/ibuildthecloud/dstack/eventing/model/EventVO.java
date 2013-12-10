@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.eventing.model.impl;
+package io.github.ibuildthecloud.dstack.eventing.model;
 
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 
@@ -7,13 +7,30 @@ import java.util.UUID;
 
 public class EventVO implements Event {
 
-    String id = UUID.randomUUID().toString();
+    String id;
     String name;
+    String replyTo;
     String[] previousIds;
     Object data;
-    Date time = new Date();
+    Date time;
     String publisher;
 
+    public EventVO() {
+        id = UUID.randomUUID().toString();
+        time = new Date();
+    }
+
+    public EventVO(Event event, String replyTo) {
+        this.replyTo = replyTo;
+
+        this.id = event.getId();
+        this.name = event.getName();
+        this.previousIds = event.getPreviousIds();
+        this.data = event.getData();
+        this.time = event.getTime();
+        this.publisher = event.getPublisher();
+    }
+    @Override
     public String getName() {
         return name;
     }
@@ -22,6 +39,7 @@ public class EventVO implements Event {
         this.name = name;
     }
 
+    @Override
     public String[] getPreviousIds() {
         return previousIds;
     }
@@ -30,6 +48,7 @@ public class EventVO implements Event {
         this.previousIds = previousIds;
     }
 
+    @Override
     public Object getData() {
         return data;
     }
@@ -38,6 +57,7 @@ public class EventVO implements Event {
         this.data = data;
     }
 
+    @Override
     public Date getTime() {
         return time;
     }
@@ -46,6 +66,7 @@ public class EventVO implements Event {
         this.time = time;
     }
 
+    @Override
     public String getPublisher() {
         return publisher;
     }
@@ -54,12 +75,22 @@ public class EventVO implements Event {
         this.publisher = publisher;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    @Override
+    public String getReplyTo() {
+        return replyTo;
+    }
+
+    public void setReplyTo(String replyTo) {
+        this.replyTo = replyTo;
     }
 
 }

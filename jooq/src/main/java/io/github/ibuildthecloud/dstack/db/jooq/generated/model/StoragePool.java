@@ -85,4 +85,10 @@ public interface StoragePool extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "removed")
 	public java.sql.Timestamp getRemoved();
+
+	/**
+	 * Getter for <code>dstack.storage_pool.agent_id</code>. 
+	 */
+	@javax.persistence.Column(name = "agent_id", precision = 19)
+	public java.lang.Long getAgentId();
 }

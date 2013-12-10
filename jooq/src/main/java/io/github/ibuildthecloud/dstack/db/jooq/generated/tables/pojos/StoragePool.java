@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.pojos;
 @javax.persistence.Table(name = "storage_pool", schema = "dstack")
 public class StoragePool implements io.github.ibuildthecloud.dstack.db.jooq.generated.model.StoragePool {
 
-	private static final long serialVersionUID = -1183800681;
+	private static final long serialVersionUID = -1204698755;
 
 	private final java.lang.Long     id;
 	private final java.lang.String   uuid;
@@ -27,6 +27,7 @@ public class StoragePool implements io.github.ibuildthecloud.dstack.db.jooq.gene
 	private final java.lang.Long     virtualTotalBytes;
 	private final java.sql.Timestamp created;
 	private final java.sql.Timestamp removed;
+	private final java.lang.Long     agentId;
 
 	public StoragePool(
 		java.lang.Long     id,
@@ -40,7 +41,8 @@ public class StoragePool implements io.github.ibuildthecloud.dstack.db.jooq.gene
 		java.lang.Long     physicalUsedBytes,
 		java.lang.Long     virtualTotalBytes,
 		java.sql.Timestamp created,
-		java.sql.Timestamp removed
+		java.sql.Timestamp removed,
+		java.lang.Long     agentId
 	) {
 		this.id = id;
 		this.uuid = uuid;
@@ -54,6 +56,7 @@ public class StoragePool implements io.github.ibuildthecloud.dstack.db.jooq.gene
 		this.virtualTotalBytes = virtualTotalBytes;
 		this.created = created;
 		this.removed = removed;
+		this.agentId = agentId;
 	}
 
 	@javax.persistence.Id
@@ -127,5 +130,11 @@ public class StoragePool implements io.github.ibuildthecloud.dstack.db.jooq.gene
 	@Override
 	public java.sql.Timestamp getRemoved() {
 		return this.removed;
+	}
+
+	@javax.persistence.Column(name = "agent_id", precision = 19)
+	@Override
+	public java.lang.Long getAgentId() {
+		return this.agentId;
 	}
 }

@@ -7,7 +7,7 @@ import io.github.ibuildthecloud.dstack.db.dynamicfield.VolumeFields;
 import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Instance;
 import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Nic;
 import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Volume;
-import io.github.ibuildthecloud.dstack.engine.handler.AbstractProcessHandler;
+import io.github.ibuildthecloud.dstack.engine.handler.AbstractDefaultProcessHandler;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
@@ -21,7 +21,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class CreateInstance extends AbstractProcessHandler<Instance> {
+public class CreateInstance extends AbstractDefaultProcessHandler<Instance> {
 
     JsonMapper jsonMapper;
     TransportFactory transportFactory;
@@ -29,8 +29,8 @@ public class CreateInstance extends AbstractProcessHandler<Instance> {
     ObjectManager objectManager;
 
     @Override
-    public HandlerResult handle(ProcessState<Instance> state, ProcessInstance process) {
-        Instance instance = state.getResource();
+    public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        Instance instance = (Instance)state.getResource();
         List<Volume> volumes = objectManager.children(instance, Volume.class);
         List<Nic> nics = objectManager.children(instance, Nic.class);
 
@@ -118,7 +118,7 @@ public class CreateInstance extends AbstractProcessHandler<Instance> {
             }
 
             if ( existing == null ) {
-                objectManager.create(Nic.class, 
+                objectManager.create(Nic.class,
                         NIC.ACCOUNT_ID, instance.getAccountId(),
                         NIC.NETWORK_ID, createId,
                         NIC.INSTANCE_ID, instance.getId(),

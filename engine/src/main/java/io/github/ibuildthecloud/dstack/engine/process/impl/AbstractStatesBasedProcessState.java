@@ -7,7 +7,7 @@ import io.github.ibuildthecloud.dstack.json.JsonMapper;
 
 import java.util.Map;
 
-public abstract class AbstractStatesBasedProcessState<T> implements ProcessState<T> {
+public abstract class AbstractStatesBasedProcessState implements ProcessState {
 
     ResourceStatesDefinition statesDefinition;
     JsonMapper jsonMapper;

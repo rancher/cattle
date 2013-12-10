@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord> {
 
-	private static final long serialVersionUID = -249632771;
+	private static final long serialVersionUID = 1330398759;
 
 	/**
 	 * The singleton instance of <code>dstack.host</code>
@@ -35,11 +35,6 @@ public class HostTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.
 	 * The column <code>dstack.host.name</code>. 
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
-
-	/**
-	 * The column <code>dstack.host.host_group_id</code>. 
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord, java.lang.Long> HOST_GROUP_ID = createField("host_group_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
 
 	/**
 	 * The column <code>dstack.host.kind</code>. 
@@ -75,6 +70,11 @@ public class HostTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.
 	 * The column <code>dstack.host.description</code>. 
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+
+	/**
+	 * The column <code>dstack.host.agent_id</code>. 
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord, java.lang.Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this);
 
 	/**
 	 * Create a <code>dstack.host</code> table reference
@@ -119,7 +119,7 @@ public class HostTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord, ?>>asList(io.github.ibuildthecloud.dstack.db.jooq.generated.Keys.FK_HOST_HOST_GROUP_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.HostRecord, ?>>asList(io.github.ibuildthecloud.dstack.db.jooq.generated.Keys.HOST_IBFK_1);
 	}
 
 	/**

@@ -9,5 +9,40 @@
         <relativePath>../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>15.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-json</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-archaius</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-db-loader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cloudstack</groupId>
+            <artifactId>cloud-framework-managed-context</artifactId>
+            <version>${acs.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-pool</groupId>
+            <artifactId>commons-pool</artifactId>
+            <version>1.6</version>
+        </dependency>
     </dependencies>
 </project>

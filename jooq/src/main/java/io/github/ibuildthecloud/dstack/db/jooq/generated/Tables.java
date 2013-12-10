@@ -19,6 +19,16 @@ public class Tables {
 	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable ACCOUNT = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT;
 
 	/**
+	 * The table dstack.agent
+	 */
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AgentTable AGENT = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AgentTable.AGENT;
+
+	/**
+	 * The table dstack.agent_group
+	 */
+	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AgentGroupTable AGENT_GROUP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AgentGroupTable.AGENT_GROUP;
+
+	/**
 	 * The table dstack.credential
 	 */
 	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable CREDENTIAL = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL;
@@ -42,11 +52,6 @@ public class Tables {
 	 * The table dstack.host
 	 */
 	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable HOST = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST;
-
-	/**
-	 * The table dstack.host_group
-	 */
-	public static final io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostGroupTable HOST_GROUP = io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostGroupTable.HOST_GROUP;
 
 	/**
 	 * The table dstack.image

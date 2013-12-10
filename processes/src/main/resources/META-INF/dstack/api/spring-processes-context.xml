@@ -45,11 +45,59 @@
                         </property>
                     </bean>
                 </entry>
+                <entry key="create.agentgroup">
+                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition" >
+                        <property name="name" value="create.agentgroup" />
+                        <property name="statesDefinition">
+                            <bean class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition" >
+                                <property name="startStates">
+                                    <list>
+                                        <value>requested</value>
+                                    </list>
+                                </property>
+                                <property name="transitioningStates">
+                                    <list>
+                                        <value>registering</value>
+                                    </list>
+                                </property>
+                                <property name="doneStates">
+                                    <list>
+                                        <value>active</value>
+                                    </list>
+                                </property>
+                            </bean>
+                        </property>
+                    </bean>
+                </entry>
+                <entry key="create.agent">
+                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition" >
+                        <property name="name" value="create.agent" />
+                        <property name="statesDefinition">
+                            <bean class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition" >
+                                <property name="startStates">
+                                    <list>
+                                        <value>requested</value>
+                                    </list>
+                                </property>
+                                <property name="transitioningStates">
+                                    <list>
+                                        <value>registering</value>
+                                    </list>
+                                </property>
+                                <property name="doneStates">
+                                    <list>
+                                        <value>active</value>
+                                    </list>
+                                </property>
+                            </bean>
+                        </property>
+                    </bean>
+                </entry>
             </map>
         </property>
     </bean>
 
-    <bean class="io.github.ibuildthecloud.dstack.engine.process.impl.DefaultProcessLogicRegistry" />
+    <bean class="io.github.ibuildthecloud.dstack.filter.agent.AgentFilter" />
 
     <bean id="CreateInstance" class="io.github.ibuildthecloud.dstack.process.instance.CreateInstance" />
 

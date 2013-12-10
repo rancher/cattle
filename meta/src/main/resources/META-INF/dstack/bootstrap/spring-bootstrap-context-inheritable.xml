@@ -9,6 +9,6 @@
                       http://www.springframework.org/schema/context/spring-context-3.0.xsd"
                       >
 
-    <context:annotation-config />
+    <import resource="classpath:META-INF/dstack/spring-bootstrap/extension-fragment-context-inheritable.xml"/>
 
 </beans>

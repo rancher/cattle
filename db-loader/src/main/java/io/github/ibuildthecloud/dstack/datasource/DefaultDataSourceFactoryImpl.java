@@ -32,9 +32,9 @@ public class DefaultDataSourceFactoryImpl implements DataSourceFactory {
             if ( newValue != null ) {
                 try {
                     if ( "password".equals(desc.getName()) ) {
-                        log.info("Setting DB [{}] property [{}={}]", dataSourceName, desc.getName(), "****");
+                        log.info("Setting Pool [{}] property [{}={}]", dataSourceName, desc.getName(), "****");
                     } else {
-                        log.info("Setting DB [{}] property [{}={}]", dataSourceName, desc.getName(), newValue);
+                        log.info("Setting Pool [{}] property [{}={}]", dataSourceName, desc.getName(), newValue);
                     }
                     BeanUtils.setProperty(poolOrConfig, desc.getName(), newValue);
                 } catch (IllegalAccessException e) {
@@ -55,14 +55,19 @@ public class DefaultDataSourceFactoryImpl implements DataSourceFactory {
     @Override
     public DataSource createDataSource(String name) {
         String server = getProperty("db." + name + ".database");
+        String alias = getProperty("db." + name + ".alias");
 
-        String prefix = "db." + name + ".";
-        if ( server != null ) {
-            prefix = prefix + server + "."; 
+        if ( server == null && alias != null ) {
+            server = getProperty("db." + alias + ".database");
         }
 
         BasicDataSource ds = new BasicDataSource();
-        setConfig(ds, name, String.format("db.%s.%s.", name, server), String.format("db.%s.", name), "db.");
+        if ( alias == null ) {
+            setConfig(ds, name, String.format("db.%s.%s.", name, server), String.format("db.%s.", name), "db.");
+        } else {
+            setConfig(ds, name, String.format("db.%s.%s.", name, server), String.format("db.%s.", name),
+                    String.format("db.%s.%s.", alias, server), String.format("db.%s.", alias), "db.");
+        }
 
         return ds;
     }

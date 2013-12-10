@@ -7,9 +7,12 @@ import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship.RelationshipType;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.model.Include;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Sort;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.model.Pagination;
 
 import java.util.ArrayList;
@@ -23,11 +26,14 @@ import org.jooq.DSLContext;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.TableField;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DefaultDSLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractJooqResourceManager extends AbstractObjectResourceManager {
 
-//    private static final Logger log = LoggerFactory.getLogger(AbstractJooqResourceManager.class);
+    private static final Logger log = LoggerFactory.getLogger(AbstractJooqResourceManager.class);
 
     Configuration configuration;
 
@@ -265,6 +271,20 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         }
     }
 
+    @Override
+    protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean handleException(Throwable t, ApiRequest apiRequest) {
+        if ( t instanceof DataAccessException ) {
+            log.error("Database error", t);
+            throw new ClientVisibleException(ResponseCodes.CONFLICT);
+        }
+        return super.handleException(t, apiRequest);
+    }
+
     public Configuration getConfiguration() {
         return configuration;
     }
@@ -273,6 +293,5 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
-
 
 }

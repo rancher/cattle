@@ -16,4 +16,12 @@ public class NamedUtils {
         return result;
     }
 
+    public static final String getName(Object obj) {
+        if ( obj instanceof Named ) {
+            return ((Named)obj).getName();
+        } else {
+            return obj.getClass().getSimpleName();
+        }
+    }
+
 }

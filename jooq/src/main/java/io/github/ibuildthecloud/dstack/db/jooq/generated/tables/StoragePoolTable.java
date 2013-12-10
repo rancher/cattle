@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolRecord> {
 
-	private static final long serialVersionUID = 1790009405;
+	private static final long serialVersionUID = -212130540;
 
 	/**
 	 * The singleton instance of <code>dstack.storage_pool</code>
@@ -87,6 +87,11 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.github.ibuildth
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolRecord, java.sql.Timestamp> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP, this);
 
 	/**
+	 * The column <code>dstack.storage_pool.agent_id</code>. 
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolRecord, java.lang.Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this);
+
+	/**
 	 * Create a <code>dstack.storage_pool</code> table reference
 	 */
 	public StoragePoolTable() {
@@ -122,6 +127,14 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.github.ibuildth
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolRecord>> getKeys() {
 		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolRecord>>asList(io.github.ibuildthecloud.dstack.db.jooq.generated.Keys.KEY_STORAGE_POOL_PRIMARY);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolRecord, ?>> getReferences() {
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.StoragePoolRecord, ?>>asList(io.github.ibuildthecloud.dstack.db.jooq.generated.Keys.STORAGE_POOL_IBFK_1);
 	}
 
 	/**

@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
 
-public class GenericResourceProcessState extends AbstractStatesBasedProcessState<Object> {
+public class GenericResourceProcessState extends AbstractStatesBasedProcessState {
 
     String resourceType;
     String resourceId;

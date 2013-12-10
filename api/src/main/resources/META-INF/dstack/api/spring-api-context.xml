@@ -92,7 +92,5 @@
         </property>
     </bean>
 
-    <bean class="io.github.ibuildthecloud.dstack.json.JacksonJsonMapper" />
-
     <bean class="io.github.ibuildthecloud.dstack.object.process.impl.DefaultObjectProcessManager" />
 </beans>

@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.IOUtils;
@@ -26,7 +27,7 @@ public class JsonOverlayPostProcessor implements SchemaPostProcessor {
 
     URL schemaFile;
     JsonMapper jsonMapper;
-    Map<String, SchemaImpl> schemas = new HashMap<String, SchemaImpl>(); 
+    Map<String, SchemaImpl> schemas = new HashMap<String, SchemaImpl>();
 
     @Override
     public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactoryImpl factory) {
@@ -114,6 +115,7 @@ public class JsonOverlayPostProcessor implements SchemaPostProcessor {
         return jsonMapper;
     }
 
+    @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
     }

@@ -8,6 +8,8 @@ public interface Event {
 
     String getName();
 
+    String getReplyTo();
+
     String[] getPreviousIds();
 
     Object getData();
@@ -15,4 +17,5 @@ public interface Event {
     Date getTime();
 
     String getPublisher();
+
 }

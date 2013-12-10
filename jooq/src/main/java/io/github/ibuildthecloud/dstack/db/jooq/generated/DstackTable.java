@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DstackTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 827419255;
+	private static final long serialVersionUID = 1584093607;
 
 	/**
 	 * The singleton instance of <code>dstack</code>
@@ -35,12 +35,13 @@ public class DstackTable extends org.jooq.impl.SchemaImpl {
 	private final java.util.List<org.jooq.Table<?>> getTables0() {
 		return java.util.Arrays.<org.jooq.Table<?>>asList(
 			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.ACCOUNT,
+			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AgentTable.AGENT,
+			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AgentGroupTable.AGENT_GROUP,
 			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.CredentialTable.CREDENTIAL,
 			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DataTable.DATA,
 			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangelogTable.DATABASECHANGELOG,
 			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK,
 			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostTable.HOST,
-			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.HostGroupTable.HOST_GROUP,
 			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageTable.IMAGE,
 			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageFormatTable.IMAGE_FORMAT,
 			io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP,

@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.engine.handler;
 
-public abstract class AbstractProcessHandler<T> implements ProcessHandler<T> {
+public abstract class AbstractProcessHandler implements ProcessHandler {
 
     String name = getClass().getSimpleName();
 

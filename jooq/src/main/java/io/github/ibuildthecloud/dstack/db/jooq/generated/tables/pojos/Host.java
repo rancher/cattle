@@ -13,11 +13,10 @@ package io.github.ibuildthecloud.dstack.db.jooq.generated.tables.pojos;
 @javax.persistence.Table(name = "host", schema = "dstack")
 public class Host implements io.github.ibuildthecloud.dstack.db.jooq.generated.model.Host {
 
-	private static final long serialVersionUID = 347783359;
+	private static final long serialVersionUID = -791030029;
 
 	private final java.lang.Long               id;
 	private final java.lang.String             name;
-	private final java.lang.Long               hostGroupId;
 	private final java.lang.String             kind;
 	private final java.lang.String             state;
 	private final java.sql.Timestamp           created;
@@ -25,22 +24,22 @@ public class Host implements io.github.ibuildthecloud.dstack.db.jooq.generated.m
 	private final java.util.Map<String,Object> data;
 	private final java.lang.String             uuid;
 	private final java.lang.String             description;
+	private final java.lang.Long               agentId;
 
 	public Host(
 		java.lang.Long               id,
 		java.lang.String             name,
-		java.lang.Long               hostGroupId,
 		java.lang.String             kind,
 		java.lang.String             state,
 		java.sql.Timestamp           created,
 		java.sql.Timestamp           removed,
 		java.util.Map<String,Object> data,
 		java.lang.String             uuid,
-		java.lang.String             description
+		java.lang.String             description,
+		java.lang.Long               agentId
 	) {
 		this.id = id;
 		this.name = name;
-		this.hostGroupId = hostGroupId;
 		this.kind = kind;
 		this.state = state;
 		this.created = created;
@@ -48,6 +47,7 @@ public class Host implements io.github.ibuildthecloud.dstack.db.jooq.generated.m
 		this.data = data;
 		this.uuid = uuid;
 		this.description = description;
+		this.agentId = agentId;
 	}
 
 	@javax.persistence.Id
@@ -61,12 +61,6 @@ public class Host implements io.github.ibuildthecloud.dstack.db.jooq.generated.m
 	@Override
 	public java.lang.String getName() {
 		return this.name;
-	}
-
-	@javax.persistence.Column(name = "host_group_id", nullable = false, precision = 19)
-	@Override
-	public java.lang.Long getHostGroupId() {
-		return this.hostGroupId;
 	}
 
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
@@ -109,5 +103,11 @@ public class Host implements io.github.ibuildthecloud.dstack.db.jooq.generated.m
 	@Override
 	public java.lang.String getDescription() {
 		return this.description;
+	}
+
+	@javax.persistence.Column(name = "agent_id", precision = 19)
+	@Override
+	public java.lang.Long getAgentId() {
+		return this.agentId;
 	}
 }

@@ -16,6 +16,6 @@ public abstract class NoExceptionRunnable extends ManagedContextRunnable {
         }
     }
 
-    public abstract void doRun() throws Exception;
+    protected abstract void doRun() throws Exception;
 
 }

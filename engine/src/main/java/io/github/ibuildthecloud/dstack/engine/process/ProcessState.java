@@ -4,9 +4,9 @@ import java.util.Map;
 
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 
-public interface ProcessState<T> {
+public interface ProcessState {
 
-    T getResource();
+    Object getResource();
 
     LockDefinition getProcessLock();
 

@@ -17,6 +17,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-archaius-startup</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>jstl</groupId>
             <artifactId>jstl</artifactId>
             <version>1.2</version>

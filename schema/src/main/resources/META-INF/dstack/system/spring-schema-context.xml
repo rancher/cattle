@@ -14,6 +14,7 @@
     </bean>
 
     <bean class="io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl">
+        <property name="writableByDefault" value="true" />
         <property name="types">
             <bean factory-bean="CoreSchemaList" factory-method="getRecordTypes" />
 <!--             <list> -->
@@ -31,6 +32,12 @@
         </property>
         <property name="postProcessors">
             <list>
+                <bean class="io.github.ibuildthecloud.dstack.schema.processor.JsonOverlayPostProcessor" >
+                    <property name="schemaFile" value="classpath:schema/base-schema.json" />
+                    <property name="jsonMapper">
+                        <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
+                    </property>
+                </bean>
                 <bean class="io.github.ibuildthecloud.dstack.schema.processor.JsonOverlayPostProcessor" >
                     <property name="schemaFile" value="classpath:schema/base-schema.json" />
                     <property name="jsonMapper">

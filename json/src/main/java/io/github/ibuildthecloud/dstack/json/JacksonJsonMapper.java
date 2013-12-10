@@ -3,7 +3,6 @@ package io.github.ibuildthecloud.dstack.json;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 
@@ -20,7 +19,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 /**
  * Default implementation of JsonMapper that uses Jackson for marshaling and
  * supports JAXB annotations.
- * 
+ *
  */
 public class JacksonJsonMapper implements JsonMapper {
 
@@ -105,49 +104,49 @@ public class JacksonJsonMapper implements JsonMapper {
         this.mapper = objectMapper;
     }
 
-    @Override
-    public <T> T fromJson(String text, Class<T> type) {
-        try {
-            return readValue(text, type);
-        } catch (IOException e) {
-            throw new JsonProcessingException(e);
-        }
-    }
-
-    @Override
-    public void toJson(Object object, Writer os) {
-        try {
-            mapper.writeValue(os, object);
-        } catch (IOException e) {
-            throw new JsonProcessingException(e);
-        }
-    }
-
-    @Override
-    public String toJson(Object object) {
-        try {
-            return writeValueAsString(object);
-        } catch (IOException e) {
-            throw new JsonProcessingException(e);
-        }
-    }
+//    @Override
+//    public <T> T fromJson(String text, Class<T> type) {
+//        try {
+//            return readValue(text, type);
+//        } catch (IOException e) {
+//            throw new JsonProcessingException(e);
+//        }
+//    }
+//
+//    @Override
+//    public void toJson(Object object, Writer os) {
+//        try {
+//            mapper.writeValue(os, object);
+//        } catch (IOException e) {
+//            throw new JsonProcessingException(e);
+//        }
+//    }
+//
+//    @Override
+//    public String toJson(Object object) {
+//        try {
+//            return writeValueAsString(object);
+//        } catch (IOException e) {
+//            throw new JsonProcessingException(e);
+//        }
+//    }
 
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> readValue(InputStream is) throws IOException {
-        return (Map<String, Object>)readValue(is, Map.class);
+        return readValue(is, Map.class);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> readValue(byte[] bytes) throws IOException {
-        return (Map<String, Object>)readValue(bytes, Map.class);
+        return readValue(bytes, Map.class);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> readValue(String text) throws IOException {
-        return (Map<String, Object>)readValue(text, Map.class);
+        return readValue(text, Map.class);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

@@ -27,12 +27,6 @@ public interface Host extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
-	 * Getter for <code>dstack.host.host_group_id</code>. 
-	 */
-	@javax.persistence.Column(name = "host_group_id", nullable = false, precision = 19)
-	public java.lang.Long getHostGroupId();
-
-	/**
 	 * Getter for <code>dstack.host.kind</code>. 
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
@@ -73,4 +67,10 @@ public interface Host extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "description", length = 255)
 	public java.lang.String getDescription();
+
+	/**
+	 * Getter for <code>dstack.host.agent_id</code>. 
+	 */
+	@javax.persistence.Column(name = "agent_id", precision = 19)
+	public java.lang.Long getAgentId();
 }

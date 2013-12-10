@@ -3,7 +3,6 @@ package io.github.ibuildthecloud.dstack.json;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 
@@ -37,37 +36,37 @@ public interface JsonMapper {
 
     <T> T convertValue(Object fromValue, Class<T> toValueType);
 
-    /**
-     * @deprecated
-     * 
-     * This method provides a toJson() method to match Gson. It is preferable to
-     * use writeValueAsString() as that method throws an IOException.
-     * 
-     * @param object
-     * @return
-     */
-    String toJson(Object object);
-    
-    /**
-     * @deprecated
-     * 
-     * This method provides a toJson() method to match Gson.
-     * 
-     * @param object
-     * @param os
-     */
-    void toJson(Object object, Writer os);
-
-    /**
-     * @deprecated
-     * 
-     * This method provides a fromJson() method to match Gson. It is preferable
-     * to use readValue() as that method throws an IOException.
-     * 
-     * @param text
-     * @param type
-     * @return
-     */
-    <T> T fromJson(String text, Class<T> type);
+//    /**
+//     * @deprecated
+//     *
+//     * This method provides a toJson() method to match Gson. It is preferable to
+//     * use writeValueAsString() as that method throws an IOException.
+//     *
+//     * @param object
+//     * @return
+//     */
+//    String toJson(Object object);
+//
+//    /**
+//     * @deprecated
+//     *
+//     * This method provides a toJson() method to match Gson.
+//     *
+//     * @param object
+//     * @param os
+//     */
+//    void toJson(Object object, Writer os);
+//
+//    /**
+//     * @deprecated
+//     *
+//     * This method provides a fromJson() method to match Gson. It is preferable
+//     * to use readValue() as that method throws an IOException.
+//     *
+//     * @param text
+//     * @param type
+//     * @return
+//     */
+//    <T> T fromJson(String text, Class<T> type);
 
 }

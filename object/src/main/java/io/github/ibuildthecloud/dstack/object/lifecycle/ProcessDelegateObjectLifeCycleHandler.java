@@ -47,7 +47,7 @@ public class ProcessDelegateObjectLifeCycleHandler extends AbstractObjectLifeCyc
             throw new IllegalStateException("Failed to find schema for class [" + clz + "]");
         }
 
-        String suffix = schema.getId().replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+        String suffix = schema.getId().toLowerCase();
         return prefix + suffix;
     }
 
