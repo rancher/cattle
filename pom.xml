@@ -13,10 +13,13 @@
 		<module>api</module>
 		<module>app</module>
 		<module>archaius</module>
+		<module>archaius-startup</module>
 		<module>db-loader</module>
 		<module>engine</module>
 		<module>engine-jooq</module>
 		<module>eventing</module>
+		<module>extension</module>
+		<module>extension-spring</module>
 		<module>jooq</module>
 		<module>json</module>
 		<module>launcher</module>
@@ -30,11 +33,7 @@
 		<module>schema</module>
 		<module>transport</module>
         <module>upstream/cloudstack/framework/managed-context</module>
-        <module>upstream/cloudstack/framework/spring/lifecycle</module>
         <module>upstream/cloudstack/framework/spring/module</module>
-        <module>upstream/cloudstack/framework/db</module>
-        <module>upstream/cloudstack/framework/config</module>
-        <module>upstream/cloudstack/utils</module>
         <module>utils</module>
 	</modules>
     <profiles>

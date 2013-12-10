@@ -41,9 +41,9 @@
       <version>${acs.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.cloudstack</groupId>
-      <artifactId>cloud-framework-spring-lifecycle</artifactId>
-      <version>${acs.version}</version>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
         <groupId>javax.servlet</groupId>
