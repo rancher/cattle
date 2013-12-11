@@ -1,0 +1,43 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean id="Versions" class="io.github.ibuildthecloud.gdapi.version.Versions" >
+        <property name="versions">
+            <list>
+                <value type="java.lang.String">v1</value>
+            </list>
+        </property>
+        <property name="latest" value="v1" />
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate" >
+        <property name="handlers" value="#{extensionManager.list('api.request.handler')}" />
+        <property name="version">
+            <bean factory-bean="Versions" factory-method="getLatest" />
+        </property>
+        <property name="idFormatter" value="#{extensionManager.first('id.formatter', 'io.github.ibuildthecloud.gdapi.id.IdFormatter')}" />
+    </bean>
+
+    <bean id="DefaultIdFormatter" class="io.github.ibuildthecloud.dstack.api.formatter.DefaultIdFormatter" />
+
+    <bean class="io.github.ibuildthecloud.dstack.api.resource.ExtensionResourceManagerLocator" >
+        <property name="defaultResourceManager" ref="DefaultResourceManager" />
+        <property name="resourceManagers" value="#{extensionManager.list('resource.manager')}" />
+        <property name="resourceManagerFilters" value="#{extensionManager.list('resource.manager.filter')}" />
+    </bean>
+
+    <bean id="DefaultResourceManager" class="io.github.ibuildthecloud.dstack.api.resource.DefaultJooqResourceManager" />
+
+    <bean class="io.github.ibuildthecloud.dstack.api.html.ConfigBasedHtmlTemplate" />
+    <bean class="io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser" />
+    <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
+
+
+</beans>
