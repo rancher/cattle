@@ -10,15 +10,28 @@
                       >
 
     <bean id="DefaultObjectMetaDataManager" class="io.github.ibuildthecloud.dstack.object.meta.impl.DefaultObjectMetaDataManager" >
-        <property name="typeSets">
+        <property name="typeSets" value="#{extensionManager.list('type.set')}" />
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.object.impl.DefaultObjectManager" >
+        <property name="postInitHandlers" value="#{extensionManager.list('object.post.instantiation.handler')}" />
+        <property name="lifeCycleHandlers" value="#{extensionManager.list('object.life.cycle.handler')}" />
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.object.postinit.SpecialFieldsPostInstantiationHandler" />
+    <bean class="io.github.ibuildthecloud.dstack.object.postinit.ObjectDefaultsPostInstantiationHandler" >
+        <property name="defaultProviders">
             <list>
-                <bean class="io.github.ibuildthecloud.dstack.object.meta.TypeSet" >
-                    <property name="typeClasses">
-                        <bean factory-bean="CoreSchemaList" factory-method="getRecordTypes" />
-                    </property>
+                <bean class="io.github.ibuildthecloud.dstack.object.defaults.JsonDefaultsProvider" >
+                    <property name="defaultPath" value="schema/defaults" />
+                    <property name="defaultOverridePath" value="schema/defaults/overrides" />
                 </bean>
             </list>
         </property>
     </bean>
+    <bean class="io.github.ibuildthecloud.dstack.object.postinit.ObjectDataPostInstantiationHandler" />
+    <bean class="io.github.ibuildthecloud.dstack.object.postinit.SetPropertiesPostInstantiationHandler" />
+
+    <bean class="io.github.ibuildthecloud.dstack.object.lifecycle.ProcessDelegateObjectLifeCycleHandler" />
 
 </beans>

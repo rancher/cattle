@@ -1,8 +1,8 @@
 package io.github.ibuildthecloud.dstack.engine.repository.impl.jooq;
 
-import static io.github.ibuildthecloud.dstack.db.jooq.generated.tables.ProcessInstanceTable.*;
+import static io.github.ibuildthecloud.dstack.core.tables.ProcessInstanceTable.*;
+import io.github.ibuildthecloud.dstack.core.tables.records.ProcessInstanceRecord;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
-import io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ProcessInstanceRecord;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessPhase;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessResult;
@@ -20,6 +20,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.ObjectUtils;
+
 
 public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessRecordDao {
 
@@ -39,7 +40,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
 
     @Override
     public ProcessRecord getRecord(Long id) {
-        io.github.ibuildthecloud.dstack.db.jooq.generated.model.ProcessInstance record = create()
+        io.github.ibuildthecloud.dstack.core.model.ProcessInstance record = create()
                 .selectFrom(PROCESS_INSTANCE)
                 .where(PROCESS_INSTANCE.ID.eq(id))
                 .fetchOne();
@@ -75,7 +76,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
 
     @Override
     public void update(ProcessRecord record) {
-        ProcessInstanceRecord pi = 
+        ProcessInstanceRecord pi =
                 create().selectFrom(PROCESS_INSTANCE)
                         .where(PROCESS_INSTANCE.ID.eq(record.getId()))
                         .fetchOne();

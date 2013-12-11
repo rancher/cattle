@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.api.auth.impl;
 
-import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Account;
+import io.github.ibuildthecloud.dstack.core.model.Account;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 
 import java.lang.reflect.InvocationTargetException;

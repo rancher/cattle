@@ -1,12 +1,12 @@
 package io.github.ibuildthecloud.dstack.eventing.impl;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
-import io.github.ibuildthecloud.dstack.datasource.DefaultDataSourceFactoryImpl;
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
+import io.github.ibuildthecloud.dstack.pool.PoolConfig;
 import io.github.ibuildthecloud.dstack.util.concurrent.DelayedObject;
 import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 
@@ -21,14 +21,11 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,7 +145,7 @@ public abstract class AbstractEventService implements EventService {
     }
 
     @Override
-    public Future<?> subscribe(final String eventName, final EventListener listener) throws IOException {
+    public Future<?> subscribe(final String eventName, final EventListener listener) {
         final SettableFuture<?> future = SettableFuture.create();
         boolean doSubscribe = register(eventName, listener);
 
@@ -163,6 +160,7 @@ public abstract class AbstractEventService implements EventService {
                     future.get();
                 } catch (Exception e) {
                     unsubscribe(eventName, listener);
+                    disconnect();
                 }
             }
         }, executorService);
@@ -260,7 +258,7 @@ public abstract class AbstractEventService implements EventService {
 
     @PostConstruct
     public void init() {
-        DefaultDataSourceFactoryImpl.setConfig(listenerPool, "eventPool", "event.pool.");
+        PoolConfig.setConfig(listenerPool, "eventPool", "event.pool.");
     }
 
     public void retry() {
@@ -279,6 +277,8 @@ public abstract class AbstractEventService implements EventService {
             delayed = retryQueue.poll();
         }
     }
+
+    protected abstract void disconnect();
 
     public JsonMapper getJsonMapper() {
         return jsonMapper;

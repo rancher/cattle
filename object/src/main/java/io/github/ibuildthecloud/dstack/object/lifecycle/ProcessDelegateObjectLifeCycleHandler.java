@@ -1,12 +1,16 @@
 package io.github.ibuildthecloud.dstack.object.lifecycle;
 
+import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
+import io.github.ibuildthecloud.dstack.engine.process.ProcessExecutionExitException;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.repository.ProcessNotFoundException;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Map;
 
@@ -30,10 +34,16 @@ public class ProcessDelegateObjectLifeCycleHandler extends AbstractObjectLifeCyc
 
         try {
             ProcessInstance process = processManager.createProcessInstance(config);
-            log.info("Running {}", config);
-            process.execute();
+            log.info("Scheduling {}", config);
+            process.schedule();
 
             return objectManager.loadResource(config.getResourceType(), config.getResourceId());
+        } catch ( ProcessExecutionExitException e ) {
+            if ( e.getExitReason() == ExitReason.FAILED_TO_ACQUIRE_LOCK ) {
+                throw new ClientVisibleException(ResponseCodes.CONFLICT);
+            } else {
+                throw e;
+            }
         } catch ( ProcessNotFoundException e ) {
             log.debug("Did not find process to run for [{}] due to [{}]", config, e.getMessage());
             return instance;

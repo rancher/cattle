@@ -10,11 +10,11 @@ import com.google.common.util.concurrent.SettableFuture;
 public class InMemoryEventService extends AbstractThreadPoolingEventService {
 
     @Override
-    protected void doPublish(String name, Event event, final String eventString) throws IOException {
+    protected void doPublish(final String name, Event event, final String eventString) throws IOException {
         getDefaultExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                onEvent(eventString);
+                onEvent(name, eventString);
             }
         });
     }
@@ -26,6 +26,10 @@ public class InMemoryEventService extends AbstractThreadPoolingEventService {
 
     @Override
     protected void doUnsubscribe(String eventName) {
+    }
+
+    @Override
+    protected void disconnect() {
     }
 
 }

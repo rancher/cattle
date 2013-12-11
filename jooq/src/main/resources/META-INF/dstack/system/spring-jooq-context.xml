@@ -29,6 +29,21 @@
 
     <bean id="JooqConfiguration" class="io.github.ibuildthecloud.dstack.db.jooq.config.Configuration" >
         <property name="name" value="dstack" />
+        <property name="connectionProvider" ref="JooqConnectionProvider" />
+    </bean>
+
+    <bean id="CoreTransactionManager"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="DataSource" />
+    </bean>
+
+    <bean id="JooqConnectionProvider" class="org.jooq.impl.DataSourceConnectionProvider" >
+        <constructor-arg>
+            <bean id="transactionAwareDataSource"
+                class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+                <constructor-arg ref="DataSource" />
+            </bean>
+        </constructor-arg>
     </bean>
 
 </beans>

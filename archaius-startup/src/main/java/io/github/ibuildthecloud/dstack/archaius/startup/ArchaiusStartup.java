@@ -4,7 +4,7 @@ import io.github.ibuildthecloud.dstack.archaius.polling.RefreshableFixedDelayPol
 import io.github.ibuildthecloud.dstack.archaius.sources.LazyJDBCSource;
 import io.github.ibuildthecloud.dstack.datasource.DataSourceFactory;
 import io.github.ibuildthecloud.dstack.extension.impl.ExtensionManagerImpl;
-import io.github.ibuildthecloud.dstack.util.type.BackgroundTask;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +23,7 @@ import com.netflix.config.DynamicConfiguration;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.sources.JDBCConfigurationSource;
 
-public class ArchaiusStartup implements BackgroundTask {
+public class ArchaiusStartup implements InitializationTask {
 
     public static final String CONFIG_KEY = "config";
     public static final String DB_CONFIG = "DatabaseConfig";

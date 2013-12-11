@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.extension.spring;
 
-import io.github.ibuildthecloud.dstack.util.type.BackgroundTask;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import org.springframework.context.SmartLifecycle;
 
 public class BackgroundStart implements BeanPostProcessor, Runnable, SmartLifecycle {
 
-    List<BackgroundTask> tasks = new ArrayList<BackgroundTask>();
+    List<InitializationTask> tasks = new ArrayList<InitializationTask>();
     boolean running = false;
 
     @Override
@@ -21,7 +21,7 @@ public class BackgroundStart implements BeanPostProcessor, Runnable, SmartLifecy
 
     @Override
     public void stop() {
-        for ( BackgroundTask task : tasks ) {
+        for ( InitializationTask task : tasks ) {
             task.stop();
         }
         running = false;
@@ -45,8 +45,8 @@ public class BackgroundStart implements BeanPostProcessor, Runnable, SmartLifecy
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if ( BackgroundTask.class.isAssignableFrom(bean.getClass()) ) {
-            tasks.add((BackgroundTask)bean);
+        if ( InitializationTask.class.isAssignableFrom(bean.getClass()) ) {
+            tasks.add((InitializationTask)bean);
         }
 
         return bean;
@@ -59,7 +59,7 @@ public class BackgroundStart implements BeanPostProcessor, Runnable, SmartLifecy
 
     @Override
     public void run() {
-        for ( BackgroundTask task : tasks ) {
+        for ( InitializationTask task : tasks ) {
             task.start();
         }
     }

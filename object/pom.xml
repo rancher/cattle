@@ -14,6 +14,10 @@
             <artifactId>commons-io</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>javax.persistence</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
             <artifactId>dstack-schema</artifactId>
             <version>${project.version}</version>

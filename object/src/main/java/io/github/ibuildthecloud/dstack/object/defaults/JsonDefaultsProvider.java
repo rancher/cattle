@@ -4,6 +4,7 @@ import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectDefaultsProvider;
 import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
 import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
@@ -19,7 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JsonDefaultsProvider implements ObjectDefaultsProvider {
+public class JsonDefaultsProvider implements ObjectDefaultsProvider, InitializationTask {
 
     private static final Logger log = LoggerFactory.getLogger(JsonDefaultsProvider.class);
 
@@ -34,13 +35,9 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider {
         return defaults;
     }
 
-    @PostConstruct
-    public void init() {
-        InitializationUtils.onInitialization(this, schemaFactory);
-    }
 
-    @AfterExtensionInitialization
-    protected void loadDefaults() throws IOException {
+    @Override
+    public void start() {
         for ( Schema schema : schemaFactory.listSchemas() ) {
             Class<?> clz = schemaFactory.getSchemaClass(schema.getId());
             if ( clz == null )
@@ -58,10 +55,16 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider {
                     Map<String,Object> defaults = jsonMapper.readValue(is, Map.class);
                     this.defaults.put(clz, defaults);
                 }
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
             } finally {
                 IOUtils.closeQuietly(is);
             }
         }
+    }
+
+    @Override
+    public void stop() {
     }
 
     protected InputStream jsonFile(String prefix, Schema schema) {

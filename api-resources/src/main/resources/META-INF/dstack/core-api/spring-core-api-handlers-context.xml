@@ -3,94 +3,58 @@
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:tx="http://www.springframework.org/schema/tx"
     xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <bean class="io.github.ibuildthecloud.dstack.api.auth.dao.impl.AuthDaoImpl" />
 
-    <bean id="Versions" class="io.github.ibuildthecloud.gdapi.version.Versions" >
-        <property name="versions">
-            <list>
-                <value type="java.lang.String">v1</value>
-            </list>
+    <bean class="io.github.ibuildthecloud.dstack.api.auth.impl.ApiAuthenticator" />
+    <bean class="io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler" />
+    <bean class="io.github.ibuildthecloud.gdapi.request.handler.ParseCollectionAttributes" />
+    <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler" />
+    <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionHandler" />
+    <bean class="io.github.ibuildthecloud.gdapi.request.handler.SchemasHandler" />
+    <bean class="io.github.ibuildthecloud.gdapi.validation.ValidationHandler" >
+        <property name="referenceValidator" >
+            <bean class="io.github.ibuildthecloud.gdapi.validation.ResourceManagerReferenceValidator" />
         </property>
-        <property name="latest" value="v1" />
     </bean>
-
-    <bean class="io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate" >
-        <property name="handlers">
-            <list>
-                <bean class="io.github.ibuildthecloud.dstack.api.auth.impl.ApiAuthenticator" />
-                <bean class="io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler" />
-                <bean class="io.github.ibuildthecloud.gdapi.request.handler.ParseCollectionAttributes" />
-                <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler" />
-                <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionHandler" />
-                <bean class="io.github.ibuildthecloud.gdapi.request.handler.SchemasHandler" />
-                <bean class="io.github.ibuildthecloud.gdapi.validation.ValidationHandler" >
-                    <property name="referenceValidator" >
-                        <bean class="io.github.ibuildthecloud.gdapi.validation.ResourceManagerReferenceValidator" />
-                    </property>
-                </bean>
-                <bean class="io.github.ibuildthecloud.gdapi.request.handler.ResourceManagerRequestHandler" />
-                <bean class="io.github.ibuildthecloud.gdapi.request.handler.NotFoundHandler" />
-                <bean class="io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter" />
-                <bean class="io.github.ibuildthecloud.gdapi.request.handler.ExceptionHandler" >
-                    <property name="standardErrorCodes">
-                        <util:properties location="classpath:api/messages.properties" />
-                    </property>
-                    <property name="messageLocation" value="api/messages" />
-                </bean>
-                <bean class="io.github.ibuildthecloud.gdapi.response.JsonResponseWriter" />
-                <bean class="io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter" />
-            </list>
-        </property>
-        <property name="version">
-            <bean factory-bean="Versions" factory-method="getLatest" />
-        </property>
-        <property name="idFormatter">
-            <bean class="io.github.ibuildthecloud.gdapi.id.TypeIdFormatter" />
+    <bean id="ResourceManagerRequestHandler" class="io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiHandler" >
+        <property name="delegate">
+            <bean class="io.github.ibuildthecloud.gdapi.request.handler.write.DefaultReadWriteApiDelegate" >
+                <property name="handlers">
+                    <list>
+                        <bean class="io.github.ibuildthecloud.gdapi.request.handler.ResourceManagerRequestHandler" />
+                    </list>
+                </property>
+            </bean>
         </property>
     </bean>
 
-    <bean class="io.github.ibuildthecloud.gdapi.request.resource.impl.ResourceManagerLocatorImpl" >
-        <property name="defaultResourceManager" ref="DefaultResourceManager" />
-    </bean>
-
-    <bean id="DefaultResourceManager" class="io.github.ibuildthecloud.dstack.api.resource.DefaultJooqResourceManager" />
-
-    <bean class="io.github.ibuildthecloud.gdapi.response.impl.DefaultHtmlTemplate" >
-        <property name="cssUrl" value="http://img1.wsimg.com/ucp/api/1.2.13/ui.css" />
-        <property name="jsUrl" value="http://img1.wsimg.com/ucp/api/1.2.13/ui.js" />
-    </bean>
-    <bean class="io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser" />
-    <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
-
-    <bean class="io.github.ibuildthecloud.dstack.object.impl.DefaultObjectManager" >
-        <property name="postInitHandlers">
-            <list>
-                <bean class="io.github.ibuildthecloud.dstack.object.postinit.SpecialFieldsPostInstantiationHandler" />
-                <bean class="io.github.ibuildthecloud.dstack.object.postinit.ObjectDefaultsPostInstantiationHandler" >
-                    <property name="defaultProviders">
-                        <list>
-                            <bean class="io.github.ibuildthecloud.dstack.object.defaults.JsonDefaultsProvider" >
-                                <property name="defaultPath" value="schema/defaults" />
-                                <property name="defaultOverridePath" value="schema/defaults/overrides" />
-                            </bean>
-                        </list>
-                    </property>
-                </bean>
-                <bean class="io.github.ibuildthecloud.dstack.object.postinit.ObjectDataPostInstantiationHandler" />
-                <bean class="io.github.ibuildthecloud.dstack.object.postinit.SetPropertiesPostInstantiationHandler" />
-            </list>
+    <bean class="io.github.ibuildthecloud.gdapi.request.handler.NotFoundHandler" />
+    <bean class="io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter" />
+    <bean class="io.github.ibuildthecloud.gdapi.request.handler.ExceptionHandler" >
+        <property name="standardErrorCodes">
+            <util:properties location="classpath:api/messages.properties" />
         </property>
-        <property name="lifeCycleHandlers">
-            <list>
-                <bean class="io.github.ibuildthecloud.dstack.object.lifecycle.ProcessDelegateObjectLifeCycleHandler" />
-            </list>
-        </property>
+        <property name="messageLocation" value="api/messages" />
     </bean>
+    <bean class="io.github.ibuildthecloud.gdapi.response.JsonResponseWriter" />
+    <bean class="io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter" />
 
-    <bean class="io.github.ibuildthecloud.dstack.object.process.impl.DefaultObjectProcessManager" />
+    <tx:advice id="ApiDelegateAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="read" isolation="READ_COMMITTED" read-only="true" />
+            <tx:method name="write" isolation="READ_COMMITTED" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
+    </aop:config>
+
 </beans>

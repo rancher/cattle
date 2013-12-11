@@ -1,12 +1,13 @@
 package io.github.ibuildthecloud.dstack.process.instance;
 
-import static io.github.ibuildthecloud.dstack.db.jooq.generated.tables.NicTable.*;
-import static io.github.ibuildthecloud.dstack.db.jooq.generated.tables.VolumeTable.*;
+import static io.github.ibuildthecloud.dstack.core.tables.VolumeTable.*;
+import static io.github.ibuildthecloud.dstack.core.tables.NicTable.*;
+
+import io.github.ibuildthecloud.dstack.core.model.Instance;
+import io.github.ibuildthecloud.dstack.core.model.Nic;
+import io.github.ibuildthecloud.dstack.core.model.Volume;
 import io.github.ibuildthecloud.dstack.db.dynamicfield.InstanceFields;
 import io.github.ibuildthecloud.dstack.db.dynamicfield.VolumeFields;
-import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Instance;
-import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Nic;
-import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Volume;
 import io.github.ibuildthecloud.dstack.engine.handler.AbstractDefaultProcessHandler;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;

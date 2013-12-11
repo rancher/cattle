@@ -14,11 +14,11 @@
             <artifactId>gdapi-java-server</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-jooq</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+<!--         <dependency> -->
+<!--             <groupId>io.github.ibuildthecloud</groupId> -->
+<!--             <artifactId>dstack-jooq</artifactId> -->
+<!--             <version>${project.version}</version> -->
+<!--         </dependency> -->
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
             <artifactId>dstack-json</artifactId>

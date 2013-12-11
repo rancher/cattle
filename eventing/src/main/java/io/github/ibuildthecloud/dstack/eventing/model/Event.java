@@ -10,6 +10,10 @@ public interface Event {
 
     String getReplyTo();
 
+    String getResourceId();
+
+    String getResourceType();
+
     String[] getPreviousIds();
 
     Object getData();

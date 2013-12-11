@@ -9,47 +9,20 @@
                       http://www.springframework.org/schema/context/spring-context-3.0.xsd"
                       >
 
-    <bean id="CoreSchemaList" class="io.github.ibuildthecloud.dstack.db.jooq.utils.SchemaRecordTypeListGenerator" >
-        <property name="schemaClass" value="io.github.ibuildthecloud.dstack.db.jooq.generated.DstackTable" />
-    </bean>
-
     <bean class="io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl">
         <property name="writableByDefault" value="true" />
-        <property name="types">
-            <bean factory-bean="CoreSchemaList" factory-method="getRecordTypes" />
-<!--             <list> -->
-<!--                 <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.OfferingRecord</value> -->
-<!--                 <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.AccountRecord</value> -->
-<!--                 <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.ZoneRecord</value> -->
-<!--                 <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.InstanceRecord</value> -->
-<!--                 <value>io.github.ibuildthecloud.dstack.db.jooq.generated.tables.records.DataRecord</value> -->
-<!--             </list> -->
-        </property>
-        <property name="typeNames">
-            <list>
-                <value>docker</value>
-            </list>
-        </property>
-        <property name="postProcessors">
-            <list>
-                <bean class="io.github.ibuildthecloud.dstack.schema.processor.JsonOverlayPostProcessor" >
-                    <property name="schemaFile" value="classpath:schema/base-schema.json" />
-                    <property name="jsonMapper">
-                        <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
-                    </property>
-                </bean>
-                <bean class="io.github.ibuildthecloud.dstack.schema.processor.JsonOverlayPostProcessor" >
-                    <property name="schemaFile" value="classpath:schema/base-schema.json" />
-                    <property name="jsonMapper">
-                        <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
-                    </property>
-                </bean>
+        <property name="postProcessors" value="#{extensionManager.list('schema.post.processor')}" />
+    </bean>
 
-                <bean class="io.github.ibuildthecloud.dstack.schema.processor.StripSuffixPostProcessor" >
-                    <property name="suffix" value="Record" />
-                </bean>
-            </list>
+    <bean id="BaseSchemaJson" class="io.github.ibuildthecloud.dstack.schema.processor.JsonOverlayPostProcessor" >
+        <property name="schemaFile" value="classpath:schema/base-schema.json" />
+        <property name="jsonMapper">
+            <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
         </property>
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.schema.processor.StripSuffixPostProcessor" >
+        <property name="suffix" value="Record" />
     </bean>
 
 

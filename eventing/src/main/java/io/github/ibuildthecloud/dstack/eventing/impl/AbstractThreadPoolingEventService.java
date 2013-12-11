@@ -31,9 +31,12 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     Map<String,Executor> executors = new ConcurrentHashMap<String, Executor>();
     Map<String,Executor> queuedExecutors = new ConcurrentHashMap<String, Executor>();
 
-    protected void onEvent(byte[] bytes) {
+    protected void onEvent(String eventName, byte[] bytes) {
         try {
             EventVO event = jsonMapper.readValue(bytes, EventVO.class);
+            if ( eventName != null ) {
+                event.setName(eventName);
+            }
             onEvent(event);
         } catch (IOException e) {
             try {
@@ -44,9 +47,12 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
         }
     }
 
-    protected void onEvent(String eventString) {
+    protected void onEvent(String eventName, String eventString) {
         try {
             EventVO event = jsonMapper.readValue(eventString, EventVO.class);
+            if ( eventName != null ) {
+                event.setName(eventName);
+            }
             onEvent(event);
         } catch (IOException e) {
             log.warn("Failed to unmarshall event [{}]", eventString, e);

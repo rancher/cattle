@@ -39,7 +39,7 @@ public class LockManagerImplTest {
 
         lockManager = new LockManagerImpl();
         lockManager.setLockProviders(Arrays.asList(lockProvider));
-        lockManager.init();
+        lockManager.start();
 
         verify(lockProvider, times(1)).activate();
     }

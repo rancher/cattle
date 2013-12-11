@@ -9,7 +9,7 @@ public interface EventService {
 
     boolean publish(Event event);
 
-    Future<?> subscribe(String eventName, EventListener listener) throws IOException;
+    Future<?> subscribe(String eventName, EventListener listener);
 
     void unsubscribe(String eventName, EventListener listener);
 

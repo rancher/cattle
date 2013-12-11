@@ -2,6 +2,8 @@ package io.github.ibuildthecloud.dstack.engine.process.impl;
 
 import static io.github.ibuildthecloud.dstack.engine.process.ExitReason.*;
 import static io.github.ibuildthecloud.dstack.util.time.TimeUtils.*;
+import io.github.ibuildthecloud.dstack.core.events.Events;
+import io.github.ibuildthecloud.dstack.deferred.util.DeferredUtils;
 import io.github.ibuildthecloud.dstack.engine.context.EngineContext;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler;
@@ -22,6 +24,9 @@ import io.github.ibuildthecloud.dstack.engine.process.log.ProcessLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessLogicExecutionLog;
 import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.repository.impl.ProcessRecord;
+import io.github.ibuildthecloud.dstack.eventing.EventService;
+import io.github.ibuildthecloud.dstack.eventing.model.Event;
+import io.github.ibuildthecloud.dstack.eventing.util.EventUtils;
 import io.github.ibuildthecloud.dstack.lock.LockCallbackNoReturn;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
@@ -49,15 +54,18 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     Long id;
     ProcessLog log;
+    EventService eventService;
     ProcessExecutionLog execution;
     LockDefinition processLock;
     ProcessPhase phase;
     ExitReason finalReason;
     ProcessRecord record;
     volatile boolean inLogic = false;
+    boolean executed = false;
+    boolean schedule = false;
 
-    public DefaultProcessInstanceImpl(ProcessManager repository, LockManager lockManager, ProcessRecord record,
-            ProcessDefinition processDefinition, ProcessState state) {
+    public DefaultProcessInstanceImpl(ProcessManager repository, LockManager lockManager, EventService eventService,
+            ProcessRecord record, ProcessDefinition processDefinition, ProcessState state) {
         super();
         this.id = record.getId();
         this.repository = repository;
@@ -67,10 +75,30 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         this.log = record.getProcessLog();
         this.phase = record.getPhase();
         this.record = record;
+        this.eventService = eventService;
     }
 
     @Override
-    public ExitReason execute() {
+    public void schedule() {
+        schedule = true;
+        try {
+            execute();
+        } catch ( ProcessExecutionExitException e ) {
+            if ( e.getExitReason() == SCHEDULED ) {
+                return;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public synchronized ExitReason execute() {
+        if ( executed ) {
+            throw new IllegalStateException("A process can only be executed once");
+        }
+        executed = true;
+
         EngineContext engineContext = EngineContext.getEngineContext();
         try {
             if ( log == null ) {
@@ -94,7 +122,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             if ( e.getCause() != null ) {
                 logger.error("Exiting with code [{}]", e.getExitReason(), e.getCause());
             }
-            return exit(e.getExitReason());
+            exit(e.getExitReason());
+            throw e;
         } finally {
             repository.persistState(this);
         }
@@ -108,6 +137,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             preRunStateCheck();
 
             acquireLockAndRun();
+        } catch ( ProcessExecutionExitException e ) {
+            throw e;
         } catch ( Throwable t) {
             execution.setException(new ExceptionLog(t));
             throw new ProcessExecutionExitException(UNKNOWN_EXCEPTION, t);
@@ -159,12 +190,30 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             setTransitioning();
         }
 
+        if ( schedule ) {
+            runScheduled();
+        }
+
         runLogic();
 
         setDone();
     }
 
-    protected void runListeners(List<ProcessListener> listeners, ProcessPhase listenerPhase, 
+    protected void runScheduled() {
+        DeferredUtils.defer(new Runnable() {
+            @Override
+            public void run() {
+                if ( record.getId() != null ) {
+                    Event event = EventUtils.newEvent(Events.PROCESS_RUN, record.getId().toString());
+                    eventService.publish(event);
+                }
+
+            }
+        });
+        throw new ProcessExecutionExitException(SCHEDULED);
+    }
+
+    protected void runListeners(List<ProcessListener> listeners, ProcessPhase listenerPhase,
             ExitReason exceptionReason) {
         if ( phase.ordinal() >= listenerPhase.ordinal() )
             return;

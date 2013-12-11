@@ -31,7 +31,7 @@
         </dependency>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-db-loader</artifactId>
+            <artifactId>dstack-pool</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

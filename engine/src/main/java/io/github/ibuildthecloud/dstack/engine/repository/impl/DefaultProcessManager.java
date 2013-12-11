@@ -9,34 +9,35 @@ import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.engine.process.impl.DefaultProcessInstanceImpl;
 import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.repository.ProcessNotFoundException;
+import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.util.concurrent.DelayedObject;
-import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
-import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
+import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 
 import com.netflix.config.DynamicLongProperty;
 
-public class DefaultProcessManager implements ProcessManager {
+public class DefaultProcessManager implements ProcessManager, InitializationTask {
 
     private static final DynamicLongProperty EXECUTION_DELAY = ArchaiusUtil.getLongProperty("process.log.save.interval.ms");
 
     ProcessRecordDao processRecordDao;
+    List<ProcessDefinition> definitionList;
     Map<String, ProcessDefinition> definitions;
     LockManager lockManager;
     DelayQueue<DelayedObject<DefaultProcessInstanceImpl>> toPersist = new DelayQueue<DelayedObject<DefaultProcessInstanceImpl>>();
     ScheduledExecutorService executor;
+    EventService eventService;
 
     @Override
     public ProcessInstance createProcessInstance(LaunchConfiguration config) {
@@ -59,7 +60,7 @@ public class DefaultProcessManager implements ProcessManager {
         if ( record.getId() == null && ! EngineContext.hasParentProcess() )
             record = processRecordDao.insert(record);
 
-        DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(this, lockManager, record, processDef, state);
+        DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(this, lockManager, eventService, record, processDef, state);
         toPersist.put(new DelayedObject<DefaultProcessInstanceImpl>(System.currentTimeMillis() + EXECUTION_DELAY.get(), process));
 
         return process;
@@ -90,7 +91,7 @@ public class DefaultProcessManager implements ProcessManager {
         ProcessRecord record = processRecordDao.getRecord(id);
         return createProcessInstance(record);
     }
-    
+
     protected void persistInProgress() throws InterruptedException {
         while ( true ) {
             ProcessInstance process = toPersist.take().getObject();
@@ -102,17 +103,10 @@ public class DefaultProcessManager implements ProcessManager {
         }
     }
 
-    @PostConstruct
-    public void init() {
-        if ( executor == null ) {
-            executor = Executors.newSingleThreadScheduledExecutor();
-        }
+    @Override
+    public void start() {
+        definitions = NamedUtils.createMapByName(definitionList);
 
-        InitializationUtils.onInitialization(this, definitions);
-    }
-
-    @AfterExtensionInitialization
-    protected void schedule() {
         executor.scheduleAtFixedRate(new NoExceptionRunnable() {
             @Override
             public void doRun() throws Exception {
@@ -120,6 +114,10 @@ public class DefaultProcessManager implements ProcessManager {
                 persistInProgress();
             }
         }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void stop() {
     }
 
     public ProcessRecordDao getProcessRecordDao() {
@@ -144,17 +142,27 @@ public class DefaultProcessManager implements ProcessManager {
         return executor;
     }
 
+    @Inject
     public void setExecutor(ScheduledExecutorService executor) {
         this.executor = executor;
     }
 
-    public Map<String, ProcessDefinition> getDefinitions() {
-        return definitions;
+    public List<ProcessDefinition> getDefinitionList() {
+        return definitionList;
     }
 
     @Inject
-    public void setDefinitions(Map<String, ProcessDefinition> definitions) {
-        this.definitions = definitions;
+    public void setDefinitionList(List<ProcessDefinition> definitionList) {
+        this.definitionList = definitionList;
+    }
+
+    public EventService getEventService() {
+        return eventService;
+    }
+
+    @Inject
+    public void setEventService(EventService eventService) {
+        this.eventService = eventService;
     }
 
 }

@@ -6,18 +6,16 @@ import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.lock.definition.MultiLockDefinition;
 import io.github.ibuildthecloud.dstack.lock.provider.LockProvider;
-import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
-import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LockManagerImpl extends AbstractLockManagerImpl implements LockManager {
+public class LockManagerImpl extends AbstractLockManagerImpl implements LockManager, InitializationTask {
 
     private static final Logger log = LoggerFactory.getLogger(LockManagerImpl.class);
 
@@ -45,7 +43,7 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
                     lock.unlock();
                 } catch (Throwable t) {
                     /* Should never happen, but I don't trust people */
-                    log.error("Failed to unlock [{}], unlock() should never throw an exception", lock.getLockDefinition(), t); 
+                    log.error("Failed to unlock [{}], unlock() should never throw an exception", lock.getLockDefinition(), t);
                 }
                 releaseLock(lock);
             }
@@ -59,7 +57,7 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
                     lockProvider.releaseLock(lockPart);
                 } catch ( Throwable t ) {
                     /* Should never happen, but I don't trust people */
-                    log.error("Failed to release lock [{}], releaseLock() should never throw an exception", lockPart.getLockDefinition(), t); 
+                    log.error("Failed to release lock [{}], releaseLock() should never throw an exception", lockPart.getLockDefinition(), t);
                 }
             }
         } else {
@@ -80,18 +78,17 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
         return lockProvider;
     }
 
-    @PostConstruct
-    public void init() {
-        InitializationUtils.onInitialization(this, lockProviders);
-    }
-
-    @AfterExtensionInitialization
-    public void activateLockProvider() {
+    @Override
+    public void start() {
         if ( lockProviders.size() == 0 )
             throw new IllegalStateException("Failed to find lock provider");
 
         lockProvider = lockProviders.get(0);
-        lockProvider.activate();        
+        lockProvider.activate();
+    }
+
+    @Override
+    public void stop() {
     }
 
     public List<LockProvider> getLockProviders() {

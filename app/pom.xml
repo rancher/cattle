@@ -10,6 +10,13 @@
     </parent>
     <packaging>war</packaging>
     <dependencies>
+        <!-- Start Plugins -->
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-eventing-redis</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- End Plugins -->
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
             <artifactId>dstack-launcher</artifactId>

@@ -6,6 +6,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.sql.DataSource;
 
+import org.jooq.ConnectionProvider;
 import org.jooq.SQLDialect;
 import org.jooq.conf.RenderNameStyle;
 import org.jooq.conf.Settings;
@@ -17,6 +18,7 @@ public class Configuration extends DefaultConfiguration {
 
     String name;
     DataSource dataSource;
+    ConnectionProvider connectionProvider;
 
     @PostConstruct
     public void init() {
@@ -33,7 +35,11 @@ public class Configuration extends DefaultConfiguration {
             throw new IllegalArgumentException("Invalid SQLDialect [" + database.toUpperCase() + "]", e);
         }
 
-        set(new AutoCommitConnectionProvider(dataSource));
+        if ( connectionProvider == null ) {
+            set(new AutoCommitConnectionProvider(dataSource));
+        } else {
+            set(connectionProvider);
+        }
 
         Settings settings = new Settings();
         settings.setRenderSchema(false);
@@ -50,7 +56,6 @@ public class Configuration extends DefaultConfiguration {
         return dataSource;
     }
 
-    @Inject
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -62,5 +67,13 @@ public class Configuration extends DefaultConfiguration {
     @Inject
     public void setName(String name) {
         this.name = name;
+    }
+
+    public ConnectionProvider getConnectionProvider() {
+        return connectionProvider;
+    }
+
+    public void setConnectionProvider(ConnectionProvider connectionProvider) {
+        this.connectionProvider = connectionProvider;
     }
 }

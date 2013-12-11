@@ -1,22 +1,20 @@
 package io.github.ibuildthecloud.dstack.object.postinit;
 
 import io.github.ibuildthecloud.dstack.object.ObjectDefaultsProvider;
-import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
-import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstantiationHandler {
+public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstantiationHandler, InitializationTask {
 
     private static final Logger log = LoggerFactory.getLogger(ObjectDefaultsPostInstantiationHandler.class);
 
@@ -46,16 +44,16 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
         BeanUtils.copyProperties(instance, defaultValues);
     }
 
-    @PostConstruct
-    public void init() {
-        InitializationUtils.onInitialization(this, defaultProviders);
-    }
 
-    @AfterExtensionInitialization
-    protected void loadDefaults() {
+    @Override
+    public void start() {
         for ( ObjectDefaultsProvider provider : defaultProviders ) {
             defaults.putAll(provider.getDefaults());
         }
+    }
+
+    @Override
+    public void stop() {
     }
 
     public List<ObjectDefaultsProvider> getDefaultProviders() {

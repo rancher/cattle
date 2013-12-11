@@ -7,6 +7,7 @@ public enum ExitReason {
     CANCELED(ProcessResult.CANCELED),
     STATE_CHANGED,
     ACTIVE(SUCCESS),
+    SCHEDULED,
     FAILED_TO_ACQUIRE_LOCK,
     //TODO rename to listener
     PRE_HANDLER_EXCEPTION,

@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.api.servlet;
 
+import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate;
 
 import java.io.IOException;
@@ -20,20 +21,25 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     @Override
     public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException,
             ServletException {
-        new ManagedContextRunnable() {
-            @Override
-            protected void runInContext() {
-                try {
-                    delegate.doFilter(request, response, chain);
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (ServletException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+        try {
+            new ManagedContextRunnable() {
+                @Override
+                protected void runInContext() {
+                    try {
+                        delegate.doFilter(request, response, chain);
+                    } catch (IOException e) {
+                        throw new WrappedException(e);
+                    } catch (ServletException e) {
+                        throw new WrappedException(e);
+                    }
                 }
-            }
-        }.run();
+            }.run();
+        } catch ( WrappedException e ) {
+            Throwable t = e.getCause();
+            ExceptionUtils.rethrow(t, IOException.class);
+            ExceptionUtils.rethrow(t, ServletException.class);
+            ExceptionUtils.rethrowExpectedRuntime(t);
+        }
     }
 
     public ApiRequestFilterDelegate getDelegate() {
@@ -45,4 +51,11 @@ public class ApiRequestFilter extends ModuleBasedFilter {
         this.delegate = delegate;
     }
 
+    private static final class WrappedException extends RuntimeException {
+        private static final long serialVersionUID = 8188803805854482331L;
+
+        public WrappedException(Throwable cause) {
+            super(cause);
+        }
+    }
 }

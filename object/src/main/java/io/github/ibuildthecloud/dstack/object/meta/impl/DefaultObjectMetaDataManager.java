@@ -5,8 +5,7 @@ import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.meta.TypeSet;
-import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
-import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
@@ -29,7 +28,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.persistence.Column;
 
@@ -38,7 +36,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Table;
 import org.jooq.TableField;
 
-public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, SchemaPostProcessor {
+public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, SchemaPostProcessor, InitializationTask {
 
     SchemaFactory schemaFactory;
     List<TypeSet> typeSets;
@@ -48,11 +46,15 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     Map<FieldCacheKey, String> propertyCache = Collections.synchronizedMap(new WeakHashMap<FieldCacheKey, String>());
     Map<FieldCacheKey, TableField<?, ?>> tableFields = new HashMap<FieldCacheKey, TableField<?,?>>();
 
-    @AfterExtensionInitialization
-    public void postInit() {
+    @Override
+    public void start() {
         List<Schema> schemas = registerTypes();
         registerRelationships();
         parseSchemas(schemas);
+    }
+
+    @Override
+    public void stop() {
     }
 
     protected void registerRelationships() {
@@ -331,11 +333,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         Class<?> clz = schemaFactory.getSchemaClass(type);
         Map<String,Relationship> relationship = relationships.get(clz);
         return relationship == null ? null : relationship.get(linkName);
-    }
-
-    @PostConstruct
-    public void init() {
-        InitializationUtils.onInitialization(this, typeSets);
     }
 
     public SchemaFactory getSchemaFactory() {

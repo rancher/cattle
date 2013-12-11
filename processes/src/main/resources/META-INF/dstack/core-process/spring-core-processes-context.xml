@@ -8,106 +8,80 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-<!--     <bean class="io.github.ibuildthecloud.dstack.json.JacksonJsonMapper" /> -->
-    <bean class="io.github.ibuildthecloud.dstack.engine.repository.impl.jooq.JooqProcessRecordDao" />
-    <bean id="ProcessServerImpl" class="io.github.ibuildthecloud.dstack.engine.server.impl.ProcessServerImpl" />
-
-<!--     <task:scheduler id="TaskScheduler" /> -->
-<!--     <task:scheduled-tasks scheduler="TaskScheduler" > -->
-<!--         <task:scheduled ref="ProcessServerImpl" method="runOutstandingJobs"  -->
-<!--             initial-delay="0" fixed-delay="15000" /> -->
-<!--     </task:scheduled-tasks> -->
-
-    <bean class="io.github.ibuildthecloud.dstack.engine.repository.impl.DefaultProcessManager" >
-        <property name="definitions">
-            <map>
-                <entry key="create.instance">
-                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition" >
-                        <property name="name" value="create.instance" />
-                        <property name="statesDefinition">
-                            <bean class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition" >
-                                <property name="startStates">
-                                    <list>
-                                        <value>requested</value>
-                                    </list>
-                                </property>
-                                <property name="transitioningStates">
-                                    <list>
-                                        <value>creating</value>
-                                    </list>
-                                </property>
-                                <property name="doneStates">
-                                    <list>
-                                        <value>running</value>
-                                    </list>
-                                </property>
-                            </bean>
-                        </property>
-                    </bean>
-                </entry>
-                <entry key="create.agentgroup">
-                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition" >
-                        <property name="name" value="create.agentgroup" />
-                        <property name="statesDefinition">
-                            <bean class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition" >
-                                <property name="startStates">
-                                    <list>
-                                        <value>requested</value>
-                                    </list>
-                                </property>
-                                <property name="transitioningStates">
-                                    <list>
-                                        <value>registering</value>
-                                    </list>
-                                </property>
-                                <property name="doneStates">
-                                    <list>
-                                        <value>active</value>
-                                    </list>
-                                </property>
-                            </bean>
-                        </property>
-                    </bean>
-                </entry>
-                <entry key="create.agent">
-                    <bean class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition" >
-                        <property name="name" value="create.agent" />
-                        <property name="statesDefinition">
-                            <bean class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition" >
-                                <property name="startStates">
-                                    <list>
-                                        <value>requested</value>
-                                    </list>
-                                </property>
-                                <property name="transitioningStates">
-                                    <list>
-                                        <value>registering</value>
-                                    </list>
-                                </property>
-                                <property name="doneStates">
-                                    <list>
-                                        <value>active</value>
-                                    </list>
-                                </property>
-                            </bean>
-                        </property>
-                    </bean>
-                </entry>
-            </map>
+    <bean
+        class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition">
+        <property name="name" value="create.instance" />
+        <property name="statesDefinition">
+            <bean
+                class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition">
+                <property name="startStates">
+                    <list>
+                        <value>requested</value>
+                    </list>
+                </property>
+                <property name="transitioningStates">
+                    <list>
+                        <value>creating</value>
+                    </list>
+                </property>
+                <property name="doneStates">
+                    <list>
+                        <value>running</value>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <bean
+        class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition">
+        <property name="name" value="create.agentgroup" />
+        <property name="statesDefinition">
+            <bean
+                class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition">
+                <property name="startStates">
+                    <list>
+                        <value>requested</value>
+                    </list>
+                </property>
+                <property name="transitioningStates">
+                    <list>
+                        <value>registering</value>
+                    </list>
+                </property>
+                <property name="doneStates">
+                    <list>
+                        <value>active</value>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <bean
+        class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition">
+        <property name="name" value="create.agent" />
+        <property name="statesDefinition">
+            <bean
+                class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition">
+                <property name="startStates">
+                    <list>
+                        <value>requested</value>
+                    </list>
+                </property>
+                <property name="transitioningStates">
+                    <list>
+                        <value>registering</value>
+                    </list>
+                </property>
+                <property name="doneStates">
+                    <list>
+                        <value>active</value>
+                    </list>
+                </property>
+            </bean>
         </property>
     </bean>
 
-    <bean class="io.github.ibuildthecloud.dstack.filter.agent.AgentFilter" />
+    <bean id="CreateInstance"
+        class="io.github.ibuildthecloud.dstack.process.instance.CreateInstance" />
 
-    <bean id="CreateInstance" class="io.github.ibuildthecloud.dstack.process.instance.CreateInstance" />
-
-    <bean class="io.github.ibuildthecloud.dstack.engine.server.impl.SequentialDispatcher" />
-
-    <bean class="io.github.ibuildthecloud.dstack.transport.impl.TransportFactoryImpl" >
-        <property name="delegates">
-            <list>
-                <bean class="io.github.ibuildthecloud.dstack.transport.ssh.SshTransportFactoryDelegateImpl" />
-            </list>
-        </property>
-    </bean>
 </beans>

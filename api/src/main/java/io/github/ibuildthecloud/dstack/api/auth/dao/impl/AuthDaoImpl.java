@@ -1,9 +1,10 @@
 package io.github.ibuildthecloud.dstack.api.auth.dao.impl;
 
-import static io.github.ibuildthecloud.dstack.db.jooq.generated.tables.AccountTable.*;
+import static io.github.ibuildthecloud.dstack.core.tables.AccountTable.*;
+
 import io.github.ibuildthecloud.dstack.api.auth.dao.AuthDao;
+import io.github.ibuildthecloud.dstack.core.model.Account;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
-import io.github.ibuildthecloud.dstack.db.jooq.generated.model.Account;
 
 public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
 

@@ -64,7 +64,7 @@
         <target>
             <!-- The destination package of your generated classes (within 
                 the destination directory) -->
-            <packageName>io.github.ibuildthecloud.dstack.db.jooq.generated</packageName>
+            <packageName>io.github.ibuildthecloud.dstack.core</packageName>
 
             <!-- The destination directory of your generated classes -->
             <directory>src/main/java</directory>
@@ -74,7 +74,7 @@
             <pojos>false</pojos>
             <daos>false</daos>
             <jpaAnnotations>true</jpaAnnotations>
-            <immutablePojos>true</immutablePojos>
+            <immutablePojos>false</immutablePojos>
         </generate>
     </generator>
 </configuration>

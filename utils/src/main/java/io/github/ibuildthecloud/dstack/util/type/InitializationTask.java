@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.util.type;
 
-public interface BackgroundTask {
+public interface InitializationTask {
 
     public void start();
 

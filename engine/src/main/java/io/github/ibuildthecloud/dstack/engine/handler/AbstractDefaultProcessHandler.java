@@ -1,9 +1,9 @@
 package io.github.ibuildthecloud.dstack.engine.handler;
 
 import io.github.ibuildthecloud.dstack.util.type.Priority;
-import io.github.ibuildthecloud.dstack.util.type.Scope;
+import io.github.ibuildthecloud.dstack.util.type.ScopeUtils;
 
-public abstract class AbstractDefaultProcessHandler<T> extends AbstractProcessHandler implements Priority, Scope {
+public abstract class AbstractDefaultProcessHandler<T> extends AbstractProcessHandler implements Priority {
 
     @Override
     public int getPriority() {
@@ -12,11 +12,7 @@ public abstract class AbstractDefaultProcessHandler<T> extends AbstractProcessHa
 
     @Override
     public String getDefaultScope() {
-        return getDefaultScope(getName());
-    }
-
-    private static String getDefaultScope(String name) {
-        return name.replaceAll("([a-z])([A-Z])", "$1.$2").toLowerCase();
+        return ScopeUtils.getScopeFromName(this);
     }
 
 }

@@ -1,11 +1,11 @@
 package io.github.ibuildthecloud.dstack.extension.spring;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
 import io.github.ibuildthecloud.dstack.extension.impl.ExtensionManagerImpl;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
 import io.github.ibuildthecloud.dstack.util.type.ScopeUtils;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -44,6 +44,10 @@ public class ExtensionDiscovery implements BeanPostProcessor {
 
     @PostConstruct
     public void init() {
+        if ( key == null && typeClass != null ) {
+            key = ScopeUtils.getScopeFromClass(typeClass);
+        }
+
         if ( key == null && ! respectScope ) {
             throw new IllegalArgumentException("If respectScope is false, key must be set");
         }

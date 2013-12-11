@@ -7,13 +7,10 @@ import java.util.UUID;
 
 public class EventVO implements Event {
 
-    String id;
-    String name;
-    String replyTo;
+    String id, name, replyTo, resourceId, resourceType, publisher;
     String[] previousIds;
     Object data;
     Date time;
-    String publisher;
 
     public EventVO() {
         id = UUID.randomUUID().toString();
@@ -29,7 +26,10 @@ public class EventVO implements Event {
         this.data = event.getData();
         this.time = event.getTime();
         this.publisher = event.getPublisher();
+        this.resourceId = event.getResourceId();
+        this.resourceType = event.getResourceType();
     }
+
     @Override
     public String getName() {
         return name;
@@ -91,6 +91,24 @@ public class EventVO implements Event {
 
     public void setReplyTo(String replyTo) {
         this.replyTo = replyTo;
+    }
+
+    @Override
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
+
+    @Override
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
     }
 
 }

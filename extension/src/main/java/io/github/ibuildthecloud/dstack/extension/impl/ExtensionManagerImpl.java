@@ -2,10 +2,12 @@ package io.github.ibuildthecloud.dstack.extension.impl;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.extension.ExtensionManager;
-import io.github.ibuildthecloud.dstack.util.type.BackgroundTask;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
 import io.github.ibuildthecloud.dstack.util.type.PriorityUtils;
+import io.github.ibuildthecloud.dstack.util.type.ScopeUtils;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -19,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class ExtensionManagerImpl implements ExtensionManager, BackgroundTask {
+public class ExtensionManagerImpl implements ExtensionManager, InitializationTask {
 
     Map<String,List<Object>> byKeyRegistry = new HashMap<String, List<Object>>();
     Map<String,ExtensionList<Object>> extensionLists = new HashMap<String, ExtensionList<Object>>();
@@ -28,6 +30,35 @@ public class ExtensionManagerImpl implements ExtensionManager, BackgroundTask {
     Map<String,Class<?>> keyToType = new HashMap<String, Class<?>>();
     Map<String,Set<Runnable>> callbacks = Collections.synchronizedMap(new HashMap<String, Set<Runnable>>());
     boolean started = false;
+
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T first(String key, String typeString) {
+        try {
+            Class<?> clz = Class.forName(typeString);
+            return first(key, (Class<T>)clz);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Failed to find class [" + typeString + "]", e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T first(String key, Class<T> type) {
+        return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type },
+                new FirstInstanceInvocationHandler(getExtensionListInternal(key)));
+    }
+
+    @Override
+    public List<?> list(String key) {
+        return getExtensionListInternal(key);
+    }
+
+    @Override
+    public <T> List<T> getExtensionList(Class<T> type) {
+        return getExtensionList(ScopeUtils.getScopeFromClass(type), type);
+    }
 
     @SuppressWarnings("unchecked")
     @Override
