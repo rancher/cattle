@@ -10,10 +10,6 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <task:scheduled-tasks scheduler="CoreTaskScheduler">
-        <task:scheduled ref="EventService" method="retry" fixed-delay="1000" />
-    </task:scheduled-tasks>
-
     <bean id="EventService" class="io.github.ibuildthecloud.dstack.eventing.memory.InMemoryEventService" >
         <property name="executorService" ref="CoreExecutorService" />
     </bean>

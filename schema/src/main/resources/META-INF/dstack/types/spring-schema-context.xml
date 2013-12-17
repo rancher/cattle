@@ -10,16 +10,25 @@
                       >
 
     <bean class="io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl">
-        <property name="writableByDefault" value="true" />
         <property name="postProcessors" value="#{extensionManager.list('schema.post.processor')}" />
     </bean>
 
-    <bean id="BaseSchemaJson" class="io.github.ibuildthecloud.dstack.schema.processor.JsonOverlayPostProcessor" >
-        <property name="schemaFile" value="classpath:schema/base-schema.json" />
-        <property name="jsonMapper">
+    <bean class="io.github.ibuildthecloud.dstack.schema.processor.JsonFileOverlayPostProcessor" >
+        <property name="path" value="schema/base" />
+        <property name="overridePath" value="schema/base-override" />
+        <property name="schemaMashaller">
             <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
         </property>
     </bean>
+
+<!--     <bean id="BaseSchemaJson" class="io.github.ibuildthecloud.dstack.schema.processor.JsonOverlayPostProcessor" > -->
+<!--         <property name="schemaFile" value="classpath:schema/base-schema.json" /> -->
+<!--         <property name="jsonMapper"> -->
+<!--             <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" /> -->
+<!--         </property> -->
+<!--     </bean> -->
+
+    <bean class="io.github.ibuildthecloud.dstack.schema.processor.JpaWritablePostProcessor" />
 
     <bean class="io.github.ibuildthecloud.dstack.schema.processor.StripSuffixPostProcessor" >
         <property name="suffix" value="Record" />

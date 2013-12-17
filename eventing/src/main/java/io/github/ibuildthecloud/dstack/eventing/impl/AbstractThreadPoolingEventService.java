@@ -5,6 +5,7 @@ import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.PoolSpecificListener;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
+import io.github.ibuildthecloud.dstack.lock.exception.FailedToAcquireLockException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -19,6 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +50,8 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     }
 
     protected void onEvent(String eventName, String eventString) {
+        getEventLog().debug("In : {}", eventString);
+
         try {
             EventVO event = jsonMapper.readValue(eventString, EventVO.class);
             if ( eventName != null ) {
@@ -69,8 +73,6 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     }
 
     protected void onEventInContext(Event event) {
-        getEventLog().debug("In : ", event);
-
         String name = event.getName();
         if ( name == null ) {
             log.debug("null event name on event [{}]", event);
@@ -96,10 +98,14 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     }
 
     protected Runnable getRunnable(final Event event, final EventListener listener) {
-        return new ManagedContextRunnable() {
+        return new NoExceptionRunnable() {
             @Override
-            protected void runInContext() {
+            protected void doRun() throws Exception {
+                try {
                 listener.onEvent(event);
+                } catch ( FailedToAcquireLockException e ) {
+                    log.trace("Failed to acquire lock on event [{}], this is probably normal", event, e);
+                }
             }
         };
     }

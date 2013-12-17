@@ -7,7 +7,7 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
 
     String name;
     long startTime;
-    long stopTime;
+    Long stopTime;
     ExceptionLog exception;
     boolean shouldContinue;
     Map<String,Object> resultData;
@@ -23,11 +23,11 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
         this.startTime = startTime;
     }
 
-    public long getStopTime() {
+    public Long getStopTime() {
         return stopTime;
     }
 
-    public void setStopTime(long stopTime) {
+    public void setStopTime(Long stopTime) {
         this.stopTime = stopTime;
     }
 

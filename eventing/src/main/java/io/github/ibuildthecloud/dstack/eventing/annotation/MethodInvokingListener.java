@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
+import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 
 public class MethodInvokingListener implements EventListener {
 
@@ -26,6 +27,7 @@ public class MethodInvokingListener implements EventListener {
         } catch (IllegalAccessException e) {
             throw new IllegalStateException("Failed to invoke method [" + method + "] for event [" + event + "", e);
         } catch (InvocationTargetException e) {
+            ExceptionUtils.rethrowRuntime(e.getCause());
             throw new IllegalStateException("Failed to invoke method [" + method + "] for event [" + event + "", e);
         }
     }

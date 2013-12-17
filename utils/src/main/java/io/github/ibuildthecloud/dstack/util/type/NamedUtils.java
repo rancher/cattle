@@ -16,7 +16,7 @@ public class NamedUtils {
         return result;
     }
 
-    public static final String getName(Object obj) {
+    public static String getName(Object obj) {
         if ( obj instanceof Named ) {
             return ((Named)obj).getName();
         } else {
@@ -24,4 +24,10 @@ public class NamedUtils {
         }
     }
 
+    public static String toDotSeparated(String name) {
+        if ( name == null ) {
+            return name;
+        }
+        return name.replaceAll("([a-z])([A-Z])", "$1.$2").toLowerCase();
+    }
 }

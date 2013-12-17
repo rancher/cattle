@@ -16,4 +16,8 @@
         <property name="typeClass" value="io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerFilter" />
     </bean>
 
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.gdapi.request.resource.ResourceManager" />
+    </bean>
+
 </beans>

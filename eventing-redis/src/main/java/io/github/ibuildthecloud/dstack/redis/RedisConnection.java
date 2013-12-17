@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,8 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
     private static final DynamicStringProperty REDIS_PASSWORD = ArchaiusUtil.getStringProperty("redis.password");
     private static final DynamicIntProperty REDIS_TIMEOUT = ArchaiusUtil.getIntProperty("redis.timeout");
 
-    private static final Object CONNECTION_LOCK = new Object();
+    /* Not actually static, but I just liked the look of the capital case */
+    private final Object CONNECTION_LOCK = new Object();
 
     RedisEventingService eventService;
     Set<String> subscriptions = Collections.synchronizedSet(new HashSet<String>());
@@ -53,12 +55,13 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
         GenericObjectPool.Config config = new GenericObjectPool.Config();
         PoolConfig.setConfig(config, "redis", "redis");
 
-        pool = new JedisPool(config, host, port, REDIS_TIMEOUT.get(), REDIS_PASSWORD.get());
+        pool = new JedisPool(config, host, port, REDIS_TIMEOUT.get(), getPassword());
         jedis = new Jedis(host, port, REDIS_TIMEOUT.get());
     }
 
     public void subscribe(String name, SettableFuture<?> future) {
         futures.put(name, future);
+        boolean connected = false;
         synchronized (CONNECTION_LOCK) {
             subscriptions.add(name);
             if ( pubSub == null ) {
@@ -67,9 +70,13 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
                 futures.remove(name);
             } else {
                 if ( waitForConnected(name, future) ) {
+                    connected = true;
                     pubSub.psubscribe(name);
                 }
             }
+        }
+        if ( ! connected ) {
+            tryConnect();
         }
     }
 
@@ -145,6 +152,17 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
         jedis.disconnect();
     }
 
+    protected String getPassword() {
+        String password = REDIS_PASSWORD.get();
+        return StringUtils.isEmpty(password) ? null : password;
+    }
+
+    protected void tryConnect() {
+        synchronized (CONNECTION_LOCK) {
+            CONNECTION_LOCK.notifyAll();
+        }
+    }
+
     @Override
     protected void runInContext() {
         while ( ! shutdown ) {
@@ -156,7 +174,7 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
 
                 if ( subscriptions.size() > 0 ) {
                     log.info("Connecting to redis [{}:{}]", host, port);
-                    jedis.getClient().setPassword(REDIS_PASSWORD.get());
+                    jedis.getClient().setPassword(getPassword());
                     jedis.connect();
 
                     String[] subs = null;
@@ -179,7 +197,9 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
             }
 
             try {
-                Thread.sleep(REDIS_RETRY.get());
+                synchronized (CONNECTION_LOCK) {
+                    CONNECTION_LOCK.wait(REDIS_RETRY.get());
+                }
             } catch (InterruptedException e) {
                 log.error("Interrupted", e);
             }

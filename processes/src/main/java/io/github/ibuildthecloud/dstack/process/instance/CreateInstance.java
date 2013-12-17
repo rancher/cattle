@@ -2,7 +2,6 @@ package io.github.ibuildthecloud.dstack.process.instance;
 
 import static io.github.ibuildthecloud.dstack.core.tables.VolumeTable.*;
 import static io.github.ibuildthecloud.dstack.core.tables.NicTable.*;
-
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.Nic;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
@@ -21,8 +20,10 @@ import io.github.ibuildthecloud.dstack.transport.TransportFactory;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
-public class CreateInstance extends AbstractDefaultProcessHandler<Instance> {
+@Named
+public class CreateInstance extends AbstractDefaultProcessHandler {
 
     JsonMapper jsonMapper;
     TransportFactory transportFactory;

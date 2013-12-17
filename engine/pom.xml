@@ -11,11 +11,6 @@
     <dependencies>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-events</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
             <artifactId>dstack-deferred</artifactId>
             <version>${project.version}</version>
         </dependency>

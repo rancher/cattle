@@ -10,13 +10,15 @@ import com.google.common.util.concurrent.SettableFuture;
 public class InMemoryEventService extends AbstractThreadPoolingEventService {
 
     @Override
-    protected void doPublish(final String name, Event event, final String eventString) throws IOException {
+    protected boolean doPublish(final String name, Event event, final String eventString) throws IOException {
         getDefaultExecutor().execute(new Runnable() {
             @Override
             public void run() {
                 onEvent(name, eventString);
             }
         });
+
+        return true;
     }
 
     @Override

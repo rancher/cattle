@@ -2,14 +2,16 @@ package io.github.ibuildthecloud.dstack.engine.process.impl;
 
 import static io.github.ibuildthecloud.dstack.engine.process.ExitReason.*;
 import static io.github.ibuildthecloud.dstack.util.time.TimeUtils.*;
-import io.github.ibuildthecloud.dstack.core.events.Events;
 import io.github.ibuildthecloud.dstack.deferred.util.DeferredUtils;
 import io.github.ibuildthecloud.dstack.engine.context.EngineContext;
+import io.github.ibuildthecloud.dstack.engine.eventing.EngineEvents;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler;
 import io.github.ibuildthecloud.dstack.engine.handler.ProcessListener;
 import io.github.ibuildthecloud.dstack.engine.idempotent.Idempotent;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecution;
+import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
+import io.github.ibuildthecloud.dstack.engine.manager.impl.ProcessRecord;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessExecutionExitException;
@@ -22,8 +24,6 @@ import io.github.ibuildthecloud.dstack.engine.process.log.ParentLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessExecutionLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessLogicExecutionLog;
-import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
-import io.github.ibuildthecloud.dstack.engine.repository.impl.ProcessRecord;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.util.EventUtils;
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultProcessInstanceImpl implements ProcessInstance {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultProcessInstanceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultProcessInstanceImpl.class);
 
     ProcessManager repository;
     LockManager lockManager;
@@ -53,7 +53,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     ProcessState state;
 
     Long id;
-    ProcessLog log;
+    ProcessLog processLog;
     EventService eventService;
     ProcessExecutionLog execution;
     LockDefinition processLock;
@@ -72,7 +72,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         this.lockManager = lockManager;
         this.processDefinition = processDefinition;
         this.state = state;
-        this.log = record.getProcessLog();
+        this.processLog = record.getProcessLog();
         this.phase = record.getPhase();
         this.record = record;
         this.eventService = eventService;
@@ -93,20 +93,22 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     @Override
-    public synchronized ExitReason execute() {
-        if ( executed ) {
-            throw new IllegalStateException("A process can only be executed once");
+    public ExitReason execute() {
+        synchronized (this) {
+            if ( executed ) {
+                throw new IllegalStateException("A process can only be executed once");
+            }
+            executed = true;
         }
-        executed = true;
 
         EngineContext engineContext = EngineContext.getEngineContext();
         try {
-            if ( log == null ) {
+            if ( processLog == null ) {
                 ParentLog parentLog = engineContext.peekLog();
                 if ( parentLog == null ) {
-                    log = new ProcessLog();
+                    processLog = new ProcessLog();
                 } else {
-                    log = parentLog.newChildLog();
+                    processLog = parentLog.newChildLog();
                 }
             }
 
@@ -120,7 +122,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             return exit(ExitReason.ACTIVE);
         } catch ( ProcessExecutionExitException e ) {
             if ( e.getCause() != null ) {
-                logger.error("Exiting with code [{}]", e.getExitReason(), e.getCause());
+                log.error("Exiting with code [{}]", e.getExitReason(), e.getCause());
             }
             exit(e.getExitReason());
             throw e;
@@ -129,8 +131,21 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
     }
 
+    protected void lookForCrashes() {
+        for ( ProcessExecutionLog exec : processLog.getExecutions() ) {
+            if ( exec.getExitReason() == null ) {
+                exec.setExitReason(SERVER_TERMINATED);
+            }
+        }
+    }
+
     protected void executeInternal() {
-        execution = log.newExecution();
+        log.info("Running process [{}] [{}] for [{}:{}]", id,
+                record.getProcessName(), record.getResourceType(), record.getResourceId());
+
+        lookForCrashes();
+
+        execution = processLog.newExecution();
         EngineContext.getEngineContext().pushLog(execution);
 
         try {
@@ -204,7 +219,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             @Override
             public void run() {
                 if ( record.getId() != null ) {
-                    Event event = EventUtils.newEvent(Events.PROCESS_RUN, record.getId().toString());
+                    Event event = EventUtils.newEvent(EngineEvents.PROCESS_EXECUTE, record.getId().toString());
                     eventService.publish(event);
                 }
 
@@ -276,7 +291,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                             }
 
                             if ( ! result.shouldContinue() && missingFields.size() > 0 ) {
-                                logger.error("Missing field [{}] for handler [{}]", missingFields, handler.getName());
+                                log.error("Missing field [{}] for handler [{}]", missingFields, handler.getName());
                                 throw new ProcessExecutionExitException(MISSING_HANDLER_RESULT_FIELDS);
                             }
 
@@ -306,7 +321,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             assertState();
         } else {
             if ( processDefinition.getHandlerRequiredResultData().size() > 0 ) {
-                logger.error("No handlers ran, but there are required fields to be set");
+                log.error("No handlers ran, but there are required fields to be set");
                 throw new ProcessExecutionExitException(MISSING_HANDLER_RESULT_FIELDS);
             }
         }
@@ -340,7 +355,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     public ProcessRecord getProcessRecord() {
         record.setPhase(phase);
-        record.setProcessLog(log);
+        record.setProcessLog(processLog);
         record.setExitReason(finalReason);
 
         if ( execution == null ) {

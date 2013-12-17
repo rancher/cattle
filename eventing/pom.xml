@@ -35,6 +35,16 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-async</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-lock</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.cloudstack</groupId>
             <artifactId>cloud-framework-managed-context</artifactId>
             <version>${acs.version}</version>

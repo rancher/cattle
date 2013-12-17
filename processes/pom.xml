@@ -16,6 +16,16 @@
         </dependency>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-agent</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-commands</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
             <artifactId>dstack-process-common</artifactId>
             <version>${project.version}</version>
         </dependency>

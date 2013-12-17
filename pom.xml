@@ -10,23 +10,35 @@
 	<artifactId>dstack</artifactId>
 	<packaging>pom</packaging>
 	<modules>
+		<module>agent</module>
+		<module>agent-connection-ssh</module>
+		<module>agent-server</module>
 		<module>api</module>
+		<module>api-pub-sub</module>
+		<module>api-resources</module>
 		<module>app</module>
 		<module>archaius</module>
 		<module>archaius-startup</module>
+		<module>async</module>
+		<module>commands</module>
 		<module>db-loader</module>
+		<module>deferred</module>
 		<module>engine</module>
 		<module>engine-jooq</module>
 		<module>eventing</module>
+		<module>eventing-redis</module>
+		<module>events</module>
 		<module>extension</module>
 		<module>extension-spring</module>
 		<module>jooq</module>
 		<module>json</module>
 		<module>launcher</module>
 		<module>lock</module>
-		<module>object</module>
 		<module>meta</module>
+		<module>model</module>
+		<module>object</module>
 		<module>parent</module>
+		<module>pool</module>
 		<module>process-common</module>
 		<module>processes</module>
 		<module>resources</module>
@@ -68,6 +80,17 @@
             </activation>
             <modules>
                 <module>deps/liquibase</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>jedis</id>
+            <activation>
+                <file>
+                    <exists>deps/jedis</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>deps/jedis</module>
             </modules>
         </profile>
     </profiles>

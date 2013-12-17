@@ -1,11 +1,11 @@
 package io.github.ibuildthecloud.dstack.engine.server.impl;
 
-import javax.inject.Inject;
-
-import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
+import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.server.ProcessInstanceDispatcher;
 import io.github.ibuildthecloud.dstack.engine.server.ProcessServer;
 import io.github.ibuildthecloud.dstack.engine.server.ServerProcessInstanceExecutor;
+
+import javax.inject.Inject;
 
 public class SequentialDispatcher implements ProcessInstanceDispatcher {
 

@@ -81,7 +81,4 @@
         </property>
     </bean>
 
-    <bean id="CreateInstance"
-        class="io.github.ibuildthecloud.dstack.process.instance.CreateInstance" />
-
 </beans>

@@ -8,7 +8,6 @@ import io.github.ibuildthecloud.dstack.object.meta.TypeSet;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
-import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
@@ -97,10 +96,14 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
         for ( TypeSet typeSet : typeSets ) {
             for ( String name : typeSet.getTypeNames() ) {
-                schemas.add(schemaFactory.registerSchema(name));
+                Schema schema = schemaFactory.registerSchema(name);
+                if ( schema != null )
+                    schemas.add(schema);
             }
             for ( Class<?> type : typeSet.getTypeClasses() ) {
-                schemas.add(schemaFactory.registerSchema(type));
+                Schema schema = schemaFactory.registerSchema(type);
+                if ( schema != null )
+                    schemas.add(schema);
             }
         }
 
@@ -207,35 +210,34 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     }
 
     @Override
-    public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactoryImpl factory) {
+    public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactory factory) {
         return schema;
     }
 
     @Override
-    public SchemaImpl postProcess(SchemaImpl schema, SchemaFactoryImpl factory) {
+    public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
         Map<String,Relationship> relationships = this.relationships.get(factory.getSchemaClass(schema.getId()));
-        if ( relationships == null ) {
-            return schema;
-        }
 
-        for ( Map.Entry<String,Relationship> entry : relationships.entrySet() ) {
-            String linkName = entry.getKey();
-            Relationship relationship = entry.getValue();
+        if ( relationships != null ) {
+            for ( Map.Entry<String,Relationship> entry : relationships.entrySet() ) {
+                String linkName = entry.getKey();
+                Relationship relationship = entry.getValue();
 
-            if ( relationship.getRelationshipType() != REFERENCE ) {
+                if ( relationship.getRelationshipType() != REFERENCE ) {
+                    schema.getIncludeableLinks().add(linkName);
+                    continue;
+                }
+
+                Field field = schema.getResourceFields().get(relationship.getPropertyName());
+                if ( ! ( field instanceof FieldImpl ) ) {
+                    continue;
+                }
+
+                FieldImpl fieldImpl = (FieldImpl)field;
+                fieldImpl.setType(FieldType.toString(FieldType.REFERENCE, factory.getSchema(relationship.getObjectType()).getId()));
+
                 schema.getIncludeableLinks().add(linkName);
-                continue;
             }
-
-            Field field = schema.getResourceFields().get(relationship.getPropertyName());
-            if ( ! ( field instanceof FieldImpl ) ) {
-                continue;
-            }
-
-            FieldImpl fieldImpl = (FieldImpl)field;
-            fieldImpl.setType(FieldType.toString(FieldType.REFERENCE, factory.getSchema(relationship.getObjectType()).getId()));
-
-            schema.getIncludeableLinks().add(linkName);
         }
 
         Map<String,Filter> filters = schema.getCollectionFilters();

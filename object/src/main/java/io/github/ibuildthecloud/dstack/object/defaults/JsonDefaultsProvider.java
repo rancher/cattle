@@ -2,8 +2,6 @@ package io.github.ibuildthecloud.dstack.object.defaults;
 
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectDefaultsProvider;
-import io.github.ibuildthecloud.dstack.util.init.AfterExtensionInitialization;
-import io.github.ibuildthecloud.dstack.util.init.InitializationUtils;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
@@ -13,7 +11,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;

@@ -20,8 +20,12 @@ import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExtensionManagerImpl implements ExtensionManager, InitializationTask {
+
+    private static final Logger log = LoggerFactory.getLogger(ExtensionManagerImpl.class);
 
     Map<String,List<Object>> byKeyRegistry = new HashMap<String, List<Object>>();
     Map<String,ExtensionList<Object>> extensionLists = new HashMap<String, ExtensionList<Object>>();
@@ -102,6 +106,10 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
 
         objects.add(obj);
 
+        if ( byName.get(name) != null ) {
+            log.info("Extension of name [{}] already exists [{}], overriding with [{}]", name, byName.get(name), obj);
+        }
+
         byName.put(name, obj);
         objectToName.put(obj, name);
     }
@@ -141,12 +149,14 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
             typeClz = Object.class;
         }
 
+        Set<String> excludes = getSetting(key + ".exclude");
+
         String list = ArchaiusUtil.getStringProperty(key + ".list").get();
         if ( ! StringUtils.isBlank(list) ) {
             List<Object> result = new ArrayList<Object>();
             for ( String name : list.split("\\s*,\\s*") ) {
                 Object obj = byName.get(name);
-                if ( obj != null && typeClz.isAssignableFrom(obj.getClass()) ) {
+                if ( ! excludes.contains(name) && obj != null && typeClz.isAssignableFrom(obj.getClass()) ) {
                     result.add(obj);
                 }
             }
@@ -155,7 +165,6 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
 
 
         Set<String> includes = getSetting(key + ".include");
-        Set<String> excludes = getSetting(key + ".exclude");
 
         Set<Object> ordered = new TreeSet<Object>(new Comparator<Object>() {
             @Override

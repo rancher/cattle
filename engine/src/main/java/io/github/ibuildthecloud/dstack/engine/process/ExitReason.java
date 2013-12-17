@@ -7,6 +7,7 @@ public enum ExitReason {
     CANCELED(ProcessResult.CANCELED),
     STATE_CHANGED,
     ACTIVE(SUCCESS),
+    SERVER_TERMINATED,
     SCHEDULED,
     FAILED_TO_ACQUIRE_LOCK,
     //TODO rename to listener

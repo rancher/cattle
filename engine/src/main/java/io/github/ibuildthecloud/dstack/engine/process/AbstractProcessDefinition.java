@@ -35,7 +35,7 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition {
     }
 
     protected List<ProcessListener> getListeners(String key) {
-        return extensionManager.getExtensionList(processHandlersKey, ProcessListener.class);
+        return extensionManager.getExtensionList(key, ProcessListener.class);
     }
 
     @Override

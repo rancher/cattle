@@ -11,10 +11,10 @@ public class ScopeUtils {
     }
 
     public static final String getScopeFromName(Object obj) {
-        return NamedUtils.getName(obj).replaceAll("([a-z])([A-Z])", "$1.$2").toLowerCase();
+        return NamedUtils.toDotSeparated(NamedUtils.getName(obj));
     }
 
     public static final String getScopeFromClass(Class<?> clz) {
-        return clz.getSimpleName().replaceAll("([a-z])([A-Z])", "$1.$2").toLowerCase();
+        return NamedUtils.toDotSeparated(clz.getSimpleName());
     }
 }

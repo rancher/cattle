@@ -191,6 +191,26 @@ public class JooqObjectManager extends AbstractObjectManager {
     @SuppressWarnings("unchecked")
     protected <T> T loadResource(String resourceType, Object resourceId) {
         Class<?> clz = schemaFactory.getSchemaClass(resourceType);
+        return (T) loadResource(clz, resourceId);
+    }
+
+    @Override
+    public <T> T loadResource(Class<T> type, Long resourceId) {
+        return loadResource(type, (Object)resourceId);
+    }
+
+    @Override
+    public <T> T loadResource(Class<T> type, String resourceId) {
+        return loadResource(type, (Object)resourceId);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T loadResource(Class<T> type, Object resourceId) {
+        if ( resourceId == null || type == null ) {
+            return null;
+        }
+
+        Class<UpdatableRecord<?>> clz = JooqUtils.getRecordClass(schemaFactory, type);
         return (T) JooqUtils.findById(DSL.using(getConfiguration()), clz, resourceId);
     }
 

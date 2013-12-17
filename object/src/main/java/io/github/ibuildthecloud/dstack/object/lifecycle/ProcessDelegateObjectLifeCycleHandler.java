@@ -1,10 +1,10 @@
 package io.github.ibuildthecloud.dstack.object.lifecycle;
 
+import io.github.ibuildthecloud.dstack.engine.manager.ProcessNotFoundException;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessExecutionExitException;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
-import io.github.ibuildthecloud.dstack.engine.repository.ProcessNotFoundException;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;

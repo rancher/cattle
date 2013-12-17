@@ -1,8 +1,8 @@
 package io.github.ibuildthecloud.dstack.engine.server;
 
 import io.github.ibuildthecloud.dstack.engine.context.EngineContext;
+import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
-import io.github.ibuildthecloud.dstack.engine.repository.ProcessManager;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;

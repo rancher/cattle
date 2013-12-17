@@ -13,7 +13,7 @@
         <property name="schemaClass" value="io.github.ibuildthecloud.dstack.core.DstackTable" />
     </bean>
 
-    <bean class="io.github.ibuildthecloud.dstack.object.meta.TypeSet" >
+    <bean id="CoreTypeSet" class="io.github.ibuildthecloud.dstack.object.meta.TypeSet" >
         <property name="typeClasses">
             <bean factory-bean="CoreSchemaList" factory-method="getRecordTypes" />
         </property>

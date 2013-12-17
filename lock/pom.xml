@@ -19,5 +19,15 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.1</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-async</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-archaius</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

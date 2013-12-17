@@ -208,6 +208,21 @@
             "type": "string"
         }
     }
+},
+{
+    "collectionMethods": [
+        "GET", "POST"
+    ],
+    "id": "subscribe",
+    "resourceFields": {
+        "eventName": {
+            "create": true
+        },
+        "agentId": {
+            "create": true,
+            "type": "reference[agent]"
+        }
+    }
 }
     ]
 }

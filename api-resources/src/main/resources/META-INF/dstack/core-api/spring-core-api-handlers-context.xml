@@ -13,6 +13,7 @@
     <bean class="io.github.ibuildthecloud.dstack.api.auth.dao.impl.AuthDaoImpl" />
 
     <bean class="io.github.ibuildthecloud.dstack.api.auth.impl.ApiAuthenticator" />
+    <bean class="io.github.ibuildthecloud.gdapi.request.handler.CSRFCookieHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.ParseCollectionAttributes" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler" />
@@ -44,7 +45,13 @@
         <property name="messageLocation" value="api/messages" />
     </bean>
     <bean class="io.github.ibuildthecloud.gdapi.response.JsonResponseWriter" />
-    <bean class="io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter" />
+    <bean class="io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter" >
+        <property name="jsonMapper">
+            <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" >
+                <property name="escapeForwardSlashes" value="true" />
+            </bean>
+        </property>
+    </bean>
 
     <tx:advice id="ApiDelegateAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>

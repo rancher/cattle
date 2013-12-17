@@ -13,6 +13,10 @@ public interface ObjectManager {
 
     <T> T persist(T obj);
 
+    <T> T loadResource(Class<T> type, String resourceId);
+
+    <T> T loadResource(Class<T> type, Long resourceId);
+
     <T> T loadResource(String resourceType, String resourceId);
 
     <T> T loadResource(String resourceType, Long resourceId);
@@ -24,7 +28,5 @@ public interface ObjectManager {
     Map<String,Object> convertToPropertiesFor(Object obj, Map<Object,Object> object);
 
     <T> List<T> children(Object obj, Class<T> type);
-
-//    <T> List<T> child(Object obj, Class<T> type);
 
 }

@@ -1,13 +1,14 @@
 package io.github.ibuildthecloud.dstack.eventing.impl;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+import io.github.ibuildthecloud.dstack.async.retry.Retry;
+import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.pool.PoolConfig;
-import io.github.ibuildthecloud.dstack.util.concurrent.DelayedObject;
 import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 
 import java.io.IOException;
@@ -17,11 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -30,6 +28,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicLongProperty;
@@ -45,8 +44,8 @@ public abstract class AbstractEventService implements EventService {
 
     private static final Object SUBSCRIPTION_LOCK = new Object();
 
+    RetryTimeoutService timeoutService;
     ExecutorService executorService;
-    DelayQueue<DelayedObject<Retry>> retryQueue = new DelayQueue<DelayedObject<Retry>>();
     Map<String, List<EventListener>> eventToListeners = new HashMap<String, List<EventListener>>();
     Map<EventListener, Set<String>> listenerToEvents = new HashMap<EventListener, Set<String>>();
     JsonMapper jsonMapper;
@@ -61,17 +60,15 @@ public abstract class AbstractEventService implements EventService {
             throw new IllegalStateException("Failed to marshall event [" + event + "] to string", e);
         }
         try {
-            getEventLog().debug("Out : ", event);
-            doPublish(event.getName(), event, eventString);
-        } catch ( IOException e ) {
+            getEventLog().debug("Out : {}", eventString);
+            return doPublish(event.getName(), event, eventString);
+        } catch ( Throwable e ) {
             log.warn("Failed to publish event [" + eventString + "]", e);
             return false;
         }
-
-        return true;
     }
 
-    protected abstract void doPublish(String name, Event event, String eventString) throws IOException;
+    protected abstract boolean doPublish(String name, Event event, String eventString) throws IOException;
 
     protected List<EventListener> getEventListeners(String eventName) {
         return eventToListeners.get(eventName);
@@ -145,7 +142,7 @@ public abstract class AbstractEventService implements EventService {
     }
 
     @Override
-    public Future<?> subscribe(final String eventName, final EventListener listener) {
+    public ListenableFuture<?> subscribe(final String eventName, final EventListener listener) {
         final SettableFuture<?> future = SettableFuture.create();
         boolean doSubscribe = register(eventName, listener);
 
@@ -189,14 +186,14 @@ public abstract class AbstractEventService implements EventService {
     }
 
     @Override
-    public Event call(Event event) throws IOException {
-        return call(event, DEFAULT_RETRIES.get(), DEFAULT_TIMEOUT.get());
+    public Event callSync(Event event) throws IOException {
+        return callSync(event, DEFAULT_RETRIES.get(), DEFAULT_TIMEOUT.get());
     }
 
     @Override
-    public Event call(Event event, int retry, long timeoutMillis) throws IOException {
+    public Event callSync(Event event, int retry, long timeoutMillis) throws IOException {
         try {
-            return callAsync(event, retry, timeoutMillis).get();
+            return call(event, retry, timeoutMillis).get();
         } catch (InterruptedException e) {
             throw new IOException(e);
         } catch (ExecutionException e) {
@@ -208,12 +205,12 @@ public abstract class AbstractEventService implements EventService {
     }
 
     @Override
-    public Future<Event> callAsync(Event event) {
-        return callAsync(event, DEFAULT_RETRIES.get(), DEFAULT_TIMEOUT.get());
+    public ListenableFuture<Event> call(Event event) {
+        return call(event, DEFAULT_RETRIES.get(), DEFAULT_TIMEOUT.get());
     }
 
     @Override
-    public Future<Event> callAsync(Event event, int retries, long timeoutMillis) {
+    public ListenableFuture<Event> call(Event event, int retries, long timeoutMillis) {
         final SettableFuture<Event> future = SettableFuture.create();
         final FutureEventListener listener;
 
@@ -224,11 +221,15 @@ public abstract class AbstractEventService implements EventService {
             return future;
         }
 
-        event = new EventVO(event, listener.getReplyTo());
-        Retry retry = new Retry(retries, timeoutMillis, event, future);
-        final DelayedObject<Retry> delayed = new DelayedObject<Retry>(System.currentTimeMillis() + timeoutMillis, retry);
+        final Event request = new EventVO(event, listener.getReplyTo());
+        Retry retry = new Retry(retries, timeoutMillis, future, new Runnable() {
+            @Override
+            public void run() {
+                publish(request);
+            }
+        });
 
-        retryQueue.add(delayed);
+        final Object cancel = timeoutService.submit(retry);
 
         listener.setFuture(future);
         listener.setEvent(event);
@@ -237,7 +238,7 @@ public abstract class AbstractEventService implements EventService {
             @Override
             public void run() {
                 try {
-                    retryQueue.remove(delayed);
+                    timeoutService.completed(cancel);
                     future.get();
                 } catch (Throwable t) {
                     listener.setFailed(true);
@@ -261,22 +262,6 @@ public abstract class AbstractEventService implements EventService {
         PoolConfig.setConfig(listenerPool, "eventPool", "event.pool.");
     }
 
-    public void retry() {
-        DelayedObject<Retry> delayed = retryQueue.poll();
-        while ( delayed != null ) {
-            Retry retry = delayed.getObject();
-            retry.retryCount++;
-
-            if ( retry.retryCount >= retry.retries ) {
-                retry.future.setException(new TimeoutException());
-            } else {
-                retryQueue.add(new DelayedObject<Retry>(System.currentTimeMillis() + retry.timeoutMillis, retry));
-                publish(retry.event);
-            }
-
-            delayed = retryQueue.poll();
-        }
-    }
 
     protected abstract void disconnect();
 
@@ -306,21 +291,13 @@ public abstract class AbstractEventService implements EventService {
         this.executorService = executorService;
     }
 
-    private static class Retry {
-        int retryCount;
-        int retries;
-        Long timeoutMillis;
-        Event event;
-        SettableFuture<Event> future;
+    public RetryTimeoutService getTimeoutService() {
+        return timeoutService;
+    }
 
-        public Retry(int retries, Long timeoutMillis, Event event, SettableFuture<Event> future) {
-            super();
-            this.retryCount = 0;
-            this.retries = retries;
-            this.timeoutMillis = timeoutMillis;
-            this.event = event;
-            this.future = future;
-        }
+    @Inject
+    public void setTimeoutService(RetryTimeoutService timeoutService) {
+        this.timeoutService = timeoutService;
     }
 
 }

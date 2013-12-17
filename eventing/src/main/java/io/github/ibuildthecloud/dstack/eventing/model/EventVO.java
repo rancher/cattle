@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.eventing.model;
 
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -109,6 +110,13 @@ public class EventVO implements Event {
 
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
+    }
+
+    @Override
+    public String toString() {
+        return "EventVO [id=" + id + ", name=" + name + ", replyTo=" + replyTo + ", resourceId=" + resourceId
+                + ", resourceType=" + resourceType + ", publisher=" + publisher + ", previousIds="
+                + Arrays.toString(previousIds) + ", data=" + data + ", time=" + time + "]";
     }
 
 }

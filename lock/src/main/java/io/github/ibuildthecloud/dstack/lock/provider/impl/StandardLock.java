@@ -50,7 +50,7 @@ public class StandardLock implements Lock {
         try {
             lock.unlock();
         } catch ( Throwable t ) {
-            log.warn("Failed to unlock [{}]", lockDefinition, t);
+            log.trace("Failed to unlock [{}], may not own lock", lockDefinition, t);
         }
     }
 
@@ -62,11 +62,11 @@ public class StandardLock implements Lock {
     public long getReference() {
         return referenceCount;
     }
-    
+
     public long incrementReference() {
         return ++referenceCount;
     }
-    
+
     public long decrementReference() {
         return --referenceCount;
     }

@@ -1,8 +1,13 @@
 package io.github.ibuildthecloud.dstack.redis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.JedisPubSub;
 
 public class RedisPubSub extends JedisPubSub {
+
+    private static final Logger log = LoggerFactory.getLogger(RedisPubSub.class);
 
     RedisEventingService service;
     RedisConnection connection;
@@ -24,6 +29,7 @@ public class RedisPubSub extends JedisPubSub {
 
     @Override
     public void onSubscribe(String channel, int subscribedChannels) {
+        log.info("Subscribed to channel [{}], total subscriptions [{}]", channel, subscribedChannels);
         connection.onSubscribed(channel);
     }
 
@@ -39,8 +45,8 @@ public class RedisPubSub extends JedisPubSub {
 
     @Override
     public void onPSubscribe(String pattern, int subscribedChannels) {
+        log.info("Subscribed to pattern [{}], total subscriptions [{}]", pattern, subscribedChannels);
         connection.onSubscribed(pattern);
     }
-
 
 }

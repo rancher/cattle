@@ -27,7 +27,7 @@ public class JacksonJsonMapper implements JsonMapper {
 
     public JacksonJsonMapper() {
         mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(Include.NON_NULL);
+//        mapper.setSerializationInclusion(Include.NON_NULL);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         AnnotationIntrospector primary = new JacksonAnnotationIntrospector();

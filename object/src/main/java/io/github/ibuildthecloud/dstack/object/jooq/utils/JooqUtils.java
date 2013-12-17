@@ -16,7 +16,7 @@ public class JooqUtils {
 
     private static final Logger log = LoggerFactory.getLogger(JooqUtils.class);
 
-    public static <T> T findById(DSLContext context, Class<T> clz, Object id) {
+    public static <T extends UpdatableRecord<?>> T findById(DSLContext context, Class<T> clz, Object id) {
         if ( id == null )
             return null;
 

@@ -9,7 +9,7 @@ public class FailedToAcquireLockException extends RuntimeException {
     LockDefinition lockDefition;
 
     public FailedToAcquireLockException(LockDefinition lockDefinition) {
-        super("Failed to acquire lock [" + (lockDefinition == null ? null : lockDefinition.getLockId()) );
+        super("Failed to acquire lock [" + (lockDefinition == null ? null : lockDefinition.getLockId()) + "]");
         this.lockDefition = lockDefinition;
     }
 

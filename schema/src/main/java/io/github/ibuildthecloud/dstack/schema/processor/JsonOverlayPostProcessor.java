@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.schema.processor;
 
-import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.model.Field;
@@ -30,7 +30,7 @@ public class JsonOverlayPostProcessor implements SchemaPostProcessor {
     Map<String, SchemaImpl> schemas = new HashMap<String, SchemaImpl>();
 
     @Override
-    public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactoryImpl factory) {
+    public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactory factory) {
         SchemaImpl override = schemas.get(schema.getId());
         if ( override != null && override.getPluralName() != null ) {
             schema.setPluralName(override.getPluralName());
@@ -40,7 +40,7 @@ public class JsonOverlayPostProcessor implements SchemaPostProcessor {
     }
 
     @Override
-    public SchemaImpl postProcess(SchemaImpl schema, SchemaFactoryImpl factory) {
+    public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
         SchemaImpl override = schemas.get(schema.getId());
         try {
             if ( override != null ) {
