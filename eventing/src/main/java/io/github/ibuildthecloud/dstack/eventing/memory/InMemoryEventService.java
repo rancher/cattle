@@ -14,7 +14,7 @@ public class InMemoryEventService extends AbstractThreadPoolingEventService {
         getDefaultExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                onEvent(name, eventString);
+                onEvent(null, name, eventString);
             }
         });
 
