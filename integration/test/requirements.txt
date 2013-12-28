@@ -1,0 +1,3 @@
+pytest==2.3.5
+requests
+argcomplete

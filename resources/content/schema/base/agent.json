@@ -1,0 +1,8 @@
+{
+    "collectionMethods" : [ "GET", "POST" ],
+    "resourceFields": {
+        "accountId": {
+            "defaultIsNull" : true
+        }
+    }
+}

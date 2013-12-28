@@ -1,0 +1,78 @@
+package io.github.ibuildthecloud.api.pubsub.manager;
+
+import io.github.ibuildthecloud.api.pubsub.model.Publish;
+import io.github.ibuildthecloud.api.pubsub.util.SubscriptionUtils;
+import io.github.ibuildthecloud.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
+import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
+import io.github.ibuildthecloud.dstack.eventing.EventService;
+import io.github.ibuildthecloud.dstack.eventing.model.Event;
+import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import javax.inject.Inject;
+
+import org.apache.commons.beanutils.PropertyUtils;
+
+public class PublishManager extends AbstractNoOpResourceManager {
+
+    EventService eventService;
+
+    @Override
+    public Class<?>[] getTypeClasses() {
+        return new Class<?>[] { Publish.class };
+    }
+
+    @Override
+    protected Object createInternal(String type, ApiRequest request) {
+        Publish publish = request.proxyRequestObject(Publish.class);
+
+        Event event = createEvent(publish);
+
+        if ( SubscriptionUtils.getSubscriptionStyle(ApiUtils.getPolicy()) != SubscriptionStyle.RAW &&
+                ! event.getName().startsWith(Event.REPLY_PREFIX) ) {
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
+        }
+
+        eventService.publish(event);
+
+        return publish;
+    }
+
+    protected Event createEvent(Publish publish) {
+        EventVO event = new EventVO();
+
+        event.setId(publish.getId());
+        event.setName(publish.getName());
+        event.setResourceId(publish.getResourceId());
+        event.setResourceType(publish.getResourceType());
+        event.setData(publish.getData());
+        event.setPublisher(publish.getPublisher());
+
+        event.setTime(new Date(publish.getTime()));
+
+        List<String> previous = publish.getPreviousIds();
+        if ( previous != null ) {
+            event.setPreviousIds(previous.toArray(new String[previous.size()]));
+        }
+
+        return event;
+    }
+
+    public EventService getEventService() {
+        return eventService;
+    }
+
+    @Inject
+    public void setEventService(EventService eventService) {
+        this.eventService = eventService;
+    }
+
+}
