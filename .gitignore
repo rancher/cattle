@@ -1,0 +1,17 @@
+resources/content/modules.properties
+app/dStack.launch
+app/db-*
+dist
+target
+.classpath
+.project
+.settings
+*.log
+venv
+_*
+.idea
+.cache
+*.pyc
+*.pyo
+*.swp
+__pycache__
