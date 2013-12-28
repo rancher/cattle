@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.object.util;
 
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -8,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
@@ -16,6 +18,17 @@ public class DataUtils {
     public static final String DATA = "data";
     public static final String OPTIONS = "options";
     public static final String FIELDS = "fields";
+
+    public static String getState(Object obj) {
+        try {
+            return BeanUtils.getProperty(obj, ObjectMetaDataManager.STATE_FIELD);
+        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException e) {
+        } catch (NoSuchMethodException e) {
+        }
+
+        return null;
+    }
 
     public static Map<String,Object> getFields(Object obj) {
         return CollectionUtils.toMap(getData(obj).get(FIELDS));

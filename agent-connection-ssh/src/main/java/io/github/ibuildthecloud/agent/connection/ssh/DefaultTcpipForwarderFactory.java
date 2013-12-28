@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.github.ibuildthecloud.agent.server.connection.ssh;
+package io.github.ibuildthecloud.agent.connection.ssh;
 
 import org.apache.sshd.common.Session;
 import org.apache.sshd.common.TcpipForwarder;
@@ -30,7 +30,8 @@ import org.apache.sshd.common.TcpipForwarderFactory;
  */
 public class DefaultTcpipForwarderFactory implements TcpipForwarderFactory
 {
-   public TcpipForwarder create( Session session )
+   @Override
+public TcpipForwarder create( Session session )
    {
       return new DefaultTcpipForwarder( session );
    }

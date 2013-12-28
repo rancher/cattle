@@ -10,6 +10,7 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
     Long stopTime;
     ExceptionLog exception;
     boolean shouldContinue;
+    boolean shouldDelegate;
     Map<String,Object> resultData;
     Map<String,Object> resourceValueBefore;
     Map<String,Object> resourceValueAfter;
@@ -85,6 +86,14 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
 
     public void setResourceValueBefore(Map<String, Object> resourceValueBefore) {
         this.resourceValueBefore = resourceValueBefore;
+    }
+
+    public boolean isShouldDelegate() {
+        return shouldDelegate;
+    }
+
+    public void setShouldDelegate(boolean shouldDelegate) {
+        this.shouldDelegate = shouldDelegate;
     }
 
 }

@@ -3,8 +3,14 @@ package io.github.ibuildthecloud.dstack.api.utils;
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.auth.impl.DefaultPolicy;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.dstack.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Collection;
+import io.github.ibuildthecloud.gdapi.model.Resource;
+import io.github.ibuildthecloud.gdapi.model.Schema;
+import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.lang.reflect.InvocationTargetException;
@@ -68,7 +74,7 @@ public class ApiUtils {
     }
 
     public static <T> List<T> authorize(List<T> list) {
-        return getPolicy().authorize(list);
+        return getPolicy().authorizeList(list);
     }
 
     @SuppressWarnings("unchecked")
@@ -76,7 +82,7 @@ public class ApiUtils {
         if ( obj instanceof List ) {
             return (T) authorize((List<T>)obj);
         }
-        return getPolicy().authorize(obj);
+        return getPolicy().authorizeObject(obj);
     }
 
     public static Object getId(Object obj) {
@@ -153,6 +159,35 @@ public class ApiUtils {
         }
 
         return result;
+    }
+
+    public static Resource createResourceWithAttachments(final SchemaFactory schemaFactory, final IdFormatter idFormatter,
+            final Schema schema, Object obj, Map<String,Object> inputAdditionalFields) {
+        Map<String,Object> additionalFields = new LinkedHashMap<String, Object>();
+        if ( inputAdditionalFields != null && inputAdditionalFields.size() > 0 ) {
+            additionalFields.putAll(inputAdditionalFields);
+        }
+        additionalFields.putAll(DataUtils.getFields(obj));
+
+        Map<String,Object> attachments = ApiUtils.getAttachements(obj, new Transformer() {
+            @Override
+            public Object transform(Object input) {
+                input = ApiUtils.authorize(input);
+                if ( input == null )
+                    return null;
+
+                Schema schema = schemaFactory.getSchema(input.getClass());
+                if ( schema == null ) {
+                    return null;
+                }
+
+                return new WrappedResource(idFormatter, schema, input, DataUtils.getFields(input));
+            }
+        });
+
+        additionalFields.putAll(attachments);
+
+        return new WrappedResource(idFormatter, schema, obj, additionalFields);
     }
 
     public static Object getPropertyIgnoreErrors(Object obj, String property) {

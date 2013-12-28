@@ -37,6 +37,7 @@
     </bean>
 
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.NotFoundHandler" />
+    <bean class="io.github.ibuildthecloud.dstack.api.handler.EventNotificationHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.ExceptionHandler" >
         <property name="standardErrorCodes">

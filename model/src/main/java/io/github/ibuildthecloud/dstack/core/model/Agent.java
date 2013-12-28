@@ -102,6 +102,28 @@ public interface Agent extends java.io.Serializable {
 	@javax.persistence.Column(name = "uri", length = 255)
 	public java.lang.String getUri();
 
+	/**
+	 * Setter for <code>dstack.agent.account_id</code>. 
+	 */
+	public void setAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.agent.account_id</code>. 
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
+
+	/**
+	 * Setter for <code>dstack.agent.created</code>. 
+	 */
+	public void setCreated(java.sql.Timestamp value);
+
+	/**
+	 * Getter for <code>dstack.agent.created</code>. 
+	 */
+	@javax.persistence.Column(name = "created", nullable = false)
+	public java.sql.Timestamp getCreated();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

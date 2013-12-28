@@ -14,5 +14,10 @@
             <artifactId>dstack-eventing</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.cloudstack</groupId>
+            <artifactId>cloud-framework-managed-context</artifactId>
+            <version>${acs.version}</version>
+        </dependency>
     </dependencies>
 </project>

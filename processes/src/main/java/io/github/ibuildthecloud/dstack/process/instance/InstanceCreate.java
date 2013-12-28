@@ -1,13 +1,12 @@
 package io.github.ibuildthecloud.dstack.process.instance;
 
-import static io.github.ibuildthecloud.dstack.core.tables.VolumeTable.*;
-import static io.github.ibuildthecloud.dstack.core.tables.NicTable.*;
+import static io.github.ibuildthecloud.dstack.core.model.tables.NicTable.*;
+import static io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.*;
+import io.github.ibuildthecloud.dstack.core.constants.InstanceConstants;
+import io.github.ibuildthecloud.dstack.core.constants.VolumeConstants;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.Nic;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
-import io.github.ibuildthecloud.dstack.db.dynamicfield.InstanceFields;
-import io.github.ibuildthecloud.dstack.db.dynamicfield.VolumeFields;
-import io.github.ibuildthecloud.dstack.engine.handler.AbstractDefaultProcessHandler;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
@@ -15,6 +14,7 @@ import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.dstack.object.util.DataUtils;
+import io.github.ibuildthecloud.dstack.process.base.AbstractDefaultProcessHandler;
 import io.github.ibuildthecloud.dstack.transport.TransportFactory;
 
 import java.util.List;
@@ -23,7 +23,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class CreateInstance extends AbstractDefaultProcessHandler {
+public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     JsonMapper jsonMapper;
     TransportFactory transportFactory;
@@ -41,11 +41,11 @@ public class CreateInstance extends AbstractDefaultProcessHandler {
 
         start(instance);
 
-        return HandlerResult.EMPTY_RESULT;
+        return new HandlerResult();
     }
 
     protected void start(Instance instance) {
-        Boolean doneStart = DataUtils.getField(instance.getData(), InstanceFields.START_ON_CREATE, Boolean.class);
+        Boolean doneStart = DataUtils.getField(instance.getData(), InstanceConstants.DATA_START_ON_CREATE, Boolean.class);
 
         if ( doneStart != null && ! doneStart.booleanValue() ) {
             return;
@@ -61,7 +61,7 @@ public class CreateInstance extends AbstractDefaultProcessHandler {
             deviceId++;
         }
 
-        List<Long> volumeOfferingIds = DataUtils.getFieldList(instance.getData(), InstanceFields.VOLUME_OFFERING_IDS, Long.class);
+        List<Long> volumeOfferingIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.DATA_VOLUME_OFFERING_IDS, Long.class);
 
         outer:
         for ( int i = 0 ; i < volumeOfferingIds.size() ; i++ ) {
@@ -77,7 +77,7 @@ public class CreateInstance extends AbstractDefaultProcessHandler {
                     VOLUME.INSTANCE_ID, instance.getId(),
                     VOLUME.OFFERING_ID, volumeOfferingIds.get(i),
                     VOLUME.DEVICE_NUMBER, deviceNumber,
-                    VOLUME.ATTACHED_STATE, VolumeFields.STATE_ATTACHED
+                    VOLUME.ATTACHED_STATE, VolumeConstants.STATE_ATTACHED
                     );
         }
     }
@@ -98,14 +98,14 @@ public class CreateInstance extends AbstractDefaultProcessHandler {
                 VOLUME.INSTANCE_ID, instance.getId(),
                 VOLUME.IMAGE_ID, instance.getImageId(),
                 VOLUME.DEVICE_NUMBER, 0,
-                VOLUME.ATTACHED_STATE, VolumeFields.STATE_ATTACHED
+                VOLUME.ATTACHED_STATE, VolumeConstants.STATE_ATTACHED
                 );
 
         return true;
     }
 
     protected void defineNics(Instance instance, List<Nic> nics) {
-        List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceFields.NETWORK_IDS, Long.class);
+        List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.DATA_NETWORK_IDS, Long.class);
         if ( networkIds == null )
             return;
 
@@ -147,10 +147,12 @@ public class CreateInstance extends AbstractDefaultProcessHandler {
         this.transportFactory = transportFactory;
     }
 
+    @Override
     public ObjectManager getObjectManager() {
         return objectManager;
     }
 
+    @Override
     @Inject
     public void setObjectManager(ObjectManager objectManager) {
         this.objectManager = objectManager;

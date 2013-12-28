@@ -26,7 +26,13 @@ public class EventUtils {
         return event;
     }
 
-    public static Event newEvent(String name, String resourceId) {
+    public static EventVO newEventFromData(String name, Object data) {
+        EventVO result = newEvent(name, null);
+        result.setData(data);
+        return result;
+    }
+
+    public static EventVO newEvent(String name, String resourceId) {
         EventVO event = new EventVO();
         event.setName(name);
         event.setResourceId(resourceId);

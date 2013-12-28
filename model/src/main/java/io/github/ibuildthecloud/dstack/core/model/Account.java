@@ -55,7 +55,7 @@ public interface Account extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.account.name</code>. 
 	 */
-	@javax.persistence.Column(name = "name", nullable = false, length = 255)
+	@javax.persistence.Column(name = "name", length = 255)
 	public java.lang.String getName();
 
 	/**

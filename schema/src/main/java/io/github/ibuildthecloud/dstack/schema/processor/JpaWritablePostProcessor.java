@@ -38,6 +38,10 @@ public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implem
     }
 
     protected void processProperty(SchemaImpl schema, PropertyDescriptor prop) {
+        if ( TypeUtils.ID_FIELD.equals(prop.getName()) ) {
+            return;
+        }
+
         FieldImpl field = getField(schema, prop.getName());
         Method writeMethod = prop.getWriteMethod();
         Method readMethod = prop.getReadMethod();

@@ -1,11 +1,14 @@
 package io.github.ibuildthecloud.dstack.object.process.impl;
 
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
+import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
+import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.dstack.object.util.ObjectLaunchConfigurationUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.util.Map;
 
@@ -15,6 +18,19 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
 
     ProcessManager processManager;
     SchemaFactory schemaFactory;
+    ObjectManager objectManager;
+
+    @Override
+    public ExitReason executeStandardProcess(StandardProcess process, Object resource, Map<String, Object> data) {
+        String processName = getProcessName(resource, process);
+        ProcessInstance pi = createProcessInstance(processName, resource, data);
+        return pi.execute();
+    }
+
+    protected String getProcessName(Object resource, StandardProcess process) {
+        Schema schema = schemaFactory.getSchema(resource.getClass());
+        return schema.getId().toLowerCase() + "." + process.toString().toLowerCase();
+    }
 
     @Override
     public ProcessInstance createProcessInstance(LaunchConfiguration config) {
@@ -48,6 +64,15 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
     @Inject
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
+    }
+
+    public ObjectManager getObjectManager() {
+        return objectManager;
+    }
+
+    @Inject
+    public void setObjectManager(ObjectManager objectManager) {
+        this.objectManager = objectManager;
     }
 
 }

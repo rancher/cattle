@@ -1,18 +1,21 @@
-package io.github.ibuildthecloud.dstack.process.virtualmachine;
-
-import java.util.Set;
+package io.github.ibuildthecloud.dstack.process.common.generic;
 
 import io.github.ibuildthecloud.dstack.engine.process.AbstractProcessDefinition;
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
+import io.github.ibuildthecloud.dstack.engine.process.StateTransition;
 import io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+
+import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 public class GenericResourceProcessDefinition extends AbstractProcessDefinition {
 
+    String resourceType;
     ResourceStatesDefinition statesDefinition;
     ObjectManager objectManager;
     JsonMapper jsonMapper;
@@ -52,6 +55,21 @@ public class GenericResourceProcessDefinition extends AbstractProcessDefinition 
     @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
+    }
+
+    @Override
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    @Inject
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
+
+    @Override
+    public List<StateTransition> getStateTransitions() {
+        return statesDefinition.getStateTransitions();
     }
 
 }

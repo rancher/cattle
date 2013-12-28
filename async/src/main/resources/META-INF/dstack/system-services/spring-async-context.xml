@@ -14,6 +14,8 @@
         <task:scheduled ref="RetryTimeoutService" method="retry" fixed-delay="1000" />
     </task:scheduled-tasks>
 
-    <bean id="RetryTimeoutService" class="io.github.ibuildthecloud.dstack.async.retry.impl.RetryTimeoutServiceImpl" />
+    <bean id="RetryTimeoutService" class="io.github.ibuildthecloud.dstack.async.retry.impl.RetryTimeoutServiceImpl" >
+        <property name="executorService" ref="CoreExecutorService" />
+    </bean>
 
 </beans>

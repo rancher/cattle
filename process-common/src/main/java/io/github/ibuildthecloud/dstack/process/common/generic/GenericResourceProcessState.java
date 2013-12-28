@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.process.virtualmachine;
+package io.github.ibuildthecloud.dstack.process.common.generic;
 
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.impl.AbstractStatesBasedProcessState;
@@ -15,10 +15,9 @@ import org.apache.commons.beanutils.BeanUtils;
 
 public class GenericResourceProcessState extends AbstractStatesBasedProcessState {
 
-    String resourceType;
-    String resourceId;
 
     Object resource;
+    String resourceId;
     ObjectManager objectManager;
     LockDefinition processLock;
 
@@ -27,6 +26,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
         this.objectManager = objectManager;
         this.resource = objectManager.loadResource(config.getResourceType(), config.getResourceId());
         this.processLock = new ResourceChangeLock(config.getResourceType(), config.getResourceId());
+        this.resourceId = config.getResourceId();
     }
 
     @Override
@@ -42,6 +42,9 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     @Override
     public String getState() {
         try {
+            if ( resource == null ) {
+                return null;
+            }
             return BeanUtils.getProperty(resource, getStatesDefinition().getStateField());
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
@@ -76,6 +79,19 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     @Override
     protected Map<String, Object> convertMap(Map<Object, Object> data) {
         return objectManager.convertToPropertiesFor(resource, data);
+    }
+
+    @Override
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    @Override
+    public boolean shouldCancel() {
+        if ( resource == null ) {
+            return true;
+        }
+        return super.shouldCancel();
     }
 
 }

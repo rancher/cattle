@@ -10,7 +10,7 @@
                       >
 
     <bean id="CoreSchemaList" class="io.github.ibuildthecloud.dstack.db.jooq.utils.SchemaRecordTypeListGenerator" >
-        <property name="schemaClass" value="io.github.ibuildthecloud.dstack.core.DstackTable" />
+        <property name="schemaClass" value="io.github.ibuildthecloud.dstack.core.model.DstackTable" />
     </bean>
 
     <bean id="CoreTypeSet" class="io.github.ibuildthecloud.dstack.object.meta.TypeSet" >

@@ -14,4 +14,12 @@ public class AbstractParentLog implements ParentLog {
         return log;
     }
 
+    public List<ProcessLog> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<ProcessLog> children) {
+        this.children = children;
+    }
+
 }

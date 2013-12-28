@@ -4,7 +4,7 @@ public class ScopeUtils {
 
     public static final String getDefaultScope(Object obj) {
         if ( obj instanceof Scope ) {
-            return ((Scope)obj).getDefaultScope();
+            return ((Scope)obj).getTargetScope();
         }
 
         return "";

@@ -1,10 +1,13 @@
 package io.github.ibuildthecloud.dstack.object.meta.impl;
 
 import static io.github.ibuildthecloud.dstack.object.meta.Relationship.RelationshipType.*;
+import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
+import io.github.ibuildthecloud.dstack.engine.process.StateTransition;
 import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.meta.TypeSet;
+import io.github.ibuildthecloud.dstack.object.util.DataUtils;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -20,10 +23,14 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 
@@ -40,7 +47,9 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     SchemaFactory schemaFactory;
     List<TypeSet> typeSets;
     Map<Class<?>,Map<String,Relationship>> relationships = new HashMap<Class<?>, Map<String,Relationship>>();
+    List<ProcessDefinition> processDefinitions;
 
+    Map<String,Set<String>> transitioningStates = new HashMap<String, Set<String>>();
     Map<String,Map<String,String>> linksCache = Collections.synchronizedMap(new WeakHashMap<String,Map<String,String>>());
     Map<FieldCacheKey, String> propertyCache = Collections.synchronizedMap(new WeakHashMap<FieldCacheKey, String>());
     Map<FieldCacheKey, TableField<?, ?>> tableFields = new HashMap<FieldCacheKey, TableField<?,?>>();
@@ -48,12 +57,38 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     @Override
     public void start() {
         List<Schema> schemas = registerTypes();
+        registerTransitionStates();
         registerRelationships();
         parseSchemas(schemas);
     }
 
     @Override
     public void stop() {
+    }
+
+    protected void registerTransitionStates() {
+        transitioningStates.clear();
+
+        for ( ProcessDefinition def : processDefinitions ) {
+            Set<String> states = transitioningStates.get(def.getResourceType());
+
+            for ( StateTransition transition : def.getStateTransitions() ) {
+                if ( states == null ) {
+                    states = new HashSet<String>();
+                    transitioningStates.put(def.getResourceType(), states);
+                }
+
+                switch (transition.getType()) {
+                case DONE:
+                    states.add(transition.getFromState());
+                    break;
+                case TRANSITIONING:
+                    states.add(transition.getToState());
+                    break;
+                default:
+                }
+            }
+        }
     }
 
     protected void registerRelationships() {
@@ -214,8 +249,38 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         return schema;
     }
 
+    protected void addTransitioningFields(SchemaImpl schema, SchemaFactory factory) {
+        Set<String> states = transitioningStates.get(schema.getId());
+        if ( states == null || states.size() == 0 ) {
+            return;
+        }
+
+        addField(schema, TRANSITIONING_FIELD, FieldType.ENUM, TRANSITIONING_YES, TRANSITIONING_NO, TRANSITIONING_ERROR);
+        addField(schema, TRANSITIONING_MESSAGE_FIELD, FieldType.STRING);
+        addField(schema, TRANSITIONING_PROGRESS_FIELD, FieldType.INT);
+    }
+
+    protected void addField(SchemaImpl schema, String name, FieldType type, String... options) {
+        Field f = schema.getResourceFields().get(name);
+        if ( f != null ) {
+            return;
+        }
+
+        FieldImpl newField = new FieldImpl();
+        newField.setTypeEnum(type);
+        if ( type == FieldType.ENUM ) {
+            newField.setOptions(Arrays.asList(options));
+        } else {
+            newField.setNullable(true);
+        }
+
+        schema.getResourceFields().put(name, newField);
+    }
+
     @Override
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
+        addTransitioningFields(schema, factory);
+
         Map<String,Relationship> relationships = this.relationships.get(factory.getSchemaClass(schema.getId()));
 
         if ( relationships != null ) {
@@ -337,6 +402,26 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         return relationship == null ? null : relationship.get(linkName);
     }
 
+    @Override
+    public Map<String, Object> getTransitionFields(Schema schema, Object obj) {
+        Set<String> states = transitioningStates.get(schema.getId());
+        if ( states == null || states.size() == 0 ) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        result.put(TRANSITIONING_FIELD, TRANSITIONING_NO);
+
+        String state = DataUtils.getState(obj);
+        if ( state != null && states.contains(state) ) {
+            result.put(TRANSITIONING_FIELD, TRANSITIONING_YES);
+            result.put(TRANSITIONING_MESSAGE_FIELD, TRANSITIONING_MESSAGE_DEFAULT_FIELD);
+            result.put(TRANSITIONING_PROGRESS_FIELD, null);
+        }
+
+        return result;
+    }
+
     public SchemaFactory getSchemaFactory() {
         return schemaFactory;
     }
@@ -353,6 +438,15 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     @Inject
     public void setTypeSets(List<TypeSet> typeSets) {
         this.typeSets = typeSets;
+    }
+
+    public List<ProcessDefinition> getProcessDefinitions() {
+        return processDefinitions;
+    }
+
+    @Inject
+    public void setProcessDefinitions(List<ProcessDefinition> processDefinitions) {
+        this.processDefinitions = processDefinitions;
     }
 
 }

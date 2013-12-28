@@ -1,2 +1,0 @@
-class CommandHandler(object):
-    def 

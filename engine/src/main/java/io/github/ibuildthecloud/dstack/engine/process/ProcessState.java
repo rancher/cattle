@@ -1,10 +1,12 @@
 package io.github.ibuildthecloud.dstack.engine.process;
 
-import java.util.Map;
-
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 
+import java.util.Map;
+
 public interface ProcessState {
+
+    String getResourceId();
 
     Object getResource();
 

@@ -13,9 +13,14 @@
         <property name="typeClasses">
             <list>
                 <value>io.github.ibuildthecloud.api.pubsub.model.Subscribe</value>
+                <value>io.github.ibuildthecloud.api.pubsub.model.Publish</value>
             </list>
         </property>
     </bean>
 
-    <bean class="io.github.ibuildthecloud.api.pubsub.manager.SubscribeManager" />
+    <bean class="io.github.ibuildthecloud.api.pubsub.manager.SubscribeManager" >
+        <property name="executorService" ref="CoreExecutorService" />
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.api.pubsub.manager.PublishManager" />
 </beans>

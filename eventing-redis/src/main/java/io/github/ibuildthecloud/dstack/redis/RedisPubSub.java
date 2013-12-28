@@ -19,12 +19,12 @@ public class RedisPubSub extends JedisPubSub {
 
     @Override
     public void onMessage(String channel, String message) {
-        service.onMessage(channel, message);
+        service.onMessage(null, channel, message);
     }
 
     @Override
     public void onPMessage(String pattern, String channel, String message) {
-        service.onMessage(channel, message);
+        service.onMessage(pattern, channel, message);
     }
 
     @Override
@@ -35,11 +35,13 @@ public class RedisPubSub extends JedisPubSub {
 
     @Override
     public void onUnsubscribe(String channel, int subscribedChannels) {
+        log.info("Unsubscribed to channel [{}], total subscriptions [{}]", channel, subscribedChannels);
         connection.onSubscribed(channel);
     }
 
     @Override
     public void onPUnsubscribe(String pattern, int subscribedChannels) {
+        log.info("Unsubscribed to pattern [{}], total subscriptions [{}]", pattern, subscribedChannels);
         connection.onSubscribed(pattern);
     }
 

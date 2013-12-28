@@ -1,15 +1,17 @@
 package io.github.ibuildthecloud.dstack.engine.process;
 
 import io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler;
-import io.github.ibuildthecloud.dstack.engine.handler.ProcessListener;
+import io.github.ibuildthecloud.dstack.engine.handler.ProcessPostListener;
+import io.github.ibuildthecloud.dstack.engine.handler.ProcessPreListener;
 import io.github.ibuildthecloud.dstack.extension.ExtensionManager;
+import io.github.ibuildthecloud.dstack.extension.ExtensionPoint;
 
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-public abstract class AbstractProcessDefinition implements ProcessDefinition {
+public abstract class AbstractProcessDefinition implements ProcessDefinition, ExtensionBasedProcessDefinition {
 
     public static final String PRE = "process.%s.pre.listeners";
     public static final String HANDLER = "process.%s.handlers";
@@ -20,9 +22,14 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition {
     String postProcessListenersKey;
     ExtensionManager extensionManager;
     String name;
+    String processDelegateName;
 
     @PostConstruct
     public void init() {
+        if ( name == null ) {
+            throw new IllegalStateException("name is required on [" + this + "]");
+        }
+
         preProcessListenersKey = String.format(PRE, getName());
         processHandlersKey = String.format(HANDLER, getName());
         postProcessListenersKey = String.format(POST, getName());
@@ -34,18 +41,31 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition {
         return extensionManager.getExtensionList(processHandlersKey, ProcessHandler.class);
     }
 
-    protected List<ProcessListener> getListeners(String key) {
-        return extensionManager.getExtensionList(key, ProcessListener.class);
+    @Override
+    public List<ProcessPreListener> getPreProcessListeners() {
+        return extensionManager.getExtensionList(preProcessListenersKey, ProcessPreListener.class);
     }
 
     @Override
-    public List<ProcessListener> getPreProcessListeners() {
-        return getListeners(preProcessListenersKey);
+    public List<ProcessPostListener> getPostProcessListeners() {
+        return extensionManager.getExtensionList(postProcessListenersKey, ProcessPostListener.class);
     }
 
     @Override
-    public List<ProcessListener> getPostProcessListeners() {
-        return getListeners(postProcessListenersKey);
+    public ExtensionPoint getPreProcessListenersExtensionPoint() {
+        return extensionManager.getExtensionPoint(preProcessListenersKey, ProcessPreListener.class);
+    }
+
+
+    @Override
+    public ExtensionPoint getProcessHandlersExtensionPoint() {
+        return extensionManager.getExtensionPoint(processHandlersKey, ProcessHandler.class);
+    }
+
+
+    @Override
+    public ExtensionPoint getPostProcessListenersExtensionPoint() {
+        return extensionManager.getExtensionPoint(postProcessListenersKey, ProcessPostListener.class);
     }
 
     @Override
@@ -65,6 +85,15 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition {
     @Inject
     public void setExtensionManager(ExtensionManager extensionManager) {
         this.extensionManager = extensionManager;
+    }
+
+    @Override
+    public String getProcessDelegateName() {
+        return processDelegateName;
+    }
+
+    public void setProcessDelegateName(String processDelegateName) {
+        this.processDelegateName = processDelegateName;
     }
 
 }

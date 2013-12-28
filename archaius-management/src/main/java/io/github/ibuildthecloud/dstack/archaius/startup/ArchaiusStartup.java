@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.archaius.startup;
 
 import io.github.ibuildthecloud.dstack.archaius.polling.RefreshableFixedDelayPollingScheduler;
 import io.github.ibuildthecloud.dstack.archaius.sources.LazyJDBCSource;
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.datasource.DataSourceFactory;
 import io.github.ibuildthecloud.dstack.extension.impl.ExtensionManagerImpl;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
@@ -46,7 +47,6 @@ public class ArchaiusStartup implements InitializationTask {
             throw new IllegalStateException("setGlobalDefaults() must be set before init() is called");
         }
 
-
         baseConfig = new ConcurrentCompositeConfiguration();
         baseConfig.addConfiguration(new MapConfiguration(getOverride()));
         baseConfig.addConfiguration(new MapConfiguration(GLOBAL_DEFAULT));
@@ -86,6 +86,8 @@ public class ArchaiusStartup implements InitializationTask {
             for ( RefreshableFixedDelayPollingScheduler scheduler : schedulers ) {
                 scheduler.refresh();
             }
+
+            ArchaiusUtil.addSchedulers(schedulers);
         }
     }
 

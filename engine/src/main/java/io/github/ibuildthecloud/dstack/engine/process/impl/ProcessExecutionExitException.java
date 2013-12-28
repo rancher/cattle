@@ -1,4 +1,6 @@
-package io.github.ibuildthecloud.dstack.engine.process;
+package io.github.ibuildthecloud.dstack.engine.process.impl;
+
+import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 
 public class ProcessExecutionExitException extends RuntimeException {
 

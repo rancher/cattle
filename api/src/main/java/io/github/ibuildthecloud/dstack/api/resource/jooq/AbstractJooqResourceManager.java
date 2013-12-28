@@ -1,6 +1,6 @@
-package io.github.ibuildthecloud.dstack.api.resource;
+package io.github.ibuildthecloud.dstack.api.resource.jooq;
 
-import io.github.ibuildthecloud.dstack.api.resource.jooq.MultiTableMapper;
+import io.github.ibuildthecloud.dstack.api.resource.AbstractObjectResourceManager;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
@@ -68,7 +68,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
             return null;
         }
 
-        MultiTableMapper tableMapper = new MultiTableMapper(metaDataManager);
+        MultiTableMapper tableMapper = new MultiTableMapper(getMetaDataManager());
         tableMapper.map(table);
 
         List<Relationship> rels = new ArrayList<Relationship>();
@@ -224,7 +224,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
 
     @SuppressWarnings("unchecked")
     protected TableField<?, Object> getTableField(String type, Object key) {
-        Object objField = metaDataManager.convertFieldNameFor(type, key);
+        Object objField = getMetaDataManager().convertFieldNameFor(type, key);
         if ( objField instanceof TableField ) {
             return (TableField<?, Object>)objField;
         } else {

@@ -8,6 +8,8 @@ public interface AgentConnection {
 
     long getAgentId();
 
+    String getUri();
+
     /**
      * The future that is returned is expected to allows complete, either success or failure.
      * It it up to the implementation of the AgentConnection to ensure that the the future
@@ -18,5 +20,9 @@ public interface AgentConnection {
      * @return
      */
     ListenableFuture<Event> execute(Event event);
+
+    void close();
+
+    boolean isOpen();
 
 }

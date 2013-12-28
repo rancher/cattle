@@ -46,16 +46,16 @@ public class CollectionUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Map<T,Object> asMap(T key, Object... value) {
+    public static <T> Map<T,Object> asMap(T key, Object... values) {
         Map<T,Object> result = new LinkedHashMap<T, Object>();
 
-        if ( value == null || value.length % 2 == 0 ) {
+        if ( values == null || values.length % 2 == 0 ) {
             throw new IllegalArgumentException("value[] must be not null and an odd length");
         }
 
-        result.put(key, value[0]);
-        for ( int i = 1 ; i < value.length ; i+=2 ) {
-            result.put((T)value[i], value[i+1]);
+        result.put(key, values[0]);
+        for ( int i = 1 ; i < values.length ; i+=2 ) {
+            result.put((T)values[i], values[i+1]);
         }
 
         return result;

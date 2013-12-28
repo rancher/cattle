@@ -11,7 +11,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-agent-server</artifactId>
+            <artifactId>dstack-agent-connection-event</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

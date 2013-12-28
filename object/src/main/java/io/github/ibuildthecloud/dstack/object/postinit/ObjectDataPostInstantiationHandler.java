@@ -29,7 +29,7 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
             setData(obj, data);
             return obj;
         } catch ( IOException e ) {
-            throw new IllegalStateException("Failed to handle object data for [" + obj + 
+            throw new IllegalStateException("Failed to handle object data for [" + obj +
                     "] and properties [" + properties + "]", e);
         }
     }

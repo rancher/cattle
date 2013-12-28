@@ -25,7 +25,7 @@ public class ModelStrategy extends DefaultGeneratorStrategy {
     public String getJavaPackageName(Definition definition, Mode mode) {
         if ( mode == Mode.INTERFACE ) {
             String result = super.getJavaPackageName(definition, mode);
-            return StringUtils.replace(result, "tables.interfaces", "model");
+            return StringUtils.replace(result, ".tables.interfaces", "");
         }
         return super.getJavaPackageName(definition, mode);
     }

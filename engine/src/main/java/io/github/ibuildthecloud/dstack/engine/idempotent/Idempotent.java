@@ -6,18 +6,20 @@ import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.apache.commons.lang3.ObjectUtils;
 
 import com.netflix.config.DynamicBooleanProperty;
 
 public class Idempotent {
 
+    private static final String DISABLE = "_disable";
     private static final int LOOP_MAX = 1000;
 
-    private static final DynamicBooleanProperty runMultipleTimes = ArchaiusUtil.getBooleanProperty("idempotent.reexecute");
-    private static final DynamicBooleanProperty abortOnChange = ArchaiusUtil.getBooleanProperty("idempotent.abort.on.change");
+    private static final DynamicBooleanProperty runMultipleTimes = ArchaiusUtil.getBoolean("idempotent.reexecute");
+    private static final DynamicBooleanProperty abortOnChange = ArchaiusUtil.getBoolean("idempotent.abort.on.change");
 
-    private static final ThreadLocal<Set<String>> IDEMPOTENT = new ThreadLocal<Set<String>>();
+    private static final ThreadLocal<Set<String>> IDEMPOTENT = new ManagedThreadLocal<Set<String>>();
 
     public static <T> T execute(IdempotentExecution<T> execution) {
         Set<String> traces = null;
@@ -41,7 +43,7 @@ public class Idempotent {
                         if ( i == 0 ) {
                             result = resultAgain;
                         }
-                        if ( ! runMultipleTimes.get() ) {
+                        if ( isDisabled(traces) || ! runMultipleTimes.get() ) {
                             break outer;
                         }
                         if ( ! ObjectUtils.equals(result, resultAgain) ) {
@@ -68,7 +70,7 @@ public class Idempotent {
 
     public static <T> T change(IdempotentExecution<T> execution) {
         Set<String> traces = IDEMPOTENT.get();
-        if ( traces != null ) {
+        if ( traces != null && ! isDisabled(traces) ) {
             IdempotentRetry e = new IdempotentRetry();
             String trace = ExceptionUtils.toString(e);
             if ( ! traces.contains(trace) ) {
@@ -78,6 +80,17 @@ public class Idempotent {
         }
 
         return execution.execute();
+    }
+
+    protected static boolean isDisabled(Set<String> traces) {
+        return traces == null || traces.contains(DISABLE);
+    }
+
+    public static void tempDisable() {
+        Set<String> traces = IDEMPOTENT.get();
+        if ( traces != null ) {
+            traces.add(DISABLE);
+        }
     }
 
 }

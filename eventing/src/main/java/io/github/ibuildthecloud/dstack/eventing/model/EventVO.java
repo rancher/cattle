@@ -6,16 +6,23 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 public class EventVO implements Event {
 
     String id, name, replyTo, resourceId, resourceType, publisher;
     String[] previousIds;
     Object data;
     Date time;
+    String listenerKey;
 
     public EventVO() {
         id = UUID.randomUUID().toString();
         time = new Date();
+    }
+
+    public EventVO(Event event) {
+        this(event, event.getReplyTo());
     }
 
     public EventVO(Event event, String replyTo) {
@@ -117,6 +124,15 @@ public class EventVO implements Event {
         return "EventVO [id=" + id + ", name=" + name + ", replyTo=" + replyTo + ", resourceId=" + resourceId
                 + ", resourceType=" + resourceType + ", publisher=" + publisher + ", previousIds="
                 + Arrays.toString(previousIds) + ", data=" + data + ", time=" + time + "]";
+    }
+
+    @XmlTransient
+    public String getListenerKey() {
+        return listenerKey;
+    }
+
+    public void setListenerKey(String listenerKey) {
+        this.listenerKey = listenerKey;
     }
 
 }

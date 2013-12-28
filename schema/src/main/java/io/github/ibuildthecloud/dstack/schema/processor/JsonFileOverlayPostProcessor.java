@@ -16,6 +16,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -132,7 +133,7 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
             }
 
             Map<String,Object> mapProperty = (Map<String, Object>)mapData.get(name);
-            PropertyUtils.copyProperties(oldValue, mapProperty.get(key));
+            BeanUtils.copyProperties(oldValue, mapProperty.get(key));
         }
     }
 

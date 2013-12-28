@@ -1,202 +1,84 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>dstack-meta</artifactId>
-  <parent>
-    <artifactId>dstack-parent</artifactId>
-    <groupId>io.github.ibuildthecloud</groupId>
-    <version>0.1-SNAPSHOT</version>
-    <relativePath>../parent/pom.xml</relativePath>
-  </parent>
-  <packaging>jar</packaging>
-  <dependencies>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-      <version>3.2.4.RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ibuildthecloud</groupId>
-      <artifactId>dstack-api-pub-sub</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ibuildthecloud</groupId>
-      <artifactId>dstack-agent-server</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ibuildthecloud</groupId>
-      <artifactId>dstack-agent-connection-ssh</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ibuildthecloud</groupId>
-      <artifactId>dstack-schema</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ibuildthecloud</groupId>
-      <artifactId>dstack-processes</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ibuildthecloud</groupId>
-      <artifactId>dstack-jooq</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ibuildthecloud</groupId>
-      <artifactId>dstack-api-resources</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.ibuildthecloud</groupId>
-      <artifactId>dstack-resources</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cloudstack</groupId>
-      <artifactId>cloud-framework-spring-module</artifactId>
-      <version>${acs.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.4</version>
-        <scope>provided</scope>
-        <optional>true</optional>
-    </dependency>
-    
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-server</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-acl-static-role-based</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-api-discovery</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-user-authenticator-sha256salted</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-network-internallb</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-hypervisor-xen</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-storage-allocator-random</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-planner-user-dispersing</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-planner-user-concentrated-pod</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-host-allocator-random</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-framework-ipc</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-api</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-components-api</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-network</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-orchestration</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-schema</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-storage</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-storage-cache</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-storage-image</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-storage-datamotion</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-storage-snapshot</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-engine-storage-volume</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-storage-volume-default</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>org.apache.cloudstack</groupId> -->
-<!--       <artifactId>cloud-plugin-storage-image-default</artifactId> -->
-<!--       <version>${acs.version}</version> -->
-<!--     </dependency> -->
-  </dependencies>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>dstack-meta</artifactId>
+    <parent>
+        <artifactId>dstack-parent</artifactId>
+        <groupId>io.github.ibuildthecloud</groupId>
+        <version>0.1-SNAPSHOT</version>
+        <relativePath>../parent/pom.xml</relativePath>
+    </parent>
+    <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-archaius-management</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>3.2.4.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-extension-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-system</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-api-pub-sub</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-agent-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-agent-connection-ssh</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-schema</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-processes</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-jooq</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-api-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
 </project>

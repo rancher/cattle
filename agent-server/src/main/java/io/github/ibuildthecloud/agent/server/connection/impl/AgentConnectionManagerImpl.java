@@ -14,6 +14,7 @@ import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +25,8 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.LoggerFactory;
-
 import org.slf4j.Logger;
 
 import com.google.common.cache.Cache;
@@ -40,8 +41,8 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
     public static final String WILDCARD = "*";
     public static final String UNASSIGNED = "!";
 
-    private static final DynamicStringProperty AGENT_GROUPS = ArchaiusUtil.getStringProperty("agent.groups");
-    private static final DynamicLongProperty AGENT_LOCK_FAILURE_CACHE_TIME = ArchaiusUtil.getLongProperty("agent.lock.failure.cache.time.millis");
+    private static final DynamicStringProperty AGENT_GROUPS = ArchaiusUtil.getString("agent.groups");
+    private static final DynamicLongProperty AGENT_LOCK_FAILURE_CACHE_TIME = ArchaiusUtil.getLong("agent.lock.failure.cache.time.millis");
 
     ObjectManager objectManager;
     Set<String> groups;
@@ -59,20 +60,46 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
             return null;
 
         if ( ! shouldHandleAgent(agent) ) {
+            closeIfExists(agent);
             return null;
         }
 
         LockDefinition lockDefinition = getLockDefinition(agent);
         if ( ! haveLock(lockDefinition) ) {
+            closeIfExists(agent);
             return null;
         }
 
         AgentConnection connection = connections.get(agent.getId());
         if ( connection != null ) {
+            if ( ! connection.isOpen() || ! ObjectUtils.equals(agent.getUri(), connection.getUri()) ) {
+                closeConnection(agent, connection);
+                return getConnection(agent);
+            }
             return connection;
         }
 
         return createConnection(agent);
+    }
+
+    protected void closeIfExists(Agent agent) {
+        AgentConnection connection = connections.get(agent.getId());
+        if ( connection != null ) {
+            closeConnection(agent, connection);
+        }
+    }
+
+    protected synchronized void closeConnection(Agent agent, AgentConnection connection) {
+        if ( connection == null ) {
+            return;
+        }
+
+        connection.close();
+        connections.remove(agent.getId());
+
+        LockDefinition lockDef = getLockDefinition(agent);
+        lockDelegator.unlock(lockDef);
+        cache.invalidate(agent.getId());
     }
 
     protected AgentConnection createConnection(final Agent agent) {
@@ -93,15 +120,25 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
         }
 
         for ( AgentConnectionFactory factory : factories ) {
-            connection = factory.createConnection(agent);
+            try {
+                connection = factory.createConnection(agent);
+            } catch (IOException e) {
+                log.error("Failed to create connection for agent [{}]", agent.getId(), e);
+                return null;
+            }
+
             if ( connection != null ) {
-                return connection;
+                break;
             }
         }
 
-        log.error("No connection factory created a connection for agent [{}] [{}]", agent.getId(), agent.getUri());
+        if ( connection == null ) {
+            log.error("No connection factory created a connection for agent [{}] [{}]", agent.getId(), agent.getUri());
+        } else {
+            connections.put(agent.getId(), connection);
+        }
 
-        return null;
+        return connection;
     }
 
     protected boolean shouldHandleAgent(Agent agent) {

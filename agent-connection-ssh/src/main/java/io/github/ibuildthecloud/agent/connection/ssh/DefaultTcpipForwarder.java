@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.github.ibuildthecloud.agent.server.connection.ssh;
+package io.github.ibuildthecloud.agent.connection.ssh;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

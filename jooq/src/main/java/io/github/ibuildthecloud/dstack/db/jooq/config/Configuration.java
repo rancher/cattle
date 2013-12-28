@@ -23,7 +23,7 @@ public class Configuration extends DefaultConfiguration {
     @PostConstruct
     public void init() {
         String prop = "db." + name + ".database";
-        String database = ArchaiusUtil.getStringProperty(prop).get();
+        String database = ArchaiusUtil.getString(prop).get();
         if ( database == null ) {
             throw new IllegalStateException("Failed to find config for [" + prop + "]");
         }
@@ -44,7 +44,7 @@ public class Configuration extends DefaultConfiguration {
         Settings settings = new Settings();
         settings.setRenderSchema(false);
 
-        String renderNameStyle = ArchaiusUtil.getStringProperty("db." + name + "." + database + ".render.name.style").get();
+        String renderNameStyle = ArchaiusUtil.getString("db." + name + "." + database + ".render.name.style").get();
         if ( renderNameStyle != null ) {
             settings.setRenderNameStyle(RenderNameStyle.valueOf(renderNameStyle.trim().toUpperCase()));
         }

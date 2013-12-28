@@ -12,6 +12,7 @@ import io.github.ibuildthecloud.dstack.pool.PoolConfig;
 import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,8 +40,8 @@ public abstract class AbstractEventService implements EventService {
     private static final Logger eventLog = LoggerFactory.getLogger("EventLog");
 
 
-    private static final DynamicIntProperty DEFAULT_RETRIES = ArchaiusUtil.getIntProperty("eventing.retry");
-    private static final DynamicLongProperty DEFAULT_TIMEOUT = ArchaiusUtil.getLongProperty("eventing.timeout.millis");
+    private static final DynamicIntProperty DEFAULT_RETRIES = ArchaiusUtil.getInt("eventing.retry");
+    private static final DynamicLongProperty DEFAULT_TIMEOUT = ArchaiusUtil.getLong("eventing.timeout.millis");
 
     private static final Object SUBSCRIPTION_LOCK = new Object();
 
@@ -59,8 +60,14 @@ public abstract class AbstractEventService implements EventService {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to marshall event [" + event + "] to string", e);
         }
+
+        if ( event.getName() == null ) {
+            log.error("Can not publish an event with a null name : {}", eventString);
+            return false;
+        }
+
         try {
-            getEventLog().debug("Out : {}", eventString);
+            getEventLog().debug("Out : {} : {}", event.getName(), eventString);
             return doPublish(event.getName(), event, eventString);
         } catch ( Throwable e ) {
             log.warn("Failed to publish event [" + eventString + "]", e);
@@ -70,8 +77,26 @@ public abstract class AbstractEventService implements EventService {
 
     protected abstract boolean doPublish(String name, Event event, String eventString) throws IOException;
 
-    protected List<EventListener> getEventListeners(String eventName) {
-        return eventToListeners.get(eventName);
+    protected List<EventListener> getEventListeners(Event event) {
+        String eventName = event.getName();
+        List<EventListener> result = eventToListeners.get(eventName);
+
+        if ( event instanceof EventVO ) {
+            String listenerKey = ((EventVO)event).getListenerKey();
+            if ( listenerKey != null && ! listenerKey.equals(eventName) ) {
+                List<EventListener> additional = eventToListeners.get(((EventVO)event).getListenerKey());
+                if ( additional != null ) {
+                    if ( result == null ) {
+                        return additional;
+                    } else {
+                        result = new ArrayList<EventListener>(result);
+                        result.addAll(additional);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     protected Logger getEventLog() {
@@ -148,6 +173,8 @@ public abstract class AbstractEventService implements EventService {
 
         if ( doSubscribe ) {
             doSubscribe(eventName, future);
+        } else {
+            future.set(null);
         }
 
         future.addListener(new Runnable() {
@@ -232,7 +259,7 @@ public abstract class AbstractEventService implements EventService {
         final Object cancel = timeoutService.submit(retry);
 
         listener.setFuture(future);
-        listener.setEvent(event);
+        listener.setEvent(request);
 
         future.addListener(new Runnable() {
             @Override
@@ -252,7 +279,7 @@ public abstract class AbstractEventService implements EventService {
             }
         }, executorService);
 
-        publish(event);
+        publish(request);
 
         return future;
     }

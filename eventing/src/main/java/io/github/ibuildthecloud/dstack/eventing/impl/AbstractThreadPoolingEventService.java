@@ -33,12 +33,14 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     Map<String,Executor> executors = new ConcurrentHashMap<String, Executor>();
     Map<String,Executor> queuedExecutors = new ConcurrentHashMap<String, Executor>();
 
-    protected void onEvent(String eventName, byte[] bytes) {
+    protected void onEvent(String listenerKey, String eventName, byte[] bytes) {
         try {
             EventVO event = jsonMapper.readValue(bytes, EventVO.class);
             if ( eventName != null ) {
                 event.setName(eventName);
             }
+            event.setListenerKey(listenerKey);
+
             onEvent(event);
         } catch (IOException e) {
             try {
@@ -49,14 +51,16 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
         }
     }
 
-    protected void onEvent(String eventName, String eventString) {
-        getEventLog().debug("In : {}", eventString);
+    protected void onEvent(String listenerKey, String eventName, String eventString) {
+        getEventLog().debug("In : {} : {}", eventName, eventString);
 
         try {
             EventVO event = jsonMapper.readValue(eventString, EventVO.class);
             if ( eventName != null ) {
                 event.setName(eventName);
             }
+            event.setListenerKey(listenerKey);
+
             onEvent(event);
         } catch (IOException e) {
             log.warn("Failed to unmarshall event [{}]", eventString, e);
@@ -79,7 +83,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
             return;
         }
 
-        List<EventListener> listeners = getEventListeners(event.getName());
+        List<EventListener> listeners = getEventListeners(event);
         if ( listeners == null || listeners.size() == 0 ) {
             log.debug("No listeners found for [{}]", event.getName());
             return;
@@ -145,11 +149,11 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     }
 
     protected int getThreadCount(String name, String defaultSetting) {
-        int count = ArchaiusUtil.getIntProperty(String.format(threadCountSetting, name)).get();
+        int count = ArchaiusUtil.getInt(String.format(threadCountSetting, name)).get();
         if ( count > 0 ) {
             return count;
         } else {
-            return ArchaiusUtil.getIntProperty(String.format(threadCountSetting, defaultSetting)).get();
+            return ArchaiusUtil.getInt(String.format(threadCountSetting, defaultSetting)).get();
         }
     }
 

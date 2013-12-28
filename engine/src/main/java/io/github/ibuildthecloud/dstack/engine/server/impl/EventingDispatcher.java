@@ -1,12 +1,12 @@
 package io.github.ibuildthecloud.dstack.engine.server.impl;
 
-import javax.inject.Inject;
-
 import io.github.ibuildthecloud.dstack.engine.eventing.EngineEvents;
 import io.github.ibuildthecloud.dstack.engine.server.ProcessInstanceDispatcher;
 import io.github.ibuildthecloud.dstack.engine.server.ProcessServer;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.util.EventUtils;
+
+import javax.inject.Inject;
 
 public class EventingDispatcher implements ProcessInstanceDispatcher {
 

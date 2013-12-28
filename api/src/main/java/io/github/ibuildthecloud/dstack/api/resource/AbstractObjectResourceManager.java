@@ -5,7 +5,6 @@ import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
-import io.github.ibuildthecloud.dstack.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -14,7 +13,6 @@ import io.github.ibuildthecloud.gdapi.model.Include;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
-import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractBaseResourceManager;
@@ -22,13 +20,10 @@ import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractBaseResource
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-
-import org.apache.commons.collections.Transformer;
 
 public abstract class AbstractObjectResourceManager extends AbstractBaseResourceManager {
 
@@ -142,16 +137,18 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         Map<Object, Object> criteria = new HashMap<Object, Object>();
         Policy policy = ApiUtils.getPolicy();
 
-        if ( ! policy.isAuthorizedForAllAccounts() ) {
+        if ( ! policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) ) {
             List<Long> accounts = policy.getAuthorizedAccounts();
             if ( accounts.size() == 1 ) {
                 criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, accounts.get(0));
+            } else if ( accounts.size() == 0 ) {
+                criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
             } else {
                 criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, new Condition(ConditionType.IN, accounts));
             }
         }
 
-        if ( ! policy.isRemovedVisible() && ! byId ) {
+        if ( ! policy.isOption(Policy.REMOVED_VISIBLE) && ! byId ) {
             Condition or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GTE, new Date()));
             criteria.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, or);
         }
@@ -172,28 +169,8 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Resource constructResource(final IdFormatter idFormatter, final Schema schema, Object obj) {
-        Map<String,Object> additionalFields = new LinkedHashMap<String, Object>();
-        additionalFields.putAll(DataUtils.getFields(obj));
-
-        Map<String,Object> attachments = ApiUtils.getAttachements(obj, new Transformer() {
-            @Override
-            public Object transform(Object input) {
-                input = ApiUtils.authorize(input);
-                if ( input == null )
-                    return null;
-
-                Schema schema = schemaFactory.getSchema(input.getClass());
-                if ( schema == null ) {
-                    return null;
-                }
-
-                return new WrappedResource(idFormatter, schema, input, DataUtils.getFields(input));
-            }
-        });
-
-        additionalFields.putAll(attachments);
-
-        return new WrappedResource(idFormatter, schema, obj, additionalFields);
+        Map<String,Object> transitioningFields = metaDataManager.getTransitionFields(schema, obj);
+        return ApiUtils.createResourceWithAttachments(schemaFactory, idFormatter, schema, obj, transitioningFields);
     }
 
     @Override

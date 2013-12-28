@@ -33,11 +33,23 @@
         <property name="resourceManagerFilters" value="#{extensionManager.list('resource.manager.filter')}" />
     </bean>
 
-    <bean id="DefaultResourceManager" class="io.github.ibuildthecloud.dstack.api.resource.DefaultJooqResourceManager" />
+    <bean id="DefaultResourceManager" class="io.github.ibuildthecloud.dstack.api.resource.jooq.DefaultJooqResourceManager" />
 
     <bean class="io.github.ibuildthecloud.dstack.api.html.ConfigBasedHtmlTemplate" />
     <bean class="io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser" />
     <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
 
+    <bean class="io.github.ibuildthecloud.dstack.api.object.postini.AccountFieldPostInitHandler" />
+    
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler" />
+    </bean>
 
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerFilter" />
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.gdapi.request.resource.ResourceManager" />
+    </bean>
 </beans>

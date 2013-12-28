@@ -18,8 +18,8 @@ import com.netflix.config.DynamicLongProperty;
 
 public class RemoteAgentImpl implements RemoteAgent {
 
-    private static final DynamicLongProperty AGENT_DEFAULT_TIMEOUT = ArchaiusUtil.getLongProperty("agent.timeout.millis");
-    private static final DynamicIntProperty AGENT_RETRIES = ArchaiusUtil.getIntProperty("agent.retries");
+    private static final DynamicLongProperty AGENT_DEFAULT_TIMEOUT = ArchaiusUtil.getLong("agent.timeout.millis");
+    private static final DynamicIntProperty AGENT_RETRIES = ArchaiusUtil.getInt("agent.retries");
 
     ExecutorService executorService;
     JsonMapper jsonMapper;

@@ -9,7 +9,7 @@ import io.github.ibuildthecloud.dstack.lock.definition.BlockingLockDefinition;
 
 public class AgentConnectionManagementLock extends AbstractLockDefinition implements BlockingLockDefinition {
 
-    private static final DynamicLongProperty AGENT_CONNECTION_MANAGEMENT_WAIT_LOCK = ArchaiusUtil.getLongProperty("agent.connection.management.lock.wait.millis");
+    private static final DynamicLongProperty AGENT_CONNECTION_MANAGEMENT_WAIT_LOCK = ArchaiusUtil.getLong("agent.connection.management.lock.wait.millis");
 
     public AgentConnectionManagementLock(Agent agent) {
         super("AGENT.CONNECTION.MANAGEMENT." + agent.getId());

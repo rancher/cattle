@@ -2,8 +2,6 @@ class TypeFactory:
     @staticmethod
     def get_type(name, default=None):
         # Avoid circular dependencies on modules
-        from marshaller import Marshaller
-        from storage_manager import StorageManager
 
         if not default is None:
             return default
@@ -16,7 +14,7 @@ class TypeFactory:
 
     @staticmethod
     def get_compute_driver(host, req = None):
-        from docker.compute import DockerCompute
+        from dstack.plugin.docker.compute import DockerCompute
         return DockerCompute()
 
     @staticmethod

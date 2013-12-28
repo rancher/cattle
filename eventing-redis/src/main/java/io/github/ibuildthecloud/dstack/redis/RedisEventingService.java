@@ -19,7 +19,7 @@ import com.netflix.config.DynamicStringProperty;
 
 public class RedisEventingService extends AbstractThreadPoolingEventService implements InitializationTask {
 
-    private static final DynamicStringProperty REDIS_HOST = ArchaiusUtil.getStringProperty("redis.hosts");
+    private static final DynamicStringProperty REDIS_HOST = ArchaiusUtil.getString("redis.hosts");
 
     volatile List<RedisConnection> connections = new ArrayList<RedisConnection>();
     int index = 0;
@@ -78,8 +78,8 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
         }
     }
 
-    protected void onMessage(String channel, String message) {
-        onEvent(channel, message);
+    protected void onMessage(String pattern, String channel, String message) {
+        onEvent(pattern, channel, message);
     }
 
     @Override

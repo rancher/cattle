@@ -7,8 +7,8 @@ import io.github.ibuildthecloud.gdapi.response.impl.DefaultHtmlTemplate;
 
 public class ConfigBasedHtmlTemplate extends DefaultHtmlTemplate {
 
-    private static final DynamicStringProperty JS_URL = ArchaiusUtil.getStringProperty("api.ui.js.url");
-    private static final DynamicStringProperty CSS_URL = ArchaiusUtil.getStringProperty("api.ui.css.url");
+    private static final DynamicStringProperty JS_URL = ArchaiusUtil.getString("api.ui.js.url");
+    private static final DynamicStringProperty CSS_URL = ArchaiusUtil.getString("api.ui.css.url");
 
     @Override
     public String getJsUrl() {

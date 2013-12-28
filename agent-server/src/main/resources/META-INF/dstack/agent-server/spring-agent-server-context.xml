@@ -18,4 +18,8 @@
         <property name="factories" value="#{extensionManager.list('agent.connection.factory')}" />
     </bean>
 
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.agent.server.connection.AgentConnectionFactory" />
+    </bean>
+
 </beans>

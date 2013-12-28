@@ -11,7 +11,11 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <bean class="io.github.ibuildthecloud.dstack.eventing.annotation.AnnotatedListenerRegistration" >
-        <property name="listeners" value="#{extensionManager.list('annotated.listener')}"></property>
+        <property name="listeners" value="#{extensionManager.list('annotated.event.listener')}"></property>
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.dstack.eventing.annotation.AnnotatedEventListener" />
     </bean>
 
 </beans>

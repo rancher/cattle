@@ -14,7 +14,6 @@ import org.apache.commons.beanutils.BeanUtils;
 public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstantiationHandler {
 
     public static final String UUID = "uuid";
-    public static final String ACCOUNT_ID = "accountId";
     public static final String ZONE_ID = "zoneId";
     public static final String CREATED = "created";
     public static final String STATE = "state";
@@ -34,7 +33,6 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
         }
 
         //TODO Bad!
-        set(obj, ACCOUNT_ID, 1L);
         set(obj, ZONE_ID, 1L);
         return obj;
     }

@@ -4,9 +4,11 @@ import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.engine.context.EngineContext;
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessNotFoundException;
+import io.github.ibuildthecloud.dstack.engine.process.HandlerResultListener;
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
+import io.github.ibuildthecloud.dstack.engine.process.ProcessServiceContext;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.engine.process.impl.DefaultProcessInstanceImpl;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
@@ -30,10 +32,11 @@ import com.netflix.config.DynamicLongProperty;
 
 public class DefaultProcessManager implements ProcessManager, InitializationTask {
 
-    private static final DynamicLongProperty EXECUTION_DELAY = ArchaiusUtil.getLongProperty("process.log.save.interval.ms");
+    private static final DynamicLongProperty EXECUTION_DELAY = ArchaiusUtil.getLong("process.log.save.interval.ms");
 
     ProcessRecordDao processRecordDao;
     List<ProcessDefinition> definitionList;
+    List<HandlerResultListener> listeners;
     Map<String, ProcessDefinition> definitions = new HashMap<String, ProcessDefinition>();
     LockManager lockManager;
     DelayQueue<DelayedObject<ProcessInstance>> toPersist = new DelayQueue<DelayedObject<ProcessInstance>>();
@@ -61,10 +64,28 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         if ( record.getId() == null && ! EngineContext.hasParentProcess() )
             record = processRecordDao.insert(record);
 
-        DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(this, lockManager, eventService, record, processDef, state);
+        ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, listeners);
+        DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(context, record, processDef, state);
         queue(process);
 
         return process;
+    }
+
+
+    @Override
+    public ProcessDefinition getProcessDelegate(ProcessDefinition def) {
+        String delegate = def.getProcessDelegateName();
+
+        if ( delegate == null ) {
+            return null;
+        }
+
+        ProcessDefinition processDef = definitions.get(delegate);
+
+        if ( processDef == null )
+            throw new ProcessNotFoundException("Failed to find ProcessDefinition for [" + delegate + "]");
+
+        return processDef;
     }
 
     @Override
@@ -98,8 +119,10 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
             ProcessInstance process = toPersist.take().getObject();
             synchronized (process) {
                 if ( process.isRunningLogic() ) {
-                    queue(process);
                     persistState(process);
+                }
+                if ( process.getExitReason() == null ) {
+                    queue(process);
                 }
             }
         }
@@ -169,6 +192,15 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     @Inject
     public void setEventService(EventService eventService) {
         this.eventService = eventService;
+    }
+
+    public List<HandlerResultListener> getListeners() {
+        return listeners;
+    }
+
+    @Inject
+    public void setListeners(List<HandlerResultListener> listeners) {
+        this.listeners = listeners;
     }
 
 }

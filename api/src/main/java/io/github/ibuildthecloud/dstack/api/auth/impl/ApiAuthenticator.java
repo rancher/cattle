@@ -8,6 +8,8 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
@@ -15,9 +17,10 @@ import com.netflix.config.DynamicBooleanProperty;
 
 public class ApiAuthenticator extends AbstractApiRequestHandler {
 
-    private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBooleanProperty("api.security.enabled");
+    private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
 
     AuthDao authDao;
+    Map<String,PolicyOptions> options = new ConcurrentHashMap<String, PolicyOptions>();
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -37,7 +40,21 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         if ( adminAccount == null )
             return;
 
-        ApiContext.getContext().setPolicy(new AccountPolicy(adminAccount));
+        ApiContext.getContext().setPolicy(new AccountPolicy(adminAccount, getOptions(adminAccount)));
+    }
+
+    protected PolicyOptions getOptions(Account account) {
+        String kind = account.getKind();
+
+        PolicyOptions opts = options.get(kind);
+        if ( opts != null ) {
+            return opts;
+        }
+
+        opts = new ArchaiusPolicyOptions(kind);
+        options.put(kind, opts);
+
+        return opts;
     }
 
     public AuthDao getAuthDao() {

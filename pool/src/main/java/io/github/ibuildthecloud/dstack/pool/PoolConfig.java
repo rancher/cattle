@@ -46,7 +46,7 @@ public class PoolConfig {
     }
 
     public static String getProperty(String key) {
-        return ArchaiusUtil.getStringProperty(key).get();
+        return ArchaiusUtil.getString(key).get();
     }
 
 }

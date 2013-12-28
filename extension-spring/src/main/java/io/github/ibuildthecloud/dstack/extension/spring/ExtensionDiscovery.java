@@ -2,7 +2,6 @@ package io.github.ibuildthecloud.dstack.extension.spring;
 
 import io.github.ibuildthecloud.dstack.extension.impl.ExtensionManagerImpl;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
-import io.github.ibuildthecloud.dstack.util.type.ScopeUtils;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -15,12 +14,14 @@ public class ExtensionDiscovery implements BeanPostProcessor {
     ExtensionManagerImpl extensionManager;
     Class<?> typeClass;
     String key;
-    boolean respectScope;
+    String[] keys;
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if ( typeClass.isAssignableFrom(bean.getClass()) ) {
-            extensionManager.addObject(getKey(bean), typeClass, bean, getName(bean, beanName));
+            for ( String key : getKeys(bean) ) {
+                extensionManager.addObject(key, typeClass, bean, getName(bean, beanName));
+            }
         }
 
         return bean;
@@ -34,22 +35,18 @@ public class ExtensionDiscovery implements BeanPostProcessor {
         return NamedUtils.getName(obj);
     }
 
-    protected String getKey(Object obj) {
-        if ( respectScope ) {
-            return ScopeUtils.getDefaultScope(obj);
-        } else {
-            return key;
-        }
+    protected String[] getKeys(Object obj) {
+        return keys;
     }
 
     @PostConstruct
     public void init() {
         if ( key == null && typeClass != null ) {
-            key = ScopeUtils.getScopeFromClass(typeClass);
+            key = NamedUtils.toDotSeparated(typeClass.getSimpleName());
         }
 
-        if ( key == null && ! respectScope ) {
-            throw new IllegalArgumentException("If respectScope is false, key must be set");
+        if ( key != null ) {
+            keys = new String[] { key };
         }
     }
 
@@ -82,14 +79,6 @@ public class ExtensionDiscovery implements BeanPostProcessor {
 
     public void setKey(String key) {
         this.key = key;
-    }
-
-    public boolean isRespectScope() {
-        return respectScope;
-    }
-
-    public void setRespectScope(boolean respectScope) {
-        this.respectScope = respectScope;
     }
 
 }

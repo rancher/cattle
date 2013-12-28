@@ -1,7 +1,6 @@
 package io.github.ibuildthecloud.dstack.engine.process.impl;
 
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
-import io.github.ibuildthecloud.dstack.engine.process.ProcessExecutionExitException;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 

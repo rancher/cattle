@@ -1,7 +1,12 @@
 package io.github.ibuildthecloud.dstack.engine.process.impl;
 
+import io.github.ibuildthecloud.dstack.engine.process.StateTransition;
+import io.github.ibuildthecloud.dstack.engine.process.StateTransition.Style;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,20 +14,50 @@ public class ResourceStatesDefinition {
 
     String stateField = "state";
     Set<String> startStates = new HashSet<String>();
-    Set<String> transitioningStates = new HashSet<String>();
-    Set<String> doneStates = new HashSet<String>();
     Set<String> requiredFields = new HashSet<String>();
     Map<String,String> transitioningStatesMap = new HashMap<String, String>();
     Map<String,String> doneStatesMap = new HashMap<String, String>();
 
+    public List<StateTransition> getStateTransitions() {
+        List<StateTransition> result = new ArrayList<StateTransition>();
+
+        for ( Map.Entry<String, String> entry : transitioningStatesMap.entrySet() ) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            if ( key == null ) {
+                for ( String start : startStates ) {
+                    result.add(new StateTransition(start, value, Style.TRANSITIONING));
+                }
+            } else {
+                result.add(new StateTransition(key, value, Style.TRANSITIONING));
+            }
+        }
+
+        for ( Map.Entry<String, String> entry : doneStatesMap.entrySet() ) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            if ( key == null ) {
+                for ( String start : transitioningStatesMap.values()) {
+                    result.add(new StateTransition(start, value, Style.DONE));
+                }
+            } else {
+                result.add(new StateTransition(key, value, Style.DONE));
+            }
+        }
+
+        return result;
+    }
+
     public String getTransitioningState(String currentState) {
         String newState = transitioningStatesMap.get(currentState);
-        if ( newState == null && transitioningStates.size() == 1) {
-            return transitioningStates.iterator().next();
+        if ( newState == null && transitioningStatesMap.size() == 1) {
+            return transitioningStatesMap.get(null);
         }
 
         if ( newState == null )
-            throw new IllegalStateException("Failed to find state to transition from [" + currentState + 
+            throw new IllegalStateException("Failed to find state to transition from [" + currentState +
                     "] to \"transitioning\"");
 
         return null;
@@ -30,41 +65,32 @@ public class ResourceStatesDefinition {
 
     public String getDoneState(String currentState) {
         String newState = doneStatesMap.get(currentState);
-        if ( newState == null && doneStates.size() == 1) {
-            return doneStates.iterator().next();
+        if ( newState == null && doneStatesMap.size() == 1) {
+            return doneStatesMap.get(null);
         }
 
         if ( newState == null )
-            throw new IllegalStateException("Failed to find state to transition from [" + currentState + 
+            throw new IllegalStateException("Failed to find state to transition from [" + currentState +
                     "] to \"done\"");
 
         return null;
     }
 
     public boolean isDone(String currentState) {
-        return doneStates.contains(currentState);        
+        return doneStatesMap.containsValue(currentState);
     }
 
     public boolean isTransitioning(String currentState) {
-        return transitioningStates.contains(currentState);        
+        return transitioningStatesMap.containsValue(currentState) ||
+                doneStatesMap.containsKey(currentState);
     }
-    
+
     public boolean isStart(String currentState) {
-        return startStates.contains(currentState);        
+        return startStates.contains(currentState);
     }
 
     public boolean isValidState(String currentState) {
         return isStart(currentState) || isTransitioning(currentState) || isDone(currentState);
-    }
-
-    public void init() {
-        if ( doneStates.size() > 0 && doneStatesMap.size() == 0) {
-            throw new IllegalStateException("If there are more than one done state you must set doneStatesMap");
-        }
-
-        if ( transitioningStates.size() > 0 && transitioningStatesMap.size() == 0) {
-            throw new IllegalStateException("If there are more than one transitioning states you must set transitioningStatesMap");
-        }
     }
 
     public Set<String> getStartStates() {
@@ -73,22 +99,6 @@ public class ResourceStatesDefinition {
 
     public void setStartStates(Set<String> startStates) {
         this.startStates = startStates;
-    }
-
-    public Set<String> getTransitioningStates() {
-        return transitioningStates;
-    }
-
-    public void setTransitioningStates(Set<String> transitioningStates) {
-        this.transitioningStates = transitioningStates;
-    }
-
-    public Set<String> getDoneStates() {
-        return doneStates;
-    }
-
-    public void setDoneStates(Set<String> doneStates) {
-        this.doneStates = doneStates;
     }
 
     public Map<String, String> getTransitioningStatesMap() {

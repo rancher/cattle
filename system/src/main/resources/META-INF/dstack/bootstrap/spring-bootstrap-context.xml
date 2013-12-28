@@ -22,4 +22,16 @@
         <constructor-arg ref="DefaultConfigProperties" />
     </bean>
 
+    <bean id="DefaultManagedContex" class="org.apache.cloudstack.managed.context.impl.DefaultManagedContext">
+        <property name="listeners" >
+            <list>
+                <bean class="io.github.ibuildthecloud.dstack.deferred.context.DeferredContextListener" />
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.apache.cloudstack.managed.context.ManagedContextRunnable" factory-method="initializeGlobalContext" >
+        <constructor-arg ref="DefaultManagedContex" />
+    </bean>
+
 </beans>

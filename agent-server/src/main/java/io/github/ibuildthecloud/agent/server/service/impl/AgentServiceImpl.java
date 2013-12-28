@@ -5,6 +5,7 @@ import io.github.ibuildthecloud.agent.server.connection.AgentConnectionManager;
 import io.github.ibuildthecloud.agent.server.service.AgentService;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
 import io.github.ibuildthecloud.dstack.async.utils.AsyncUtils;
+import io.github.ibuildthecloud.dstack.async.utils.TimeoutException;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
@@ -17,9 +18,15 @@ import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.util.concurrent.ListenableFuture;
 
 public class AgentServiceImpl implements AgentService {
+
+    private static final Logger log = LoggerFactory.getLogger(AgentServiceImpl.class);
 
     AgentConnectionManager connectionManager;
     ObjectManager objectManager;
@@ -35,18 +42,22 @@ public class AgentServiceImpl implements AgentService {
             return;
         }
 
-        Event agentEvent = getAgentEvent(event);
+        final Event agentEvent = getAgentEvent(event);
         if ( agentEvent == null ) {
             return;
         }
 
         AgentConnection connection = connectionManager.getConnection(agent);
         if ( connection != null ) {
-            final ListenableFuture<Event> future = connection.execute(event);
-            future.addListener(new Runnable() {
+            final ListenableFuture<Event> future = connection.execute(agentEvent);
+            future.addListener(new NoExceptionRunnable() {
                 @Override
-                public void run() {
-                    handleResponse(event, AsyncUtils.get(future));
+                protected void doRun() throws Exception {
+                    try {
+                        handleResponse(event, AsyncUtils.get(future));
+                    } catch ( TimeoutException t ) {
+                        log.info("Timeout waiting for response to [{}] id [{}]", agentEvent.getName(), agentEvent.getId());
+                    }
                 }
             }, executorService);
         }

@@ -27,7 +27,7 @@ public class DelayedObject<T> implements Delayed {
             return -1;
         }
 
-        return (thisVal == anotherVal ) ? 0 : 1; 
+        return (thisVal == anotherVal ) ? 0 : 1;
     }
 
     @Override
@@ -35,4 +35,15 @@ public class DelayedObject<T> implements Delayed {
         return unit.convert(whenToRunMillis - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if ( other instanceof DelayedObject ) {
+            Object delayed = ((DelayedObject<?>)other).getObject();
+            if ( delayed == this.object ) {
+                return true;
+            }
+        }
+
+        return super.equals(other);
+    }
 }

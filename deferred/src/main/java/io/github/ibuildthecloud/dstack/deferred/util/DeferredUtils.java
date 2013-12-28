@@ -32,6 +32,15 @@ public class DeferredUtils {
         }
     }
 
+    public static void deferPublish(final EventService service, final Event event) {
+        defer(new Runnable() {
+            @Override
+            public void run() {
+                service.publish(event);
+            }
+        });
+    }
+
     public static void defer(Runnable runnable) {
         TL.get().add(runnable);
     }

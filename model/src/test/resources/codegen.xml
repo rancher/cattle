@@ -64,7 +64,7 @@
         <target>
             <!-- The destination package of your generated classes (within 
                 the destination directory) -->
-            <packageName>io.github.ibuildthecloud.dstack.core</packageName>
+            <packageName>io.github.ibuildthecloud.dstack.core.model</packageName>
 
             <!-- The destination directory of your generated classes -->
             <directory>src/main/java</directory>

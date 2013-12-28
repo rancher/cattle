@@ -4,14 +4,20 @@ import java.util.List;
 
 public interface Policy {
 
-    boolean isAuthorizedForAllAccounts();
+    public static final String AUTHORIZED_FOR_ALL_ACCOUNTS = "all.accounts";
+    public static final String REMOVED_VISIBLE = "removed.visible";
+    public static final long NO_ACCOUNT = -1L;
 
-    boolean isRemovedVisible();
+    boolean isOption(String optionName);
+
+    String getOption(String optionName);
 
     List<Long> getAuthorizedAccounts();
 
-    <T> List<T> authorized(List<T> list);
+    long getAccountId();
 
-    <T> T authorize(T obj);
+    <T> List<T> authorizeList(List<T> list);
+
+    <T> T authorizeObject(T obj);
 
 }

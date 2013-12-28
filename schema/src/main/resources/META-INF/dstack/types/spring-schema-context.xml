@@ -21,18 +21,13 @@
         </property>
     </bean>
 
-<!--     <bean id="BaseSchemaJson" class="io.github.ibuildthecloud.dstack.schema.processor.JsonOverlayPostProcessor" > -->
-<!--         <property name="schemaFile" value="classpath:schema/base-schema.json" /> -->
-<!--         <property name="jsonMapper"> -->
-<!--             <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" /> -->
-<!--         </property> -->
-<!--     </bean> -->
-
     <bean class="io.github.ibuildthecloud.dstack.schema.processor.JpaWritablePostProcessor" />
 
     <bean class="io.github.ibuildthecloud.dstack.schema.processor.StripSuffixPostProcessor" >
         <property name="suffix" value="Record" />
     </bean>
 
-
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor" />
+    </bean>
 </beans>

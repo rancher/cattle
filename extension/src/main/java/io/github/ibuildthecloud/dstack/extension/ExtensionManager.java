@@ -16,6 +16,12 @@ public interface ExtensionManager {
 
 //    <T> Map<String, List<T>> getExtensionMap(String key, Class<T> type);
 
-    void onChange(String key, Runnable runnable);
+//    void onChange(String key, Runnable runnable);
+
+    List<ExtensionPoint> getExtensions();
+
+    ExtensionPoint getExtensionPoint(Class<?> type);
+
+    ExtensionPoint getExtensionPoint(String key, Class<?> type);
 
 }

@@ -1,17 +1,23 @@
 package io.github.ibuildthecloud.dstack.engine.handler;
 
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class HandlerResult {
 
-    public static final HandlerResult EMPTY_RESULT = new HandlerResult();
-
     boolean shouldContinue = false;
+    boolean shouldDelegate = false;
     Map<Object, Object> data;
+    Map<String, Object> notes;
 
     public HandlerResult() {
         this(false, null);
+    }
+
+    public HandlerResult(Object key, Object... values) {
+        this(false, CollectionUtils.asMap(key, values));
     }
 
     public HandlerResult(Map<Object, Object> data) {
@@ -58,6 +64,14 @@ public class HandlerResult {
         if (shouldContinue != other.shouldContinue)
             return false;
         return true;
+    }
+
+    public boolean shouldDelegate() {
+        return shouldDelegate;
+    }
+
+    public void shouldDelegate(boolean shouldDelegate) {
+        this.shouldDelegate = shouldDelegate;
     }
 
 }

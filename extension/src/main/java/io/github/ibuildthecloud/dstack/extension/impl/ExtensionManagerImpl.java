@@ -1,7 +1,9 @@
 package io.github.ibuildthecloud.dstack.extension.impl;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+import io.github.ibuildthecloud.dstack.extension.ExtensionImplementation;
 import io.github.ibuildthecloud.dstack.extension.ExtensionManager;
+import io.github.ibuildthecloud.dstack.extension.ExtensionPoint;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
 import io.github.ibuildthecloud.dstack.util.type.PriorityUtils;
@@ -32,7 +34,7 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
     Map<String,Object> byName = new HashMap<String, Object>();
     Map<Object,String> objectToName = new HashMap<Object,String>();
     Map<String,Class<?>> keyToType = new HashMap<String, Class<?>>();
-    Map<String,Set<Runnable>> callbacks = Collections.synchronizedMap(new HashMap<String, Set<Runnable>>());
+//    Map<String,Set<Runnable>> callbacks = Collections.synchronizedMap(new HashMap<String, Set<Runnable>>());
     boolean started = false;
 
 
@@ -124,11 +126,11 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
                 extensionList.inner.addAll(getList(entry.getValue(), key));
             }
 
-            for ( Set<Runnable> runnables : callbacks.values() ) {
-                for ( Runnable runnable : runnables ) {
-                    runnable.run();
-                }
-            }
+//            for ( Set<Runnable> runnables : callbacks.values() ) {
+//                for ( Runnable runnable : runnables ) {
+//                    runnable.run();
+//                }
+//            }
 
             started = true;
         }
@@ -151,7 +153,7 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
 
         Set<String> excludes = getSetting(key + ".exclude");
 
-        String list = ArchaiusUtil.getStringProperty(key + ".list").get();
+        String list = ArchaiusUtil.getString(key + ".list").get();
         if ( ! StringUtils.isBlank(list) ) {
             List<Object> result = new ArrayList<Object>();
             for ( String name : list.split("\\s*,\\s*") ) {
@@ -204,7 +206,7 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
     }
 
     protected Set<String> getSetting(String key) {
-        String value = ArchaiusUtil.getStringProperty(key).get();
+        String value = getSettingValue(key);
         if ( StringUtils.isBlank(value) ) {
             return Collections.emptySet();
         }
@@ -218,15 +220,60 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
         return result;
     }
 
-    @Override
-    public void onChange(String key, Runnable runnable) {
-        Set<Runnable> set = callbacks.get(key);
-        if ( set == null ) {
-            set = new HashSet<Runnable>();
-            callbacks.put(key, set);
-        }
-
-        set.add(runnable);
+    protected String getSettingValue(String key) {
+        return ArchaiusUtil.getString(key).get();
     }
 
+//    @Override
+//    public void onChange(String key, Runnable runnable) {
+//        Set<Runnable> set = callbacks.get(key);
+//        if ( set == null ) {
+//            set = new HashSet<Runnable>();
+//            callbacks.put(key, set);
+//        }
+//
+//        set.add(runnable);
+//    }
+
+    @Override
+    public List<ExtensionPoint> getExtensions() {
+        List<ExtensionPoint> result = new ArrayList<ExtensionPoint>();
+
+        for ( String key : extensionLists.keySet() ) {
+            result.add(getExtensionPoint(key));
+        }
+
+        return result;
+    }
+
+    @Override
+    public ExtensionPoint getExtensionPoint(Class<?> type) {
+        return getExtensionPoint(ScopeUtils.getScopeFromClass(type), type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public ExtensionPoint getExtensionPoint(String key, Class<?> type) {
+        Class<?> clz = keyToType.get(key);
+        if ( clz != null && clz != type ) {
+            throw new IllegalArgumentException("Extension list for key [" + key + "] is of type ["
+                    + type + "] got [" + clz + "]");
+        }
+        return getExtensionPoint(key);
+    }
+
+    protected ExtensionPoint getExtensionPoint(String key) {
+        List<ExtensionImplementation> impls = new ArrayList<ExtensionImplementation>();
+        ExtensionList<Object> list = extensionLists.get(key);
+
+        if ( list != null ) {
+            for ( Object obj : list ) {
+                String name = objectToName.get(obj);
+                impls.add(new ExtensionImplementationImpl(name, obj.getClass().getName()));
+            }
+        }
+
+        return new ExtensionPointImpl(key, impls, getSettingValue(key + ".list"),
+                getSettingValue(key + ".exclude"), getSettingValue(key + ".include"));
+    }
 }

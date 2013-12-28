@@ -16,4 +16,6 @@
 
     <bean id="moduleStartup" class="io.github.ibuildthecloud.dstack.extension.spring.BackgroundStart" />
 
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ParentExtensionDiscovery" />
+
 </beans>

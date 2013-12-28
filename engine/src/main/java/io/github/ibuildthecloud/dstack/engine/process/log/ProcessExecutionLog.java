@@ -11,10 +11,9 @@ import java.util.List;
 public class ProcessExecutionLog extends AbstractParentLog implements ParentLog {
 
     long startTime;
+    String processName;
     Long stopTime;
     String processLock;
-    Long transitionToActivating;
-    Long transitionToActive;
     Long lockAcquireStart;
     Long lockAcquired;
     Long lockAcquireEnd;
@@ -22,6 +21,8 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
     String failedToAcquireLock;
     Long lockHoldTime;
     Long processingServerId;
+    String resourceType;
+    String resourceId;
     List<ProcessStateTransition> transitions = new ArrayList<ProcessStateTransition>();
     List<ProcessLogicExecutionLog> processHandlerExecutions = new ArrayList<ProcessLogicExecutionLog>();
     ExceptionLog exception;
@@ -128,22 +129,6 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.transitions = transitions;
     }
 
-    public Long getTransitionToActivating() {
-        return transitionToActivating;
-    }
-
-    public void setTransitionToActivating(Long transitionToActivating) {
-        this.transitionToActivating = transitionToActivating;
-    }
-
-    public Long getTransitionToActive() {
-        return transitionToActive;
-    }
-
-    public void setTransitionToActive(Long transitionToActive) {
-        this.transitionToActive = transitionToActive;
-    }
-
     public Long getLockAcquireFailed() {
         return lockAcquireFailed;
     }
@@ -176,14 +161,6 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
 //        this.handlerExecutions = handlerExecutions;
 //    }
 
-    public List<ProcessLog> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<ProcessLog> children) {
-        this.children = children;
-    }
-
     public String getFailedToAcquireLock() {
         return failedToAcquireLock;
     }
@@ -194,6 +171,30 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
 
     public void setStartTime(long startTime) {
         this.startTime = startTime;
+    }
+
+    public String getProcessName() {
+        return processName;
+    }
+
+    public void setProcessName(String processName) {
+        this.processName = processName;
+    }
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
+
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
     }
 
 //    public List<ProcessExecutionLog> getExecutions() {

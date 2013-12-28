@@ -17,17 +17,17 @@ import org.apache.commons.lang.StringUtils;
 
 public class AnnotatedListenerRegistration implements InitializationTask {
 
-    List<AnnotatedListener> listeners;
+    List<AnnotatedEventListener> listeners;
     EventService eventService;
 
     @Override
     public void start() {
-        for ( AnnotatedListener listener : listeners ) {
+        for ( AnnotatedEventListener listener : listeners ) {
             register(listener);
         }
     }
 
-    protected void register(AnnotatedListener listener) {
+    protected void register(AnnotatedEventListener listener) {
         Map<String,EventListener> listeners = parseListener(listener);
         for ( Map.Entry<String, EventListener> entry : listeners.entrySet() ) {
             String eventName = entry.getKey();
@@ -45,7 +45,7 @@ public class AnnotatedListenerRegistration implements InitializationTask {
         }
     }
 
-    protected Map<String, EventListener> parseListener(AnnotatedListener listener) {
+    protected Map<String, EventListener> parseListener(AnnotatedEventListener listener) {
         Map<String, EventListener> result = new LinkedHashMap<String, EventListener>();
 
         for ( Class<?> clz : getClasses(listener.getClass()) ) {
@@ -84,12 +84,12 @@ public class AnnotatedListenerRegistration implements InitializationTask {
     public void stop() {
     }
 
-    public List<AnnotatedListener> getListeners() {
+    public List<AnnotatedEventListener> getListeners() {
         return listeners;
     }
 
     @Inject
-    public void setListeners(List<AnnotatedListener> listeners) {
+    public void setListeners(List<AnnotatedEventListener> listeners) {
         this.listeners = listeners;
     }
 

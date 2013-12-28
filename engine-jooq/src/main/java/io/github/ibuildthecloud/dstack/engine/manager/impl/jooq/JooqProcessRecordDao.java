@@ -1,7 +1,7 @@
 package io.github.ibuildthecloud.dstack.engine.manager.impl.jooq;
 
-import static io.github.ibuildthecloud.dstack.core.tables.ProcessInstanceTable.*;
-import io.github.ibuildthecloud.dstack.core.tables.records.ProcessInstanceRecord;
+import static io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.*;
+import io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
 import io.github.ibuildthecloud.dstack.engine.manager.impl.ProcessRecord;
 import io.github.ibuildthecloud.dstack.engine.manager.impl.ProcessRecordDao;
@@ -47,6 +47,10 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
                 .selectFrom(PROCESS_INSTANCE)
                 .where(PROCESS_INSTANCE.ID.eq(id))
                 .fetchOne();
+
+        if ( record == null ) {
+            return null;
+        }
 
         ProcessRecord result = new ProcessRecord();
 

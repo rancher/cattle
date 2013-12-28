@@ -1,4 +1,22 @@
-from .type_factory import TypeFactory
+import calendar
+import time
+import uuid
+from dstack.plugins.core.marshaller import JsonObject
+
+
+def reply(event):
+    if event is None or event.replyTo is None:
+        return None
+    else:
+        return JsonObject({
+            "id": str(uuid.uuid4()),
+            "name": event.replyTo,
+            "resourceType": event.resourceType,
+            "resourceId": event.resourceId,
+            "previousIds": [event.id],
+            "time": calendar.timegm(time.gmtime()) * 1000,
+        })
+
 
 def get_data(obj, prefix=None, strip_prefix=True):
     result = {}

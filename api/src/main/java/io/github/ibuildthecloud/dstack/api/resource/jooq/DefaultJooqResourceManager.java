@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.api.resource;
+package io.github.ibuildthecloud.dstack.api.resource.jooq;
 
 
 public class DefaultJooqResourceManager extends AbstractJooqResourceManager {

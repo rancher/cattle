@@ -77,7 +77,7 @@ public interface Credential extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.credential.public_value</code>. 
 	 */
-	@javax.persistence.Column(name = "public_value", nullable = false, length = 16777215)
+	@javax.persistence.Column(name = "public_value", length = 16777215)
 	public java.lang.String getPublicValue();
 
 	/**

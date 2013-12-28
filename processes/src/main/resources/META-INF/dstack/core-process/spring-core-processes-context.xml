@@ -3,82 +3,46 @@
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:task="http://www.springframework.org/schema/task"
+    xmlns:process="http://dstack.io/schemas/spring/process/generic-process"
+    xmlns:p="http://www.springframework.org/schema/p"
     xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://dstack.io/schemas/spring/process/generic-process http://dstack.io/schemas/spring/process/generic-process-1.0.xsd">
 
-    <bean
-        class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition">
-        <property name="name" value="create.instance" />
-        <property name="statesDefinition">
-            <bean
-                class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition">
-                <property name="startStates">
-                    <list>
-                        <value>requested</value>
-                    </list>
-                </property>
-                <property name="transitioningStates">
-                    <list>
-                        <value>creating</value>
-                    </list>
-                </property>
-                <property name="doneStates">
-                    <list>
-                        <value>running</value>
-                    </list>
-                </property>
-            </bean>
-        </property>
-    </bean>
-    <bean
-        class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition">
-        <property name="name" value="create.agentgroup" />
-        <property name="statesDefinition">
-            <bean
-                class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition">
-                <property name="startStates">
-                    <list>
-                        <value>requested</value>
-                    </list>
-                </property>
-                <property name="transitioningStates">
-                    <list>
-                        <value>registering</value>
-                    </list>
-                </property>
-                <property name="doneStates">
-                    <list>
-                        <value>active</value>
-                    </list>
-                </property>
-            </bean>
-        </property>
-    </bean>
-    <bean
-        class="io.github.ibuildthecloud.dstack.process.virtualmachine.GenericResourceProcessDefinition">
-        <property name="name" value="create.agent" />
-        <property name="statesDefinition">
-            <bean
-                class="io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition">
-                <property name="startStates">
-                    <list>
-                        <value>requested</value>
-                    </list>
-                </property>
-                <property name="transitioningStates">
-                    <list>
-                        <value>registering</value>
-                    </list>
-                </property>
-                <property name="doneStates">
-                    <list>
-                        <value>active</value>
-                    </list>
-                </property>
-            </bean>
-        </property>
-    </bean>
+    <bean class="io.github.ibuildthecloud.dstack.process.common.spring.GenericResourceProcessDefinitionCollector" />
+    <bean id="processFactory" abstract="true" class="io.github.ibuildthecloud.dstack.process.common.spring.GenericProcessFactory" />
 
+<!--     <process:process name="instance.create"   resourceType="instance"   start="requested" transitioning="creating"    done="running"  /> -->
+<!--     <process:process name="instance.start"    resourceType="instance"   start="stopped"   transitioning="starting"    done="running"  /> -->
+
+    <!-- 
+        <process:defaultProcesses resourceType="agent" />
+
+        The above XML is the equivalent as doing the below, 
+        refer to dstack-process-common/src/main/resources/META-INF/dstack/process/defaults.properties for the definitive list
+
+        <process:process name="agent.create" resourceType="agent" start="requested" transitioning="registering" done="inactive" />
+        <process:process name="agent.activate" resourceType="agent" start="inactive" transitioning="activating" done="active" />
+        <process:process name="agent.deactivate" resourceType="agent" start="active,activating" transitioning="deactivating" done="inactive" />
+        <process:process name="agent.remove" resourceType="agent" start="active,activating,deactivating,registering" transitioning="removing" done="removed" />
+        <process:process name="agent.purge" resourceType="agent" start="removed" transitioning="purging" done="purged" />
+    -->
+        
+
+    <process:defaultProcesses resourceType="agent" />
+    <process:defaultProcesses resourceType="agentgroup" />
+    <process:defaultProcesses resourceType="account" />
+    <process:defaultProcesses resourceType="credential" />
+    <process:defaultProcesses resourceType="instance" 
+        renames="
+            registering=creating,
+            inactive=stopped,
+            activating=starting,
+            active=running,
+            updating-active=updating-running,
+            deactivating=stopping,
+            updating-inactive=updating-stopped" />
+    <process:process name="instance.migrate" resourceType="instance" start="running" transitioning="migrating" done="running" />
 </beans>

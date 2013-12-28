@@ -5,7 +5,6 @@ import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
@@ -15,31 +14,28 @@ public class AccountPolicy extends DefaultPolicy {
 
     private static final Logger log = LoggerFactory.getLogger(AccountPolicy.class);
 
-    List<Long> authorized;
-    Account account;
-
-    public AccountPolicy(Account account) {
-        super();
-        this.account = account;
-        this.authorized = Arrays.asList(account.getId());
+    public AccountPolicy(Account account, PolicyOptions options) {
+        super(account.getId(), Arrays.asList(account.getId()), options);
     }
 
     @Override
-    public List<Long> getAuthorizedAccounts() {
-        return authorized;
-    }
-
-    @Override
-    public <T> T authorize(T obj) {
-        if ( isAuthorizedForAllAccounts() || obj == null ) {
+    public <T> T authorizeObject(T obj) {
+        if ( isOption(AUTHORIZED_FOR_ALL_ACCOUNTS) || obj == null ) {
             return obj;
         } else {
-            try {
-                Object prop = PropertyUtils.getProperty(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
-                if ( prop != null && prop.equals(account.getId()) ) {
+            if ( obj instanceof Account ) {
+                if ( ((Account)obj).getId().longValue() == getAccountId() ) {
                     return obj;
                 } else {
-                    log.error("Dropping unauthorized object [{}] for acccount [{}]", obj, account.getId());
+                    return null;
+                }
+            }
+            try {
+                Object prop = PropertyUtils.getProperty(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
+                if ( prop != null && prop.equals(getAccountId()) ) {
+                    return obj;
+                } else {
+                    log.error("Dropping unauthorized object [{}] for acccount [{}]", obj, getAccountId());
                 }
             } catch (IllegalAccessException e) {
                 log.error("Failed to access [{}] field for authorization", ObjectMetaDataManager.ACCOUNT_FIELD, e);
@@ -48,6 +44,7 @@ public class AccountPolicy extends DefaultPolicy {
                 log.error("Failed to access [{}] field for authorization", ObjectMetaDataManager.ACCOUNT_FIELD, e);
                 return null;
             } catch (NoSuchMethodException e) {
+                /* If it doesn't have "accountId," then its authorized */
                 return obj;
             }
             return null;

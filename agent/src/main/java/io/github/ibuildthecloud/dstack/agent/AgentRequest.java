@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.agent;
 
-import io.github.ibuildthecloud.dstack.core.events.CoreEvents;
+import io.github.ibuildthecloud.dstack.core.event.CoreEvents;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.util.type.TypeConstants;

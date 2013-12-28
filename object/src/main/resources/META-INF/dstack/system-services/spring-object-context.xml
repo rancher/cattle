@@ -11,6 +11,7 @@
 
     <bean id="DefaultObjectMetaDataManager" class="io.github.ibuildthecloud.dstack.object.meta.impl.DefaultObjectMetaDataManager" >
         <property name="typeSets" value="#{extensionManager.list('type.set')}" />
+        <property name="processDefinitions" value="#{extensionManager.list('process.definition')}" />
     </bean>
 
     <bean class="io.github.ibuildthecloud.dstack.object.impl.DefaultObjectManager" >
@@ -34,4 +35,17 @@
 
     <bean class="io.github.ibuildthecloud.dstack.object.lifecycle.ProcessDelegateObjectLifeCycleHandler" />
 
+    <bean class="io.github.ibuildthecloud.dstack.object.util.CommonsConverterStartup" />
+
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.dstack.object.meta.TypeSet" />
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHandler" />
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler" />
+    </bean>
 </beans>

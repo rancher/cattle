@@ -18,7 +18,7 @@
 		<module>api-resources</module>
 		<module>app</module>
 		<module>archaius</module>
-		<module>archaius-startup</module>
+		<module>archaius-management</module>
 		<module>async</module>
 		<module>commands</module>
 		<module>db-loader</module>
@@ -30,6 +30,7 @@
 		<module>events</module>
 		<module>extension</module>
 		<module>extension-spring</module>
+		<module>extension-api</module>
 		<module>jooq</module>
 		<module>json</module>
 		<module>launcher</module>

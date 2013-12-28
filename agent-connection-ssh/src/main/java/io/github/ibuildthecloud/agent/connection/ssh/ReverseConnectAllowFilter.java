@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.agent.server.connection.ssh;
+package io.github.ibuildthecloud.agent.connection.ssh;
 
 import org.apache.sshd.common.ForwardingFilter;
 import org.apache.sshd.common.Session;

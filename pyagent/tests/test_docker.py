@@ -1,10 +1,8 @@
-import testcommon
 import sys
 print sys.path
-from dstack.docker.storage import Template
-from dstack.docker.storage import DockerPool
-from dstack.docker.compute import DockerCompute
-from dstack.marshaller import JsonObject
+from dstack.plugin.docker.storage import DockerPool
+from dstack.plugin.docker.compute import DockerCompute
+from dstack.plugin.core.marshaller import JsonObject
 import pytest
 
 
@@ -19,12 +17,12 @@ def dockercompute():
 def test_stage_template(dockerpool, name="ibuildthecloud/hello-world", delete=True):
     if delete:
         dockerpool.delete_template(templateStoragePoolRef = JsonObject({
-            "data" : {
+            "data": {
                 "docker.image.Repository" : name
             }
         }))
-    template = dockerpool.stage_template(template = JsonObject({
-        "data" : {
+    template = dockerpool.stage_template(template=JsonObject({
+        "data": {
             "docker.image.Repository" : name
         }
     }))

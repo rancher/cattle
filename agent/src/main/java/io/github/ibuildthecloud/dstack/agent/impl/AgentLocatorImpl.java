@@ -75,6 +75,7 @@ public class AgentLocatorImpl implements AgentLocator {
         return jsonMapper;
     }
 
+    @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
     }

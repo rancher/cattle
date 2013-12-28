@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.dstack.eventing.impl;
 
 import io.github.ibuildthecloud.dstack.eventing.EventService;
+import io.github.ibuildthecloud.dstack.eventing.model.Event;
 
 import java.util.Random;
 import java.util.concurrent.Future;
@@ -11,7 +12,7 @@ import org.apache.commons.pool.PoolableObjectFactory;
 
 public class ListenerPoolObjectFactory implements PoolableObjectFactory<FutureEventListener> {
 
-    String prefix = "reply.";
+    String prefix = Event.REPLY_PREFIX;
     EventService eventService;
     Random random = new Random();
 
@@ -25,8 +26,8 @@ public class ListenerPoolObjectFactory implements PoolableObjectFactory<FutureEv
 
     @Override
     public FutureEventListener makeObject() throws Exception {
-        String key = "reply." + random.nextLong();
-        FutureEventListener listener = new FutureEventListener(key);
+        String key = "reply." + Math.abs(random.nextLong());
+        FutureEventListener listener = new FutureEventListener(eventService, key);
         Future<?> future = eventService.subscribe(key, listener);
         future.get();
         return listener;

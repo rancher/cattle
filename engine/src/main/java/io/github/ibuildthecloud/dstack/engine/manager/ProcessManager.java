@@ -1,9 +1,10 @@
 package io.github.ibuildthecloud.dstack.engine.manager;
 
-import java.util.List;
-
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
+import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
+
+import java.util.List;
 
 public interface ProcessManager {
 
@@ -14,5 +15,7 @@ public interface ProcessManager {
     ProcessInstance createProcessInstance(LaunchConfiguration config);
 
     void persistState(ProcessInstance process);
+
+    ProcessDefinition getProcessDelegate(ProcessDefinition def);
 
 }

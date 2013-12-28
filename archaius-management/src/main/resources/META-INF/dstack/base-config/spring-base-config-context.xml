@@ -13,4 +13,9 @@
     <bean id="ConfigScheduler" class="io.github.ibuildthecloud.dstack.archaius.polling.RefreshableFixedDelayPollingScheduler" />
 
     <bean class="io.github.ibuildthecloud.dstack.datasource.DefaultDataSourceFactoryImpl" />
+
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
+        <property name="key" value="config" />
+        <property name="typeClass" value="org.apache.commons.configuration.AbstractConfiguration" />
+    </bean>
 </beans>

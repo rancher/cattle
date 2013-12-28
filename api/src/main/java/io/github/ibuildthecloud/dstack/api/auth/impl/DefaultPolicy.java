@@ -8,35 +8,56 @@ import java.util.List;
 
 public class DefaultPolicy implements Policy {
 
-    @Override
-    public boolean isAuthorizedForAllAccounts() {
-        return false;
+    long accountId;
+    List<Long> authorizedAccounts;
+    PolicyOptions options;
+
+    @SuppressWarnings("unchecked")
+    public DefaultPolicy() {
+        this(Policy.NO_ACCOUNT, Collections.EMPTY_LIST, new NoPolicyOptions());
+    }
+
+    public DefaultPolicy(long accountId, List<Long> authorizedAccounts, PolicyOptions options) {
+        super();
+        this.accountId = accountId;
+        this.authorizedAccounts = authorizedAccounts;
+        this.options = options;
     }
 
     @Override
     public List<Long> getAuthorizedAccounts() {
-        return Collections.emptyList();
+        return authorizedAccounts;
     }
 
     @Override
-    public boolean isRemovedVisible() {
-        return false;
+    public boolean isOption(String optionName) {
+        return options.isOption(optionName);
     }
 
     @Override
-    public <T> List<T> authorized(List<T> list) {
+    public String getOption(String optionName) {
+        return options.getOption(optionName);
+    }
+
+    @Override
+    public <T> List<T> authorizeList(List<T> list) {
         List<T> result = new ArrayList<T>(list.size());
         for ( T obj : list ) {
-            T authorized = authorize(obj);
+            T authorized = authorizeObject(obj);
             if ( authorized != null )
                 result.add(authorized);
         }
-        return list;
+        return result;
     }
 
     @Override
-    public <T> T authorize(T obj) {
+    public <T> T authorizeObject(T obj) {
         return obj;
+    }
+
+    @Override
+    public long getAccountId() {
+        return accountId;
     }
 
 }

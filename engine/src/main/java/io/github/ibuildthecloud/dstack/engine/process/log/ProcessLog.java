@@ -7,9 +7,6 @@ import java.util.List;
 
 public class ProcessLog {
 
-    Long startTime;
-    Long endTime;
-
     List<ProcessExecutionLog> executions = new ArrayList<ProcessExecutionLog>();
 
     public ProcessExecutionLog newExecution() {
@@ -26,22 +23,6 @@ public class ProcessLog {
 
     public void setExecutions(List<ProcessExecutionLog> executions) {
         this.executions = executions;
-    }
-
-    public Long getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Long startTime) {
-        this.startTime = startTime;
-    }
-
-    public Long getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Long endTime) {
-        this.endTime = endTime;
     }
 
 }

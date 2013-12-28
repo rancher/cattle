@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.filter.agent;
 
-import static io.github.ibuildthecloud.dstack.core.tables.AgentTable.*;
+import static io.github.ibuildthecloud.dstack.core.model.tables.AgentTable.*;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.filter.common.AbstractDefaultResourceManagerFilter;
@@ -26,9 +26,9 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
 
     private static final Logger log = LoggerFactory.getLogger(AgentFilter.class);
 
-    private static final DynamicBooleanProperty ASSIGN_AGENT_URI = ArchaiusUtil.getBooleanProperty("agent.filter.assign.uri");
-    private static final DynamicBooleanProperty TRY_DNS = ArchaiusUtil.getBooleanProperty("agent.filter.default.uri.reverse.dns");
-    private static final DynamicStringProperty URI_FORMAT = ArchaiusUtil.getStringProperty("agent.filter.default.uri");
+    private static final DynamicBooleanProperty ASSIGN_AGENT_URI = ArchaiusUtil.getBoolean("agent.filter.assign.uri");
+    private static final DynamicBooleanProperty TRY_DNS = ArchaiusUtil.getBoolean("agent.filter.default.uri.reverse.dns");
+    private static final DynamicStringProperty URI_FORMAT = ArchaiusUtil.getString("agent.filter.default.uri");
 
     ResourceManagerLocator locator;
 

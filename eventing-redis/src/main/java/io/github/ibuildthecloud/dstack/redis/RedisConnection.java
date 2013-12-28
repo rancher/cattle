@@ -29,9 +29,9 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
 
     private static final Logger log = LoggerFactory.getLogger(RedisConnection.class);
 
-    private static final DynamicLongProperty REDIS_RETRY = ArchaiusUtil.getLongProperty("redis.retry.millis");
-    private static final DynamicStringProperty REDIS_PASSWORD = ArchaiusUtil.getStringProperty("redis.password");
-    private static final DynamicIntProperty REDIS_TIMEOUT = ArchaiusUtil.getIntProperty("redis.timeout");
+    private static final DynamicLongProperty REDIS_RETRY = ArchaiusUtil.getLong("redis.retry.millis");
+    private static final DynamicStringProperty REDIS_PASSWORD = ArchaiusUtil.getString("redis.password");
+    private static final DynamicIntProperty REDIS_TIMEOUT = ArchaiusUtil.getInt("redis.timeout");
 
     /* Not actually static, but I just liked the look of the capital case */
     private final Object CONNECTION_LOCK = new Object();
