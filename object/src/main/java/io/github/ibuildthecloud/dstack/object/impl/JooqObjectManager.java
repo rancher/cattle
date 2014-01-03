@@ -4,6 +4,7 @@ import io.github.ibuildthecloud.dstack.engine.idempotent.Idempotent;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecutionNoReturn;
 import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -16,11 +17,14 @@ import javax.inject.Inject;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.jooq.Configuration;
+import org.jooq.DSLContext;
 import org.jooq.ForeignKey;
+import org.jooq.ResultQuery;
 import org.jooq.Table;
 import org.jooq.UpdatableRecord;
 import org.jooq.exception.DataChangedException;
 import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +39,7 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T instantiate(Class<T> clz, Object properties) {
+    public <T> T instantiate(Class<T> clz, Map<String,Object> properties) {
         Class<UpdatableRecord<?>> recordClass = JooqUtils.getRecordClass(schemaFactory, clz);
         UpdatableRecord<?> record = JooqUtils.getRecord(recordClass);
         record.attach(getConfiguration());
@@ -44,7 +48,7 @@ public class JooqObjectManager extends AbstractObjectManager {
     }
 
     @Override
-    public <T> T insert(T instance, Class<T> clz, Object properties) {
+    public <T> T insert(T instance, Class<T> clz, Map<String,Object> properties) {
         final UpdatableRecord<?> record = JooqUtils.getRecordObject(instance);
         record.attach(configuration);
         Idempotent.change(new IdempotentExecutionNoReturn() {
@@ -165,6 +169,47 @@ public class JooqObjectManager extends AbstractObjectManager {
         }
 
         return result;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T findOne(Class<T> clz, Map<Object, Object> values) {
+        return (T)toQuery(clz, values).fetchOne();
+    }
+
+    @Override
+    public <T> T findOne(Class<T> clz, Object key, Object... valueKeyValue) {
+        Map<Object,Object> map = CollectionUtils.asMap(key, valueKeyValue);
+        return findOne(clz, map);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> List<T> find(Class<T> clz, Map<Object, Object> values) {
+        return (List<T>)toQuery(clz, values).fetch();
+    }
+
+    @Override
+    public <T> List<T> find(Class<T> clz, Object key, Object... valueKeyValue) {
+        Map<Object,Object> map = CollectionUtils.asMap(key, valueKeyValue);
+        return find(clz, map);
+    }
+
+    protected ResultQuery<?> toQuery(Class<?> clz, Map<Object, Object> values) {
+        String type = schemaFactory.getSchemaName(clz);
+        if ( type == null ) {
+            throw new IllegalArgumentException("Failed to find type of class [" + clz + "]");
+        }
+        Class<UpdatableRecord<?>> recordClass = JooqUtils.getRecordClass(schemaFactory, clz);
+        Table<?> table = JooqUtils.getTable(recordClass);
+        return create()
+                .selectFrom(table)
+                .where(JooqUtils.toConditions(metaDataManager, type, values));
+    }
+
+    protected DSLContext create() {
+        return new DefaultDSLContext(configuration);
     }
 
     protected void setField(Object obj, String name, Object value) {

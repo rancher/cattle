@@ -10,5 +10,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="io.github.ibuildthecloud.dstack.launcher.Main"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="dstack-app"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-XX:MaxPermSize=256m&#10;-Xmx256m&#10;-Dspring.liveBeansView.mbeanDomain"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dapi.dev=true&#10;-XX:MaxPermSize=256m&#10;-Xmx256m&#10;-Dspring.liveBeansView.mbeanDomain"/>
 </launchConfiguration>

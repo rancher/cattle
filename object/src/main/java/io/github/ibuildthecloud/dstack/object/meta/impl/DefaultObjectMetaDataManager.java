@@ -12,6 +12,7 @@ import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
+import io.github.ibuildthecloud.gdapi.model.Action;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
 import io.github.ibuildthecloud.gdapi.model.Filter;
@@ -27,7 +28,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +53,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     List<ProcessDefinition> processDefinitions;
 
     Map<String,Set<String>> transitioningStates = new HashMap<String, Set<String>>();
+    Map<String,Set<String>> actions = new HashMap<String, Set<String>>();
     Map<String,Map<String,String>> linksCache = Collections.synchronizedMap(new WeakHashMap<String,Map<String,String>>());
     Map<FieldCacheKey, String> propertyCache = Collections.synchronizedMap(new WeakHashMap<FieldCacheKey, String>());
     Map<FieldCacheKey, TableField<?, ?>> tableFields = new HashMap<FieldCacheKey, TableField<?,?>>();
@@ -57,6 +61,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     @Override
     public void start() {
         List<Schema> schemas = registerTypes();
+        registerActions();
         registerTransitionStates();
         registerRelationships();
         parseSchemas(schemas);
@@ -64,6 +69,28 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
     @Override
     public void stop() {
+    }
+
+    protected void registerActions() {
+        actions.clear();
+
+        for ( ProcessDefinition def : processDefinitions ) {
+            String resourceType = def.getResourceType();
+            Set<String> actions = this.actions.get(resourceType);
+
+            if ( resourceType == null ) {
+                continue;
+            }
+
+            if ( def.getName().startsWith(resourceType.toLowerCase() + ".") ) {
+                if ( actions == null ) {
+                    actions = new LinkedHashSet<String>();
+                    this.actions.put(resourceType, actions);
+                }
+
+                actions.add(def.getName().substring(resourceType.length() + 1));
+            }
+        }
     }
 
     protected void registerTransitionStates() {
@@ -146,9 +173,26 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     }
 
     protected void parseSchemas(List<Schema> schemas) {
-        for ( Schema schema : schemas ) {
-            schemaFactory.parseSchema(schema.getId());
-        }
+        Set<String> done = new HashSet<String>();
+        List<Schema> todo = new ArrayList<Schema>(schemas);
+
+        do {
+            int todoSize = todo.size();
+
+            Iterator<Schema> iter = todo.iterator();
+            while ( iter.hasNext() ) {
+                Schema schema = iter.next();
+                if ( schema.getParent() == null || done.contains(schema.getParent()) ) {
+                    schemaFactory.parseSchema(schema.getId());
+                    done.add(schema.getId());
+                    iter.remove();
+                }
+            }
+
+            if ( todo.size() > 0 && todo.size() == todoSize ) {
+                throw new IllegalStateException("Failed to find parents of schemas " + todo);
+            }
+        } while ( todo.size() > 0 );
     }
 
     protected void register(ForeignKey<?, ?> foreignKey) {
@@ -249,6 +293,26 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         return schema;
     }
 
+    protected void addActions(SchemaImpl schema, SchemaFactory factory) {
+        Set<String> actions = this.actions.get(schema.getId());
+        if ( actions == null || actions.size() == 0 ) {
+            return;
+        }
+
+        Map<String,Action> resourceActions = schema.getResourceActions();
+        if ( resourceActions == null ) {
+            resourceActions = new LinkedHashMap<String, Action>();
+            schema.setResourceActions(resourceActions);
+        }
+
+        for ( String action : actions ) {
+            if ( ! resourceActions.containsKey(action) ) {
+                Action newAction = new Action();
+                newAction.setOutput(schema.getId());
+                resourceActions.put(action, newAction);
+            }
+        }
+    }
     protected void addTransitioningFields(SchemaImpl schema, SchemaFactory factory) {
         Set<String> states = transitioningStates.get(schema.getId());
         if ( states == null || states.size() == 0 ) {
@@ -268,6 +332,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
         FieldImpl newField = new FieldImpl();
         newField.setTypeEnum(type);
+        newField.setName(name);
         if ( type == FieldType.ENUM ) {
             newField.setOptions(Arrays.asList(options));
         } else {
@@ -279,6 +344,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
     @Override
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
+        addActions(schema, factory);
         addTransitioningFields(schema, factory);
 
         Map<String,Relationship> relationships = this.relationships.get(factory.getSchemaClass(schema.getId()));
@@ -373,7 +439,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         links = new TreeMap<String,String>();
         Schema schema = schemaFactory.getSchema(type);
 
-        Map<String,Relationship> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId()));
+        Map<String,Relationship> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId(), true));
         if ( relationships == null || relationships.size() == 0 ) {
             linksCache.put(key, links);
             return links;
@@ -397,7 +463,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
     @Override
     public Relationship getRelationship(String type, String linkName) {
-        Class<?> clz = schemaFactory.getSchemaClass(type);
+        Class<?> clz = schemaFactory.getSchemaClass(type, true);
         Map<String,Relationship> relationship = relationships.get(clz);
         return relationship == null ? null : relationship.get(linkName);
     }
@@ -406,7 +472,12 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     public Map<String, Object> getTransitionFields(Schema schema, Object obj) {
         Set<String> states = transitioningStates.get(schema.getId());
         if ( states == null || states.size() == 0 ) {
-            return Collections.emptyMap();
+            schema = schemaFactory.getSchema(obj.getClass());
+            states = transitioningStates.get(schema.getId());
+
+            if ( states == null ) {
+                return Collections.emptyMap();
+            }
         }
 
         Map<String, Object> result = new LinkedHashMap<String, Object>();

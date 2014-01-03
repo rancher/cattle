@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "image", schema = "dstack")
-public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp>, io.github.ibuildthecloud.dstack.core.model.Image {
+public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.core.model.Image {
 
-	private static final long serialVersionUID = 1720352865;
+	private static final long serialVersionUID = -1335064727;
 
 	/**
 	 * Setter for <code>dstack.image.id</code>. 
@@ -288,6 +288,23 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 		return (java.sql.Timestamp) getValue(15);
 	}
 
+	/**
+	 * Setter for <code>dstack.image.data</code>. 
+	 */
+	@Override
+	public void setData(java.util.Map<String,Object> value) {
+		setValue(16, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.image.data</code>. 
+	 */
+	@javax.persistence.Column(name = "data", length = 16777215)
+	@Override
+	public java.util.Map<String,Object> getData() {
+		return (java.util.Map<String,Object>) getValue(16);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -301,23 +318,23 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	}
 
 	// -------------------------------------------------------------------------
-	// Record16 type implementation
+	// Record17 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp> fieldsRow() {
-		return (org.jooq.Row16) super.fieldsRow();
+	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>> fieldsRow() {
+		return (org.jooq.Row17) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp> valuesRow() {
-		return (org.jooq.Row16) super.valuesRow();
+	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>> valuesRow() {
+		return (org.jooq.Row17) super.valuesRow();
 	}
 
 	/**
@@ -452,6 +469,14 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.util.Map<String,Object>> field17() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE.DATA;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -576,6 +601,14 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 		return getRemoveTime();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Map<String,Object> value17() {
+		return getData();
+	}
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
@@ -601,6 +634,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 		setCreated(from.getCreated());
 		setRemoved(from.getRemoved());
 		setRemoveTime(from.getRemoveTime());
+		setData(from.getData());
 	}
 
 	/**
@@ -626,7 +660,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Create a detached, initialised ImageRecord
 	 */
-	public ImageRecord(java.lang.Long id, java.lang.String name, java.lang.String uuid, java.lang.Long accountId, java.lang.String url, java.lang.String description, java.lang.Boolean isPublic, java.lang.String state, java.lang.Boolean prepopulate, java.lang.String prepopulateStamp, java.lang.Long physicalSizeBytes, java.lang.Long virtualSizeBytes, java.lang.String checksum, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime) {
+	public ImageRecord(java.lang.Long id, java.lang.String name, java.lang.String uuid, java.lang.Long accountId, java.lang.String url, java.lang.String description, java.lang.Boolean isPublic, java.lang.String state, java.lang.Boolean prepopulate, java.lang.String prepopulateStamp, java.lang.Long physicalSizeBytes, java.lang.Long virtualSizeBytes, java.lang.String checksum, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime, java.util.Map<String,Object> data) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE);
 
 		setValue(0, id);
@@ -645,5 +679,6 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 		setValue(13, created);
 		setValue(14, removed);
 		setValue(15, removeTime);
+		setValue(16, data);
 	}
 }

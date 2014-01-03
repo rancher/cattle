@@ -89,6 +89,11 @@ public class ApiUtils {
         return getPropertyIgnoreErrors(obj, ObjectMetaDataManager.ID_FIELD);
     }
 
+    public static String getKind(Object obj) {
+        Object kind = getPropertyIgnoreErrors(obj, ObjectMetaDataManager.KIND_FIELD);
+        return kind == null ? null : kind.toString();
+    }
+
     public static String getAttachementKey(Object obj) {
         return getAttachementKey(obj, getId(obj));
     }
@@ -176,7 +181,7 @@ public class ApiUtils {
                 if ( input == null )
                     return null;
 
-                Schema schema = schemaFactory.getSchema(input.getClass());
+                Schema schema = getSchemaForDisplay(schemaFactory, input);
                 if ( schema == null ) {
                     return null;
                 }
@@ -202,6 +207,19 @@ public class ApiUtils {
         }
 
         return null;
+    }
+
+    public static Schema getSchemaForDisplay(SchemaFactory factory, Object obj) {
+        Schema schema = factory.getSchema(obj.getClass());
+        if ( schema.getChildren().size() > 0 ) {
+            String kind = getKind(obj);
+            Schema kindSchema = factory.getSchema(kind);
+            if ( kindSchema != null ) {
+                return kindSchema;
+            }
+        }
+
+        return schema;
     }
 
 }

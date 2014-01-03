@@ -19,6 +19,8 @@ public interface Event {
 
     String[] getPreviousIds();
 
+    String[] getPreviousNames();
+
     Object getData();
 
     Date getTime();

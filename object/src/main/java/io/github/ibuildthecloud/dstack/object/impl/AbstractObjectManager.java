@@ -7,6 +7,7 @@ import io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHa
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,33 @@ public abstract class AbstractObjectManager implements ObjectManager {
     SchemaFactory schemaFactory;
     List<ObjectPostInstantiationHandler> postInitHandlers;
     List<ObjectLifeCycleHandler> lifeCycleHandlers;
+
+    @Override
+    public <T> T create(T instance) {
+        return create(instance, new HashMap<String, Object>());
+    }
+
+    @Override
+    public <T> T create(T instance, Object key, Object... valueKeyValue) {
+        Map<Object,Object> properties = CollectionUtils.asMap(key, valueKeyValue);
+        return create(instance, convertToPropertiesFor(instance, properties));
+    }
+
+    @Override
+    public <T> T create(T instance, Map<String,Object> properties) {
+        @SuppressWarnings("unchecked")
+        Class<T> clz = (Class<T>) instance.getClass();
+
+        for ( ObjectPostInstantiationHandler handler : postInitHandlers ) {
+            instance = handler.postProcess(instance, clz, properties);
+        }
+
+        instance = insert(instance, clz, properties);
+
+        instance = callLifeCycleHandlers(LifeCycleEvent.CREATE, instance, clz, properties);
+
+        return instance;
+    }
 
     @Override
     public <T> T create(Class<T> clz, Map<String,Object> properties) {
@@ -53,9 +81,9 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return instance;
     }
 
-    protected abstract <T> T instantiate(Class<T> clz, Object properties);
+    protected abstract <T> T instantiate(Class<T> clz, Map<String,Object> properties);
 
-    protected abstract <T> T insert(T instance, Class<T> clz, Object properties);
+    protected abstract <T> T insert(T instance, Class<T> clz, Map<String,Object> properties);
 
 
     @Override

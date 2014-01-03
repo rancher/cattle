@@ -22,7 +22,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-@Named
+//@Named
 public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     JsonMapper jsonMapper;

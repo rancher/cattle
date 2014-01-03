@@ -1,5 +1,10 @@
 package io.github.ibuildthecloud.dstack.object.jooq.utils;
 
+import java.util.List;
+import java.util.Map;
+
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
@@ -98,6 +103,110 @@ public class JooqUtils {
             return (T)obj;
         }
         throw new IllegalArgumentException("Expected instance of [" + UpdatableRecord.class + "] got [" + obj.getClass() + "]");
+    }
+
+    public static org.jooq.Condition toConditions(ObjectMetaDataManager metaData, String type, Map<Object, Object> criteria) {
+        org.jooq.Condition existingCondition = null;
+
+        for ( Map.Entry<Object, Object> entry : criteria.entrySet() ) {
+            Object value = entry.getValue();
+            Object key = entry.getKey();
+            TableField<?, Object> field = null;
+            if ( key == org.jooq.Condition.class ) {
+                if ( ! ( value instanceof org.jooq.Condition ) ) {
+                    throw new IllegalArgumentException("If key is Condition, value must be an instanceof Condition got key [" +
+                            key + "] value [" + value + "]");
+                }
+            } else {
+                field = getTableField(metaData, type, key);
+                if ( field == null ) {
+                    continue;
+                }
+            }
+
+            org.jooq.Condition newCondition = null;
+
+            if ( value instanceof org.jooq.Condition ) {
+                newCondition = (org.jooq.Condition)value;
+            } if ( value instanceof Condition ) {
+                newCondition = toCondition(field, (Condition)value);
+            } else if ( value instanceof List ) {
+                newCondition = listToCondition(field, (List<?>)value);
+            } else {
+                newCondition = field.eq(value);
+            }
+
+            if ( existingCondition == null ) {
+                existingCondition = newCondition;
+            } else {
+                existingCondition = existingCondition.and(newCondition);
+            }
+        }
+
+        return existingCondition;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static TableField<?, Object> getTableField(ObjectMetaDataManager metaData, String type, Object key) {
+        Object objField = metaData.convertFieldNameFor(type, key);
+        if ( objField instanceof TableField ) {
+            return (TableField<?, Object>)objField;
+        } else {
+            return null;
+        }
+    }
+
+    protected static org.jooq.Condition listToCondition(TableField<?, Object> field, List<?> list) {
+        org.jooq.Condition condition = null;
+        for ( Object value : list ) {
+            if ( value instanceof Condition ) {
+                org.jooq.Condition newCondition = toCondition(field, (Condition)value);
+                condition = condition == null ? newCondition : condition.and(newCondition);
+            } else {
+                condition = condition == null ? field.eq(value) : condition.and(field.eq(value));
+            }
+        }
+
+        return condition;
+    }
+
+    protected static org.jooq.Condition toCondition(TableField<?, Object> field, Condition value) {
+        Condition condition = value;
+        switch (condition.getConditionType()) {
+        case EQ:
+            return field.eq(condition.getValue());
+        case GT:
+            return field.gt(condition.getValue());
+        case GTE:
+            return field.ge(condition.getValue());
+        case IN:
+            List<Object> values = condition.getValues();
+            if ( values.size() == 1 ) {
+                return field.eq(values.get(0));
+            } else {
+                return field.in(condition.getValues());
+            }
+        case LIKE:
+            return field.like(condition.getValue().toString());
+        case LT:
+            return field.lt(condition.getValue());
+        case LTE:
+            return field.le(condition.getValue());
+        case NE:
+            return field.ne(condition.getValue());
+        case NOTLIKE:
+            return field.notLike(condition.getValue().toString());
+        case NOTNULL:
+            return field.isNotNull();
+        case NULL:
+            return field.isNull();
+        case PREFIX:
+            return field.like(condition.getValue() + "%");
+        case OR:
+            return toCondition(field, condition.getLeft()).or(toCondition(field, condition.getRight()));
+        default:
+            throw new IllegalArgumentException("Invalid condition type [" + condition.getConditionType() + "]");
+        }
     }
 
 }

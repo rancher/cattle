@@ -9,19 +9,6 @@
                       http://www.springframework.org/schema/context/spring-context-3.0.xsd"
                       >
 
-    <bean id="CoreSchemaList" class="io.github.ibuildthecloud.dstack.db.jooq.utils.SchemaRecordTypeListGenerator" >
-        <property name="schemaClass" value="io.github.ibuildthecloud.dstack.core.model.DstackTable" />
-    </bean>
-
-    <bean id="CoreTypeSet" class="io.github.ibuildthecloud.dstack.object.meta.TypeSet" >
-        <property name="typeClasses">
-            <bean factory-bean="CoreSchemaList" factory-method="getRecordTypes" />
-        </property>
-        <property name="typeNames">
-            <set>
-                <value>container,parent=instance</value>
-            </set>
-        </property>
-    </bean>
+    <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.AccountCoreDaoImpl" />
 
 </beans>

@@ -19,11 +19,26 @@ public class EventUtils {
 
         EventVO event = new EventVO();
         event.setName(request.getReplyTo());
-        event.setPreviousIds(previousIds);
+        event.setPreviousNames(prepend(request.getPreviousNames(), request.getName()));
+        event.setPreviousIds(prepend(request.getPreviousIds(), request.getId()));
         event.setResourceId(request.getResourceId());
         event.setResourceType(request.getResourceType());
 
         return event;
+    }
+
+    protected static String[] prepend(String[] array, String value) {
+        if ( array != null && array.length > 0 ) {
+            String[] newIds = new String[array.length+1];
+            System.arraycopy(array, 0, newIds, 1, array.length);
+            newIds[0] = value;
+
+            array = newIds;
+        } else {
+            array = new String[] { value };
+        }
+
+        return array;
     }
 
     public static EventVO newEventFromData(String name, Object data) {

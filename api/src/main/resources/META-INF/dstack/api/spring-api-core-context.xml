@@ -40,7 +40,7 @@
     <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
 
     <bean class="io.github.ibuildthecloud.dstack.api.object.postini.AccountFieldPostInitHandler" />
-    
+
     <bean class="io.github.ibuildthecloud.dstack.extension.spring.ExtensionDiscovery" >
         <property name="typeClass" value="io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler" />
     </bean>

@@ -26,15 +26,15 @@ public interface ImageStoragePoolMap extends java.io.Serializable {
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.template_id</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.image_id</code>. 
 	 */
-	public void setTemplateId(java.lang.Long value);
+	public void setImageId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.template_id</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.image_id</code>. 
 	 */
-	@javax.persistence.Column(name = "template_id", nullable = false, precision = 19)
-	public java.lang.Long getTemplateId();
+	@javax.persistence.Column(name = "image_id", nullable = false, precision = 19)
+	public java.lang.Long getImageId();
 
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.storage_pool_id</code>. 
@@ -48,37 +48,26 @@ public interface ImageStoragePoolMap extends java.io.Serializable {
 	public java.lang.Long getStoragePoolId();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.progress</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.state</code>. 
 	 */
-	public void setProgress(java.lang.String value);
+	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.progress</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.state</code>. 
 	 */
-	@javax.persistence.Column(name = "progress", length = 255)
-	public java.lang.String getProgress();
+	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.resource_state</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.uri</code>. 
 	 */
-	public void setResourceState(java.lang.String value);
+	public void setUri(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.resource_state</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.uri</code>. 
 	 */
-	@javax.persistence.Column(name = "resource_state", nullable = false, length = 255)
-	public java.lang.String getResourceState();
-
-	/**
-	 * Setter for <code>dstack.image_storage_pool_map.location</code>. 
-	 */
-	public void setLocation(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.image_storage_pool_map.location</code>. 
-	 */
-	@javax.persistence.Column(name = "location", length = 255)
-	public java.lang.String getLocation();
+	@javax.persistence.Column(name = "uri", length = 255)
+	public java.lang.String getUri();
 
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.created</code>. 
@@ -92,28 +81,6 @@ public interface ImageStoragePoolMap extends java.io.Serializable {
 	public java.sql.Timestamp getCreated();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.billing_start</code>. 
-	 */
-	public void setBillingStart(java.sql.Timestamp value);
-
-	/**
-	 * Getter for <code>dstack.image_storage_pool_map.billing_start</code>. 
-	 */
-	@javax.persistence.Column(name = "billing_start")
-	public java.sql.Timestamp getBillingStart();
-
-	/**
-	 * Setter for <code>dstack.image_storage_pool_map.billing_end</code>. 
-	 */
-	public void setBillingEnd(java.sql.Timestamp value);
-
-	/**
-	 * Getter for <code>dstack.image_storage_pool_map.billing_end</code>. 
-	 */
-	@javax.persistence.Column(name = "billing_end")
-	public java.sql.Timestamp getBillingEnd();
-
-	/**
 	 * Setter for <code>dstack.image_storage_pool_map.removed</code>. 
 	 */
 	public void setRemoved(java.sql.Timestamp value);
@@ -125,26 +92,15 @@ public interface ImageStoragePoolMap extends java.io.Serializable {
 	public java.sql.Timestamp getRemoved();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.resource_remove_schedule</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.remove_time</code>. 
 	 */
-	public void setResourceRemoveSchedule(java.sql.Timestamp value);
+	public void setRemoveTime(java.sql.Timestamp value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.resource_remove_schedule</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.remove_time</code>. 
 	 */
-	@javax.persistence.Column(name = "resource_remove_schedule")
-	public java.sql.Timestamp getResourceRemoveSchedule();
-
-	/**
-	 * Setter for <code>dstack.image_storage_pool_map.resource_removed</code>. 
-	 */
-	public void setResourceRemoved(java.sql.Timestamp value);
-
-	/**
-	 * Getter for <code>dstack.image_storage_pool_map.resource_removed</code>. 
-	 */
-	@javax.persistence.Column(name = "resource_removed")
-	public java.sql.Timestamp getResourceRemoved();
+	@javax.persistence.Column(name = "remove_time")
+	public java.sql.Timestamp getRemoveTime();
 
 	/**
 	 * Setter for <code>dstack.image_storage_pool_map.remove_locked</code>. 

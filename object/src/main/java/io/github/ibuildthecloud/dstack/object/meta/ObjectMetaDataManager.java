@@ -17,6 +17,7 @@ public interface ObjectMetaDataManager {
     public static final String TRANSITIONING_MESSAGE_FIELD = "transitioningMessage";
     public static final String TRANSITIONING_MESSAGE_DEFAULT_FIELD = "In Progress";
 
+    public static final String KIND_FIELD = "kind";
     public static final String STATE_FIELD = "state";
     public static final String ACCOUNT_FIELD = "accountId";
     public static final String REMOVE_TIME_FIELD = "removeTime";

@@ -4,5 +4,9 @@
         "accountId": {
             "defaultIsNull" : true
         }
+    },
+    "resourceActions" : {
+        "activate" : {
+        }
     }
 }

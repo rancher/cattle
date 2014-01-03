@@ -54,8 +54,8 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
     @Override
     protected Object getByIdInternal(String type, String id, ListOptions options) {
         for ( ProcessDefinition def : processDefinitions ) {
-            if ( id.equals(def.getResourceType()) ) {
-                return newResource(id, options.getInclude());
+            if ( id.equalsIgnoreCase(def.getResourceType()) ) {
+                return newResource(def.getResourceType(), options.getInclude());
             }
         }
 

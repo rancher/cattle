@@ -2,11 +2,17 @@ package io.github.ibuildthecloud.dstack.api.resource;
 
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
+import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
+import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
+import io.github.ibuildthecloud.dstack.engine.process.ProcessInstanceException;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
+import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Include;
@@ -16,6 +22,7 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractBaseResourceManager;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Collections;
 import java.util.Date;
@@ -28,6 +35,7 @@ import javax.inject.Inject;
 public abstract class AbstractObjectResourceManager extends AbstractBaseResourceManager {
 
     ObjectManager objectManager;
+    ObjectProcessManager objectProcessManager;
     ObjectMetaDataManager metaDataManager;
 
     @Override
@@ -37,13 +45,30 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Object createInternal(String type, ApiRequest request) {
-        Class<?> clz = schemaFactory.getSchemaClass(type);
+        Class<?> clz = getClassForType(type);
         if ( clz == null ) {
             return null;
         }
 
-        Object result = objectManager.create(clz, ApiUtils.getMap(request.getRequestObject()));
+        Map<String,Object> properties = new HashMap<String, Object>(ApiUtils.getMap(request.getRequestObject()));
+        if ( ! properties.containsKey(ObjectMetaDataManager.KIND_FIELD) ) {
+            properties.put(ObjectMetaDataManager.KIND_FIELD, type);
+        }
+
+        Object result = objectManager.create(clz, properties);
         return result;
+    }
+
+    protected Class<?> getClassForType(String type) {
+        Class<?> clz = schemaFactory.getSchemaClass(type);
+        if ( clz == null ) {
+            Schema schema = schemaFactory.getSchema(type);
+            if ( schema.getParent() != null ) {
+                return getClassForType(schema.getParent());
+            }
+        }
+
+        return clz;
     }
 
     @Override
@@ -168,9 +193,41 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     @Override
+    protected Schema getSchemaForDisplay(Object obj) {
+        return ApiUtils.getSchemaForDisplay(getSchemaFactory(), obj);
+    }
+
+    @Override
     protected Resource constructResource(final IdFormatter idFormatter, final Schema schema, Object obj) {
         Map<String,Object> transitioningFields = metaDataManager.getTransitionFields(schema, obj);
         return ApiUtils.createResourceWithAttachments(schemaFactory, idFormatter, schema, obj, transitioningFields);
+    }
+
+    @Override
+    protected Object resourceActionInternal(Object obj, ApiRequest request) {
+        Map<String,Object> data = CollectionUtils.castMap(request.getRequestObject());
+        ProcessInstance pi = objectProcessManager.createProcessInstance(getProcessName(obj, request), obj, data);
+
+        try {
+            pi.schedule();
+        } catch ( ProcessInstanceException e ) {
+            if ( e.getExitReason() == ExitReason.FAILED_TO_ACQUIRE_LOCK || e.getExitReason() == ExitReason.CANCELED ) {
+                throw new ClientVisibleException(ResponseCodes.CONFLICT);
+            } else {
+                throw e;
+            }
+        }
+
+        request.setResponseCode(ResponseCodes.ACCEPTED);
+        return objectManager.reload(obj);
+    }
+
+    protected String getProcessName(Object obj, ApiRequest request) {
+        return (request.getType() + "." + request.getAction()).toLowerCase();
+    }
+    @Override
+    protected Object collectionActionInternal(Object resources, ApiRequest request) {
+        return null;
     }
 
     @Override
@@ -194,6 +251,15 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Inject
     public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
         this.metaDataManager = metaDataManager;
+    }
+
+    public ObjectProcessManager getObjectProcessManager() {
+        return objectProcessManager;
+    }
+
+    @Inject
+    public void setObjectProcessManager(ObjectProcessManager objectProcessManager) {
+        this.objectProcessManager = objectProcessManager;
     }
 
 }

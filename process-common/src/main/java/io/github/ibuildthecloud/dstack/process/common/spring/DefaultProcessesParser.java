@@ -42,13 +42,13 @@ public class DefaultProcessesParser extends ProcessParser {
                 throw new IllegalStateException(PROP_PREFIX + i + " must be in the format name;start;transitioning;done;delegate(optional)");
             }
 
-            String name = String.format(parts[0], resourceType);
+            String name = String.format(parts[0], resourceType).toLowerCase();
             String start = parts[1];
             String transitioning = parts[2];
             String done = parts[3];
             String delegate = null;
             if ( parts.length > 4 ) {
-                delegate = String.format(parts[4], resourceType);
+                delegate = String.format(parts[4], resourceType).toLowerCase();
             }
 
             if ( ! excludes.contains(name) ) {

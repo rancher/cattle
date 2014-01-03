@@ -190,6 +190,17 @@ public interface Image extends java.io.Serializable {
 	@javax.persistence.Column(name = "remove_time")
 	public java.sql.Timestamp getRemoveTime();
 
+	/**
+	 * Setter for <code>dstack.image.data</code>. 
+	 */
+	public void setData(java.util.Map<String,Object> value);
+
+	/**
+	 * Getter for <code>dstack.image.data</code>. 
+	 */
+	@javax.persistence.Column(name = "data", length = 16777215)
+	public java.util.Map<String,Object> getData();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

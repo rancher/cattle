@@ -16,6 +16,21 @@
             <artifactId>dstack-eventing-redis</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-docker</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-agent-connection-simulator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-storage-simulator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- End Plugins -->
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
@@ -26,7 +41,6 @@
         <dependency>
             <groupId>jstl</groupId>
             <artifactId>jstl</artifactId>
-            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>

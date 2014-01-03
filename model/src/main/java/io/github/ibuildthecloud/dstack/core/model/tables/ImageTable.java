@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> {
 
-	private static final long serialVersionUID = -971142638;
+	private static final long serialVersionUID = 2121825894;
 
 	/**
 	 * The singleton instance of <code>dstack.image</code>
@@ -105,6 +105,11 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	 * The column <code>dstack.image.remove_time</code>. 
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.sql.Timestamp> REMOVE_TIME = createField("remove_time", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+
+	/**
+	 * The column <code>dstack.image.data</code>. 
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this);
 
 	/**
 	 * Create a <code>dstack.image</code> table reference

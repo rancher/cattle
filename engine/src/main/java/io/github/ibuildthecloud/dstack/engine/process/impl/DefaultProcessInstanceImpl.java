@@ -31,6 +31,7 @@ import io.github.ibuildthecloud.dstack.eventing.util.EventUtils;
 import io.github.ibuildthecloud.dstack.lock.LockCallback;
 import io.github.ibuildthecloud.dstack.lock.LockCallbackNoReturn;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
+import io.github.ibuildthecloud.dstack.lock.definition.Namespace;
 import io.github.ibuildthecloud.dstack.lock.exception.FailedToAcquireLockException;
 import io.github.ibuildthecloud.dstack.lock.util.LockUtils;
 import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
@@ -476,7 +477,13 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected void startLock() {
         ProcessState state = instanceContext.getState();
-        instanceContext.setProcessLock(state.getProcessLock());
+
+        LockDefinition lockDef = state.getProcessLock();
+        if ( schedule ) {
+            lockDef = new Namespace("schedule").getLockDefinition(lockDef);
+        }
+
+        instanceContext.setProcessLock(lockDef);
         execution.setLockAcquireStart(now());
         execution.setProcessLock(LockUtils.serializeLock(instanceContext.getProcessLock()));
     }

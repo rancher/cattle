@@ -22,6 +22,8 @@
 
         The above XML is the equivalent as doing the below, 
         refer to dstack-process-common/src/main/resources/META-INF/dstack/process/defaults.properties for the definitive list
+        
+        TODO: This is out of date
 
         <process:process name="agent.create" resourceType="agent" start="requested" transitioning="registering" done="inactive" />
         <process:process name="agent.activate" resourceType="agent" start="inactive" transitioning="activating" done="active" />
@@ -29,12 +31,16 @@
         <process:process name="agent.remove" resourceType="agent" start="active,activating,deactivating,registering" transitioning="removing" done="removed" />
         <process:process name="agent.purge" resourceType="agent" start="removed" transitioning="purging" done="purged" />
     -->
-        
+
 
     <process:defaultProcesses resourceType="agent" />
     <process:defaultProcesses resourceType="agentgroup" />
     <process:defaultProcesses resourceType="account" />
     <process:defaultProcesses resourceType="credential" />
+    <process:defaultProcesses resourceType="image" />
+    <process:defaultProcesses resourceType="storagePool" />
+    <process:defaultProcesses resourceType="imageStoragePoolMap" />
+
     <process:defaultProcesses resourceType="instance" 
         renames="
             registering=creating,

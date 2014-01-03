@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlTransient;
 public class EventVO implements Event {
 
     String id, name, replyTo, resourceId, resourceType, publisher;
-    String[] previousIds;
+    String[] previousIds, previousNames;
     Object data;
     Date time;
     String listenerKey;
@@ -31,6 +31,7 @@ public class EventVO implements Event {
         this.id = event.getId();
         this.name = event.getName();
         this.previousIds = event.getPreviousIds();
+        this.previousNames = event.getPreviousNames();
         this.data = event.getData();
         this.time = event.getTime();
         this.publisher = event.getPublisher();
@@ -54,6 +55,15 @@ public class EventVO implements Event {
 
     public void setPreviousIds(String[] previousIds) {
         this.previousIds = previousIds;
+    }
+
+    @Override
+    public String[] getPreviousNames() {
+        return previousNames;
+    }
+
+    public void setPreviousNames(String[] names) {
+        this.previousNames = names;
     }
 
     @Override
@@ -121,9 +131,10 @@ public class EventVO implements Event {
 
     @Override
     public String toString() {
-        return "EventVO [id=" + id + ", name=" + name + ", replyTo=" + replyTo + ", resourceId=" + resourceId
-                + ", resourceType=" + resourceType + ", publisher=" + publisher + ", previousIds="
-                + Arrays.toString(previousIds) + ", data=" + data + ", time=" + time + "]";
+        return "EventVO [id=" + id + ", name=" + name + ", previousNames=" + Arrays.toString(previousNames)
+                + ", replyTo=" + replyTo + ", resourceId=" + resourceId + ", resourceType=" + resourceType
+                + ", publisher=" + publisher + ", previousIds=" + Arrays.toString(previousIds) + ", data=" + data
+                + ", time=" + time + ", listenerKey=" + listenerKey + "]";
     }
 
     @XmlTransient

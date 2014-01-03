@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord> {
 
-	private static final long serialVersionUID = 719448094;
+	private static final long serialVersionUID = -92856944;
 
 	/**
 	 * The singleton instance of <code>dstack.storage_pool</code>
@@ -52,11 +52,6 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.github.ibuildth
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
 
 	/**
-	 * The column <code>dstack.storage_pool.content_type</code>. 
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.lang.String> CONTENT_TYPE = createField("content_type", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
-
-	/**
 	 * The column <code>dstack.storage_pool.state</code>. 
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
@@ -90,6 +85,11 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.github.ibuildth
 	 * The column <code>dstack.storage_pool.agent_id</code>. 
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.lang.Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this);
+
+	/**
+	 * The column <code>dstack.storage_pool.external</code>. 
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.lang.Boolean> EXTERNAL = createField("external", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this);
 
 	/**
 	 * Create a <code>dstack.storage_pool</code> table reference

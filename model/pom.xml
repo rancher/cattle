@@ -26,5 +26,10 @@
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-object</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

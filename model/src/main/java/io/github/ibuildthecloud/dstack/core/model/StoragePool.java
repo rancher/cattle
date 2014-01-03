@@ -70,17 +70,6 @@ public interface StoragePool extends java.io.Serializable {
 	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.storage_pool.content_type</code>. 
-	 */
-	public void setContentType(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.storage_pool.content_type</code>. 
-	 */
-	@javax.persistence.Column(name = "content_type", nullable = false, length = 255)
-	public java.lang.String getContentType();
-
-	/**
 	 * Setter for <code>dstack.storage_pool.state</code>. 
 	 */
 	public void setState(java.lang.String value);
@@ -156,6 +145,17 @@ public interface StoragePool extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "agent_id", precision = 19)
 	public java.lang.Long getAgentId();
+
+	/**
+	 * Setter for <code>dstack.storage_pool.external</code>. 
+	 */
+	public void setExternal(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool.external</code>. 
+	 */
+	@javax.persistence.Column(name = "external", nullable = false, precision = 1)
+	public java.lang.Boolean getExternal();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

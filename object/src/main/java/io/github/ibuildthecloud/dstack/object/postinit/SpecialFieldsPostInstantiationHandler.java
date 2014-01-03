@@ -39,13 +39,12 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
 
     protected void set(Object obj, String property, Object value) {
         try {
-            BeanUtils.setProperty(obj, property, value);
+            if ( BeanUtils.getProperty(obj, property) == null ) {
+                BeanUtils.setProperty(obj, property, value);
+            }
         } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
         }
     }
 
