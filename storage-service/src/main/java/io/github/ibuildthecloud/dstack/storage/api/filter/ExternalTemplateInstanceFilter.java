@@ -1,0 +1,98 @@
+package io.github.ibuildthecloud.dstack.storage.api.filter;
+
+import io.github.ibuildthecloud.dstack.core.constants.InstanceConstants;
+import io.github.ibuildthecloud.dstack.core.model.Image;
+import io.github.ibuildthecloud.dstack.core.model.Instance;
+import io.github.ibuildthecloud.dstack.storage.service.StorageService;
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.model.ListOptions;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractResourceManagerFilter;
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(ExternalTemplateInstanceFilter.class);
+
+    SchemaFactory schemaFactory;
+    StorageService storageService;
+    ResourceManagerLocator locator;
+
+    @Override
+    public Object create(String type, ApiRequest request, ResourceManager next) {
+        Map<String,Object> data = CollectionUtils.castMap(request.getRequestObject());
+        Object imageUuid = data.get(InstanceConstants.IMAGE_UUID);
+
+        if ( imageUuid != null && ! validateImageUuid(imageUuid.toString())) {
+            throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, InstanceConstants.IMAGE_UUID);
+        }
+
+        return super.create(type, request, next);
+    }
+
+    protected boolean validateImageUuid(String uuid) {
+        try {
+            Image image = storageService.registerRemoteImage(uuid);
+            if ( image == null ) {
+                return false;
+            }
+
+            String type = locator.getType(Image.class);
+            ResourceManager rm = locator.getResourceManagerByType(type);
+
+            return rm.getById(type, image.getId().toString(), new ListOptions()) != null;
+        } catch ( IOException e ) {
+            log.error("Failed to contact external registry", e);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "ExternalServiceUnavailable");
+        }
+    }
+
+    @Override
+    public String[] getTypes() {
+        List<String> types = schemaFactory.getSchemaNames(Instance.class);
+        return types.toArray(new String[types.size()]);
+    }
+
+    public SchemaFactory getSchemaFactory() {
+        return schemaFactory;
+    }
+
+    @Inject
+    public void setSchemaFactory(SchemaFactory schemaFactory) {
+        this.schemaFactory = schemaFactory;
+    }
+
+    public StorageService getStorageService() {
+        return storageService;
+    }
+
+    @Inject
+    public void setStorageService(StorageService storageService) {
+        this.storageService = storageService;
+    }
+
+    public ResourceManagerLocator getLocator() {
+        return locator;
+    }
+
+    @Inject
+    public void setLocator(ResourceManagerLocator locator) {
+        this.locator = locator;
+    }
+
+}
