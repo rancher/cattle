@@ -11,6 +11,7 @@
     <bean id="EnvironmentConfig" class="org.apache.commons.configuration.EnvironmentConfiguration" />
     <bean id="SystemConfig" class="org.apache.commons.configuration.SystemConfiguration" />
     <bean id="ConfigFileConfig" factory-bean="ConfigFileConfigFactory" factory-method="getConfiguration" />
+    <bean id="DstackLocalFileConfig" factory-bean="DstackLocalFileConfigFactory" factory-method="getConfiguration" />
     <bean id="DstackFileConfig" factory-bean="DstackFileConfigFactory" factory-method="getConfiguration" />
     <bean id="DatabaseConfig" class="com.netflix.config.DynamicConfiguration" >
         <constructor-arg index="0" >
@@ -30,5 +31,8 @@
     </bean>
     <bean id="DstackFileConfigFactory" class="io.github.ibuildthecloud.dstack.archaius.sources.OptionalPropertiesConfigurationFactory" >
         <property name="name" value="dstack.properties" />
+    </bean>
+    <bean id="DstackLocalFileConfigFactory" class="io.github.ibuildthecloud.dstack.archaius.sources.OptionalPropertiesConfigurationFactory" >
+        <property name="name" value="dstack-local.properties" />
     </bean>
 </beans>

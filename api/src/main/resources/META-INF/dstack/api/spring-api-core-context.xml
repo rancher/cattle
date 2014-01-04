@@ -35,7 +35,12 @@
 
     <bean id="DefaultResourceManager" class="io.github.ibuildthecloud.dstack.api.resource.jooq.DefaultJooqResourceManager" />
 
-    <bean class="io.github.ibuildthecloud.dstack.api.html.ConfigBasedHtmlTemplate" />
+    <bean class="io.github.ibuildthecloud.dstack.api.html.ConfigBasedHtmlTemplate" >
+        <property name="settings">
+            <bean class="io.github.ibuildthecloud.dstack.api.utils.ApiSettings" />
+        </property>
+    </bean>
+
     <bean class="io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser" />
     <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
 

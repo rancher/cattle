@@ -1,3 +1,4 @@
+resources/content/dstack-local.properties
 resources/content/modules.properties
 app/dStack.launch
 app/db-*
