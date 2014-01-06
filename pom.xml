@@ -25,6 +25,7 @@
         <module>code/simulator/storage-simulator</module>
         <module>commands</module>
         <module>db-loader</module>
+        <module>dev</module>
         <module>deferred</module>
         <module>engine</module>
         <module>engine-jooq</module>
