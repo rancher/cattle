@@ -54,6 +54,7 @@
         <module>transport</module>
         <module>upstream/cloudstack/framework/managed-context</module>
         <module>upstream/cloudstack/framework/spring/module</module>
+        <module>upstream/cloudstack/maven-standard</module>
         <module>utils</module>
     </modules>
     <profiles>
