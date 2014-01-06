@@ -16,3 +16,5 @@ _*
 *.pyo
 *.swp
 __pycache__
+.tox
+MANIFEST

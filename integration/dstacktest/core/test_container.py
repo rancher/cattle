@@ -1,4 +1,4 @@
-from common_fixtures import *
+from .common_fixtures import *
 import time
 import random
 import re
