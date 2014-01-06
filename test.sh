@@ -25,6 +25,12 @@ do
     fi
 done
 
+if ! checkPort
+then
+    echo "Server did not start"
+    exit 1
+fi
+
 cd integration
 . ./env
 tox
