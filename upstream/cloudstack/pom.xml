@@ -160,22 +160,9 @@
   </organization>
 
   <modules>
-    <module>api</module>
-    <module>agent</module>
-    <module>core</module>
-    <module>server</module>
-    <module>usage</module>
-    <module>utils</module>
-    <module>deps/XenServerJava</module>
-    <module>engine</module>
-    <module>plugins</module>
-    <module>framework</module>
-    <module>test</module>
-    <module>client</module>
-    <module>services</module>
     <module>maven-standard</module>
-    <module>quickcloud</module>
-    <module>parents/checkstyle</module>
+    <module>framework/managed-context</module>
+    <module>framework/spring/module</module>
   </modules>
 
   <dependencyManagement>
