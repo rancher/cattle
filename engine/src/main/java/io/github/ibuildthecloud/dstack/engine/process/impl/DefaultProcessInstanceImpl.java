@@ -101,6 +101,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         try {
+            log.info("Attempting to run process [{}] id [{}] on resource [{}]", getName(),  getId(), instanceContext.state.getResourceId());
             return context.getLockManager().lock(new ProcessLock(this), new LockCallback<ExitReason>() {
                 @Override
                 public ExitReason doWithLock() {
@@ -110,6 +111,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         } catch ( FailedToAcquireLockException e ) {
             return exit(FAILED_TO_ACQUIRE_PROCESS_INSTANCE_LOCK);
         } finally {
+            log.info("Exiting [{}] process [{}] id [{}] on resource [{}]", finalReason, getName(),  getId(), instanceContext.state.getResourceId());
             if ( finalReason == null ) {
                 log.error("final ExitReason is null, should not be");
                 throw new IllegalStateException("final ExitReason is null, should not be");

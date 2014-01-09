@@ -23,6 +23,14 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
 
     @Override
     public void instanceAllocate(Event event) {
+        allocate(event);
+    }
+    @Override
+    public void volumeAllocate(Event event) {
+        allocate(event);
+    }
+
+    protected void allocate(Event event) {
         log.info("Allocating [{}:{}]", event.getResourceType(), event.getResourceId());
 
         AllocationRequest request = new AllocationRequest(event);
@@ -40,6 +48,8 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
             eventService.publish(EventVO.reply(event));
         }
     }
+
+
 
     public EventService getEventService() {
         return eventService;

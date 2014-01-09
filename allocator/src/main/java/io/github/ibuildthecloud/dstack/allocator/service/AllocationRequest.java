@@ -5,7 +5,7 @@ import io.github.ibuildthecloud.dstack.eventing.model.Event;
 public class AllocationRequest {
 
     public enum Type {
-        INSTANCE;
+        INSTANCE, VOLUME;
     }
 
     Type type;
@@ -18,6 +18,8 @@ public class AllocationRequest {
         this.event = event;
         if ( event.getName().startsWith("instance") ) {
             this.type = Type.INSTANCE;
+        } else if ( event.getName().startsWith("volume") ) {
+            this.type = Type.VOLUME;
         }
         this.resourceId = Long.parseLong(event.getResourceId());
     }

@@ -13,7 +13,7 @@ public class ImageStoragePoolMapDaoImpl extends AbstractCoreDao implements Image
                 .where(
                         IMAGE_STORAGE_POOL_MAP.REMOVED.isNull()
                         .and(IMAGE_STORAGE_POOL_MAP.IMAGE_ID.eq(imageId))
-                        .and(IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(imageId)))
+                        .and(IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(storagePoolId)))
                 .fetchOne();
     }
 

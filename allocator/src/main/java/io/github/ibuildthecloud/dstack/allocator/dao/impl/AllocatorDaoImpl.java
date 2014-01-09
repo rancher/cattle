@@ -25,6 +25,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import o.github.ibuildthecloud.dstack.allocator.util.AllocatorUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,10 +102,23 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             for ( Map.Entry<Long, Set<Long>> entry : newPools.entrySet() ) {
                 long volumeId = entry.getKey();
                 for ( long poolId : entry.getValue() ) {
-                    log.info("Associating volume [{}] to storage pool [{}]", volumeId, poolId);
-                    objectManager.create(VolumeStoragePoolMap.class,
-                            VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId,
-                            VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId);
+                    boolean inRightState = true;
+                    for ( Volume v : attempt.getVolumes() ) {
+                        if ( v.getId().longValue() == volumeId ) {
+                            Boolean stateCheck = AllocatorUtils.checkState(v.getId(), v.getAllocationState(), "Volume");
+                            if ( stateCheck != null && ! stateCheck.booleanValue() ) {
+                                log.error("Not assigning volume [{}] to pool [{}] because it is in state [{}]",
+                                        v.getId(), poolId, v.getAllocationState());
+                                inRightState = false;
+                            }
+                        }
+                    }
+                    if ( inRightState ) {
+                        log.info("Associating volume [{}] to storage pool [{}]", volumeId, poolId);
+                        objectManager.create(VolumeStoragePoolMap.class,
+                                VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId,
+                                VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId);
+                    }
                 }
             }
         } else {

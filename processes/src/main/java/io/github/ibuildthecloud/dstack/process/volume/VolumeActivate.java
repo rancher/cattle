@@ -42,8 +42,6 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
         Image image = getObjectManager().loadResource(Image.class, volume.getImageId());
 
         activateImageInPool(volume, image, map.getStoragePoolId(), data);
-
-        activate(volume, data);
         activate(map, data);
     }
 

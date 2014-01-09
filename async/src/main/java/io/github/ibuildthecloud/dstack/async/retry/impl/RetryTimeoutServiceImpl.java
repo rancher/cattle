@@ -78,7 +78,7 @@ public class RetryTimeoutServiceImpl implements RetryTimeoutService {
 
     @Override
     public void completed(Object obj) {
-        retryQueue.remove(new DelayedObject<Object>(0L, obj));
+        retryQueue.remove(obj);
     }
 
     public ExecutorService getExecutorService() {

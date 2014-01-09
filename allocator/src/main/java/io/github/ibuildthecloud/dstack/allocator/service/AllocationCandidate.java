@@ -15,10 +15,12 @@ public class AllocationCandidate {
     public AllocationCandidate() {
     }
 
-    public AllocationCandidate(long hostId, Map<Long, Long> pools) {
+    public AllocationCandidate(Long hostId, Map<Long, Long> pools) {
         super();
         this.hosts = new HashSet<Long>();
-        this.hosts.add(hostId);
+        if ( hostId != null ) {
+            this.hosts.add(hostId);
+        }
         this.pools = new HashMap<Long, Set<Long>>();
 
         for ( Map.Entry<Long, Long> entry : pools.entrySet() ) {

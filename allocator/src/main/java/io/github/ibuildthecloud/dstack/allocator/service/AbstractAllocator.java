@@ -3,6 +3,7 @@ package io.github.ibuildthecloud.dstack.allocator.service;
 import io.github.ibuildthecloud.dstack.allocator.dao.AllocatorDao;
 import io.github.ibuildthecloud.dstack.allocator.exception.UnsupportedAllocation;
 import io.github.ibuildthecloud.dstack.allocator.lock.AllocateResourceLock;
+import io.github.ibuildthecloud.dstack.allocator.lock.AllocateVolumesResourceLock;
 import io.github.ibuildthecloud.dstack.core.model.Host;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.StoragePool;
@@ -23,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+
+import o.github.ibuildthecloud.dstack.allocator.util.AllocatorUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +52,8 @@ public abstract class AbstractAllocator implements Allocator {
                     switch (request.getType()) {
                     case INSTANCE:
                         return allocateInstance(request);
+                    case VOLUME:
+                        return allocateVolume(request);
                     }
 
                     return false;
@@ -60,18 +65,51 @@ public abstract class AbstractAllocator implements Allocator {
         }
     }
 
-    protected boolean allocateInstance(AllocationRequest request) {
-        Instance instance = objectManager.loadResource(Instance.class, request.getResourceId());
-        Set<Host> hosts = new HashSet<Host>(allocatorDao.getHosts(instance));
-        Set<Volume> volumes = new HashSet<Volume>(objectManager.children(instance, Volume.class));
-        Map<Volume,Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
+    protected boolean allocateInstance(final AllocationRequest request) {
+        final Instance instance = objectManager.loadResource(Instance.class, request.getResourceId());
+        Boolean stateCheck = AllocatorUtils.checkState(request.getResourceId(), instance.getAllocationState(), "Instance");
+        if ( stateCheck != null ) {
+            return stateCheck;
+        }
+
+        final Set<Host> hosts = new HashSet<Host>(allocatorDao.getHosts(instance));
+        final Set<Volume> volumes = new HashSet<Volume>(objectManager.children(instance, Volume.class));
+        final Map<Volume,Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
 
         for ( Volume v : volumes ) {
             pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
         }
 
+        return lockManager.lock(new AllocateVolumesResourceLock(volumes), new LockCallback<Boolean>() {
+            @Override
+            public Boolean doWithLock() {
+                AllocationAttempt attempt = new AllocationAttempt(instance, hosts, volumes, pools);
+
+                return doAllocate(request, attempt, instance);
+            }
+        });
+    }
+
+    protected boolean allocateVolume(AllocationRequest request) {
+        Volume volume = objectManager.loadResource(Volume.class, request.getResourceId());
+        Boolean stateCheck = AllocatorUtils.checkState(request.getResourceId(), volume.getAllocationState(), "Volume");
+        if ( stateCheck != null ) {
+            return stateCheck;
+        }
+
+        Set<Volume> volumes = new HashSet<Volume>();
+        volumes.add(volume);
+
+        Map<Volume,Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
+        pools.put(volume, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(volume)));
+
+        AllocationAttempt attempt = new AllocationAttempt(null, new HashSet<Host>(), volumes, pools);
+
+        return doAllocate(request, attempt, volume);
+    }
+
+    protected boolean doAllocate(AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
         AllocationLog log = getLog(request);
-        final AllocationAttempt attempt = new AllocationAttempt(instance, hosts, volumes, pools);
         populateConstraints(attempt, log);
 
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
@@ -83,10 +121,11 @@ public abstract class AbstractAllocator implements Allocator {
 
         if ( attempt.getMatchedCandidate() == null ) {
             if ( unallocateOnFailure ) {
-                processManager.scheduleStandardProcess(StandardProcess.DEALLOCATE, instance, null);
+                processManager.scheduleStandardProcess(StandardProcess.DEALLOCATE, deallocate, null);
             }
             return false;
         }
+
         return true;
     }
 
@@ -154,7 +193,9 @@ public abstract class AbstractAllocator implements Allocator {
     protected void logStart(AllocationAttempt request) {
         String id = request.getId();
         log.info("[{}] Attemping allocation for:", id);
-        log.info("[{}]   instance [{}]", id, request.getInstance().getId());
+        if ( request.getInstance() != null ) {
+            log.info("[{}]   instance [{}]", id, request.getInstance().getId());
+        }
         for ( Map.Entry<Volume, Set<StoragePool>> entry : request.getPools().entrySet() ) {
             long volumeId = entry.getKey().getId();
             log.info("[{}]   volume [{}]", id, volumeId);

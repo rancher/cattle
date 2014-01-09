@@ -62,6 +62,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         Object result = objectManager.create(clz, properties);
         try {
             objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, result, properties);
+            result = objectManager.reload(result);
         } catch ( ProcessInstanceException e ) {
             if ( e.getExitReason() == ExitReason.FAILED_TO_ACQUIRE_LOCK ) {
                 throw new ClientVisibleException(ResponseCodes.CONFLICT);

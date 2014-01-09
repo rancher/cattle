@@ -43,14 +43,14 @@ public class Idempotent {
                         if ( i == 0 ) {
                             result = resultAgain;
                         }
-                        if ( isDisabled(traces) || ! runMultipleTimes.get() ) {
+                        if ( isDisabled(traces) || isNested(traces) || ! runMultipleTimes.get() ) {
                             break outer;
                         }
                         if ( ! ObjectUtils.equals(result, resultAgain) ) {
                             throw new OperationNotIdemponent("Result [" + result + "] does not match second result [" + resultAgain + "]");
                         }
                         break;
-                    } catch ( IdempotentRetry e ) {
+                    } catch ( IdempotentRetryException e ) {
                         if ( IDEMPOTENT.get() != traces )
                             throw e;
                         if ( j == LOOP_MAX - 1 ) {
@@ -62,16 +62,20 @@ public class Idempotent {
 
             return result;
         } finally {
-            if ( traces != null && IDEMPOTENT.get() == traces ) {
+            if ( traces != null && ! isNested(traces) ) {
                 IDEMPOTENT.remove();
             }
         }
     }
 
+    protected static boolean isNested(Set<String> traces) {
+        return IDEMPOTENT.get() != traces;
+    }
+
     public static <T> T change(IdempotentExecution<T> execution) {
         Set<String> traces = IDEMPOTENT.get();
         if ( traces != null && ! isDisabled(traces) ) {
-            IdempotentRetry e = new IdempotentRetry();
+            IdempotentRetryException e = new IdempotentRetryException();
             String trace = ExceptionUtils.toString(e);
             if ( ! traces.contains(trace) ) {
                 traces.add(trace);
