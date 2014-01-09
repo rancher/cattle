@@ -2,7 +2,7 @@ package io.github.ibuildthecloud.dstack.process.agent;
 
 import io.github.ibuildthecloud.dstack.agent.AgentLocator;
 import io.github.ibuildthecloud.dstack.agent.RemoteAgent;
-import io.github.ibuildthecloud.dstack.command.PingCommand;
+import io.github.ibuildthecloud.dstack.core.command.PingCommand;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;

@@ -4,6 +4,7 @@ import io.github.ibuildthecloud.dstack.engine.process.ExtensionBasedProcessDefin
 import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
 import io.github.ibuildthecloud.dstack.engine.process.StateTransition;
 import io.github.ibuildthecloud.dstack.engine.process.StateTransition.Style;
+import io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinition;
 import io.github.ibuildthecloud.dstack.extension.ExtensionImplementation;
 import io.github.ibuildthecloud.dstack.extension.ExtensionPoint;
 import io.github.ibuildthecloud.dstack.extension.api.model.ProcessDefinitionApi;
@@ -78,8 +79,8 @@ public class DotMaker {
         List<StateTransition> transitions = def.getStateTransitions();
 
         for ( StateTransition transition : transitions ) {
-            String from = transition.getFromState();
-            String to = transition.getToState();
+            String from = getTransitionName(transition, transition.getFromState());
+            String to = getTransitionName(transition, transition.getToState());
 
             buffer.append("  \"")
                 .append(from)
@@ -92,15 +93,23 @@ public class DotMaker {
             }
 
             if ( transition.getType() == Style.DONE ) {
-                buffer.append(" [color=\"green\" label=\"" + doneName + "\" URL=\"" + link + "\"]");
+                buffer.append(" [color=\"orange\" label=\"" + doneName + "\" URL=\"" + link + "\"]");
             }
             buffer
                 .append(";\n");
 
             if ( transition.getType() == Style.TRANSITIONING && ! nodes.contains(to) ) {
-                buffer.append("  \"").append(to).append("\" [color=\"green\"];\n");
+                buffer.append("  \"").append(to).append("\" [color=\"orange\"];\n");
                 nodes.add(to);
             }
+        }
+    }
+
+    protected String getTransitionName(StateTransition transition, String name) {
+        if ( ResourceStatesDefinition.DEFAULT_STATE_FIELD.equals(transition.getField()) ) {
+            return name;
+        } else {
+            return transition.getField() + ":" + name;
         }
     }
 
@@ -133,7 +142,7 @@ public class DotMaker {
 
         String result = buffer.toString();
         if ( ! result.contains("no-op") ) {
-            result += "\" fontname=\"times-bold\" style=\"bold";
+            result += "\" fontname=\"times-bold\" color=\"green\" style=\"bold";
         }
 
         return result;

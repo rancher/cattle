@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolHostMapTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord> {
 
-	private static final long serialVersionUID = 1700319378;
+	private static final long serialVersionUID = -246258534;
 
 	/**
 	 * The singleton instance of <code>dstack.storage_pool_host_map</code>
@@ -45,6 +45,21 @@ public class StoragePoolHostMapTable extends org.jooq.impl.TableImpl<io.github.i
 	 * The column <code>dstack.storage_pool_host_map.state</code>. 
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this);
+
+	/**
+	 * The column <code>dstack.storage_pool_host_map.created</code>. 
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.sql.Timestamp> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false), this);
+
+	/**
+	 * The column <code>dstack.storage_pool_host_map.removed</code>. 
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.sql.Timestamp> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+
+	/**
+	 * The column <code>dstack.storage_pool_host_map.uuid</code>. 
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this);
 
 	/**
 	 * Create a <code>dstack.storage_pool_host_map</code> table reference

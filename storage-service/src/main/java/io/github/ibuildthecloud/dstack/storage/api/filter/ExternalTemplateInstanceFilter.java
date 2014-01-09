@@ -35,27 +35,33 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
-        Map<String,Object> data = CollectionUtils.castMap(request.getRequestObject());
-        Object imageUuid = data.get(InstanceConstants.IMAGE_UUID);
+        Map<String,Object> data = CollectionUtils.toMap(request.getRequestObject());
+        Object imageUuid = data.get(InstanceConstants.FIELD_IMAGE_UUID);
 
-        if ( imageUuid != null && ! validateImageUuid(imageUuid.toString())) {
-            throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, InstanceConstants.IMAGE_UUID);
+        if ( imageUuid != null ) {
+            Image image = validateImageUuid(imageUuid.toString());
+            if ( image == null ) {
+                throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, InstanceConstants.FIELD_IMAGE_UUID);
+            }
+
+            Instance instance = request.proxyRequestObject(Instance.class);
+            instance.setImageId(image.getId());
         }
 
         return super.create(type, request, next);
     }
 
-    protected boolean validateImageUuid(String uuid) {
+    protected Image validateImageUuid(String uuid) {
         try {
             Image image = storageService.registerRemoteImage(uuid);
             if ( image == null ) {
-                return false;
+                return null;
             }
 
             String type = locator.getType(Image.class);
             ResourceManager rm = locator.getResourceManagerByType(type);
 
-            return rm.getById(type, image.getId().toString(), new ListOptions()) != null;
+            return (Image)rm.getById(type, image.getId().toString(), new ListOptions());
         } catch ( IOException e ) {
             log.error("Failed to contact external registry", e);
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "ExternalServiceUnavailable");

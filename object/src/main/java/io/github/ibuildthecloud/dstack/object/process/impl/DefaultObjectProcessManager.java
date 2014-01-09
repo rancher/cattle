@@ -6,9 +6,9 @@ import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
+import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 import io.github.ibuildthecloud.dstack.object.util.ObjectLaunchConfigurationUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
-import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.util.Map;
 
@@ -27,9 +27,16 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
         return pi.execute();
     }
 
+    @Override
+    public void scheduleStandardProcess(StandardProcess process, Object resource, Map<String, Object> data) {
+        String processName = getProcessName(resource, process);
+        ProcessInstance pi = createProcessInstance(processName, resource, data);
+        pi.schedule();
+    }
+
     protected String getProcessName(Object resource, StandardProcess process) {
-        Schema schema = schemaFactory.getSchema(resource.getClass());
-        return schema.getId().toLowerCase() + "." + process.toString().toLowerCase();
+        String type = objectManager.getType(resource);
+        return type.toLowerCase() + "." + process.toString().toLowerCase();
     }
 
     @Override

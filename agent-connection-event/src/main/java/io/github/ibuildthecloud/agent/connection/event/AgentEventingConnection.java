@@ -36,7 +36,7 @@ public class AgentEventingConnection implements AgentConnection {
             return future;
         }
 
-        return eventService.call(event, 0, 15000);
+        return eventService.call(event, 0, 15000L);
     }
 
     @Override

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.0.0.xsd">
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.2.0.xsd">
     <!-- Configure the database connection here -->
     <jdbc>
-        <driver>com.mysql.jdbc.Driver</driver>
-        <url>jdbc:mysql://localhost:3306/dstack</url>
+        <driver>org.drizzle.jdbc.DrizzleDriver</driver>
+        <url>jdbc:mysql:thin://localhost:3306/dstack</url>
         <user>dstack</user>
         <password>dstack</password>
     </jdbc>

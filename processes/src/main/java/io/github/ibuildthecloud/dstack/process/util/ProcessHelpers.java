@@ -2,7 +2,7 @@ package io.github.ibuildthecloud.dstack.process.util;
 
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
-import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager.StandardProcess;
+import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 
 import java.util.Arrays;
 import java.util.List;

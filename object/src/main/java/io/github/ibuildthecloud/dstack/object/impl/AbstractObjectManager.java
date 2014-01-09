@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler.L
 import io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHandler;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.util.HashMap;
 import java.util.List;
@@ -85,6 +86,18 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
     protected abstract <T> T insert(T instance, Class<T> clz, Map<String,Object> properties);
 
+    @Override
+    public String getType(Object obj) {
+        if ( obj == null ) {
+            return null;
+        }
+        Schema schema = schemaFactory.getSchema(obj.getClass());
+        if ( schema == null ) {
+            return null;
+        }
+
+        return schema.getParent() == null ? schema.getId () : schemaFactory.getBaseType(schema.getId());
+    }
 
     @Override
     public <T> T setFields(Object obj, Object key, Object... valueKeyValue) {

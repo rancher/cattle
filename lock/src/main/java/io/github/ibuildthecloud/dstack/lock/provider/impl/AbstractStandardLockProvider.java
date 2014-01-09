@@ -24,7 +24,7 @@ public abstract class AbstractStandardLockProvider implements LockProvider {
 
     @Override
     public synchronized Lock getLock(LockDefinition lockDefinition) {
-        if ( lockDefinition == null )
+        if ( lockDefinition == null || lockDefinition.getLockId() == null )
             return null;
 
         StandardLock lock = locks.get(lockDefinition.getLockId());

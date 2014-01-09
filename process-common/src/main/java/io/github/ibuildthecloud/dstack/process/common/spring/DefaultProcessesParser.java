@@ -24,6 +24,7 @@ public class DefaultProcessesParser extends ProcessParser {
         String resourceType = element.getAttribute("resourceType");
         String exclude = element.getAttribute("exclude");
         Map<String,String> renames = getMap(element.getAttribute("renames"), new HashMap<String, String>());
+        Map<String,String> processRenames = getMap(element.getAttribute("processRenames"), new HashMap<String, String>());
 
         Set<String> excludes = new HashSet<String>();
         if ( ! StringUtils.isBlank(exclude) ) {
@@ -43,12 +44,18 @@ public class DefaultProcessesParser extends ProcessParser {
             }
 
             String name = String.format(parts[0], resourceType).toLowerCase();
+            if ( processRenames.containsKey(name) ) {
+                name = processRenames.get(name);
+            }
             String start = parts[1];
             String transitioning = parts[2];
             String done = parts[3];
             String delegate = null;
             if ( parts.length > 4 ) {
                 delegate = String.format(parts[4], resourceType).toLowerCase();
+                if ( processRenames.containsKey(delegate) ) {
+                    delegate = processRenames.get(delegate);
+                }
             }
 
             if ( ! excludes.contains(name) ) {

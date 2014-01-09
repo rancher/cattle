@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.dstack.util.type;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -9,6 +10,23 @@ import java.util.Map;
 
 public class CollectionUtils {
 
+    @SuppressWarnings("unchecked")
+    public static <K,V extends Collection<T>,T> void addToMap(Map<K,V> data, K key, T value, Class<? extends Collection> clz) {
+        V values = data.get(key);
+        if ( values == null ) {
+            try {
+                values = (V)clz.newInstance();
+            } catch (InstantiationException e) {
+                throw new IllegalArgumentException("Failed to create collection class", e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException("Failed to create collection class", e);
+            }
+
+            data.put(key, values);
+        }
+
+        values.add(value);
+    }
     public static List<?> toList(Object obj) {
         if ( obj instanceof List ) {
             return (List<?>)obj;

@@ -20,6 +20,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     String resourceId;
     ObjectManager objectManager;
     LockDefinition processLock;
+    Map<String,Object> data;
 
     public GenericResourceProcessState(JsonMapper jsonMapper, ResourceStatesDefinition stateDef, LaunchConfiguration config, ObjectManager objectManager) {
         super(jsonMapper, stateDef);
@@ -27,6 +28,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
         this.resource = objectManager.loadResource(config.getResourceType(), config.getResourceId());
         this.processLock = new ResourceChangeLock(config.getResourceType(), config.getResourceId());
         this.resourceId = config.getResourceId();
+        this.data = config.getData();
     }
 
     @Override
@@ -92,6 +94,11 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
             return true;
         }
         return super.shouldCancel();
+    }
+
+    @Override
+    public Map<String, Object> getData() {
+        return data;
     }
 
 }

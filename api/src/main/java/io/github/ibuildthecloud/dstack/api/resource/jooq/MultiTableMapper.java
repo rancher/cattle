@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.api.resource.jooq;
 
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
@@ -99,7 +100,7 @@ public class MultiTableMapper extends AbstractSequentialList<Object> implements 
         }
 
         Object rootObject = objects.remove("");
-        Object id = ApiUtils.getId(rootObject);
+        Object id = ObjectUtils.getId(rootObject);
         String key = ApiUtils.getAttachementKey(rootObject, id);
         if ( key == null ) {
             return;

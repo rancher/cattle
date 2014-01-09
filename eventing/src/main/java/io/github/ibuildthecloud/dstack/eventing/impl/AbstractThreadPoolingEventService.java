@@ -106,7 +106,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
             @Override
             protected void doRun() throws Exception {
                 try {
-                listener.onEvent(event);
+                    listener.onEvent(event);
                 } catch ( FailedToAcquireLockException e ) {
                     log.trace("Failed to acquire lock on event [{}], this is probably normal", event, e);
                 }

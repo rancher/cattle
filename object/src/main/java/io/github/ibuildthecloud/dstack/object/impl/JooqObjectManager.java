@@ -47,6 +47,20 @@ public class JooqObjectManager extends AbstractObjectManager {
         return (T)record;
     }
 
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T newRecord(Class<T> type) {
+        Class<?> clz = JooqUtils.getRecordClass(schemaFactory, type);
+        try {
+            return (T)clz.newInstance();
+        } catch (InstantiationException e) {
+            throw new IllegalStateException(e);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     @Override
     public <T> T insert(T instance, Class<T> clz, Map<String,Object> properties) {
         final UpdatableRecord<?> record = JooqUtils.getRecordObject(instance);

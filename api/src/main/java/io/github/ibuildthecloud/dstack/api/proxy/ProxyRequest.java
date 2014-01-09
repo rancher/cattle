@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.api.proxy;
 
-import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.lang.reflect.InvocationHandler;
@@ -15,7 +15,7 @@ public class ProxyRequest {
     @SuppressWarnings("unchecked")
     public static <T> T proxy(ApiRequest request, Class<T> typeClz) {
         final Object obj = new Object();
-        final Map<String,Object> map = ApiUtils.getMap(request.getRequestObject());
+        final Map<String,Object> map = CollectionUtils.toMap(request.getRequestObject());
 
         return (T) Proxy.newProxyInstance(typeClz.getClassLoader(), new Class<?>[] { typeClz }, new InvocationHandler() {
             @Override

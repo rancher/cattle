@@ -10,20 +10,8 @@
     </parent>
     <dependencies>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.1</version>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>
@@ -42,17 +30,17 @@
             <artifactId>javax.persistence</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-archaius</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-json</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-utils</artifactId>
             <version>${project.version}</version>
         </dependency>

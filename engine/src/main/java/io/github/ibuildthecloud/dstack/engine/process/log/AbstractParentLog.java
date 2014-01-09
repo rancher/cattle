@@ -1,11 +1,12 @@
 package io.github.ibuildthecloud.dstack.engine.process.log;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class AbstractParentLog implements ParentLog {
 
-    List<ProcessLog> children = new ArrayList<ProcessLog>();
+    List<ProcessLog> children = Collections.synchronizedList(new ArrayList<ProcessLog>());
 
     @Override
     public ProcessLog newChildLog() {

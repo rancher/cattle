@@ -3,13 +3,13 @@ package io.github.ibuildthecloud.dstack.eventing.impl;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.async.retry.Retry;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
+import io.github.ibuildthecloud.dstack.async.utils.AsyncUtils;
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.pool.PoolConfig;
-import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
@@ -213,31 +212,35 @@ public abstract class AbstractEventService implements EventService {
     }
 
     @Override
-    public Event callSync(Event event) throws IOException {
-        return callSync(event, DEFAULT_RETRIES.get(), DEFAULT_TIMEOUT.get());
+    public Event callSync(Event event) {
+        return callSync(event, null, null);
     }
 
     @Override
-    public Event callSync(Event event, int retry, long timeoutMillis) throws IOException {
-        try {
-            return call(event, retry, timeoutMillis).get();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        } catch (ExecutionException e) {
-            Throwable t = e.getCause();
-            ExceptionUtils.rethrow(t, IOException.class);
-            ExceptionUtils.rethrowRuntime(t);
-            throw new IOException(t);
+    public Event callSync(Event event, Integer retries, Long timeoutMillis) {
+        if ( retries == null ) {
+            retries = DEFAULT_RETRIES.get();
         }
+        if ( timeoutMillis == null ) {
+            timeoutMillis = DEFAULT_TIMEOUT.get();
+        }
+        return AsyncUtils.get(call(event, retries, timeoutMillis));
     }
 
     @Override
     public ListenableFuture<Event> call(Event event) {
-        return call(event, DEFAULT_RETRIES.get(), DEFAULT_TIMEOUT.get());
+        return call(event, null, null);
     }
 
     @Override
-    public ListenableFuture<Event> call(Event event, int retries, long timeoutMillis) {
+    public ListenableFuture<Event> call(Event event, Integer retries, Long timeoutMillis) {
+        if ( retries == null ) {
+            retries = DEFAULT_RETRIES.get();
+        }
+        if ( timeoutMillis == null ) {
+            timeoutMillis = DEFAULT_TIMEOUT.get();
+        }
+
         final SettableFuture<Event> future = SettableFuture.create();
         final FutureEventListener listener;
 

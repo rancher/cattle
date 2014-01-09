@@ -45,6 +45,9 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
     }
 
     public ProcessLogicExecutionLog newProcessLogicExecution(Named handler) {
+        if ( handler == null ) {
+            return new ProcessLogicExecutionLog();
+        }
         ProcessLogicExecutionLog execution = new ProcessLogicExecutionLog();
         execution.setStartTime(now());
         execution.setName(handler.getName());

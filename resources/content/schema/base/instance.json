@@ -3,6 +3,11 @@
         "imageUuid" : {
             "type" : "string",
             "create" : true
+        },
+        "startOnCreate" : {
+            "type" : "boolean",
+            "create" : true,
+            "default" : true
         }
     }
 }

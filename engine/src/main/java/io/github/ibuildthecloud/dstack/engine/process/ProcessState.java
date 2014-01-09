@@ -14,6 +14,8 @@ public interface ProcessState {
 
     String getState();
 
+    Map<String,Object> getData();
+
     boolean shouldCancel();
 
     boolean isDone();

@@ -1,0 +1,91 @@
+<configuration scan="true" scanPeriod="5 seconds">
+
+    <appender name="CONSOLE_INFO" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <encoder>
+            <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE_ALL" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
+        </encoder>
+    </appender>
+
+<!--     <appender name="CONSOLE_SHORT" class="ch.qos.logback.core.ConsoleAppender"> -->
+<!--         <encoder> -->
+<!--             <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %.100m %xEx%n</pattern> -->
+<!--         </encoder> -->
+<!--     </appender> -->
+
+    <appender name="LOGSTASH" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logstash.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>debug.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>debug.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
+        </encoder>
+    </appender> 
+
+    <logger name="liquibase">
+        <level value="DEBUG" />
+    </logger>
+
+    <logger name="com">
+        <level value="INFO" />
+    </logger>
+
+    <logger name="org">
+        <level value="INFO" />
+    </logger>
+
+    <logger name="io">
+        <level value="INFO" />
+    </logger>
+
+    <logger name="io.github.ibuildthecloud">
+        <level value="DEBUG" />
+    </logger>
+
+    <logger name="org.jooq">
+        <level value="INFO" />
+        <appender-ref ref="CONSOLE_ALL" />
+    </logger>
+
+    <logger name="org.springframework">
+        <level value="WARN" />
+    </logger>
+
+    <logger name="EventLog">
+        <level value="DEBUG" />
+        <appender-ref ref="CONSOLE_ALL" />
+    </logger>
+
+    <root>
+        <appender-ref ref="CONSOLE_INFO" />
+        <appender-ref ref="FILE" />
+        <appender-ref ref="LOGSTASH" />
+    </root>
+
+</configuration>

@@ -84,6 +84,10 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
 
     @Override
     protected boolean doPublish(String name, Event event, String eventString) throws IOException {
+        if ( connections.size() == 0 ) {
+            return false;
+        }
+
         RedisConnection conn = null;
         try {
             conn = connections.get(index);

@@ -2,15 +2,19 @@ package io.github.ibuildthecloud.dstack.db.jooq.config;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.sql.DataSource;
 
 import org.jooq.ConnectionProvider;
+import org.jooq.ExecuteListener;
 import org.jooq.SQLDialect;
 import org.jooq.conf.RenderNameStyle;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DefaultConfiguration;
+import org.jooq.impl.DefaultExecuteListenerProvider;
 
 public class Configuration extends DefaultConfiguration {
 
@@ -19,6 +23,7 @@ public class Configuration extends DefaultConfiguration {
     String name;
     DataSource dataSource;
     ConnectionProvider connectionProvider;
+    List<ExecuteListener> listeners;
 
     @PostConstruct
     public void init() {
@@ -50,6 +55,11 @@ public class Configuration extends DefaultConfiguration {
         }
 
         set(settings);
+
+        if ( listeners != null ) {
+            settings().setExecuteLogging(false);
+            set(DefaultExecuteListenerProvider.providers(listeners.toArray(new ExecuteListener[listeners.size()])));
+        }
     }
 
     public DataSource getDataSource() {
@@ -75,5 +85,13 @@ public class Configuration extends DefaultConfiguration {
 
     public void setConnectionProvider(ConnectionProvider connectionProvider) {
         this.connectionProvider = connectionProvider;
+    }
+
+    public List<ExecuteListener> getListeners() {
+        return listeners;
+    }
+
+    public void setListeners(List<ExecuteListener> listeners) {
+        this.listeners = listeners;
     }
 }

@@ -33,7 +33,7 @@
     <bean class="io.github.ibuildthecloud.dstack.object.postinit.ObjectDataPostInstantiationHandler" />
     <bean class="io.github.ibuildthecloud.dstack.object.postinit.SetPropertiesPostInstantiationHandler" />
 
-    <bean class="io.github.ibuildthecloud.dstack.object.lifecycle.ProcessDelegateObjectLifeCycleHandler" />
+<!--     <bean class="io.github.ibuildthecloud.dstack.object.lifecycle.ProcessDelegateObjectLifeCycleHandler" /> -->
 
     <bean class="io.github.ibuildthecloud.dstack.object.util.CommonsConverterStartup" />
 

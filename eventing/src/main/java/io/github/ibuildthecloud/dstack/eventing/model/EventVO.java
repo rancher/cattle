@@ -39,6 +39,56 @@ public class EventVO implements Event {
         this.resourceType = event.getResourceType();
     }
 
+    public static EventVO reply(Event request) {
+        String[] previousIds = request.getPreviousIds();
+        if ( previousIds != null && previousIds.length > 0 ) {
+            String[] newIds = new String[previousIds.length+1];
+            System.arraycopy(previousIds, 0, newIds, 1, previousIds.length);
+            newIds[0] = request.getId();
+
+            previousIds = newIds;
+        } else {
+            previousIds = new String[] { request.getId() };
+        }
+
+        EventVO event = new EventVO();
+        event.setName(request.getReplyTo());
+        event.setPreviousNames(prepend(request.getPreviousNames(), request.getName()));
+        event.setPreviousIds(prepend(request.getPreviousIds(), request.getId()));
+        event.setResourceId(request.getResourceId());
+        event.setResourceType(request.getResourceType());
+
+        return event;
+    }
+
+    protected static String[] prepend(String[] array, String value) {
+        if ( array != null && array.length > 0 ) {
+            String[] newIds = new String[array.length+1];
+            System.arraycopy(array, 0, newIds, 1, array.length);
+            newIds[0] = value;
+
+            array = newIds;
+        } else {
+            array = new String[] { value };
+        }
+
+        return array;
+    }
+
+    public static EventVO newEvent(String name) {
+        return new EventVO(name);
+    }
+
+    public EventVO(String name) {
+        this();
+        setName(name);
+    }
+
+    public EventVO name(String name) {
+        setName(name);
+        return this;
+    }
+
     @Override
     public String getName() {
         return name;
@@ -46,6 +96,11 @@ public class EventVO implements Event {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public EventVO previousIds(String[] previousIds) {
+        setPreviousIds(previousIds);
+        return this;
     }
 
     @Override
@@ -71,8 +126,18 @@ public class EventVO implements Event {
         return data;
     }
 
+    public EventVO data(Object data) {
+        this.setData(data);
+        return this;
+    }
+
     public void setData(Object data) {
         this.data = data;
+    }
+
+    public EventVO time(Date time) {
+        setTime(time);
+        return this;
     }
 
     @Override
@@ -82,6 +147,11 @@ public class EventVO implements Event {
 
     public void setTime(Date time) {
         this.time = time;
+    }
+
+    public EventVO publisher(String publisher) {
+        setPublisher(publisher);
+        return this;
     }
 
     @Override
@@ -98,6 +168,11 @@ public class EventVO implements Event {
         return id;
     }
 
+    public EventVO id(String id) {
+        setId(id);
+        return this;
+    }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -105,6 +180,11 @@ public class EventVO implements Event {
     @Override
     public String getReplyTo() {
         return replyTo;
+    }
+
+    public EventVO replyTo(String replyTo) {
+        setReplyTo(replyTo);
+        return this;
     }
 
     public void setReplyTo(String replyTo) {
@@ -116,6 +196,11 @@ public class EventVO implements Event {
         return resourceId;
     }
 
+    public EventVO resourceId(String resourceId) {
+        setResourceId(resourceId);
+        return this;
+    }
+
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
     }
@@ -123,6 +208,11 @@ public class EventVO implements Event {
     @Override
     public String getResourceType() {
         return resourceType;
+    }
+
+    public EventVO resourceType(String resourceType) {
+        setResourceType(resourceType);
+        return this;
     }
 
     public void setResourceType(String resourceType) {
@@ -140,6 +230,11 @@ public class EventVO implements Event {
     @XmlTransient
     public String getListenerKey() {
         return listenerKey;
+    }
+
+    public EventVO listenerKey(String listenerKey) {
+        setListenerKey(listenerKey);
+        return this;
     }
 
     public void setListenerKey(String listenerKey) {

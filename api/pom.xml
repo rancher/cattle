@@ -10,34 +10,31 @@
     <artifactId>dstack-api</artifactId>
     <dependencies>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>gdapi-java-server</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-core-model</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-object</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-events</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.8.3</version>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <version>3.2.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cloudstack</groupId>
@@ -47,12 +44,11 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
-            <version>2.4</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-jooq</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>

@@ -10,5 +10,6 @@
                       >
 
     <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.AccountCoreDaoImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.ImageStoragePoolMapDaoImpl" />
 
 </beans>

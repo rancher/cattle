@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.engine.handler;
 
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,14 +21,15 @@ public class HandlerResult {
         this(false, CollectionUtils.asMap(key, values));
     }
 
-    public HandlerResult(Map<Object, Object> data) {
-        this(false, data);
+    @SuppressWarnings("unchecked")
+    public HandlerResult(Map<?, Object> data) {
+        this(false, (Map<Object, Object>)data);
     }
 
     public HandlerResult(boolean shouldContinue, Map<Object, Object> data) {
         super();
         this.shouldContinue = shouldContinue;
-        this.data = data == null ? new HashMap<Object,Object>() : data;
+        this.data = Collections.unmodifiableMap(data == null ? new HashMap<Object,Object>() : data);
     }
 
     public boolean shouldContinue() {

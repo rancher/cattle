@@ -2,8 +2,8 @@ package io.github.ibuildthecloud.dstack.api.utils;
 
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.auth.impl.DefaultPolicy;
-import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.util.DataUtils;
+import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -13,15 +13,12 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.Transformer;
 
 public class ApiUtils {
@@ -29,27 +26,6 @@ public class ApiUtils {
     public static final String SINGLE_ATTACHMENT_PREFIX = "s__";
 
     private static final Policy DEFAULT_POLICY = new DefaultPolicy();
-
-    @SuppressWarnings("unchecked")
-    public static Map<String,Object> getMap(Object obj) {
-        if ( obj instanceof Map ) {
-            return (Map<String,Object>)obj;
-        } else {
-            return new HashMap<String, Object>();
-        }
-    }
-
-    public static void copy(Object src, Object dest) {
-        try {
-            BeanUtils.copyProperties(dest, src);
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("Failed to copy properties from [" + src + "] to ["
-                    + dest + "]", e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException("Failed to copy properties from [" + src + "] to ["
-                    + dest + "]", e);
-        }
-    }
 
     public static Object getFirstFromList(Object obj) {
         if ( obj instanceof Collection ) {
@@ -85,17 +61,8 @@ public class ApiUtils {
         return getPolicy().authorizeObject(obj);
     }
 
-    public static Object getId(Object obj) {
-        return getPropertyIgnoreErrors(obj, ObjectMetaDataManager.ID_FIELD);
-    }
-
-    public static String getKind(Object obj) {
-        Object kind = getPropertyIgnoreErrors(obj, ObjectMetaDataManager.KIND_FIELD);
-        return kind == null ? null : kind.toString();
-    }
-
     public static String getAttachementKey(Object obj) {
-        return getAttachementKey(obj, getId(obj));
+        return getAttachementKey(obj, ObjectUtils.getId(obj));
     }
 
     public static String getAttachementKey(Object obj, Object id) {
@@ -115,7 +82,7 @@ public class ApiUtils {
         @SuppressWarnings("unchecked")
         Map<String,Map<Object,Object>> attachments = (Map<String, Map<Object,Object>>) request.getAttribute(key);
 
-        Object id = getId(obj);
+        Object id = ObjectUtils.getId(obj);
         if ( id == null ) {
             return;
         }
@@ -195,24 +162,10 @@ public class ApiUtils {
         return new WrappedResource(idFormatter, schema, obj, additionalFields);
     }
 
-    public static Object getPropertyIgnoreErrors(Object obj, String property) {
-        try {
-            if ( obj == null ) {
-                return null;
-            }
-            return PropertyUtils.getProperty(obj, property);
-        } catch (IllegalAccessException e) {
-        } catch (InvocationTargetException e) {
-        } catch (NoSuchMethodException e) {
-        }
-
-        return null;
-    }
-
     public static Schema getSchemaForDisplay(SchemaFactory factory, Object obj) {
         Schema schema = factory.getSchema(obj.getClass());
         if ( schema.getChildren().size() > 0 ) {
-            String kind = getKind(obj);
+            String kind = ObjectUtils.getKind(obj);
             Schema kindSchema = factory.getSchema(kind);
             if ( kindSchema != null ) {
                 return kindSchema;

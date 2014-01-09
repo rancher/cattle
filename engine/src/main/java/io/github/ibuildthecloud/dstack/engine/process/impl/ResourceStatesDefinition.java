@@ -12,7 +12,9 @@ import java.util.Set;
 
 public class ResourceStatesDefinition {
 
-    String stateField = "state";
+    public static final String DEFAULT_STATE_FIELD = "state";
+
+    String stateField = DEFAULT_STATE_FIELD;
     Set<String> startStates = new HashSet<String>();
     Set<String> requiredFields = new HashSet<String>();
     Map<String,String> transitioningStatesMap = new HashMap<String, String>();
@@ -27,10 +29,10 @@ public class ResourceStatesDefinition {
 
             if ( key == null ) {
                 for ( String start : startStates ) {
-                    result.add(new StateTransition(start, value, Style.TRANSITIONING));
+                    result.add(new StateTransition(start, value, stateField, Style.TRANSITIONING));
                 }
             } else {
-                result.add(new StateTransition(key, value, Style.TRANSITIONING));
+                result.add(new StateTransition(key, value, stateField, Style.TRANSITIONING));
             }
         }
 
@@ -40,10 +42,10 @@ public class ResourceStatesDefinition {
 
             if ( key == null ) {
                 for ( String start : transitioningStatesMap.values()) {
-                    result.add(new StateTransition(start, value, Style.DONE));
+                    result.add(new StateTransition(start, value, stateField, Style.DONE));
                 }
             } else {
-                result.add(new StateTransition(key, value, Style.DONE));
+                result.add(new StateTransition(key, value, stateField, Style.DONE));
             }
         }
 

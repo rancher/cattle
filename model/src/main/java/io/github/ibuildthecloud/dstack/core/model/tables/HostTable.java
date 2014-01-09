@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.HostRecord> {
 
-	private static final long serialVersionUID = -557463223;
+	private static final long serialVersionUID = 1111243016;
 
 	/**
 	 * The singleton instance of <code>dstack.host</code>
@@ -34,7 +34,7 @@ public class HostTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.
 	/**
 	 * The column <code>dstack.host.name</code>. 
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.HostRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.HostRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
 
 	/**
 	 * The column <code>dstack.host.kind</code>. 

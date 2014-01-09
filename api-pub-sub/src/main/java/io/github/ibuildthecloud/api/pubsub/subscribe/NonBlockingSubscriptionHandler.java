@@ -4,7 +4,7 @@ import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.async.retry.CancelRetryException;
 import io.github.ibuildthecloud.dstack.async.retry.Retry;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
-import io.github.ibuildthecloud.dstack.command.PingCommand;
+import io.github.ibuildthecloud.dstack.core.command.PingCommand;
 import io.github.ibuildthecloud.dstack.core.event.CoreEvents;
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.EventService;

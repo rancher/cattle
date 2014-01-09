@@ -58,6 +58,39 @@ public interface StoragePoolHostMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
 
+	/**
+	 * Setter for <code>dstack.storage_pool_host_map.created</code>. 
+	 */
+	public void setCreated(java.sql.Timestamp value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool_host_map.created</code>. 
+	 */
+	@javax.persistence.Column(name = "created", nullable = false)
+	public java.sql.Timestamp getCreated();
+
+	/**
+	 * Setter for <code>dstack.storage_pool_host_map.removed</code>. 
+	 */
+	public void setRemoved(java.sql.Timestamp value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool_host_map.removed</code>. 
+	 */
+	@javax.persistence.Column(name = "removed")
+	public java.sql.Timestamp getRemoved();
+
+	/**
+	 * Setter for <code>dstack.storage_pool_host_map.uuid</code>. 
+	 */
+	public void setUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool_host_map.uuid</code>. 
+	 */
+	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	public java.lang.String getUuid();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

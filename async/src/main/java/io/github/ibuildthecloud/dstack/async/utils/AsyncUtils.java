@@ -3,10 +3,14 @@ package io.github.ibuildthecloud.dstack.async.utils;
 import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.dstack.util.exception.UnreachableException;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 
 public class AsyncUtils {
 
@@ -37,5 +41,13 @@ public class AsyncUtils {
             ExceptionUtils.rethrowExpectedRuntime(t);
             throw new UnreachableException();
         }
+    }
+
+    public static void waitAll(List<ListenableFuture<?>> futures) {
+        AsyncUtils.get(Futures.allAsList(futures));
+    }
+
+    public static void waitAll(ListenableFuture<?>... futures) {
+        AsyncUtils.get(Futures.allAsList(futures));
     }
 }

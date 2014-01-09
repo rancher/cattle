@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.command;
+package io.github.ibuildthecloud.dstack.core.command;
 
 import io.github.ibuildthecloud.dstack.core.event.CoreEvents;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;

@@ -4,7 +4,7 @@ import io.github.ibuildthecloud.dstack.engine.eventing.EngineEvents;
 import io.github.ibuildthecloud.dstack.engine.server.ProcessInstanceDispatcher;
 import io.github.ibuildthecloud.dstack.engine.server.ProcessServer;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
-import io.github.ibuildthecloud.dstack.eventing.util.EventUtils;
+import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 
 import javax.inject.Inject;
 
@@ -15,7 +15,7 @@ public class EventingDispatcher implements ProcessInstanceDispatcher {
     @Override
     public void execute(ProcessServer server, Long id) {
         if ( id != null ) {
-            eventService.publish(EventUtils.newEvent(EngineEvents.PROCESS_EXECUTE, id.toString()));
+            eventService.publish(EventVO.newEvent(EngineEvents.PROCESS_EXECUTE).resourceId(id.toString()));
         }
     }
 

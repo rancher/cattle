@@ -13,6 +13,11 @@
         <!-- Start Plugins -->
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-allocator-simulator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
             <artifactId>dstack-eventing-redis</artifactId>
             <version>${project.version}</version>
         </dependency>

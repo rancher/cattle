@@ -30,6 +30,14 @@
     <bean id="JooqConfiguration" class="io.github.ibuildthecloud.dstack.db.jooq.config.Configuration" >
         <property name="name" value="dstack" />
         <property name="connectionProvider" ref="JooqConnectionProvider" />
+        <property name="listeners">
+            <list>
+                <bean class="io.github.ibuildthecloud.dstack.db.jooq.logging.LoggerListener" >
+                    <property name="maxLength" value="1000" />
+                </bean>
+                <bean class="org.jooq.tools.StopWatchListener" />
+           </list>
+        </property>
     </bean>
 
     <bean id="CoreTransactionManager"

@@ -14,6 +14,7 @@
         <module>agent-connection-event</module>
         <module>agent-connection-ssh</module>
         <module>agent-server</module>
+        <module>allocator</module>
         <module>api</module>
         <module>api-pub-sub</module>
         <module>api-resources</module>
@@ -22,6 +23,7 @@
         <module>archaius-management</module>
         <module>async</module>
         <module>code/simulator/agent-connection-simulator</module>
+        <module>code/simulator/allocator-simulator</module>
         <module>code/simulator/storage-simulator</module>
         <module>commands</module>
         <module>db-loader</module>
@@ -39,7 +41,9 @@
         <module>json</module>
         <module>launcher</module>
         <module>lock</module>
+        <module>logback</module>
         <module>meta</module>
+        <module>meta-parent</module>
         <module>model</module>
         <module>object</module>
         <module>parent</module>
@@ -49,6 +53,7 @@
         <module>processes</module>
         <module>resources</module>
         <module>schema</module>
+        <module>spring</module>
         <module>storage-service</module>
         <module>system</module>
         <module>transport</module>

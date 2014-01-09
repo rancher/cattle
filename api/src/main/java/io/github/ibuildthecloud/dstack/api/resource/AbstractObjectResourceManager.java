@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.api.resource;
 
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
+import io.github.ibuildthecloud.dstack.engine.manager.ProcessNotFoundException;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstanceException;
@@ -9,6 +10,7 @@ import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
+import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
@@ -34,6 +36,8 @@ import javax.inject.Inject;
 
 public abstract class AbstractObjectResourceManager extends AbstractBaseResourceManager {
 
+//    private static final Logger log = LoggerFactory.getLogger(AbstractObjectResourceManager.class);
+
     ObjectManager objectManager;
     ObjectProcessManager objectProcessManager;
     ObjectMetaDataManager metaDataManager;
@@ -50,12 +54,23 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return null;
         }
 
-        Map<String,Object> properties = new HashMap<String, Object>(ApiUtils.getMap(request.getRequestObject()));
+        Map<String,Object> properties = new HashMap<String, Object>(CollectionUtils.<String, Object>toMap(request.getRequestObject()));
         if ( ! properties.containsKey(ObjectMetaDataManager.KIND_FIELD) ) {
             properties.put(ObjectMetaDataManager.KIND_FIELD, type);
         }
 
         Object result = objectManager.create(clz, properties);
+        try {
+            objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, result, properties);
+        } catch ( ProcessInstanceException e ) {
+            if ( e.getExitReason() == ExitReason.FAILED_TO_ACQUIRE_LOCK ) {
+                throw new ClientVisibleException(ResponseCodes.CONFLICT);
+            } else {
+                throw e;
+            }
+        } catch ( ProcessNotFoundException e ) {
+        }
+
         return result;
     }
 
@@ -73,7 +88,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Object updateInternal(String type, String id, Object obj, ApiRequest request) {
-        Map<String,Object> updates = ApiUtils.getMap(request.getRequestObject());
+        Map<String,Object> updates = CollectionUtils.toMap(request.getRequestObject());
         return objectManager.setFields(obj, updates);
     }
 
@@ -205,7 +220,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Object resourceActionInternal(Object obj, ApiRequest request) {
-        Map<String,Object> data = CollectionUtils.castMap(request.getRequestObject());
+        Map<String,Object> data = CollectionUtils.toMap(request.getRequestObject());
         ProcessInstance pi = objectProcessManager.createProcessInstance(getProcessName(obj, request), obj, data);
 
         try {
@@ -223,8 +238,10 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     protected String getProcessName(Object obj, ApiRequest request) {
-        return (request.getType() + "." + request.getAction()).toLowerCase();
+        String baseType = schemaFactory.getBaseType(request.getType());
+        return String.format("%s.%s", baseType == null ? request.getType() : baseType, request.getAction()).toLowerCase();
     }
+
     @Override
     protected Object collectionActionInternal(Object resources, ApiRequest request) {
         return null;

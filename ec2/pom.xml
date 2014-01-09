@@ -10,12 +10,11 @@
     <artifactId>dstack-ec2</artifactId>
     <dependencies>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>gdapi-java-server</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-object</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -54,7 +53,7 @@
                                         <extraarg>-frontend</extraarg>
                                         <extraarg>jaxws21</extraarg>
                                         <extraarg>-p</extraarg>
-                                        <extraarg>io.github.ibuildthecloud.com.amazon.ec2</extraarg>
+                                        <extraarg>${project.groupId}.com.amazon.ec2</extraarg>
                                     </extraargs>
                                 </wsdlOption>
                             </wsdlOptions>

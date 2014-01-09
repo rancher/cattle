@@ -21,6 +21,7 @@
         <xsd:attribute name="exclude" type="xsd:string" use="optional" />
         <xsd:attribute name="stateField" type="xsd:string" use="optional" />
         <xsd:attribute name="renames" type="xsd:string" use="optional" />
+        <xsd:attribute name="processRenames" type="xsd:string" use="optional" />
     </xsd:complexType>
 
     <xsd:element name="process" type="ProcessType" />

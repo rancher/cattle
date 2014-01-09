@@ -4,8 +4,6 @@ import pytest
 import time
 
 
-SIM_EXTERNAL_POOL = "simexternalpool"
-
 @pytest.fixture(scope="module")
 def client():
     return dstack.from_env("DSAPI")
@@ -15,25 +13,60 @@ def client():
 def admin_client():
     return dstack.from_env("DSAPI")
 
+
+@pytest.fixture(scope="module")
+def sim_host(admin_client):
+    return create_type_by_uuid(admin_client, "host", "simhost1", kind="sim")
+
+
 @pytest.fixture(scope="module")
 def sim_external_pool(admin_client):
-    sim_pools = admin_client.list_storagePool(uuid=SIM_EXTERNAL_POOL)
-    pool = None
-    if len(sim_pools) == 0:
-        pool = admin_client.create_storagePool(uuid=SIM_EXTERNAL_POOL, kind="sim", external=True)
-    else:
-        pool = sim_pools[0]
+    return create_type_by_uuid(admin_client, "storagePool", "simexternalpool", kind="sim", external=True)
 
-    pool = wait_success(admin_client, pool)
-    if pool.state == "inactive":
-        pool.activate()
-        pool = wait_success(admin_client, pool)
 
-    assert pool.state == "active"
-    assert pool.kind == "sim"
-    assert pool.external
+@pytest.fixture(scope="module")
+def sim_pool(admin_client, sim_host):
+    pool = create_type_by_uuid(admin_client, "storagePool", "simpool1", kind="sim")
+    assert not pool.external
+
+    create_type_by_uuid(admin_client, "storagePoolHostMap", "simpool1-simhost",
+                                  storagePoolId=pool.id, hostId=sim_host.id)
 
     return pool
+
+
+
+
+@pytest.fixture(scope="module")
+def sim_context(sim_host, sim_pool, sim_external_pool):
+    return {
+        "host": sim_host,
+        "pool": sim_pool,
+        "external_pool": sim_external_pool,
+    }
+
+
+def create_type_by_uuid(admin_client, type, uuid, activate=True, **kw):
+    opts = dict(kw)
+    opts["uuid"] = uuid
+
+    objs = admin_client.list(type, uuid=uuid)
+    obj = None
+    if len(objs) == 0:
+        obj = admin_client.create(type, **opts)
+    else:
+        obj = objs[0]
+
+    obj = wait_success(admin_client, obj)
+    if activate and obj.state == "inactive":
+        obj.activate()
+        obj = wait_success(admin_client, obj)
+
+    for k, v in opts.items():
+        assert getattr(obj, k) == v
+
+    return obj
+
 
 
 def random_num():

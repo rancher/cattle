@@ -8,7 +8,7 @@ import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
-import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager.StandardProcess;
+import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 import io.github.ibuildthecloud.dstack.process.base.AbstractDefaultProcessHandler;
 import io.github.ibuildthecloud.dstack.process.dao.AccountDao;
 

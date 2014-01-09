@@ -5,6 +5,8 @@ import java.util.Map;
 
 public interface ObjectManager {
 
+    <T> T newRecord(Class<T> type);
+
     <T> T create(T obj);
 
     <T> T create(T obj, Map<String,Object> properties);
@@ -42,5 +44,7 @@ public interface ObjectManager {
     <T> List<T> find(Class<T> clz, Map<Object,Object> values);
 
     <T> List<T> find(Class<T> clz, Object key, Object... valueKeyValue);
+
+    String getType(Object obj);
 
 }

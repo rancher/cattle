@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "storage_pool_host_map", schema = "dstack")
-public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.StoragePoolHostMap {
+public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record7<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.StoragePoolHostMap {
 
-	private static final long serialVersionUID = 1655898522;
+	private static final long serialVersionUID = 500887598;
 
 	/**
 	 * Setter for <code>dstack.storage_pool_host_map.id</code>. 
@@ -84,6 +84,57 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 		return (java.lang.String) getValue(3);
 	}
 
+	/**
+	 * Setter for <code>dstack.storage_pool_host_map.created</code>. 
+	 */
+	@Override
+	public void setCreated(java.sql.Timestamp value) {
+		setValue(4, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.storage_pool_host_map.created</code>. 
+	 */
+	@javax.persistence.Column(name = "created", nullable = false)
+	@Override
+	public java.sql.Timestamp getCreated() {
+		return (java.sql.Timestamp) getValue(4);
+	}
+
+	/**
+	 * Setter for <code>dstack.storage_pool_host_map.removed</code>. 
+	 */
+	@Override
+	public void setRemoved(java.sql.Timestamp value) {
+		setValue(5, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.storage_pool_host_map.removed</code>. 
+	 */
+	@javax.persistence.Column(name = "removed")
+	@Override
+	public java.sql.Timestamp getRemoved() {
+		return (java.sql.Timestamp) getValue(5);
+	}
+
+	/**
+	 * Setter for <code>dstack.storage_pool_host_map.uuid</code>. 
+	 */
+	@Override
+	public void setUuid(java.lang.String value) {
+		setValue(6, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.storage_pool_host_map.uuid</code>. 
+	 */
+	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@Override
+	public java.lang.String getUuid() {
+		return (java.lang.String) getValue(6);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -97,23 +148,23 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	}
 
 	// -------------------------------------------------------------------------
-	// Record4 type implementation
+	// Record7 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row4<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String> fieldsRow() {
-		return (org.jooq.Row4) super.fieldsRow();
+	public org.jooq.Row7<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String> fieldsRow() {
+		return (org.jooq.Row7) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row4<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String> valuesRow() {
-		return (org.jooq.Row4) super.valuesRow();
+	public org.jooq.Row7<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.lang.String> valuesRow() {
+		return (org.jooq.Row7) super.valuesRow();
 	}
 
 	/**
@@ -152,6 +203,30 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.sql.Timestamp> field5() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.CREATED;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.sql.Timestamp> field6() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.REMOVED;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.String> field7() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.UUID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -180,6 +255,30 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 		return getState();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.sql.Timestamp value5() {
+		return getCreated();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.sql.Timestamp value6() {
+		return getRemoved();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value7() {
+		return getUuid();
+	}
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
@@ -193,6 +292,9 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 		setHostId(from.getHostId());
 		setStoragePoolId(from.getStoragePoolId());
 		setState(from.getState());
+		setCreated(from.getCreated());
+		setRemoved(from.getRemoved());
+		setUuid(from.getUuid());
 	}
 
 	/**
@@ -218,12 +320,15 @@ public class StoragePoolHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<
 	/**
 	 * Create a detached, initialised StoragePoolHostMapRecord
 	 */
-	public StoragePoolHostMapRecord(java.lang.Long id, java.lang.Long hostId, java.lang.Long storagePoolId, java.lang.String state) {
+	public StoragePoolHostMapRecord(java.lang.Long id, java.lang.Long hostId, java.lang.Long storagePoolId, java.lang.String state, java.sql.Timestamp created, java.sql.Timestamp removed, java.lang.String uuid) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP);
 
 		setValue(0, id);
 		setValue(1, hostId);
 		setValue(2, storagePoolId);
 		setValue(3, state);
+		setValue(4, created);
+		setValue(5, removed);
+		setValue(6, uuid);
 	}
 }

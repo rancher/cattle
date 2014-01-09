@@ -10,7 +10,6 @@ import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
-import io.github.ibuildthecloud.dstack.eventing.util.EventUtils;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 
@@ -64,7 +63,7 @@ public class AgentServiceImpl implements AgentService {
     }
 
     protected void handleResponse(Event request, Event agentResponse) {
-        EventVO response = EventUtils.reply(request);
+        EventVO response = EventVO.reply(request);
         response.setData(agentResponse);
         eventService.publish(response);
     }

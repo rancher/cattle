@@ -18,6 +18,10 @@
         <property name="allowCoreThreadTimeOut" value="true" />
     </bean>
 
+    <bean id="CoreListeningExecutorService" class="com.google.common.util.concurrent.MoreExecutors" factory-method="listeningDecorator" >
+        <constructor-arg ref="CoreExecutorService" />
+    </bean>
+
     <bean id="CoreScheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" >
         <property name="poolSize" value="100" />
     </bean>
