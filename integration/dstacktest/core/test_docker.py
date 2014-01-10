@@ -4,6 +4,8 @@ import os
 TEST_IMAGE = "ibuildthecloud/hello-world"
 TEST_IMAGE_UUID = "docker:" + TEST_IMAGE
 
+DOCKER_HOST = "ssh://docker:docker@localhost"
+
 if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") is None', reason="DOCKER_TEST is not set")
 
 
@@ -30,7 +32,7 @@ def docker_pool(admin_client, docker_host, docker_agent):
 
 @pytest.fixture(scope="module")
 def docker_agent(admin_client):
-    return create_type_by_uuid(admin_client, "agent", "dockeragent1", kind="docker", uri="sim://")
+    return create_type_by_uuid(admin_client, "agent", "dockeragent1", kind="docker", uri=DOCKER_HOST)
 
 
 @pytest.fixture(scope="module")

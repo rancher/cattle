@@ -98,6 +98,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
 
             String script = copyBootStrap(session);
             int port = setForwarding(session);
+            log.info("Allocated random port [{}] on [{}]", port, opts.getHost());
             ChannelExec exec = callBootStrap(session, script);
 
             success = true;
