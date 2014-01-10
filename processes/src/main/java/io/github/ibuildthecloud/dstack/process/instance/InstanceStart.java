@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.dstack.process.instance;
 
 import io.github.ibuildthecloud.dstack.core.model.Instance;
+import io.github.ibuildthecloud.dstack.core.model.InstanceHostMap;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
@@ -11,15 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.inject.Inject;
 import javax.inject.Named;
-
-import com.google.common.util.concurrent.ListeningExecutorService;
 
 @Named
 public class InstanceStart extends AbstractDefaultProcessHandler {
-
-    ListeningExecutorService executorService;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -29,21 +25,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
         allocate(instance);
 
-//        ListenableFuture<?> storage = executorService.submit(new Runnable() {
-//            @Override
-//            public void run() {
-                storage(instance);
-//            }
-//        });
+        storage(instance);
 
-//        ListenableFuture<?> networking = executorService.submit(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//            }
-//        });
-
-//        AsyncUtils.waitAll(storage, networking);
+        compute(instance);
 
         return new HandlerResult(result);
     }
@@ -61,13 +45,12 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
     }
 
-    public ListeningExecutorService getExecutorService() {
-        return executorService;
-    }
+    protected void compute(Instance instance) {
+        List<InstanceHostMap> maps = getObjectManager().children(instance, InstanceHostMap.class);
 
-    @Inject
-    public void setExecutorService(ListeningExecutorService executorService) {
-        this.executorService = executorService;
+        for ( InstanceHostMap map : maps ) {
+            activate(map, null);
+        }
     }
 
 }

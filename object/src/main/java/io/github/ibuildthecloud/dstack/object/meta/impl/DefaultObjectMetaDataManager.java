@@ -50,6 +50,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     SchemaFactory schemaFactory;
     List<TypeSet> typeSets;
     Map<Class<?>,Map<String,Relationship>> relationships = new HashMap<Class<?>, Map<String,Relationship>>();
+    Map<Class<?>,Map<String,Relationship>> relationshipsBothCase = new HashMap<Class<?>, Map<String,Relationship>>();
     List<ProcessDefinition> processDefinitions;
 
     Map<String,Set<String>> transitioningStates = new HashMap<String, Set<String>>();
@@ -219,13 +220,22 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     }
 
     protected void register(Class<?> type, Relationship relationship) {
-        Map<String,Relationship> relationships = this.relationships.get(type);
+        register(this.relationships, type, relationship, false);
+        register(this.relationshipsBothCase, type, relationship, true);
+    }
+
+    protected void register(Map<Class<?>,Map<String,Relationship>> relationshipsMap, Class<?> type, Relationship relationship,
+            boolean bothCase) {
+        Map<String,Relationship> relationships = relationshipsMap.get(type);
         if ( relationships == null ) {
             relationships = new HashMap<String, Relationship>();
-            this.relationships.put(type, relationships);
+            relationshipsMap.put(type, relationships);
         }
 
         relationships.put(relationship.getName().toLowerCase(), relationship);
+        if ( bothCase ) {
+            relationships.put(relationship.getName(), relationship);
+        }
     }
 
 
@@ -415,6 +425,9 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
     @Override
     public Map<String,Relationship> getLinkRelationships(SchemaFactory schemaFactory, String type) {
+        if ( schemaFactory == null ) {
+            schemaFactory = this.schemaFactory;
+        }
         Map<String,Relationship> result = new HashMap<String, Relationship>();
         Schema schema = schemaFactory.getSchema(type);
 
@@ -431,6 +444,9 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
     @Override
     public Map<String,String> getLinks(SchemaFactory schemaFactory, String type) {
+        if ( schemaFactory == null ) {
+            schemaFactory = this.schemaFactory;
+        }
         String key = schemaFactory.getId() + ":links:" + type;
         Map<String,String> links = linksCache.get(key);
         if ( links != null )
@@ -464,7 +480,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     @Override
     public Relationship getRelationship(String type, String linkName) {
         Class<?> clz = schemaFactory.getSchemaClass(type, true);
-        Map<String,Relationship> relationship = relationships.get(clz);
+        Map<String,Relationship> relationship = relationshipsBothCase.get(clz);
         return relationship == null ? null : relationship.get(linkName);
     }
 

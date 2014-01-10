@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.async.utils.AsyncUtils;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
+import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 
 import java.util.concurrent.ExecutorService;
@@ -50,14 +51,29 @@ public class RemoteAgentImpl implements RemoteAgent {
     }
 
     @Override
-    public <T extends Event> ListenableFuture<T> call(Event event, final Class<T> reply, long timeout) {
+    public <T extends Event> ListenableFuture<T> call(final Event event, final Class<T> reply, long timeout) {
         Event request = createRequest(event);
 
         ListenableFuture<Event> future = eventService.call(request, AGENT_RETRIES.get(), timeout);
         return Futures.transform(future, new Function<Event, T>() {
             @Override
             public T apply(Event input) {
-                return jsonMapper.convertValue(input, reply);
+                if ( input.getData() == null ) {
+                    return null;
+                }
+
+                T commandReply = jsonMapper.convertValue(input.getData(), reply);
+                EventVO publishEvent = null;
+                if ( commandReply instanceof EventVO ) {
+                    publishEvent = (EventVO)commandReply;
+                } else {
+                    publishEvent = jsonMapper.convertValue(input.getData(), EventVO.class);
+                }
+
+                publishEvent.setName(event.getName() + Event.REPLY_SUFFIX);
+                eventService.publish(publishEvent);
+
+                return commandReply;
             }
         });
     }
@@ -69,17 +85,17 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public Event callSync(Event event, long timeout) {
-        return callSync(event, Event.class, timeout);
+        return callSync(event, EventVO.class, timeout);
     }
 
     @Override
-    public ListenableFuture<Event> call(Event event) {
+    public ListenableFuture<? extends Event> call(Event event) {
         return call(event, AGENT_DEFAULT_TIMEOUT.get());
     }
 
     @Override
-    public ListenableFuture<Event> call(Event event, long timeout) {
-        return call(event, Event.class, timeout);
+    public ListenableFuture<? extends Event> call(Event event, long timeout) {
+        return call(event, EventVO.class, timeout);
     }
 
     @Override

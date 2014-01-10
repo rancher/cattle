@@ -52,7 +52,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     }
 
     protected void onEvent(String listenerKey, String eventName, String eventString) {
-        getEventLog().debug("In : {} : {}", eventName, eventString);
+        getEventLogIn().debug("{} : {}", eventName, eventString);
 
         try {
             EventVO event = jsonMapper.readValue(eventString, EventVO.class);

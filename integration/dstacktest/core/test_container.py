@@ -4,72 +4,126 @@ import random
 import re
 
 
-def test_container_create(client, sim_context):
+def test_container_create_only(client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = client.create_container(name="test",
                                         imageUuid=uuid,
                                         startOnCreate=False)
 
+    assert_fields(container, {
+        "type": "container",
+        "allocationState": "inactive",
+        "state": "creating",
+        "imageUuid": uuid,
+        "imageId": NOT_NONE,
+    })
+
     container = wait_success(client, container)
 
-    assert container is not None
-    assert "container" == container.type
-    assert container.allocationState == "inactive"
-    assert container.state == "stopped"
-    assert container.imageUuid == uuid
-    assert container.imageId is not None
+    assert_fields(container, {
+        "type": "container",
+        "allocationState": "inactive",
+        "state": "stopped",
+        "imageUuid": uuid,
+        "imageId": NOT_NONE,
+    })
 
     image = container.image()
     image = wait_success(client, image)
-    assert image.state == "inactive"
+    assert_fields(image, {
+        "state": "inactive"
+    })
 
     volumes = container.volumes()
     assert len(volumes) == 1
 
-    root_volume = volumes[0]
-    root_volume = wait_success(client, root_volume)
-    assert root_volume.allocationState == "inactive"
-    assert root_volume.attachedState == "active"
-    assert root_volume.state == "inactive"
-    assert root_volume.instanceId == container.id
-    assert root_volume.deviceNumber == 0
+    root_volume = wait_success(client, volumes[0])
+    assert_fields(root_volume, {
+        "allocationState": "inactive",
+        "attachedState": "active",
+        "state": "inactive",
+        "instanceId": container.id,
+        "deviceNumber": 0,
+    })
 
+    volume_mappings = root_volume.volumeStoragePoolMaps()
+    assert len(volume_mappings) == 0
 
     nics = container.nics()
     assert len(nics) == 0
 
-    image = client.list_image(uuid=uuid)[0]
+    image = wait_success(client, client.list_image(uuid=uuid)[0])
+    assert_fields(image, {
+        "state": "inactive",
+        "uuid": uuid,
+        "isPublic": True,
+    })
     image_mappings = image.imageStoragePoolMaps()
 
     assert len(image_mappings) == 1
 
     image_mapping = wait_success(client, image_mappings[0])
-
-    assert image_mapping.imageId == image.id
-    assert image_mapping.storagePoolId == sim_context["external_pool"].id
-    assert image_mapping.state == "inactive"
-    assert image.isPublic
-    assert image.uuid == uuid
+    assert_fields(image_mapping, {
+       "imageId": image.id,
+       "storagePoolId": sim_context["external_pool"].id,
+       "state": "inactive",
+    })
 
     return container
 
 
 def test_container_create_then_start(client, sim_context):
-    container = test_container_create(client, sim_context)
+    container = test_container_create_only(client, sim_context)
     container = container.start()
 
-    assert container.state == "starting"
+    assert_fields(container, {
+        "state": "starting"
+    })
 
     container = wait_success(client, container)
 
-    assert container.allocationState == "active"
-    assert container.state == "running"
-    root_volume = container.volumes()[0]
+    assert_fields(container, {
+        "allocationState": "active",
+        "state": "running"
+    })
 
-    assert root_volume.state == "active"
+    root_volume = container.volumes()[0]
+    assert_fields(root_volume, {
+        "state": "active"
+    })
 
     image = root_volume.image()
+    assert_fields(image, {
+        "state": "active"
+    })
 
-    assert image is not None
-    assert image.state == "active"
+    volume_mappings = root_volume.volumeStoragePoolMaps()
+    assert len(volume_mappings) == 1
 
+    assert_fields(volume_mappings[0], {
+        "state": "active"
+    })
+
+    volume_pool = volume_mappings[0].storagePool()
+    assert_fields(volume_pool, {
+        "state": "active"
+    })
+
+    image_mappings = image.imageStoragePoolMaps()
+    assert len(image_mappings) == 2
+    for image_mapping in image_mappings:
+        if image_mapping.storagePoolId == sim_context["external_pool"].id:
+            pass
+        else:
+            assert_fields(image_mapping, {
+                "state": "active",
+                "storagePoolId": volume_pool.id
+            })
+
+
+    instance_host_mappings = container.instanceHostMaps()
+    assert len(instance_host_mappings) == 1
+
+    assert_fields(instance_host_mappings[0], {
+        "state": "active"
+    })

@@ -12,21 +12,27 @@ public enum ExitReason {
     SCHEDULED,
     FAILED_TO_ACQUIRE_PROCESS_INSTANCE_LOCK,
     FAILED_TO_ACQUIRE_LOCK,
-    //TODO rename to listener
-    PRE_HANDLER_EXCEPTION,
-    PRE_HANDLER_DELAYED,
+    PRE_LISTENER_EXCEPTION,
+    PRE_LISTENER_DELAYED,
     HANDLER_EXCEPTION,
     HANDLER_DELAYED,
-    POST_HANDLER_EXCEPTION,
-    POST_HANDLER_DELAYED,
-    UNKNOWN_EXCEPTION,
+    POST_LISTENER_EXCEPTION,
+    POST_LISTENER_DELAYED,
+    RETRY_EXCEPTION(true),
+    UNKNOWN_EXCEPTION(true),
     MISSING_HANDLER_RESULT_FIELDS;
 
     boolean terminating;
+    boolean rethrow;
     ProcessResult result;
 
     private ExitReason() {
         this(false, null);
+    }
+
+    private ExitReason(boolean rethrow) {
+        this(false, null);
+        this.rethrow = rethrow;
     }
 
     private ExitReason(ProcessResult result) {
@@ -48,5 +54,9 @@ public enum ExitReason {
 
     public ProcessResult getResult() {
         return result;
+    }
+
+    public boolean isRethrow() {
+        return rethrow;
     }
 }

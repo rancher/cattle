@@ -11,17 +11,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-allocator</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-core-model</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-jooq</artifactId>
+            <artifactId>dstack-allocator-simple</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

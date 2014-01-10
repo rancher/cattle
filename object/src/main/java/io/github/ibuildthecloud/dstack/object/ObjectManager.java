@@ -1,5 +1,7 @@
 package io.github.ibuildthecloud.dstack.object;
 
+import io.github.ibuildthecloud.dstack.object.meta.Relationship;
+
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +46,10 @@ public interface ObjectManager {
     <T> List<T> find(Class<T> clz, Map<Object,Object> values);
 
     <T> List<T> find(Class<T> clz, Object key, Object... valueKeyValue);
+
+    <T> List<T> getListByRelationship(Object obj, Relationship relationship);
+
+    <T> T getObjectByRelationship(Object obj, Relationship relationship);
 
     String getType(Object obj);
 

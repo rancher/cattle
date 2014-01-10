@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
@@ -23,6 +27,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 public class JacksonJsonMapper implements JsonMapper {
 
     ObjectMapper mapper;
+    List<Module> modules;
 
     public JacksonJsonMapper() {
         mapper = new ObjectMapper();
@@ -34,6 +39,15 @@ public class JacksonJsonMapper implements JsonMapper {
 
         AnnotationIntrospector pair = AnnotationIntrospectorPair.create(primary, secondary);
         mapper.setAnnotationIntrospector(pair);
+    }
+
+    @PostConstruct
+    public void init() {
+        if ( modules != null ) {
+            for ( Module module : modules ) {
+                mapper.registerModule(module);
+            }
+        }
     }
 
     public JacksonJsonMapper(ObjectMapper mapper) {
@@ -68,6 +82,12 @@ public class JacksonJsonMapper implements JsonMapper {
     @Override
     public void writeValue(OutputStream baos, Object object) throws IOException {
         mapper.writeValue(baos, object);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> writeValueAsMap(Object data) {
+        return convertValue(data, Map.class);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -154,6 +174,14 @@ public class JacksonJsonMapper implements JsonMapper {
             throws IOException {
         CollectionType type = mapper.getTypeFactory().constructCollectionType(collectionClass, elementsClass);
         return (T) mapper.readValue(is, type);
+    }
+
+    public List<Module> getModules() {
+        return modules;
+    }
+
+    public void setModules(List<Module> modules) {
+        this.modules = modules;
     }
 
 }

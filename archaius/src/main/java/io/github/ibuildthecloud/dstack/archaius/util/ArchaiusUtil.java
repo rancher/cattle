@@ -1,9 +1,9 @@
 package io.github.ibuildthecloud.dstack.archaius.util;
 
+import io.github.ibuildthecloud.dstack.archaius.polling.RefreshableFixedDelayPollingScheduler;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import io.github.ibuildthecloud.dstack.archaius.polling.RefreshableFixedDelayPollingScheduler;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicDoubleProperty;
@@ -38,6 +38,10 @@ public class ArchaiusUtil {
     }
 
     public static DynamicStringProperty getString(String key) {
+        return DynamicPropertyFactory.getInstance().getStringProperty(key, null);
+    }
+
+    public static DynamicStringProperty getList(String key) {
         return DynamicPropertyFactory.getInstance().getStringProperty(key, null);
     }
 

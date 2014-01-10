@@ -1,9 +1,9 @@
 package io.github.ibuildthecloud.dstack.api.html;
 
-import com.netflix.config.DynamicStringProperty;
-
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.gdapi.response.impl.DefaultHtmlTemplate;
+
+import com.netflix.config.DynamicStringProperty;
 
 public class ConfigBasedHtmlTemplate extends DefaultHtmlTemplate {
 

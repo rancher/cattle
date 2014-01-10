@@ -124,6 +124,17 @@ public interface Agent extends java.io.Serializable {
 	@javax.persistence.Column(name = "created", nullable = false)
 	public java.sql.Timestamp getCreated();
 
+	/**
+	 * Setter for <code>dstack.agent.uuid</code>. 
+	 */
+	public void setUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.agent.uuid</code>. 
+	 */
+	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	public java.lang.String getUuid();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

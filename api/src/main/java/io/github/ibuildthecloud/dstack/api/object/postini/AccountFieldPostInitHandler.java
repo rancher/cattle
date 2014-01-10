@@ -4,12 +4,10 @@ import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.core.constants.AccountConstants;
 import io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHandler;
+import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
-
-import org.apache.commons.beanutils.BeanUtils;
 
 public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandler {
 
@@ -36,10 +34,6 @@ public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandl
     }
 
     protected void set(Object obj, String property, Object value) {
-        try {
-            BeanUtils.setProperty(obj, property, value);
-        } catch (IllegalAccessException e) {
-        } catch (InvocationTargetException e) {
-        }
+        ObjectUtils.setPropertyIgnoreErrors(obj, property, value);
     }
 }

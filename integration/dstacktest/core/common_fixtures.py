@@ -4,6 +4,8 @@ import pytest
 import time
 
 
+NOT_NONE = object()
+
 @pytest.fixture(scope="module")
 def client():
     return dstack.from_env("DSAPI")
@@ -15,8 +17,8 @@ def admin_client():
 
 
 @pytest.fixture(scope="module")
-def sim_host(admin_client):
-    return create_type_by_uuid(admin_client, "host", "simhost1", kind="sim")
+def sim_host(admin_client, sim_agent):
+    return create_type_by_uuid(admin_client, "host", "simhost1", kind="sim", agentId=sim_agent.id)
 
 
 @pytest.fixture(scope="module")
@@ -25,8 +27,8 @@ def sim_external_pool(admin_client):
 
 
 @pytest.fixture(scope="module")
-def sim_pool(admin_client, sim_host):
-    pool = create_type_by_uuid(admin_client, "storagePool", "simpool1", kind="sim")
+def sim_pool(admin_client, sim_host, sim_agent):
+    pool = create_type_by_uuid(admin_client, "storagePool", "simpool1", kind="sim", agentId=sim_agent.id)
     assert not pool.external
 
     create_type_by_uuid(admin_client, "storagePoolHostMap", "simpool1-simhost",
@@ -35,14 +37,18 @@ def sim_pool(admin_client, sim_host):
     return pool
 
 
+@pytest.fixture(scope="module")
+def sim_agent(admin_client):
+    return create_type_by_uuid(admin_client, "agent", "simagent1", kind="sim", uri="sim://")
 
 
 @pytest.fixture(scope="module")
-def sim_context(sim_host, sim_pool, sim_external_pool):
+def sim_context(sim_host, sim_pool, sim_external_pool, sim_agent):
     return {
         "host": sim_host,
         "pool": sim_pool,
         "external_pool": sim_external_pool,
+        "agent": sim_agent
     }
 
 
@@ -68,7 +74,6 @@ def create_type_by_uuid(admin_client, type, uuid, activate=True, **kw):
     return obj
 
 
-
 def random_num():
     return random.randint(0, 1000000);
 
@@ -88,3 +93,13 @@ def wait_transitioning(client, obj):
     return obj
 
 
+def assert_fields(obj, fields):
+    assert obj is not None
+    for k, v in fields.items():
+        assert k in obj
+        if v is None:
+            assert obj[k] is None
+        elif v is NOT_NONE:
+            assert obj[k] is not None
+        else:
+            assert obj[k] == v

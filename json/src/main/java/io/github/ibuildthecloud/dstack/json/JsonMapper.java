@@ -24,6 +24,8 @@ public interface JsonMapper {
 
     byte[] writeValueAsBytes(Object data) throws IOException;
 
+    Map<String,Object> writeValueAsMap(Object data);
+
     void writeValue(OutputStream baos, Object object) throws IOException;
 
     @SuppressWarnings("rawtypes")

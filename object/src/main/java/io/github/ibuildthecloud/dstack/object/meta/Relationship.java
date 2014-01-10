@@ -6,6 +6,8 @@ public interface Relationship {
         CHILD, REFERENCE
     }
 
+    boolean isListResult();
+
     RelationshipType getRelationshipType();
 
     String getName();

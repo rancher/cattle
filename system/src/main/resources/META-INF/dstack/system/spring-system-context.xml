@@ -10,7 +10,9 @@
 
     <task:scheduler id="CoreTaskScheduler" pool-size="100" />
 
-    <bean id="CoreJsonMapper" class="io.github.ibuildthecloud.dstack.json.JacksonJsonMapper" />
+    <bean id="CoreJsonMapper" class="io.github.ibuildthecloud.dstack.json.JacksonJsonMapper" autowire="byType" />
+
+    <bean id="NoOpJacksonModule" class="com.fasterxml.jackson.databind.module.SimpleModule" />
 
     <bean id="CoreExecutorService" class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean">
         <property name="corePoolSize" value="10" />

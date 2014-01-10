@@ -84,9 +84,9 @@ public class Tables {
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.IpAddressTable IP_ADDRESS = io.github.ibuildthecloud.dstack.core.model.tables.IpAddressTable.IP_ADDRESS;
 
 	/**
-	 * The table dstack.ip_assignment
+	 * The table dstack.ip_address_nic_map
 	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.IpAssignmentTable IP_ASSIGNMENT = io.github.ibuildthecloud.dstack.core.model.tables.IpAssignmentTable.IP_ASSIGNMENT;
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.IpAddressNicMapTable IP_ADDRESS_NIC_MAP = io.github.ibuildthecloud.dstack.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
 
 	/**
 	 * The table dstack.item_pool

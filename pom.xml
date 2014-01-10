@@ -22,6 +22,7 @@
         <module>archaius</module>
         <module>archaius-management</module>
         <module>async</module>
+        <module>code/implementation/allocator-simple</module>
         <module>code/simulator/agent-connection-simulator</module>
         <module>code/simulator/allocator-simulator</module>
         <module>code/simulator/storage-simulator</module>

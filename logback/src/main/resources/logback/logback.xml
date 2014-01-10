@@ -46,7 +46,52 @@
         <encoder>
             <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
         </encoder>
+    </appender>
+
+    <appender name="FILE_EVENT_IN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>event-in.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>event-out.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date{ISO8601} : %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE_EVENT_OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>event-out.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>event-out.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date{ISO8601} : %m%n</pattern>
+        </encoder>
     </appender> 
+
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <file>error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>error.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
+        </encoder>
+    </appender>
 
     <logger name="liquibase">
         <level value="DEBUG" />
@@ -77,14 +122,20 @@
         <level value="WARN" />
     </logger>
 
-    <logger name="EventLog">
+    <logger name="EventLogIn">
         <level value="DEBUG" />
-        <appender-ref ref="CONSOLE_ALL" />
+        <appender-ref ref="FILE_EVENT_OUT" />
+    </logger>
+    
+    <logger name="EventLogOut">
+        <level value="DEBUG" />
+        <appender-ref ref="FILE_EVENT_IN" />
     </logger>
 
     <root>
         <appender-ref ref="CONSOLE_INFO" />
         <appender-ref ref="FILE" />
+        <appender-ref ref="FILE_ERROR" />
         <appender-ref ref="LOGSTASH" />
     </root>
 

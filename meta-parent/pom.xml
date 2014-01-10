@@ -193,6 +193,16 @@
                 <artifactId>commons-collections</artifactId>
                 <version>3.2.1</version>
             </dependency>
+            <dependency>
+                <groupId>commons-pool</groupId>
+                <artifactId>commons-pool</artifactId>
+                <version>1.6</version>
+            </dependency>
+            <dependency>
+                <groupId>com.netflix.archaius</groupId>
+                <artifactId>archaius-core</artifactId>
+                <version>0.1.4</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>

@@ -4,6 +4,7 @@ import io.github.ibuildthecloud.dstack.allocator.dao.AllocatorDao;
 import io.github.ibuildthecloud.dstack.allocator.exception.UnsupportedAllocation;
 import io.github.ibuildthecloud.dstack.allocator.lock.AllocateResourceLock;
 import io.github.ibuildthecloud.dstack.allocator.lock.AllocateVolumesResourceLock;
+import io.github.ibuildthecloud.dstack.allocator.service.AllocationRequest.Type;
 import io.github.ibuildthecloud.dstack.core.model.Host;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.StoragePool;
@@ -108,14 +109,14 @@ public abstract class AbstractAllocator implements Allocator {
         return doAllocate(request, attempt, volume);
     }
 
-    protected boolean doAllocate(AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
+    protected boolean doAllocate(final AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
         AllocationLog log = getLog(request);
         populateConstraints(attempt, log);
 
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                runAllocation(attempt);
+                runAllocation(request, attempt);
             }
         });
 
@@ -129,7 +130,7 @@ public abstract class AbstractAllocator implements Allocator {
         return true;
     }
 
-    protected void runAllocation(AllocationAttempt attempt) {
+    protected void runAllocation(AllocationRequest request, AllocationAttempt attempt) {
         logStart(attempt);
 
         Iterator<AllocationCandidate> iter = getCandidates(attempt);
@@ -152,6 +153,10 @@ public abstract class AbstractAllocator implements Allocator {
 
                 log.info("{}   candidates result [{}]", prefix, good);
                 if ( good ) {
+                    if ( candidate.getHosts().size() > 0 && request.getType() == Type.VOLUME ) {
+                        throw new IllegalStateException("Attempting to allocate hosts during a volume allocation");
+                    }
+
                     if ( recordCandidate(attempt, candidate) ) {
                         attempt.setMatchedCandidate(candidate);
                         return;

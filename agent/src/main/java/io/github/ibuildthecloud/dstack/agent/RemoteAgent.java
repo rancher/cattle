@@ -14,9 +14,9 @@ public interface RemoteAgent {
     Event callSync(Event event, long timeout);
 
 
-    ListenableFuture<Event> call(Event event);
+    ListenableFuture<? extends Event> call(Event event);
 
-    ListenableFuture<Event> call(Event event, long timeout);
+    ListenableFuture<? extends Event> call(Event event, long timeout);
 
 
     <T extends Event> T callSync(Event event, Class<T> reply);

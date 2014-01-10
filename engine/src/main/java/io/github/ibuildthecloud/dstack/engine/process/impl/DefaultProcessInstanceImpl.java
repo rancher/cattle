@@ -10,6 +10,7 @@ import io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler;
 import io.github.ibuildthecloud.dstack.engine.handler.ProcessLogic;
 import io.github.ibuildthecloud.dstack.engine.idempotent.Idempotent;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecution;
+import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentRetryException;
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.manager.impl.ProcessRecord;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
@@ -159,6 +160,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 runDelegateLoop(engineContext);
             } catch ( ProcessExecutionExitException e ) {
                 throw e;
+            } catch ( IdempotentRetryException e ) {
+                execution.setException(new ExceptionLog(e));
+                throw new ProcessExecutionExitException(RETRY_EXCEPTION, e);
             } catch ( Throwable t) {
                 execution.setException(new ExceptionLog(t));
                 throw new ProcessExecutionExitException(UNKNOWN_EXCEPTION, t);
@@ -171,9 +175,14 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 return e.getExitReason();
             }
 
-            if ( e.getExitReason() == UNKNOWN_EXCEPTION ) {
-                log.error("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
-                        e.getCause().getMessage());
+            if ( e.getExitReason().isRethrow() ) {
+                if ( e.getExitReason() == RETRY_EXCEPTION ) {
+                    log.info("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
+                            e.getCause().getMessage());
+                } else {
+                    log.error("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
+                            e.getCause().getMessage());
+                }
                 ExceptionUtils.rethrowRuntime(e.getCause());
             }
 
@@ -429,12 +438,12 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         inLogic = true;
         try {
             runListeners(instanceContext.getProcessDefinition().getPreProcessListeners(), ProcessPhase.PRE_LISTENERS_DONE,
-                    ExitReason.PRE_HANDLER_EXCEPTION);
+                    ExitReason.PRE_LISTENER_EXCEPTION);
 
             runHandlers();
 
             runListeners(instanceContext.getProcessDefinition().getPreProcessListeners(), ProcessPhase.POST_LISTENERS_DONE,
-                    ExitReason.POST_HANDLER_EXCEPTION);
+                    ExitReason.POST_LISTENER_EXCEPTION);
         } finally {
             inLogic = false;
         }

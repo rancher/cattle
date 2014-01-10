@@ -22,6 +22,11 @@ public class ForeignKeyRelationship implements Relationship {
         this.foreignKey = foreignKey;
     }
 
+    @Override
+    public boolean isListResult() {
+        return relationshipType == RelationshipType.CHILD;
+    }
+
     public ForeignKey<?, ?> getForeignKey() {
         return foreignKey;
     }

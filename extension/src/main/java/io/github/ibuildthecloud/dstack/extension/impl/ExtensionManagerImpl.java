@@ -251,7 +251,6 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
         return getExtensionPoint(ScopeUtils.getScopeFromClass(type), type);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public ExtensionPoint getExtensionPoint(String key, Class<?> type) {
         Class<?> clz = keyToType.get(key);
@@ -269,7 +268,7 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
         if ( list != null ) {
             for ( Object obj : list ) {
                 String name = objectToName.get(obj);
-                impls.add(new ExtensionImplementationImpl(name, obj.getClass().getName()));
+                impls.add(new ExtensionImplementationImpl(name, obj));
             }
         }
 

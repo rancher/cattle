@@ -44,5 +44,46 @@ public class ObjectUtils {
         return null;
     }
 
+    public static Object getProperty(Object obj, String property) {
+        try {
+            if ( obj == null ) {
+                return null;
+            }
+            return PropertyUtils.getProperty(obj, property);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException("Failed to get property [" + property + "] on [" + obj + "]", e);
+        } catch (InvocationTargetException e) {
+            throw new IllegalArgumentException("Failed to get property [" + property + "] on [" + obj + "]", e);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException("Failed to get property [" + property + "] on [" + obj + "]", e);
+        }
+    }
+
+    public static void setProperty(Object obj, String property, Object value) {
+        try {
+            if ( obj == null ) {
+                return;
+            }
+            PropertyUtils.setProperty(obj, property, value);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException("Failed to set property [" + property + "] on [" + obj + "] with value [" + value + "]", e);
+        } catch (InvocationTargetException e) {
+            throw new IllegalArgumentException("Failed to set property [" + property + "] on [" + obj + "] with value [" + value + "]", e);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException("Failed to set property [" + property + "] on [" + obj + "] with value [" + value + "]", e);
+        }
+    }
+
+    public static void setPropertyIgnoreErrors(Object obj, String property, Object value) {
+        try {
+            if ( obj == null ) {
+                return;
+            }
+            PropertyUtils.setProperty(obj, property, value);
+        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException e) {
+        } catch (NoSuchMethodException e) {
+        }
+    }
 
 }

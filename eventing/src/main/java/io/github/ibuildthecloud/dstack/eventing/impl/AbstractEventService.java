@@ -36,7 +36,8 @@ import com.netflix.config.DynamicLongProperty;
 public abstract class AbstractEventService implements EventService {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractEventService.class);
-    private static final Logger eventLog = LoggerFactory.getLogger("EventLog");
+    private static final Logger eventLogIn = LoggerFactory.getLogger("EventLogIn");
+    private static final Logger eventLogOut = LoggerFactory.getLogger("EventLogOut");
 
 
     private static final DynamicIntProperty DEFAULT_RETRIES = ArchaiusUtil.getInt("eventing.retry");
@@ -66,7 +67,7 @@ public abstract class AbstractEventService implements EventService {
         }
 
         try {
-            getEventLog().debug("Out : {} : {}", event.getName(), eventString);
+            getEventLogOut().debug("{} : {}", event.getName(), eventString);
             return doPublish(event.getName(), event, eventString);
         } catch ( Throwable e ) {
             log.warn("Failed to publish event [" + eventString + "]", e);
@@ -98,8 +99,12 @@ public abstract class AbstractEventService implements EventService {
         return result;
     }
 
-    protected Logger getEventLog() {
-        return eventLog;
+    protected Logger getEventLogIn() {
+        return eventLogIn;
+    }
+
+    protected Logger getEventLogOut() {
+        return eventLogOut;
     }
 
     protected boolean register(String eventName, EventListener listener) {

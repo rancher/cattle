@@ -135,6 +135,9 @@ public class JooqObjectManager extends AbstractObjectManager {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public <T> List<T> children(Object obj, Class<T> type) {
+        if ( obj == null ) {
+            return Collections.emptyList();
+        }
         UpdatableRecord<?> recordObject = JooqUtils.getRecordObject(obj);
         Class<UpdatableRecord<?>> parent = JooqUtils.getRecordClass(schemaFactory, obj.getClass());
         Class<UpdatableRecord<?>> child = JooqUtils.getRecordClass(schemaFactory, type);

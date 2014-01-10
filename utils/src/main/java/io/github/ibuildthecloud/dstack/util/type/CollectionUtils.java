@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class CollectionUtils {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <K,V extends Collection<T>,T> void addToMap(Map<K,V> data, K key, T value, Class<? extends Collection> clz) {
         V values = data.get(key);
         if ( values == null ) {

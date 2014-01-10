@@ -1,7 +1,6 @@
 package io.github.ibuildthecloud.dstack.api.auth.dao.impl;
 
 import static io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.*;
-
 import io.github.ibuildthecloud.dstack.api.auth.dao.AuthDao;
 import io.github.ibuildthecloud.dstack.core.model.Account;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;

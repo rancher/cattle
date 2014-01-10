@@ -10,22 +10,21 @@
     </parent>
     <dependencies>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.1</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-async</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-archaius</artifactId>
             <version>${project.version}</version>
         </dependency>

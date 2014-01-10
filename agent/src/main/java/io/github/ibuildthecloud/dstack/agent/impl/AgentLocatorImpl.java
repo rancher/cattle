@@ -6,13 +6,11 @@ import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
-
-import org.apache.commons.beanutils.PropertyUtils;
 
 public class AgentLocatorImpl implements AgentLocator {
 
@@ -40,14 +38,9 @@ public class AgentLocatorImpl implements AgentLocator {
     }
 
     protected Long getAgentId(Object resource) {
-        try {
-            Object obj = PropertyUtils.getProperty(resource, "agentId");
-            if ( obj instanceof Long ) {
-                return (Long)obj;
-            }
-        } catch (IllegalAccessException e) {
-        } catch (InvocationTargetException e) {
-        } catch (NoSuchMethodException e) {
+        Object obj = ObjectUtils.getPropertyIgnoreErrors(resource, "agentId");
+        if ( obj instanceof Long ) {
+            return (Long)obj;
         }
 
         return null;
