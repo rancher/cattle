@@ -45,20 +45,20 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
-        start(instance);
+        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds);
+        result.shouldDelegate(shouldStart(instance));
 
-        return new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds);
+        return result;
     }
 
-    protected void start(Instance instance) {
+    protected boolean shouldStart(Instance instance) {
         Boolean doneStart = DataUtils.getField(instance.getData(), InstanceConstants.FIELD_START_ON_CREATE, Boolean.class);
 
         if ( doneStart != null && ! doneStart.booleanValue() ) {
-            return;
+            return false;
+        } else {
+            return true;
         }
-
-        ProcessInstance process = processManager.createProcessInstance("instance.start", instance, null);
-        process.execute();
     }
 
     protected Set<Long> createVolumes(Instance instance, List<Volume> volumes, Map<String,Object> data) {

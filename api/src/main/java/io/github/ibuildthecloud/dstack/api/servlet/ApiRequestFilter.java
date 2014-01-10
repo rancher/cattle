@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -15,6 +16,8 @@ import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.spring.module.web.ModuleBasedFilter;
 
 public class ApiRequestFilter extends ModuleBasedFilter {
+
+    private static final String DEFAULT_MODULE = "api";
 
     ApiRequestFilterDelegate delegate;
 
@@ -40,6 +43,12 @@ public class ApiRequestFilter extends ModuleBasedFilter {
             ExceptionUtils.rethrow(t, ServletException.class);
             ExceptionUtils.rethrowExpectedRuntime(t);
         }
+    }
+
+    @Override
+    protected String getModule(FilterConfig filterConfig) {
+        String result = super.getModule(filterConfig);
+        return result == null ? DEFAULT_MODULE : result;
     }
 
     public ApiRequestFilterDelegate getDelegate() {

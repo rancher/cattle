@@ -12,38 +12,46 @@
     <dependencies>
         <!-- Start Plugins -->
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-allocator-simulator</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-eventing-redis</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-docker</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-docker-storage</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-agent-connection-simulator</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-docker-allocator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-simulator-agent-connection</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-storage-simulator</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-simulator-storage</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-simulator-allocator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-dev</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- End Plugins -->
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-launcher</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -53,12 +61,12 @@
             <artifactId>jstl</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-db-loader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-meta</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -116,7 +124,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>io.github.ibuildthecloud</includeGroupIds>
+                            <includeGroupIds>${project.groupId}</includeGroupIds>
                             <includeArtifactIds>dstack-launcher</includeArtifactIds>
                             <scope>provided</scope>
                             <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/jetty</outputDirectory>
@@ -129,7 +137,7 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>io.github.ibuildthecloud</includeGroupIds>
+                            <includeGroupIds>${project.groupId}</includeGroupIds>
                             <includeArtifactIds>dstack-launcher</includeArtifactIds>
                             <includes>**/*.class</includes>
                             <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
@@ -143,7 +151,7 @@
                     <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
                     <archive>
                         <manifest>
-                            <mainClass>io.github.ibuildthecloud.dstack.launcher.Main</mainClass>
+                            <mainClass>${project.groupId}.dstack.launcher.Main</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Implementation-Version>${project.version}</Implementation-Version>

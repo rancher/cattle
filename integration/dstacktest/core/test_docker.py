@@ -1,46 +1,66 @@
 from common_fixtures import *
 import os
 
-DOCKER_POOL_UUID = "dockerexternalpool"
+TEST_IMAGE = "ibuildthecloud/hello-world"
+TEST_IMAGE_UUID = "docker:" + TEST_IMAGE
 
-ifdocker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") is None', reason="DOCKER_TEST is not set")
+if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") is None', reason="DOCKER_TEST is not set")
+
 
 @pytest.fixture(scope="module")
-def docker_pool(admin_client):
-    docker_pools = admin_client.list_storagePool(uuid=DOCKER_POOL_UUID)
-    pool = None
-    if len(docker_pools) == 0:
-        pool = admin_client.create_storagePool(uuid=DOCKER_POOL_UUID, kind="docker", external=True)
-    else:
-        pool = docker_pools[0]
+def docker_host(admin_client, docker_agent):
+    return create_type_by_uuid(admin_client, "host", "dockerhost1", kind="docker", agentId=docker_agent.id)
 
-    pool = wait_success(admin_client, pool)
-    if pool.state == "inactive":
-        pool.activate()
-        pool = wait_success(admin_client, pool)
 
-    assert pool.state == "active"
-    assert pool.kind == "docker"
-    assert pool.external
+@pytest.fixture(scope="module")
+def docker_external_pool(admin_client):
+    return create_type_by_uuid(admin_client, "storagePool", "dockerexternalpool", kind="docker", external=True)
+
+
+@pytest.fixture(scope="module")
+def docker_pool(admin_client, docker_host, docker_agent):
+    pool = create_type_by_uuid(admin_client, "storagePool", "dockerpool1", kind="docker", agentId=docker_agent.id)
+    assert not pool.external
+
+    create_type_by_uuid(admin_client, "storagePoolHostMap", "dockerpool1-dockerhost",
+                        storagePoolId=pool.id, hostId=docker_host.id)
 
     return pool
 
 
-@ifdocker
-def test_docker_create(client, docker_pool):
-    uuid = "docker:ibuildthecloud/hello-world"
-    container = client.create_container(name="test", imageUuid=uuid)
+@pytest.fixture(scope="module")
+def docker_agent(admin_client):
+    return create_type_by_uuid(admin_client, "agent", "dockeragent1", kind="docker", uri="sim://")
+
+
+@pytest.fixture(scope="module")
+def docker_context(docker_host, docker_pool, docker_external_pool, docker_agent):
+    return {
+        "host": docker_host,
+        "pool": docker_pool,
+        "external_pool": docker_external_pool,
+        "agent": docker_agent
+    }
+
+
+@if_docker
+def test_docker_create_only(client, docker_context):
+    uuid = TEST_IMAGE_UUID
+    container = client.create_container(name="test", imageUuid=uuid, startOnCreate=False)
     container = wait_success(client, container)
 
     assert container is not None
     assert "container" == container.type
 
     image = client.list_image(uuid=uuid)[0]
-    image_mapping = image.imageStoragePoolMaps()
+    image_mapping = filter(
+        lambda m: not m.storagePool().external,
+        image.imageStoragePoolMaps()
+    )
 
     assert len(image_mapping) == 1
     assert image_mapping[0].imageId == image.id
-    assert image_mapping[0].storagePoolId == docker_pool.id
+    assert image_mapping[0].storagePoolId == docker_context["pool"].id
 
     assert image.isPublic
     assert image.uuid == uuid
@@ -48,3 +68,17 @@ def test_docker_create(client, docker_pool):
     assert image.data.dockerImage.namespace == "ibuildthecloud"
     assert image.data.dockerImage.tag == "latest"
     assert image.data.dockerImage.id is not None
+
+    return container
+
+
+@if_docker
+def test_docker_create_with_start(client, docker_context):
+    uuid = TEST_IMAGE_UUID
+    container = client.create_container(name="test", imageUuid=uuid)
+
+    assert container.state == "creating"
+
+    container = wait_success(client, container)
+
+    assert container.state == "running"

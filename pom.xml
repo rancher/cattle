@@ -22,10 +22,12 @@
         <module>archaius</module>
         <module>archaius-management</module>
         <module>async</module>
-        <module>code/implementation/allocator-simple</module>
-        <module>code/simulator/agent-connection-simulator</module>
-        <module>code/simulator/allocator-simulator</module>
-        <module>code/simulator/storage-simulator</module>
+        <module>code/iaas/simple-allocator</module>
+        <module>code/implementation/docker/allocator</module>
+        <module>code/implementation/docker/storage</module>
+        <module>code/implementation/simulator/agent-connection</module>
+        <module>code/implementation/simulator/allocator</module>
+        <module>code/implementation/simulator/storage</module>
         <module>commands</module>
         <module>db-loader</module>
         <module>dev</module>
@@ -48,7 +50,6 @@
         <module>model</module>
         <module>object</module>
         <module>parent</module>
-        <module>plugins/docker</module>
         <module>pool</module>
         <module>process-common</module>
         <module>processes</module>

@@ -7,33 +7,13 @@
 		<listener-class>io.github.ibuildthecloud.dstack.context.WebContextLoaderListener</listener-class>
 	</listener>
 
-	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>classpath:META-INF/dstack/webApplicationContext.xml</param-value>
-	</context-param>
-
-<!-- 
-    <filter>
-        <filter-name>ConfigItem</filter-name>
-        <filter-class>org.apache.cloudstack.configitem.servlet.ConfigItemFilter</filter-class>
-        <init-param>
-            <param-name>module</param-name>
-            <param-value>config-item</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>ConfigItem</filter-name>
-        <url-pattern>/config/*</url-pattern>
-    </filter-mapping>
--->
-
     <filter>
         <filter-name>ApiFilter</filter-name>
         <filter-class>io.github.ibuildthecloud.dstack.api.servlet.ApiRequestFilter</filter-class>
-        <init-param>
-            <param-name>module</param-name>
-            <param-value>api</param-value>
-        </init-param>
+<!--         <init-param> -->
+<!--             <param-name>module</param-name> -->
+<!--             <param-value>api</param-value> -->
+<!--         </init-param> -->
     </filter>
     <filter-mapping>
         <filter-name>ApiFilter</filter-name>
