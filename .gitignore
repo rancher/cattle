@@ -1,14 +1,15 @@
+runtime
 resources/content/dstack-local.properties
 resources/content/modules.properties
 app/dStack.launch
 app/db-*
 dist
 target
+build
 .classpath
 .project
 .settings
 *.log
-venv
 _*
 .idea
 .cache

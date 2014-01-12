@@ -3,6 +3,8 @@ set -e
 
 PORT=8080
 
+cd $(dirname $0)/../..
+
 checkPort()
 {  
     netstat -an | grep -q ':'${PORT}'.*LISTEN'
@@ -10,7 +12,7 @@ checkPort()
 
 if ! checkPort
 then
-    ./run.sh &
+    ./dstack.sh run &
     LASTPID=$!
 fi
 

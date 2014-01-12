@@ -3,4 +3,4 @@ jdk:
   - openjdk6
   - openjdk7
   - oraclejdk7
-after_success: ./test.sh
+after_success: ./tools/test/runtests.sh
