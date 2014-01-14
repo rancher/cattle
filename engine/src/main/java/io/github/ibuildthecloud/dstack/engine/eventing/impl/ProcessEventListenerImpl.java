@@ -25,6 +25,8 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
             processManager.loadProcess(new Long(event.getResourceId())).execute();
         } catch ( ProcessNotFoundException e ) {
             log.debug("Failed to find process for id [{}]", event.getResourceId());
+        } catch ( RuntimeException e ) {
+            log.error("Unknown exception running process [{}]", event.getResourceId(), e);
         }
     }
 

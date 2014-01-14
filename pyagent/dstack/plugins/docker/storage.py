@@ -1,116 +1,45 @@
-from dstack import log
-from dstack import utils
+import logging
 from dstack.storage import BaseStoragePool
-from docker import Client
-import json
-
-class Template(object):
-    def __init__(self, client, image=None):
-        self._client = client
-        self._image = image
+from dstack.agent.handler import KindBasedMixin
+from . import docker_client
 
 
-    @staticmethod
-    def from_template_or_pool_ref(client, template_or_pool_ref):
-        image = utils.get_data(template_or_pool_ref, prefix="docker.image", strip_prefix=True)
-        if image.get("Id") is None and image.get("Repository") is None:
-            raise Exception("Invalid template, both Id and Repository are null")
-
-        if not image.get("Repository") is None and image.get("Tag") is None:
-            image["Tag"] = "latest"
-
-        return Template(client, image)
+log = logging.getLogger("docker")
 
 
-    def delete(self):
-        image = self._get_image()
-        if image is None:
-            return
+class DockerPool(KindBasedMixin, BaseStoragePool):
+    def __init__(self):
+        KindBasedMixin.__init__(self, kind="docker")
+        BaseStoragePool.__init__(self)
 
-        self._client.remove_image(image["Id"])
-        return image
+    def _get_image_by_id(self, id):
+        templates = docker_client().images(all=True)
+        templates = filter(lambda x: x["Id"] == id, templates)
 
-    def _parse_status(self, status):
-        result = []
-        current = 0
-        try:
-            while current <= len(status):
-                i = status.index("}", current)
-                part = status[current:i+1]
-                result.append(json.loads(part))
-                current = i+1
-        except ValueError:
-            pass
+        if len(templates) > 0:
+            return templates[0]
+        return None
 
-        return result
+    def _is_image_active(self, image, storage_pool):
+        return self._get_image_by_id(image.data.dockerImage.id) is not None
 
+    def _do_image_activate(self, image, storage_pool, progress):
+        client = docker_client()
+        data = image.data.dockerImage
+        for status in client.pull(repository=data.qualifiedName, tag=data.tag, stream=True):
+            log.info("Pulling [%s] status : %s", data.fullName, status)
+            progress.update(status)
 
-    def pull(self):
-        image = self._get_image()
-        if not image is None:
-            return image
+    def _get_image_storage_pool_map_data(self, obj):
+        image = self._get_image_by_id(obj.image.data.dockerImage.id)
+        return {
+            "+data": {
+               "dockerImage": image
+            }
+        }
 
-        id, repo, tag = self._lookup_data(self._image)
+    def _is_volume_active(self, volume, storage_pool):
+        if volume.deviceNumber == 0:
+            return True
+        return False
 
-        pull_result = self._client.pull(repo, tag=tag)
-        for status in self._parse_status(pull_result):
-            log.info("%s: %s [%s]" % (status.get("id"), status.get("status"), status.get("progress")))
-
-        image = None
-        if status.get("progress") == "complete":
-            image = self._get_image(repo=repo, tag=tag)
-            if not image is None:
-                self._image = (image["Id"], image["Repository"], image["Tag"])
-
-        return image
-
-    def _lookup_data(self, image):
-        if image is None:
-            return (None, None, None)
-
-        id = image.get("Id")
-        repo = image.get("Repository")
-        tag = image.get("Tag")
-        
-        return (id, repo, tag)
-
-    def _get_image(self, id=None, repo=None, tag=None):
-        result = []
-        
-        if repo is None:
-            id, repo, tag = self._lookup_data(self._image)
-
-        if id is None:
-            if not repo is None:
-                for image in self._client.images(name=repo):
-                    if image["Tag"] == tag:
-                        result.append(image)
-        else:
-            for image in filter(lambda x: x["Id"] == id, self._client.images()):
-                result.append(image)
-
-        if len(result) == 0:
-            return None
-
-        if len(result) > 1:
-            log.error("Found multiple results for %s" % ref)
-
-        return result[0]
-
-
-
-class DockerPool(BaseStoragePool):
-    def delete_template(self, storagePool=None, template=None,
-                        templateStoragePoolRef=None, **kw):
-        template = Template.from_template_or_pool_ref(self._get_client(), templateStoragePoolRef)
-        template.delete()
-
-
-    def stage_template(self, storagePool=None, template=None, **kw):
-        template = Template.from_template_or_pool_ref(self._get_client(), template)
-        stage_result = template.pull()
-        return stage_result
-
-        
-    def _get_client(self):
-        return Client()

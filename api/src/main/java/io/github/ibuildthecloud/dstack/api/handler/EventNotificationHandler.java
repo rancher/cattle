@@ -34,7 +34,8 @@ public class EventNotificationHandler implements ApiRequestHandler {
         data.put("action", request.getAction());
         data.put("responseCode", request.getResponseCode());
 
-        DeferredUtils.deferPublish(eventService, EventVO.newEvent(CoreEvents.API_CHANGE).data(data));
+        DeferredUtils.deferPublish(eventService, EventVO.newEvent(CoreEvents.API_CHANGE)
+                .withData(data));
     }
 
     @Override
@@ -52,7 +53,8 @@ public class EventNotificationHandler implements ApiRequestHandler {
         data.put("message", t.getMessage());
         data.put("stackTrace", ExceptionUtils.toString(t));
 
-        DeferredUtils.deferPublish(eventService, EventVO.newEvent(CoreEvents.API_EXCEPTION).data(data));
+        DeferredUtils.deferPublish(eventService, EventVO.newEvent(CoreEvents.API_EXCEPTION)
+                .withData(data));
 
         return false;
     }

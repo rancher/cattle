@@ -1,10 +1,9 @@
 package io.github.ibuildthecloud.dstack.process.common.handler;
 
-import java.util.Map;
-
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
+import io.github.ibuildthecloud.dstack.eventing.EventCallOptions;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
@@ -12,6 +11,8 @@ import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
+
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -59,11 +60,11 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler {
 
         Event request = EventVO
                             .newEvent(process.getName())
-                            .resourceId(idString)
-                            .resourceType(type)
-                            .data(state.getData());
+                            .withResourceId(idString)
+                            .withResourceType(type)
+                            .withData(state.getData());
 
-        Event response = eventService.callSync(request, retry, timeoutMillis);
+        Event response = eventService.callSync(request, new EventCallOptions(retry, timeoutMillis));
 
         return postEvent(state, process, CollectionUtils.toMap(response.getData()));
     }

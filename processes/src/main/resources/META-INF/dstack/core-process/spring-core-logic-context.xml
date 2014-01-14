@@ -18,7 +18,7 @@
 
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="ImageStoragePoolMapActivate"
-        p:commandName="storage.image.active"
+        p:commandName="storage.image.activate"
         p:eventResourceRelationship="image"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.ImageStoragePoolMap"
@@ -27,7 +27,7 @@
 
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="VolumeStoragePoolMapActivate"
-        p:commandName="storage.volume.active"
+        p:commandName="storage.volume.activate"
         p:eventResourceRelationship="volume"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap"
@@ -36,7 +36,7 @@
 
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="InstanceHostMapActivate"
-        p:commandName="compute.instance.active"
+        p:commandName="compute.instance.activate"
         p:eventResourceRelationship="instance"
         p:agentResourceRelationship="host"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.InstanceHostMap"

@@ -1,15 +1,19 @@
+import logging
 import requests
 import json
-import sys
 import os
 import psutil
+import uuid
 from Queue import Empty, Full
 from multiprocessing import Queue, Process
 
 from dstack.plugins.core.publisher import Publisher
 from dstack.agent import Agent
-from dstack import log
 from dstack import type_manager
+from dstack import utils
+from dstack.lock import FailedToLock
+
+log = logging.getLogger("dstack-agent")
 
 
 def _data(events):
@@ -23,6 +27,7 @@ def _worker(queue, ppid):
     publisher = type_manager.get_type(type_manager.PUBLISHER)
     while True:
         try:
+            req = None
             line = queue.get(True, 5)
             log.info("Request: %s" % line)
 
@@ -34,10 +39,19 @@ def _worker(queue, ppid):
         except Empty:
             if not psutil.pid_exists(ppid):
                 break
+        except FailedToLock as e:
+            log.info("{0} for {1}", e.message, req.name)
         except Exception as e:
-            log.exception("Unknown error")
+            error_id = str(uuid.uuid4())
+            log.exception("%s : Unknown error", error_id)
             if not psutil.pid_exists(ppid):
                 break
+
+            if req is not None:
+                resp = utils.reply(req)
+                resp["transitioning"] = "error"
+                resp["transitioningInternalMessage"] = "{0} : {1}".format(error_id, e)
+                publisher.publish(resp)
 
 
 class EventClient:
@@ -65,6 +79,8 @@ class EventClient:
 
         try:
             r = requests.post(self._url, data=_data(events), stream=True, headers=headers)
+            if r.status_code != 201:
+                raise Exception(r.text)
             self._start_children()
             for line in r.iter_lines(chunk_size=1):
                 try:
@@ -74,4 +90,5 @@ class EventClient:
         finally:
             for child in self._children:
                 child.terminate()
+
 

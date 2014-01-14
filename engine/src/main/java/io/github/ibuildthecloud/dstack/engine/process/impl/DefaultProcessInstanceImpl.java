@@ -296,7 +296,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             public void run() {
                 Long id = record.getId();
                 if ( id != null ) {
-                    Event event = EventVO.newEvent(EngineEvents.PROCESS_EXECUTE).resourceId(id.toString());
+                    Event event = EventVO.newEvent(EngineEvents.PROCESS_EXECUTE)
+                            .withResourceId(id.toString());
                     context.getEventService().publish(event);
                 }
 

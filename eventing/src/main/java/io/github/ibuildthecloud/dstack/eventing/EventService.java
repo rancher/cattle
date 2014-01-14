@@ -16,10 +16,10 @@ public interface EventService {
 
     Event callSync(Event event);
 
-    Event callSync(Event event, Integer retry, Long timeoutMillis);
+    Event callSync(Event event, EventCallOptions callOptions);
 
     ListenableFuture<Event> call(Event event);
 
-    ListenableFuture<Event> call(Event event, Integer retry, Long timeoutMillis);
+    ListenableFuture<Event> call(Event event, EventCallOptions callOptions);
 
 }

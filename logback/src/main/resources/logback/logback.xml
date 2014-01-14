@@ -122,12 +122,12 @@
         <level value="WARN" />
     </logger>
 
-    <logger name="EventLogIn">
+    <logger name="EventLogOut">
         <level value="DEBUG" />
         <appender-ref ref="FILE_EVENT_OUT" />
     </logger>
     
-    <logger name="EventLogOut">
+    <logger name="EventLogIn">
         <level value="DEBUG" />
         <appender-ref ref="FILE_EVENT_IN" />
     </logger>

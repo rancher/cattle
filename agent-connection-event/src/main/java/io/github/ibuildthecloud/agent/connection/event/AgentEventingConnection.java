@@ -1,10 +1,13 @@
 package io.github.ibuildthecloud.agent.connection.event;
 
-import java.io.IOException;
-
 import io.github.ibuildthecloud.agent.server.connection.AgentConnection;
+import io.github.ibuildthecloud.dstack.core.event.CoreEvents;
+import io.github.ibuildthecloud.dstack.eventing.EventCallOptions;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
+import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
+
+import java.io.IOException;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -36,7 +39,10 @@ public class AgentEventingConnection implements AgentConnection {
             return future;
         }
 
-        return eventService.call(event, 0, 15000L);
+        EventVO withAgentEvent = new EventVO(event);
+        withAgentEvent.setName(CoreEvents.appendAgent(event.getName(), getAgentId()));
+
+        return eventService.call(withAgentEvent, new EventCallOptions(0, 15000L));
     }
 
     @Override

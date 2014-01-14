@@ -10,11 +10,12 @@ import javax.xml.bind.annotation.XmlTransient;
 
 public class EventVO implements Event {
 
-    String id, name, replyTo, resourceId, resourceType, publisher;
+    String id, name, replyTo, resourceId, resourceType, publisher, transitioning, transitioningMessage, transitioningInternalMessage;
     String[] previousIds, previousNames;
     Object data;
     Date time;
     String listenerKey;
+    Integer transitioningProgress;
 
     public EventVO() {
         id = UUID.randomUUID().toString();
@@ -37,6 +38,10 @@ public class EventVO implements Event {
         this.publisher = event.getPublisher();
         this.resourceId = event.getResourceId();
         this.resourceType = event.getResourceType();
+        this.transitioning = event.getTransitioning();
+        this.transitioningMessage = event.getTransitioningMessage();
+        this.transitioningInternalMessage = event.getTransitioningInternalMessage();
+        this.transitioningProgress = event.getTransitioningProgress();
     }
 
     public static EventVO reply(Event request) {
@@ -84,11 +89,6 @@ public class EventVO implements Event {
         setName(name);
     }
 
-    public EventVO name(String name) {
-        setName(name);
-        return this;
-    }
-
     @Override
     public String getName() {
         return name;
@@ -98,8 +98,8 @@ public class EventVO implements Event {
         this.name = name;
     }
 
-    public EventVO previousIds(String[] previousIds) {
-        setPreviousIds(previousIds);
+    public EventVO withName(String name) {
+        this.name = name;
         return this;
     }
 
@@ -112,6 +112,11 @@ public class EventVO implements Event {
         this.previousIds = previousIds;
     }
 
+    public EventVO withPreviousIds(String[] previousIds) {
+        this.previousIds = previousIds;
+        return this;
+    }
+
     @Override
     public String[] getPreviousNames() {
         return previousNames;
@@ -121,22 +126,22 @@ public class EventVO implements Event {
         this.previousNames = names;
     }
 
+    public EventVO withPreviousNames(String[] names) {
+        this.previousNames = names;
+        return this;
+    }
+
     @Override
     public Object getData() {
         return data;
-    }
-
-    public EventVO data(Object data) {
-        this.setData(data);
-        return this;
     }
 
     public void setData(Object data) {
         this.data = data;
     }
 
-    public EventVO time(Date time) {
-        setTime(time);
+    public EventVO withData(Object data) {
+        this.data = data;
         return this;
     }
 
@@ -149,8 +154,8 @@ public class EventVO implements Event {
         this.time = time;
     }
 
-    public EventVO publisher(String publisher) {
-        setPublisher(publisher);
+    public EventVO withTime(Date time) {
+        this.time = time;
         return this;
     }
 
@@ -163,18 +168,23 @@ public class EventVO implements Event {
         this.publisher = publisher;
     }
 
+    public EventVO withPublisher(String publisher) {
+        this.publisher = publisher;
+        return this;
+    }
+
     @Override
     public String getId() {
         return id;
     }
 
-    public EventVO id(String id) {
-        setId(id);
-        return this;
-    }
-
     public void setId(String id) {
         this.id = id;
+    }
+
+    public EventVO withId(String id) {
+        this.id = id;
+        return this;
     }
 
     @Override
@@ -182,13 +192,13 @@ public class EventVO implements Event {
         return replyTo;
     }
 
-    public EventVO replyTo(String replyTo) {
-        setReplyTo(replyTo);
-        return this;
-    }
-
     public void setReplyTo(String replyTo) {
         this.replyTo = replyTo;
+    }
+
+    public EventVO withReplyTo(String replyTo) {
+        this.replyTo = replyTo;
+        return this;
     }
 
     @Override
@@ -196,13 +206,13 @@ public class EventVO implements Event {
         return resourceId;
     }
 
-    public EventVO resourceId(String resourceId) {
-        setResourceId(resourceId);
-        return this;
-    }
-
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public EventVO withResourceId(String resourceId) {
+        this.resourceId = resourceId;
+        return this;
     }
 
     @Override
@@ -210,21 +220,13 @@ public class EventVO implements Event {
         return resourceType;
     }
 
-    public EventVO resourceType(String resourceType) {
-        setResourceType(resourceType);
-        return this;
-    }
-
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
     }
 
-    @Override
-    public String toString() {
-        return "EventVO [id=" + id + ", name=" + name + ", previousNames=" + Arrays.toString(previousNames)
-                + ", replyTo=" + replyTo + ", resourceId=" + resourceId + ", resourceType=" + resourceType
-                + ", publisher=" + publisher + ", previousIds=" + Arrays.toString(previousIds) + ", data=" + data
-                + ", time=" + time + ", listenerKey=" + listenerKey + "]";
+    public EventVO withResourceType(String resourceType) {
+        this.resourceType = resourceType;
+        return this;
     }
 
     @XmlTransient
@@ -232,13 +234,78 @@ public class EventVO implements Event {
         return listenerKey;
     }
 
-    public EventVO listenerKey(String listenerKey) {
-        setListenerKey(listenerKey);
+    public void setListenerKey(String listenerKey) {
+        this.listenerKey = listenerKey;
+    }
+
+    public EventVO withListenerKey(String listenerKey) {
+        this.listenerKey = listenerKey;
         return this;
     }
 
-    public void setListenerKey(String listenerKey) {
-        this.listenerKey = listenerKey;
+    @Override
+    public String getTransitioning() {
+        return transitioning;
+    }
+
+    public void setTransitioning(String transitioning) {
+        this.transitioning = transitioning;
+    }
+
+    public EventVO withTransitioning(String transitioning) {
+        this.transitioning = transitioning;
+        return this;
+    }
+
+    @Override
+    public String getTransitioningMessage() {
+        return transitioningMessage;
+    }
+
+    public void setTransitioningMessage(String transitioningMessage) {
+        this.transitioningMessage = transitioningMessage;
+    }
+
+    public EventVO withTransitioningMessage(String transitioningMessage) {
+        this.transitioningMessage = transitioningMessage;
+        return this;
+    }
+
+    @Override
+    public Integer getTransitioningProgress() {
+        return transitioningProgress;
+    }
+
+    public void setTransitioningProgress(Integer transitioningProgress) {
+        this.transitioningProgress = transitioningProgress;
+    }
+
+    public EventVO withTransitioningProgress(Integer transitioningProgress) {
+        this.transitioningProgress = transitioningProgress;
+        return this;
+    }
+    @Override
+    public String getTransitioningInternalMessage() {
+        return transitioningInternalMessage;
+    }
+
+    public void setTransitioningInternalMessage(String transitioningInternalMessage) {
+        this.transitioningInternalMessage = transitioningInternalMessage;
+    }
+
+    public EventVO withTransitioningInternalMessage(String transitioningInternalMessage) {
+        this.transitioningInternalMessage = transitioningInternalMessage;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "EventVO [id=" + id + ", name=" + name + ", previousNames=" + Arrays.toString(previousNames)
+                + ", replyTo=" + replyTo + ", resourceId=" + resourceId + ", resourceType=" + resourceType
+                + ", publisher=" + publisher + ", transitioning=" + transitioning + ", transitioningMessage="
+                + transitioningMessage + ", transitioningInternalMessage=" + transitioningInternalMessage
+                + ", previousIds=" + Arrays.toString(previousIds) + ", data=" + data + ", time=" + time
+                + ", listenerKey=" + listenerKey + ", transitioningProgress=" + transitioningProgress + "]";
     }
 
 }

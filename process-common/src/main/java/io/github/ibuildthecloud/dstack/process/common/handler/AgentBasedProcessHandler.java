@@ -84,9 +84,9 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         ObjectSerializer serializer = getObjectSerializer(dataResource);
         Map<String,Object> data = serializer.serialize(dataResource);
         EventVO event = EventVO.newEvent(getCommandName() == null ? process.getName() : getCommandName())
-                .data(data)
-                .resourceType(getObjectManager().getType(eventResource))
-                .resourceId(ObjectUtils.getId(eventResource).toString());
+                .withData(data)
+                .withResourceType(getObjectManager().getType(eventResource))
+                .withResourceId(ObjectUtils.getId(eventResource).toString());
 
         preProcessEvent(event, state, process, eventResource, dataResource, agentResource);
 

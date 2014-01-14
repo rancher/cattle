@@ -16,3 +16,8 @@ class Publisher:
         r = requests.post(self._url, data=line, headers={"Authentication": self._auth})
         if r.status_code != 201:
             log.error("Error [%s], Request [%s]" % (r.text, line))
+
+
+def publish(event):
+    publisher = type_manager.get_type(type_manager.PUBLISHER)
+    publisher.publish(event)

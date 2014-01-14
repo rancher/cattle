@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.api.pubsub.model;
 
 import java.util.List;
+import java.util.Map;
 
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
@@ -24,12 +25,24 @@ public interface Publish {
     List<String> getPreviousIds();
 
     @Field(create = true, nullable = true)
-    Object getData();
+    Map<String,Object> getData();
 
     @Field(create = true, required = true)
     Long getTime();
 
     @Field(create = true)
     String getPublisher();
+
+    @Field(create = true)
+    String getTransitioning();
+
+    @Field(create = true)
+    Integer getTransitioningProgress();
+
+    @Field(create = true)
+    String getTransitioningMessage();
+
+    @Field(create = true)
+    String getTransitioningInternalMessage();
 
 }

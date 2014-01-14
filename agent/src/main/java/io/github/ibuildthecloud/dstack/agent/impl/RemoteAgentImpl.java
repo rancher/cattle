@@ -4,7 +4,9 @@ import io.github.ibuildthecloud.dstack.agent.AgentRequest;
 import io.github.ibuildthecloud.dstack.agent.RemoteAgent;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.async.utils.AsyncUtils;
+import io.github.ibuildthecloud.dstack.eventing.EventCallOptions;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
+import io.github.ibuildthecloud.dstack.eventing.exception.EventExecutionException;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
@@ -47,14 +49,22 @@ public class RemoteAgentImpl implements RemoteAgent {
     @Override
     public <T extends Event> T callSync(Event event, Class<T> reply, long timeout) {
         /* NOTE: Forever blocking get() used only because underlying future will always timeout */
-        return AsyncUtils.get(call(event, reply, timeout));
+        try {
+            return AsyncUtils.get(call(event, reply, timeout));
+        } catch ( EventExecutionException e ) {
+            /* This is done so that the exception will have a better stack trace.
+             * Normally the exceptions from a future will have a pretty sparse stack
+             * not giving too much context
+             */
+            throw new EventExecutionException(e);
+        }
     }
 
     @Override
     public <T extends Event> ListenableFuture<T> call(final Event event, final Class<T> reply, long timeout) {
         Event request = createRequest(event);
 
-        ListenableFuture<Event> future = eventService.call(request, AGENT_RETRIES.get(), timeout);
+        ListenableFuture<Event> future = eventService.call(request, new EventCallOptions(AGENT_RETRIES.get(), timeout));
         return Futures.transform(future, new Function<Event, T>() {
             @Override
             public T apply(Event input) {

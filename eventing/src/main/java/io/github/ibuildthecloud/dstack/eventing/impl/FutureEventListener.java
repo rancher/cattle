@@ -1,8 +1,10 @@
 package io.github.ibuildthecloud.dstack.eventing.impl;
 
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
+import io.github.ibuildthecloud.dstack.eventing.EventProgress;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.PoolSpecificListener;
+import io.github.ibuildthecloud.dstack.eventing.exception.EventExecutionException;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 
@@ -13,6 +15,7 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
     EventService eventService;
     String replyTo;
     SettableFuture<Event> future;
+    EventProgress progress;
     Event event;
     boolean failed;
 
@@ -23,14 +26,25 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
     }
 
     @Override
-    public void onEvent(Event reply) {
+    public synchronized void onEvent(Event reply) {
         if ( future != null && event != null ) {
             String[] previous = reply.getPreviousIds();
+
             if ( previous != null && previous.length > 0 && previous[0].equals(event.getId()) ) {
                 EventVO replyWithName = new EventVO(reply);
                 replyWithName.setName(appendReply(event.getName()));
-                future.set(replyWithName);
+
                 eventService.publish(replyWithName);
+
+                String transitioning = replyWithName.getTransitioning();
+
+                if ( transitioning == null || Event.TRANSITIONING_NO.equals(transitioning) ) {
+                    future.set(replyWithName);
+                } else if ( Event.TRANSITIONING_ERROR.equals(transitioning) ) {
+                    future.setException(new EventExecutionException(replyWithName));
+                } else if ( progress != null ){
+                    progress.progress(replyWithName);
+                }
             }
         }
     }
@@ -45,9 +59,10 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
 
     }
 
-    public void reset() {
+    public synchronized void reset() {
         future = null;
         event = null;
+        progress = null;
     }
 
     public SettableFuture<Event> getFuture() {
@@ -92,6 +107,14 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
     @Override
     public int getQueueDepth() {
         return 1000;
+    }
+
+    public EventProgress getProgress() {
+        return progress;
+    }
+
+    public void setProgress(EventProgress progress) {
+        this.progress = progress;
     }
 
 }

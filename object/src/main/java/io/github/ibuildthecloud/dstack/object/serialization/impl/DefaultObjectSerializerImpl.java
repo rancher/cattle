@@ -39,6 +39,10 @@ public class DefaultObjectSerializerImpl implements ObjectSerializer {
     protected Map<String,Object> marshall(Object obj, String type, Action action) {
         Map<String,Object> data = obj == null ? null : jsonMapper.writeValueAsMap(obj);
 
+        if ( data != null ) {
+            data.put("type", type);
+        }
+
         for ( Action childAction : action.getChildren() ) {
             Relationship rel = metaDataManager.getRelationship(type, childAction.getName().toLowerCase());
             if ( rel == null ) {

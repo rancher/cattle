@@ -15,7 +15,8 @@ public class EventingDispatcher implements ProcessInstanceDispatcher {
     @Override
     public void execute(ProcessServer server, Long id) {
         if ( id != null ) {
-            eventService.publish(EventVO.newEvent(EngineEvents.PROCESS_EXECUTE).resourceId(id.toString()));
+            eventService.publish(EventVO.newEvent(EngineEvents.PROCESS_EXECUTE)
+                    .withResourceId(id.toString()));
         }
     }
 

@@ -14,6 +14,7 @@ def reply(event):
             "resourceType": event.resourceType,
             "resourceId": event.resourceId,
             "previousIds": [event.id],
+            "previousNames": [event.name],
             "time": calendar.timegm(time.gmtime()) * 1000,
         })
 

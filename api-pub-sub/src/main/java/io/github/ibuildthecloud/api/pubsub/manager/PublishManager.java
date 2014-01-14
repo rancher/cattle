@@ -51,6 +51,10 @@ public class PublishManager extends AbstractNoOpResourceManager {
         event.setResourceType(publish.getResourceType());
         event.setData(publish.getData());
         event.setPublisher(publish.getPublisher());
+        event.setTransitioning(publish.getTransitioning());
+        event.setTransitioningInternalMessage(publish.getTransitioningInternalMessage());
+        event.setTransitioningMessage(event.getTransitioningMessage());
+        event.setTransitioningProgress(event.getTransitioningProgress());
 
         event.setTime(new Date(publish.getTime()));
 

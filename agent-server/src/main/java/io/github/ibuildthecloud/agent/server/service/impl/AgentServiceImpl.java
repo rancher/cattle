@@ -8,6 +8,7 @@ import io.github.ibuildthecloud.dstack.async.utils.AsyncUtils;
 import io.github.ibuildthecloud.dstack.async.utils.TimeoutException;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
+import io.github.ibuildthecloud.dstack.eventing.exception.EventExecutionException;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
@@ -55,6 +56,8 @@ public class AgentServiceImpl implements AgentService {
                 protected void doRun() throws Exception {
                     try {
                         handleResponse(event, AsyncUtils.get(future));
+                    } catch ( EventExecutionException e ) {
+                        handleError(event, e.getEvent());
                     } catch ( TimeoutException t ) {
                         log.info("Timeout waiting for response to [{}] id [{}]", agentEvent.getName(), agentEvent.getId());
                     }
@@ -66,6 +69,17 @@ public class AgentServiceImpl implements AgentService {
     protected void handleResponse(Event request, Event agentResponse) {
         EventVO response = EventVO.reply(request);
         response.setData(agentResponse);
+        eventService.publish(response);
+    }
+
+    protected void handleError(Event request, Event agentResponse) {
+        EventVO response = EventVO.reply(request);
+        response.setData(agentResponse);
+        response.setTransitioning(agentResponse.getTransitioning());
+        response.setTransitioningInternalMessage(agentResponse.getTransitioningInternalMessage());
+        response.setTransitioningMessage(agentResponse.getTransitioningMessage());
+        response.setTransitioningProgress(agentResponse.getTransitioningProgress());
+
         eventService.publish(response);
     }
 
