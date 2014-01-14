@@ -1,7 +1,7 @@
 from common_fixtures import *
 import os
 
-TEST_IMAGE = "ibuildthecloud/hello-world"
+TEST_IMAGE = "ibuildthecloud/helloworld"
 TEST_IMAGE_UUID = "docker:" + TEST_IMAGE
 
 DOCKER_HOST = "ssh://docker:docker@localhost"
@@ -56,17 +56,17 @@ def test_docker_create_only(client, docker_context):
 
     image = client.list_image(uuid=uuid)[0]
     image_mapping = filter(
-        lambda m: not m.storagePool().external,
+        lambda m: m.storagePool().external,
         image.imageStoragePoolMaps()
     )
 
     assert len(image_mapping) == 1
     assert image_mapping[0].imageId == image.id
-    assert image_mapping[0].storagePoolId == docker_context["pool"].id
+    assert image_mapping[0].storagePoolId == docker_context["external_pool"].id
 
     assert image.isPublic
     assert image.uuid == uuid
-    assert image.data.dockerImage.repository == "hello-world"
+    assert image.data.dockerImage.repository == "helloworld"
     assert image.data.dockerImage.namespace == "ibuildthecloud"
     assert image.data.dockerImage.tag == "latest"
     assert image.data.dockerImage.id is not None
@@ -84,3 +84,13 @@ def test_docker_create_with_start(client, docker_context):
     container = wait_success(client, container)
 
     assert container.state == "running"
+
+    image = client.list_image(uuid=uuid)[0]
+    image_mapping = filter(
+        lambda m: not m.storagePool().external,
+        image.imageStoragePoolMaps()
+    )
+
+    assert len(image_mapping) == 1
+    assert image_mapping[0].imageId == image.id
+    assert image_mapping[0].storagePoolId == docker_context["pool"].id
