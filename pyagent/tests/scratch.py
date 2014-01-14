@@ -1,3 +1,3 @@
-import testcommon
+import common_fixtures
 
 import dstack.plugins

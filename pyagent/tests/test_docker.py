@@ -1,49 +1,25 @@
-import sys
-print sys.path
-from dstack.plugin.docker.storage import DockerPool
-from dstack.plugin.docker.compute import DockerCompute
-from dstack.plugin.core.marshaller import JsonObject
+from common_fixtures import *
 import pytest
+from docker import Client
+
+if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") is None', reason="DOCKER_TEST is not set")
 
 
-@pytest.fixture(scope="module")
-def dockerpool():
-    return DockerPool()
+@if_docker
+def test_image_activate(agent, responses):
+    event_test(agent, 'docker/image_activate')
 
-@pytest.fixture(scope="module")
-def dockercompute():
-    return DockerCompute()
 
-def test_stage_template(dockerpool, name="ibuildthecloud/hello-world", delete=True):
-    if delete:
-        dockerpool.delete_template(templateStoragePoolRef = JsonObject({
-            "data": {
-                "docker.image.Repository" : name
-            }
-        }))
-    template = dockerpool.stage_template(template=JsonObject({
-        "data": {
-            "docker.image.Repository" : name
-        }
-    }))
-    assert not template is None
-    assert template["Repository"] == name
-    assert template["Tag"] == "latest"
+@if_docker
+def test_volume_activate(agent, responses):
+    event_test(agent, 'docker/volume_activate')
 
-    return template
 
-def test_create_container(dockercompute, dockerpool):
-    #test_stage_template(dockerpool, "busybox", delete=False)
-    vm = JsonObject({
-        "data" : {
-            "docker.container.Image" : "busybox",
-            "docker.container.Cmd" : [ "/bin/sleep",  "15" ],
-            "docker.container.Name" : ""
-        }
-    })
+@if_docker
+def test_instance_activate(agent, responses):
+    def post(req, resp):
+        del resp["data"]["+data"]["dockerContainer"]["Created"]
+        del resp["data"]["+data"]["dockerContainer"]["Id"]
+        del resp["data"]["+data"]["dockerContainer"]["Status"]
 
-    container = dockercompute.start(vm)
-    assert not container is None
-    assert not container.get("Id") is None
-    assert container.get("Image") == "busybox:latest"
-    assert container.get("Command") == "/bin/sleep 15"
+    event_test(agent, 'docker/instance_activate', post_func=post)
