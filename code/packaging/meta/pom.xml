@@ -16,6 +16,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-settings-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-iaas-archaius-management</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -2,7 +2,7 @@
 
     <appender name="CONSOLE_INFO" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>ERROR</level>
+            <level>INFO</level>
         </filter>
         <encoder>
             <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
@@ -14,12 +14,6 @@
             <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
         </encoder>
     </appender>
-
-<!--     <appender name="CONSOLE_SHORT" class="ch.qos.logback.core.ConsoleAppender"> -->
-<!--         <encoder> -->
-<!--             <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %.100m %xEx%n</pattern> -->
-<!--         </encoder> -->
-<!--     </appender> -->
 
     <appender name="LOGSTASH" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logstash.log</file>
@@ -124,19 +118,19 @@
 
     <logger name="EventLogOut">
         <level value="DEBUG" />
-<!--         <appender-ref ref="FILE_EVENT_OUT" /> -->
+        <appender-ref ref="FILE_EVENT_OUT" />
     </logger>
-    
+
     <logger name="EventLogIn">
         <level value="DEBUG" />
-<!--         <appender-ref ref="FILE_EVENT_IN" /> -->
+        <appender-ref ref="FILE_EVENT_IN" />
     </logger>
 
     <root>
         <appender-ref ref="CONSOLE_INFO" />
-<!--         <appender-ref ref="FILE" /> -->
+        <appender-ref ref="FILE" />
         <appender-ref ref="FILE_ERROR" />
-<!--         <appender-ref ref="LOGSTASH" /> -->
+        <appender-ref ref="LOGSTASH" />
     </root>
 
 </configuration>

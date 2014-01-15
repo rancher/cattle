@@ -17,7 +17,7 @@ import org.apache.cloudstack.spring.module.web.ModuleBasedFilter;
 
 public class ApiRequestFilter extends ModuleBasedFilter {
 
-    private static final String DEFAULT_MODULE = "api";
+    private static final String DEFAULT_MODULE = "api-server";
 
     ApiRequestFilterDelegate delegate;
 
