@@ -6,12 +6,12 @@
         <groupId>io.github.ibuildthecloud</groupId>
         <artifactId>dstack-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../../../../parent/pom.xml</relativePath>
+        <relativePath>../../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-simple-allocator</artifactId>
+            <artifactId>dstack-iaas-simple-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

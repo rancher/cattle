@@ -1,11 +1,11 @@
 package io.github.ibuildthecloud.agent.connection.event;
 
 import io.github.ibuildthecloud.agent.server.connection.AgentConnection;
-import io.github.ibuildthecloud.dstack.core.event.CoreEvents;
 import io.github.ibuildthecloud.dstack.eventing.EventCallOptions;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
+import io.github.ibuildthecloud.dstack.iaas.event.IaasEvents;
 
 import java.io.IOException;
 
@@ -40,7 +40,7 @@ public class AgentEventingConnection implements AgentConnection {
         }
 
         EventVO withAgentEvent = new EventVO(event);
-        withAgentEvent.setName(CoreEvents.appendAgent(event.getName(), getAgentId()));
+        withAgentEvent.setName(IaasEvents.appendAgent(event.getName(), getAgentId()));
 
         return eventService.call(withAgentEvent, new EventCallOptions(0, 15000L));
     }

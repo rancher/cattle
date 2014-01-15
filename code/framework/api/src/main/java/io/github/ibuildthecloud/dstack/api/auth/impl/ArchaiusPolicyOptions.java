@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.api.auth.impl;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,6 +15,7 @@ public class ArchaiusPolicyOptions implements PolicyOptions {
 
     Map<String,DynamicBooleanProperty> bools = new ConcurrentHashMap<String, DynamicBooleanProperty>();
     Map<String,DynamicStringProperty> strings = new ConcurrentHashMap<String, DynamicStringProperty>();
+    Map<String,OptionCallback> callbacks = new HashMap<String, OptionCallback>();
     String name;
 
     public ArchaiusPolicyOptions(String name) {
@@ -32,6 +34,11 @@ public class ArchaiusPolicyOptions implements PolicyOptions {
 
     @Override
     public String getOption(String optionName) {
+        OptionCallback callback = callbacks.get(optionName);
+        if ( callback != null ) {
+            return callback.getOption();
+        }
+
         DynamicStringProperty prop = strings.get(optionName);
         if ( prop == null ) {
             prop = ArchaiusUtil.getString(String.format(PROP_FORMAT, name, optionName));

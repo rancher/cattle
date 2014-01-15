@@ -5,62 +5,18 @@
         <groupId>io.github.ibuildthecloud</groupId>
         <artifactId>dstack-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>parent</relativePath>
+        <relativePath>code/parent/pom.xml</relativePath>
     </parent>
     <artifactId>dstack</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>agent</module>
-        <module>agent-connection-event</module>
-        <module>agent-connection-ssh</module>
-        <module>agent-server</module>
-        <module>allocator</module>
-        <module>api</module>
-        <module>api-pub-sub</module>
-        <module>api-resources</module>
-        <module>app</module>
-        <module>archaius</module>
-        <module>archaius-management</module>
-        <module>async</module>
-        <module>code/iaas/simple-allocator</module>
-        <module>code/iaas/model</module>
-        <module>code/implementation/docker/allocator</module>
-        <module>code/implementation/docker/storage</module>
-        <module>code/implementation/simulator/agent-connection</module>
-        <module>code/implementation/simulator/allocator</module>
-        <module>code/implementation/simulator/storage</module>
-        <module>commands</module>
-        <module>db-loader</module>
-        <module>dev</module>
-        <module>deferred</module>
-        <module>engine</module>
-        <module>engine-jooq</module>
-        <module>eventing</module>
-        <module>eventing-redis</module>
-        <module>events</module>
-        <module>extension</module>
-        <module>extension-spring</module>
-        <module>extension-api</module>
-        <module>jooq</module>
-        <module>json</module>
-        <module>launcher</module>
-        <module>lock</module>
-        <module>logback</module>
-        <module>meta</module>
-        <module>meta-parent</module>
-        <module>object</module>
-        <module>parent</module>
-        <module>pool</module>
-        <module>process-common</module>
-        <module>processes</module>
         <module>resources</module>
-        <module>schema</module>
-        <module>spring</module>
-        <module>storage-service</module>
-        <module>system</module>
-        <module>transport</module>
-        <module>upstream/cloudstack</module>
-        <module>utils</module>
+        <module>code/framework</module>
+        <module>code/iaas</module>
+        <module>code/implementation</module>
+        <module>code/meta-parent</module>
+        <module>code/packaging</module>
+        <module>code/parent</module>
     </modules>
     <profiles>
         <profile>

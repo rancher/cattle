@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.filter.common;
+package io.github.ibuildthecloud.dstack.iaas.api.filter.common;
 
 import io.github.ibuildthecloud.dstack.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.resource.AbstractResourceManagerFilter;

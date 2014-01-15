@@ -1,5 +1,7 @@
-package io.github.ibuildthecloud.dstack.api.auth.impl;
+package io.github.ibuildthecloud.dstack.iaas.api.auth.impl;
 
+import io.github.ibuildthecloud.dstack.api.auth.impl.DefaultPolicy;
+import io.github.ibuildthecloud.dstack.api.auth.impl.PolicyOptions;
 import io.github.ibuildthecloud.dstack.core.model.Account;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 

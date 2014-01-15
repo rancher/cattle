@@ -1,26 +1,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <artifactId>dstack-framework-api</artifactId>
     <parent>
         <artifactId>dstack-parent</artifactId>
         <groupId>io.github.ibuildthecloud</groupId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../parent/pom.xml</relativePath>
     </parent>
-    <artifactId>dstack-api</artifactId>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>gdapi-java-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-object</artifactId>
+            <artifactId>dstack-framework-object</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-events</artifactId>
+            <artifactId>dstack-framework-events</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -32,9 +28,10 @@
             <artifactId>commons-collections</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cloudstack</groupId>
-            <artifactId>cloud-framework-spring-module</artifactId>
-            <version>${acs.version}</version>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-spring-module</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -44,7 +41,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-jooq</artifactId>
+            <artifactId>dstack-framework-jooq</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>

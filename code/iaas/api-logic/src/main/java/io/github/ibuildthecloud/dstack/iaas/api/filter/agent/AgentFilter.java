@@ -1,9 +1,9 @@
-package io.github.ibuildthecloud.dstack.filter.agent;
+package io.github.ibuildthecloud.dstack.iaas.api.filter.agent;
 
 import static io.github.ibuildthecloud.dstack.core.model.tables.AgentTable.*;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
-import io.github.ibuildthecloud.dstack.filter.common.AbstractDefaultResourceManagerFilter;
+import io.github.ibuildthecloud.dstack.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;

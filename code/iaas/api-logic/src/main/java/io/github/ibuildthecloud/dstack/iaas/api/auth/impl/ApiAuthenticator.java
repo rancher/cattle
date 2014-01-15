@@ -1,8 +1,10 @@
-package io.github.ibuildthecloud.dstack.api.auth.impl;
+package io.github.ibuildthecloud.dstack.iaas.api.auth.impl;
 
-import io.github.ibuildthecloud.dstack.api.auth.dao.AuthDao;
+import io.github.ibuildthecloud.dstack.api.auth.impl.ArchaiusPolicyOptions;
+import io.github.ibuildthecloud.dstack.api.auth.impl.PolicyOptions;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.model.Account;
+import io.github.ibuildthecloud.dstack.iaas.api.auth.dao.AuthDao;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;

@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.api.object.postini;
+package io.github.ibuildthecloud.dstack.iaas.api.object.postinit;
 
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;

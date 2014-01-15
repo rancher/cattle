@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-simple-allocator</artifactId>
+    <artifactId>dstack-iaas-simple-allocator</artifactId>
     <parent>
         <groupId>io.github.ibuildthecloud</groupId>
         <artifactId>dstack-parent</artifactId>
@@ -11,18 +11,19 @@
     <dependencies>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-allocator</artifactId>
+            <artifactId>dstack-iaas-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-core-model</artifactId>
+            <artifactId>dstack-iaas-model</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-jooq</artifactId>
+            <artifactId>dstack-framework-jooq</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-jooq</artifactId>
+    <artifactId>dstack-framework-jooq</artifactId>
     <parent>
         <groupId>io.github.ibuildthecloud</groupId>
         <artifactId>dstack-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
@@ -24,6 +24,7 @@
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-codegen</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
@@ -31,17 +32,17 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-archaius</artifactId>
+            <artifactId>dstack-framework-archaius</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-json</artifactId>
+            <artifactId>dstack-framework-json</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-utils</artifactId>
+            <artifactId>dstack-framework-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

@@ -6,27 +6,27 @@
         <artifactId>dstack-parent</artifactId>
         <groupId>io.github.ibuildthecloud</groupId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-allocator</artifactId>
+            <artifactId>dstack-iaas-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-archaius-management</artifactId>
+            <artifactId>dstack-iaas-archaius-management</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-storage-service</artifactId>
+            <artifactId>dstack-iaas-storage-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-spring</artifactId>
+            <artifactId>dstack-framework-spring</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
@@ -37,17 +37,17 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-system</artifactId>
+            <artifactId>dstack-iaas-system</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-api-pub-sub</artifactId>
+            <artifactId>dstack-framework-api-pub-sub</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-agent-server</artifactId>
+            <artifactId>dstack-iaas-agent-server</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -57,22 +57,17 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-schema</artifactId>
+            <artifactId>dstack-framework-schema</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-processes</artifactId>
+            <artifactId>dstack-iaas-logic</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-jooq</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-api-resources</artifactId>
+            <artifactId>dstack-iaas-api-logic</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -13,7 +13,6 @@
     <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
-        <acs.version>4.3.0-SNAPSHOT</acs.version>
         <jetty.version>8.1.11.v20130520</jetty.version>
         <jooq.version>3.3.0-SNAPSHOT</jooq.version>
         <spring.version>3.2.4.RELEASE</spring.version>
@@ -42,6 +41,21 @@
     </dependencies>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>2.0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>1.7.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>15.0</version>
+            </dependency>
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
@@ -132,6 +146,11 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>

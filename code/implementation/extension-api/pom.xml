@@ -5,13 +5,13 @@
         <artifactId>dstack-parent</artifactId>
         <groupId>io.github.ibuildthecloud</groupId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <artifactId>dstack-extension-api</artifactId>
     <dependencies>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-api</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-api</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

@@ -4,12 +4,12 @@ import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.async.retry.CancelRetryException;
 import io.github.ibuildthecloud.dstack.async.retry.Retry;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
-import io.github.ibuildthecloud.dstack.core.command.PingCommand;
-import io.github.ibuildthecloud.dstack.core.event.CoreEvents;
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
+import io.github.ibuildthecloud.dstack.framework.command.PingCommand;
+import io.github.ibuildthecloud.dstack.framework.event.FrameworkEvents;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -82,7 +82,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         if ( strip ) {
             String name = newEvent.getName();
             if ( name != null ) {
-                newEvent.setName(StringUtils.substringBefore(name, CoreEvents.EVENT_SEP));
+                newEvent.setName(StringUtils.substringBefore(name, FrameworkEvents.EVENT_SEP));
             }
         }
 

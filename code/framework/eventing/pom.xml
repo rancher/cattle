@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-eventing</artifactId>
+    <artifactId>dstack-framework-eventing</artifactId>
     <parent>
         <groupId>io.github.ibuildthecloud</groupId>
         <artifactId>dstack-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
@@ -15,44 +15,43 @@
             <version>15.0</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-json</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-json</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-utils</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-archaius</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-archaius</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-pool</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-pool</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-async</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-async</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-lock</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-lock</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.cloudstack</groupId>
-            <artifactId>cloud-framework-managed-context</artifactId>
-            <version>${acs.version}</version>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-managed-context</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-pool</groupId>
             <artifactId>commons-pool</artifactId>
-            <version>1.6</version>
         </dependency>
     </dependencies>
 </project>

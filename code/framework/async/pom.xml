@@ -1,28 +1,27 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-async</artifactId>
+    <artifactId>dstack-framework-async</artifactId>
     <parent>
         <groupId>io.github.ibuildthecloud</groupId>
         <artifactId>dstack-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>15.0</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-utils</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.cloudstack</groupId>
-            <artifactId>cloud-framework-managed-context</artifactId>
-            <version>${acs.version}</version>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-managed-context</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

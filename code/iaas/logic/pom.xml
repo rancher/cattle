@@ -1,58 +1,47 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-processes</artifactId>
+    <artifactId>dstack-iaas-logic</artifactId>
     <parent>
         <groupId>io.github.ibuildthecloud</groupId>
         <artifactId>dstack-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-engine</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-engine</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-agent</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-iaas-agent</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-commands</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-iaas-logic-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-process-common</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-iaas-engine-jooq</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-engine-jooq</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-transport</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-jooq</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-jooq</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.6</version>
         </dependency>
     </dependencies>
 </project>

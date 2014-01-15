@@ -6,7 +6,7 @@
         <artifactId>dstack-parent</artifactId>
         <groupId>io.github.ibuildthecloud</groupId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <packaging>war</packaging>
     <dependencies>
@@ -50,19 +50,16 @@
             <version>${project.version}</version>
         </dependency>
         <!-- End Plugins -->
+
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-launcher</artifactId>
+            <artifactId>dstack-framework-launcher</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>jstl</groupId>
-            <artifactId>jstl</artifactId>
-        </dependency>
-        <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-db-loader</artifactId>
+            <artifactId>dstack-iaas-db-loader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

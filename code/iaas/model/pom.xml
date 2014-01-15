@@ -16,13 +16,13 @@
         </dependency>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-jooq</artifactId>
+            <artifactId>dstack-framework-jooq</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-object</artifactId>
+            <artifactId>dstack-framework-object</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

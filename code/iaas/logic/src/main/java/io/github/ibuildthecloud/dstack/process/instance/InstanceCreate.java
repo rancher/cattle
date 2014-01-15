@@ -16,7 +16,6 @@ import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 import io.github.ibuildthecloud.dstack.object.util.DataUtils;
 import io.github.ibuildthecloud.dstack.process.base.AbstractDefaultProcessHandler;
-import io.github.ibuildthecloud.dstack.transport.TransportFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +31,6 @@ import javax.inject.Named;
 public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     JsonMapper jsonMapper;
-    TransportFactory transportFactory;
     ObjectProcessManager processManager;
     ObjectManager objectManager;
 
@@ -171,15 +169,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
-    }
-
-    public TransportFactory getTransportFactory() {
-        return transportFactory;
-    }
-
-    @Inject
-    public void setTransportFactory(TransportFactory transportFactory) {
-        this.transportFactory = transportFactory;
     }
 
     @Override

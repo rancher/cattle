@@ -8,9 +8,8 @@ import io.github.ibuildthecloud.api.pubsub.util.SubscriptionUtils.SubscriptionSt
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
-import io.github.ibuildthecloud.dstack.core.event.CoreEvents;
-import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
+import io.github.ibuildthecloud.dstack.framework.event.FrameworkEvents;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
@@ -34,6 +33,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.osgi.framework.FrameworkEvent;
 
 public class SubscribeManager extends AbstractNoOpResourceManager {
 
@@ -54,23 +54,17 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
 
         List<String> eventNames = subscribe.getEventNames();
         List<String> filteredEventNames = new ArrayList<String>(eventNames.size());
-        Long agentId = subscribe.getAgentId();
 
         Policy policy = ApiUtils.getPolicy();
-        long accountId = policy.getAccountId();
 
         SubscriptionStyle style = SubscriptionUtils.getSubscriptionStyle(policy);
         for ( String eventName : eventNames ) {
             switch (style) {
-            case ACCOUNT:
-                eventName = CoreEvents.appendAccount(eventName, accountId);
+            case QUALIFIED:
+                String key = SubscriptionUtils.getSubscriptionQualifier(policy);
+                String value = SubscriptionUtils.getSubscriptionQualifierValue(policy);
+                eventName = String.format("%s%s%s=%s", eventName, FrameworkEvents.EVENT_SEP, key, value);
                 break;
-            case AGENT:
-                Long resolvedAgentId = getAgent(agentId);
-                if ( resolvedAgentId == null ) {
-                    throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
-                }
-                eventName = CoreEvents.appendAccount(eventName, resolvedAgentId);
             case RAW:
                 break;
             }

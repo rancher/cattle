@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.api.auth.dao;
+package io.github.ibuildthecloud.dstack.iaas.api.auth.dao;
 
 import io.github.ibuildthecloud.dstack.core.model.Account;
 

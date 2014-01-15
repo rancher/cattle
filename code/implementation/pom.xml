@@ -1,0 +1,24 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>dstack-implementation</artifactId>
+    <parent>
+        <groupId>io.github.ibuildthecloud</groupId>
+        <artifactId>dstack-parent</artifactId>
+        <relativePath>../parent/pom.xml</relativePath>
+        <version>0.1-SNAPSHOT</version>
+    </parent>
+    <packaging>pom</packaging>
+    <modules>
+        <module>agent-connection-event</module>
+        <module>agent-connection-ssh</module>
+        <module>docker/allocator</module>
+        <module>docker/storage</module>
+        <module>eventing-redis</module>
+        <module>extension-api</module>
+        <module>settings-api</module>
+        <module>simulator/agent-connection</module>
+        <module>simulator/allocator</module>
+        <module>simulator/storage</module>
+    </modules>
+</project>

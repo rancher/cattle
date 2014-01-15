@@ -1,12 +1,12 @@
-package io.github.ibuildthecloud.dstack.core.command;
+package io.github.ibuildthecloud.dstack.framework.command;
 
-import io.github.ibuildthecloud.dstack.core.event.CoreEvents;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
+import io.github.ibuildthecloud.dstack.framework.event.FrameworkEvents;
 
 public class PingCommand extends EventVO {
 
     public PingCommand() {
-        setName(CoreEvents.PING);
+        setName(FrameworkEvents.PING);
     }
 
 }

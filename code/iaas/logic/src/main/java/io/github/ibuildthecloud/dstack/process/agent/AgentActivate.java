@@ -2,11 +2,11 @@ package io.github.ibuildthecloud.dstack.process.agent;
 
 import io.github.ibuildthecloud.dstack.agent.AgentLocator;
 import io.github.ibuildthecloud.dstack.agent.RemoteAgent;
-import io.github.ibuildthecloud.dstack.core.command.PingCommand;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
+import io.github.ibuildthecloud.dstack.framework.command.PingCommand;
 import io.github.ibuildthecloud.dstack.process.base.AbstractDefaultProcessHandler;
 
 import javax.inject.Inject;
