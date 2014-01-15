@@ -9,7 +9,7 @@ public class AllocatorUtils {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorUtils.class);
 
-    public static Boolean checkState(long resourceId, String state, String logType) {
+    public static Boolean checkAllocateState(long resourceId, String state, String logType) {
         if ( CommonStatesConstants.ACTIVE.equals(state) ) {
             log.info("{} [{}] is already allocated", logType, resourceId);
             return true;
@@ -19,6 +19,15 @@ public class AllocatorUtils {
         }
 
         return null;
+    }
+
+    public static boolean checkDeallocateState(long resourceId, String state, String logType) {
+        if ( CommonStatesConstants.ACTIVE.equals(state) ) {
+            return true;
+        }
+
+        log.info("Can not deallocate {}:{}, is not in an active state", logType, resourceId);
+        return false;
     }
 
 }

@@ -25,9 +25,15 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
     public void instanceAllocate(Event event) {
         allocate(event);
     }
+
     @Override
     public void volumeAllocate(Event event) {
         allocate(event);
+    }
+
+    @Override
+    public void instanceDeallocate(Event event) {
+        deallocate(event);
     }
 
     protected void allocate(Event event) {
@@ -40,6 +46,25 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
             if ( allocator.allocate(request) ) {
                 handled = true;
                 log.info("Allocator [{}] handled request [{}]", allocator, request);
+                break;
+            }
+        }
+
+        if ( handled && request.isSendReply() ) {
+            eventService.publish(EventVO.reply(event));
+        }
+    }
+
+    protected void deallocate(Event event) {
+        log.info("Deallocating [{}:{}]", event.getResourceType(), event.getResourceId());
+
+        AllocationRequest request = new AllocationRequest(event);
+        boolean handled = false;
+
+        for ( Allocator allocator : allocators ) {
+            if ( allocator.deallocate(request) ) {
+                handled = true;
+                log.info("Deallocator [{}] handled request [{}]", allocator, request);
                 break;
             }
         }

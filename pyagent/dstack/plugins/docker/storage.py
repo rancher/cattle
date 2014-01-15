@@ -43,3 +43,8 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
             return True
         return False
 
+    def _is_volume_inactive(self, volume, storage_pool):
+        if volume.deviceNumber == 0:
+            return True
+        return False
+

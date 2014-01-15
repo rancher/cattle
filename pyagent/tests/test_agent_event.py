@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import common_fixtures
 from dstack.agent.event import EventClient
 

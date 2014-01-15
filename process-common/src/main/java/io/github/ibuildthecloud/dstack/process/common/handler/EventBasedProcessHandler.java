@@ -11,12 +11,13 @@ import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
+import io.github.ibuildthecloud.dstack.util.type.Priority;
 
 import java.util.Map;
 
 import javax.inject.Inject;
 
-public class EventBasedProcessHandler extends AbstractObjectProcessHandler {
+public class EventBasedProcessHandler extends AbstractObjectProcessHandler implements Priority {
 
     public static String DEFAULT_NAME = "EventBased";
 
@@ -25,6 +26,7 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler {
     String eventName;
     Integer retry;
     Long timeoutMillis;
+    int priority = Priority.SPECIFIC;
 
     public EventBasedProcessHandler() {
         if ( this.getClass() == EventBasedProcessHandler.class ) {
@@ -119,6 +121,15 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler {
 
     public void setTimeoutMillis(Long timeoutMillis) {
         this.timeoutMillis = timeoutMillis;
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
 }

@@ -31,7 +31,7 @@ public class Main {
 
 		return null;
 	}
-	
+
 	protected static URL getContextRoot(URL webXml) throws IOException {
 	    if ( webXml != null ) {
     	    URLConnection connection = webXml.openConnection();
@@ -50,7 +50,7 @@ public class Main {
 		long start = System.currentTimeMillis();
 
 		try {
-			Server s = new Server(8080);
+			Server s = new Server(Integer.parseInt(System.getProperty("http.port","8080")));
 
 			WebAppContext context = new WebAppContext();
 			context.setThrowUnavailableOnStartupException(true);

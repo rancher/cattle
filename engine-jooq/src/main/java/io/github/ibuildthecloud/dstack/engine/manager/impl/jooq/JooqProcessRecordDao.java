@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.dstack.engine.manager.impl.jooq;
 
 import static io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.*;
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
 import io.github.ibuildthecloud.dstack.engine.manager.impl.ProcessRecord;
@@ -24,8 +25,12 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicIntProperty;
+
 
 public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessRecordDao {
+
+    private static DynamicIntProperty PROCESS_REPLAY_BATCH = ArchaiusUtil.getInt("process.replay.batch.size");
 
     private static final Logger log = LoggerFactory.getLogger(JooqProcessRecordDao.class);
 
@@ -38,6 +43,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
                 .from(PROCESS_INSTANCE)
                 .where(PROCESS_INSTANCE.END_TIME.isNull())
                 .orderBy(PROCESS_INSTANCE.START_TIME.asc())
+                .limit(PROCESS_REPLAY_BATCH.get())
                 .fetch(PROCESS_INSTANCE.ID);
     }
 

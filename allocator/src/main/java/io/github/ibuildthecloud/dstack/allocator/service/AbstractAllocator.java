@@ -66,9 +66,50 @@ public abstract class AbstractAllocator implements Allocator {
         }
     }
 
+    @Override
+    public boolean deallocate(final AllocationRequest request) {
+        if ( ! supports(request) )
+            return false;
+
+        try {
+            return lockManager.lock(new AllocateResourceLock(request), new LockCallback<Boolean>() {
+                @Override
+                public Boolean doWithLock() {
+                    switch (request.getType()) {
+                    case INSTANCE:
+                        return deallocateInstance(request);
+                    case VOLUME:
+                        return deallocateVolume(request);
+                    }
+
+                    return false;
+                }
+            });
+        } catch( UnsupportedAllocation e ) {
+            log.info("Unsupported allocation for [{}] : {}", this, e.getMessage());
+            return false;
+        }
+    }
+
+    protected boolean deallocateInstance(final AllocationRequest request) {
+        final Instance instance = objectManager.loadResource(Instance.class, request.getResourceId());
+        boolean stateCheck = AllocatorUtils.checkDeallocateState(request.getResourceId(), instance.getAllocationState(), "Instance");
+        if ( ! stateCheck ) {
+            return true;
+        }
+
+        releaseAllocation(instance);
+
+        return true;
+    }
+
+    protected void releaseAllocation(Instance instance) {
+        allocatorDao.releaseAllocation(instance);
+    }
+
     protected boolean allocateInstance(final AllocationRequest request) {
         final Instance instance = objectManager.loadResource(Instance.class, request.getResourceId());
-        Boolean stateCheck = AllocatorUtils.checkState(request.getResourceId(), instance.getAllocationState(), "Instance");
+        Boolean stateCheck = AllocatorUtils.checkAllocateState(request.getResourceId(), instance.getAllocationState(), "Instance");
         if ( stateCheck != null ) {
             return stateCheck;
         }
@@ -91,9 +132,13 @@ public abstract class AbstractAllocator implements Allocator {
         });
     }
 
+    protected boolean deallocateVolume(AllocationRequest request) {
+        throw new UnsupportedOperationException();
+    }
+
     protected boolean allocateVolume(AllocationRequest request) {
         Volume volume = objectManager.loadResource(Volume.class, request.getResourceId());
-        Boolean stateCheck = AllocatorUtils.checkState(request.getResourceId(), volume.getAllocationState(), "Volume");
+        Boolean stateCheck = AllocatorUtils.checkAllocateState(request.getResourceId(), volume.getAllocationState(), "Volume");
         if ( stateCheck != null ) {
             return stateCheck;
         }

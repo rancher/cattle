@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.process.volume;
 
+import io.github.ibuildthecloud.dstack.core.dao.VolumeDao;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
 import io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
@@ -14,10 +15,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
 public class VolumeAllocate extends EventBasedProcessHandler {
+
+    VolumeDao volumeDao;
+
+    public VolumeAllocate() {
+        setPriority(DEFAULT);
+    }
 
     @Override
     protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
@@ -26,11 +34,20 @@ public class VolumeAllocate extends EventBasedProcessHandler {
 
         Volume volume = (Volume)state.getResource();
 
-        for ( VolumeStoragePoolMap map : getObjectManager().children(volume, VolumeStoragePoolMap.class) ) {
+        for ( VolumeStoragePoolMap map : volumeDao.findNonRemovedVolumeStoragePoolMaps(volume.getId()) ) {
             CollectionUtils.addToMap(allocationData, "volume:" + volume.getId(), map.getVolumeId(), HashSet.class);
             getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, state.getData());
         }
 
         return new HandlerResult(result);
+    }
+
+    public VolumeDao getVolumeDao() {
+        return volumeDao;
+    }
+
+    @Inject
+    public void setVolumeDao(VolumeDao volumeDao) {
+        this.volumeDao = volumeDao;
     }
 }

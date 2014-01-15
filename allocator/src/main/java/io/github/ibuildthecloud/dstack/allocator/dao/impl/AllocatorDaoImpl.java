@@ -8,6 +8,7 @@ import static io.github.ibuildthecloud.dstack.core.model.tables.VolumeStoragePoo
 import io.github.ibuildthecloud.dstack.allocator.dao.AllocatorDao;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationAttempt;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationCandidate;
+import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
 import io.github.ibuildthecloud.dstack.core.model.Host;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.InstanceHostMap;
@@ -105,7 +106,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                     boolean inRightState = true;
                     for ( Volume v : attempt.getVolumes() ) {
                         if ( v.getId().longValue() == volumeId ) {
-                            Boolean stateCheck = AllocatorUtils.checkState(v.getId(), v.getAllocationState(), "Volume");
+                            Boolean stateCheck = AllocatorUtils.checkAllocateState(v.getId(), v.getAllocationState(), "Volume");
                             if ( stateCheck != null && ! stateCheck.booleanValue() ) {
                                 log.error("Not assigning volume [{}] to pool [{}] because it is in state [{}]",
                                         v.getId(), poolId, v.getAllocationState());
@@ -139,6 +140,17 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         }
 
         return true;
+    }
+
+    @Override
+    public void releaseAllocation(Instance instance) {
+        create()
+            .update(INSTANCE_HOST_MAP)
+            .set(INSTANCE_HOST_MAP.STATE, CommonStatesConstants.DEACTIVATING)
+            .where(
+                    INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId())
+                    .and(INSTANCE_HOST_MAP.STATE.eq(CommonStatesConstants.ACTIVE)))
+            .execute();
     }
 
     public ObjectManager getObjectManager() {

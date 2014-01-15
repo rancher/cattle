@@ -65,6 +65,7 @@ def test_docker_create_only(client, docker_context):
     assert image_mapping[0].storagePoolId == docker_context["external_pool"].id
 
     assert image.isPublic
+    assert image.name == "{} ({})".format(image.data.dockerImage.fullName, image.data.dockerImage.id)
     assert image.uuid == uuid
     assert image.data.dockerImage.repository == "helloworld"
     assert image.data.dockerImage.namespace == "ibuildthecloud"

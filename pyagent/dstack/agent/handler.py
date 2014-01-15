@@ -1,7 +1,10 @@
 import re
+import logging
 
 from dstack import utils
 from dstack.lock import lock
+
+log = logging.getLogger("agent")
 
 
 class BaseHandler(object):

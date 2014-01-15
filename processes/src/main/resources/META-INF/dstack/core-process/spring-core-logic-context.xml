@@ -4,9 +4,11 @@
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:task="http://www.springframework.org/schema/task"
     xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <bean class="io.github.ibuildthecloud.dstack.process.base.ActivateByDefaultListener" />
@@ -22,8 +24,23 @@
         p:eventResourceRelationship="image"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.ImageStoragePoolMap"
-        p:processNames="imagestoragepoolmap.activate"
-        />
+        p:processNames="imagestoragepoolmap.activate" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
+        p:name="ImageStoragePoolMapDeactivate"
+        p:commandName="storage.image.deactivate"
+        p:eventResourceRelationship="image"
+        p:agentResourceRelationship="storagePool"
+        p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.ImageStoragePoolMap"
+        p:processNames="imagestoragepoolmap.deactivate" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
 
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="VolumeStoragePoolMapActivate"
@@ -31,8 +48,23 @@
         p:eventResourceRelationship="volume"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap"
-        p:processNames="volumestoragepoolmap.activate"
-        />
+        p:processNames="volumestoragepoolmap.activate" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
+        p:name="VolumeStoragePoolMapDeactivate"
+        p:commandName="storage.volume.deactivate"
+        p:eventResourceRelationship="volume"
+        p:agentResourceRelationship="storagePool"
+        p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap"
+        p:processNames="volumestoragepoolmap.deactivate" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
 
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="InstanceHostMapActivate"
@@ -40,7 +72,22 @@
         p:eventResourceRelationship="instance"
         p:agentResourceRelationship="host"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.InstanceHostMap"
-        p:processNames="instancehostmap.activate"
-        />
+        p:processNames="instancehostmap.activate" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
+        p:name="InstanceHostMapDeactivate"
+        p:commandName="compute.instance.deactivate"
+        p:eventResourceRelationship="instance"
+        p:agentResourceRelationship="host"
+        p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.InstanceHostMap"
+        p:processNames="instancehostmap.deactivate" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
 
 </beans>

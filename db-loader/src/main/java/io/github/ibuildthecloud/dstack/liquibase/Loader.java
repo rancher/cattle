@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.liquibase;
 
-import io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangeloglockTable;
+import io.github.ibuildthecloud.dstack.core.model.tables.CoreChangelogTable;
 
 import javax.inject.Inject;
 
@@ -20,7 +20,7 @@ public class Loader extends SpringLiquibase {
             System.setProperty("liquibase.databaseChangeLogTableName", "core_changelog");
             System.setProperty("liquibase.databaseChangeLogLockTableName", "changelog_lock");
             //TODO acquire lock
-            DSL.using(getConfiguration()).delete(DatabasechangeloglockTable.DATABASECHANGELOGLOCK).execute();
+            DSL.using(getConfiguration()).delete(CoreChangelogTable.CORE_CHANGELOG).execute();
         } catch ( Throwable t ) {
             //ignore all errors
         }

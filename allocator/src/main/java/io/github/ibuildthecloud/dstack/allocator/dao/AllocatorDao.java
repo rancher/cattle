@@ -19,4 +19,6 @@ public interface AllocatorDao {
 
     boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate);
 
+    void releaseAllocation(Instance instance);
+
 }

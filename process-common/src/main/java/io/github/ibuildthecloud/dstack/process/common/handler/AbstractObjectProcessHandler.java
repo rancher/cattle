@@ -25,6 +25,10 @@ public abstract class AbstractObjectProcessHandler extends AbstractProcessHandle
         return getObjectProcessManager().executeStandardProcess(StandardProcess.ACTIVATE, obj, data);
     }
 
+    protected ExitReason deactivate(Object obj, Map<String,Object> data) {
+        return getObjectProcessManager().executeStandardProcess(StandardProcess.DEACTIVATE, obj, data);
+    }
+
     protected ExitReason create(Object obj, Map<String,Object> data) {
         return getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, obj, data);
     }

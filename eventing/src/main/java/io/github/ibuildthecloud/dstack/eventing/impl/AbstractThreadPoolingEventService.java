@@ -3,6 +3,7 @@ package io.github.ibuildthecloud.dstack.eventing.impl;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.PoolSpecificListener;
+import io.github.ibuildthecloud.dstack.eventing.annotation.EventHandler;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.lock.exception.FailedToAcquireLockException;
@@ -29,7 +30,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     private static final Logger log = LoggerFactory.getLogger(AbstractThreadPoolingEventService.class);
 
     String threadCountSetting = "eventing.pool.%s.count";
-    String defaultPoolName = "default";
+    String defaultPoolName = EventHandler.DEFAULT_POOL_KEY;
     Map<String,Executor> executors = new ConcurrentHashMap<String, Executor>();
     Map<String,Executor> queuedExecutors = new ConcurrentHashMap<String, Executor>();
 

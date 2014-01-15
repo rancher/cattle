@@ -23,6 +23,7 @@
         <module>archaius-management</module>
         <module>async</module>
         <module>code/iaas/simple-allocator</module>
+        <module>code/iaas/model</module>
         <module>code/implementation/docker/allocator</module>
         <module>code/implementation/docker/storage</module>
         <module>code/implementation/simulator/agent-connection</module>
@@ -47,7 +48,6 @@
         <module>logback</module>
         <module>meta</module>
         <module>meta-parent</module>
-        <module>model</module>
         <module>object</module>
         <module>parent</module>
         <module>pool</module>

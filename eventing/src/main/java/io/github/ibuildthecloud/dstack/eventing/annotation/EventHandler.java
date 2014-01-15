@@ -9,6 +9,15 @@ import java.lang.annotation.Target;
 @Target({ ElementType.METHOD })
 public @interface EventHandler {
 
+    public static final String DEFAULT_POOL_KEY = "default";
+
     String name() default "";
+
+    boolean allowQueueing() default false;
+
+    int queueDepth() default 0;
+
+    String poolKey() default DEFAULT_POOL_KEY;
+
 
 }

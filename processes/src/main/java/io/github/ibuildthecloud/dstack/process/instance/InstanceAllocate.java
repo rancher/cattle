@@ -1,5 +1,7 @@
 package io.github.ibuildthecloud.dstack.process.instance;
 
+import io.github.ibuildthecloud.dstack.core.dao.InstanceDao;
+import io.github.ibuildthecloud.dstack.core.dao.VolumeDao;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.InstanceHostMap;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
@@ -17,10 +19,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
 public class InstanceAllocate extends EventBasedProcessHandler {
+
+    InstanceDao instanceDao;
+    VolumeDao volumeDao;
+
+    public InstanceAllocate() {
+        setPriority(DEFAULT);
+    }
 
     @Override
     protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
@@ -29,7 +39,7 @@ public class InstanceAllocate extends EventBasedProcessHandler {
 
         Instance instance = (Instance)state.getResource();
 
-        for ( InstanceHostMap map : getObjectManager().children(instance, InstanceHostMap.class) ) {
+        for ( InstanceHostMap map : instanceDao.findNonRemovedInstanceHostMaps(instance.getId()) ) {
             CollectionUtils.addToMap(allocationData, "instance:" + instance.getId(), map.getHostId(), HashSet.class);
             getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, state.getData());
         }
@@ -42,13 +52,31 @@ public class InstanceAllocate extends EventBasedProcessHandler {
 
         volumes = getObjectManager().children(instance, Volume.class);
         for ( Volume v : volumes ) {
-            for ( VolumeStoragePoolMap map : getObjectManager().children(v, VolumeStoragePoolMap.class) ) {
+            for ( VolumeStoragePoolMap map : volumeDao.findNonRemovedVolumeStoragePoolMaps(v.getId()) ) {
                 CollectionUtils.addToMap(allocationData, "volume:" + v.getId(), map.getVolumeId(), HashSet.class);
                 getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, state.getData());
             }
         }
 
         return new HandlerResult(result);
+    }
+
+    public InstanceDao getInstanceDao() {
+        return instanceDao;
+    }
+
+    @Inject
+    public void setInstanceDao(InstanceDao instanceDao) {
+        this.instanceDao = instanceDao;
+    }
+
+    public VolumeDao getVolumeDao() {
+        return volumeDao;
+    }
+
+    @Inject
+    public void setVolumeDao(VolumeDao volumeDao) {
+        this.volumeDao = volumeDao;
     }
 
 }

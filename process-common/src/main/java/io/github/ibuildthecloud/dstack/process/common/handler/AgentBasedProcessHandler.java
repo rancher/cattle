@@ -14,6 +14,7 @@ import io.github.ibuildthecloud.dstack.object.serialization.ObjectSerializerFact
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.dstack.process.common.util.ProcessUtils;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
+import io.github.ibuildthecloud.dstack.util.type.Priority;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicStringProperty;
 
-public class AgentBasedProcessHandler extends AbstractObjectProcessHandler implements InitializationTask {
+public class AgentBasedProcessHandler extends AbstractObjectProcessHandler implements InitializationTask, Priority {
 
     private static final String DEFAULT_NAME = "AgentBased";
 
@@ -41,6 +42,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     String dataResourceRelationship;
     String eventResourceRelationship;
     String expression;
+    int priority = Priority.SPECIFIC;
 
     Map<String,ObjectSerializer> serializers = new ConcurrentHashMap<String, ObjectSerializer>();
 
@@ -325,6 +327,15 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     public void setExpression(String expression) {
         this.expression = expression;
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
 }

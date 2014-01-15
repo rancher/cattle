@@ -1,0 +1,7 @@
+pytest==2.3.5
+
+setuptools
+requests
+docker-py>=0.2.3
+psutil
+portalocker

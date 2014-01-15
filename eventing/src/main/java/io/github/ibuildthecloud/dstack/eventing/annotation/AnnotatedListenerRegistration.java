@@ -56,7 +56,7 @@ public class AnnotatedListenerRegistration implements InitializationTask {
                 }
 
                 String eventName = getEventName(h, m);
-                result.put(eventName, new MethodInvokingListener(m, listener));
+                result.put(eventName, new MethodInvokingListener(h, m, listener));
             }
         }
 
