@@ -10,21 +10,18 @@
     </parent>
     <packaging>pom</packaging>
     <modules>
+        <module>accounts</module>
         <module>agent</module>
-        <module>agent-commands</module>
         <module>agent-server</module>
         <module>allocator</module>
         <module>api-logic</module>
         <module>archaius-management</module>
-        <module>config-item</module>
         <module>db-loader</module>
-        <module>ec2</module>
         <module>engine-jooq</module>
         <module>events</module>
         <module>logic</module>
         <module>logic-common</module>
         <module>model</module>
-        <module>pom.xml</module>
         <module>simple-allocator</module>
         <module>storage-service</module>
         <module>system</module>

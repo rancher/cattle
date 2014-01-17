@@ -12,8 +12,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -28,16 +32,47 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
     private static final Logger log = LoggerFactory.getLogger(JsonFileOverlayPostProcessor.class);
 
     public static final String REMOVE = "-";
+    public static final String OVERRIDE = "-overrdie";
 
     JsonMapper jsonMapper;
     io.github.ibuildthecloud.gdapi.json.JsonMapper schemaMashaller;
     boolean explicitByDefault = false;
+    boolean whiteList = false;
+    Set<String> ignoreTypes = new HashSet<String>();
 
     String path;
     String overridePath;
 
+    public JsonFileOverlayPostProcessor() {
+        ignoreTypes.add("schema");
+        ignoreTypes.add("error");
+    }
+
+    @PostConstruct
+    public void init() {
+        if ( overridePath == null ) {
+            overridePath = path + OVERRIDE;
+        }
+    }
+
+    @Override
+    public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactory factory) {
+        if ( ignoreTypes.contains(schema.getId()) ) {
+            return schema;
+        }
+
+        if ( whiteList && ! jsonFileExists(path, schema) && ! jsonFileExists(path, schema) ) {
+            return null;
+        }
+        return super.postProcessRegister(schema, factory);
+    }
+
     @Override
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
+        if ( ignoreTypes.contains(schema.getId()) ) {
+            return schema;
+        }
+
         InputStream is = loadJsonFile(overridePath, schema);
         if ( is == null ) {
             is = loadJsonFile(path, schema);
@@ -104,7 +139,7 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         }
 
         if ( Boolean.TRUE.equals(value) ) {
-            for ( String key : oldValues.keySet() ) {
+            for ( String key : new HashSet<String>(oldValues.keySet()) ) {
                 if ( newValues == null || ! newValues.containsKey(key) ) {
                     oldValues.remove(key);
                 }
@@ -146,6 +181,12 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         return is;
     }
 
+    protected boolean jsonFileExists(String prefix, Schema schema) {
+        String path = String.format("%s/%s.json", prefix, schema.getId());
+        URL url = schema.getClass().getClassLoader().getResource(path);
+        return url != null;
+    }
+
     public JsonMapper getJsonMapper() {
         return jsonMapper;
     }
@@ -167,6 +208,7 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         return path;
     }
 
+    @Inject
     public void setPath(String path) {
         this.path = path;
     }
@@ -186,6 +228,22 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
     @Inject
     public void setSchemaMashaller(io.github.ibuildthecloud.gdapi.json.JsonMapper schemaMashaller) {
         this.schemaMashaller = schemaMashaller;
+    }
+
+    public boolean isWhiteList() {
+        return whiteList;
+    }
+
+    public void setWhiteList(boolean whiteList) {
+        this.whiteList = whiteList;
+    }
+
+    public Set<String> getIgnoreTypes() {
+        return ignoreTypes;
+    }
+
+    public void setIgnoreTypes(Set<String> ignoreTypes) {
+        this.ignoreTypes = ignoreTypes;
     }
 
 }

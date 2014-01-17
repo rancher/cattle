@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "agent", schema = "dstack")
-public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.sql.Timestamp, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Agent {
+public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.sql.Timestamp, java.lang.String, java.sql.Timestamp>, io.github.ibuildthecloud.dstack.core.model.Agent {
 
-	private static final long serialVersionUID = -1399121374;
+	private static final long serialVersionUID = -1200200508;
 
 	/**
 	 * Setter for <code>dstack.agent.id</code>. 
@@ -203,6 +203,23 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 		return (java.lang.String) getValue(10);
 	}
 
+	/**
+	 * Setter for <code>dstack.agent.removed</code>. 
+	 */
+	@Override
+	public void setRemoved(java.sql.Timestamp value) {
+		setValue(11, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.agent.removed</code>. 
+	 */
+	@javax.persistence.Column(name = "removed")
+	@Override
+	public java.sql.Timestamp getRemoved() {
+		return (java.sql.Timestamp) getValue(11);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -216,23 +233,23 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	}
 
 	// -------------------------------------------------------------------------
-	// Record11 type implementation
+	// Record12 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.sql.Timestamp, java.lang.String> fieldsRow() {
-		return (org.jooq.Row11) super.fieldsRow();
+	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.sql.Timestamp, java.lang.String, java.sql.Timestamp> fieldsRow() {
+		return (org.jooq.Row12) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.sql.Timestamp, java.lang.String> valuesRow() {
-		return (org.jooq.Row11) super.valuesRow();
+	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.sql.Timestamp, java.lang.String, java.sql.Timestamp> valuesRow() {
+		return (org.jooq.Row12) super.valuesRow();
 	}
 
 	/**
@@ -327,6 +344,14 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.sql.Timestamp> field12() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.AgentTable.AGENT.REMOVED;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -409,6 +434,14 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	@Override
 	public java.lang.String value11() {
 		return getUuid();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.sql.Timestamp value12() {
+		return getRemoved();
 	}
 
 	/**
@@ -514,7 +547,16 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public AgentRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.util.Map<String,Object> value5, java.lang.Long value6, java.lang.String value7, java.lang.String value8, java.lang.Long value9, java.sql.Timestamp value10, java.lang.String value11) {
+	public AgentRecord value12(java.sql.Timestamp value) {
+		setRemoved(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AgentRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.util.Map<String,Object> value5, java.lang.Long value6, java.lang.String value7, java.lang.String value8, java.lang.Long value9, java.sql.Timestamp value10, java.lang.String value11, java.sql.Timestamp value12) {
 		return this;
 	}
 
@@ -538,6 +580,7 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 		setAccountId(from.getAccountId());
 		setCreated(from.getCreated());
 		setUuid(from.getUuid());
+		setRemoved(from.getRemoved());
 	}
 
 	/**
@@ -563,7 +606,7 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Create a detached, initialised AgentRecord
 	 */
-	public AgentRecord(java.lang.Long id, java.lang.String name, java.lang.String description, java.lang.String kind, java.util.Map<String,Object> data, java.lang.Long agentGroupId, java.lang.String state, java.lang.String uri, java.lang.Long accountId, java.sql.Timestamp created, java.lang.String uuid) {
+	public AgentRecord(java.lang.Long id, java.lang.String name, java.lang.String description, java.lang.String kind, java.util.Map<String,Object> data, java.lang.Long agentGroupId, java.lang.String state, java.lang.String uri, java.lang.Long accountId, java.sql.Timestamp created, java.lang.String uuid, java.sql.Timestamp removed) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.AgentTable.AGENT);
 
 		setValue(0, id);
@@ -577,5 +620,6 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 		setValue(8, accountId);
 		setValue(9, created);
 		setValue(10, uuid);
+		setValue(11, removed);
 	}
 }

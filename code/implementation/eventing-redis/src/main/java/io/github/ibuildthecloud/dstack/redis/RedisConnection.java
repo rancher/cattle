@@ -12,7 +12,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +52,7 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
         this.port = port;
         this.eventService = eventService;
 
-        GenericObjectPool.Config config = new GenericObjectPool.Config();
+        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         PoolConfig.setConfig(config, "redis", "redis");
 
         pool = new JedisPool(config, host, port, REDIS_TIMEOUT.get(), getPassword());

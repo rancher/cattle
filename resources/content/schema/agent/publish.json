@@ -1,0 +1,38 @@
+{
+    "collectionMethods": ["POST"],
+    "resourceFields": {
+        "id": {
+            "create": true
+        },
+        "name": {
+            "create": true
+        },
+        "previousIds": {
+            "create": true
+        },
+        "publisher": {
+            "create": true
+        },
+        "resourceId": {
+            "create": true
+        },
+        "resourceType": {
+            "create": true
+        },
+        "time": {
+            "create": true
+        },
+        "transitioning": {
+            "create": true
+        },
+        "transitioningInternalMessage": {
+            "create": true
+        },
+        "transitioningMessage": {
+            "create": true
+        },
+        "transitioningProgress": {
+            "create": true
+        }
+    }
+}

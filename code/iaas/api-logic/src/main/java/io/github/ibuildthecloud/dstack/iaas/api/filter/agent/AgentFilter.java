@@ -1,10 +1,9 @@
 package io.github.ibuildthecloud.dstack.iaas.api.filter.agent;
 
-import static io.github.ibuildthecloud.dstack.core.model.tables.AgentTable.*;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+import io.github.ibuildthecloud.dstack.core.dao.AgentDao;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
-import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
@@ -12,7 +11,6 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -31,6 +29,7 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
     private static final DynamicStringProperty URI_FORMAT = ArchaiusUtil.getString("agent.filter.default.uri");
 
     ResourceManagerLocator locator;
+    AgentDao agentDao;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -41,6 +40,13 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
     public Object create(String type, ApiRequest request, ResourceManager next) {
         String ip = request.getClientIp();
         Agent agent = request.proxyRequestObject(Agent.class);
+        /* This ensures that the accountId is always set from the request and
+         * never overwritten by the default accountId setting logic.  In the
+         * situation in which the client doesn't have access to the accountId field,
+         * the result will be null, which is correct.  You want it to be null so
+         * that the AgentCreate logic will create an account for this Agent
+         */
+        agent.setAccountId(agent.getAccountId());
         String uri = agent.getUri();
 
         if ( uri == null ) {
@@ -55,10 +61,8 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
     }
 
     protected void isUnique(String uri) {
-        String type = locator.getType(Agent.class);
-        ResourceManager rm = locator.getResourceManagerByType(type);
-        List<?> result = rm.list(type, CollectionUtils.asMap((Object)AGENT.URI, uri), null);
-        if ( result.size() > 0 ) {
+        Agent existing = agentDao.findNonRemovedByUri(uri);
+        if ( existing != null ) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE, "uri");
         }
     }
@@ -91,6 +95,15 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
     @Inject
     public void setLocator(ResourceManagerLocator locator) {
         this.locator = locator;
+    }
+
+    public AgentDao getAgentDao() {
+        return agentDao;
+    }
+
+    @Inject
+    public void setAgentDao(AgentDao agentDao) {
+        this.agentDao = agentDao;
     }
 
 }

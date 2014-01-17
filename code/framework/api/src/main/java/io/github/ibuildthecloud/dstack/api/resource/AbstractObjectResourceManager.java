@@ -14,13 +14,16 @@ import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Include;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import io.github.ibuildthecloud.gdapi.model.Schema.Method;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractBaseResourceManager;
@@ -49,12 +52,17 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Object createInternal(String type, ApiRequest request) {
-        Class<?> clz = getClassForType(type);
+        Class<?> clz = getClassForType(request.getSchemaFactory(), type);
         if ( clz == null ) {
             return null;
         }
 
-        Map<String,Object> properties = new HashMap<String, Object>(CollectionUtils.<String, Object>toMap(request.getRequestObject()));
+        return doCreate(type, clz, CollectionUtils.toMap(request.getRequestObject()));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T doCreate(String type, Class<T> clz, Map<Object,Object> data) {
+        Map<String,Object> properties = getObjectManager().convertToPropertiesFor(clz, data);
         if ( ! properties.containsKey(ObjectMetaDataManager.KIND_FIELD) ) {
             properties.put(ObjectMetaDataManager.KIND_FIELD, type);
         }
@@ -72,15 +80,15 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         } catch ( ProcessNotFoundException e ) {
         }
 
-        return result;
+        return (T)result;
     }
 
-    protected Class<?> getClassForType(String type) {
+    protected Class<?> getClassForType(SchemaFactory schemaFactory, String type) {
         Class<?> clz = schemaFactory.getSchemaClass(type);
         if ( clz == null ) {
             Schema schema = schemaFactory.getSchema(type);
             if ( schema.getParent() != null ) {
-                return getClassForType(schema.getParent());
+                return getClassForType(schemaFactory, schema.getParent());
             }
         }
 
@@ -112,7 +120,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     protected Object getChildLink(String type, String id, Relationship relationship, ApiRequest request) {
-        Schema otherSchema = schemaFactory.getSchema(relationship.getObjectType());
+        Schema otherSchema = request.getSchemaFactory().getSchema(relationship.getObjectType());
         if ( otherSchema == null ) {
             return Collections.EMPTY_LIST;
         }
@@ -128,7 +136,14 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return Collections.EMPTY_LIST;
         }
 
-        Map<Object,Object> criteria = getDefaultCriteria(false);
+        if ( otherSchema.getCollectionMethods().contains(Method.POST.toString()) ) {
+            Map<String,Object> createDefaults = new HashMap<String, Object>();
+            IdFormatter idFormatter = ApiContext.getContext().getIdFormatter();
+            createDefaults.put(relationship.getPropertyName(), idFormatter.formatId(type, id));
+            request.setCreateDefaults(createDefaults);
+        }
+
+        Map<Object,Object> criteria = getDefaultCriteria(false, otherType);
         criteria.put(relationship.getPropertyName(), id);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherType);
@@ -136,6 +151,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     protected Object getReferenceLink(String type, String id, Relationship relationship, ApiRequest request) {
+        SchemaFactory schemaFactory = request.getSchemaFactory();
         Schema schema = schemaFactory.getSchema(type);
         Schema otherSchema = schemaFactory.getSchema(relationship.getObjectType());
         Field field = schema.getResourceFields().get(relationship.getPropertyName());
@@ -151,14 +167,14 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return null;
         }
 
-        Map<Object,Object> criteria = getDefaultCriteria(true);
+        Map<Object,Object> criteria = getDefaultCriteria(true, otherSchema.getId());
         criteria.put(ObjectMetaDataManager.ID_FIELD, fieldValue);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherSchema.getId());
         return ApiUtils.getFirstFromList(resourceManager.list(otherSchema.getId(), criteria, options));
     }
 
-    protected Map<String,Relationship> getLinkRelationships(String type, Include include) {
+    protected Map<String,Relationship> getLinkRelationships(SchemaFactory schemaFactory, String type, Include include) {
         if ( include == null )
             return Collections.emptyMap();
 
@@ -174,10 +190,21 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     @Override
-    protected Map<Object,Object> getDefaultCriteria(boolean byId) {
+    protected Map<Object,Object> getDefaultCriteria(boolean byId, String type) {
         Map<Object, Object> criteria = new HashMap<Object, Object>();
         Policy policy = ApiUtils.getPolicy();
 
+        addAccountAuthorization(type, criteria, policy);
+
+        if ( ! policy.isOption(Policy.REMOVED_VISIBLE) && ! byId ) {
+            Condition or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GTE, new Date()));
+            criteria.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, or);
+        }
+
+        return criteria;
+    }
+
+    protected void addAccountAuthorization(String type, Map<Object, Object> criteria, Policy policy) {
         if ( ! policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) ) {
             List<Long> accounts = policy.getAuthorizedAccounts();
             if ( accounts.size() == 1 ) {
@@ -188,13 +215,6 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
                 criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, new Condition(ConditionType.IN, accounts));
             }
         }
-
-        if ( ! policy.isOption(Policy.REMOVED_VISIBLE) && ! byId ) {
-            Condition or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GTE, new Date()));
-            criteria.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, or);
-        }
-
-        return criteria;
     }
 
     @Override
@@ -204,17 +224,17 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return request.getType();
         } else {
             Relationship relationship = metaDataManager.getRelationship(request.getType(), link);
-            return schemaFactory.getSchemaName(relationship.getObjectType());
+            return request.getSchemaFactory().getSchemaName(relationship.getObjectType());
         }
     }
 
     @Override
-    protected Schema getSchemaForDisplay(Object obj) {
-        return ApiUtils.getSchemaForDisplay(getSchemaFactory(), obj);
+    protected Schema getSchemaForDisplay(SchemaFactory schemaFactory, Object obj) {
+        return ApiUtils.getSchemaForDisplay(schemaFactory, obj);
     }
 
     @Override
-    protected Resource constructResource(final IdFormatter idFormatter, final Schema schema, Object obj) {
+    protected Resource constructResource(final IdFormatter idFormatter, SchemaFactory schemaFactory, final Schema schema, Object obj) {
         Map<String,Object> transitioningFields = metaDataManager.getTransitionFields(schema, obj);
         return ApiUtils.createResourceWithAttachments(schemaFactory, idFormatter, schema, obj, transitioningFields);
     }
@@ -239,7 +259,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     protected String getProcessName(Object obj, ApiRequest request) {
-        String baseType = schemaFactory.getBaseType(request.getType());
+        String baseType = request.getSchemaFactory().getBaseType(request.getType());
         return String.format("%s.%s", baseType == null ? request.getType() : baseType, request.getAction()).toLowerCase();
     }
 
@@ -249,7 +269,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     @Override
-    protected Map<String, String> getLinks(Resource resource) {
+    protected Map<String, String> getLinks(SchemaFactory schemaFactory, Resource resource) {
         return metaDataManager.getLinks(schemaFactory, resource.getType());
     }
 

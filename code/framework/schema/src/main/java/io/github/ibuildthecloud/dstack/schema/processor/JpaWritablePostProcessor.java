@@ -17,7 +17,7 @@ import javax.persistence.Entity;
 
 import org.apache.commons.beanutils.PropertyUtils;
 
-public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implements SchemaPostProcessor{
+public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implements SchemaPostProcessor {
 
     @Override
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {

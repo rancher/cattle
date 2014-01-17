@@ -20,6 +20,7 @@
     </bean>
 
     <bean class="io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate" >
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
         <property name="handlers" value="#{extensionManager.list('api.request.handler')}" />
         <property name="version">
             <bean factory-bean="Versions" factory-method="getLatest" />
@@ -27,9 +28,12 @@
         <property name="idFormatter" value="#{extensionManager.first('id.formatter', 'io.github.ibuildthecloud.gdapi.id.IdFormatter')}" />
     </bean>
 
-    <bean id="DefaultIdFormatter" class="io.github.ibuildthecloud.dstack.api.formatter.DefaultIdFormatter" />
+    <bean id="DefaultIdFormatter" class="io.github.ibuildthecloud.dstack.api.formatter.DefaultIdFormatter" >
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+    </bean>
 
     <bean class="io.github.ibuildthecloud.dstack.api.resource.ExtensionResourceManagerLocator" >
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
         <property name="defaultResourceManager" ref="DefaultResourceManager" />
         <property name="resourceManagers" value="#{extensionManager.list('resource.manager')}" />
         <property name="resourceManagerFilters" value="#{extensionManager.list('resource.manager.filter')}" />
@@ -46,7 +50,15 @@
     <bean class="io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser" />
     <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
 
+    <!-- This is here only to ensure that there are two SchemaFactories in the context
+         to make autowiring fail -->
+    <bean class="io.github.ibuildthecloud.gdapi.factory.impl.SubSchemaFactory" >
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="id" value="noop" />
+    </bean>
+
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler" />
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerFilter" />
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManager" />
+
 </beans>

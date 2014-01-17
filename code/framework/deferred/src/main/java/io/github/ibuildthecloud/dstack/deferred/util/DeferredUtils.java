@@ -21,17 +21,6 @@ public class DeferredUtils {
         }
     };
 
-    public static void deferEvent(final Event event, final EventService service) {
-        if ( service != null && event != null ) {
-            defer(new Runnable() {
-                @Override
-                public void run() {
-                    service.publish(event);
-                }
-            });
-        }
-    }
-
     public static void deferPublish(final EventService service, final Event event) {
         defer(new Runnable() {
             @Override
@@ -43,6 +32,10 @@ public class DeferredUtils {
 
     public static void defer(Runnable runnable) {
         TL.get().add(runnable);
+    }
+
+    public static void resetDeferred() {
+        TL.get().clear();
     }
 
     public static void runDeferred() {

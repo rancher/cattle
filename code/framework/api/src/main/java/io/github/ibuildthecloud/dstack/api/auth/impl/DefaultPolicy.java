@@ -9,19 +9,21 @@ import java.util.List;
 public class DefaultPolicy implements Policy {
 
     long accountId;
+    String name;
     List<Long> authorizedAccounts;
     PolicyOptions options;
 
     @SuppressWarnings("unchecked")
     public DefaultPolicy() {
-        this(Policy.NO_ACCOUNT, Collections.EMPTY_LIST, new NoPolicyOptions());
+        this(Policy.NO_ACCOUNT, null, Collections.EMPTY_LIST, new NoPolicyOptions());
     }
 
-    public DefaultPolicy(long accountId, List<Long> authorizedAccounts, PolicyOptions options) {
+    public DefaultPolicy(long accountId, String name, List<Long> authorizedAccounts, PolicyOptions options) {
         super();
         this.accountId = accountId;
         this.authorizedAccounts = authorizedAccounts;
         this.options = options;
+        this.name = name;
     }
 
     @Override
@@ -58,6 +60,11 @@ public class DefaultPolicy implements Policy {
     @Override
     public long getAccountId() {
         return accountId;
+    }
+
+    @Override
+    public String getUserName() {
+        return name;
     }
 
 }

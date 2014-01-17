@@ -5,6 +5,7 @@ import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
 import io.github.ibuildthecloud.dstack.extension.api.dot.DotMaker;
 import io.github.ibuildthecloud.dstack.extension.api.model.ProcessDefinitionApi;
 import io.github.ibuildthecloud.dstack.extension.api.util.ApiPredicates;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -42,7 +43,7 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Map<String, String> getLinks(Resource resource) {
+    protected Map<String, String> getLinks(SchemaFactory schemaFactory, Resource resource) {
         return LINKS;
     }
 
@@ -84,7 +85,7 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Object listInternal(String type, Map<Object, Object> criteria, ListOptions options) {
+    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         List<ProcessDefinitionApi> result = new ArrayList<ProcessDefinitionApi>();
         Predicate<Object> condition = ApiPredicates.filterOn(criteria, "name", "resourceType");
 

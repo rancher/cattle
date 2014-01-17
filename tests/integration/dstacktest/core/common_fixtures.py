@@ -6,14 +6,62 @@ import time
 
 NOT_NONE = object()
 
-@pytest.fixture(scope="module")
-def client():
-    return dstack.from_env("DSAPI")
+
+def _admin_client():
+    return dstack.from_env("DSAPI", access_key="admin", secrect_key="adminpass")
+
+
+def _client_for_user(name, accounts):
+    return dstack.from_env("DSAPI", access_key=accounts[name][0], secret_key=accounts[name][1])
 
 
 @pytest.fixture(scope="module")
-def admin_client():
-    return dstack.from_env("DSAPI")
+def accounts():
+    result = {}
+    admin_client = _admin_client()
+    for user_name in ["admin", "agent", "user", "agentRegister", "test", "readAdmin"]:
+        password = user_name + "pass"
+        account = create_type_by_uuid(admin_client, "account", user_name,
+                                      kind=user_name,
+                                      name=user_name)
+
+        active_cred = None
+        for cred in account.credentials():
+            if cred.publicValue == user_name and cred.secretValue == password:
+                active_cred = cred
+                break
+
+        if active_cred is None:
+            active_cred = admin_client.create_credential({
+                "accountId": account.id,
+                "kind": "apiKey",
+                "publicValue": user_name,
+                "secretValue": password
+            })
+
+        active_cred = wait_success(admin_client, active_cred)
+        if active_cred.state != "active":
+            wait_success(admin_client, active_cred.activate())
+
+        result[user_name] = [user_name, password]
+
+    #for setting in admin_client.list_setting():
+    #    if setting.name == "api.security.enabled" and setting.activeValue != "true":
+    #        admin_client.update(setting, {
+    #            "value": "true"
+    #        })
+
+    return result
+
+
+@pytest.fixture(scope="module")
+def client(accounts):
+    return _client_for_user("test", accounts)
+
+
+@pytest.fixture(scope="module")
+def admin_client(accounts):
+    return _client_for_user("admin", accounts)
 
 
 @pytest.fixture(scope="module")
@@ -32,7 +80,7 @@ def sim_pool(admin_client, sim_host, sim_agent):
     assert not pool.external
 
     create_type_by_uuid(admin_client, "storagePoolHostMap", "simpool1-simhost",
-                                  storagePoolId=pool.id, hostId=sim_host.id)
+                        storagePoolId=pool.id, hostId=sim_host.id)
 
     return pool
 

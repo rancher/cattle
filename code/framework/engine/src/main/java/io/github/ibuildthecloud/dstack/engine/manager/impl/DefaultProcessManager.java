@@ -111,6 +111,9 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     @Override
     public ProcessInstance loadProcess(Long id) {
         ProcessRecord record = processRecordDao.getRecord(id);
+        if ( record == null ) {
+            throw new ProcessNotFoundException("Failed to find ProcessRecord for [" + id + "]");
+        }
         return createProcessInstance(record);
     }
 

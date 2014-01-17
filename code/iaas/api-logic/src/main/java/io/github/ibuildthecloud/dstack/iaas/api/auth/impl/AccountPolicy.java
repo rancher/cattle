@@ -4,6 +4,7 @@ import io.github.ibuildthecloud.dstack.api.auth.impl.DefaultPolicy;
 import io.github.ibuildthecloud.dstack.api.auth.impl.PolicyOptions;
 import io.github.ibuildthecloud.dstack.core.model.Account;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -17,7 +18,7 @@ public class AccountPolicy extends DefaultPolicy {
     private static final Logger log = LoggerFactory.getLogger(AccountPolicy.class);
 
     public AccountPolicy(Account account, PolicyOptions options) {
-        super(account.getId(), Arrays.asList(account.getId()), options);
+        super(account.getId(), account.getName(), Arrays.asList(account.getId()), options);
     }
 
     @Override
@@ -32,11 +33,16 @@ public class AccountPolicy extends DefaultPolicy {
                     return null;
                 }
             }
+
             try {
                 Object prop = PropertyUtils.getProperty(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
                 if ( prop != null && prop.equals(getAccountId()) ) {
                     return obj;
                 } else {
+                    Object isPublic = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.PUBLIC_FIELD);
+                    if ( isPublic instanceof Boolean && ((Boolean)isPublic).booleanValue() ) {
+                        return obj;
+                    }
                     log.error("Dropping unauthorized object [{}] for acccount [{}]", obj, getAccountId());
                 }
             } catch (IllegalAccessException e) {

@@ -416,8 +416,12 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         }
 
         if ( field.isNullable() ) {
-            conditions.add(ConditionType.NULL.getExternalForm());
-            conditions.add(ConditionType.NOTNULL.getExternalForm());
+            if ( ! conditions.contains(ConditionType.NULL.getExternalForm()) ) {
+                conditions.add(ConditionType.NULL.getExternalForm());
+            }
+            if ( ! conditions.contains(ConditionType.NOTNULL.getExternalForm()) ) {
+                conditions.add(ConditionType.NOTNULL.getExternalForm());
+            }
         }
 
         return conditions;
@@ -432,6 +436,9 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         Schema schema = schemaFactory.getSchema(type);
 
         Map<String,Relationship> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId()));
+        if ( relationships == null ) {
+            return result;
+        }
         for ( String link : getLinks(schemaFactory, type).keySet() ) {
             Relationship rel = relationships.get(link);
             if ( rel != null ) {

@@ -6,7 +6,7 @@
     <artifactId>dstack-parent</artifactId>
     <groupId>io.github.ibuildthecloud</groupId>
     <version>0.1-SNAPSHOT</version>
-    <relativePath>../parent/pom.xml</relativePath>
+    <relativePath>../code/parent/pom.xml</relativePath>
   </parent>
   <build>
     <resources>

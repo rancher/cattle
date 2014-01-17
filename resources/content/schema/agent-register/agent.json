@@ -1,0 +1,8 @@
+{
+    "collectionMethods": [ "GET", "POST" ],
+    "resourceFields": {
+        "uri": {
+            "create": true
+        }
+    }
+}

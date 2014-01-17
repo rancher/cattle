@@ -83,7 +83,7 @@ class RestObject:
                       wrapfunc=lambda x: str(x))
 
     def _is_list(self):
-        return hasattr(self, "data") and isinstance(self.data, list)
+        return "data" in self.__dict__ and isinstance(self.data, list)
 
     def __repr__(self):
         data = {}
@@ -93,7 +93,7 @@ class RestObject:
         return repr(data)
 
     def __getattr__(self, k):
-        if self._is_list() and LIST_METHODS.has_key(k):
+        if self._is_list() and k in LIST_METHODS:
             return getattr(self.data, k)
         return getattr(self.__dict__, k)
 
@@ -264,8 +264,7 @@ class Client:
         return self._unmarshall(r.text)
 
     def _unmarshall(self, text):
-        #print "Output:", text
-        return json.loads(text, object_pairs_hook=self.object_pairs_hook)
+        return json.loads(text, object_hook=self.object_hook)
 
     def _marshall(self, obj):
         if obj is None:
@@ -287,7 +286,8 @@ class Client:
                 schema_text = response.text
             self._cache_schema(schema_text)
 
-        schema = Schema(schema_text, self._unmarshall(schema_text))
+        obj = self._unmarshall(schema_text)
+        schema = Schema(schema_text, obj)
 
         self._bind_methods(schema)
         self.schema = schema
@@ -425,24 +425,24 @@ class Client:
         return os.path.join(cachedir, "schema-" + h + ".json")
 
     def _cache_schema(self, text):
-        cachedschema = self._get_cached_schema_file_name()
+        cached_schema = self._get_cached_schema_file_name()
 
-        if not cachedschema:
+        if not cached_schema:
             return None
 
-        with open(cachedschema, "w") as f:
+        with open(cached_schema, "w") as f:
             f.write(text)
 
     def _get_cached_schema(self):
-        cachedschema = self._get_cached_schema_file_name()
+        cached_schema = self._get_cached_schema_file_name()
 
-        if not cachedschema:
+        if not cached_schema:
             return None
 
-        if os.path.exists(cachedschema):
-            modtime = os.path.getmtime(cachedschema)
-            if time.time() - modtime < self._cache_time:
-                with open(cachedschema) as f:
+        if os.path.exists(cached_schema):
+            mod_time = os.path.getmtime(cached_schema)
+            if time.time() - mod_time < self._cache_time:
+                with open(cached_schema) as f:
                     data = f.read()
                 return data
 
@@ -618,12 +618,14 @@ def _env_prefix(cmd):
     return _prefix(cmd) + "_"
 
 
-def from_env(prefix):
+def from_env(prefix, **kw):
     args = dict((x, None) for x in ["access_key", "secret_key", "url", "cache", "cache_time", "strict"])
+    args.update(kw)
     if not prefix.endswith("_"):
         prefix += "_"
     prefix = prefix.upper()
     return _from_env(prefix=prefix, **args)
+
 
 def _from_env(prefix=PREFIX + "_", **kw):
     result = dict(kw)
@@ -754,7 +756,6 @@ def _extract(namespace, *args):
 def _cli_client(argv):
     args, unknown = _general_args(help=False).parse_known_args()
     args = vars(args)
-    print "ARGS: ", args
     prefix = _env_prefix(argv[0])
     return _from_env(prefix, **args)
 

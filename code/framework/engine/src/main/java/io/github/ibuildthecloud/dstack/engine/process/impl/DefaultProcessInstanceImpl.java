@@ -266,28 +266,37 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void runWithProcessLock() {
-        lockAcquired();
+        boolean success = false;
+        try {
+            lockAcquired();
 
-        instanceContext.getState().reload();
+            instanceContext.getState().reload();
 
-        preRunStateCheck();
+            preRunStateCheck();
 
-        if ( instanceContext.getPhase() == ProcessPhase.REQUESTED ) {
-            instanceContext.setPhase(ProcessPhase.STARTED);
-            getProcessManager().persistState(this);
+            if ( instanceContext.getPhase() == ProcessPhase.REQUESTED ) {
+                instanceContext.setPhase(ProcessPhase.STARTED);
+                getProcessManager().persistState(this);
+            }
+
+            if ( instanceContext.getState().isStart() ) {
+                setTransitioning();
+            }
+
+            if ( schedule ) {
+                runScheduled();
+            }
+
+            runLogic();
+
+            setDone();
+
+            success = true;
+        } finally {
+            if ( ! success ) {
+                assertState();
+            }
         }
-
-        if ( instanceContext.getState().isStart() ) {
-            setTransitioning();
-        }
-
-        if ( schedule ) {
-            runScheduled();
-        }
-
-        runLogic();
-
-        setDone();
     }
 
     protected void runScheduled() {
@@ -459,6 +468,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         state.reload();
         String newState = state.getState();
         if ( ! previousState.equals(newState) ) {
+            preRunStateCheck();
             throw new ProcessExecutionExitException(STATE_CHANGED);
         }
     }

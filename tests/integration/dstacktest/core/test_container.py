@@ -129,6 +129,7 @@ def test_container_create_then_start(client, sim_context):
     })
 
 
+@pytest.mark.skipif("True")
 def test_container_stop(client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = client.create_container(name="test",

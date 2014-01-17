@@ -6,4 +6,6 @@ public interface PolicyOptions {
 
     String getOption(String optionName);
 
+    void setOption(String name, String value);
+
 }

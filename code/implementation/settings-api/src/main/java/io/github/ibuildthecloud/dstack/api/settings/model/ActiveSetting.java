@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.api.settings.model;
 
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.model.Setting;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
@@ -51,6 +52,9 @@ public class ActiveSetting {
 
     @Field(update = true)
     public String getValue() {
+        if ( value == null && ! isInDb && activeValue != null) {
+            return ArchaiusUtil.getString(name).get();
+        }
         return value;
     }
 

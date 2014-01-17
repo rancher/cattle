@@ -11,6 +11,11 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-iaas-accounts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-iaas-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -84,5 +89,11 @@
             <groupId>org.drizzle.jdbc</groupId>
             <artifactId>drizzle-jdbc</artifactId>
         </dependency>
+        <!-- Uncomment to include MySQL driver
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+         -->
     </dependencies>
 </project>

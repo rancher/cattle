@@ -39,7 +39,7 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
         Object imageUuid = data.get(InstanceConstants.FIELD_IMAGE_UUID);
 
         if ( imageUuid != null ) {
-            Image image = validateImageUuid(imageUuid.toString());
+            Image image = validateImageUuid(request.getSchemaFactory(), imageUuid.toString());
             if ( image == null ) {
                 throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, InstanceConstants.FIELD_IMAGE_UUID);
             }
@@ -51,14 +51,14 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
         return super.create(type, request, next);
     }
 
-    protected Image validateImageUuid(String uuid) {
+    protected Image validateImageUuid(SchemaFactory schemaFactory, String uuid) {
         try {
             Image image = storageService.registerRemoteImage(uuid);
             if ( image == null ) {
                 return null;
             }
 
-            String type = locator.getType(Image.class);
+            String type = schemaFactory.getSchemaName(Image.class);
             ResourceManager rm = locator.getResourceManagerByType(type);
 
             return (Image)rm.getById(type, image.getId().toString(), new ListOptions());

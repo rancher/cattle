@@ -126,12 +126,6 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
                 extensionList.inner.addAll(getList(entry.getValue(), key));
             }
 
-//            for ( Set<Runnable> runnables : callbacks.values() ) {
-//                for ( Runnable runnable : runnables ) {
-//                    runnable.run();
-//                }
-//            }
-
             started = true;
         }
     }
@@ -224,23 +218,21 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
         return ArchaiusUtil.getString(key).get();
     }
 
-//    @Override
-//    public void onChange(String key, Runnable runnable) {
-//        Set<Runnable> set = callbacks.get(key);
-//        if ( set == null ) {
-//            set = new HashSet<Runnable>();
-//            callbacks.put(key, set);
-//        }
-//
-//        set.add(runnable);
-//    }
-
     @Override
     public List<ExtensionPoint> getExtensions() {
         List<ExtensionPoint> result = new ArrayList<ExtensionPoint>();
 
-        for ( String key : extensionLists.keySet() ) {
+        Set<String> keys = new TreeSet<String>(extensionLists.keySet());
+
+        for ( String key : keys ) {
             result.add(getExtensionPoint(key));
+        }
+
+        if ( keys.size() != extensionLists.size() ) {
+            /* While traversing the extensions, more extension might be registered
+             * so try again
+             */
+            return getExtensions();
         }
 
         return result;

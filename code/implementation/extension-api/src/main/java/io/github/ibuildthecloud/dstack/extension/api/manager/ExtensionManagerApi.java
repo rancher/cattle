@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.extension.api.manager;
 
 import io.github.ibuildthecloud.dstack.extension.ExtensionManager;
 import io.github.ibuildthecloud.dstack.extension.ExtensionPoint;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Resource;
@@ -24,14 +25,15 @@ public class ExtensionManagerApi extends AbstractNoOpResourceManager {
     @Override
     protected Resource createResource(Object obj, IdFormatter idFormatter, ApiRequest request) {
         if ( obj instanceof ExtensionPoint ) {
-            return constructResource(idFormatter, getSchemaFactory().getSchema(ExtensionPoint.class), obj);
+            return constructResource(idFormatter, request.getSchemaFactory(),
+                    request.getSchemaFactory().getSchema(ExtensionPoint.class), obj);
         }
 
         return super.createResource(obj, idFormatter, request);
     }
 
     @Override
-    protected Object listInternal(String type, Map<Object, Object> criteria, ListOptions options) {
+    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         return extensionManager.getExtensions();
     }
 

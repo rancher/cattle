@@ -6,4 +6,6 @@ public interface AuthDao {
 
     Account getAdminAccount();
 
+    Account getAccountByKeys(String access, String secretKey);
+
 }

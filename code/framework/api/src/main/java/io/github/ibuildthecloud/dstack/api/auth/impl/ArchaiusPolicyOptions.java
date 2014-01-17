@@ -47,4 +47,9 @@ public class ArchaiusPolicyOptions implements PolicyOptions {
         return prop.get();
     }
 
+    @Override
+    public void setOption(String name, String value) {
+        throw new UnsupportedOperationException();
+    }
+
 }

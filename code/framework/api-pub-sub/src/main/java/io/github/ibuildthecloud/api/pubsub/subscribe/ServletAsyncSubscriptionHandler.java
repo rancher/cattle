@@ -24,8 +24,8 @@ public class ServletAsyncSubscriptionHandler extends NonBlockingSubscriptionHand
     protected OutputStream getOutputStream(ApiRequest apiRequest) throws IOException {
         apiRequest.commit();
 
-        HttpServletRequest request = apiRequest.getRequestServletContext().getRequest();
-        HttpServletResponse response = apiRequest.getRequestServletContext().getResponse();
+        HttpServletRequest request = apiRequest.getServletContext().getRequest();
+        HttpServletResponse response = apiRequest.getServletContext().getResponse();
 
         AsyncContext ctx = request.startAsync(request, response);
         ctx.setTimeout(0);

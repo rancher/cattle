@@ -2,15 +2,20 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:util="http://www.springframework.org/schema/util"
        xmlns:extension="http://dstack.io/schemas/spring/extension"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+                      http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
                       http://dstack.io/schemas/spring/extension http://dstack.io/schemas/spring/extension-1.0.xsd
                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd" >
 
-    <bean class="io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl">
+    <bean id="CoreSchemaFactory" class="io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl">
         <property name="postProcessors" value="#{extensionManager.list('schema.post.processor')}" />
+        <property name="id">
+            <util:constant static-field="io.github.ibuildthecloud.gdapi.factory.SchemaFactory.BASE_SCHEMA"/>
+        </property>
     </bean>
 
     <bean class="io.github.ibuildthecloud.dstack.schema.processor.JsonFileOverlayPostProcessor" >

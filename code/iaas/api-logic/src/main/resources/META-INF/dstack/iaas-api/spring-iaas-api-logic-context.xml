@@ -4,18 +4,29 @@
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:util="http://www.springframework.org/schema/util"
     xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:extension="http://dstack.io/schemas/spring/extension"
     xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://dstack.io/schemas/spring/extension http://dstack.io/schemas/spring/extension-1.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.filter.agent.AgentFilter" />
 
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.dao.impl.AuthDaoImpl" />
 
-    <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.impl.ApiAuthenticator" />
+    <!-- Start Handlers -->
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.impl.ApiAuthenticator" >
+        <property name="accountLookup">
+            <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.impl.BasicAuthImpl" />
+        </property>
+        <property name="authorizationProviders" value="#{extensionManager.list('authorization.provider')}" />
+    </bean>
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.CSRFCookieHandler" />
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.request.handler.PostChildLinkHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.ParseCollectionAttributes" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler" />
@@ -37,7 +48,6 @@
             </bean>
         </property>
     </bean>
-
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.NotFoundHandler" />
     <bean class="io.github.ibuildthecloud.dstack.api.handler.EventNotificationHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter" />
@@ -55,6 +65,14 @@
             </bean>
         </property>
     </bean>
+    <bean class="io.github.ibuildthecloud.dstack.api.handler.DeferredActionsHandler" />
+    <!-- End Handlers -->
+
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.impl.DefaultAuthorizationProvider" >
+        <property name="schemaFactoryList" value="#{extensionManager.list('schema.factory')}" />
+    </bean>
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.impl.AgentAuthorizationProvider" />
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.AchaiusPolicyOptionsFactory" />
 
     <tx:advice id="ApiDelegateAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
@@ -66,5 +84,8 @@
     <aop:config>
         <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
     </aop:config>
+
+    <extension:discover class="io.github.ibuildthecloud.gdapi.factory.SchemaFactory"/>
+    <extension:discover class="io.github.ibuildthecloud.dstack.iaas.api.auth.AuthorizationProvider"/>
 
 </beans>

@@ -7,6 +7,7 @@ import io.github.ibuildthecloud.dstack.extension.api.dot.DotMaker;
 import io.github.ibuildthecloud.dstack.extension.api.model.ProcessDefinitionApi;
 import io.github.ibuildthecloud.dstack.extension.api.model.ResourceDefinition;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Include;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -63,7 +64,7 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Object listInternal(String type, Map<Object, Object> criteria, ListOptions options) {
+    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         Set<String> found = new HashSet<String>();
         List<ResourceDefinition> result = new ArrayList<ResourceDefinition>();
         for ( ProcessDefinition def : processDefinitions ) {
@@ -95,12 +96,12 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
 
 
     @Override
-    protected Resource constructResource(final IdFormatter idFormatter, final Schema schema, Object obj) {
+    protected Resource constructResource(final IdFormatter idFormatter, SchemaFactory schemaFactory, final Schema schema, Object obj) {
         return ApiUtils.createResourceWithAttachments(schemaFactory, idFormatter, schema, obj, new HashMap<String, Object>());
     }
 
     protected List<?> getLinkInternal(ResourceDefinition def, String link, ApiRequest request) {
-        String type = getLocator().getType(ProcessDefinitionApi.class);
+        String type = request.getSchemaFactory().getSchemaName(ProcessDefinitionApi.class);
         ResourceManager rm = getLocator().getResourceManagerByType(type);
 
         if ( link.equalsIgnoreCase(PROCESSES) ) {
@@ -130,7 +131,7 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
 
 
     @Override
-    protected Map<String, String> getLinks(Resource resource) {
+    protected Map<String, String> getLinks(SchemaFactory schemaFactory, Resource resource) {
         return LINKS;
     }
 

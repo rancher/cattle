@@ -128,7 +128,7 @@ public class JooqUtils {
 
             if ( value instanceof org.jooq.Condition ) {
                 newCondition = (org.jooq.Condition)value;
-            } if ( value instanceof Condition ) {
+            } else if ( value instanceof Condition ) {
                 newCondition = toCondition(field, (Condition)value);
             } else if ( value instanceof List ) {
                 newCondition = listToCondition(field, (List<?>)value);

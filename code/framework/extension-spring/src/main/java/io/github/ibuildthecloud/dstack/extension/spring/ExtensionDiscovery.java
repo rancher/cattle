@@ -11,6 +11,8 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 
 public class ExtensionDiscovery implements BeanPostProcessor {
 
+    private static final String EXCLUDE = "#";
+
     ExtensionManagerImpl extensionManager;
     Class<?> typeClass;
     String key;
@@ -19,8 +21,11 @@ public class ExtensionDiscovery implements BeanPostProcessor {
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if ( typeClass.isAssignableFrom(bean.getClass()) ) {
-            for ( String key : getKeys(bean) ) {
-                extensionManager.addObject(key, typeClass, bean, getName(bean, beanName));
+            String name = getName(bean, beanName);
+            if ( name != null && name.indexOf(EXCLUDE) == -1 ) {
+                for ( String key : getKeys(bean) ) {
+                    extensionManager.addObject(key, typeClass, bean, name);
+                }
             }
         }
 

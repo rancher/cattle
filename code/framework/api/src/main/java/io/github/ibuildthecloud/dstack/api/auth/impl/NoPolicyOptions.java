@@ -12,4 +12,8 @@ public class NoPolicyOptions implements PolicyOptions {
         return null;
     }
 
+    @Override
+    public void setOption(String name, String value) {
+    }
+
 }

@@ -135,6 +135,17 @@ public interface Agent extends java.io.Serializable {
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
 	public java.lang.String getUuid();
 
+	/**
+	 * Setter for <code>dstack.agent.removed</code>. 
+	 */
+	public void setRemoved(java.sql.Timestamp value);
+
+	/**
+	 * Getter for <code>dstack.agent.removed</code>. 
+	 */
+	@javax.persistence.Column(name = "removed")
+	public java.sql.Timestamp getRemoved();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

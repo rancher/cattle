@@ -16,6 +16,8 @@ public interface Policy {
 
     long getAccountId();
 
+    String getUserName();
+
     <T> List<T> authorizeList(List<T> list);
 
     <T> T authorizeObject(T obj);

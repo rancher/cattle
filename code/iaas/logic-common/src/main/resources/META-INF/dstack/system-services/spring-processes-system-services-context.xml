@@ -23,6 +23,9 @@
 
     <bean class="io.github.ibuildthecloud.dstack.object.process.impl.DefaultObjectProcessManager" />
 
-    <extension:discover class="io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler" />
+    <bean class="io.github.ibuildthecloud.dstack.extension.spring.ProcessExtensionDiscovery" >
+        <property name="typeClass" value="io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler" />
+    </bean>
+
     <extension:discover class="io.github.ibuildthecloud.dstack.engine.process.HandlerResultListener" />
 </beans>

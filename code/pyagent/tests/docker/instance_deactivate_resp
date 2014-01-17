@@ -1,0 +1,21 @@
+{
+    "data": {
+        "+data": {
+            "dockerContainer": {
+                "Command": "sleep 120",
+                "Image": "ibuildthecloud/helloworld:latest",
+                "Names": [
+                    "/c861f990-4472-4fa1-960f-65171b544c28"
+                ],
+                "Ports": null,
+                "SizeRootFs": 0,
+                "SizeRw": 0
+            }
+        }
+    },
+    "previousIds": ["fe8fe34c-1b13-4287-a094-a2c5f902722b"],
+    "previousNames": ["compute.instance.deactivate;agent=91"],
+    "name": "reply.6533363327570546786",
+    "resourceId": "211",
+    "resourceType": "instance"
+}

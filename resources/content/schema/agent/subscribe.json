@@ -1,0 +1,11 @@
+{
+    "collectionMethods": ["POST"],
+    "resourceFields": {
+        "agentId": {
+            "create": true
+        },
+        "eventNames": {
+            "create": true
+        }
+    }
+}

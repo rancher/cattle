@@ -11,15 +11,10 @@ import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.framework.event.FrameworkEvents;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
-import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
-import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
-import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
-import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
-import io.github.ibuildthecloud.model.Pagination;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -33,7 +28,6 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.osgi.framework.FrameworkEvent;
 
 public class SubscribeManager extends AbstractNoOpResourceManager {
 
@@ -108,24 +102,9 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
             return null;
         }
     }
-    protected Long getAgent(Long agentId) {
-        if ( agentId != null ) {
-            return agentId;
-        }
-
-        String type = getLocator().getType(Agent.class);
-        ResourceManager rm = getLocator().getResourceManagerByType(type);
-        List<?> agents = rm.list(type, null,Pagination.limit(2));
-
-        if ( agents.size() > 1 ) {
-            throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "agentId");
-        }
-
-        return agents.size() == 0 ? null : ((Agent)agents.get(1)).getId();
-    }
 
     @Override
-    protected Object listInternal(String type, Map<Object, Object> criteria, ListOptions options) {
+    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         return Collections.EMPTY_LIST;
     }
 

@@ -3,6 +3,7 @@ package io.github.ibuildthecloud.dstack.iaas.api.object.postinit;
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.core.constants.AccountConstants;
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHandler;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -27,13 +28,10 @@ public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandl
         }
 
         if ( overwrite ) {
-            properties.put(AccountConstants.ACCOUNT_ID, policy.getAccountId());
+            ObjectUtils.setPropertyIgnoreErrors(obj, ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
         }
 
         return obj;
     }
 
-    protected void set(Object obj, String property, Object value) {
-        ObjectUtils.setPropertyIgnoreErrors(obj, property, value);
-    }
 }

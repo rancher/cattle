@@ -2,7 +2,7 @@ from common_fixtures import *
 import pytest
 from dstack import config
 
-if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") is None', reason="DOCKER_TEST is not set")
+if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") != "true"', reason="DOCKER_TEST is not set")
 
 
 @if_docker

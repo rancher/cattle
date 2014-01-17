@@ -6,7 +6,7 @@ TEST_IMAGE_UUID = "docker:" + TEST_IMAGE
 
 DOCKER_HOST = "ssh://docker:docker@localhost"
 
-if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") is None', reason="DOCKER_TEST is not set")
+if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") != "true"', reason="DOCKER_TEST is not set")
 
 
 @pytest.fixture(scope="module")

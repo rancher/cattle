@@ -4,23 +4,23 @@ import random
 import re
 
 
-def test_account_create(client):
-    cred_count = len(client.list_credential())
-    count = len(client.list_account())
-    account = client.create_account()
+def test_account_create(admin_client):
+    cred_count = len(admin_client.list_credential())
+    count = len(admin_client.list_account())
+    account = admin_client.create_account()
 
     assert account.state == "registering"
     assert account.transitioning == "yes"
 
-    account = wait_success(client, account)
+    account = wait_success(admin_client, account)
 
     assert account.transitioning == "no"
     assert account.state == "active"
 
-    new_count = len(client.list_account())
+    new_count = len(admin_client.list_account())
     assert (count+1) == new_count
 
-    new_count = len(client.list_credential())
+    new_count = len(admin_client.list_credential())
     assert (cred_count+1) == new_count
 
     creds = account.credentials()

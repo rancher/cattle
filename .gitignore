@@ -8,7 +8,7 @@ __pycache__
 .settings
 .tox
 
-app/db-*
+code/packaging/app/db-*
 build
 dist
 MANIFEST
