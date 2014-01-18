@@ -12,6 +12,7 @@ code/packaging/app/db-*
 build
 dist
 MANIFEST
+resources/content/db/mysql/dstack_dump*.sql
 resources/content/dstack-local.properties
 resources/content/modules.properties
 runtime
