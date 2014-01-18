@@ -34,6 +34,16 @@ public class Tables {
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.ChangelogLockTable CHANGELOG_LOCK = io.github.ibuildthecloud.dstack.core.model.tables.ChangelogLockTable.CHANGELOG_LOCK;
 
 	/**
+	 * The table dstack.config_item
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemTable CONFIG_ITEM = io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemTable.CONFIG_ITEM;
+
+	/**
+	 * The table dstack.config_item_status
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemStatusTable CONFIG_ITEM_STATUS = io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS;
+
+	/**
 	 * The table dstack.core_changelog
 	 */
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.CoreChangelogTable CORE_CHANGELOG = io.github.ibuildthecloud.dstack.core.model.tables.CoreChangelogTable.CORE_CHANGELOG;
@@ -47,6 +57,16 @@ public class Tables {
 	 * The table dstack.data
 	 */
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.DataTable DATA = io.github.ibuildthecloud.dstack.core.model.tables.DataTable.DATA;
+
+	/**
+	 * The table dstack.DATABASECHANGELOG
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangelogTable DATABASECHANGELOG = io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangelogTable.DATABASECHANGELOG;
+
+	/**
+	 * The table dstack.DATABASECHANGELOGLOCK
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangeloglockTable DATABASECHANGELOGLOCK = io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK;
 
 	/**
 	 * The table dstack.host

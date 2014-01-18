@@ -398,7 +398,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         context.pushLog(processExecution);
         try {
             processExecution.setResourceValueBefore(state.convertData(state.getResource()));
+
             HandlerResult result = handler == null ? null : handler.handle(state, DefaultProcessInstanceImpl.this);
+
             result = notifyResult(handler, state, result);
 
             if ( result == null ) {

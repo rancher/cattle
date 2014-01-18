@@ -17,8 +17,8 @@ public class Loader extends SpringLiquibase {
     @Override
     public void afterPropertiesSet() throws LiquibaseException {
         try {
-            System.setProperty("liquibase.databaseChangeLogTableName", "core_changelog");
-            System.setProperty("liquibase.databaseChangeLogLockTableName", "changelog_lock");
+//            System.setProperty("liquibase.databaseChangeLogTableName", "core_changelog");
+//            System.setProperty("liquibase.databaseChangeLogLockTableName", "changelog_lock");
             //TODO acquire lock
             DSL.using(getConfiguration()).delete(CoreChangelogTable.CORE_CHANGELOG).execute();
         } catch ( Throwable t ) {

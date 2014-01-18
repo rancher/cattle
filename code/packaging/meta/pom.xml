@@ -11,6 +11,11 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-config-item-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>dstack-iaas-accounts</artifactId>
             <version>${project.version}</version>
         </dependency>

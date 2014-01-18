@@ -4,6 +4,7 @@ import java.util.List;
 
 public interface Policy {
 
+    public static final String AGENT_ID = "agentId";
     public static final String AUTHORIZED_FOR_ALL_ACCOUNTS = "all.accounts";
     public static final String REMOVED_VISIBLE = "removed.visible";
     public static final long NO_ACCOUNT = -1L;

@@ -16,6 +16,11 @@
         <module>allocator</module>
         <module>api-logic</module>
         <module>archaius-management</module>
+        <module>config-item/api</module>
+        <module>config-item/common</module>
+        <module>config-item/scripts</module>
+        <module>config-item/server</module>
+        <module>config-item/servlet</module>
         <module>db-loader</module>
         <module>engine-jooq</module>
         <module>events</module>

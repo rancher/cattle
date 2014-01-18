@@ -42,22 +42,30 @@ public class AgentAuthorizationProvider implements AuthorizationProvider {
             return null;
         }
 
-        PolicyOptionsWrapper options = new PolicyOptionsWrapper(optionsFactory.getOptions(account));
+        final PolicyOptionsWrapper options = new PolicyOptionsWrapper(optionsFactory.getOptions(account));
         AccountPolicy policy = new AccountPolicy(account, options);
+
+        options.addCallback(Policy.AGENT_ID, new OptionCallback() {
+            @Override
+            public String getOption() {
+                Long agentId = getAgent();
+                return agentId == null ? null : Long.toString(agentId);
+            }
+        });
 
         if ( SubscriptionUtils.getSubscriptionStyle(policy) == SubscriptionStyle.QUALIFIED ) {
             options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER, IaasEvents.AGENT_QUALIFIER);
             options.addCallback(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER_VALUE, new OptionCallback() {
                 @Override
                 public String getOption() {
-                    Long agentId = getAgent();
+                    String agentId = options.getOption(Policy.AGENT_ID);
 
                     if ( agentId == null ) {
                         log.error("Failed to determine the proper agent ID for subscription for account [{}]", account.getId());
                         throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
                     }
 
-                    return agentId.toString();
+                    return agentId;
                 }
             });
         }
@@ -85,7 +93,7 @@ public class AgentAuthorizationProvider implements AuthorizationProvider {
             throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "agentId");
         }
 
-        return agents.size() == 0 ? null : ((Agent)agents.get(1)).getId();
+        return agents.size() == 0 ? null : ((Agent)agents.get(0)).getId();
     }
 
     @Override
