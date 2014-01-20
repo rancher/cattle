@@ -135,7 +135,7 @@
                         </goals>
                         <configuration>
                             <includeGroupIds>${project.groupId}</includeGroupIds>
-                            <includeArtifactIds>dstack-launcher</includeArtifactIds>
+                            <includeArtifactIds>dstack-framework-launcher</includeArtifactIds>
                             <includes>**/*.class</includes>
                             <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
                         </configuration>

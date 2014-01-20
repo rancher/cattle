@@ -2,19 +2,16 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:aop="http://www.springframework.org/schema/aop"
-    xmlns:extension="http://dstack.io/schemas/spring/extension"
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
-        http://dstack.io/schemas/spring/extension http://dstack.io/schemas/spring/extension-1.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <bean id="ArchaiusStartup" class="io.github.ibuildthecloud.dstack.archaius.startup.ArchaiusStartup" />
+    <bean id="MetricsStartup" class="io.github.ibuildthecloud.dstack.metrics.util.MetricsStartup" />
 
-    <bean id="ConfigScheduler" class="io.github.ibuildthecloud.dstack.archaius.polling.RefreshableFixedDelayPollingScheduler" />
+    <bean id="MetricsRegistry" class="io.github.ibuildthecloud.dstack.metrics.util.MetricsUtil" factory-method="getRegistry" />
 
-    <bean class="io.github.ibuildthecloud.dstack.datasource.JMXDataSourceFactoryImpl" />
+    <bean id="HealthCheckRegistry" class="io.github.ibuildthecloud.dstack.metrics.util.MetricsUtil" factory-method="getHealthCheckRegistry" />
 
-    <extension:discover key="config" class="org.apache.commons.configuration.AbstractConfiguration"/>
 </beans>

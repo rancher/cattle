@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.ServletContext;
+
 import org.apache.cloudstack.spring.module.locator.ModuleDefinitionLocator;
 import org.apache.cloudstack.spring.module.locator.impl.ClasspathModuleDefinitionLocator;
 import org.apache.cloudstack.spring.module.model.ModuleDefinition;
@@ -100,6 +102,16 @@ public class CloudStackSpringContext {
         }
 
         return def;
+    }
+
+    public static ApplicationContext getApplicationContext(ServletContext servletContext, String module) {
+        CloudStackSpringContext context =
+                (CloudStackSpringContext) servletContext.getAttribute(CloudStackSpringContext.CLOUDSTACK_CONTEXT_SERVLET_KEY);
+
+        if ( context == null )
+            return null;
+
+        return context.getApplicationContextForWeb(module);
     }
 
     public ApplicationContext getApplicationContextForWeb(String name) {

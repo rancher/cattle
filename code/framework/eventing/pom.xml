@@ -12,7 +12,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>15.0</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -48,10 +47,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>dstack-framework-managed-context</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-pool</groupId>
-            <artifactId>commons-pool</artifactId>
         </dependency>
     </dependencies>
 </project>

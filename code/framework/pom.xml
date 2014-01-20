@@ -26,6 +26,7 @@
         <module>lock</module>
         <module>logback</module>
         <module>managed-context</module>
+        <module>metrics</module>
         <module>module</module>
         <module>object</module>
         <module>pool</module>

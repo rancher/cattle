@@ -1,5 +1,7 @@
 <configuration scan="true" scanPeriod="5 seconds">
 
+    <jmxConfigurator/>
+
     <appender name="CONSOLE_INFO" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>

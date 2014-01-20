@@ -16,6 +16,6 @@
         <constructor-arg value="dstack" />
     </bean>
 
-    <bean id="DataSourceFactory" class="io.github.ibuildthecloud.dstack.datasource.DefaultDataSourceFactoryImpl" />
+    <bean id="DataSourceFactory" class="io.github.ibuildthecloud.dstack.datasource.JMXDataSourceFactoryImpl" />
 
 </beans>

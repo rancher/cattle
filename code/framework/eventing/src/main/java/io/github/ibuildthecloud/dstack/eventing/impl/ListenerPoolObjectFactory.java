@@ -8,9 +8,11 @@ import java.util.concurrent.Future;
 
 import javax.inject.Inject;
 
-import org.apache.commons.pool.PoolableObjectFactory;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 
-public class ListenerPoolObjectFactory implements PoolableObjectFactory<FutureEventListener> {
+public class ListenerPoolObjectFactory implements PooledObjectFactory<FutureEventListener> {
 
     String prefix = Event.REPLY_PREFIX;
     EventService eventService;
@@ -25,32 +27,32 @@ public class ListenerPoolObjectFactory implements PoolableObjectFactory<FutureEv
     }
 
     @Override
-    public FutureEventListener makeObject() throws Exception {
+    public PooledObject<FutureEventListener> makeObject() throws Exception {
         String key = "reply." + Math.abs(random.nextLong());
         FutureEventListener listener = new FutureEventListener(eventService, key);
         Future<?> future = eventService.subscribe(key, listener);
         future.get();
-        return listener;
+        return new DefaultPooledObject<FutureEventListener>(listener);
     }
 
     @Override
-    public void destroyObject(FutureEventListener obj) throws Exception {
-        eventService.unsubscribe(obj);
+    public void destroyObject(PooledObject<FutureEventListener> p) throws Exception {
+        eventService.unsubscribe(p.getObject());
     }
 
     @Override
-    public boolean validateObject(FutureEventListener obj) {
-        return obj.isFailed();
+    public boolean validateObject(PooledObject<FutureEventListener> p) {
+        return p.getObject().isFailed();
     }
 
     @Override
-    public void activateObject(FutureEventListener obj) throws Exception {
-        obj.reset();
+    public void activateObject(PooledObject<FutureEventListener> p) throws Exception {
+        p.getObject().reset();
     }
 
     @Override
-    public void passivateObject(FutureEventListener obj) throws Exception {
-        obj.reset();
+    public void passivateObject(PooledObject<FutureEventListener> p) throws Exception {
+        p.getObject().reset();
     }
 
     public String getPrefix() {

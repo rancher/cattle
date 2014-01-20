@@ -53,7 +53,9 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
         this.eventService = eventService;
 
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-        PoolConfig.setConfig(config, "redis", "redis");
+        PoolConfig.setConfig(config, "redis",
+                "redis.pool.",
+                "global.pool.");
 
         pool = new JedisPool(config, host, port, REDIS_TIMEOUT.get(), getPassword());
         jedis = new Jedis(host, port, REDIS_TIMEOUT.get());

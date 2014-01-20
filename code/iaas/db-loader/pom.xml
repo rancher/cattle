@@ -10,6 +10,10 @@
     </parent>
     <dependencies>
         <dependency>
+            <groupId>net.ju-n.commons-dbcp-jmx</groupId>
+            <artifactId>commons-dbcp-jmx-jdbc4</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>dstack-framework-pool</artifactId>
             <version>${project.version}</version>

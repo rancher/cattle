@@ -26,7 +26,9 @@ import java.util.concurrent.ExecutorService;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +54,7 @@ public abstract class AbstractEventService implements EventService {
     Map<String, List<EventListener>> eventToListeners = new HashMap<String, List<EventListener>>();
     Map<EventListener, Set<String>> listenerToEvents = new HashMap<EventListener, Set<String>>();
     JsonMapper jsonMapper;
-    GenericObjectPool<FutureEventListener> listenerPool = new GenericObjectPool<FutureEventListener>(new ListenerPoolObjectFactory(this));
+    ObjectPool<FutureEventListener> listenerPool;
 
     @Override
     public boolean publish(Event event) {
@@ -308,7 +310,13 @@ public abstract class AbstractEventService implements EventService {
 
     @PostConstruct
     public void init() {
-        PoolConfig.setConfig(listenerPool, "eventPool", "event.pool.");
+        if ( listenerPool == null ) {
+            GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+            PoolConfig.setConfig(config, "eventing.reply.pool",
+                    "eventing.reply.pool.",
+                    "global.pool.");
+            listenerPool = new GenericObjectPool<FutureEventListener>(new ListenerPoolObjectFactory(this), config);
+        }
     }
 
 
@@ -323,11 +331,11 @@ public abstract class AbstractEventService implements EventService {
         this.jsonMapper = jsonMapper;
     }
 
-    public GenericObjectPool<FutureEventListener> getListenerPool() {
+    public ObjectPool<FutureEventListener> getListenerPool() {
         return listenerPool;
     }
 
-    public void setListenerPool(GenericObjectPool<FutureEventListener> listenerPool) {
+    public void setListenerPool(ObjectPool<FutureEventListener> listenerPool) {
         this.listenerPool = listenerPool;
     }
 

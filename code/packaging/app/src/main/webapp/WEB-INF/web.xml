@@ -7,18 +7,39 @@
 		<listener-class>io.github.ibuildthecloud.dstack.context.WebContextLoaderListener</listener-class>
 	</listener>
 
+    <listener>
+        <listener-class>com.ryantenney.metrics.spring.servlets.MetricsServletsContextListener</listener-class>
+    </listener>
+
     <filter>
         <filter-name>ApiFilter</filter-name>
         <filter-class>io.github.ibuildthecloud.dstack.api.servlet.ApiRequestFilter</filter-class>
-<!--         <init-param> -->
-<!--             <param-name>module</param-name> -->
-<!--             <param-value>api</param-value> -->
-<!--         </init-param> -->
+        <init-param>
+            <param-name>ignore-prefixes</param-name>
+            <param-value>/static,/ping,/healthcheck</param-value>
+        </init-param>
     </filter>
     <filter-mapping>
         <filter-name>ApiFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+    <servlet>
+        <servlet-name>HealthCheck</servlet-name>
+        <servlet-class>com.codahale.metrics.servlets.HealthCheckServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Ping</servlet-name>
+        <servlet-class>com.codahale.metrics.servlets.PingServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Ping</servlet-name>
+        <url-pattern>/ping</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HealthCheck</servlet-name>
+        <url-pattern>/healthcheck</url-pattern>
+    </servlet-mapping>
 
     <error-page>
         <error-code>500</error-code>
