@@ -4,28 +4,35 @@ import io.github.ibuildthecloud.dstack.eventing.model.Event;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.bind.annotation.XmlTransient;
 
-public class EventVO implements Event {
+import org.slf4j.MDC;
+
+public class EventVO<T> implements Event {
 
     String id, name, replyTo, resourceId, resourceType, publisher, transitioning, transitioningMessage, transitioningInternalMessage;
     String[] previousIds, previousNames;
-    Object data;
+    T data;
     Date time;
     String listenerKey;
     Integer transitioningProgress;
+    Map<String,Object> context;
 
+    @SuppressWarnings("unchecked")
     public EventVO() {
         id = UUID.randomUUID().toString();
         time = new Date();
+        context = MDC.getMDCAdapter().getCopyOfContextMap();
     }
 
     public EventVO(Event event) {
         this(event, event.getReplyTo());
     }
 
+    @SuppressWarnings("unchecked")
     public EventVO(Event event, String replyTo) {
         this.replyTo = replyTo;
 
@@ -33,7 +40,7 @@ public class EventVO implements Event {
         this.name = event.getName();
         this.previousIds = event.getPreviousIds();
         this.previousNames = event.getPreviousNames();
-        this.data = event.getData();
+        this.data = (T)event.getData();
         this.time = event.getTime();
         this.publisher = event.getPublisher();
         this.resourceId = event.getResourceId();
@@ -42,9 +49,10 @@ public class EventVO implements Event {
         this.transitioningMessage = event.getTransitioningMessage();
         this.transitioningInternalMessage = event.getTransitioningInternalMessage();
         this.transitioningProgress = event.getTransitioningProgress();
+        this.context = event.getContext();
     }
 
-    public static EventVO reply(Event request) {
+    public static EventVO<Object> reply(Event request) {
         String[] previousIds = request.getPreviousIds();
         if ( previousIds != null && previousIds.length > 0 ) {
             String[] newIds = new String[previousIds.length+1];
@@ -56,7 +64,7 @@ public class EventVO implements Event {
             previousIds = new String[] { request.getId() };
         }
 
-        EventVO event = new EventVO();
+        EventVO<Object> event = new EventVO<Object>();
         event.setName(request.getReplyTo());
         event.setPreviousNames(prepend(request.getPreviousNames(), request.getName()));
         event.setPreviousIds(prepend(request.getPreviousIds(), request.getId()));
@@ -80,8 +88,8 @@ public class EventVO implements Event {
         return array;
     }
 
-    public static EventVO newEvent(String name) {
-        return new EventVO(name);
+    public static <T> EventVO<T> newEvent(String name) {
+        return new EventVO<T>(name);
     }
 
     public EventVO(String name) {
@@ -98,7 +106,7 @@ public class EventVO implements Event {
         this.name = name;
     }
 
-    public EventVO withName(String name) {
+    public EventVO<T> withName(String name) {
         this.name = name;
         return this;
     }
@@ -112,7 +120,7 @@ public class EventVO implements Event {
         this.previousIds = previousIds;
     }
 
-    public EventVO withPreviousIds(String[] previousIds) {
+    public EventVO<T> withPreviousIds(String[] previousIds) {
         this.previousIds = previousIds;
         return this;
     }
@@ -126,21 +134,21 @@ public class EventVO implements Event {
         this.previousNames = names;
     }
 
-    public EventVO withPreviousNames(String[] names) {
+    public EventVO<T> withPreviousNames(String[] names) {
         this.previousNames = names;
         return this;
     }
 
     @Override
-    public Object getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(T data) {
         this.data = data;
     }
 
-    public EventVO withData(Object data) {
+    public EventVO<T> withData(T data) {
         this.data = data;
         return this;
     }
@@ -154,7 +162,7 @@ public class EventVO implements Event {
         this.time = time;
     }
 
-    public EventVO withTime(Date time) {
+    public EventVO<T> withTime(Date time) {
         this.time = time;
         return this;
     }
@@ -168,7 +176,7 @@ public class EventVO implements Event {
         this.publisher = publisher;
     }
 
-    public EventVO withPublisher(String publisher) {
+    public EventVO<T> withPublisher(String publisher) {
         this.publisher = publisher;
         return this;
     }
@@ -182,7 +190,7 @@ public class EventVO implements Event {
         this.id = id;
     }
 
-    public EventVO withId(String id) {
+    public EventVO<T> withId(String id) {
         this.id = id;
         return this;
     }
@@ -196,7 +204,7 @@ public class EventVO implements Event {
         this.replyTo = replyTo;
     }
 
-    public EventVO withReplyTo(String replyTo) {
+    public EventVO<T> withReplyTo(String replyTo) {
         this.replyTo = replyTo;
         return this;
     }
@@ -210,7 +218,7 @@ public class EventVO implements Event {
         this.resourceId = resourceId;
     }
 
-    public EventVO withResourceId(String resourceId) {
+    public EventVO<T> withResourceId(String resourceId) {
         this.resourceId = resourceId;
         return this;
     }
@@ -224,7 +232,7 @@ public class EventVO implements Event {
         this.resourceType = resourceType;
     }
 
-    public EventVO withResourceType(String resourceType) {
+    public EventVO<T> withResourceType(String resourceType) {
         this.resourceType = resourceType;
         return this;
     }
@@ -238,7 +246,7 @@ public class EventVO implements Event {
         this.listenerKey = listenerKey;
     }
 
-    public EventVO withListenerKey(String listenerKey) {
+    public EventVO<T> withListenerKey(String listenerKey) {
         this.listenerKey = listenerKey;
         return this;
     }
@@ -252,7 +260,7 @@ public class EventVO implements Event {
         this.transitioning = transitioning;
     }
 
-    public EventVO withTransitioning(String transitioning) {
+    public EventVO<T> withTransitioning(String transitioning) {
         this.transitioning = transitioning;
         return this;
     }
@@ -266,7 +274,7 @@ public class EventVO implements Event {
         this.transitioningMessage = transitioningMessage;
     }
 
-    public EventVO withTransitioningMessage(String transitioningMessage) {
+    public EventVO<T> withTransitioningMessage(String transitioningMessage) {
         this.transitioningMessage = transitioningMessage;
         return this;
     }
@@ -280,7 +288,7 @@ public class EventVO implements Event {
         this.transitioningProgress = transitioningProgress;
     }
 
-    public EventVO withTransitioningProgress(Integer transitioningProgress) {
+    public EventVO<T> withTransitioningProgress(Integer transitioningProgress) {
         this.transitioningProgress = transitioningProgress;
         return this;
     }
@@ -293,8 +301,22 @@ public class EventVO implements Event {
         this.transitioningInternalMessage = transitioningInternalMessage;
     }
 
-    public EventVO withTransitioningInternalMessage(String transitioningInternalMessage) {
+    public EventVO<T> withTransitioningInternalMessage(String transitioningInternalMessage) {
         this.transitioningInternalMessage = transitioningInternalMessage;
+        return this;
+    }
+
+    @Override
+    public Map<String, Object> getContext() {
+        return context;
+    }
+
+    public void setContext(Map<String, Object> context) {
+        this.context = context;
+    }
+
+    public EventVO<T> withContext(Map<String, Object> context) {
+        this.context = context;
         return this;
     }
 

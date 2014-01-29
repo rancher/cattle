@@ -26,8 +26,11 @@ public class AgentLocatorImpl implements AgentLocator {
         }
 
         Long agentId = null;
-        if ( resource instanceof Agent ) {
-            return new RemoteAgentImpl(executorService, jsonMapper, eventService, ((Agent)resource).getId());
+
+        if ( resource instanceof Long ) {
+            agentId = (Long)resource;
+        } else if ( resource instanceof Agent ) {
+            agentId = ((Agent)resource).getId();
         }
 
         if ( agentId == null ) {

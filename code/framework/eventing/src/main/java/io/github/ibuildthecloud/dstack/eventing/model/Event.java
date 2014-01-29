@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.dstack.eventing.model;
 
 import java.util.Date;
+import java.util.Map;
 
 public interface Event {
 
@@ -39,4 +40,5 @@ public interface Event {
 
     String getPublisher();
 
+    Map<String,Object> getContext();
 }

@@ -12,9 +12,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GenericResourceProcessState extends AbstractStatesBasedProcessState {
 
+    private static final Logger log = LoggerFactory.getLogger(GenericResourceProcessState.class);
 
     Object resource;
     String resourceId;
@@ -91,6 +94,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     @Override
     public boolean shouldCancel() {
         if ( resource == null ) {
+            log.error("Resource is null, can't find resource id [{}]", resourceId);
             return true;
         }
         return super.shouldCancel();

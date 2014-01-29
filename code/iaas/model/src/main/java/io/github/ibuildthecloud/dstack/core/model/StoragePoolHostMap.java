@@ -14,79 +14,79 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface StoragePoolHostMap extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.storage_pool_host_map.id</code>. 
+	 * Setter for <code>dstack.storage_pool_host_map.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool_host_map.id</code>. 
+	 * Getter for <code>dstack.storage_pool_host_map.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.storage_pool_host_map.host_id</code>. 
+	 * Setter for <code>dstack.storage_pool_host_map.host_id</code>.
 	 */
 	public void setHostId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool_host_map.host_id</code>. 
+	 * Getter for <code>dstack.storage_pool_host_map.host_id</code>.
 	 */
 	@javax.persistence.Column(name = "host_id", nullable = false, precision = 19)
 	public java.lang.Long getHostId();
 
 	/**
-	 * Setter for <code>dstack.storage_pool_host_map.storage_pool_id</code>. 
+	 * Setter for <code>dstack.storage_pool_host_map.storage_pool_id</code>.
 	 */
 	public void setStoragePoolId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool_host_map.storage_pool_id</code>. 
+	 * Getter for <code>dstack.storage_pool_host_map.storage_pool_id</code>.
 	 */
 	@javax.persistence.Column(name = "storage_pool_id", nullable = false, precision = 19)
 	public java.lang.Long getStoragePoolId();
 
 	/**
-	 * Setter for <code>dstack.storage_pool_host_map.state</code>. 
+	 * Setter for <code>dstack.storage_pool_host_map.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool_host_map.state</code>. 
+	 * Getter for <code>dstack.storage_pool_host_map.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.storage_pool_host_map.created</code>. 
+	 * Setter for <code>dstack.storage_pool_host_map.created</code>.
 	 */
-	public void setCreated(java.sql.Timestamp value);
+	public void setCreated(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool_host_map.created</code>. 
+	 * Getter for <code>dstack.storage_pool_host_map.created</code>.
 	 */
 	@javax.persistence.Column(name = "created", nullable = false)
-	public java.sql.Timestamp getCreated();
+	public java.util.Date getCreated();
 
 	/**
-	 * Setter for <code>dstack.storage_pool_host_map.removed</code>. 
+	 * Setter for <code>dstack.storage_pool_host_map.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool_host_map.removed</code>. 
+	 * Getter for <code>dstack.storage_pool_host_map.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
 
 	/**
-	 * Setter for <code>dstack.storage_pool_host_map.uuid</code>. 
+	 * Setter for <code>dstack.storage_pool_host_map.uuid</code>.
 	 */
 	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool_host_map.uuid</code>. 
+	 * Getter for <code>dstack.storage_pool_host_map.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
 	public java.lang.String getUuid();

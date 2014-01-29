@@ -8,13 +8,14 @@ import io.github.ibuildthecloud.dstack.engine.eventing.EngineEvents;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.handler.ProcessHandler;
 import io.github.ibuildthecloud.dstack.engine.handler.ProcessLogic;
+import io.github.ibuildthecloud.dstack.engine.handler.ProcessPostListener;
+import io.github.ibuildthecloud.dstack.engine.handler.ProcessPreListener;
 import io.github.ibuildthecloud.dstack.engine.idempotent.Idempotent;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecution;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentRetryException;
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.manager.impl.ProcessRecord;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
-import io.github.ibuildthecloud.dstack.engine.process.HandlerResultListener;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstanceException;
@@ -29,6 +30,7 @@ import io.github.ibuildthecloud.dstack.engine.process.log.ProcessLog;
 import io.github.ibuildthecloud.dstack.engine.process.log.ProcessLogicExecutionLog;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
+import io.github.ibuildthecloud.dstack.framework.event.FrameworkEvents;
 import io.github.ibuildthecloud.dstack.lock.LockCallback;
 import io.github.ibuildthecloud.dstack.lock.LockCallbackNoReturn;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
@@ -37,7 +39,6 @@ import io.github.ibuildthecloud.dstack.lock.exception.FailedToAcquireLockExcepti
 import io.github.ibuildthecloud.dstack.lock.util.LockUtils;
 import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +111,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 }
             });
         } catch ( FailedToAcquireLockException e ) {
-            return exit(FAILED_TO_ACQUIRE_PROCESS_INSTANCE_LOCK);
+            exit(FAILED_TO_ACQUIRE_PROCESS_INSTANCE_LOCK);
+            throw new ProcessInstanceException(this, new ProcessExecutionExitException(FAILED_TO_ACQUIRE_PROCESS_INSTANCE_LOCK));
         } finally {
             log.info("Exiting [{}] process [{}] id [{}] on resource [{}]", finalReason, getName(),  getId(), instanceContext.state.getResourceId());
             if ( finalReason == null ) {
@@ -141,11 +143,12 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         lookForCrashes();
 
         execution = processLog.newExecution();
+        execution.setProcessId(record.getId());
         execution.setResourceType(instanceContext.getProcessDefinition().getResourceType());
         execution.setResourceId(instanceContext.getState().getResourceId());
-        engineContext.pushLog(execution);
-
         execution.setProcessName(instanceContext.getProcessDefinition().getName());
+
+        engineContext.pushLog(execution);
     }
 
     protected void closeLog(EngineContext engineContext) {
@@ -156,17 +159,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     protected ExitReason executeWithProcessInstanceLock() {
         EngineContext engineContext = EngineContext.getEngineContext();
         try {
-            try {
-                runDelegateLoop(engineContext);
-            } catch ( ProcessExecutionExitException e ) {
-                throw e;
-            } catch ( IdempotentRetryException e ) {
-                execution.setException(new ExceptionLog(e));
-                throw new ProcessExecutionExitException(RETRY_EXCEPTION, e);
-            } catch ( Throwable t) {
-                execution.setException(new ExceptionLog(t));
-                throw new ProcessExecutionExitException(UNKNOWN_EXCEPTION, t);
-            }
+            runDelegateLoop(engineContext);
 
             return exit(ExitReason.ACTIVE);
         } catch ( ProcessExecutionExitException e ) {
@@ -186,7 +179,11 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 ExceptionUtils.rethrowRuntime(e.getCause());
             }
 
-            log.error("Exiting with code [{}]", e.getExitReason(), e.getCause());
+            if ( e.getExitReason() == SCHEDULED ) {
+                log.info("Exiting with code [{}]", e.getExitReason(), e.getCause());
+            } else {
+                log.error("Exiting with code [{}]", e.getExitReason(), e.getCause());
+            }
             throw new ProcessInstanceException(this, e);
         } finally {
             context.getProcessManager().persistState(this);
@@ -211,6 +208,14 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 } else {
                     execution.exit(DELEGATE);
                 }
+            } catch ( ProcessExecutionExitException e ) {
+                throw e;
+            } catch ( IdempotentRetryException e ) {
+                execution.setException(new ExceptionLog(e));
+                throw new ProcessExecutionExitException(RETRY_EXCEPTION, e);
+            } catch ( Throwable t) {
+                execution.setException(new ExceptionLog(t));
+                throw new ProcessExecutionExitException(UNKNOWN_EXCEPTION, t);
             } finally {
                 closeLog(engineContext);
             }
@@ -229,9 +234,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         ProcessInstanceContext newContext = new ProcessInstanceContext();
-        newContext.setPhase(ProcessPhase.STARTED);
         newContext.setProcessDefinition(def);
         newContext.setState(state);
+        newContext.setPhase(ProcessPhase.STARTED);
 
         instanceContextHistory.push(instanceContext);
         instanceContext = newContext;
@@ -261,7 +266,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         if ( instanceContext.getState().shouldCancel() ) {
-            throw new ProcessCancelException();
+            throw new ProcessCancelException("State [" + instanceContext.getState().getState() + "] is not valid");
         }
     }
 
@@ -315,102 +320,80 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         throw new ProcessExecutionExitException(SCHEDULED);
     }
 
-    protected void runListeners(List<? extends ProcessLogic> listeners, ProcessPhase listenerPhase,
-            ExitReason exceptionReason) {
-        if ( instanceContext.getPhase().ordinal() >= listenerPhase.ordinal() )
-            return;
-
-        boolean ran = false;
-        EngineContext context = EngineContext.getEngineContext();
-        for ( ProcessLogic listener : listeners ) {
-            ProcessLogicExecutionLog processExecution = execution.newProcessLogicExecution(listener);
-            context.pushLog(processExecution);
-            try {
-                ran = true;
-                listener.handle(instanceContext.getState(), this);
-            } catch ( Throwable t ) {
-                processExecution.setException(new ExceptionLog(t));
-                throw new ProcessExecutionExitException(exceptionReason, t);
-            } finally {
-                processExecution.setStopTime(now());
-                context.popLog();
-            }
-        }
-
-        if ( ran ) {
-            assertState();
-        }
-
-        instanceContext.setPhase(listenerPhase);
-    }
-
-    protected HandlerResult notifyResult(ProcessHandler handler, ProcessState state, HandlerResult result) {
-        for ( HandlerResultListener listener : context.getResultListeners() ) {
-            result = listener.onResult(this, state, handler, instanceContext.getProcessDefinition(), result);
-        }
-
-        return result;
-    }
-
-    protected void runHandlers() {
+    protected boolean runHandlers(ProcessPhase phase, List<? extends ProcessLogic> handlers) {
+        boolean shouldDelegate = false;
         boolean ran = false;
         final ProcessDefinition processDefinition = instanceContext.getProcessDefinition();
         final ProcessState state = instanceContext.getState();
 
-        if ( instanceContext.getPhase().ordinal() < ProcessPhase.HANDLER_DONE.ordinal() ) {
+        if ( instanceContext.getPhase().ordinal() < phase.ordinal() ) {
             final EngineContext context = EngineContext.getEngineContext();
 
-            List<ProcessHandler> handlers = processDefinition.getProcessHandlers();
-            if ( handlers.size() == 0 ) {
-                handlers = Arrays.asList((ProcessHandler)null);
-            }
-
-            for ( final ProcessHandler handler : handlers ) {
+            for ( final ProcessLogic handler : handlers ) {
                 ran = true;
-                Boolean shouldContinue = Idempotent.execute(new IdempotentExecution<Boolean>() {
+                HandlerResult result = Idempotent.execute(new IdempotentExecution<HandlerResult>() {
                     @Override
-                    public Boolean execute() {
+                    public HandlerResult execute() {
                         return runHandler(processDefinition, state, context, handler);
                     }
                 });
 
-                if ( ! shouldContinue ) {
-                    break;
+                if ( result != null ) {
+                    shouldDelegate |= result.shouldDelegate();
+                    if ( ! result.shouldContinue(instanceContext.getPhase()) ) {
+                        break;
+                    }
                 }
             }
 
-            instanceContext.setPhase(ProcessPhase.HANDLER_DONE);
+            instanceContext.setPhase(phase);
         }
 
         if ( ran ) {
             assertState();
         } else {
-            if ( processDefinition.getHandlerRequiredResultData().size() > 0 ) {
+            if ( phase == ProcessPhase.HANDLER_DONE && processDefinition.getHandlerRequiredResultData().size() > 0 ) {
                 log.error("No handlers ran, but there are required fields to be set");
                 throw new ProcessExecutionExitException(MISSING_HANDLER_RESULT_FIELDS);
             }
         }
+
+        return shouldDelegate;
     }
 
-    protected Boolean runHandler(ProcessDefinition processDefinition, ProcessState state,
-            EngineContext context, ProcessHandler handler) {
+    protected String logicTypeString(ProcessLogic logic) {
+        if ( logic instanceof ProcessPreListener ) {
+            return "pre listener ";
+        } else if ( logic instanceof ProcessHandler ) {
+            return "handler ";
+        } else if ( logic instanceof ProcessPostListener ) {
+            return "post listener ";
+        }
+
+        return "";
+    }
+
+    protected HandlerResult runHandler(ProcessDefinition processDefinition, ProcessState state,
+            EngineContext context, ProcessLogic handler) {
         ProcessLogicExecutionLog processExecution = execution.newProcessLogicExecution(handler);
         context.pushLog(processExecution);
         try {
             processExecution.setResourceValueBefore(state.convertData(state.getResource()));
 
-            HandlerResult result = handler == null ? null : handler.handle(state, DefaultProcessInstanceImpl.this);
+            log.info("Running {}[{}]", logicTypeString(handler), handler.getName());
+            HandlerResult handlerResult = handler.handle(state, DefaultProcessInstanceImpl.this);
+            log.info("Finished {}[{}]", logicTypeString(handler), handler.getName());
 
-            result = notifyResult(handler, state, result);
-
-            if ( result == null ) {
-                return true;
+            if ( handlerResult == null ) {
+                return handlerResult;
             }
 
-            Map<String,Object> resultData = state.convertData(result.getData());
+            boolean shouldContinue = handlerResult.shouldContinue(state.getPhase());
 
-            processExecution.setShouldDelegate(result.shouldDelegate());
-            processExecution.setShouldContinue(result.shouldContinue());
+            Map<String,Object> resultData = state.convertData(handlerResult.getData());
+
+            processExecution.setShouldDelegate(handlerResult.shouldDelegate());
+            processExecution.setShouldContinue(shouldContinue);
             processExecution.setResultData(resultData);
 
             Set<String> missingFields = new TreeSet<String>();
@@ -422,7 +405,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 }
             }
 
-            if ( ! result.shouldContinue() && missingFields.size() > 0 ) {
+            if ( ! shouldContinue && missingFields.size() > 0 ) {
                 log.error("Missing field [{}] for handler [{}]", missingFields, handler == null ? null : handler.getName());
                 throw new ProcessExecutionExitException(MISSING_HANDLER_RESULT_FIELDS);
             }
@@ -430,11 +413,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             state.applyData(resultData);
             processExecution.setResourceValueAfter(state.convertData(state.getResource()));
 
-            if ( result.shouldDelegate() ) {
-                throw new ProcessCancelException();
-            }
-
-            return result.shouldContinue();
+            return handlerResult;
         } catch ( ProcessCancelException e ) {
             throw e;
         } catch ( RuntimeException e ) {
@@ -448,14 +427,20 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected void runLogic() {
         inLogic = true;
+        boolean shouldDelegate = false;
         try {
-            runListeners(instanceContext.getProcessDefinition().getPreProcessListeners(), ProcessPhase.PRE_LISTENERS_DONE,
-                    ExitReason.PRE_LISTENER_EXCEPTION);
+            instanceContext.setPhase(ProcessPhase.PRE_LISTENERS);
+            shouldDelegate |= runHandlers(ProcessPhase.PRE_LISTENERS_DONE, instanceContext.getProcessDefinition().getPreProcessListeners());
 
-            runHandlers();
+            instanceContext.setPhase(ProcessPhase.HANDLERS);
+            shouldDelegate |= runHandlers(ProcessPhase.HANDLER_DONE, instanceContext.getProcessDefinition().getProcessHandlers());
 
-            runListeners(instanceContext.getProcessDefinition().getPreProcessListeners(), ProcessPhase.POST_LISTENERS_DONE,
-                    ExitReason.POST_LISTENER_EXCEPTION);
+            instanceContext.setPhase(ProcessPhase.POST_LISTENERS);
+            shouldDelegate |= runHandlers(ProcessPhase.POST_LISTENERS_DONE, instanceContext.getProcessDefinition().getPostProcessListeners());
+
+            if ( shouldDelegate ) {
+                throw new ProcessCancelException("Process result triggered a delegation");
+            }
         } finally {
             inLogic = false;
         }
@@ -480,13 +465,10 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         record.setProcessLog(processLog);
         record.setExitReason(finalReason);
 
-        if ( execution == null ) {
-            record.setRunningProcessServerId(null);
+        if ( finalReason == null ) {
+            record.setRunningProcessServerId(EngineContext.getProcessServerId());
         } else {
-            record.setRunningProcessServerId(execution.getProcessingServerId());
-        }
-
-        if ( finalReason != null ) {
+            record.setRunningProcessServerId(null);
             if ( finalReason.isTerminating() && execution != null && execution.getStopTime() != null ) {
                 record.setEndTime(new Date(execution.getStopTime()));
             }
@@ -503,6 +485,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         String previousState = state.getState();
         String newState = state.setTransitioning();
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, "transitioning", now()));
+        publishChanged();
     }
 
     protected void setDone() {
@@ -511,6 +494,14 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         String previousState = state.getState();
         String newState = state.setDone();
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, "done", now()));
+        publishChanged();
+    }
+
+    protected void publishChanged() {
+        context.getEventService().publish(EventVO
+                .newEvent(FrameworkEvents.STATE_CHANGE)
+                .withResourceType(record.getResourceType())
+                .withResourceId(record.getResourceId()));
     }
 
     protected void startLock() {
@@ -574,4 +565,13 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         return context.getProcessManager();
     }
 
+    @Override
+    public String toString() {
+        try {
+            return "Process [" + instanceContext.getProcessDefinition().getName() +
+                    "] resource [" + instanceContext.getState().getResourceId() + "]";
+        } catch ( NullPointerException e ) {
+            return super.toString();
+        }
+    }
 }

@@ -24,6 +24,7 @@ import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public abstract class AbstractThreadPoolingEventService extends AbstractEventService {
 
@@ -36,7 +37,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
     protected void onEvent(String listenerKey, String eventName, byte[] bytes) {
         try {
-            EventVO event = jsonMapper.readValue(bytes, EventVO.class);
+            EventVO<?> event = jsonMapper.readValue(bytes, EventVO.class);
             if ( eventName != null ) {
                 event.setName(eventName);
             }
@@ -56,7 +57,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
         getEventLogIn().debug("{} : {}", eventName, eventString);
 
         try {
-            EventVO event = jsonMapper.readValue(eventString, EventVO.class);
+            EventVO<?> event = jsonMapper.readValue(eventString, EventVO.class);
             if ( eventName != null ) {
                 event.setName(eventName);
             }
@@ -107,6 +108,11 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
             @Override
             protected void doRun() throws Exception {
                 try {
+                    Map<String,Object> context = event.getContext();
+                    if ( context != null ) {
+                        MDC.setContextMap(context);
+                    }
+
                     listener.onEvent(event);
                 } catch ( FailedToAcquireLockException e ) {
                     log.trace("Failed to acquire lock on event [{}], this is probably normal", event, e);

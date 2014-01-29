@@ -21,4 +21,6 @@ public interface AllocatorDao {
 
     void releaseAllocation(Instance instance);
 
+    void releaseAllocation(Volume volume);
+
 }

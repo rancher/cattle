@@ -17,13 +17,13 @@ public class ProcessRecord extends LaunchConfiguration {
     ProcessResult result;
     ExitReason exitReason;
     ProcessPhase phase = ProcessPhase.REQUESTED;
-    Long startProcessServerId;
-    Long runningProcessServerId;
+    String startProcessServerId;
+    String runningProcessServerId;
 
     public ProcessRecord() {
     }
 
-    public ProcessRecord(LaunchConfiguration config, Long id, Long startProcessServerId) {
+    public ProcessRecord(LaunchConfiguration config, Long id, String startProcessServerId) {
         super(config);
         this.id = id;
         this.startProcessServerId = startProcessServerId;
@@ -66,19 +66,19 @@ public class ProcessRecord extends LaunchConfiguration {
         this.processLog = processLog;
     }
 
-    public Long getStartProcessServerId() {
+    public String getStartProcessServerId() {
         return startProcessServerId;
     }
 
-    public void setStartProcessServerId(Long startProcessServerId) {
+    public void setStartProcessServerId(String startProcessServerId) {
         this.startProcessServerId = startProcessServerId;
     }
 
-    public Long getRunningProcessServerId() {
+    public String getRunningProcessServerId() {
         return runningProcessServerId;
     }
 
-    public void setRunningProcessServerId(Long runningProcessServerId) {
+    public void setRunningProcessServerId(String runningProcessServerId) {
         this.runningProcessServerId = runningProcessServerId;
     }
 

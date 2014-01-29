@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SettingTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord> {
 
-	private static final long serialVersionUID = -1106142865;
+	private static final long serialVersionUID = -1629554359;
 
 	/**
 	 * The singleton instance of <code>dstack.setting</code>
@@ -27,36 +27,40 @@ public class SettingTable extends org.jooq.impl.TableImpl<io.github.ibuildtheclo
 	}
 
 	/**
-	 * The column <code>dstack.setting.id</code>. 
+	 * The column <code>dstack.setting.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.setting.name</code>. 
+	 * The column <code>dstack.setting.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.setting.value</code>. 
+	 * The column <code>dstack.setting.value</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.VARCHAR.length(1024).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.VARCHAR.length(1024).nullable(false), this, "");
 
 	/**
 	 * Create a <code>dstack.setting</code> table reference
 	 */
 	public SettingTable() {
-		super("setting", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("setting", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.setting</code> table reference
 	 */
 	public SettingTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.SettingTable.SETTING);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.SettingTable.SETTING);
 	}
 
 	private SettingTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private SettingTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

@@ -14,57 +14,57 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface AgentGroup extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.agent_group.id</code>. 
+	 * Setter for <code>dstack.agent_group.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.agent_group.id</code>. 
+	 * Getter for <code>dstack.agent_group.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.agent_group.name</code>. 
+	 * Setter for <code>dstack.agent_group.name</code>.
 	 */
 	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent_group.name</code>. 
+	 * Getter for <code>dstack.agent_group.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.agent_group.description</code>. 
+	 * Setter for <code>dstack.agent_group.description</code>.
 	 */
 	public void setDescription(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent_group.description</code>. 
+	 * Getter for <code>dstack.agent_group.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
 	public java.lang.String getDescription();
 
 	/**
-	 * Setter for <code>dstack.agent_group.data</code>. 
+	 * Setter for <code>dstack.agent_group.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
 
 	/**
-	 * Getter for <code>dstack.agent_group.data</code>. 
+	 * Getter for <code>dstack.agent_group.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
 	/**
-	 * Setter for <code>dstack.agent_group.state</code>. 
+	 * Setter for <code>dstack.agent_group.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent_group.state</code>. 
+	 * Getter for <code>dstack.agent_group.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	public java.lang.String getState();

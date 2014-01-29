@@ -1,6 +1,5 @@
-from common_fixtures import *
+from common_fixtures import *  # NOQA
 import time
-import random
 
 
 def test_agent_create(admin_client):
@@ -39,3 +38,5 @@ def test_agent_create(admin_client):
     creds = account.credentials()
     assert len(creds) == 1
     assert creds[0].state == "active"
+    assert creds[0].publicValue is not None
+    assert creds[0].secretValue is not None

@@ -27,7 +27,7 @@ public class ObjectLaunchConfigurationUtils {
         Object id = field.getValue(resource);
 
         if ( id == null ) {
-            throw new IllegalStateException("Object [" + resource + "] does has a null ID");
+            throw new IllegalStateException("Object [" + resource + "] has a null ID");
         }
 
         return new LaunchConfiguration(processName, schema.getId(), id.toString(), data == null ? new HashMap<String, Object>() : data);

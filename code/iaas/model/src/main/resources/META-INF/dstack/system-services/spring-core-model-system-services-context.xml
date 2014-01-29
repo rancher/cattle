@@ -9,10 +9,8 @@
                       http://www.springframework.org/schema/context/spring-context-3.0.xsd"
                       >
 
-    <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.AccountCoreDaoImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.AccountDaoImpl" />
     <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.AgentDaoImpl" />
-    <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.ImageStoragePoolMapDaoImpl" />
-    <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.InstanceDaoImpl" />
-    <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.VolumeDaoImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.GenericMapDaoImpl" />
 
 </beans>

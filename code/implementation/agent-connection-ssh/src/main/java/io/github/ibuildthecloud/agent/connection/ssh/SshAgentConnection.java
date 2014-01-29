@@ -57,4 +57,8 @@ public class SshAgentConnection extends AgentEventingConnection implements Agent
         this.exec = exec;
     }
 
+    public int getCallbackPort() {
+        return callbackPort;
+    }
+
 }

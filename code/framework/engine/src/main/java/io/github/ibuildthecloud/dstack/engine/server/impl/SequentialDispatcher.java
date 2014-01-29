@@ -2,7 +2,6 @@ package io.github.ibuildthecloud.dstack.engine.server.impl;
 
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.server.ProcessInstanceDispatcher;
-import io.github.ibuildthecloud.dstack.engine.server.ProcessServer;
 import io.github.ibuildthecloud.dstack.engine.server.ServerProcessInstanceExecutor;
 
 import javax.inject.Inject;
@@ -12,8 +11,8 @@ public class SequentialDispatcher implements ProcessInstanceDispatcher {
     ProcessManager repository;
 
     @Override
-    public void execute(ProcessServer server, Long id) {
-        new ServerProcessInstanceExecutor(id, repository, server).run();
+    public void execute(Long id) {
+        new ServerProcessInstanceExecutor(id, repository).run();
     }
 
     public ProcessManager getRepository() {

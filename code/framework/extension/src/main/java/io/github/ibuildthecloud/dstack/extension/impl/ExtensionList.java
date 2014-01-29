@@ -19,7 +19,7 @@ public class ExtensionList<T> implements List<T> {
     public ExtensionList(ExtensionManager extensionManager, String key, List<T> list) {
         this.extensionManager = extensionManager;
         this.key = key;
-        this.inner = new CopyOnWriteArrayList<Object>();
+        this.inner = list == null ? new CopyOnWriteArrayList<Object>() : new CopyOnWriteArrayList<Object>(list);
         this.list = (List<T>) Collections.unmodifiableList(inner);
     }
 
@@ -148,4 +148,8 @@ public class ExtensionList<T> implements List<T> {
         return list.subList(fromIndex, toIndex);
     }
 
+    @Override
+    public String toString() {
+        return list == null ? super.toString() : list.toString();
+    }
 }

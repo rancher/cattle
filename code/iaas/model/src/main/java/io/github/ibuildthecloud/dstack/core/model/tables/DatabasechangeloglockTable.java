@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DatabasechangeloglockTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord> {
 
-	private static final long serialVersionUID = -1265018199;
+	private static final long serialVersionUID = -1142142668;
 
 	/**
 	 * The singleton instance of <code>dstack.DATABASECHANGELOGLOCK</code>
@@ -27,41 +27,45 @@ public class DatabasechangeloglockTable extends org.jooq.impl.TableImpl<io.githu
 	}
 
 	/**
-	 * The column <code>dstack.DATABASECHANGELOGLOCK.ID</code>. 
+	 * The column <code>dstack.DATABASECHANGELOGLOCK.ID</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord, java.lang.Integer> ID = createField("ID", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord, java.lang.Integer> ID = createField("ID", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.DATABASECHANGELOGLOCK.LOCKED</code>. 
+	 * The column <code>dstack.DATABASECHANGELOGLOCK.LOCKED</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord, java.lang.Boolean> LOCKED = createField("LOCKED", org.jooq.impl.SQLDataType.BIT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord, java.lang.Boolean> LOCKED = createField("LOCKED", org.jooq.impl.SQLDataType.BIT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.DATABASECHANGELOGLOCK.LOCKGRANTED</code>. 
+	 * The column <code>dstack.DATABASECHANGELOGLOCK.LOCKGRANTED</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord, java.sql.Timestamp> LOCKGRANTED = createField("LOCKGRANTED", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord, java.util.Date> LOCKGRANTED = createField("LOCKGRANTED", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.DATABASECHANGELOGLOCK.LOCKEDBY</code>. 
+	 * The column <code>dstack.DATABASECHANGELOGLOCK.LOCKEDBY</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord, java.lang.String> LOCKEDBY = createField("LOCKEDBY", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord, java.lang.String> LOCKEDBY = createField("LOCKEDBY", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>dstack.DATABASECHANGELOGLOCK</code> table reference
 	 */
 	public DatabasechangeloglockTable() {
-		super("DATABASECHANGELOGLOCK", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("DATABASECHANGELOGLOCK", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.DATABASECHANGELOGLOCK</code> table reference
 	 */
 	public DatabasechangeloglockTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK);
 	}
 
 	private DatabasechangeloglockTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private DatabasechangeloglockTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.DatabasechangeloglockRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

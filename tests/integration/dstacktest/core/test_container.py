@@ -1,7 +1,6 @@
-from common_fixtures import *
+from common_fixtures import *  # NOQA
+from datetime import datetime, timedelta
 import time
-import random
-import re
 
 
 def test_container_create_only(client, sim_context):
@@ -64,9 +63,9 @@ def test_container_create_only(client, sim_context):
 
     image_mapping = wait_success(client, image_mappings[0])
     assert_fields(image_mapping, {
-       "imageId": image.id,
-       "storagePoolId": sim_context["external_pool"].id,
-       "state": "inactive",
+        "imageId": image.id,
+        "storagePoolId": sim_context["external_pool"].id,
+        "state": "inactive",
     })
 
     return container
@@ -120,7 +119,6 @@ def test_container_create_then_start(client, sim_context):
                 "storagePoolId": volume_pool.id
             })
 
-
     instance_host_mappings = container.instanceHostMaps()
     assert len(instance_host_mappings) == 1
 
@@ -129,7 +127,6 @@ def test_container_create_then_start(client, sim_context):
     })
 
 
-@pytest.mark.skipif("True")
 def test_container_stop(client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = client.create_container(name="test",
@@ -187,6 +184,107 @@ def test_container_stop(client, sim_context):
                 "storagePoolId": volume_pool.id
             })
 
-
     instance_host_mappings = container.instanceHostMaps()
-    assert len(instance_host_mappings) == 0
+    assert len(instance_host_mappings) == 1
+    assert instance_host_mappings[0].state == "removed"
+    assert instance_host_mappings[0].removed is not None
+
+
+def test_container_remove(client, sim_context):
+    uuid = "sim:{}".format(random_num())
+    container = client.create_container(name="test",
+                                        imageUuid=uuid,
+                                        startOnCreate=True)
+    container = wait_success(client, container)
+    container = wait_success(client, container.stop())
+
+    assert container.state == "stopped"
+
+    container = client.delete(container)
+
+    assert container.state == "removing"
+
+    container = wait_success(client, container)
+
+    assert container.state == "removed"
+    assert_removed_fields(container)
+
+    volumes = container.volumes()
+    assert len(volumes) == 1
+
+    assert volumes[0].state == "removed"
+    assert_removed_fields(volumes[0])
+
+    volume_mappings = volumes[0].volumeStoragePoolMaps()
+    assert len(volume_mappings) == 1
+    assert volume_mappings[0].state == "inactive"
+
+    return container
+
+
+def test_container_restore(client, sim_context):
+    container = test_container_remove(client, sim_context)
+
+    assert container.state == "removed"
+
+    container = container.restore()
+
+    assert container.state == "restoring"
+
+    container = wait_success(client, container)
+
+    assert container.state == "stopped"
+    assert_restored_fields(container)
+
+    volumes = container.volumes()
+    assert len(volumes) == 1
+
+    assert volumes[0].state == "inactive"
+    assert_restored_fields(volumes[0])
+
+    volume_mappings = volumes[0].volumeStoragePoolMaps()
+    assert len(volume_mappings) == 1
+    assert volume_mappings[0].state == "inactive"
+
+
+def test_container_purge(client, sim_context):
+    container = test_container_remove(client, sim_context)
+
+    assert container.state == "removed"
+
+    # It's easier to call container.purge(), but this was to test other
+    # things too
+
+    remove_time = now() - timedelta(hours=1)
+    client.update(container, {
+        'removeTime': format_time(remove_time)
+    })
+
+    purge = client.list_task(name="purge.resources")[0]
+    purge.execute()
+
+    container = client.reload(container)
+    for x in range(30):
+        if container.state == "removed":
+            time.sleep(0.5)
+            container = client.reload(container)
+        else:
+            break
+
+    assert container.state != "removed"
+
+    container = wait_success(client, container)
+    assert container.state == "purged"
+
+    volume = container.volumes()[0]
+    assert volume.state == "removed"
+
+    volume = volume.purge()
+    assert volume.state == 'purging'
+
+    volume = wait_transitioning(client, volume)
+    assert volume.state == 'purged'
+
+    pool_maps = volume.volumeStoragePoolMaps()
+    assert len(pool_maps) == 1
+    assert pool_maps[0].state == 'removed'

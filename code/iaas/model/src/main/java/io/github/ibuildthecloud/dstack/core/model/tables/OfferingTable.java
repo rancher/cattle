@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class OfferingTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord> {
 
-	private static final long serialVersionUID = -225193986;
+	private static final long serialVersionUID = 642443290;
 
 	/**
 	 * The singleton instance of <code>dstack.offering</code>
@@ -27,61 +27,65 @@ public class OfferingTable extends org.jooq.impl.TableImpl<io.github.ibuildthecl
 	}
 
 	/**
-	 * The column <code>dstack.offering.id</code>. 
+	 * The column <code>dstack.offering.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.offering.name</code>. 
+	 * The column <code>dstack.offering.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.offering.kind</code>. 
+	 * The column <code>dstack.offering.kind</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.offering.created</code>. 
+	 * The column <code>dstack.offering.created</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.sql.Timestamp> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.offering.removed</code>. 
+	 * The column <code>dstack.offering.removed</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.sql.Timestamp> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.util.Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.offering.is_public</code>. 
+	 * The column <code>dstack.offering.is_public</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>dstack.offering.description</code>. 
+	 * The column <code>dstack.offering.description</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
-	 * The column <code>dstack.offering.uuid</code>. 
+	 * The column <code>dstack.offering.uuid</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
 	 * Create a <code>dstack.offering</code> table reference
 	 */
 	public OfferingTable() {
-		super("offering", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("offering", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.offering</code> table reference
 	 */
 	public OfferingTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING);
 	}
 
 	private OfferingTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private OfferingTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

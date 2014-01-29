@@ -14,57 +14,57 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface Vnet extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.vnet.id</code>. 
+	 * Setter for <code>dstack.vnet.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.vnet.id</code>. 
+	 * Getter for <code>dstack.vnet.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.vnet.uri</code>. 
+	 * Setter for <code>dstack.vnet.uri</code>.
 	 */
 	public void setUri(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.vnet.uri</code>. 
+	 * Getter for <code>dstack.vnet.uri</code>.
 	 */
 	@javax.persistence.Column(name = "uri", nullable = false, length = 128)
 	public java.lang.String getUri();
 
 	/**
-	 * Setter for <code>dstack.vnet.scope</code>. 
+	 * Setter for <code>dstack.vnet.scope</code>.
 	 */
 	public void setScope(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.vnet.scope</code>. 
+	 * Getter for <code>dstack.vnet.scope</code>.
 	 */
 	@javax.persistence.Column(name = "scope", nullable = false, length = 128)
 	public java.lang.String getScope();
 
 	/**
-	 * Setter for <code>dstack.vnet.ip_pool_qualifier</code>. 
+	 * Setter for <code>dstack.vnet.ip_pool_qualifier</code>.
 	 */
 	public void setIpPoolQualifier(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.vnet.ip_pool_qualifier</code>. 
+	 * Getter for <code>dstack.vnet.ip_pool_qualifier</code>.
 	 */
 	@javax.persistence.Column(name = "ip_pool_qualifier", length = 128)
 	public java.lang.String getIpPoolQualifier();
 
 	/**
-	 * Setter for <code>dstack.vnet.ip_pool_segment</code>. 
+	 * Setter for <code>dstack.vnet.ip_pool_segment</code>.
 	 */
 	public void setIpPoolSegment(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.vnet.ip_pool_segment</code>. 
+	 * Getter for <code>dstack.vnet.ip_pool_segment</code>.
 	 */
 	@javax.persistence.Column(name = "ip_pool_segment", length = 128)
 	public java.lang.String getIpPoolSegment();

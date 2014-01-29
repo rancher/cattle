@@ -8,7 +8,6 @@ import java.util.List;
 
 public class ProcessServiceContext {
 
-    List<HandlerResultListener> resultListeners;
     LockManager lockManager;
     EventService eventService;
     ProcessManager processManager;
@@ -19,7 +18,6 @@ public class ProcessServiceContext {
         this.lockManager = lockManager;
         this.eventService = eventService;
         this.processManager = processManager;
-        this.resultListeners = listeners;
     }
 
     public LockManager getLockManager() {
@@ -34,7 +32,4 @@ public class ProcessServiceContext {
         return processManager;
     }
 
-    public List<HandlerResultListener> getResultListeners() {
-        return resultListeners;
-    }
 }

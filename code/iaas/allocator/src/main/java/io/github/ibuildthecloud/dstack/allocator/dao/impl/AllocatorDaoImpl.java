@@ -8,7 +8,6 @@ import static io.github.ibuildthecloud.dstack.core.model.tables.VolumeStoragePoo
 import io.github.ibuildthecloud.dstack.allocator.dao.AllocatorDao;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationAttempt;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationCandidate;
-import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
 import io.github.ibuildthecloud.dstack.core.model.Host;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.InstanceHostMap;
@@ -144,13 +143,12 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public void releaseAllocation(Instance instance) {
-        create()
-            .update(INSTANCE_HOST_MAP)
-            .set(INSTANCE_HOST_MAP.STATE, CommonStatesConstants.DEACTIVATING)
-            .where(
-                    INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId())
-                    .and(INSTANCE_HOST_MAP.STATE.eq(CommonStatesConstants.ACTIVE)))
-            .execute();
+        // Nothing to do?
+    }
+
+    @Override
+    public void releaseAllocation(Volume volume) {
+        // Nothing to do?
     }
 
     public ObjectManager getObjectManager() {

@@ -1,5 +1,0 @@
-setuptools
-requests
-docker-py>=0.2.3
-psutil
-portalocker

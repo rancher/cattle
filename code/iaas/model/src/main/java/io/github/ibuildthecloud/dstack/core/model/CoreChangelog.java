@@ -14,122 +14,122 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface CoreChangelog extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.core_changelog.ID</code>. 
+	 * Setter for <code>dstack.core_changelog.ID</code>.
 	 */
 	public void setId(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.ID</code>. 
+	 * Getter for <code>dstack.core_changelog.ID</code>.
 	 */
 	@javax.persistence.Column(name = "ID", nullable = false, length = 255)
 	public java.lang.String getId();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.AUTHOR</code>. 
+	 * Setter for <code>dstack.core_changelog.AUTHOR</code>.
 	 */
 	public void setAuthor(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.AUTHOR</code>. 
+	 * Getter for <code>dstack.core_changelog.AUTHOR</code>.
 	 */
 	@javax.persistence.Column(name = "AUTHOR", nullable = false, length = 255)
 	public java.lang.String getAuthor();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.FILENAME</code>. 
+	 * Setter for <code>dstack.core_changelog.FILENAME</code>.
 	 */
 	public void setFilename(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.FILENAME</code>. 
+	 * Getter for <code>dstack.core_changelog.FILENAME</code>.
 	 */
 	@javax.persistence.Column(name = "FILENAME", nullable = false, length = 255)
 	public java.lang.String getFilename();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.DATEEXECUTED</code>. 
+	 * Setter for <code>dstack.core_changelog.DATEEXECUTED</code>.
 	 */
-	public void setDateexecuted(java.sql.Timestamp value);
+	public void setDateexecuted(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.DATEEXECUTED</code>. 
+	 * Getter for <code>dstack.core_changelog.DATEEXECUTED</code>.
 	 */
 	@javax.persistence.Column(name = "DATEEXECUTED", nullable = false)
-	public java.sql.Timestamp getDateexecuted();
+	public java.util.Date getDateexecuted();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.ORDEREXECUTED</code>. 
+	 * Setter for <code>dstack.core_changelog.ORDEREXECUTED</code>.
 	 */
 	public void setOrderexecuted(java.lang.Integer value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.ORDEREXECUTED</code>. 
+	 * Getter for <code>dstack.core_changelog.ORDEREXECUTED</code>.
 	 */
 	@javax.persistence.Column(name = "ORDEREXECUTED", nullable = false, precision = 10)
 	public java.lang.Integer getOrderexecuted();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.EXECTYPE</code>. 
+	 * Setter for <code>dstack.core_changelog.EXECTYPE</code>.
 	 */
 	public void setExectype(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.EXECTYPE</code>. 
+	 * Getter for <code>dstack.core_changelog.EXECTYPE</code>.
 	 */
 	@javax.persistence.Column(name = "EXECTYPE", nullable = false, length = 10)
 	public java.lang.String getExectype();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.MD5SUM</code>. 
+	 * Setter for <code>dstack.core_changelog.MD5SUM</code>.
 	 */
 	public void setMd5sum(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.MD5SUM</code>. 
+	 * Getter for <code>dstack.core_changelog.MD5SUM</code>.
 	 */
 	@javax.persistence.Column(name = "MD5SUM", length = 35)
 	public java.lang.String getMd5sum();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.DESCRIPTION</code>. 
+	 * Setter for <code>dstack.core_changelog.DESCRIPTION</code>.
 	 */
 	public void setDescription(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.DESCRIPTION</code>. 
+	 * Getter for <code>dstack.core_changelog.DESCRIPTION</code>.
 	 */
 	@javax.persistence.Column(name = "DESCRIPTION", length = 255)
 	public java.lang.String getDescription();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.COMMENTS</code>. 
+	 * Setter for <code>dstack.core_changelog.COMMENTS</code>.
 	 */
 	public void setComments(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.COMMENTS</code>. 
+	 * Getter for <code>dstack.core_changelog.COMMENTS</code>.
 	 */
 	@javax.persistence.Column(name = "COMMENTS", length = 255)
 	public java.lang.String getComments();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.TAG</code>. 
+	 * Setter for <code>dstack.core_changelog.TAG</code>.
 	 */
 	public void setTag(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.TAG</code>. 
+	 * Getter for <code>dstack.core_changelog.TAG</code>.
 	 */
 	@javax.persistence.Column(name = "TAG", length = 255)
 	public java.lang.String getTag();
 
 	/**
-	 * Setter for <code>dstack.core_changelog.LIQUIBASE</code>. 
+	 * Setter for <code>dstack.core_changelog.LIQUIBASE</code>.
 	 */
 	public void setLiquibase(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.core_changelog.LIQUIBASE</code>. 
+	 * Getter for <code>dstack.core_changelog.LIQUIBASE</code>.
 	 */
 	@javax.persistence.Column(name = "LIQUIBASE", length = 20)
 	public java.lang.String getLiquibase();

@@ -20,8 +20,12 @@ public class ApiConfigItemRequest extends AbstractRequest {
 
     @Override
     public OutputStream getOutputStream() throws IOException {
-        request.setResponseContentType("application/octet-stream");
         return request.getOutputStream();
+    }
+
+    @Override
+    public void setContentType(String contentType) {
+        request.setResponseContentType(contentType);
     }
 
 }

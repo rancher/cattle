@@ -1,21 +1,25 @@
 package io.github.ibuildthecloud.agent.connection.simulator;
 
 import io.github.ibuildthecloud.agent.server.connection.AgentConnection;
+import io.github.ibuildthecloud.dstack.async.utils.AsyncUtils;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 
+import java.util.List;
+
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 
 public class AgentConnectionSimulator implements AgentConnection {
 
     Agent agent;
     boolean open = true;
+    List<AgentSimulatorEventProcessor> processors;
 
-    public AgentConnectionSimulator(Agent agent) {
+    public AgentConnectionSimulator(Agent agent, List<AgentSimulatorEventProcessor> processors) {
         super();
         this.agent = agent;
+        this.processors = processors;
     }
 
     @Override
@@ -30,10 +34,18 @@ public class AgentConnectionSimulator implements AgentConnection {
 
     @Override
     public ListenableFuture<Event> execute(Event event) {
-        SettableFuture<Event> response = SettableFuture.create();
-        response.set(EventVO.reply(event));
-
-        return response;
+        for ( AgentSimulatorEventProcessor processor : processors ) {
+            Event response;
+            try {
+                response = processor.handle(this, event);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+            if ( response != null ) {
+                return AsyncUtils.done(response);
+            }
+        }
+        return AsyncUtils.done((Event)EventVO.reply(event));
     }
 
     @Override
@@ -44,6 +56,10 @@ public class AgentConnectionSimulator implements AgentConnection {
     @Override
     public boolean isOpen() {
         return open;
+    }
+
+    public Agent getAgent() {
+        return agent;
     }
 
 }

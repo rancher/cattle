@@ -14,46 +14,46 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface ImageFormat extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.image_format.id</code>. 
+	 * Setter for <code>dstack.image_format.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.image_format.id</code>. 
+	 * Getter for <code>dstack.image_format.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.image_format.template_id</code>. 
+	 * Setter for <code>dstack.image_format.template_id</code>.
 	 */
 	public void setTemplateId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.image_format.template_id</code>. 
+	 * Getter for <code>dstack.image_format.template_id</code>.
 	 */
 	@javax.persistence.Column(name = "template_id", nullable = false, precision = 19)
 	public java.lang.Long getTemplateId();
 
 	/**
-	 * Setter for <code>dstack.image_format.format</code>. 
+	 * Setter for <code>dstack.image_format.format</code>.
 	 */
 	public void setFormat(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.image_format.format</code>. 
+	 * Getter for <code>dstack.image_format.format</code>.
 	 */
 	@javax.persistence.Column(name = "format", nullable = false, length = 128)
 	public java.lang.String getFormat();
 
 	/**
-	 * Setter for <code>dstack.image_format.data</code>. 
+	 * Setter for <code>dstack.image_format.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
 
 	/**
-	 * Getter for <code>dstack.image_format.data</code>. 
+	 * Getter for <code>dstack.image_format.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();

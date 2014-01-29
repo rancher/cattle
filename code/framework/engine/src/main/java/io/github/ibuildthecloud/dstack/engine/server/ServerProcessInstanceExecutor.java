@@ -1,6 +1,5 @@
 package io.github.ibuildthecloud.dstack.engine.server;
 
-import io.github.ibuildthecloud.dstack.engine.context.EngineContext;
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 
@@ -14,13 +13,11 @@ public class ServerProcessInstanceExecutor extends NoExceptionRunnable {
 
     long id;
     ProcessManager repository;
-    ProcessServer processServer;
 
-    public ServerProcessInstanceExecutor(long id, ProcessManager repository, ProcessServer processServer) {
+    public ServerProcessInstanceExecutor(long id, ProcessManager repository) {
         super();
         this.id = id;
         this.repository = repository;
-        this.processServer = processServer;
     }
 
     @Override
@@ -30,10 +27,6 @@ public class ServerProcessInstanceExecutor extends NoExceptionRunnable {
             log.error("Failed to find processInstance [{}]", id);
             return;
         }
-
-        EngineContext engineContext = EngineContext.getEngineContext();
-        if ( engineContext.getProcessServer() == null )
-            engineContext.setProcessServer(processServer);
 
         process.execute();
     }

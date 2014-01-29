@@ -73,9 +73,9 @@ public class RemoteAgentImpl implements RemoteAgent {
                 }
 
                 T commandReply = jsonMapper.convertValue(input.getData(), reply);
-                EventVO publishEvent = null;
+                EventVO<?> publishEvent = null;
                 if ( commandReply instanceof EventVO ) {
-                    publishEvent = (EventVO)commandReply;
+                    publishEvent = (EventVO<?>)commandReply;
                 } else {
                     publishEvent = jsonMapper.convertValue(input.getData(), EventVO.class);
                 }

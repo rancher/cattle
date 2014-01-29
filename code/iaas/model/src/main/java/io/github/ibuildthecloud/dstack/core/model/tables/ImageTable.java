@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> {
 
-	private static final long serialVersionUID = 352138707;
+	private static final long serialVersionUID = -1133275960;
 
 	/**
 	 * The singleton instance of <code>dstack.image</code>
@@ -27,106 +27,110 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	}
 
 	/**
-	 * The column <code>dstack.image.id</code>. 
+	 * The column <code>dstack.image.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.image.name</code>. 
+	 * The column <code>dstack.image.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.image.uuid</code>. 
+	 * The column <code>dstack.image.uuid</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.image.account_id</code>. 
+	 * The column <code>dstack.image.account_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.image.url</code>. 
+	 * The column <code>dstack.image.url</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> URL = createField("url", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> URL = createField("url", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.image.description</code>. 
+	 * The column <code>dstack.image.description</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
-	 * The column <code>dstack.image.is_public</code>. 
+	 * The column <code>dstack.image.is_public</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>dstack.image.state</code>. 
+	 * The column <code>dstack.image.state</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.image.prepopulate</code>. 
+	 * The column <code>dstack.image.prepopulate</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Boolean> PREPOPULATE = createField("prepopulate", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Boolean> PREPOPULATE = createField("prepopulate", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>dstack.image.prepopulate_stamp</code>. 
+	 * The column <code>dstack.image.prepopulate_stamp</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> PREPOPULATE_STAMP = createField("prepopulate_stamp", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false).defaulted(true), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> PREPOPULATE_STAMP = createField("prepopulate_stamp", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>dstack.image.physical_size_bytes</code>. 
+	 * The column <code>dstack.image.physical_size_bytes</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> PHYSICAL_SIZE_BYTES = createField("physical_size_bytes", org.jooq.impl.SQLDataType.BIGINT, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> PHYSICAL_SIZE_BYTES = createField("physical_size_bytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>dstack.image.virtual_size_bytes</code>. 
+	 * The column <code>dstack.image.virtual_size_bytes</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> VIRTUAL_SIZE_BYTES = createField("virtual_size_bytes", org.jooq.impl.SQLDataType.BIGINT, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> VIRTUAL_SIZE_BYTES = createField("virtual_size_bytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>dstack.image.checksum</code>. 
+	 * The column <code>dstack.image.checksum</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> CHECKSUM = createField("checksum", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> CHECKSUM = createField("checksum", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.image.created</code>. 
+	 * The column <code>dstack.image.created</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.sql.Timestamp> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.image.removed</code>. 
+	 * The column <code>dstack.image.removed</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.sql.Timestamp> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.util.Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.image.remove_time</code>. 
+	 * The column <code>dstack.image.remove_time</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.sql.Timestamp> REMOVE_TIME = createField("remove_time", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.util.Date> REMOVE_TIME = createField("remove_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.image.data</code>. 
+	 * The column <code>dstack.image.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * Create a <code>dstack.image</code> table reference
 	 */
 	public ImageTable() {
-		super("image", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("image", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.image</code> table reference
 	 */
 	public ImageTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE);
 	}
 
 	private ImageTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private ImageTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

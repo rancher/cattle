@@ -7,9 +7,11 @@ import io.github.ibuildthecloud.dstack.util.type.Named;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ProcessExecutionLog extends AbstractParentLog implements ParentLog {
 
+    String id = UUID.randomUUID().toString();
     long startTime;
     String processName;
     Long stopTime;
@@ -20,9 +22,10 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
     Long lockAcquireFailed;
     String failedToAcquireLock;
     Long lockHoldTime;
-    Long processingServerId;
+    String processingServerId;
     String resourceType;
     String resourceId;
+    Long processId;
     List<ProcessStateTransition> transitions = new ArrayList<ProcessStateTransition>();
     List<ProcessLogicExecutionLog> processHandlerExecutions = new ArrayList<ProcessLogicExecutionLog>();
     ExceptionLog exception;
@@ -108,11 +111,11 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.lockAcquireEnd = lockAcquireEnd;
     }
 
-    public Long getProcessingServerId() {
+    public String getProcessingServerId() {
         return processingServerId;
     }
 
-    public void setProcessingServerId(Long processingServerId) {
+    public void setProcessingServerId(String processingServerId) {
         this.processingServerId = processingServerId;
     }
 
@@ -156,14 +159,6 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.exception = exception;
     }
 
-//    public List<ProcessLogicExecutionLog> getHandlerExecutions() {
-//        return handlerExecutions;
-//    }
-//
-//    public void setHandlerExecutions(List<ProcessLogicExecutionLog> handlerExecutions) {
-//        this.handlerExecutions = handlerExecutions;
-//    }
-
     public String getFailedToAcquireLock() {
         return failedToAcquireLock;
     }
@@ -200,11 +195,25 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.resourceId = resourceId;
     }
 
-//    public List<ProcessExecutionLog> getExecutions() {
-//        return executions;
-//    }
-//
-//    public void setExecutions(List<ProcessExecutionLog> executions) {
-//        this.executions = executions;
-//    }
+    @Override
+    public String getName() {
+        return processName;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Long getProcessId() {
+        return processId;
+    }
+
+    public void setProcessId(Long processId) {
+        this.processId = processId;
+    }
+
 }

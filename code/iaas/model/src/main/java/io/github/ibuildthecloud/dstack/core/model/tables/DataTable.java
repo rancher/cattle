@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DataTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord> {
 
-	private static final long serialVersionUID = 317875;
+	private static final long serialVersionUID = 122214348;
 
 	/**
 	 * The singleton instance of <code>dstack.data</code>
@@ -27,36 +27,45 @@ public class DataTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.
 	}
 
 	/**
-	 * The column <code>dstack.data.id</code>. 
+	 * The column <code>dstack.data.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.data.name</code>. 
+	 * The column <code>dstack.data.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.data.value</code>. 
+	 * The column <code>dstack.data.visible</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.VARCHAR.length(1024).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord, java.lang.Boolean> VISIBLE = createField("visible", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>dstack.data.value</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.CLOB.length(16777215).nullable(false), this, "");
 
 	/**
 	 * Create a <code>dstack.data</code> table reference
 	 */
 	public DataTable() {
-		super("data", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("data", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.data</code> table reference
 	 */
 	public DataTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.DataTable.DATA);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.DataTable.DATA);
 	}
 
 	private DataTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private DataTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

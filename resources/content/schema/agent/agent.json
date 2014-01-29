@@ -1,6 +1,10 @@
 {
     "resourceFields": {
         "id": null,
-        "name": null
+        "name": null,
+        "user": {
+            "type": "string",
+            "create": true
+        }
     }
 }

@@ -5,7 +5,7 @@ cd $(dirname $0)
 
 run()
 {
-    WAR="$(echo app/target/*war)"
+    WAR="$(echo code/packaging/app/target/*war)"
     if [ ! -e "$WAR" ]; then
         mvn clean install
     fi

@@ -3,4 +3,9 @@ jdk:
   - openjdk6
   - openjdk7
   - oraclejdk7
-after_success: ./tools/test/runtests.sh
+services:
+  - redis
+install: 
+  - sudo pip install tox
+  - ./tools/build/build.sh
+script: ./tools/build/runtests.sh

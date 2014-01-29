@@ -60,5 +60,6 @@
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler" />
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerFilter" />
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManager" />
+    <extension:discover class="io.github.ibuildthecloud.dstack.api.action.ActionHandler" />
 
 </beans>

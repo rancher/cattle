@@ -11,12 +11,12 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "storage_pool", schema = "dstack")
-public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.lang.Long, java.lang.Boolean>, io.github.ibuildthecloud.dstack.core.model.StoragePool {
+public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.Long, java.lang.Boolean>, io.github.ibuildthecloud.dstack.core.model.StoragePool {
 
-	private static final long serialVersionUID = 1769593634;
+	private static final long serialVersionUID = 1117153428;
 
 	/**
-	 * Setter for <code>dstack.storage_pool.id</code>. 
+	 * Setter for <code>dstack.storage_pool.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.id</code>. 
+	 * Getter for <code>dstack.storage_pool.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.uuid</code>. 
+	 * Setter for <code>dstack.storage_pool.uuid</code>.
 	 */
 	@Override
 	public void setUuid(java.lang.String value) {
@@ -42,7 +42,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.uuid</code>. 
+	 * Getter for <code>dstack.storage_pool.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 255)
 	@Override
@@ -51,7 +51,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.name</code>. 
+	 * Setter for <code>dstack.storage_pool.name</code>.
 	 */
 	@Override
 	public void setName(java.lang.String value) {
@@ -59,7 +59,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.name</code>. 
+	 * Getter for <code>dstack.storage_pool.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	@Override
@@ -68,7 +68,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.description</code>. 
+	 * Setter for <code>dstack.storage_pool.description</code>.
 	 */
 	@Override
 	public void setDescription(java.lang.String value) {
@@ -76,7 +76,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.description</code>. 
+	 * Getter for <code>dstack.storage_pool.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
 	@Override
@@ -85,7 +85,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.kind</code>. 
+	 * Setter for <code>dstack.storage_pool.kind</code>.
 	 */
 	@Override
 	public void setKind(java.lang.String value) {
@@ -93,7 +93,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.kind</code>. 
+	 * Getter for <code>dstack.storage_pool.kind</code>.
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
 	@Override
@@ -102,7 +102,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.state</code>. 
+	 * Setter for <code>dstack.storage_pool.state</code>.
 	 */
 	@Override
 	public void setState(java.lang.String value) {
@@ -110,7 +110,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.state</code>. 
+	 * Getter for <code>dstack.storage_pool.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	@Override
@@ -119,7 +119,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.physical_total_bytes</code>. 
+	 * Setter for <code>dstack.storage_pool.physical_total_bytes</code>.
 	 */
 	@Override
 	public void setPhysicalTotalBytes(java.lang.Long value) {
@@ -127,7 +127,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.physical_total_bytes</code>. 
+	 * Getter for <code>dstack.storage_pool.physical_total_bytes</code>.
 	 */
 	@javax.persistence.Column(name = "physical_total_bytes", precision = 19)
 	@Override
@@ -136,7 +136,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.physical_used_bytes</code>. 
+	 * Setter for <code>dstack.storage_pool.physical_used_bytes</code>.
 	 */
 	@Override
 	public void setPhysicalUsedBytes(java.lang.Long value) {
@@ -144,7 +144,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.physical_used_bytes</code>. 
+	 * Getter for <code>dstack.storage_pool.physical_used_bytes</code>.
 	 */
 	@javax.persistence.Column(name = "physical_used_bytes", precision = 19)
 	@Override
@@ -153,7 +153,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.virtual_total_bytes</code>. 
+	 * Setter for <code>dstack.storage_pool.virtual_total_bytes</code>.
 	 */
 	@Override
 	public void setVirtualTotalBytes(java.lang.Long value) {
@@ -161,7 +161,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.virtual_total_bytes</code>. 
+	 * Getter for <code>dstack.storage_pool.virtual_total_bytes</code>.
 	 */
 	@javax.persistence.Column(name = "virtual_total_bytes", precision = 19)
 	@Override
@@ -170,41 +170,41 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.created</code>. 
+	 * Setter for <code>dstack.storage_pool.created</code>.
 	 */
 	@Override
-	public void setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.util.Date value) {
 		setValue(9, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.created</code>. 
+	 * Getter for <code>dstack.storage_pool.created</code>.
 	 */
 	@javax.persistence.Column(name = "created", nullable = false)
 	@Override
-	public java.sql.Timestamp getCreated() {
-		return (java.sql.Timestamp) getValue(9);
+	public java.util.Date getCreated() {
+		return (java.util.Date) getValue(9);
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.removed</code>. 
+	 * Setter for <code>dstack.storage_pool.removed</code>.
 	 */
 	@Override
-	public void setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.util.Date value) {
 		setValue(10, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.removed</code>. 
+	 * Getter for <code>dstack.storage_pool.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
 	@Override
-	public java.sql.Timestamp getRemoved() {
-		return (java.sql.Timestamp) getValue(10);
+	public java.util.Date getRemoved() {
+		return (java.util.Date) getValue(10);
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.agent_id</code>. 
+	 * Setter for <code>dstack.storage_pool.agent_id</code>.
 	 */
 	@Override
 	public void setAgentId(java.lang.Long value) {
@@ -212,7 +212,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.agent_id</code>. 
+	 * Getter for <code>dstack.storage_pool.agent_id</code>.
 	 */
 	@javax.persistence.Column(name = "agent_id", precision = 19)
 	@Override
@@ -221,7 +221,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.external</code>. 
+	 * Setter for <code>dstack.storage_pool.external</code>.
 	 */
 	@Override
 	public void setExternal(java.lang.Boolean value) {
@@ -229,7 +229,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.external</code>. 
+	 * Getter for <code>dstack.storage_pool.external</code>.
 	 */
 	@javax.persistence.Column(name = "external", nullable = false, precision = 1)
 	@Override
@@ -257,7 +257,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.lang.Long, java.lang.Boolean> fieldsRow() {
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.Long, java.lang.Boolean> fieldsRow() {
 		return (org.jooq.Row13) super.fieldsRow();
 	}
 
@@ -265,7 +265,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.lang.Long, java.lang.Boolean> valuesRow() {
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.Long, java.lang.Boolean> valuesRow() {
 		return (org.jooq.Row13) super.valuesRow();
 	}
 
@@ -345,7 +345,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field10() {
+	public org.jooq.Field<java.util.Date> field10() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.STORAGE_POOL.CREATED;
 	}
 
@@ -353,7 +353,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field11() {
+	public org.jooq.Field<java.util.Date> field11() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.STORAGE_POOL.REMOVED;
 	}
 
@@ -449,7 +449,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value10() {
+	public java.util.Date value10() {
 		return getCreated();
 	}
 
@@ -457,7 +457,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value11() {
+	public java.util.Date value11() {
 		return getRemoved();
 	}
 
@@ -562,7 +562,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StoragePoolRecord value10(java.sql.Timestamp value) {
+	public StoragePoolRecord value10(java.util.Date value) {
 		setCreated(value);
 		return this;
 	}
@@ -571,7 +571,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StoragePoolRecord value11(java.sql.Timestamp value) {
+	public StoragePoolRecord value11(java.util.Date value) {
 		setRemoved(value);
 		return this;
 	}
@@ -598,7 +598,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StoragePoolRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.Long value7, java.lang.Long value8, java.lang.Long value9, java.sql.Timestamp value10, java.sql.Timestamp value11, java.lang.Long value12, java.lang.Boolean value13) {
+	public StoragePoolRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.Long value7, java.lang.Long value8, java.lang.Long value9, java.util.Date value10, java.util.Date value11, java.lang.Long value12, java.lang.Boolean value13) {
 		return this;
 	}
 
@@ -649,7 +649,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Create a detached, initialised StoragePoolRecord
 	 */
-	public StoragePoolRecord(java.lang.Long id, java.lang.String uuid, java.lang.String name, java.lang.String description, java.lang.String kind, java.lang.String state, java.lang.Long physicalTotalBytes, java.lang.Long physicalUsedBytes, java.lang.Long virtualTotalBytes, java.sql.Timestamp created, java.sql.Timestamp removed, java.lang.Long agentId, java.lang.Boolean external) {
+	public StoragePoolRecord(java.lang.Long id, java.lang.String uuid, java.lang.String name, java.lang.String description, java.lang.String kind, java.lang.String state, java.lang.Long physicalTotalBytes, java.lang.Long physicalUsedBytes, java.lang.Long virtualTotalBytes, java.util.Date created, java.util.Date removed, java.lang.Long agentId, java.lang.Boolean external) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.STORAGE_POOL);
 
 		setValue(0, id);

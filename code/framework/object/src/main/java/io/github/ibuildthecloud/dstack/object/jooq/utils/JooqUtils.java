@@ -21,6 +21,7 @@ public class JooqUtils {
 
     private static final Logger log = LoggerFactory.getLogger(JooqUtils.class);
 
+    @SuppressWarnings("unchecked")
     public static <T extends UpdatableRecord<?>> T findById(DSLContext context, Class<T> clz, Object id) {
         if ( id == null )
             return null;
@@ -33,16 +34,14 @@ public class JooqUtils {
         if ( key == null || key.getFieldsArray().length != 1 )
             return null;
 
-        @SuppressWarnings("unchecked")
         TableField<?, Object> keyField = (TableField<?, Object>)key.getFieldsArray()[0];
 
         /* Convert object because we are abusing type safety here */
         Object converted = keyField.getDataType().convert(id);
 
-        return context.select()
-                .from(table)
+        return (T)context.selectFrom(table)
                 .where(keyField.eq(converted))
-                .fetchOneInto(clz);
+                .fetchOne();
     }
 
     @SuppressWarnings("unchecked")

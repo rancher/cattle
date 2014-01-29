@@ -1,12 +1,11 @@
 package io.github.ibuildthecloud.dstack.process.volume;
 
-import io.github.ibuildthecloud.dstack.core.dao.VolumeDao;
+import io.github.ibuildthecloud.dstack.core.dao.GenericMapDao;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
 import io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
-import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 import io.github.ibuildthecloud.dstack.process.common.handler.EventBasedProcessHandler;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 
@@ -21,7 +20,7 @@ import javax.inject.Named;
 @Named
 public class VolumeAllocate extends EventBasedProcessHandler {
 
-    VolumeDao volumeDao;
+    GenericMapDao mapDao;
 
     public VolumeAllocate() {
         setPriority(DEFAULT);
@@ -34,20 +33,20 @@ public class VolumeAllocate extends EventBasedProcessHandler {
 
         Volume volume = (Volume)state.getResource();
 
-        for ( VolumeStoragePoolMap map : volumeDao.findNonRemovedVolumeStoragePoolMaps(volume.getId()) ) {
+        for ( VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId()) ) {
             CollectionUtils.addToMap(allocationData, "volume:" + volume.getId(), map.getVolumeId(), HashSet.class);
-            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, state.getData());
+            create(map, state.getData());
         }
 
         return new HandlerResult(result);
     }
 
-    public VolumeDao getVolumeDao() {
-        return volumeDao;
+    public GenericMapDao getMapDao() {
+        return mapDao;
     }
 
     @Inject
-    public void setVolumeDao(VolumeDao volumeDao) {
-        this.volumeDao = volumeDao;
+    public void setMapDao(GenericMapDao mapDao) {
+        this.mapDao = mapDao;
     }
 }

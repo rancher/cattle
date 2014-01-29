@@ -14,37 +14,48 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface Data extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.data.id</code>. 
+	 * Setter for <code>dstack.data.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.data.id</code>. 
+	 * Getter for <code>dstack.data.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.data.name</code>. 
+	 * Setter for <code>dstack.data.name</code>.
 	 */
 	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.data.name</code>. 
+	 * Getter for <code>dstack.data.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.data.value</code>. 
+	 * Setter for <code>dstack.data.visible</code>.
+	 */
+	public void setVisible(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>dstack.data.visible</code>.
+	 */
+	@javax.persistence.Column(name = "visible", nullable = false, precision = 1)
+	public java.lang.Boolean getVisible();
+
+	/**
+	 * Setter for <code>dstack.data.value</code>.
 	 */
 	public void setValue(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.data.value</code>. 
+	 * Getter for <code>dstack.data.value</code>.
 	 */
-	@javax.persistence.Column(name = "value", nullable = false, length = 1024)
+	@javax.persistence.Column(name = "value", nullable = false, length = 16777215)
 	public java.lang.String getValue();
 
 	// -------------------------------------------------------------------------

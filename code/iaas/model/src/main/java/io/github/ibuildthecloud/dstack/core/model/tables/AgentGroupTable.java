@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentGroupTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord> {
 
-	private static final long serialVersionUID = 1281336643;
+	private static final long serialVersionUID = -1107198291;
 
 	/**
 	 * The singleton instance of <code>dstack.agent_group</code>
@@ -27,46 +27,50 @@ public class AgentGroupTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	}
 
 	/**
-	 * The column <code>dstack.agent_group.id</code>. 
+	 * The column <code>dstack.agent_group.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.agent_group.name</code>. 
+	 * The column <code>dstack.agent_group.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.agent_group.description</code>. 
+	 * The column <code>dstack.agent_group.description</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
-	 * The column <code>dstack.agent_group.data</code>. 
+	 * The column <code>dstack.agent_group.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.agent_group.state</code>. 
+	 * The column <code>dstack.agent_group.state</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
 	 * Create a <code>dstack.agent_group</code> table reference
 	 */
 	public AgentGroupTable() {
-		super("agent_group", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("agent_group", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.agent_group</code> table reference
 	 */
 	public AgentGroupTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.AgentGroupTable.AGENT_GROUP);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.AgentGroupTable.AGENT_GROUP);
 	}
 
 	private AgentGroupTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private AgentGroupTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

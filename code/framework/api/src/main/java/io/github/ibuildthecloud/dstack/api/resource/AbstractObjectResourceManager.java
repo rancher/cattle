@@ -1,7 +1,9 @@
 package io.github.ibuildthecloud.dstack.api.resource;
 
+import io.github.ibuildthecloud.dstack.api.action.ActionHandler;
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessNotFoundException;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
@@ -12,6 +14,8 @@ import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
+import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -37,13 +41,19 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-public abstract class AbstractObjectResourceManager extends AbstractBaseResourceManager {
+import com.netflix.config.DynamicIntProperty;
+
+public abstract class AbstractObjectResourceManager extends AbstractBaseResourceManager implements InitializationTask {
 
 //    private static final Logger log = LoggerFactory.getLogger(AbstractObjectResourceManager.class);
+
+    private static final DynamicIntProperty REMOVE_DELAY = ArchaiusUtil.getInt("api.show.removed.for.seconds");
 
     ObjectManager objectManager;
     ObjectProcessManager objectProcessManager;
     ObjectMetaDataManager metaDataManager;
+    Map<String,ActionHandler> actionHandlersMap;
+    List<ActionHandler> actionHandlers;
 
     @Override
     protected Object authorize(Object object) {
@@ -69,14 +79,8 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         Object result = objectManager.create(clz, properties);
         try {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, result, properties);
+            scheduleProcess(StandardProcess.CREATE, result, properties);
             result = objectManager.reload(result);
-        } catch ( ProcessInstanceException e ) {
-            if ( e.getExitReason() == ExitReason.FAILED_TO_ACQUIRE_LOCK ) {
-                throw new ClientVisibleException(ResponseCodes.CONFLICT);
-            } else {
-                throw e;
-            }
         } catch ( ProcessNotFoundException e ) {
         }
 
@@ -94,6 +98,18 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         return clz;
     }
+
+    @Override
+    protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
+        try {
+            scheduleProcess(StandardProcess.REMOVE, obj, null);
+            return objectManager.reload(obj);
+        } catch ( ProcessNotFoundException e ) {
+            return removeFromStore(type, id, obj, request);
+        }
+    }
+
+    protected abstract Object removeFromStore(String type, String id, Object obj, ApiRequest request);
 
     @Override
     protected Object updateInternal(String type, String id, Object obj, ApiRequest request) {
@@ -127,7 +143,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         Object currentObject = getById(type, id, new ListOptions(request));
         if ( currentObject == null ) {
-            return Collections.EMPTY_LIST;
+            return null;
         }
 
         String otherType = otherSchema.getId();
@@ -161,6 +177,10 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         ListOptions options = new ListOptions(request);
         Object currentObject = getById(type, id, options);
+        if ( currentObject == null ) {
+            return null;
+        }
+
         Object fieldValue = field.getValue(currentObject);
 
         if ( fieldValue == null ) {
@@ -181,6 +201,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         Map<String,Relationship> result = new HashMap<String, Relationship>();
         Map<String,Relationship> links = metaDataManager.getLinkRelationships(schemaFactory, type);
         for ( String link : include.getLinks() ) {
+            link = link.toLowerCase();
             if ( links.containsKey(link) ) {
                 result.put(link, links.get(link));
             }
@@ -197,11 +218,20 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         addAccountAuthorization(type, criteria, policy);
 
         if ( ! policy.isOption(Policy.REMOVED_VISIBLE) && ! byId ) {
-            Condition or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GTE, new Date()));
+            /* removed is null or removed >= (NOW() - delay) */
+            Condition or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GTE, removedTime()));
+            criteria.put(ObjectMetaDataManager.REMOVED_FIELD, or);
+
+            /* remove_time is null or remove_time > NOW() */
+            or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GT, new Date()));
             criteria.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, or);
         }
 
         return criteria;
+    }
+
+    protected Date removedTime() {
+        return new Date(System.currentTimeMillis() - REMOVE_DELAY.get() * 1000);
     }
 
     protected void addAccountAuthorization(String type, Map<Object, Object> criteria, Policy policy) {
@@ -241,17 +271,18 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Object resourceActionInternal(Object obj, ApiRequest request) {
+        String processName = getProcessName(obj, request);
+        ActionHandler handler = actionHandlersMap.get(processName);
+        if ( handler != null ) {
+            return handler.perform(processName, obj, request);
+        }
+
         Map<String,Object> data = CollectionUtils.toMap(request.getRequestObject());
-        ProcessInstance pi = objectProcessManager.createProcessInstance(getProcessName(obj, request), obj, data);
 
         try {
-            pi.schedule();
-        } catch ( ProcessInstanceException e ) {
-            if ( e.getExitReason() == ExitReason.FAILED_TO_ACQUIRE_LOCK || e.getExitReason() == ExitReason.CANCELED ) {
-                throw new ClientVisibleException(ResponseCodes.CONFLICT);
-            } else {
-                throw e;
-            }
+            scheduleProcess(getProcessName(obj, request), obj, data);
+        } catch ( ProcessNotFoundException e ) {
+            throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
         }
 
         request.setResponseCode(ResponseCodes.ACCEPTED);
@@ -261,6 +292,47 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     protected String getProcessName(Object obj, ApiRequest request) {
         String baseType = request.getSchemaFactory().getBaseType(request.getType());
         return String.format("%s.%s", baseType == null ? request.getType() : baseType, request.getAction()).toLowerCase();
+    }
+
+    protected void scheduleProcess(String processName, Object resource, Map<String, Object> data) {
+        final ProcessInstance pi = objectProcessManager.createProcessInstance(processName, resource, data);
+
+        scheduleProcess(new Runnable() {
+            @Override
+            public void run() {
+                pi.schedule();
+            }
+        });
+    }
+
+    protected void scheduleProcess(final StandardProcess process, final Object resource, final Map<String, Object> data) {
+        scheduleProcess(new Runnable() {
+            @Override
+            public void run() {
+                objectProcessManager.scheduleStandardProcess(process, resource, data);
+            }
+        });
+    }
+
+    protected void scheduleProcess(Runnable run) {
+        try {
+            run.run();
+        } catch ( ProcessInstanceException e ) {
+            if ( e.getExitReason() == ExitReason.FAILED_TO_ACQUIRE_LOCK || e.getExitReason() == ExitReason.CANCELED ) {
+                throw new ClientVisibleException(ResponseCodes.CONFLICT);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public void start() {
+        actionHandlersMap = NamedUtils.createMapByName(actionHandlers);
+    }
+
+    @Override
+    public void stop() {
     }
 
     @Override
@@ -298,6 +370,15 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Inject
     public void setObjectProcessManager(ObjectProcessManager objectProcessManager) {
         this.objectProcessManager = objectProcessManager;
+    }
+
+    public List<ActionHandler> getActionHandlers() {
+        return actionHandlers;
+    }
+
+    @Inject
+    public void setActionHandlers(List<ActionHandler> actionHandlers) {
+        this.actionHandlers = actionHandlers;
     }
 
 }

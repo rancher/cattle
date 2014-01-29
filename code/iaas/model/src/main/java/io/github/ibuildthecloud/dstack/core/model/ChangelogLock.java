@@ -14,46 +14,46 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface ChangelogLock extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.changelog_lock.ID</code>. 
+	 * Setter for <code>dstack.changelog_lock.ID</code>.
 	 */
 	public void setId(java.lang.Integer value);
 
 	/**
-	 * Getter for <code>dstack.changelog_lock.ID</code>. 
+	 * Getter for <code>dstack.changelog_lock.ID</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "ID", unique = true, nullable = false, precision = 10)
 	public java.lang.Integer getId();
 
 	/**
-	 * Setter for <code>dstack.changelog_lock.LOCKED</code>. 
+	 * Setter for <code>dstack.changelog_lock.LOCKED</code>.
 	 */
 	public void setLocked(java.lang.Boolean value);
 
 	/**
-	 * Getter for <code>dstack.changelog_lock.LOCKED</code>. 
+	 * Getter for <code>dstack.changelog_lock.LOCKED</code>.
 	 */
 	@javax.persistence.Column(name = "LOCKED", nullable = false, precision = 1)
 	public java.lang.Boolean getLocked();
 
 	/**
-	 * Setter for <code>dstack.changelog_lock.LOCKGRANTED</code>. 
+	 * Setter for <code>dstack.changelog_lock.LOCKGRANTED</code>.
 	 */
-	public void setLockgranted(java.sql.Timestamp value);
+	public void setLockgranted(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.changelog_lock.LOCKGRANTED</code>. 
+	 * Getter for <code>dstack.changelog_lock.LOCKGRANTED</code>.
 	 */
 	@javax.persistence.Column(name = "LOCKGRANTED")
-	public java.sql.Timestamp getLockgranted();
+	public java.util.Date getLockgranted();
 
 	/**
-	 * Setter for <code>dstack.changelog_lock.LOCKEDBY</code>. 
+	 * Setter for <code>dstack.changelog_lock.LOCKEDBY</code>.
 	 */
 	public void setLockedby(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.changelog_lock.LOCKEDBY</code>. 
+	 * Getter for <code>dstack.changelog_lock.LOCKEDBY</code>.
 	 */
 	@javax.persistence.Column(name = "LOCKEDBY", length = 255)
 	public java.lang.String getLockedby();

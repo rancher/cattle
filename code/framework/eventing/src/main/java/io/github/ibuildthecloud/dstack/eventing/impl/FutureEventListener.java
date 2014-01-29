@@ -31,7 +31,7 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
             String[] previous = reply.getPreviousIds();
 
             if ( previous != null && previous.length > 0 && previous[0].equals(event.getId()) ) {
-                EventVO replyWithName = new EventVO(reply);
+                EventVO<Object> replyWithName = new EventVO<Object>(reply);
                 replyWithName.setName(appendReply(event.getName()));
 
                 eventService.publish(replyWithName);

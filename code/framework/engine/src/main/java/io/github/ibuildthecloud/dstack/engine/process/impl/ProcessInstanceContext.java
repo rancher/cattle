@@ -9,8 +9,6 @@ public class ProcessInstanceContext {
 
     ProcessDefinition processDefinition;
     ProcessState state;
-
-    ProcessPhase phase;
     LockDefinition processLock;
 
     public ProcessDefinition getProcessDefinition() {
@@ -30,11 +28,11 @@ public class ProcessInstanceContext {
     }
 
     public ProcessPhase getPhase() {
-        return phase;
+        return state.getPhase();
     }
 
     public void setPhase(ProcessPhase phase) {
-        this.phase = phase;
+        state.setPhase(phase);
     }
 
     public LockDefinition getProcessLock() {

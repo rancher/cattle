@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.configitem.server.model.impl;
 
+import io.github.ibuildthecloud.dstack.configitem.model.ItemVersion;
 import io.github.ibuildthecloud.dstack.configitem.server.model.ConfigItem;
 import io.github.ibuildthecloud.dstack.configitem.server.model.Request;
 import io.github.ibuildthecloud.dstack.configitem.version.ConfigItemStatusManager;
@@ -16,9 +17,11 @@ public abstract class AbstractConfigItem implements ConfigItem {
     }
 
     protected String getVersion(Request req) {
-        return null;
+        ItemVersion version = versionManager.getRequestedVersion(req.getClient(), req.getItemName());
+        return version == null ? null : version.toExternalForm();
     }
 
+    @Override
     public String getName() {
         return name;
     }

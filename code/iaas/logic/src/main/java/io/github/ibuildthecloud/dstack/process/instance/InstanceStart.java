@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.process.instance;
 
+import io.github.ibuildthecloud.dstack.core.dao.GenericMapDao;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.InstanceHostMap;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
@@ -12,10 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
 public class InstanceStart extends AbstractDefaultProcessHandler {
+
+    GenericMapDao mapDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -33,8 +37,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     }
 
     protected void allocate(Instance instance) {
-        ProcessInstance pi = getObjectProcessManager().createProcessInstance("instance.allocate", instance, null);
-        pi.execute();
+        execute("instance.allocate", instance, null);
     }
 
     protected void storage(Instance instance) {
@@ -46,11 +49,18 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     }
 
     protected void compute(Instance instance) {
-        List<InstanceHostMap> maps = getObjectManager().children(instance, InstanceHostMap.class);
-
-        for ( InstanceHostMap map : maps ) {
+        for ( InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()) ) {
             activate(map, null);
         }
+    }
+
+    public GenericMapDao getMapDao() {
+        return mapDao;
+    }
+
+    @Inject
+    public void setMapDao(GenericMapDao mapDao) {
+        this.mapDao = mapDao;
     }
 
 }

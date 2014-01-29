@@ -13,10 +13,10 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "image_format", schema = "dstack")
 public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.core.model.ImageFormat {
 
-	private static final long serialVersionUID = -989860934;
+	private static final long serialVersionUID = 654623342;
 
 	/**
-	 * Setter for <code>dstack.image_format.id</code>. 
+	 * Setter for <code>dstack.image_format.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.image_format.id</code>. 
+	 * Getter for <code>dstack.image_format.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.image_format.template_id</code>. 
+	 * Setter for <code>dstack.image_format.template_id</code>.
 	 */
 	@Override
 	public void setTemplateId(java.lang.Long value) {
@@ -42,7 +42,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.image_format.template_id</code>. 
+	 * Getter for <code>dstack.image_format.template_id</code>.
 	 */
 	@javax.persistence.Column(name = "template_id", nullable = false, precision = 19)
 	@Override
@@ -51,7 +51,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.image_format.format</code>. 
+	 * Setter for <code>dstack.image_format.format</code>.
 	 */
 	@Override
 	public void setFormat(java.lang.String value) {
@@ -59,7 +59,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.image_format.format</code>. 
+	 * Getter for <code>dstack.image_format.format</code>.
 	 */
 	@javax.persistence.Column(name = "format", nullable = false, length = 128)
 	@Override
@@ -68,7 +68,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.image_format.data</code>. 
+	 * Setter for <code>dstack.image_format.data</code>.
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
@@ -76,7 +76,7 @@ public class ImageFormatRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Getter for <code>dstack.image_format.data</code>. 
+	 * Getter for <code>dstack.image_format.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override

@@ -14,46 +14,46 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface Databasechangeloglock extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.ID</code>. 
+	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.ID</code>.
 	 */
 	public void setId(java.lang.Integer value);
 
 	/**
-	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.ID</code>. 
+	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.ID</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "ID", unique = true, nullable = false, precision = 10)
 	public java.lang.Integer getId();
 
 	/**
-	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.LOCKED</code>. 
+	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.LOCKED</code>.
 	 */
 	public void setLocked(java.lang.Boolean value);
 
 	/**
-	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.LOCKED</code>. 
+	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.LOCKED</code>.
 	 */
 	@javax.persistence.Column(name = "LOCKED", nullable = false, precision = 1)
 	public java.lang.Boolean getLocked();
 
 	/**
-	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.LOCKGRANTED</code>. 
+	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.LOCKGRANTED</code>.
 	 */
-	public void setLockgranted(java.sql.Timestamp value);
+	public void setLockgranted(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.LOCKGRANTED</code>. 
+	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.LOCKGRANTED</code>.
 	 */
 	@javax.persistence.Column(name = "LOCKGRANTED")
-	public java.sql.Timestamp getLockgranted();
+	public java.util.Date getLockgranted();
 
 	/**
-	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.LOCKEDBY</code>. 
+	 * Setter for <code>dstack.DATABASECHANGELOGLOCK.LOCKEDBY</code>.
 	 */
 	public void setLockedby(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.LOCKEDBY</code>. 
+	 * Getter for <code>dstack.DATABASECHANGELOGLOCK.LOCKEDBY</code>.
 	 */
 	@javax.persistence.Column(name = "LOCKEDBY", length = 255)
 	public java.lang.String getLockedby();

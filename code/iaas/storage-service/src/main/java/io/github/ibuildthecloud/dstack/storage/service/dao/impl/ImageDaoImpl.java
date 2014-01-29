@@ -2,7 +2,7 @@ package io.github.ibuildthecloud.dstack.storage.service.dao.impl;
 
 import static io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.*;
-import io.github.ibuildthecloud.dstack.core.dao.AccountCoreDao;
+import io.github.ibuildthecloud.dstack.core.dao.AccountDao;
 import io.github.ibuildthecloud.dstack.core.model.Account;
 import io.github.ibuildthecloud.dstack.core.model.Image;
 import io.github.ibuildthecloud.dstack.core.model.ImageStoragePoolMap;
@@ -22,7 +22,7 @@ public class ImageDaoImpl extends AbstractJooqDao implements ImageDao {
 
     private static final Logger log = LoggerFactory.getLogger(ImageDaoImpl.class);
 
-    AccountCoreDao accountCoreDao;
+    AccountDao accountCoreDao;
     ObjectManager objectManager;
     ObjectProcessManager processManager;
 
@@ -72,12 +72,12 @@ public class ImageDaoImpl extends AbstractJooqDao implements ImageDao {
         this.objectManager = objectManager;
     }
 
-    public AccountCoreDao getAccountCoreDao() {
+    public AccountDao getAccountCoreDao() {
         return accountCoreDao;
     }
 
     @Inject
-    public void setAccountCoreDao(AccountCoreDao accountCoreDao) {
+    public void setAccountCoreDao(AccountDao accountCoreDao) {
         this.accountCoreDao = accountCoreDao;
     }
 

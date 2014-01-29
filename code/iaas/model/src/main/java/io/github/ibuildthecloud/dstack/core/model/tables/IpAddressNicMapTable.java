@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class IpAddressNicMapTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord> {
 
-	private static final long serialVersionUID = -1903524291;
+	private static final long serialVersionUID = 1042897933;
 
 	/**
 	 * The singleton instance of <code>dstack.ip_address_nic_map</code>
@@ -27,66 +27,70 @@ public class IpAddressNicMapTable extends org.jooq.impl.TableImpl<io.github.ibui
 	}
 
 	/**
-	 * The column <code>dstack.ip_address_nic_map.id</code>. 
+	 * The column <code>dstack.ip_address_nic_map.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.ip_address_nic_map.state</code>. 
+	 * The column <code>dstack.ip_address_nic_map.state</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.ip_address_nic_map.nic_id</code>. 
+	 * The column <code>dstack.ip_address_nic_map.nic_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.Long> NIC_ID = createField("nic_id", org.jooq.impl.SQLDataType.BIGINT, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.Long> NIC_ID = createField("nic_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>dstack.ip_address_nic_map.account_id</code>. 
+	 * The column <code>dstack.ip_address_nic_map.account_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.ip_address_nic_map.ip_address_id</code>. 
+	 * The column <code>dstack.ip_address_nic_map.ip_address_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.Long> IP_ADDRESS_ID = createField("ip_address_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.Long> IP_ADDRESS_ID = createField("ip_address_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.ip_address_nic_map.created</code>. 
+	 * The column <code>dstack.ip_address_nic_map.created</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.sql.Timestamp> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.ip_address_nic_map.removed</code>. 
+	 * The column <code>dstack.ip_address_nic_map.removed</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.sql.Timestamp> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.util.Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.ip_address_nic_map.uuid</code>. 
+	 * The column <code>dstack.ip_address_nic_map.uuid</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.ip_address_nic_map.kind</code>. 
+	 * The column <code>dstack.ip_address_nic_map.kind</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
 	 * Create a <code>dstack.ip_address_nic_map</code> table reference
 	 */
 	public IpAddressNicMapTable() {
-		super("ip_address_nic_map", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("ip_address_nic_map", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.ip_address_nic_map</code> table reference
 	 */
 	public IpAddressNicMapTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP);
 	}
 
 	private IpAddressNicMapTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private IpAddressNicMapTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

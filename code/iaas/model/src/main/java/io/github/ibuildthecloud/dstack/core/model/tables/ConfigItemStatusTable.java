@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord> {
 
-	private static final long serialVersionUID = -543690794;
+	private static final long serialVersionUID = 1368597367;
 
 	/**
 	 * The singleton instance of <code>dstack.config_item_status</code>
@@ -27,66 +27,65 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.github.ibu
 	}
 
 	/**
-	 * The column <code>dstack.config_item_status.id</code>. 
+	 * The column <code>dstack.config_item_status.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.config_item_status.name</code>. 
+	 * The column <code>dstack.config_item_status.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.config_item_status.requested_version</code>. 
+	 * The column <code>dstack.config_item_status.requested_version</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> REQUESTED_VERSION = createField("requested_version", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaulted(true), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> REQUESTED_VERSION = createField("requested_version", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>dstack.config_item_status.applied_version</code>. 
+	 * The column <code>dstack.config_item_status.applied_version</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> APPLIED_VERSION = createField("applied_version", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaulted(true), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> APPLIED_VERSION = createField("applied_version", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>dstack.config_item_status.source_version</code>. 
+	 * The column <code>dstack.config_item_status.source_version</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.String> SOURCE_VERSION = createField("source_version", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.String> SOURCE_VERSION = createField("source_version", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.config_item_status.requested_updated</code>. 
+	 * The column <code>dstack.config_item_status.requested_updated</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.sql.Timestamp> REQUESTED_UPDATED = createField("requested_updated", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.util.Date> REQUESTED_UPDATED = createField("requested_updated", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.config_item_status.applied_updated</code>. 
+	 * The column <code>dstack.config_item_status.applied_updated</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.sql.Timestamp> APPLIED_UPDATED = createField("applied_updated", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.util.Date> APPLIED_UPDATED = createField("applied_updated", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.config_item_status.resource_type</code>. 
+	 * The column <code>dstack.config_item_status.agent_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.String> RESOURCE_TYPE = createField("resource_type", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this);
-
-	/**
-	 * The column <code>dstack.config_item_status.resource_id</code>. 
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> RESOURCE_ID = createField("resource_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>dstack.config_item_status</code> table reference
 	 */
 	public ConfigItemStatusTable() {
-		super("config_item_status", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("config_item_status", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.config_item_status</code> table reference
 	 */
 	public ConfigItemStatusTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS);
 	}
 
 	private ConfigItemStatusTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private ConfigItemStatusTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**
@@ -110,7 +109,15 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.github.ibu
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_STATUS_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_STATUS_VM_INSTANCE_ID);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_STATUS_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_STATUS_NAME);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, ?>> getReferences() {
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.CONFIG_ITEM_STATUS_IBFK_1);
 	}
 
 	/**

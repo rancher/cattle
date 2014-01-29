@@ -11,8 +11,6 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <bean class="io.github.ibuildthecloud.dstack.process.base.ActivateByDefaultListener" />
-
     <context:component-scan base-package="io.github.ibuildthecloud.dstack.process" />
 
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler" />
@@ -21,7 +19,6 @@
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="ImageStoragePoolMapActivate"
         p:commandName="storage.image.activate"
-        p:eventResourceRelationship="image"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.ImageStoragePoolMap"
         p:processNames="imagestoragepoolmap.activate" >
@@ -33,7 +30,6 @@
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="ImageStoragePoolMapDeactivate"
         p:commandName="storage.image.deactivate"
-        p:eventResourceRelationship="image"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.ImageStoragePoolMap"
         p:processNames="imagestoragepoolmap.deactivate" >
@@ -45,7 +41,6 @@
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="VolumeStoragePoolMapActivate"
         p:commandName="storage.volume.activate"
-        p:eventResourceRelationship="volume"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap"
         p:processNames="volumestoragepoolmap.activate" >
@@ -57,7 +52,6 @@
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="VolumeStoragePoolMapDeactivate"
         p:commandName="storage.volume.deactivate"
-        p:eventResourceRelationship="volume"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap"
         p:processNames="volumestoragepoolmap.deactivate" >
@@ -67,9 +61,19 @@
     </bean>
 
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
+        p:name="VolumeStoragePoolMapRemove"
+        p:commandName="storage.volume.remove"
+        p:agentResourceRelationship="storagePool"
+        p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap"
+        p:processNames="volumestoragepoolmap.remove" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="InstanceHostMapActivate"
         p:commandName="compute.instance.activate"
-        p:eventResourceRelationship="instance"
         p:agentResourceRelationship="host"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.InstanceHostMap"
         p:processNames="instancehostmap.activate" >
@@ -81,7 +85,6 @@
     <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
         p:name="InstanceHostMapDeactivate"
         p:commandName="compute.instance.deactivate"
-        p:eventResourceRelationship="instance"
         p:agentResourceRelationship="host"
         p:dataTypeClass="io.github.ibuildthecloud.dstack.core.model.InstanceHostMap"
         p:processNames="instancehostmap.deactivate" >

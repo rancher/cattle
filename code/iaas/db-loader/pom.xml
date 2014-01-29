@@ -39,6 +39,10 @@
             <artifactId>hsqldb</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>dstack-framework-spring</artifactId>
             <version>${project.version}</version>

@@ -1,11 +1,18 @@
 {
-    "collectionMethods": ["POST"],
+    "collectionMethods": ["GET", "POST"],
     "resourceFields": {
         "agentId": {
             "create": true
         },
         "eventNames": {
             "create": true
+        }
+    },
+    "collectionFilters": {
+        "eventNames": {
+            "modifiers": [
+                "eq"
+            ]
         }
     }
 }

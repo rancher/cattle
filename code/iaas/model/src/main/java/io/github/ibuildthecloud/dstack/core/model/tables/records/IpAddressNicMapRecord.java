@@ -11,12 +11,12 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "ip_address_nic_map", schema = "dstack")
-public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record9<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.IpAddressNicMap {
+public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressNicMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record9<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.IpAddressNicMap {
 
-	private static final long serialVersionUID = 1012133680;
+	private static final long serialVersionUID = 219228842;
 
 	/**
-	 * Setter for <code>dstack.ip_address_nic_map.id</code>. 
+	 * Setter for <code>dstack.ip_address_nic_map.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address_nic_map.id</code>. 
+	 * Getter for <code>dstack.ip_address_nic_map.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address_nic_map.state</code>. 
+	 * Setter for <code>dstack.ip_address_nic_map.state</code>.
 	 */
 	@Override
 	public void setState(java.lang.String value) {
@@ -42,7 +42,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address_nic_map.state</code>. 
+	 * Getter for <code>dstack.ip_address_nic_map.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	@Override
@@ -51,7 +51,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address_nic_map.nic_id</code>. 
+	 * Setter for <code>dstack.ip_address_nic_map.nic_id</code>.
 	 */
 	@Override
 	public void setNicId(java.lang.Long value) {
@@ -59,7 +59,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address_nic_map.nic_id</code>. 
+	 * Getter for <code>dstack.ip_address_nic_map.nic_id</code>.
 	 */
 	@javax.persistence.Column(name = "nic_id", precision = 19)
 	@Override
@@ -68,7 +68,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address_nic_map.account_id</code>. 
+	 * Setter for <code>dstack.ip_address_nic_map.account_id</code>.
 	 */
 	@Override
 	public void setAccountId(java.lang.Long value) {
@@ -76,7 +76,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address_nic_map.account_id</code>. 
+	 * Getter for <code>dstack.ip_address_nic_map.account_id</code>.
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
 	@Override
@@ -85,7 +85,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address_nic_map.ip_address_id</code>. 
+	 * Setter for <code>dstack.ip_address_nic_map.ip_address_id</code>.
 	 */
 	@Override
 	public void setIpAddressId(java.lang.Long value) {
@@ -93,7 +93,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address_nic_map.ip_address_id</code>. 
+	 * Getter for <code>dstack.ip_address_nic_map.ip_address_id</code>.
 	 */
 	@javax.persistence.Column(name = "ip_address_id", nullable = false, precision = 19)
 	@Override
@@ -102,41 +102,41 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address_nic_map.created</code>. 
+	 * Setter for <code>dstack.ip_address_nic_map.created</code>.
 	 */
 	@Override
-	public void setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.util.Date value) {
 		setValue(5, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address_nic_map.created</code>. 
+	 * Getter for <code>dstack.ip_address_nic_map.created</code>.
 	 */
 	@javax.persistence.Column(name = "created", nullable = false)
 	@Override
-	public java.sql.Timestamp getCreated() {
-		return (java.sql.Timestamp) getValue(5);
+	public java.util.Date getCreated() {
+		return (java.util.Date) getValue(5);
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address_nic_map.removed</code>. 
+	 * Setter for <code>dstack.ip_address_nic_map.removed</code>.
 	 */
 	@Override
-	public void setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.util.Date value) {
 		setValue(6, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address_nic_map.removed</code>. 
+	 * Getter for <code>dstack.ip_address_nic_map.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
 	@Override
-	public java.sql.Timestamp getRemoved() {
-		return (java.sql.Timestamp) getValue(6);
+	public java.util.Date getRemoved() {
+		return (java.util.Date) getValue(6);
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address_nic_map.uuid</code>. 
+	 * Setter for <code>dstack.ip_address_nic_map.uuid</code>.
 	 */
 	@Override
 	public void setUuid(java.lang.String value) {
@@ -144,7 +144,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address_nic_map.uuid</code>. 
+	 * Getter for <code>dstack.ip_address_nic_map.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
 	@Override
@@ -153,7 +153,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address_nic_map.kind</code>. 
+	 * Setter for <code>dstack.ip_address_nic_map.kind</code>.
 	 */
 	@Override
 	public void setKind(java.lang.String value) {
@@ -161,7 +161,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address_nic_map.kind</code>. 
+	 * Getter for <code>dstack.ip_address_nic_map.kind</code>.
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 128)
 	@Override
@@ -189,7 +189,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row9<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row9<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.String, java.lang.String> fieldsRow() {
 		return (org.jooq.Row9) super.fieldsRow();
 	}
 
@@ -197,7 +197,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row9<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row9<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.String, java.lang.String> valuesRow() {
 		return (org.jooq.Row9) super.valuesRow();
 	}
 
@@ -245,7 +245,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field6() {
+	public org.jooq.Field<java.util.Date> field6() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP.CREATED;
 	}
 
@@ -253,7 +253,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field7() {
+	public org.jooq.Field<java.util.Date> field7() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP.REMOVED;
 	}
 
@@ -317,7 +317,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value6() {
+	public java.util.Date value6() {
 		return getCreated();
 	}
 
@@ -325,7 +325,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value7() {
+	public java.util.Date value7() {
 		return getRemoved();
 	}
 
@@ -394,7 +394,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IpAddressNicMapRecord value6(java.sql.Timestamp value) {
+	public IpAddressNicMapRecord value6(java.util.Date value) {
 		setCreated(value);
 		return this;
 	}
@@ -403,7 +403,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IpAddressNicMapRecord value7(java.sql.Timestamp value) {
+	public IpAddressNicMapRecord value7(java.util.Date value) {
 		setRemoved(value);
 		return this;
 	}
@@ -430,7 +430,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IpAddressNicMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.Long value4, java.lang.Long value5, java.sql.Timestamp value6, java.sql.Timestamp value7, java.lang.String value8, java.lang.String value9) {
+	public IpAddressNicMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.Long value4, java.lang.Long value5, java.util.Date value6, java.util.Date value7, java.lang.String value8, java.lang.String value9) {
 		return this;
 	}
 
@@ -477,7 +477,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Create a detached, initialised IpAddressNicMapRecord
 	 */
-	public IpAddressNicMapRecord(java.lang.Long id, java.lang.String state, java.lang.Long nicId, java.lang.Long accountId, java.lang.Long ipAddressId, java.sql.Timestamp created, java.sql.Timestamp removed, java.lang.String uuid, java.lang.String kind) {
+	public IpAddressNicMapRecord(java.lang.Long id, java.lang.String state, java.lang.Long nicId, java.lang.Long accountId, java.lang.Long ipAddressId, java.util.Date created, java.util.Date removed, java.lang.String uuid, java.lang.String kind) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP);
 
 		setValue(0, id);

@@ -11,12 +11,12 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "volume_storage_pool_map", schema = "dstack")
-public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record6<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp>, io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap {
+public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record6<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date>, io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap {
 
-	private static final long serialVersionUID = -557788034;
+	private static final long serialVersionUID = 1754323208;
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.id</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.id</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.volume_id</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.volume_id</code>.
 	 */
 	@Override
 	public void setVolumeId(java.lang.Long value) {
@@ -42,7 +42,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.volume_id</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.volume_id</code>.
 	 */
 	@javax.persistence.Column(name = "volume_id", nullable = false, precision = 19)
 	@Override
@@ -51,7 +51,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
 	 */
 	@Override
 	public void setStoragePoolId(java.lang.Long value) {
@@ -59,7 +59,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
 	 */
 	@javax.persistence.Column(name = "storage_pool_id", nullable = false, precision = 19)
 	@Override
@@ -68,7 +68,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>.
 	 */
 	@Override
 	public void setStoragePoolLocation(java.lang.Long value) {
@@ -76,7 +76,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>.
 	 */
 	@javax.persistence.Column(name = "storage_pool_location", precision = 19)
 	@Override
@@ -85,7 +85,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.state</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.state</code>.
 	 */
 	@Override
 	public void setState(java.lang.String value) {
@@ -93,7 +93,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.state</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	@Override
@@ -102,20 +102,20 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	}
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.removed</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.removed</code>.
 	 */
 	@Override
-	public void setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.util.Date value) {
 		setValue(5, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.removed</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
 	@Override
-	public java.sql.Timestamp getRemoved() {
-		return (java.sql.Timestamp) getValue(5);
+	public java.util.Date getRemoved() {
+		return (java.util.Date) getValue(5);
 	}
 
 	// -------------------------------------------------------------------------
@@ -138,7 +138,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row6<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp> fieldsRow() {
+	public org.jooq.Row6<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date> fieldsRow() {
 		return (org.jooq.Row6) super.fieldsRow();
 	}
 
@@ -146,7 +146,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row6<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.sql.Timestamp> valuesRow() {
+	public org.jooq.Row6<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date> valuesRow() {
 		return (org.jooq.Row6) super.valuesRow();
 	}
 
@@ -194,7 +194,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field6() {
+	public org.jooq.Field<java.util.Date> field6() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.REMOVED;
 	}
 
@@ -242,7 +242,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value6() {
+	public java.util.Date value6() {
 		return getRemoved();
 	}
 
@@ -295,7 +295,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public VolumeStoragePoolMapRecord value6(java.sql.Timestamp value) {
+	public VolumeStoragePoolMapRecord value6(java.util.Date value) {
 		setRemoved(value);
 		return this;
 	}
@@ -304,7 +304,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public VolumeStoragePoolMapRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.Long value3, java.lang.Long value4, java.lang.String value5, java.sql.Timestamp value6) {
+	public VolumeStoragePoolMapRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.Long value3, java.lang.Long value4, java.lang.String value5, java.util.Date value6) {
 		return this;
 	}
 
@@ -348,7 +348,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	/**
 	 * Create a detached, initialised VolumeStoragePoolMapRecord
 	 */
-	public VolumeStoragePoolMapRecord(java.lang.Long id, java.lang.Long volumeId, java.lang.Long storagePoolId, java.lang.Long storagePoolLocation, java.lang.String state, java.sql.Timestamp removed) {
+	public VolumeStoragePoolMapRecord(java.lang.Long id, java.lang.Long volumeId, java.lang.Long storagePoolId, java.lang.Long storagePoolLocation, java.lang.String state, java.util.Date removed) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP);
 
 		setValue(0, id);

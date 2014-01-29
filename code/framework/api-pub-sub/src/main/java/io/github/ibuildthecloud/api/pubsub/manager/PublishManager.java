@@ -43,7 +43,7 @@ public class PublishManager extends AbstractNoOpResourceManager {
     }
 
     protected Event createEvent(Publish publish) {
-        EventVO event = new EventVO();
+        EventVO<Object> event = new EventVO<Object>();
 
         event.setId(publish.getId());
         event.setName(publish.getName());

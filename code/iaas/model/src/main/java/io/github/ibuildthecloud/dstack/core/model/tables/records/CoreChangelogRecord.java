@@ -11,12 +11,12 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "core_changelog", schema = "dstack")
-public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.CoreChangelog {
+public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.CoreChangelog {
 
-	private static final long serialVersionUID = -618760984;
+	private static final long serialVersionUID = 1970815174;
 
 	/**
-	 * Setter for <code>dstack.core_changelog.ID</code>. 
+	 * Setter for <code>dstack.core_changelog.ID</code>.
 	 */
 	@Override
 	public void setId(java.lang.String value) {
@@ -24,7 +24,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.ID</code>. 
+	 * Getter for <code>dstack.core_changelog.ID</code>.
 	 */
 	@javax.persistence.Column(name = "ID", nullable = false, length = 255)
 	@Override
@@ -33,7 +33,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.AUTHOR</code>. 
+	 * Setter for <code>dstack.core_changelog.AUTHOR</code>.
 	 */
 	@Override
 	public void setAuthor(java.lang.String value) {
@@ -41,7 +41,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.AUTHOR</code>. 
+	 * Getter for <code>dstack.core_changelog.AUTHOR</code>.
 	 */
 	@javax.persistence.Column(name = "AUTHOR", nullable = false, length = 255)
 	@Override
@@ -50,7 +50,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.FILENAME</code>. 
+	 * Setter for <code>dstack.core_changelog.FILENAME</code>.
 	 */
 	@Override
 	public void setFilename(java.lang.String value) {
@@ -58,7 +58,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.FILENAME</code>. 
+	 * Getter for <code>dstack.core_changelog.FILENAME</code>.
 	 */
 	@javax.persistence.Column(name = "FILENAME", nullable = false, length = 255)
 	@Override
@@ -67,24 +67,24 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.DATEEXECUTED</code>. 
+	 * Setter for <code>dstack.core_changelog.DATEEXECUTED</code>.
 	 */
 	@Override
-	public void setDateexecuted(java.sql.Timestamp value) {
+	public void setDateexecuted(java.util.Date value) {
 		setValue(3, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.DATEEXECUTED</code>. 
+	 * Getter for <code>dstack.core_changelog.DATEEXECUTED</code>.
 	 */
 	@javax.persistence.Column(name = "DATEEXECUTED", nullable = false)
 	@Override
-	public java.sql.Timestamp getDateexecuted() {
-		return (java.sql.Timestamp) getValue(3);
+	public java.util.Date getDateexecuted() {
+		return (java.util.Date) getValue(3);
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.ORDEREXECUTED</code>. 
+	 * Setter for <code>dstack.core_changelog.ORDEREXECUTED</code>.
 	 */
 	@Override
 	public void setOrderexecuted(java.lang.Integer value) {
@@ -92,7 +92,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.ORDEREXECUTED</code>. 
+	 * Getter for <code>dstack.core_changelog.ORDEREXECUTED</code>.
 	 */
 	@javax.persistence.Column(name = "ORDEREXECUTED", nullable = false, precision = 10)
 	@Override
@@ -101,7 +101,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.EXECTYPE</code>. 
+	 * Setter for <code>dstack.core_changelog.EXECTYPE</code>.
 	 */
 	@Override
 	public void setExectype(java.lang.String value) {
@@ -109,7 +109,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.EXECTYPE</code>. 
+	 * Getter for <code>dstack.core_changelog.EXECTYPE</code>.
 	 */
 	@javax.persistence.Column(name = "EXECTYPE", nullable = false, length = 10)
 	@Override
@@ -118,7 +118,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.MD5SUM</code>. 
+	 * Setter for <code>dstack.core_changelog.MD5SUM</code>.
 	 */
 	@Override
 	public void setMd5sum(java.lang.String value) {
@@ -126,7 +126,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.MD5SUM</code>. 
+	 * Getter for <code>dstack.core_changelog.MD5SUM</code>.
 	 */
 	@javax.persistence.Column(name = "MD5SUM", length = 35)
 	@Override
@@ -135,7 +135,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.DESCRIPTION</code>. 
+	 * Setter for <code>dstack.core_changelog.DESCRIPTION</code>.
 	 */
 	@Override
 	public void setDescription(java.lang.String value) {
@@ -143,7 +143,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.DESCRIPTION</code>. 
+	 * Getter for <code>dstack.core_changelog.DESCRIPTION</code>.
 	 */
 	@javax.persistence.Column(name = "DESCRIPTION", length = 255)
 	@Override
@@ -152,7 +152,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.COMMENTS</code>. 
+	 * Setter for <code>dstack.core_changelog.COMMENTS</code>.
 	 */
 	@Override
 	public void setComments(java.lang.String value) {
@@ -160,7 +160,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.COMMENTS</code>. 
+	 * Getter for <code>dstack.core_changelog.COMMENTS</code>.
 	 */
 	@javax.persistence.Column(name = "COMMENTS", length = 255)
 	@Override
@@ -169,7 +169,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.TAG</code>. 
+	 * Setter for <code>dstack.core_changelog.TAG</code>.
 	 */
 	@Override
 	public void setTag(java.lang.String value) {
@@ -177,7 +177,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.TAG</code>. 
+	 * Getter for <code>dstack.core_changelog.TAG</code>.
 	 */
 	@javax.persistence.Column(name = "TAG", length = 255)
 	@Override
@@ -186,7 +186,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.core_changelog.LIQUIBASE</code>. 
+	 * Setter for <code>dstack.core_changelog.LIQUIBASE</code>.
 	 */
 	@Override
 	public void setLiquibase(java.lang.String value) {
@@ -194,7 +194,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.core_changelog.LIQUIBASE</code>. 
+	 * Getter for <code>dstack.core_changelog.LIQUIBASE</code>.
 	 */
 	@javax.persistence.Column(name = "LIQUIBASE", length = 20)
 	@Override
@@ -210,7 +210,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row11<java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
 		return (org.jooq.Row11) super.fieldsRow();
 	}
 
@@ -218,7 +218,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.String, java.lang.String, java.lang.String, java.sql.Timestamp, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row11<java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
 		return (org.jooq.Row11) super.valuesRow();
 	}
 
@@ -250,7 +250,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field4() {
+	public org.jooq.Field<java.util.Date> field4() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.CoreChangelogTable.CORE_CHANGELOG.DATEEXECUTED;
 	}
 
@@ -338,7 +338,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value4() {
+	public java.util.Date value4() {
 		return getDateexecuted();
 	}
 
@@ -429,7 +429,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CoreChangelogRecord value4(java.sql.Timestamp value) {
+	public CoreChangelogRecord value4(java.util.Date value) {
 		setDateexecuted(value);
 		return this;
 	}
@@ -501,7 +501,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CoreChangelogRecord values(java.lang.String value1, java.lang.String value2, java.lang.String value3, java.sql.Timestamp value4, java.lang.Integer value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.String value9, java.lang.String value10, java.lang.String value11) {
+	public CoreChangelogRecord values(java.lang.String value1, java.lang.String value2, java.lang.String value3, java.util.Date value4, java.lang.Integer value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.String value9, java.lang.String value10, java.lang.String value11) {
 		return this;
 	}
 
@@ -550,7 +550,7 @@ public class CoreChangelogRecord extends org.jooq.impl.TableRecordImpl<io.github
 	/**
 	 * Create a detached, initialised CoreChangelogRecord
 	 */
-	public CoreChangelogRecord(java.lang.String id, java.lang.String author, java.lang.String filename, java.sql.Timestamp dateexecuted, java.lang.Integer orderexecuted, java.lang.String exectype, java.lang.String md5sum, java.lang.String description, java.lang.String comments, java.lang.String tag, java.lang.String liquibase) {
+	public CoreChangelogRecord(java.lang.String id, java.lang.String author, java.lang.String filename, java.util.Date dateexecuted, java.lang.Integer orderexecuted, java.lang.String exectype, java.lang.String md5sum, java.lang.String description, java.lang.String comments, java.lang.String tag, java.lang.String liquibase) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.CoreChangelogTable.CORE_CHANGELOG);
 
 		setValue(0, id);

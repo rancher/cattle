@@ -3,8 +3,9 @@ package io.github.ibuildthecloud.dstack.process.credential;
 import static io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.*;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.model.Credential;
-import io.github.ibuildthecloud.dstack.engine.handler.AbstractProcessHandler;
+import io.github.ibuildthecloud.dstack.engine.handler.AbstractProcessLogic;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
+import io.github.ibuildthecloud.dstack.engine.handler.ProcessPreListener;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 
@@ -18,7 +19,7 @@ import org.apache.commons.codec.binary.Hex;
 import com.netflix.config.DynamicStringProperty;
 
 @Named
-public class ApiKeyCreate extends AbstractProcessHandler {
+public class ApiKeyCreate extends AbstractProcessLogic implements ProcessPreListener {
 
     public static final DynamicStringProperty BAD_CHARACTERS = ArchaiusUtil.getString("process.credential.create.bad.characters");
     public static final String API_KEY = "apiKey";

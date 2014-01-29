@@ -6,7 +6,6 @@ import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
 import javax.servlet.AsyncContext;
@@ -21,7 +20,7 @@ public class ServletAsyncSubscriptionHandler extends NonBlockingSubscriptionHand
     }
 
     @Override
-    protected OutputStream getOutputStream(ApiRequest apiRequest) throws IOException {
+    protected MessageWriter getMessageWriter(ApiRequest apiRequest) throws IOException {
         apiRequest.commit();
 
         HttpServletRequest request = apiRequest.getServletContext().getRequest();
@@ -30,8 +29,7 @@ public class ServletAsyncSubscriptionHandler extends NonBlockingSubscriptionHand
         AsyncContext ctx = request.startAsync(request, response);
         ctx.setTimeout(0);
 
-        return ctx.getResponse().getOutputStream();
-
+        return new OutputStreamMessageWriter(ctx.getResponse().getOutputStream());
     }
 
 }

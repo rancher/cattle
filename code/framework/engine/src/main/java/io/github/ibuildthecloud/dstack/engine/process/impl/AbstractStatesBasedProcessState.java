@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.dstack.engine.process.impl;
 
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
+import io.github.ibuildthecloud.dstack.engine.process.ProcessPhase;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 
@@ -10,6 +11,7 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
 
     ResourceStatesDefinition statesDefinition;
     JsonMapper jsonMapper;
+    ProcessPhase phase;
 
     public AbstractStatesBasedProcessState(JsonMapper jsonMapper, ResourceStatesDefinition statesDef) {
         this.statesDefinition = statesDef;
@@ -80,6 +82,16 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
 
     public JsonMapper getJsonMapper() {
         return jsonMapper;
+    }
+
+    @Override
+    public ProcessPhase getPhase() {
+        return phase;
+    }
+
+    @Override
+    public void setPhase(ProcessPhase phase) {
+        this.phase = phase;
     }
 
 }

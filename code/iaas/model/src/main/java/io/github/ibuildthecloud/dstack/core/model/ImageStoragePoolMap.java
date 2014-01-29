@@ -14,101 +14,101 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface ImageStoragePoolMap extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.id</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.id</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.image_id</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.image_id</code>.
 	 */
 	public void setImageId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.image_id</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.image_id</code>.
 	 */
 	@javax.persistence.Column(name = "image_id", nullable = false, precision = 19)
 	public java.lang.Long getImageId();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.storage_pool_id</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.storage_pool_id</code>.
 	 */
 	public void setStoragePoolId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.storage_pool_id</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.storage_pool_id</code>.
 	 */
 	@javax.persistence.Column(name = "storage_pool_id", nullable = false, precision = 19)
 	public java.lang.Long getStoragePoolId();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.state</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.state</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.uri</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.uri</code>.
 	 */
 	public void setUri(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.uri</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.uri</code>.
 	 */
 	@javax.persistence.Column(name = "uri", length = 255)
 	public java.lang.String getUri();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.created</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.created</code>.
 	 */
-	public void setCreated(java.sql.Timestamp value);
+	public void setCreated(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.created</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.created</code>.
 	 */
 	@javax.persistence.Column(name = "created")
-	public java.sql.Timestamp getCreated();
+	public java.util.Date getCreated();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.removed</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.removed</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.remove_time</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.remove_time</code>.
 	 */
-	public void setRemoveTime(java.sql.Timestamp value);
+	public void setRemoveTime(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.remove_time</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.remove_time</code>.
 	 */
 	@javax.persistence.Column(name = "remove_time")
-	public java.sql.Timestamp getRemoveTime();
+	public java.util.Date getRemoveTime();
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.remove_locked</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.remove_locked</code>.
 	 */
 	public void setRemoveLocked(java.lang.Boolean value);
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.remove_locked</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.remove_locked</code>.
 	 */
 	@javax.persistence.Column(name = "remove_locked", nullable = false, precision = 1)
 	public java.lang.Boolean getRemoveLocked();

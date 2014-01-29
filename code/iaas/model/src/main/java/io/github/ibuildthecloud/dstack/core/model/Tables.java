@@ -154,6 +154,16 @@ public class Tables {
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable STORAGE_POOL_HOST_MAP = io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP;
 
 	/**
+	 * The table dstack.task
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.TaskTable TASK = io.github.ibuildthecloud.dstack.core.model.tables.TaskTable.TASK;
+
+	/**
+	 * The table dstack.task_instance
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.TaskInstanceTable TASK_INSTANCE = io.github.ibuildthecloud.dstack.core.model.tables.TaskInstanceTable.TASK_INSTANCE;
+
+	/**
 	 * The table dstack.vnet
 	 */
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.VnetTable VNET = io.github.ibuildthecloud.dstack.core.model.tables.VnetTable.VNET;

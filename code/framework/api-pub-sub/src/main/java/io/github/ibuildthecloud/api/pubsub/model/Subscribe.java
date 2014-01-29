@@ -9,7 +9,7 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 @Type(pluralName = "subscribe")
 public interface Subscribe {
 
-    @Field(create = true, required = true, minLength = 1, validChars = "*._0-1a-zA-Z")
+    @Field(create = true, required = true, minLength = 1, validChars = "*._0-9a-zA-Z;=")
     List<String> getEventNames();
 
     Long getAgentId();

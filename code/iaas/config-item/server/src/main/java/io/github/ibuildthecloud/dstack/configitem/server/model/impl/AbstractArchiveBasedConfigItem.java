@@ -27,7 +27,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         OutputStream os = req.getOutputStream();
         GZIPOutputStream gzos = new GZIPOutputStream(os);
         TarArchiveOutputStream taos = null;
-        
+
         try {
             taos = new TarArchiveOutputStream(gzos);
             taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
@@ -39,7 +39,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
     }
 
     protected void writeContent(final ArchiveContext context) throws IOException {
-        final byte[] content = (context.getVersion() + "\n").getBytes("UTF-8"); 
+        final byte[] content = (context.getVersion() + "\n").getBytes("UTF-8");
         withEntry(context, "version", content.length, new WithEntry() {
             @Override
             public void with(OutputStream os) throws IOException {
@@ -58,7 +58,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
                 public void with(OutputStream os) throws IOException {
                     os.write(baos.toByteArray());
                 }
-            }; 
+            };
         }
 
         withEntry(context, getDefaultEntry(context, entryName, size), with);
@@ -70,7 +70,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         with.with(taos);
         taos.closeArchiveEntry();
     };
-    
+
     protected TarArchiveEntry getDefaultEntry(ArchiveContext context, String name, long size) {
         StringBuilder entryName = new StringBuilder(context.getRequest().getItemName());
         entryName.append("-").append(context.getVersion());

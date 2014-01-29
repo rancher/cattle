@@ -35,6 +35,8 @@ public class EventNotificationHandler implements ApiRequestHandler {
         data.put("responseCode", request.getResponseCode());
 
         DeferredUtils.deferPublish(eventService, EventVO.newEvent(FrameworkEvents.API_CHANGE)
+                .withResourceId(request.getId())
+                .withResourceType(request.getType())
                 .withData(data));
     }
 

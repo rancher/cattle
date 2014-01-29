@@ -15,4 +15,7 @@ public interface AllocatorEventListener extends AnnotatedEventListener {
     @EventHandler
     void instanceDeallocate(Event event);
 
+    @EventHandler
+    void volumeDeallocate(Event event);
+
 }

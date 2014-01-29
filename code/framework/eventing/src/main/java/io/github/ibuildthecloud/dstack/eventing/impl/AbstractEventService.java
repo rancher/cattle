@@ -58,6 +58,10 @@ public abstract class AbstractEventService implements EventService {
 
     @Override
     public boolean publish(Event event) {
+        if ( event == null ) {
+            return false;
+        }
+
         String eventString = null;
         try {
             eventString = jsonMapper.writeValueAsString(event);
@@ -86,9 +90,9 @@ public abstract class AbstractEventService implements EventService {
         List<EventListener> result = eventToListeners.get(eventName);
 
         if ( event instanceof EventVO ) {
-            String listenerKey = ((EventVO)event).getListenerKey();
+            String listenerKey = ((EventVO<?>)event).getListenerKey();
             if ( listenerKey != null && ! listenerKey.equals(eventName) ) {
-                List<EventListener> additional = eventToListeners.get(((EventVO)event).getListenerKey());
+                List<EventListener> additional = eventToListeners.get(((EventVO<?>)event).getListenerKey());
                 if ( additional != null ) {
                     if ( result == null ) {
                         return additional;
@@ -271,7 +275,7 @@ public abstract class AbstractEventService implements EventService {
             return future;
         }
 
-        final Event request = new EventVO(event, listener.getReplyTo());
+        final Event request = new EventVO<Object>(event, listener.getReplyTo());
         Retry retry = new Retry(retries, timeoutMillis, future, new Runnable() {
             @Override
             public void run() {

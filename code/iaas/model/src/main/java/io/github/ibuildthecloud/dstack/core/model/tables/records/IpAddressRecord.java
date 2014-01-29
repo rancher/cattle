@@ -11,12 +11,12 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "ip_address", schema = "dstack")
-public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.IpAddress {
+public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.IpAddressRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.util.Date, java.util.Date, java.util.Date, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.IpAddress {
 
-	private static final long serialVersionUID = 1742355713;
+	private static final long serialVersionUID = 1633546607;
 
 	/**
-	 * Setter for <code>dstack.ip_address.id</code>. 
+	 * Setter for <code>dstack.ip_address.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.id</code>. 
+	 * Getter for <code>dstack.ip_address.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.address</code>. 
+	 * Setter for <code>dstack.ip_address.address</code>.
 	 */
 	@Override
 	public void setAddress(java.lang.String value) {
@@ -42,7 +42,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.address</code>. 
+	 * Getter for <code>dstack.ip_address.address</code>.
 	 */
 	@javax.persistence.Column(name = "address", nullable = false, length = 128)
 	@Override
@@ -51,7 +51,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.account_id</code>. 
+	 * Setter for <code>dstack.ip_address.account_id</code>.
 	 */
 	@Override
 	public void setAccountId(java.lang.Long value) {
@@ -59,7 +59,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.account_id</code>. 
+	 * Getter for <code>dstack.ip_address.account_id</code>.
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
 	@Override
@@ -68,7 +68,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.netmask</code>. 
+	 * Setter for <code>dstack.ip_address.netmask</code>.
 	 */
 	@Override
 	public void setNetmask(java.lang.String value) {
@@ -76,7 +76,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.netmask</code>. 
+	 * Getter for <code>dstack.ip_address.netmask</code>.
 	 */
 	@javax.persistence.Column(name = "netmask", length = 128)
 	@Override
@@ -85,7 +85,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.gateway</code>. 
+	 * Setter for <code>dstack.ip_address.gateway</code>.
 	 */
 	@Override
 	public void setGateway(java.lang.String value) {
@@ -93,7 +93,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.gateway</code>. 
+	 * Getter for <code>dstack.ip_address.gateway</code>.
 	 */
 	@javax.persistence.Column(name = "gateway", length = 128)
 	@Override
@@ -102,7 +102,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.version</code>. 
+	 * Setter for <code>dstack.ip_address.version</code>.
 	 */
 	@Override
 	public void setVersion(java.lang.String value) {
@@ -110,7 +110,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.version</code>. 
+	 * Getter for <code>dstack.ip_address.version</code>.
 	 */
 	@javax.persistence.Column(name = "version", nullable = false, length = 255)
 	@Override
@@ -119,7 +119,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.vnet_id</code>. 
+	 * Setter for <code>dstack.ip_address.vnet_id</code>.
 	 */
 	@Override
 	public void setVnetId(java.lang.Long value) {
@@ -127,7 +127,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.vnet_id</code>. 
+	 * Getter for <code>dstack.ip_address.vnet_id</code>.
 	 */
 	@javax.persistence.Column(name = "vnet_id", precision = 19)
 	@Override
@@ -136,7 +136,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.ip_assignment_type</code>. 
+	 * Setter for <code>dstack.ip_address.ip_assignment_type</code>.
 	 */
 	@Override
 	public void setIpAssignmentType(java.lang.String value) {
@@ -144,7 +144,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.ip_assignment_type</code>. 
+	 * Getter for <code>dstack.ip_address.ip_assignment_type</code>.
 	 */
 	@javax.persistence.Column(name = "ip_assignment_type", length = 255)
 	@Override
@@ -153,7 +153,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.item_pool_id</code>. 
+	 * Setter for <code>dstack.ip_address.item_pool_id</code>.
 	 */
 	@Override
 	public void setItemPoolId(java.lang.Long value) {
@@ -161,7 +161,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.item_pool_id</code>. 
+	 * Getter for <code>dstack.ip_address.item_pool_id</code>.
 	 */
 	@javax.persistence.Column(name = "item_pool_id", precision = 19)
 	@Override
@@ -170,58 +170,58 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.created</code>. 
+	 * Setter for <code>dstack.ip_address.created</code>.
 	 */
 	@Override
-	public void setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.util.Date value) {
 		setValue(9, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.created</code>. 
+	 * Getter for <code>dstack.ip_address.created</code>.
 	 */
 	@javax.persistence.Column(name = "created")
 	@Override
-	public java.sql.Timestamp getCreated() {
-		return (java.sql.Timestamp) getValue(9);
+	public java.util.Date getCreated() {
+		return (java.util.Date) getValue(9);
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.removed</code>. 
+	 * Setter for <code>dstack.ip_address.removed</code>.
 	 */
 	@Override
-	public void setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.util.Date value) {
 		setValue(10, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.removed</code>. 
+	 * Getter for <code>dstack.ip_address.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
 	@Override
-	public java.sql.Timestamp getRemoved() {
-		return (java.sql.Timestamp) getValue(10);
+	public java.util.Date getRemoved() {
+		return (java.util.Date) getValue(10);
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.remove_time</code>. 
+	 * Setter for <code>dstack.ip_address.remove_time</code>.
 	 */
 	@Override
-	public void setRemoveTime(java.sql.Timestamp value) {
+	public void setRemoveTime(java.util.Date value) {
 		setValue(11, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.remove_time</code>. 
+	 * Getter for <code>dstack.ip_address.remove_time</code>.
 	 */
 	@javax.persistence.Column(name = "remove_time")
 	@Override
-	public java.sql.Timestamp getRemoveTime() {
-		return (java.sql.Timestamp) getValue(11);
+	public java.util.Date getRemoveTime() {
+		return (java.util.Date) getValue(11);
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.name</code>. 
+	 * Setter for <code>dstack.ip_address.name</code>.
 	 */
 	@Override
 	public void setName(java.lang.String value) {
@@ -229,7 +229,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.name</code>. 
+	 * Getter for <code>dstack.ip_address.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	@Override
@@ -238,7 +238,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Setter for <code>dstack.ip_address.description</code>. 
+	 * Setter for <code>dstack.ip_address.description</code>.
 	 */
 	@Override
 	public void setDescription(java.lang.String value) {
@@ -246,7 +246,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	}
 
 	/**
-	 * Getter for <code>dstack.ip_address.description</code>. 
+	 * Getter for <code>dstack.ip_address.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
 	@Override
@@ -274,7 +274,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.util.Date, java.util.Date, java.util.Date, java.lang.String, java.lang.String> fieldsRow() {
 		return (org.jooq.Row14) super.fieldsRow();
 	}
 
@@ -282,7 +282,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.util.Date, java.util.Date, java.util.Date, java.lang.String, java.lang.String> valuesRow() {
 		return (org.jooq.Row14) super.valuesRow();
 	}
 
@@ -362,7 +362,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field10() {
+	public org.jooq.Field<java.util.Date> field10() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.IpAddressTable.IP_ADDRESS.CREATED;
 	}
 
@@ -370,7 +370,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field11() {
+	public org.jooq.Field<java.util.Date> field11() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.IpAddressTable.IP_ADDRESS.REMOVED;
 	}
 
@@ -378,7 +378,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field12() {
+	public org.jooq.Field<java.util.Date> field12() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.IpAddressTable.IP_ADDRESS.REMOVE_TIME;
 	}
 
@@ -474,7 +474,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value10() {
+	public java.util.Date value10() {
 		return getCreated();
 	}
 
@@ -482,7 +482,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value11() {
+	public java.util.Date value11() {
 		return getRemoved();
 	}
 
@@ -490,7 +490,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value12() {
+	public java.util.Date value12() {
 		return getRemoveTime();
 	}
 
@@ -595,7 +595,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IpAddressRecord value10(java.sql.Timestamp value) {
+	public IpAddressRecord value10(java.util.Date value) {
 		setCreated(value);
 		return this;
 	}
@@ -604,7 +604,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IpAddressRecord value11(java.sql.Timestamp value) {
+	public IpAddressRecord value11(java.util.Date value) {
 		setRemoved(value);
 		return this;
 	}
@@ -613,7 +613,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IpAddressRecord value12(java.sql.Timestamp value) {
+	public IpAddressRecord value12(java.util.Date value) {
 		setRemoveTime(value);
 		return this;
 	}
@@ -640,7 +640,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IpAddressRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.Long value7, java.lang.String value8, java.lang.Long value9, java.sql.Timestamp value10, java.sql.Timestamp value11, java.sql.Timestamp value12, java.lang.String value13, java.lang.String value14) {
+	public IpAddressRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.Long value7, java.lang.String value8, java.lang.Long value9, java.util.Date value10, java.util.Date value11, java.util.Date value12, java.lang.String value13, java.lang.String value14) {
 		return this;
 	}
 
@@ -692,7 +692,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.github
 	/**
 	 * Create a detached, initialised IpAddressRecord
 	 */
-	public IpAddressRecord(java.lang.Long id, java.lang.String address, java.lang.Long accountId, java.lang.String netmask, java.lang.String gateway, java.lang.String version, java.lang.Long vnetId, java.lang.String ipAssignmentType, java.lang.Long itemPoolId, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime, java.lang.String name, java.lang.String description) {
+	public IpAddressRecord(java.lang.Long id, java.lang.String address, java.lang.Long accountId, java.lang.String netmask, java.lang.String gateway, java.lang.String version, java.lang.Long vnetId, java.lang.String ipAssignmentType, java.lang.Long itemPoolId, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.lang.String name, java.lang.String description) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.IpAddressTable.IP_ADDRESS);
 
 		setValue(0, id);

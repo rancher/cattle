@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ChangelogLockTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord> {
 
-	private static final long serialVersionUID = 301660175;
+	private static final long serialVersionUID = -1310785258;
 
 	/**
 	 * The singleton instance of <code>dstack.changelog_lock</code>
@@ -27,41 +27,45 @@ public class ChangelogLockTable extends org.jooq.impl.TableImpl<io.github.ibuild
 	}
 
 	/**
-	 * The column <code>dstack.changelog_lock.ID</code>. 
+	 * The column <code>dstack.changelog_lock.ID</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord, java.lang.Integer> ID = createField("ID", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord, java.lang.Integer> ID = createField("ID", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.changelog_lock.LOCKED</code>. 
+	 * The column <code>dstack.changelog_lock.LOCKED</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord, java.lang.Boolean> LOCKED = createField("LOCKED", org.jooq.impl.SQLDataType.BIT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord, java.lang.Boolean> LOCKED = createField("LOCKED", org.jooq.impl.SQLDataType.BIT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.changelog_lock.LOCKGRANTED</code>. 
+	 * The column <code>dstack.changelog_lock.LOCKGRANTED</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord, java.sql.Timestamp> LOCKGRANTED = createField("LOCKGRANTED", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord, java.util.Date> LOCKGRANTED = createField("LOCKGRANTED", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.changelog_lock.LOCKEDBY</code>. 
+	 * The column <code>dstack.changelog_lock.LOCKEDBY</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord, java.lang.String> LOCKEDBY = createField("LOCKEDBY", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord, java.lang.String> LOCKEDBY = createField("LOCKEDBY", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>dstack.changelog_lock</code> table reference
 	 */
 	public ChangelogLockTable() {
-		super("changelog_lock", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("changelog_lock", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.changelog_lock</code> table reference
 	 */
 	public ChangelogLockTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.ChangelogLockTable.CHANGELOG_LOCK);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.ChangelogLockTable.CHANGELOG_LOCK);
 	}
 
 	private ChangelogLockTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private ChangelogLockTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ChangelogLockRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

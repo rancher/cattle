@@ -11,12 +11,12 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "image_storage_pool_map", schema = "dstack")
-public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record9<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.Boolean>, io.github.ibuildthecloud.dstack.core.model.ImageStoragePoolMap {
+public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record9<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.lang.Boolean>, io.github.ibuildthecloud.dstack.core.model.ImageStoragePoolMap {
 
-	private static final long serialVersionUID = -2018037307;
+	private static final long serialVersionUID = -1993984399;
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.id</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.id</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.image_id</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.image_id</code>.
 	 */
 	@Override
 	public void setImageId(java.lang.Long value) {
@@ -42,7 +42,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.image_id</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.image_id</code>.
 	 */
 	@javax.persistence.Column(name = "image_id", nullable = false, precision = 19)
 	@Override
@@ -51,7 +51,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.storage_pool_id</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.storage_pool_id</code>.
 	 */
 	@Override
 	public void setStoragePoolId(java.lang.Long value) {
@@ -59,7 +59,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.storage_pool_id</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.storage_pool_id</code>.
 	 */
 	@javax.persistence.Column(name = "storage_pool_id", nullable = false, precision = 19)
 	@Override
@@ -68,7 +68,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.state</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.state</code>.
 	 */
 	@Override
 	public void setState(java.lang.String value) {
@@ -76,7 +76,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.state</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	@Override
@@ -85,7 +85,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.uri</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.uri</code>.
 	 */
 	@Override
 	public void setUri(java.lang.String value) {
@@ -93,7 +93,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.uri</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.uri</code>.
 	 */
 	@javax.persistence.Column(name = "uri", length = 255)
 	@Override
@@ -102,58 +102,58 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.created</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.created</code>.
 	 */
 	@Override
-	public void setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.util.Date value) {
 		setValue(5, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.created</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.created</code>.
 	 */
 	@javax.persistence.Column(name = "created")
 	@Override
-	public java.sql.Timestamp getCreated() {
-		return (java.sql.Timestamp) getValue(5);
+	public java.util.Date getCreated() {
+		return (java.util.Date) getValue(5);
 	}
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.removed</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.removed</code>.
 	 */
 	@Override
-	public void setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.util.Date value) {
 		setValue(6, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.removed</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
 	@Override
-	public java.sql.Timestamp getRemoved() {
-		return (java.sql.Timestamp) getValue(6);
+	public java.util.Date getRemoved() {
+		return (java.util.Date) getValue(6);
 	}
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.remove_time</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.remove_time</code>.
 	 */
 	@Override
-	public void setRemoveTime(java.sql.Timestamp value) {
+	public void setRemoveTime(java.util.Date value) {
 		setValue(7, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.remove_time</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.remove_time</code>.
 	 */
 	@javax.persistence.Column(name = "remove_time")
 	@Override
-	public java.sql.Timestamp getRemoveTime() {
-		return (java.sql.Timestamp) getValue(7);
+	public java.util.Date getRemoveTime() {
+		return (java.util.Date) getValue(7);
 	}
 
 	/**
-	 * Setter for <code>dstack.image_storage_pool_map.remove_locked</code>. 
+	 * Setter for <code>dstack.image_storage_pool_map.remove_locked</code>.
 	 */
 	@Override
 	public void setRemoveLocked(java.lang.Boolean value) {
@@ -161,7 +161,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	/**
-	 * Getter for <code>dstack.image_storage_pool_map.remove_locked</code>. 
+	 * Getter for <code>dstack.image_storage_pool_map.remove_locked</code>.
 	 */
 	@javax.persistence.Column(name = "remove_locked", nullable = false, precision = 1)
 	@Override
@@ -189,7 +189,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row9<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.Boolean> fieldsRow() {
+	public org.jooq.Row9<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.lang.Boolean> fieldsRow() {
 		return (org.jooq.Row9) super.fieldsRow();
 	}
 
@@ -197,7 +197,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row9<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.lang.Boolean> valuesRow() {
+	public org.jooq.Row9<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.lang.Boolean> valuesRow() {
 		return (org.jooq.Row9) super.valuesRow();
 	}
 
@@ -245,7 +245,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field6() {
+	public org.jooq.Field<java.util.Date> field6() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP.CREATED;
 	}
 
@@ -253,7 +253,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field7() {
+	public org.jooq.Field<java.util.Date> field7() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP.REMOVED;
 	}
 
@@ -261,7 +261,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field8() {
+	public org.jooq.Field<java.util.Date> field8() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP.REMOVE_TIME;
 	}
 
@@ -317,7 +317,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value6() {
+	public java.util.Date value6() {
 		return getCreated();
 	}
 
@@ -325,7 +325,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value7() {
+	public java.util.Date value7() {
 		return getRemoved();
 	}
 
@@ -333,7 +333,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value8() {
+	public java.util.Date value8() {
 		return getRemoveTime();
 	}
 
@@ -394,7 +394,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ImageStoragePoolMapRecord value6(java.sql.Timestamp value) {
+	public ImageStoragePoolMapRecord value6(java.util.Date value) {
 		setCreated(value);
 		return this;
 	}
@@ -403,7 +403,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ImageStoragePoolMapRecord value7(java.sql.Timestamp value) {
+	public ImageStoragePoolMapRecord value7(java.util.Date value) {
 		setRemoved(value);
 		return this;
 	}
@@ -412,7 +412,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ImageStoragePoolMapRecord value8(java.sql.Timestamp value) {
+	public ImageStoragePoolMapRecord value8(java.util.Date value) {
 		setRemoveTime(value);
 		return this;
 	}
@@ -430,7 +430,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ImageStoragePoolMapRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.sql.Timestamp value6, java.sql.Timestamp value7, java.sql.Timestamp value8, java.lang.Boolean value9) {
+	public ImageStoragePoolMapRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.util.Date value6, java.util.Date value7, java.util.Date value8, java.lang.Boolean value9) {
 		return this;
 	}
 
@@ -477,7 +477,7 @@ public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Create a detached, initialised ImageStoragePoolMapRecord
 	 */
-	public ImageStoragePoolMapRecord(java.lang.Long id, java.lang.Long imageId, java.lang.Long storagePoolId, java.lang.String state, java.lang.String uri, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime, java.lang.Boolean removeLocked) {
+	public ImageStoragePoolMapRecord(java.lang.Long id, java.lang.Long imageId, java.lang.Long storagePoolId, java.lang.String state, java.lang.String uri, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.lang.Boolean removeLocked) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP);
 
 		setValue(0, id);

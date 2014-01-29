@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ItemPoolTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord> {
 
-	private static final long serialVersionUID = -484822143;
+	private static final long serialVersionUID = 110980639;
 
 	/**
 	 * The singleton instance of <code>dstack.item_pool</code>
@@ -27,71 +27,75 @@ public class ItemPoolTable extends org.jooq.impl.TableImpl<io.github.ibuildthecl
 	}
 
 	/**
-	 * The column <code>dstack.item_pool.id</code>. 
+	 * The column <code>dstack.item_pool.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.item_pool.name</code>. 
+	 * The column <code>dstack.item_pool.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.item_pool.kind</code>. 
+	 * The column <code>dstack.item_pool.kind</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.item_pool.state</code>. 
+	 * The column <code>dstack.item_pool.state</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.item_pool.qualifier</code>. 
+	 * The column <code>dstack.item_pool.qualifier</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> QUALIFIER = createField("qualifier", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> QUALIFIER = createField("qualifier", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.item_pool.item_pool_generator_id</code>. 
+	 * The column <code>dstack.item_pool.item_pool_generator_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.Long> ITEM_POOL_GENERATOR_ID = createField("item_pool_generator_id", org.jooq.impl.SQLDataType.BIGINT, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.Long> ITEM_POOL_GENERATOR_ID = createField("item_pool_generator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>dstack.item_pool.segment</code>. 
+	 * The column <code>dstack.item_pool.segment</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> SEGMENT = createField("segment", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> SEGMENT = createField("segment", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.item_pool.description</code>. 
+	 * The column <code>dstack.item_pool.description</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.item_pool.uuid</code>. 
+	 * The column <code>dstack.item_pool.uuid</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.item_pool.data</code>. 
+	 * The column <code>dstack.item_pool.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * Create a <code>dstack.item_pool</code> table reference
 	 */
 	public ItemPoolTable() {
-		super("item_pool", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("item_pool", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.item_pool</code> table reference
 	 */
 	public ItemPoolTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.ItemPoolTable.ITEM_POOL);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.ItemPoolTable.ITEM_POOL);
 	}
 
 	private ItemPoolTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private ItemPoolTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

@@ -10,7 +10,7 @@
                       >
 
     <bean class="io.github.ibuildthecloud.dstack.lock.impl.LockManagerImpl" />
-    <bean class="io.github.ibuildthecloud.dstack.lock.provider.impl.InMemoryLockProvider" />
+    <bean id="LockProvider" class="io.github.ibuildthecloud.dstack.lock.provider.impl.InMemoryLockProvider" />
     <bean class="io.github.ibuildthecloud.dstack.lock.impl.LockDelegatorImpl" >
         <property name="executorService" ref="CoreExecutorService" />
     </bean>

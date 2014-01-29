@@ -149,12 +149,7 @@ public class SettingManager extends AbstractJooqResourceManager {
             source = ((CompositeConfiguration)config).getSource(name);
         }
 
-        if ( value == null && source == null ) {
-            return null;
-        }
-
         return new ActiveSetting(name, value, toString(source));
-
     }
 
     protected String toString(Configuration config) {

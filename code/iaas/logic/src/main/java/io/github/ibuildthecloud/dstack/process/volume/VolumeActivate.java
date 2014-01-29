@@ -1,9 +1,10 @@
 package io.github.ibuildthecloud.dstack.process.volume;
 
 import static io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.*;
-import io.github.ibuildthecloud.dstack.core.dao.ImageStoragePoolMapDao;
+import io.github.ibuildthecloud.dstack.core.dao.GenericMapDao;
 import io.github.ibuildthecloud.dstack.core.model.Image;
 import io.github.ibuildthecloud.dstack.core.model.ImageStoragePoolMap;
+import io.github.ibuildthecloud.dstack.core.model.StoragePool;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
 import io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
@@ -21,18 +22,16 @@ import javax.inject.Named;
 @Named
 public class VolumeActivate extends AbstractDefaultProcessHandler {
 
-    ImageStoragePoolMapDao imageStoragePoolMapDao;
+    GenericMapDao mapDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Volume volume = (Volume)state.getResource();
 
         Set<Long> pools = new HashSet<Long>();
-        for ( VolumeStoragePoolMap map : getObjectManager().children(volume, VolumeStoragePoolMap.class) ) {
-            if ( map.getRemoved() == null ) {
-                activatePool(volume, map, state.getData());
-                pools.add(map.getStoragePoolId());
-            }
+        for ( VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId()) ) {
+            activatePool(volume, map, state.getData());
+            pools.add(map.getStoragePoolId());
         }
 
         return new HandlerResult("_activatedPools", pools);
@@ -52,7 +51,9 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
 
         activate(image, data);
 
-        ImageStoragePoolMap map = imageStoragePoolMapDao.findNonRemovedMap(image.getId(), poolId);
+        ImageStoragePoolMap map = mapDao.findNonRemoved(ImageStoragePoolMap.class,
+                Image.class, image.getId(),
+                StoragePool.class, poolId);
         if ( map == null ) {
             map = getObjectManager().create(ImageStoragePoolMap.class,
                     IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId,
@@ -63,12 +64,12 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
         activate(map, data);
     }
 
-    public ImageStoragePoolMapDao getImageStoragePoolMapDao() {
-        return imageStoragePoolMapDao;
+    public GenericMapDao getMapDao() {
+        return mapDao;
     }
 
     @Inject
-    public void setImageStoragePoolMapDao(ImageStoragePoolMapDao imageStoragePoolMapDao) {
-        this.imageStoragePoolMapDao = imageStoragePoolMapDao;
+    public void setMapDao(GenericMapDao mapDao) {
+        this.mapDao = mapDao;
     }
 }

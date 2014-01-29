@@ -14,126 +14,126 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface Nic extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.nic.id</code>. 
+	 * Setter for <code>dstack.nic.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.nic.id</code>. 
+	 * Getter for <code>dstack.nic.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.nic.instance_id</code>. 
+	 * Setter for <code>dstack.nic.instance_id</code>.
 	 */
 	public void setInstanceId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.nic.instance_id</code>. 
+	 * Getter for <code>dstack.nic.instance_id</code>.
 	 */
 	@javax.persistence.Column(name = "instance_id", nullable = false, precision = 19)
 	public java.lang.Long getInstanceId();
 
 	/**
-	 * Setter for <code>dstack.nic.network_id</code>. 
+	 * Setter for <code>dstack.nic.network_id</code>.
 	 */
 	public void setNetworkId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.nic.network_id</code>. 
+	 * Getter for <code>dstack.nic.network_id</code>.
 	 */
 	@javax.persistence.Column(name = "network_id", nullable = false, precision = 19)
 	public java.lang.Long getNetworkId();
 
 	/**
-	 * Setter for <code>dstack.nic.account_id</code>. 
+	 * Setter for <code>dstack.nic.account_id</code>.
 	 */
 	public void setAccountId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.nic.account_id</code>. 
+	 * Getter for <code>dstack.nic.account_id</code>.
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
 	public java.lang.Long getAccountId();
 
 	/**
-	 * Setter for <code>dstack.nic.state</code>. 
+	 * Setter for <code>dstack.nic.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.nic.state</code>. 
+	 * Getter for <code>dstack.nic.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.nic.mac_address</code>. 
+	 * Setter for <code>dstack.nic.mac_address</code>.
 	 */
 	public void setMacAddress(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.nic.mac_address</code>. 
+	 * Getter for <code>dstack.nic.mac_address</code>.
 	 */
 	@javax.persistence.Column(name = "mac_address", length = 17)
 	public java.lang.String getMacAddress();
 
 	/**
-	 * Setter for <code>dstack.nic.device_number</code>. 
+	 * Setter for <code>dstack.nic.device_number</code>.
 	 */
 	public void setDeviceNumber(java.lang.Integer value);
 
 	/**
-	 * Getter for <code>dstack.nic.device_number</code>. 
+	 * Getter for <code>dstack.nic.device_number</code>.
 	 */
 	@javax.persistence.Column(name = "device_number", nullable = false, precision = 10)
 	public java.lang.Integer getDeviceNumber();
 
 	/**
-	 * Setter for <code>dstack.nic.uuid</code>. 
+	 * Setter for <code>dstack.nic.uuid</code>.
 	 */
 	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.nic.uuid</code>. 
+	 * Getter for <code>dstack.nic.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 255)
 	public java.lang.String getUuid();
 
 	/**
-	 * Setter for <code>dstack.nic.created</code>. 
+	 * Setter for <code>dstack.nic.created</code>.
 	 */
-	public void setCreated(java.sql.Timestamp value);
+	public void setCreated(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.nic.created</code>. 
+	 * Getter for <code>dstack.nic.created</code>.
 	 */
 	@javax.persistence.Column(name = "created")
-	public java.sql.Timestamp getCreated();
+	public java.util.Date getCreated();
 
 	/**
-	 * Setter for <code>dstack.nic.removed</code>. 
+	 * Setter for <code>dstack.nic.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.nic.removed</code>. 
+	 * Getter for <code>dstack.nic.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
 
 	/**
-	 * Setter for <code>dstack.nic.remove_time</code>. 
+	 * Setter for <code>dstack.nic.remove_time</code>.
 	 */
-	public void setRemoveTime(java.sql.Timestamp value);
+	public void setRemoveTime(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.nic.remove_time</code>. 
+	 * Getter for <code>dstack.nic.remove_time</code>.
 	 */
 	@javax.persistence.Column(name = "remove_time")
-	public java.sql.Timestamp getRemoveTime();
+	public java.util.Date getRemoveTime();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

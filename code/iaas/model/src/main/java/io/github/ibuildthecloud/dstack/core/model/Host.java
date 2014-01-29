@@ -14,112 +14,112 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface Host extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.host.id</code>. 
+	 * Setter for <code>dstack.host.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.host.id</code>. 
+	 * Getter for <code>dstack.host.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.host.name</code>. 
+	 * Setter for <code>dstack.host.name</code>.
 	 */
 	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.host.name</code>. 
+	 * Getter for <code>dstack.host.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.host.kind</code>. 
+	 * Setter for <code>dstack.host.kind</code>.
 	 */
 	public void setKind(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.host.kind</code>. 
+	 * Getter for <code>dstack.host.kind</code>.
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
 	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.host.state</code>. 
+	 * Setter for <code>dstack.host.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.host.state</code>. 
+	 * Getter for <code>dstack.host.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.host.created</code>. 
+	 * Setter for <code>dstack.host.created</code>.
 	 */
-	public void setCreated(java.sql.Timestamp value);
+	public void setCreated(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.host.created</code>. 
+	 * Getter for <code>dstack.host.created</code>.
 	 */
 	@javax.persistence.Column(name = "created", nullable = false)
-	public java.sql.Timestamp getCreated();
+	public java.util.Date getCreated();
 
 	/**
-	 * Setter for <code>dstack.host.removed</code>. 
+	 * Setter for <code>dstack.host.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.host.removed</code>. 
+	 * Getter for <code>dstack.host.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
 
 	/**
-	 * Setter for <code>dstack.host.data</code>. 
+	 * Setter for <code>dstack.host.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
 
 	/**
-	 * Getter for <code>dstack.host.data</code>. 
+	 * Getter for <code>dstack.host.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
 	/**
-	 * Setter for <code>dstack.host.uuid</code>. 
+	 * Setter for <code>dstack.host.uuid</code>.
 	 */
 	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.host.uuid</code>. 
+	 * Getter for <code>dstack.host.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
 	public java.lang.String getUuid();
 
 	/**
-	 * Setter for <code>dstack.host.description</code>. 
+	 * Setter for <code>dstack.host.description</code>.
 	 */
 	public void setDescription(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.host.description</code>. 
+	 * Getter for <code>dstack.host.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 255)
 	public java.lang.String getDescription();
 
 	/**
-	 * Setter for <code>dstack.host.agent_id</code>. 
+	 * Setter for <code>dstack.host.agent_id</code>.
 	 */
 	public void setAgentId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.host.agent_id</code>. 
+	 * Getter for <code>dstack.host.agent_id</code>.
 	 */
 	@javax.persistence.Column(name = "agent_id", precision = 19)
 	public java.lang.Long getAgentId();

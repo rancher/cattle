@@ -5,6 +5,7 @@ import io.github.ibuildthecloud.dstack.framework.event.FrameworkEvents;
 public class IaasEvents {
 
     public static final String AGENT_REQUEST = "agent.request";
+    public static final String CONFIG_UPDATE = "config.update";
 
     public static final String ACCOUNT_QUALIFIER = "account";
     public static final String AGENT_QUALIFIER = "agent";

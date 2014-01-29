@@ -11,11 +11,17 @@ public class DateConverter implements Converter<Timestamp, Date>{
 
     @Override
     public Date from(Timestamp databaseObject) {
+        if ( databaseObject == null ) {
+            return null;
+        }
         return new Date(databaseObject.getTime());
     }
 
     @Override
     public Timestamp to(Date userObject) {
+        if ( userObject == null ) {
+            return null;
+        }
         return new Timestamp(userObject.getTime());
     }
 

@@ -12,7 +12,7 @@ public class ProcessLog {
     public ProcessExecutionLog newExecution() {
         ProcessExecutionLog execution = new ProcessExecutionLog();
         execution.setStartTime(System.currentTimeMillis());
-        execution.setProcessingServerId(EngineContext.getEngineContext().getProcessingServerId());
+        execution.setProcessingServerId(EngineContext.getProcessServerId());
         executions.add(execution);
         return execution;
     }

@@ -14,60 +14,60 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface InstanceHostMap extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.instance_host_map.id</code>. 
+	 * Setter for <code>dstack.instance_host_map.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.instance_host_map.id</code>. 
+	 * Getter for <code>dstack.instance_host_map.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.instance_host_map.state</code>. 
+	 * Setter for <code>dstack.instance_host_map.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.instance_host_map.state</code>. 
+	 * Getter for <code>dstack.instance_host_map.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.instance_host_map.instance_id</code>. 
+	 * Setter for <code>dstack.instance_host_map.instance_id</code>.
 	 */
 	public void setInstanceId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.instance_host_map.instance_id</code>. 
+	 * Getter for <code>dstack.instance_host_map.instance_id</code>.
 	 */
 	@javax.persistence.Column(name = "instance_id", nullable = false, precision = 19)
 	public java.lang.Long getInstanceId();
 
 	/**
-	 * Setter for <code>dstack.instance_host_map.host_id</code>. 
+	 * Setter for <code>dstack.instance_host_map.host_id</code>.
 	 */
 	public void setHostId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.instance_host_map.host_id</code>. 
+	 * Getter for <code>dstack.instance_host_map.host_id</code>.
 	 */
 	@javax.persistence.Column(name = "host_id", nullable = false, precision = 19)
 	public java.lang.Long getHostId();
 
 	/**
-	 * Setter for <code>dstack.instance_host_map.removed</code>. 
+	 * Setter for <code>dstack.instance_host_map.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.instance_host_map.removed</code>. 
+	 * Getter for <code>dstack.instance_host_map.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

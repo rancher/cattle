@@ -439,7 +439,9 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         if ( relationships == null ) {
             return result;
         }
+
         for ( String link : getLinks(schemaFactory, type).keySet() ) {
+            link = link.toLowerCase();
             Relationship rel = relationships.get(link);
             if ( rel != null ) {
                 result.put(link, rel);

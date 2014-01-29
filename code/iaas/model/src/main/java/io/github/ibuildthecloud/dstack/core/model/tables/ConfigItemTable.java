@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord> {
 
-	private static final long serialVersionUID = -1946108618;
+	private static final long serialVersionUID = 1595014578;
 
 	/**
 	 * The singleton instance of <code>dstack.config_item</code>
@@ -27,36 +27,40 @@ public class ConfigItemTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	}
 
 	/**
-	 * The column <code>dstack.config_item.id</code>. 
+	 * The column <code>dstack.config_item.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.config_item.name</code>. 
+	 * The column <code>dstack.config_item.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.config_item.source_version</code>. 
+	 * The column <code>dstack.config_item.source_version</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord, java.lang.String> SOURCE_VERSION = createField("source_version", org.jooq.impl.SQLDataType.VARCHAR.length(1024).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord, java.lang.String> SOURCE_VERSION = createField("source_version", org.jooq.impl.SQLDataType.VARCHAR.length(1024).nullable(false), this, "");
 
 	/**
 	 * Create a <code>dstack.config_item</code> table reference
 	 */
 	public ConfigItemTable() {
-		super("config_item", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("config_item", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.config_item</code> table reference
 	 */
 	public ConfigItemTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemTable.CONFIG_ITEM);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemTable.CONFIG_ITEM);
 	}
 
 	private ConfigItemTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private ConfigItemTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

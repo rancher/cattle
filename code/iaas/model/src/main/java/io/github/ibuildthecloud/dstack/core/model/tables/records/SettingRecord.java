@@ -13,10 +13,10 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "setting", schema = "dstack")
 public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.SettingRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record3<java.lang.Long, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Setting {
 
-	private static final long serialVersionUID = 538569685;
+	private static final long serialVersionUID = 644785739;
 
 	/**
-	 * Setter for <code>dstack.setting.id</code>. 
+	 * Setter for <code>dstack.setting.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	}
 
 	/**
-	 * Getter for <code>dstack.setting.id</code>. 
+	 * Getter for <code>dstack.setting.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	}
 
 	/**
-	 * Setter for <code>dstack.setting.name</code>. 
+	 * Setter for <code>dstack.setting.name</code>.
 	 */
 	@Override
 	public void setName(java.lang.String value) {
@@ -42,7 +42,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	}
 
 	/**
-	 * Getter for <code>dstack.setting.name</code>. 
+	 * Getter for <code>dstack.setting.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
 	@Override
@@ -51,7 +51,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	}
 
 	/**
-	 * Setter for <code>dstack.setting.value</code>. 
+	 * Setter for <code>dstack.setting.value</code>.
 	 */
 	@Override
 	public void setValue(java.lang.String value) {
@@ -59,7 +59,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	}
 
 	/**
-	 * Getter for <code>dstack.setting.value</code>. 
+	 * Getter for <code>dstack.setting.value</code>.
 	 */
 	@javax.persistence.Column(name = "value", nullable = false, length = 1024)
 	@Override

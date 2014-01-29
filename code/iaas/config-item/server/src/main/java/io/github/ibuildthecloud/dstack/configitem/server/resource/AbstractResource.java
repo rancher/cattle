@@ -27,4 +27,9 @@ public abstract class AbstractResource implements Resource {
         return name;
     }
 
+    @Override
+    public String toString() {
+        return "Resource [" + name + "]";
+    }
+
 }

@@ -13,10 +13,10 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "agent_group", schema = "dstack")
 public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record5<java.lang.Long, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.AgentGroup {
 
-	private static final long serialVersionUID = 956402786;
+	private static final long serialVersionUID = 833658510;
 
 	/**
-	 * Setter for <code>dstack.agent_group.id</code>. 
+	 * Setter for <code>dstack.agent_group.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Getter for <code>dstack.agent_group.id</code>. 
+	 * Getter for <code>dstack.agent_group.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Setter for <code>dstack.agent_group.name</code>. 
+	 * Setter for <code>dstack.agent_group.name</code>.
 	 */
 	@Override
 	public void setName(java.lang.String value) {
@@ -42,7 +42,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Getter for <code>dstack.agent_group.name</code>. 
+	 * Getter for <code>dstack.agent_group.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	@Override
@@ -51,7 +51,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Setter for <code>dstack.agent_group.description</code>. 
+	 * Setter for <code>dstack.agent_group.description</code>.
 	 */
 	@Override
 	public void setDescription(java.lang.String value) {
@@ -59,7 +59,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Getter for <code>dstack.agent_group.description</code>. 
+	 * Getter for <code>dstack.agent_group.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
 	@Override
@@ -68,7 +68,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Setter for <code>dstack.agent_group.data</code>. 
+	 * Setter for <code>dstack.agent_group.data</code>.
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
@@ -76,7 +76,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Getter for <code>dstack.agent_group.data</code>. 
+	 * Getter for <code>dstack.agent_group.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
@@ -85,7 +85,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Setter for <code>dstack.agent_group.state</code>. 
+	 * Setter for <code>dstack.agent_group.state</code>.
 	 */
 	@Override
 	public void setState(java.lang.String value) {
@@ -93,7 +93,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Getter for <code>dstack.agent_group.state</code>. 
+	 * Getter for <code>dstack.agent_group.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	@Override

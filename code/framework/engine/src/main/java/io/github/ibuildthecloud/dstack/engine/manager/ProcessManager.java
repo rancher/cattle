@@ -10,6 +10,8 @@ public interface ProcessManager {
 
     List<Long> pendingTasks();
 
+    Long getRemainingTask(long processId);
+
     ProcessInstance loadProcess(Long id);
 
     ProcessInstance createProcessInstance(LaunchConfiguration config);
@@ -17,5 +19,7 @@ public interface ProcessManager {
     void persistState(ProcessInstance process);
 
     ProcessDefinition getProcessDelegate(ProcessDefinition def);
+
+    ProcessDefinition getProcessDefinition(String name);
 
 }

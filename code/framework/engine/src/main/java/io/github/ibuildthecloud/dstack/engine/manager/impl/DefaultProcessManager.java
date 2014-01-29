@@ -105,7 +105,18 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
 
     @Override
     public List<Long> pendingTasks() {
-        return processRecordDao.pendingTasks();
+        return processRecordDao.pendingTasks(null, null);
+    }
+
+    @Override
+    public Long getRemainingTask(long processId) {
+        ProcessRecord record = processRecordDao.getRecord(processId);
+        if ( record == null ) {
+            return null;
+        }
+
+        List<Long> next = processRecordDao.pendingTasks(record.getResourceType(), record.getResourceId());
+        return next.size() == 0 ? null : next.get(0);
     }
 
     @Override
@@ -133,6 +144,11 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
 
     protected void queue(ProcessInstance process) {
         toPersist.put(new DelayedObject<ProcessInstance>(System.currentTimeMillis() + EXECUTION_DELAY.get(), process));
+    }
+
+    @Override
+    public ProcessDefinition getProcessDefinition(String name) {
+        return definitions.get(name);
     }
 
     @Override

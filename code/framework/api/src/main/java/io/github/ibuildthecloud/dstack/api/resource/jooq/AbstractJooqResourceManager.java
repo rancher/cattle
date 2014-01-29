@@ -103,7 +103,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
                 throw new IllegalStateException("Failed to find table for type [" + rel.getObjectType() + "]");
             } else {
                 String key = rel.getRelationshipType() == RelationshipType.REFERENCE ?
-                        ApiUtils.SINGLE_ATTACHMENT_PREFIX + entry.getKey() : entry.getKey();
+                        ApiUtils.SINGLE_ATTACHMENT_PREFIX + rel.getName() : rel.getName();
                 tableMapper.map(key, childTable);
                 rels.add(rel);
             }
@@ -226,10 +226,22 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         }
     }
 
-
     @Override
-    protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
-        throw new UnsupportedOperationException();
+    protected Object removeFromStore(String type, String id, Object obj, ApiRequest request) {
+        Table<?> table = JooqUtils.getTable(JooqUtils.getRecordClass(request.getSchemaFactory(), obj.getClass()));
+        TableField<?, Object> idField = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
+
+        int result = create()
+            .delete(table)
+            .where(idField.eq(id))
+            .execute();
+
+        if ( result != 1 ) {
+            log.error("While deleting type [{}] and id [{}] got a result of [{}]", type, id, result);
+            throw new ClientVisibleException(ResponseCodes.CONFLICT);
+        }
+
+        return obj;
     }
 
     @Override

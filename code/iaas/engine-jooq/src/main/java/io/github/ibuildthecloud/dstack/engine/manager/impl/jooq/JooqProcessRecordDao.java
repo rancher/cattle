@@ -14,14 +14,20 @@ import io.github.ibuildthecloud.dstack.json.JsonMapper;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.jooq.Condition;
+import org.jooq.Record3;
+import org.jooq.RecordHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +43,61 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     JsonMapper jsonMapper;
 
     @Override
-    public List<Long> pendingTasks() {
-        return create()
-                .select(PROCESS_INSTANCE.ID)
+    public List<Long> pendingTasks(String resourceType, String resourceId) {
+        final List<Long> result = new ArrayList<Long>();
+        /* I know I should and can do this unique logic in SQL, but I couldn't
+         * figure out a simple way to do it in HSQLDB.  So if you're reading this
+         * and can find a query that does this across all the supported DB, please
+         * let someone know.
+         *
+         * Here's what I wanted to do
+         *
+         * select
+         *     min(PROCESS_INSTANCE.ID)
+         * from PROCESS_INSTANCE
+         * where
+         *     PROCESS_INSTANCE.END_TIME is null
+         * group by PROCESS_INSTANCE.RESOURCE_TYPE, PROCESS_INSTANCE.RESOURCE_ID
+         * order by PROCESS_INSTANCE.START_TIME asc
+         * limit 10000 offset 0
+         *
+         *  But you can't order by something that is not in the group by.  So how
+         *  do I get a unique pair of resource_type, resource_id, but still order by
+         *  id or start_time
+         */
+        final Set<String> seen = new HashSet<String>();
+        create()
+            .select(PROCESS_INSTANCE.ID,
+                    PROCESS_INSTANCE.RESOURCE_TYPE,
+                    PROCESS_INSTANCE.RESOURCE_TYPE)
                 .from(PROCESS_INSTANCE)
-                .where(PROCESS_INSTANCE.END_TIME.isNull())
-                .orderBy(PROCESS_INSTANCE.START_TIME.asc())
-                .limit(PROCESS_REPLAY_BATCH.get())
-                .fetch(PROCESS_INSTANCE.ID);
+            .where(processCondition(resourceType, resourceId))
+            .orderBy(PROCESS_INSTANCE.ID.asc())
+            .limit(PROCESS_REPLAY_BATCH.get())
+            .fetchInto(new RecordHandler<Record3<Long,String,String>>() {
+                @Override
+                public void next(Record3<Long,String,String> record) {
+                    String resource = String.format("%s:%s", record.value2(), record.value3());
+                    if ( seen.contains(resource) ) {
+                        return;
+                    }
+
+                    seen.add(resource);
+                    result.add(record.value1());
+                }
+            });
+
+        return result;
+    }
+
+    protected Condition processCondition(String resourceType, String resourceId) {
+        if ( resourceType == null ) {
+            return PROCESS_INSTANCE.END_TIME.isNull();
+        } else {
+            return PROCESS_INSTANCE.END_TIME.isNull()
+                    .and(PROCESS_INSTANCE.RESOURCE_TYPE.eq(resourceType))
+                    .and(PROCESS_INSTANCE.RESOURCE_ID.eq(resourceId));
+        }
     }
 
     @Override

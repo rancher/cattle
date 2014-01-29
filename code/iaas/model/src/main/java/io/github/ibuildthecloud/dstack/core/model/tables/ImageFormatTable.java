@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ImageFormatTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord> {
 
-	private static final long serialVersionUID = 1789845417;
+	private static final long serialVersionUID = 17431807;
 
 	/**
 	 * The singleton instance of <code>dstack.image_format</code>
@@ -27,41 +27,45 @@ public class ImageFormatTable extends org.jooq.impl.TableImpl<io.github.ibuildth
 	}
 
 	/**
-	 * The column <code>dstack.image_format.id</code>. 
+	 * The column <code>dstack.image_format.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.image_format.template_id</code>. 
+	 * The column <code>dstack.image_format.template_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord, java.lang.Long> TEMPLATE_ID = createField("template_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord, java.lang.Long> TEMPLATE_ID = createField("template_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.image_format.format</code>. 
+	 * The column <code>dstack.image_format.format</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord, java.lang.String> FORMAT = createField("format", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord, java.lang.String> FORMAT = createField("format", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.image_format.data</code>. 
+	 * The column <code>dstack.image_format.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * Create a <code>dstack.image_format</code> table reference
 	 */
 	public ImageFormatTable() {
-		super("image_format", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("image_format", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.image_format</code> table reference
 	 */
 	public ImageFormatTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.ImageFormatTable.IMAGE_FORMAT);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.ImageFormatTable.IMAGE_FORMAT);
 	}
 
 	private ImageFormatTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private ImageFormatTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageFormatRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

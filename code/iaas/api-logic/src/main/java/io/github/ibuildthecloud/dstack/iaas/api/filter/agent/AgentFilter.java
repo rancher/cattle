@@ -1,9 +1,11 @@
 package io.github.ibuildthecloud.dstack.iaas.api.filter.agent;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+import io.github.ibuildthecloud.dstack.core.constants.AgentConstants;
 import io.github.ibuildthecloud.dstack.core.dao.AgentDao;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.github.ibuildthecloud.dstack.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
@@ -27,6 +29,7 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
     private static final DynamicBooleanProperty ASSIGN_AGENT_URI = ArchaiusUtil.getBoolean("agent.filter.assign.uri");
     private static final DynamicBooleanProperty TRY_DNS = ArchaiusUtil.getBoolean("agent.filter.default.uri.reverse.dns");
     private static final DynamicStringProperty URI_FORMAT = ArchaiusUtil.getString("agent.filter.default.uri");
+    private static final DynamicStringProperty USER = ArchaiusUtil.getString("agent.filter.default.user");
 
     ResourceManagerLocator locator;
     AgentDao agentDao;
@@ -48,9 +51,10 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
          */
         agent.setAccountId(agent.getAccountId());
         String uri = agent.getUri();
+        String user = DataUtils.getFieldFromRequest(request, AgentConstants.USER, String.class);
 
         if ( uri == null ) {
-            uri = getUri(ip);
+            uri = getUri(user, ip);
             if ( uri != null ) {
                 isUnique(uri);
                 agent.setUri(uri);
@@ -67,9 +71,13 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
         }
     }
 
-    protected String getUri(String ip) {
+    protected String getUri(String user, String ip) {
         if ( ip == null ) {
             return null;
+        }
+
+        if ( user == null ) {
+            user = USER.get();
         }
 
         if ( ! ASSIGN_AGENT_URI.get() ) {
@@ -85,7 +93,7 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
             }
         }
 
-        return String.format(URI_FORMAT.get(), ip);
+        return String.format(URI_FORMAT.get(), user, ip);
     }
 
     public ResourceManagerLocator getLocator() {

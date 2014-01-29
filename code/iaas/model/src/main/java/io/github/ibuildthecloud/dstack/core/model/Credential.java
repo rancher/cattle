@@ -14,123 +14,123 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface Credential extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.credential.id</code>. 
+	 * Setter for <code>dstack.credential.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.credential.id</code>. 
+	 * Getter for <code>dstack.credential.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.credential.name</code>. 
+	 * Setter for <code>dstack.credential.name</code>.
 	 */
 	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.credential.name</code>. 
+	 * Getter for <code>dstack.credential.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.credential.account_id</code>. 
+	 * Setter for <code>dstack.credential.account_id</code>.
 	 */
 	public void setAccountId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.credential.account_id</code>. 
+	 * Getter for <code>dstack.credential.account_id</code>.
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
 	public java.lang.Long getAccountId();
 
 	/**
-	 * Setter for <code>dstack.credential.state</code>. 
+	 * Setter for <code>dstack.credential.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.credential.state</code>. 
+	 * Getter for <code>dstack.credential.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.credential.kind</code>. 
+	 * Setter for <code>dstack.credential.kind</code>.
 	 */
 	public void setKind(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.credential.kind</code>. 
+	 * Getter for <code>dstack.credential.kind</code>.
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
 	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.credential.public_value</code>. 
+	 * Setter for <code>dstack.credential.public_value</code>.
 	 */
 	public void setPublicValue(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.credential.public_value</code>. 
+	 * Getter for <code>dstack.credential.public_value</code>.
 	 */
 	@javax.persistence.Column(name = "public_value", length = 16777215)
 	public java.lang.String getPublicValue();
 
 	/**
-	 * Setter for <code>dstack.credential.secret_value</code>. 
+	 * Setter for <code>dstack.credential.secret_value</code>.
 	 */
 	public void setSecretValue(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.credential.secret_value</code>. 
+	 * Getter for <code>dstack.credential.secret_value</code>.
 	 */
 	@javax.persistence.Column(name = "secret_value", length = 1024)
 	public java.lang.String getSecretValue();
 
 	/**
-	 * Setter for <code>dstack.credential.created</code>. 
+	 * Setter for <code>dstack.credential.created</code>.
 	 */
-	public void setCreated(java.sql.Timestamp value);
+	public void setCreated(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.credential.created</code>. 
+	 * Getter for <code>dstack.credential.created</code>.
 	 */
 	@javax.persistence.Column(name = "created", nullable = false)
-	public java.sql.Timestamp getCreated();
+	public java.util.Date getCreated();
 
 	/**
-	 * Setter for <code>dstack.credential.removed</code>. 
+	 * Setter for <code>dstack.credential.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.credential.removed</code>. 
+	 * Getter for <code>dstack.credential.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
 
 	/**
-	 * Setter for <code>dstack.credential.data</code>. 
+	 * Setter for <code>dstack.credential.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
 
 	/**
-	 * Getter for <code>dstack.credential.data</code>. 
+	 * Getter for <code>dstack.credential.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
 	/**
-	 * Setter for <code>dstack.credential.uuid</code>. 
+	 * Setter for <code>dstack.credential.uuid</code>.
 	 */
 	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.credential.uuid</code>. 
+	 * Getter for <code>dstack.credential.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
 	public java.lang.String getUuid();

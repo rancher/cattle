@@ -27,14 +27,20 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
     }
 
     @Override
+    public void instanceDeallocate(Event event) {
+        deallocate(event);
+    }
+
+    @Override
     public void volumeAllocate(Event event) {
         allocate(event);
     }
 
     @Override
-    public void instanceDeallocate(Event event) {
+    public void volumeDeallocate(Event event) {
         deallocate(event);
     }
+
 
     protected void allocate(Event event) {
         log.info("Allocating [{}:{}]", event.getResourceType(), event.getResourceId());

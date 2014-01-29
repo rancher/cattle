@@ -7,13 +7,13 @@
             <level>INFO</level>
         </filter>
         <encoder>
-            <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
+            <pattern>%date{ISO8601} %-5.5p [%25.25X{prettyResource}] [%-15.15t] [%-36.36logger{36}] %m -- [%X{agentId}][%X{processUuid}:%X{processId}][%X{logicPath}] %xEx%n</pattern>
         </encoder>
     </appender>
 
     <appender name="CONSOLE_ALL" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
+            <pattern>%date{ISO8601} %-5.5p [%25.25X{prettyResource}] [%-15.15t] [%-36.36logger{36}] %m -- [%X{agentId}][%X{processUuid}:%X{processId}][%X{logicPath}] %xEx%n</pattern>
         </encoder>
     </appender>
 
@@ -40,7 +40,7 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
+            <pattern>%date{ISO8601} %-5.5p [%25.25X{prettyResource}] [%-15.15t] [%-36.36logger{36}] %m -- [%X{agentId}][%X{processUuid}:%X{processId}][%X{logicPath}] %xEx%n</pattern>
         </encoder>
     </appender>
 
@@ -85,7 +85,7 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%date{ISO8601} %-5.5p [%t] [%logger{36}] %m %xEx%n</pattern>
+            <pattern>%date{ISO8601} %-5.5p [%25.25X{prettyResource}] [%-15.15t] [%-36.36logger{36}] %m -- [%X{agentId}][%X{processUuid}:%X{processId}][%X{logicPath}] %xEx%n</pattern>
         </encoder>
     </appender>
 
@@ -111,7 +111,7 @@
 
     <logger name="org.jooq">
         <level value="INFO" />
-        <appender-ref ref="CONSOLE_ALL" />
+<!--         <appender-ref ref="CONSOLE_ALL" /> -->
     </logger>
 
     <logger name="org.springframework">
@@ -129,6 +129,7 @@
     </logger>
 
     <root>
+        <level value="DEBUG" />
         <appender-ref ref="CONSOLE_INFO" />
         <appender-ref ref="FILE" />
         <appender-ref ref="FILE_ERROR" />

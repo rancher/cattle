@@ -26,6 +26,7 @@
         <property name="listeners" >
             <list>
                 <bean class="io.github.ibuildthecloud.dstack.deferred.context.DeferredContextListener" />
+                <bean class="org.apache.cloudstack.managed.context.impl.MdcClearListener" />
             </list>
         </property>
     </bean>

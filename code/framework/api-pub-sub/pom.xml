@@ -14,16 +14,6 @@
             <artifactId>dstack-framework-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-<!--         <dependency> -->
-<!--             <groupId>io.github.ibuildthecloud</groupId> -->
-<!--             <artifactId>dstack-commands</artifactId> -->
-<!--             <version>${project.version}</version> -->
-<!--         </dependency> -->
-<!--         <dependency> -->
-<!--             <groupId>io.github.ibuildthecloud</groupId> -->
-<!--             <artifactId>dstack-events</artifactId> -->
-<!--             <version>${project.version}</version> -->
-<!--         </dependency> -->
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-servlet_3.0_spec</artifactId>

@@ -10,6 +10,14 @@ public class DefaultItemVersion implements ItemVersion {
     String sourceRevision;
     boolean latest;
 
+    public DefaultItemVersion() {
+    }
+
+    public DefaultItemVersion(long revision, String sourceRevision) {
+        this.revision = revision;
+        this.sourceRevision = sourceRevision;
+    }
+
     @Override
     public long getRevision() {
         return revision;
@@ -63,4 +71,16 @@ public class DefaultItemVersion implements ItemVersion {
         }
     }
 
+    @Override
+    public String toExternalForm() {
+        if ( latest ) {
+            return LATEST;
+        }
+        return String.format("%s-%s", revision, sourceRevision);
+    }
+
+    @Override
+    public String toString() {
+        return toExternalForm();
+    }
 }

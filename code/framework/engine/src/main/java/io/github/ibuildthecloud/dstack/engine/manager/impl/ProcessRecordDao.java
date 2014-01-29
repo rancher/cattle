@@ -9,7 +9,7 @@ public interface ProcessRecordDao {
 
     void update(ProcessRecord record);
 
-    List<Long> pendingTasks();
+    List<Long> pendingTasks(String resourceType, String resourceId);
 
     ProcessRecord getRecord(Long id);
 

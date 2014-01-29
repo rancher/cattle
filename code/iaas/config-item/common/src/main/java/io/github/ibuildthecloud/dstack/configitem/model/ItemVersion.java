@@ -8,4 +8,6 @@ public interface ItemVersion {
 
     boolean isLatest();
 
+    String toExternalForm();
+
 }

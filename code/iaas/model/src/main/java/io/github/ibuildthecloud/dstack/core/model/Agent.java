@@ -14,137 +14,148 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface Agent extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.agent.id</code>. 
+	 * Setter for <code>dstack.agent.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.agent.id</code>. 
+	 * Getter for <code>dstack.agent.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.agent.name</code>. 
+	 * Setter for <code>dstack.agent.name</code>.
 	 */
 	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent.name</code>. 
+	 * Getter for <code>dstack.agent.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.agent.description</code>. 
+	 * Setter for <code>dstack.agent.description</code>.
 	 */
 	public void setDescription(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent.description</code>. 
+	 * Getter for <code>dstack.agent.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
 	public java.lang.String getDescription();
 
 	/**
-	 * Setter for <code>dstack.agent.kind</code>. 
+	 * Setter for <code>dstack.agent.kind</code>.
 	 */
 	public void setKind(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent.kind</code>. 
+	 * Getter for <code>dstack.agent.kind</code>.
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
 	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.agent.data</code>. 
+	 * Setter for <code>dstack.agent.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
 
 	/**
-	 * Getter for <code>dstack.agent.data</code>. 
+	 * Getter for <code>dstack.agent.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
 	/**
-	 * Setter for <code>dstack.agent.agent_group_id</code>. 
+	 * Setter for <code>dstack.agent.agent_group_id</code>.
 	 */
 	public void setAgentGroupId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.agent.agent_group_id</code>. 
+	 * Getter for <code>dstack.agent.agent_group_id</code>.
 	 */
 	@javax.persistence.Column(name = "agent_group_id", precision = 19)
 	public java.lang.Long getAgentGroupId();
 
 	/**
-	 * Setter for <code>dstack.agent.state</code>. 
+	 * Setter for <code>dstack.agent.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent.state</code>. 
+	 * Getter for <code>dstack.agent.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.agent.uri</code>. 
+	 * Setter for <code>dstack.agent.uri</code>.
 	 */
 	public void setUri(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent.uri</code>. 
+	 * Getter for <code>dstack.agent.uri</code>.
 	 */
 	@javax.persistence.Column(name = "uri", length = 255)
 	public java.lang.String getUri();
 
 	/**
-	 * Setter for <code>dstack.agent.account_id</code>. 
+	 * Setter for <code>dstack.agent.account_id</code>.
 	 */
 	public void setAccountId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.agent.account_id</code>. 
+	 * Getter for <code>dstack.agent.account_id</code>.
 	 */
 	@javax.persistence.Column(name = "account_id", precision = 19)
 	public java.lang.Long getAccountId();
 
 	/**
-	 * Setter for <code>dstack.agent.created</code>. 
+	 * Setter for <code>dstack.agent.created</code>.
 	 */
-	public void setCreated(java.sql.Timestamp value);
+	public void setCreated(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.agent.created</code>. 
+	 * Getter for <code>dstack.agent.created</code>.
 	 */
 	@javax.persistence.Column(name = "created", nullable = false)
-	public java.sql.Timestamp getCreated();
+	public java.util.Date getCreated();
 
 	/**
-	 * Setter for <code>dstack.agent.uuid</code>. 
+	 * Setter for <code>dstack.agent.uuid</code>.
 	 */
 	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent.uuid</code>. 
+	 * Getter for <code>dstack.agent.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
 	public java.lang.String getUuid();
 
 	/**
-	 * Setter for <code>dstack.agent.removed</code>. 
+	 * Setter for <code>dstack.agent.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.agent.removed</code>. 
+	 * Getter for <code>dstack.agent.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
+
+	/**
+	 * Setter for <code>dstack.agent.managed_config</code>.
+	 */
+	public void setManagedConfig(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>dstack.agent.managed_config</code>.
+	 */
+	@javax.persistence.Column(name = "managed_config", nullable = false, precision = 1)
+	public java.lang.Boolean getManagedConfig();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

@@ -7,6 +7,7 @@ import static io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.*;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationCandidate;
+import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
@@ -61,7 +62,9 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                 .join(STORAGE_POOL)
                     .on(STORAGE_POOL.ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
                 .where(
-                    STORAGE_POOL.KIND.eq(kind)
+                    HOST.STATE.eq(CommonStatesConstants.ACTIVE)
+                    .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
+                    .and(STORAGE_POOL.KIND.eq(kind))
                     .and(HOST.KIND.eq(kind)))
                 .fetchLazy();
 

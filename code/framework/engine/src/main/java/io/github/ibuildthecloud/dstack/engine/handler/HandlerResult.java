@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.engine.handler;
 
+import io.github.ibuildthecloud.dstack.engine.process.ProcessPhase;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 
 import java.util.Collections;
@@ -8,31 +9,33 @@ import java.util.Map;
 
 public class HandlerResult {
 
-    boolean shouldContinue = false;
+    Boolean shouldContinue;
     boolean shouldDelegate = false;
     Map<Object, Object> data;
-    Map<String, Object> notes;
 
     public HandlerResult() {
-        this(false, null);
+        this((Boolean)null, (Map<Object, Object>)null);
     }
 
     public HandlerResult(Object key, Object... values) {
-        this(false, CollectionUtils.asMap(key, values));
+        this(null, CollectionUtils.asMap(key, values));
     }
 
     @SuppressWarnings("unchecked")
     public HandlerResult(Map<?, Object> data) {
-        this(false, (Map<Object, Object>)data);
+        this(null, (Map<Object, Object>)data);
     }
 
-    public HandlerResult(boolean shouldContinue, Map<Object, Object> data) {
+    public HandlerResult(Boolean shouldContinue, Map<Object, Object> data) {
         super();
         this.shouldContinue = shouldContinue;
         this.data = Collections.unmodifiableMap(data == null ? new HashMap<Object,Object>() : data);
     }
 
-    public boolean shouldContinue() {
+    public Boolean shouldContinue(ProcessPhase phase) {
+        if ( shouldContinue == null ) {
+            return phase != ProcessPhase.HANDLERS;
+        }
         return shouldContinue;
     }
 
@@ -40,12 +43,22 @@ public class HandlerResult {
         return data;
     }
 
+
+    public boolean shouldDelegate() {
+        return shouldDelegate;
+    }
+
+    public void shouldDelegate(boolean shouldDelegate) {
+        this.shouldDelegate = shouldDelegate;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((data == null) ? 0 : data.hashCode());
-        result = prime * result + (shouldContinue ? 1231 : 1237);
+        result = prime * result + ((shouldContinue == null) ? 0 : shouldContinue.hashCode());
+        result = prime * result + (shouldDelegate ? 1231 : 1237);
         return result;
     }
 
@@ -57,23 +70,26 @@ public class HandlerResult {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        HandlerResult other = (HandlerResult) obj;
+        HandlerResult other = (HandlerResult)obj;
         if (data == null) {
             if (other.data != null)
                 return false;
         } else if (!data.equals(other.data))
             return false;
-        if (shouldContinue != other.shouldContinue)
+        if (shouldContinue == null) {
+            if (other.shouldContinue != null)
+                return false;
+        } else if (!shouldContinue.equals(other.shouldContinue))
+            return false;
+        if (shouldDelegate != other.shouldDelegate)
             return false;
         return true;
     }
 
-    public boolean shouldDelegate() {
-        return shouldDelegate;
-    }
-
-    public void shouldDelegate(boolean shouldDelegate) {
-        this.shouldDelegate = shouldDelegate;
+    @Override
+    public String toString() {
+        return "HandlerResult [shouldContinue=" + shouldContinue + ", shouldDelegate=" + shouldDelegate + ", data="
+                + data + "]";
     }
 
 }

@@ -1,5 +1,5 @@
 
-export DSAPI_URL="http://localhost:8080/v1/schemas"
-export DSAPI_ACCESS_KEY="test"
-export DSAPI_SECRET_KEY="test"
-export DSAPI_CACHE="false"
+export DSTACK_URL="http://localhost:8080/v1/schemas"
+export DSTACK_ACCESS_KEY="admin"
+export DSTACK_SECRET_KEY="adminpass"
+export DSTACK_CACHE="false"

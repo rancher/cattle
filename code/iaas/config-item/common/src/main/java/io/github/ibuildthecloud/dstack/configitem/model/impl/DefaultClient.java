@@ -16,6 +16,7 @@ public class DefaultClient implements Client {
         this.resourceId = resourceId;
     }
 
+    @Override
     public Class<?> getResourceType() {
         return resourceType;
     }
@@ -24,6 +25,7 @@ public class DefaultClient implements Client {
         this.resourceType = resourceType;
     }
 
+    @Override
     public long getResourceId() {
         return resourceId;
     }
@@ -34,7 +36,7 @@ public class DefaultClient implements Client {
 
     @Override
     public String toString() {
-        return "Client [resourceType=" + resourceType + ", resourceId=" + resourceId + "]";
+        return (resourceType.getSimpleName() + ":" + resourceId).toLowerCase();
     }
 
 }

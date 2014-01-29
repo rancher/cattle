@@ -12,6 +12,10 @@ public class ProcessExecutionExitException extends RuntimeException {
         this(exitReason, null);
     }
 
+    public ProcessExecutionExitException(String message, ExitReason exitReason) {
+        this(message, exitReason, null);
+    }
+
     public ProcessExecutionExitException(ExitReason exitReason, Throwable t) {
         this(null, exitReason, t);
     }

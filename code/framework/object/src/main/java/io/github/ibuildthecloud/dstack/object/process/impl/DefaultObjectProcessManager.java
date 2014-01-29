@@ -36,6 +36,11 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
 
     protected String getProcessName(Object resource, StandardProcess process) {
         String type = objectManager.getType(resource);
+        return getStandardProcessName(process, type);
+    }
+
+    @Override
+    public String getStandardProcessName(StandardProcess process, String type) {
         return type.toLowerCase() + "." + process.toString().toLowerCase();
     }
 

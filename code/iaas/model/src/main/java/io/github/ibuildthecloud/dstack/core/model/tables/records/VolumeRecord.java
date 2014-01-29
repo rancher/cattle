@@ -11,12 +11,12 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "volume", schema = "dstack")
-public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.core.model.Volume {
+public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.core.model.Volume {
 
-	private static final long serialVersionUID = -475647363;
+	private static final long serialVersionUID = 785990443;
 
 	/**
-	 * Setter for <code>dstack.volume.id</code>. 
+	 * Setter for <code>dstack.volume.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.id</code>. 
+	 * Getter for <code>dstack.volume.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.name</code>. 
+	 * Setter for <code>dstack.volume.name</code>.
 	 */
 	@Override
 	public void setName(java.lang.String value) {
@@ -42,7 +42,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.name</code>. 
+	 * Getter for <code>dstack.volume.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	@Override
@@ -51,7 +51,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.description</code>. 
+	 * Setter for <code>dstack.volume.description</code>.
 	 */
 	@Override
 	public void setDescription(java.lang.String value) {
@@ -59,7 +59,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.description</code>. 
+	 * Getter for <code>dstack.volume.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
 	@Override
@@ -68,7 +68,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.account_id</code>. 
+	 * Setter for <code>dstack.volume.account_id</code>.
 	 */
 	@Override
 	public void setAccountId(java.lang.Long value) {
@@ -76,7 +76,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.account_id</code>. 
+	 * Getter for <code>dstack.volume.account_id</code>.
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
 	@Override
@@ -85,7 +85,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.uuid</code>. 
+	 * Setter for <code>dstack.volume.uuid</code>.
 	 */
 	@Override
 	public void setUuid(java.lang.String value) {
@@ -93,7 +93,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.uuid</code>. 
+	 * Getter for <code>dstack.volume.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
 	@Override
@@ -102,7 +102,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.state</code>. 
+	 * Setter for <code>dstack.volume.state</code>.
 	 */
 	@Override
 	public void setState(java.lang.String value) {
@@ -110,7 +110,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.state</code>. 
+	 * Getter for <code>dstack.volume.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	@Override
@@ -119,7 +119,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.physical_size_bytes</code>. 
+	 * Setter for <code>dstack.volume.physical_size_bytes</code>.
 	 */
 	@Override
 	public void setPhysicalSizeBytes(java.lang.Long value) {
@@ -127,7 +127,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.physical_size_bytes</code>. 
+	 * Getter for <code>dstack.volume.physical_size_bytes</code>.
 	 */
 	@javax.persistence.Column(name = "physical_size_bytes", precision = 19)
 	@Override
@@ -136,7 +136,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.virtual_size_bytes</code>. 
+	 * Setter for <code>dstack.volume.virtual_size_bytes</code>.
 	 */
 	@Override
 	public void setVirtualSizeBytes(java.lang.Long value) {
@@ -144,7 +144,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.virtual_size_bytes</code>. 
+	 * Getter for <code>dstack.volume.virtual_size_bytes</code>.
 	 */
 	@javax.persistence.Column(name = "virtual_size_bytes", precision = 19)
 	@Override
@@ -153,7 +153,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.format</code>. 
+	 * Setter for <code>dstack.volume.format</code>.
 	 */
 	@Override
 	public void setFormat(java.lang.String value) {
@@ -161,7 +161,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.format</code>. 
+	 * Getter for <code>dstack.volume.format</code>.
 	 */
 	@javax.persistence.Column(name = "format", length = 255)
 	@Override
@@ -170,7 +170,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.image_id</code>. 
+	 * Setter for <code>dstack.volume.image_id</code>.
 	 */
 	@Override
 	public void setImageId(java.lang.Long value) {
@@ -178,7 +178,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.image_id</code>. 
+	 * Getter for <code>dstack.volume.image_id</code>.
 	 */
 	@javax.persistence.Column(name = "image_id", precision = 19)
 	@Override
@@ -187,7 +187,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.offering_id</code>. 
+	 * Setter for <code>dstack.volume.offering_id</code>.
 	 */
 	@Override
 	public void setOfferingId(java.lang.Long value) {
@@ -195,7 +195,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.offering_id</code>. 
+	 * Getter for <code>dstack.volume.offering_id</code>.
 	 */
 	@javax.persistence.Column(name = "offering_id", precision = 19)
 	@Override
@@ -204,7 +204,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.device_number</code>. 
+	 * Setter for <code>dstack.volume.device_number</code>.
 	 */
 	@Override
 	public void setDeviceNumber(java.lang.Integer value) {
@@ -212,7 +212,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.device_number</code>. 
+	 * Getter for <code>dstack.volume.device_number</code>.
 	 */
 	@javax.persistence.Column(name = "device_number", precision = 10)
 	@Override
@@ -221,7 +221,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.instance_id</code>. 
+	 * Setter for <code>dstack.volume.instance_id</code>.
 	 */
 	@Override
 	public void setInstanceId(java.lang.Long value) {
@@ -229,7 +229,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.instance_id</code>. 
+	 * Getter for <code>dstack.volume.instance_id</code>.
 	 */
 	@javax.persistence.Column(name = "instance_id", precision = 19)
 	@Override
@@ -238,7 +238,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.recreatable</code>. 
+	 * Setter for <code>dstack.volume.recreatable</code>.
 	 */
 	@Override
 	public void setRecreatable(java.lang.Boolean value) {
@@ -246,7 +246,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.recreatable</code>. 
+	 * Getter for <code>dstack.volume.recreatable</code>.
 	 */
 	@javax.persistence.Column(name = "recreatable", nullable = false, precision = 1)
 	@Override
@@ -255,7 +255,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.attached_state</code>. 
+	 * Setter for <code>dstack.volume.attached_state</code>.
 	 */
 	@Override
 	public void setAttachedState(java.lang.String value) {
@@ -263,7 +263,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.attached_state</code>. 
+	 * Getter for <code>dstack.volume.attached_state</code>.
 	 */
 	@javax.persistence.Column(name = "attached_state", nullable = false, length = 255)
 	@Override
@@ -272,7 +272,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.allocation_state</code>. 
+	 * Setter for <code>dstack.volume.allocation_state</code>.
 	 */
 	@Override
 	public void setAllocationState(java.lang.String value) {
@@ -280,7 +280,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.allocation_state</code>. 
+	 * Getter for <code>dstack.volume.allocation_state</code>.
 	 */
 	@javax.persistence.Column(name = "allocation_state", nullable = false, length = 255)
 	@Override
@@ -289,58 +289,58 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.created</code>. 
+	 * Setter for <code>dstack.volume.created</code>.
 	 */
 	@Override
-	public void setCreated(java.sql.Timestamp value) {
+	public void setCreated(java.util.Date value) {
 		setValue(16, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.created</code>. 
+	 * Getter for <code>dstack.volume.created</code>.
 	 */
 	@javax.persistence.Column(name = "created")
 	@Override
-	public java.sql.Timestamp getCreated() {
-		return (java.sql.Timestamp) getValue(16);
+	public java.util.Date getCreated() {
+		return (java.util.Date) getValue(16);
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.removed</code>. 
+	 * Setter for <code>dstack.volume.removed</code>.
 	 */
 	@Override
-	public void setRemoved(java.sql.Timestamp value) {
+	public void setRemoved(java.util.Date value) {
 		setValue(17, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.removed</code>. 
+	 * Getter for <code>dstack.volume.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
 	@Override
-	public java.sql.Timestamp getRemoved() {
-		return (java.sql.Timestamp) getValue(17);
+	public java.util.Date getRemoved() {
+		return (java.util.Date) getValue(17);
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.remove_time</code>. 
+	 * Setter for <code>dstack.volume.remove_time</code>.
 	 */
 	@Override
-	public void setRemoveTime(java.sql.Timestamp value) {
+	public void setRemoveTime(java.util.Date value) {
 		setValue(18, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.remove_time</code>. 
+	 * Getter for <code>dstack.volume.remove_time</code>.
 	 */
 	@javax.persistence.Column(name = "remove_time")
 	@Override
-	public java.sql.Timestamp getRemoveTime() {
-		return (java.sql.Timestamp) getValue(18);
+	public java.util.Date getRemoveTime() {
+		return (java.util.Date) getValue(18);
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.data</code>. 
+	 * Setter for <code>dstack.volume.data</code>.
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
@@ -348,7 +348,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.data</code>. 
+	 * Getter for <code>dstack.volume.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
@@ -376,7 +376,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>> fieldsRow() {
+	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>> fieldsRow() {
 		return (org.jooq.Row20) super.fieldsRow();
 	}
 
@@ -384,7 +384,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.String, java.sql.Timestamp, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>> valuesRow() {
+	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.Long, java.lang.Boolean, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>> valuesRow() {
 		return (org.jooq.Row20) super.valuesRow();
 	}
 
@@ -520,7 +520,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field17() {
+	public org.jooq.Field<java.util.Date> field17() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME.CREATED;
 	}
 
@@ -528,7 +528,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field18() {
+	public org.jooq.Field<java.util.Date> field18() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME.REMOVED;
 	}
 
@@ -536,7 +536,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field19() {
+	public org.jooq.Field<java.util.Date> field19() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME.REMOVE_TIME;
 	}
 
@@ -680,7 +680,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value17() {
+	public java.util.Date value17() {
 		return getCreated();
 	}
 
@@ -688,7 +688,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value18() {
+	public java.util.Date value18() {
 		return getRemoved();
 	}
 
@@ -696,7 +696,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value19() {
+	public java.util.Date value19() {
 		return getRemoveTime();
 	}
 
@@ -856,7 +856,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public VolumeRecord value17(java.sql.Timestamp value) {
+	public VolumeRecord value17(java.util.Date value) {
 		setCreated(value);
 		return this;
 	}
@@ -865,7 +865,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public VolumeRecord value18(java.sql.Timestamp value) {
+	public VolumeRecord value18(java.util.Date value) {
 		setRemoved(value);
 		return this;
 	}
@@ -874,7 +874,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public VolumeRecord value19(java.sql.Timestamp value) {
+	public VolumeRecord value19(java.util.Date value) {
 		setRemoveTime(value);
 		return this;
 	}
@@ -892,7 +892,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 * {@inheritDoc}
 	 */
 	@Override
-	public VolumeRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.Long value4, java.lang.String value5, java.lang.String value6, java.lang.Long value7, java.lang.Long value8, java.lang.String value9, java.lang.Long value10, java.lang.Long value11, java.lang.Integer value12, java.lang.Long value13, java.lang.Boolean value14, java.lang.String value15, java.lang.String value16, java.sql.Timestamp value17, java.sql.Timestamp value18, java.sql.Timestamp value19, java.util.Map<String,Object> value20) {
+	public VolumeRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.Long value4, java.lang.String value5, java.lang.String value6, java.lang.Long value7, java.lang.Long value8, java.lang.String value9, java.lang.Long value10, java.lang.Long value11, java.lang.Integer value12, java.lang.Long value13, java.lang.Boolean value14, java.lang.String value15, java.lang.String value16, java.util.Date value17, java.util.Date value18, java.util.Date value19, java.util.Map<String,Object> value20) {
 		return this;
 	}
 
@@ -950,7 +950,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	/**
 	 * Create a detached, initialised VolumeRecord
 	 */
-	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.String description, java.lang.Long accountId, java.lang.String uuid, java.lang.String state, java.lang.Long physicalSizeBytes, java.lang.Long virtualSizeBytes, java.lang.String format, java.lang.Long imageId, java.lang.Long offeringId, java.lang.Integer deviceNumber, java.lang.Long instanceId, java.lang.Boolean recreatable, java.lang.String attachedState, java.lang.String allocationState, java.sql.Timestamp created, java.sql.Timestamp removed, java.sql.Timestamp removeTime, java.util.Map<String,Object> data) {
+	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.String description, java.lang.Long accountId, java.lang.String uuid, java.lang.String state, java.lang.Long physicalSizeBytes, java.lang.Long virtualSizeBytes, java.lang.String format, java.lang.Long imageId, java.lang.Long offeringId, java.lang.Integer deviceNumber, java.lang.Long instanceId, java.lang.Boolean recreatable, java.lang.String attachedState, java.lang.String allocationState, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME);
 
 		setValue(0, id);

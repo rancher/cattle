@@ -12,7 +12,7 @@
         <dependency>
             <groupId>org.drizzle.jdbc</groupId>
             <artifactId>drizzle-jdbc</artifactId>
-            <scope>test</scope>
+<!--             <scope>test</scope> -->
         </dependency>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-codegen</artifactId>
-            <scope>test</scope>
+<!--             <scope>test</scope> -->
         </dependency>
         <dependency>
             <groupId>io.github.ibuildthecloud</groupId>

@@ -5,7 +5,7 @@ import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.iaas.event.IaasEvents;
 import io.github.ibuildthecloud.dstack.util.type.TypeConstants;
 
-public class AgentRequest extends EventVO {
+public class AgentRequest extends EventVO<Event> {
 
     public AgentRequest() {
     }
@@ -19,15 +19,6 @@ public class AgentRequest extends EventVO {
         setResourceId(agentId.toString());
         setResourceType(TypeConstants.AGENT);
         setData(event);
-    }
-
-    @Override
-    public EventVO getData() {
-        return (EventVO)super.getData();
-    }
-
-    public void setData(EventVO data) {
-        super.setData(data);
     }
 
 }

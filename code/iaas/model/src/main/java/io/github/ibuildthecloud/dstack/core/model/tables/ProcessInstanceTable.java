@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ProcessInstanceTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord> {
 
-	private static final long serialVersionUID = -890137593;
+	private static final long serialVersionUID = 667520743;
 
 	/**
 	 * The singleton instance of <code>dstack.process_instance</code>
@@ -27,86 +27,90 @@ public class ProcessInstanceTable extends org.jooq.impl.TableImpl<io.github.ibui
 	}
 
 	/**
-	 * The column <code>dstack.process_instance.id</code>. 
+	 * The column <code>dstack.process_instance.id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.start_time</code>. 
+	 * The column <code>dstack.process_instance.start_time</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.sql.Timestamp> START_TIME = createField("start_time", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.util.Date> START_TIME = createField("start_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.end_time</code>. 
+	 * The column <code>dstack.process_instance.end_time</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.sql.Timestamp> END_TIME = createField("end_time", org.jooq.impl.SQLDataType.TIMESTAMP, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.util.Date> END_TIME = createField("end_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.log</code>. 
+	 * The column <code>dstack.process_instance.log</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.util.Map<String,Object>> LOG = createField("log", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.util.Map<String,Object>> LOG = createField("log", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.data</code>. 
+	 * The column <code>dstack.process_instance.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.process_name</code>. 
+	 * The column <code>dstack.process_instance.process_name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> PROCESS_NAME = createField("process_name", org.jooq.impl.SQLDataType.VARCHAR.length(128), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> PROCESS_NAME = createField("process_name", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.resource_type</code>. 
+	 * The column <code>dstack.process_instance.resource_type</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> RESOURCE_TYPE = createField("resource_type", org.jooq.impl.SQLDataType.VARCHAR.length(128), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> RESOURCE_TYPE = createField("resource_type", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.resource_id</code>. 
+	 * The column <code>dstack.process_instance.resource_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> RESOURCE_ID = createField("resource_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> RESOURCE_ID = createField("resource_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.result</code>. 
+	 * The column <code>dstack.process_instance.result</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> RESULT = createField("result", org.jooq.impl.SQLDataType.VARCHAR.length(128), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> RESULT = createField("result", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.exit_reason</code>. 
+	 * The column <code>dstack.process_instance.exit_reason</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> EXIT_REASON = createField("exit_reason", org.jooq.impl.SQLDataType.VARCHAR.length(128), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> EXIT_REASON = createField("exit_reason", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.phase</code>. 
+	 * The column <code>dstack.process_instance.phase</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> PHASE = createField("phase", org.jooq.impl.SQLDataType.VARCHAR.length(128), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> PHASE = createField("phase", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.start_process_server_id</code>. 
+	 * The column <code>dstack.process_instance.start_process_server_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.Long> START_PROCESS_SERVER_ID = createField("start_process_server_id", org.jooq.impl.SQLDataType.BIGINT, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> START_PROCESS_SERVER_ID = createField("start_process_server_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
-	 * The column <code>dstack.process_instance.running_process_server_id</code>. 
+	 * The column <code>dstack.process_instance.running_process_server_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.Long> RUNNING_PROCESS_SERVER_ID = createField("running_process_server_id", org.jooq.impl.SQLDataType.BIGINT, this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.lang.String> RUNNING_PROCESS_SERVER_ID = createField("running_process_server_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
 	 * Create a <code>dstack.process_instance</code> table reference
 	 */
 	public ProcessInstanceTable() {
-		super("process_instance", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("process_instance", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.process_instance</code> table reference
 	 */
 	public ProcessInstanceTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE);
 	}
 
 	private ProcessInstanceTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private ProcessInstanceTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

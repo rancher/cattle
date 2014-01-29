@@ -50,7 +50,7 @@ public class Main {
 		long start = System.currentTimeMillis();
 
 		try {
-			Server s = new Server(Integer.parseInt(System.getProperty("http.port","8080")));
+			Server s = new Server(Integer.parseInt(System.getProperty("dstack.http.port","8080")));
 
 			WebAppContext context = new WebAppContext();
 			context.setThrowUnavailableOnStartupException(true);

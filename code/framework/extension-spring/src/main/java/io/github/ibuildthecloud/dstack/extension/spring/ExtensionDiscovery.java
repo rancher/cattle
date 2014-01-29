@@ -11,8 +11,6 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 
 public class ExtensionDiscovery implements BeanPostProcessor {
 
-    private static final String EXCLUDE = "#";
-
     ExtensionManagerImpl extensionManager;
     Class<?> typeClass;
     String key;
@@ -22,7 +20,7 @@ public class ExtensionDiscovery implements BeanPostProcessor {
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if ( typeClass.isAssignableFrom(bean.getClass()) ) {
             String name = getName(bean, beanName);
-            if ( name != null && name.indexOf(EXCLUDE) == -1 ) {
+            if ( name != null && ! isInner(beanName) ) {
                 for ( String key : getKeys(bean) ) {
                     extensionManager.addObject(key, typeClass, bean, name);
                 }
@@ -30,6 +28,14 @@ public class ExtensionDiscovery implements BeanPostProcessor {
         }
 
         return bean;
+    }
+
+    /* This tries to guess if this is an inner bean.  This logic is
+     * flawed
+     */
+    protected boolean isInner(String beanName) {
+        String[] parts = beanName.split("#");
+        return parts.length == 2 && parts[1].length() > 2;
     }
 
     protected String getName(Object obj, String beanName) {

@@ -3,10 +3,12 @@ package io.github.ibuildthecloud.dstack.object.impl;
 import io.github.ibuildthecloud.dstack.engine.idempotent.Idempotent;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecutionNoReturn;
 import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
-import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.dstack.object.meta.Relationship;
+import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,26 +18,26 @@ import java.util.WeakHashMap;
 import javax.inject.Inject;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.ForeignKey;
 import org.jooq.ResultQuery;
 import org.jooq.Table;
 import org.jooq.UpdatableRecord;
-import org.jooq.exception.DataChangedException;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDSLContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JooqObjectManager extends AbstractObjectManager {
 
-    private static final Logger log = LoggerFactory.getLogger(JooqObjectManager.class);
+//    private static final Logger log = LoggerFactory.getLogger(JooqObjectManager.class);
+
+    private static final String PLUS = "+";
 
     Map<ChildReferenceCacheKey, ForeignKey<?, ?>> childReferenceCache = Collections.synchronizedMap(new WeakHashMap<ChildReferenceCacheKey, ForeignKey<?, ?>>());
     Configuration configuration;
     Configuration lockingConfiguration;
-    ObjectMetaDataManager metaDataManager;
+    TransactionDelegate transactionDelegate;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -106,30 +108,74 @@ public class JooqObjectManager extends AbstractObjectManager {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T setFields(final Object obj, final Map<String,Object> values) {
-        final UpdatableRecord<?> record = JooqUtils.getRecordObject(obj);
+        final List<UpdatableRecord<?>> pending = new ArrayList<UpdatableRecord<?>>();
+        Map<Object,Object> toWrite = toObjectsToWrite(obj, values);
+        setFields(obj, toWrite, pending);
 
-        for ( Map.Entry<String, Object> entry : values.entrySet() ) {
-            setField(obj, entry.getKey(), entry.getValue());
-        }
-
-        record.attach(getLockingConfiguration());
-        try {
-            Idempotent.change(new IdempotentExecutionNoReturn() {
+        if ( pending.size() == 1 ) {
+            persistRecord(pending.get(0));
+        } else if ( pending.size() > 1 ){
+            transactionDelegate.doInTransaction(new Runnable() {
                 @Override
-                protected void executeNoResult() {
-                    if ( record.changed() ) {
-                        if ( record.update() == 0 ) {
-                            throw new IllegalStateException("Failed to update [" + obj + "] with " + values);
-                        }
+                public void run() {
+                    for ( UpdatableRecord<?> record : pending ) {
+                        persistRecord(record);
                     }
                 }
             });
-        } catch ( DataChangedException e ) {
-            log.info("Data changed and can not set fields [{}] on [{}]", values, obj);
-            return null;
         }
 
-        return (T)record;
+        return (T)obj;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void setFields(Object obj, Map<Object,Object> toWrite, List<UpdatableRecord<?>> result) {
+        UpdatableRecord<?> record = JooqUtils.getRecordObject(obj);
+
+        for ( Map.Entry<Object, Object> entry : toWrite.entrySet() ) {
+            Object key = entry.getKey();
+            Object value = entry.getValue();
+            if ( key instanceof String ) {
+                String name = (String)key;
+                if ( name.startsWith(PLUS) && value instanceof Map<?, ?> ) {
+                    name = name.substring(PLUS.length());
+                    Object mapObj = ObjectUtils.getPropertyIgnoreErrors(obj, name);
+                    if ( mapObj instanceof Map<?, ?> ) {
+                        ((Map<Object,Object>)mapObj).putAll((Map<Object,Object>)value);
+                    }
+                    setField(record, name, value);
+                } else {
+                    setField(record, (String)key, value);
+                }
+            } else if ( key instanceof Relationship && value instanceof Map<?,?> ) {
+                Relationship rel = (Relationship)key;
+                Object id = ObjectUtils.getPropertyIgnoreErrors(obj, rel.getPropertyName());
+                if ( id == null ) {
+                    continue;
+                }
+                Object refObj = loadResource(rel.getObjectType(), id);
+                setFields(refObj, (Map<Object,Object>)value, result);
+            }
+        }
+
+        if ( record.changed() ) {
+            result.add(record);
+        }
+    }
+
+    protected void persistRecord(final UpdatableRecord<?> record) {
+        Idempotent.change(new IdempotentExecutionNoReturn() {
+            @Override
+            protected void executeNoResult() {
+                record.attach(getLockingConfiguration());
+
+                if ( record.changed() ) {
+                    if ( record.update() == 0 ) {
+                        throw new IllegalStateException("Failed to update [" + record + "]");
+                    }
+                }
+            }
+        });
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -182,7 +228,9 @@ public class JooqObjectManager extends AbstractObjectManager {
 
         for ( Map.Entry<Object, Object> entry : values.entrySet() ) {
             String name = metaDataManager.convertToPropertyNameString(recordClass, entry.getKey());
-            result.put(name, entry.getValue());
+            if ( name != null ) {
+                result.put(name, entry.getValue());
+            }
         }
 
         return result;
@@ -231,10 +279,17 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     protected void setField(Object obj, String name, Object value) {
         try {
-            BeanUtils.setProperty(obj, name, value);
+            /* BeanUtils doesn't always like setting null values */
+            if ( value == null ) {
+                PropertyUtils.setProperty(obj, name, value);
+            } else {
+                BeanUtils.setProperty(obj, name, value);
+            }
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException("Failed to set [" + name + "] to value [" + value + "] on [" + obj + "]");
         } catch (InvocationTargetException e) {
+            throw new IllegalArgumentException("Failed to set [" + name + "] to value [" + value + "] on [" + obj + "]");
+        } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("Failed to set [" + name + "] to value [" + value + "] on [" + obj + "]");
         }
     }
@@ -294,13 +349,14 @@ public class JooqObjectManager extends AbstractObjectManager {
         this.lockingConfiguration = lockingConfiguration;
     }
 
-    public ObjectMetaDataManager getMetaDataManager() {
-        return metaDataManager;
+
+    public TransactionDelegate getTransactionDelegate() {
+        return transactionDelegate;
     }
 
     @Inject
-    public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
-        this.metaDataManager = metaDataManager;
+    public void setTransactionDelegate(TransactionDelegate transactionDelegate) {
+        this.transactionDelegate = transactionDelegate;
     }
 
 }

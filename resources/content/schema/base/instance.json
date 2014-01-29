@@ -2,7 +2,8 @@
     "resourceFields" : {
         "imageUuid" : {
             "type" : "string",
-            "create" : true
+            "create" : true,
+            "nullable" : true
         },
         "startOnCreate" : {
             "type" : "boolean",

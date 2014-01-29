@@ -38,8 +38,9 @@ public class FileBasedResourceRoot extends AbstractCachingResourceRoot implement
             return;
 
         for ( String child : children ) {
-            if ( child.startsWith(".") )
+            if ( shouldIgnore(child) ) {
                 continue;
+            }
 
             File childFile = new File(current,child);
             String childName = new File(path, child).getPath();

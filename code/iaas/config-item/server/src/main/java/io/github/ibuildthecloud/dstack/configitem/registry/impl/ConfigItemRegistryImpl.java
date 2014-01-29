@@ -36,9 +36,6 @@ public class ConfigItemRegistryImpl implements ConfigItemRegistry, Initializatio
     }
 
     public boolean register(ConfigItemFactory type) {
-        if ( factories.contains(type) )
-            return false;
-
         try {
             for ( ConfigItem item : type.getConfigItems() ) {
                 if ( items.containsKey(item.getName()) )

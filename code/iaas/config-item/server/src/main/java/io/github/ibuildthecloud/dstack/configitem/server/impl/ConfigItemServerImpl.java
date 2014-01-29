@@ -45,8 +45,9 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
             return;
         }
 
+        ConfigItem item = itemRegistry.getConfigItem(req.getItemName());
+
         if (version.isLatest()) {
-            ConfigItem item = itemRegistry.getConfigItem(req.getItemName());
             if (item == null) {
                 req.setResponseCode(Request.NOT_FOUND);
                 return;
@@ -54,9 +55,15 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
             log.info("Setting item [{}] to latest for [{}]", req.getItemName(), req.getClient());
             versionManager.setLatest(req.getClient(), req.getItemName(), item.getSourceRevision());
         } else {
-            log.info("Setting item [{}] to version [{}] for [{}]", req.getItemName(), req.getAppliedVersion(),
-                    req.getClient());
-            versionManager.setApplied(req.getClient(), req.getItemName(), req.getAppliedVersion());
+            if ( item.getSourceRevision().equals(version.getSourceRevision()) ) {
+                log.info("Setting item [{}] to version [{}] for [{}]", req.getItemName(), req.getAppliedVersion(),
+                        req.getClient());
+                versionManager.setApplied(req.getClient(), req.getItemName(), req.getAppliedVersion());
+            } else {
+                log.info("Ignoring item [{}] to version [{}] for [{}] because source revision [{}] does not match expect [{}]",
+                        req.getItemName(), req.getAppliedVersion(), req.getClient(), version.getSourceRevision(),
+                        item.getSourceRevision());
+            }
         }
     }
 

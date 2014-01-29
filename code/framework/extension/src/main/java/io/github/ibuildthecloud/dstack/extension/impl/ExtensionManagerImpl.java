@@ -4,6 +4,7 @@ import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.extension.ExtensionImplementation;
 import io.github.ibuildthecloud.dstack.extension.ExtensionManager;
 import io.github.ibuildthecloud.dstack.extension.ExtensionPoint;
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
 import io.github.ibuildthecloud.dstack.util.type.PriorityUtils;
@@ -15,26 +16,28 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ExtensionManagerImpl implements ExtensionManager, InitializationTask {
 
-    private static final Logger log = LoggerFactory.getLogger(ExtensionManagerImpl.class);
+    private static final String WILDCARD = "regexp:";
+
+//    private static final Logger log = LoggerFactory.getLogger(ExtensionManagerImpl.class);
 
     Map<String,List<Object>> byKeyRegistry = new HashMap<String, List<Object>>();
     Map<String,ExtensionList<Object>> extensionLists = new HashMap<String, ExtensionList<Object>>();
-    Map<String,Object> byName = new HashMap<String, Object>();
+    Map<String,List<Object>> byName = new HashMap<String, List<Object>>();
     Map<Object,String> objectToName = new HashMap<Object,String>();
     Map<String,Class<?>> keyToType = new HashMap<String, Class<?>>();
-//    Map<String,Set<Runnable>> callbacks = Collections.synchronizedMap(new HashMap<String, Set<Runnable>>());
+    Map<Pattern,List<String>> wildcards = new HashMap<Pattern,List<String>>();
     boolean started = false;
 
 
@@ -80,7 +83,8 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
     protected synchronized ExtensionList<?> getExtensionListInternal(String key) {
         ExtensionList<Object> list = extensionLists.get(key);
         if ( list == null ) {
-            list = new ExtensionList<Object>(this, key, Collections.emptyList());
+            List<Object> inner = started ? getList(key) : Collections.emptyList();
+            list = new ExtensionList<Object>(this, key, inner);
             extensionLists.put(key, list);
         }
 
@@ -108,12 +112,24 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
 
         objects.add(obj);
 
-        if ( byName.get(name) != null ) {
-            log.info("Extension of name [{}] already exists [{}], overriding with [{}]", name, byName.get(name), obj);
+        CollectionUtils.addToMap(byName, name, obj, ArrayList.class);
+        objectToName.put(obj, name);
+
+        Pattern pattern = null;
+        if ( key.startsWith(WILDCARD) ) {
+            pattern = Pattern.compile(key.substring(0, WILDCARD.length()));
+        } else if ( key.contains("*") ) {
+            String[] parts = StringUtils.splitByWholeSeparator(key.trim(), "*");
+            for ( int i = 0 ; i < parts.length ; i++ ) {
+                parts[i] = Pattern.quote(parts[i].trim());
+            }
+
+            pattern = Pattern.compile(parts.length == 0 ? ".*" : StringUtils.join(parts, ".*"));
         }
 
-        byName.put(name, obj);
-        objectToName.put(obj, name);
+        if ( pattern != null ) {
+            CollectionUtils.addToMap(wildcards, pattern, name, ArrayList.class);
+        }
     }
 
     @Override
@@ -123,7 +139,7 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
                 String key = entry.getKey();
                 ExtensionList<?> extensionList = getExtensionListInternal(key);
                 extensionList.inner.clear();
-                extensionList.inner.addAll(getList(entry.getValue(), key));
+                extensionList.inner.addAll(getList(key));
             }
 
             started = true;
@@ -139,7 +155,7 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
     public synchronized void stop() {
     }
 
-    protected List<?> getList(List<Object> existing, String key) {
+    protected synchronized List<Object> getList(String key) {
         Class<?> typeClz = keyToType.get(key);
         if ( typeClz == null ) {
             typeClz = Object.class;
@@ -151,10 +167,11 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
         if ( ! StringUtils.isBlank(list) ) {
             List<Object> result = new ArrayList<Object>();
             for ( String name : list.split("\\s*,\\s*") ) {
-                Object obj = byName.get(name);
-                if ( ! excludes.contains(name) && obj != null && typeClz.isAssignableFrom(obj.getClass()) ) {
-                    result.add(obj);
+                if ( excludes.contains(name) ) {
+                    continue;
                 }
+
+                result.addAll(getObjectsByName(name, typeClz));
             }
             return result;
         }
@@ -181,22 +198,52 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
         List<?> registered = byKeyRegistry.get(key);
 
         if ( registered != null ) {
-            for ( Object obj : registered ) {
-                String name = objectToName.get(obj);
-                if ( ! excludes.contains(name) ) {
-                    ordered.add(obj);
-                }
-            }
+            ordered.addAll(registered);
         }
 
+        ordered.addAll(getByWildcard(key, typeClz));
+
         for ( String include : includes ) {
-            Object obj = byName.get(include);
-            if ( obj != null && typeClz.isAssignableFrom(obj.getClass()) ) {
-                ordered.add(obj);
+            ordered.addAll(getObjectsByName(include, typeClz));
+        }
+
+        Iterator<Object> iter = ordered.iterator();
+        while ( iter.hasNext() ) {
+            String name = objectToName.get(iter.next());
+            if ( excludes.contains(name) ) {
+                iter.remove();
             }
         }
 
         return new ArrayList<Object>(ordered);
+    }
+
+    protected List<Object> getByWildcard(String key, Class<?> typeClz) {
+        List<Object> result = new ArrayList<Object>();
+
+        for ( Map.Entry<Pattern, List<String>> entry : wildcards.entrySet() ) {
+            if ( entry.getKey().matcher(key).matches() ) {
+                for ( String name : entry.getValue() ) {
+                    result.addAll(getObjectsByName(name, typeClz));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    protected List<Object> getObjectsByName(String name, Class<?> typeClz) {
+        List<Object> result = new ArrayList<Object>();
+        List<Object> objs = byName.get(name);
+        if ( objs != null ) {
+            for ( Object obj : objs ) {
+                if ( typeClz.isAssignableFrom(obj.getClass()) ) {
+                    result.add(obj);
+                }
+            }
+        }
+
+        return result;
     }
 
     protected Set<String> getSetting(String key) {
@@ -255,7 +302,7 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
 
     protected ExtensionPoint getExtensionPoint(String key) {
         List<ExtensionImplementation> impls = new ArrayList<ExtensionImplementation>();
-        ExtensionList<Object> list = extensionLists.get(key);
+        ExtensionList<?> list = getExtensionListInternal(key);
 
         if ( list != null ) {
             for ( Object obj : list ) {

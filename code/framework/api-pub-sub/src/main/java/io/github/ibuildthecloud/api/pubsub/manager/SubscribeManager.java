@@ -1,41 +1,32 @@
 package io.github.ibuildthecloud.api.pubsub.manager;
 
 import io.github.ibuildthecloud.api.pubsub.model.Subscribe;
-import io.github.ibuildthecloud.api.pubsub.subscribe.BlockingSubscriptionHandler;
 import io.github.ibuildthecloud.api.pubsub.subscribe.SubscriptionHandler;
 import io.github.ibuildthecloud.api.pubsub.util.SubscriptionUtils;
 import io.github.ibuildthecloud.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
-import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
-import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.framework.event.FrameworkEvents;
-import io.github.ibuildthecloud.dstack.json.JsonMapper;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
+import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class SubscribeManager extends AbstractNoOpResourceManager {
 
     List<SubscriptionHandler> handlers = new ArrayList<SubscriptionHandler>();
-    EventService eventService;
-    JsonMapper jsonMapper;
-    ExecutorService executorService;
-    RetryTimeoutService retryTimeout;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -44,9 +35,7 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object createInternal(String type, ApiRequest request) {
-        Subscribe subscribe = request.proxyRequestObject(Subscribe.class);
-
-        List<String> eventNames = subscribe.getEventNames();
+        List<String> eventNames = getEventNames(request);
         List<String> filteredEventNames = new ArrayList<String>(eventNames.size());
 
         Policy policy = ApiUtils.getPolicy();
@@ -55,6 +44,10 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
         for ( String eventName : eventNames ) {
             switch (style) {
             case QUALIFIED:
+                if ( eventName.contains(FrameworkEvents.EVENT_SEP) ) {
+                    eventName = StringUtils.substringBefore(eventName, FrameworkEvents.EVENT_SEP);
+                }
+
                 String key = SubscriptionUtils.getSubscriptionQualifier(policy);
                 String value = SubscriptionUtils.getSubscriptionQualifierValue(policy);
                 eventName = String.format("%s%s%s=%s", eventName, FrameworkEvents.EVENT_SEP, key, value);
@@ -64,6 +57,10 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
             }
 
             filteredEventNames.add(eventName);
+        }
+
+        if ( filteredEventNames.size() == 0 ) {
+            return null;
         }
 
         request.setResponseContentType("text/plain");
@@ -81,67 +78,48 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
         return super.createInternal(type, request);
     }
 
+    protected List<String> getEventNames(ApiRequest request) {
+        Subscribe subscribe = request.proxyRequestObject(Subscribe.class);
 
-    @PostConstruct
-    public void init() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Class<?> clz = getClass("javax.servlet.AsyncContext");
-        if ( clz != null ) {
-            SubscriptionHandler handler = (SubscriptionHandler)ConstructorUtils.invokeConstructor(clz, jsonMapper,
-                    eventService, retryTimeout, executorService);
-            handlers.add(handler);
+        List<String> eventNames = subscribe.getEventNames();
+        if ( eventNames != null ) {
+            return eventNames;
         }
 
-        handlers.add(new BlockingSubscriptionHandler(jsonMapper, eventService, retryTimeout, executorService));
-    }
-
-    protected Class<?> getClass(String ifClassName) {
-        try {
-            Class.forName(ifClassName);
-            return Class.forName("io.github.ibuildthecloud.api.pubsub.subscribe.ServletAsyncSubscriptionHandler");
-        } catch (ClassNotFoundException e) {
-            return null;
+        eventNames = new ArrayList<String>();
+        Map<String,List<Condition>> conditions = request.getConditions();
+        if ( conditions == null ) {
+            return eventNames;
         }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        List<?> list = ProxyUtils.proxy((Map)conditions, Subscribe.class).getEventNames();
+        if ( list != null ) {
+            for ( Object condition : list ) {
+                if ( condition instanceof Condition ) {
+                    Object value = ((Condition)condition).getValue();
+                    if ( value != null ) {
+                        eventNames.add(value.toString());
+                    }
+                }
+            }
+        }
+
+        return eventNames;
     }
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return Collections.EMPTY_LIST;
+        return createInternal(type, ApiContext.getContext().getApiRequest());
     }
 
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
+    public List<SubscriptionHandler> getHandlers() {
+        return handlers;
     }
 
     @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    @Inject
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
-    public RetryTimeoutService getRetryTimeout() {
-        return retryTimeout;
-    }
-
-    @Inject
-    public void setRetryTimeout(RetryTimeoutService retryTimeout) {
-        this.retryTimeout = retryTimeout;
+    public void setHandlers(List<SubscriptionHandler> handlers) {
+        this.handlers = handlers;
     }
 
 }

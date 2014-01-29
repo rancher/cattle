@@ -13,10 +13,10 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "vnet", schema = "dstack")
 public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VnetRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record5<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Vnet {
 
-	private static final long serialVersionUID = 1747205619;
+	private static final long serialVersionUID = 70482245;
 
 	/**
-	 * Setter for <code>dstack.vnet.id</code>. 
+	 * Setter for <code>dstack.vnet.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.vnet.id</code>. 
+	 * Getter for <code>dstack.vnet.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.vnet.uri</code>. 
+	 * Setter for <code>dstack.vnet.uri</code>.
 	 */
 	@Override
 	public void setUri(java.lang.String value) {
@@ -42,7 +42,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.vnet.uri</code>. 
+	 * Getter for <code>dstack.vnet.uri</code>.
 	 */
 	@javax.persistence.Column(name = "uri", nullable = false, length = 128)
 	@Override
@@ -51,7 +51,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.vnet.scope</code>. 
+	 * Setter for <code>dstack.vnet.scope</code>.
 	 */
 	@Override
 	public void setScope(java.lang.String value) {
@@ -59,7 +59,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.vnet.scope</code>. 
+	 * Getter for <code>dstack.vnet.scope</code>.
 	 */
 	@javax.persistence.Column(name = "scope", nullable = false, length = 128)
 	@Override
@@ -68,7 +68,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.vnet.ip_pool_qualifier</code>. 
+	 * Setter for <code>dstack.vnet.ip_pool_qualifier</code>.
 	 */
 	@Override
 	public void setIpPoolQualifier(java.lang.String value) {
@@ -76,7 +76,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.vnet.ip_pool_qualifier</code>. 
+	 * Getter for <code>dstack.vnet.ip_pool_qualifier</code>.
 	 */
 	@javax.persistence.Column(name = "ip_pool_qualifier", length = 128)
 	@Override
@@ -85,7 +85,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.vnet.ip_pool_segment</code>. 
+	 * Setter for <code>dstack.vnet.ip_pool_segment</code>.
 	 */
 	@Override
 	public void setIpPoolSegment(java.lang.String value) {
@@ -93,7 +93,7 @@ public class VnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.vnet.ip_pool_segment</code>. 
+	 * Getter for <code>dstack.vnet.ip_pool_segment</code>.
 	 */
 	@javax.persistence.Column(name = "ip_pool_segment", length = 128)
 	@Override

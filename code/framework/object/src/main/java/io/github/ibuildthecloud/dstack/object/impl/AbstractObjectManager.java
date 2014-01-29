@@ -3,6 +3,7 @@ package io.github.ibuildthecloud.dstack.object.impl;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler;
 import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler.LifeCycleEvent;
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHandler;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
@@ -12,6 +13,7 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +24,8 @@ public abstract class AbstractObjectManager implements ObjectManager {
     SchemaFactory schemaFactory;
     List<ObjectPostInstantiationHandler> postInitHandlers;
     List<ObjectLifeCycleHandler> lifeCycleHandlers;
+    ObjectMetaDataManager metaDataManager;
+
 
     @Override
     public <T> T create(T instance) {
@@ -95,7 +99,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
             return null;
         }
 
-        Schema schema =null;
+        Schema schema = null;
         if ( obj instanceof Class<?> ) {
             schema = schemaFactory.getSchema((Class<?>)obj);
         } else {
@@ -114,6 +118,39 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
         return setFields(obj, convertToPropertiesFor(obj, values));
     }
+
+    @SuppressWarnings("unchecked")
+    protected Map<Object,Object> toObjectsToWrite(Object obj, Map<String, Object> values) {
+        String type = getType(obj);
+        Map<String,Relationship> relationships = null;
+        Map<Object,Object> objValues = new LinkedHashMap<Object, Object>();
+
+        for ( Map.Entry<String, Object> entry : values.entrySet() ) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if ( value instanceof Map<?, ?> ) {
+                if ( relationships == null ) {
+                    relationships = metaDataManager.getLinkRelationships(schemaFactory, type);
+                }
+                Relationship rel = relationships.get(key.toLowerCase());
+                if ( rel != null && rel.getRelationshipType() != Relationship.RelationshipType.REFERENCE ) {
+                    rel = null;
+                }
+
+                if ( rel == null ) {
+                    objValues.put(key, value);
+                } else {
+                    value = toObjectsToWrite(rel.getObjectType(), (Map<String,Object>)value);
+                    objValues.put(rel, value);
+                }
+            } else {
+                objValues.put(key, value);
+            }
+        }
+
+        return objValues;
+    }
+
 
     @SuppressWarnings("unchecked")
     @Override
@@ -171,6 +208,15 @@ public abstract class AbstractObjectManager implements ObjectManager {
     @Inject
     public void setLifeCycleHandlers(List<ObjectLifeCycleHandler> lifeCycleHandlers) {
         this.lifeCycleHandlers = lifeCycleHandlers;
+    }
+
+    public ObjectMetaDataManager getMetaDataManager() {
+        return metaDataManager;
+    }
+
+    @Inject
+    public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
+        this.metaDataManager = metaDataManager;
     }
 
 }

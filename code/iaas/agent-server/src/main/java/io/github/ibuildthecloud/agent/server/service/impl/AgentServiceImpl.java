@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.agent.server.service.AgentService;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
 import io.github.ibuildthecloud.dstack.async.utils.AsyncUtils;
 import io.github.ibuildthecloud.dstack.async.utils.TimeoutException;
+import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.exception.EventExecutionException;
@@ -14,6 +15,9 @@ import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
@@ -27,6 +31,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 public class AgentServiceImpl implements AgentService {
 
     private static final Logger log = LoggerFactory.getLogger(AgentServiceImpl.class);
+    private static final Set<String> GOOD_AGENT_STATES = new HashSet<String>(Arrays.asList(
+            CommonStatesConstants.ACTIVATING,
+            CommonStatesConstants.ACTIVE
+        ));
 
     AgentConnectionManager connectionManager;
     ObjectManager objectManager;
@@ -67,13 +75,15 @@ public class AgentServiceImpl implements AgentService {
     }
 
     protected void handleResponse(Event request, Event agentResponse) {
-        EventVO response = EventVO.reply(request);
-        response.setData(agentResponse);
-        eventService.publish(response);
+        if ( request.getReplyTo() != null ) {
+            EventVO<Object> response = EventVO.reply(request);
+            response.setData(agentResponse);
+            eventService.publish(response);
+        }
     }
 
     protected void handleError(Event request, Event agentResponse) {
-        EventVO response = EventVO.reply(request);
+        EventVO<Object> response = EventVO.reply(request);
         response.setData(agentResponse);
         response.setTransitioning(agentResponse.getTransitioning());
         response.setTransitioningInternalMessage(agentResponse.getTransitioningInternalMessage());
@@ -88,11 +98,19 @@ public class AgentServiceImpl implements AgentService {
             return null;
         }
 
-        return jsonMapper.convertValue(event.getData(), EventVO.class);
+        EventVO<?> agentEvent = jsonMapper.convertValue(event.getData(), EventVO.class);
+        agentEvent.setReplyTo(agentEvent.getName() + Event.REPLY_SUFFIX);
+
+        return agentEvent;
     }
 
     protected Agent getAgent(Event event) {
-        return objectManager.loadResource(Agent.class, event.getResourceId());
+        Agent agent = objectManager.loadResource(Agent.class, event.getResourceId());
+        if ( agent != null && GOOD_AGENT_STATES.contains(agent.getState()) ) {
+            return agent;
+        }
+
+        return null;
     }
 
     public ObjectManager getObjectManager() {

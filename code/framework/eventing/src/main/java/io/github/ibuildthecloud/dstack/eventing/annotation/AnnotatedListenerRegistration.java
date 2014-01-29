@@ -2,6 +2,8 @@ package io.github.ibuildthecloud.dstack.eventing.annotation;
 
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
+import io.github.ibuildthecloud.dstack.json.JsonMapper;
+import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
 
@@ -19,6 +21,8 @@ public class AnnotatedListenerRegistration implements InitializationTask {
 
     List<AnnotatedEventListener> listeners;
     EventService eventService;
+    JsonMapper jsonMapper;
+    LockManager lockManager;
 
     @Override
     public void start() {
@@ -56,7 +60,7 @@ public class AnnotatedListenerRegistration implements InitializationTask {
                 }
 
                 String eventName = getEventName(h, m);
-                result.put(eventName, new MethodInvokingListener(h, m, listener));
+                result.put(eventName, new MethodInvokingListener(lockManager, jsonMapper, h, m, listener));
             }
         }
 
@@ -100,6 +104,24 @@ public class AnnotatedListenerRegistration implements InitializationTask {
     @Inject
     public void setEventService(EventService eventService) {
         this.eventService = eventService;
+    }
+
+    public JsonMapper getJsonMapper() {
+        return jsonMapper;
+    }
+
+    @Inject
+    public void setJsonMapper(JsonMapper jsonMapper) {
+        this.jsonMapper = jsonMapper;
+    }
+
+    public LockManager getLockManager() {
+        return lockManager;
+    }
+
+    @Inject
+    public void setLockManager(LockManager lockManager) {
+        this.lockManager = lockManager;
     }
 
 }

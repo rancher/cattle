@@ -1,5 +1,7 @@
 package io.github.ibuildthecloud.dstack.eventing.annotation;
 
+import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,5 +21,6 @@ public @interface EventHandler {
 
     String poolKey() default DEFAULT_POOL_KEY;
 
+    Class<? extends LockDefinition> lock() default LockDefinition.class;
 
 }

@@ -14,35 +14,35 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface ConfigItem extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.config_item.id</code>. 
+	 * Setter for <code>dstack.config_item.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.config_item.id</code>. 
+	 * Getter for <code>dstack.config_item.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 20)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.config_item.name</code>. 
+	 * Setter for <code>dstack.config_item.name</code>.
 	 */
 	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.config_item.name</code>. 
+	 * Getter for <code>dstack.config_item.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.config_item.source_version</code>. 
+	 * Setter for <code>dstack.config_item.source_version</code>.
 	 */
 	public void setSourceVersion(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.config_item.source_version</code>. 
+	 * Getter for <code>dstack.config_item.source_version</code>.
 	 */
 	@javax.persistence.Column(name = "source_version", nullable = false, length = 1024)
 	public java.lang.String getSourceVersion();

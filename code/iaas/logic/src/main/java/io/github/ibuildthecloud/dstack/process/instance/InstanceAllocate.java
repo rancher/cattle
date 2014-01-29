@@ -1,7 +1,6 @@
 package io.github.ibuildthecloud.dstack.process.instance;
 
-import io.github.ibuildthecloud.dstack.core.dao.InstanceDao;
-import io.github.ibuildthecloud.dstack.core.dao.VolumeDao;
+import io.github.ibuildthecloud.dstack.core.dao.GenericMapDao;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.InstanceHostMap;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
@@ -25,8 +24,7 @@ import javax.inject.Named;
 @Named
 public class InstanceAllocate extends EventBasedProcessHandler {
 
-    InstanceDao instanceDao;
-    VolumeDao volumeDao;
+    GenericMapDao mapDao;
 
     public InstanceAllocate() {
         setPriority(DEFAULT);
@@ -39,44 +37,35 @@ public class InstanceAllocate extends EventBasedProcessHandler {
 
         Instance instance = (Instance)state.getResource();
 
-        for ( InstanceHostMap map : instanceDao.findNonRemovedInstanceHostMaps(instance.getId()) ) {
+        for ( InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()) ) {
             CollectionUtils.addToMap(allocationData, "instance:" + instance.getId(), map.getHostId(), HashSet.class);
-            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, state.getData());
+            create(map, state.getData());
         }
 
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
 
         for ( Volume v : volumes ) {
-            getObjectProcessManager().executeStandardProcess(StandardProcess.ALLOCATE, v, state.getData());
+            allocate(v, state.getData());
         }
 
         volumes = getObjectManager().children(instance, Volume.class);
         for ( Volume v : volumes ) {
-            for ( VolumeStoragePoolMap map : volumeDao.findNonRemovedVolumeStoragePoolMaps(v.getId()) ) {
+            for ( VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, v.getId()) ) {
                 CollectionUtils.addToMap(allocationData, "volume:" + v.getId(), map.getVolumeId(), HashSet.class);
-                getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, state.getData());
+                create(map, state.getData());
             }
         }
 
         return new HandlerResult(result);
     }
 
-    public InstanceDao getInstanceDao() {
-        return instanceDao;
+    public GenericMapDao getMapDao() {
+        return mapDao;
     }
 
     @Inject
-    public void setInstanceDao(InstanceDao instanceDao) {
-        this.instanceDao = instanceDao;
-    }
-
-    public VolumeDao getVolumeDao() {
-        return volumeDao;
-    }
-
-    @Inject
-    public void setVolumeDao(VolumeDao volumeDao) {
-        this.volumeDao = volumeDao;
+    public void setMapDao(GenericMapDao mapDao) {
+        this.mapDao = mapDao;
     }
 
 }

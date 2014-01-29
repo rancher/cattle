@@ -14,156 +14,156 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface IpAddress extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.ip_address.id</code>. 
+	 * Setter for <code>dstack.ip_address.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.id</code>. 
+	 * Getter for <code>dstack.ip_address.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.ip_address.address</code>. 
+	 * Setter for <code>dstack.ip_address.address</code>.
 	 */
 	public void setAddress(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.address</code>. 
+	 * Getter for <code>dstack.ip_address.address</code>.
 	 */
 	@javax.persistence.Column(name = "address", nullable = false, length = 128)
 	public java.lang.String getAddress();
 
 	/**
-	 * Setter for <code>dstack.ip_address.account_id</code>. 
+	 * Setter for <code>dstack.ip_address.account_id</code>.
 	 */
 	public void setAccountId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.account_id</code>. 
+	 * Getter for <code>dstack.ip_address.account_id</code>.
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
 	public java.lang.Long getAccountId();
 
 	/**
-	 * Setter for <code>dstack.ip_address.netmask</code>. 
+	 * Setter for <code>dstack.ip_address.netmask</code>.
 	 */
 	public void setNetmask(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.netmask</code>. 
+	 * Getter for <code>dstack.ip_address.netmask</code>.
 	 */
 	@javax.persistence.Column(name = "netmask", length = 128)
 	public java.lang.String getNetmask();
 
 	/**
-	 * Setter for <code>dstack.ip_address.gateway</code>. 
+	 * Setter for <code>dstack.ip_address.gateway</code>.
 	 */
 	public void setGateway(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.gateway</code>. 
+	 * Getter for <code>dstack.ip_address.gateway</code>.
 	 */
 	@javax.persistence.Column(name = "gateway", length = 128)
 	public java.lang.String getGateway();
 
 	/**
-	 * Setter for <code>dstack.ip_address.version</code>. 
+	 * Setter for <code>dstack.ip_address.version</code>.
 	 */
 	public void setVersion(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.version</code>. 
+	 * Getter for <code>dstack.ip_address.version</code>.
 	 */
 	@javax.persistence.Column(name = "version", nullable = false, length = 255)
 	public java.lang.String getVersion();
 
 	/**
-	 * Setter for <code>dstack.ip_address.vnet_id</code>. 
+	 * Setter for <code>dstack.ip_address.vnet_id</code>.
 	 */
 	public void setVnetId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.vnet_id</code>. 
+	 * Getter for <code>dstack.ip_address.vnet_id</code>.
 	 */
 	@javax.persistence.Column(name = "vnet_id", precision = 19)
 	public java.lang.Long getVnetId();
 
 	/**
-	 * Setter for <code>dstack.ip_address.ip_assignment_type</code>. 
+	 * Setter for <code>dstack.ip_address.ip_assignment_type</code>.
 	 */
 	public void setIpAssignmentType(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.ip_assignment_type</code>. 
+	 * Getter for <code>dstack.ip_address.ip_assignment_type</code>.
 	 */
 	@javax.persistence.Column(name = "ip_assignment_type", length = 255)
 	public java.lang.String getIpAssignmentType();
 
 	/**
-	 * Setter for <code>dstack.ip_address.item_pool_id</code>. 
+	 * Setter for <code>dstack.ip_address.item_pool_id</code>.
 	 */
 	public void setItemPoolId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.item_pool_id</code>. 
+	 * Getter for <code>dstack.ip_address.item_pool_id</code>.
 	 */
 	@javax.persistence.Column(name = "item_pool_id", precision = 19)
 	public java.lang.Long getItemPoolId();
 
 	/**
-	 * Setter for <code>dstack.ip_address.created</code>. 
+	 * Setter for <code>dstack.ip_address.created</code>.
 	 */
-	public void setCreated(java.sql.Timestamp value);
+	public void setCreated(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.created</code>. 
+	 * Getter for <code>dstack.ip_address.created</code>.
 	 */
 	@javax.persistence.Column(name = "created")
-	public java.sql.Timestamp getCreated();
+	public java.util.Date getCreated();
 
 	/**
-	 * Setter for <code>dstack.ip_address.removed</code>. 
+	 * Setter for <code>dstack.ip_address.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.removed</code>. 
+	 * Getter for <code>dstack.ip_address.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
 
 	/**
-	 * Setter for <code>dstack.ip_address.remove_time</code>. 
+	 * Setter for <code>dstack.ip_address.remove_time</code>.
 	 */
-	public void setRemoveTime(java.sql.Timestamp value);
+	public void setRemoveTime(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.remove_time</code>. 
+	 * Getter for <code>dstack.ip_address.remove_time</code>.
 	 */
 	@javax.persistence.Column(name = "remove_time")
-	public java.sql.Timestamp getRemoveTime();
+	public java.util.Date getRemoveTime();
 
 	/**
-	 * Setter for <code>dstack.ip_address.name</code>. 
+	 * Setter for <code>dstack.ip_address.name</code>.
 	 */
 	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.name</code>. 
+	 * Getter for <code>dstack.ip_address.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.ip_address.description</code>. 
+	 * Setter for <code>dstack.ip_address.description</code>.
 	 */
 	public void setDescription(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.ip_address.description</code>. 
+	 * Getter for <code>dstack.ip_address.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
 	public java.lang.String getDescription();

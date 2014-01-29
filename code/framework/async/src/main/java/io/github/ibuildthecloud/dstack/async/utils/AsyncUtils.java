@@ -11,6 +11,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 
 public class AsyncUtils {
 
@@ -41,6 +42,24 @@ public class AsyncUtils {
             ExceptionUtils.rethrowExpectedRuntime(t);
             throw new UnreachableException();
         }
+    }
+
+    public static ListenableFuture<?> done() {
+        return done(true);
+    }
+
+    public static <T> ListenableFuture<T> done(T obj) {
+        SettableFuture<T> future = SettableFuture.create();
+        future.set(obj);
+
+        return future;
+    }
+
+    public static <T> ListenableFuture<T> error(Throwable t) {
+        SettableFuture<T> future = SettableFuture.create();
+        future.setException(t);
+
+        return future;
     }
 
     public static void waitAll(List<ListenableFuture<?>> futures) {

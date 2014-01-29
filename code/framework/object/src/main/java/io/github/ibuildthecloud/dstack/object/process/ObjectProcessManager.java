@@ -7,6 +7,8 @@ import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import java.util.Map;
 
 public interface ObjectProcessManager {
+    String getStandardProcessName(StandardProcess process, String type);
+
     ProcessInstance createProcessInstance(LaunchConfiguration config);
 
     ProcessInstance createProcessInstance(String processName, Object resource, Map<String, Object> data);

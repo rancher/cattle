@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class AbstractParentLog implements ParentLog {
+public abstract class AbstractParentLog implements ParentLog {
 
     List<ProcessLog> children = Collections.synchronizedList(new ArrayList<ProcessLog>());
 

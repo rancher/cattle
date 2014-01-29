@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CoreChangelogTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord> {
 
-	private static final long serialVersionUID = 1110660130;
+	private static final long serialVersionUID = -1658553359;
 
 	/**
 	 * The singleton instance of <code>dstack.core_changelog</code>
@@ -27,76 +27,80 @@ public class CoreChangelogTable extends org.jooq.impl.TableImpl<io.github.ibuild
 	}
 
 	/**
-	 * The column <code>dstack.core_changelog.ID</code>. 
+	 * The column <code>dstack.core_changelog.ID</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> ID = createField("ID", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> ID = createField("ID", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.AUTHOR</code>. 
+	 * The column <code>dstack.core_changelog.AUTHOR</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> AUTHOR = createField("AUTHOR", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> AUTHOR = createField("AUTHOR", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.FILENAME</code>. 
+	 * The column <code>dstack.core_changelog.FILENAME</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> FILENAME = createField("FILENAME", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> FILENAME = createField("FILENAME", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.DATEEXECUTED</code>. 
+	 * The column <code>dstack.core_changelog.DATEEXECUTED</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.sql.Timestamp> DATEEXECUTED = createField("DATEEXECUTED", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.util.Date> DATEEXECUTED = createField("DATEEXECUTED", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.ORDEREXECUTED</code>. 
+	 * The column <code>dstack.core_changelog.ORDEREXECUTED</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.Integer> ORDEREXECUTED = createField("ORDEREXECUTED", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.Integer> ORDEREXECUTED = createField("ORDEREXECUTED", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.EXECTYPE</code>. 
+	 * The column <code>dstack.core_changelog.EXECTYPE</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> EXECTYPE = createField("EXECTYPE", org.jooq.impl.SQLDataType.VARCHAR.length(10).nullable(false), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> EXECTYPE = createField("EXECTYPE", org.jooq.impl.SQLDataType.VARCHAR.length(10).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.MD5SUM</code>. 
+	 * The column <code>dstack.core_changelog.MD5SUM</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> MD5SUM = createField("MD5SUM", org.jooq.impl.SQLDataType.VARCHAR.length(35), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> MD5SUM = createField("MD5SUM", org.jooq.impl.SQLDataType.VARCHAR.length(35), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.DESCRIPTION</code>. 
+	 * The column <code>dstack.core_changelog.DESCRIPTION</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> DESCRIPTION = createField("DESCRIPTION", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> DESCRIPTION = createField("DESCRIPTION", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.COMMENTS</code>. 
+	 * The column <code>dstack.core_changelog.COMMENTS</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> COMMENTS = createField("COMMENTS", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> COMMENTS = createField("COMMENTS", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.TAG</code>. 
+	 * The column <code>dstack.core_changelog.TAG</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> TAG = createField("TAG", org.jooq.impl.SQLDataType.VARCHAR.length(255), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> TAG = createField("TAG", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.core_changelog.LIQUIBASE</code>. 
+	 * The column <code>dstack.core_changelog.LIQUIBASE</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> LIQUIBASE = createField("LIQUIBASE", org.jooq.impl.SQLDataType.VARCHAR.length(20), this);
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord, java.lang.String> LIQUIBASE = createField("LIQUIBASE", org.jooq.impl.SQLDataType.VARCHAR.length(20), this, "");
 
 	/**
 	 * Create a <code>dstack.core_changelog</code> table reference
 	 */
 	public CoreChangelogTable() {
-		super("core_changelog", io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK);
+		this("core_changelog", null);
 	}
 
 	/**
 	 * Create an aliased <code>dstack.core_changelog</code> table reference
 	 */
 	public CoreChangelogTable(java.lang.String alias) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, io.github.ibuildthecloud.dstack.core.model.tables.CoreChangelogTable.CORE_CHANGELOG);
+		this(alias, io.github.ibuildthecloud.dstack.core.model.tables.CoreChangelogTable.CORE_CHANGELOG);
 	}
 
 	private CoreChangelogTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord> aliased) {
-		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased);
+		this(alias, aliased, null);
+	}
+
+	private CoreChangelogTable(java.lang.String alias, org.jooq.Table<io.github.ibuildthecloud.dstack.core.model.tables.records.CoreChangelogRecord> aliased, org.jooq.Field<?>[] parameters) {
+		super(alias, io.github.ibuildthecloud.dstack.core.model.DstackTable.DSTACK, aliased, parameters, "");
 	}
 
 	/**

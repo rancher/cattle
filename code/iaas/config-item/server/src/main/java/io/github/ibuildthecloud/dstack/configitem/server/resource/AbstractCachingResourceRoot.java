@@ -1,5 +1,7 @@
 package io.github.ibuildthecloud.dstack.configitem.server.resource;
 
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestOutputStream;
@@ -11,11 +13,25 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 
+import com.netflix.config.DynamicStringListProperty;
+
 public abstract class AbstractCachingResourceRoot implements ResourceRoot {
+
+    public static final DynamicStringListProperty IGNORE_PREFIX = ArchaiusUtil.getList("config.item.ignore.prefixes");
 
     Collection<Resource> resources;
     String sourceRevision;
     byte[] additionalRevisionData;
+
+    public static boolean shouldIgnore(String path) {
+        for ( String prefix : IGNORE_PREFIX.get() ) {
+            if ( path.startsWith(prefix) ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     @Override
     public Collection<Resource> getResources() throws IOException {

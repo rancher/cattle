@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DstackTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 1773556793;
+	private static final long serialVersionUID = -418005892;
 
 	/**
 	 * The singleton instance of <code>dstack</code>
@@ -62,6 +62,8 @@ public class DstackTable extends org.jooq.impl.SchemaImpl {
 			io.github.ibuildthecloud.dstack.core.model.tables.SettingTable.SETTING,
 			io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.STORAGE_POOL,
 			io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP,
+			io.github.ibuildthecloud.dstack.core.model.tables.TaskTable.TASK,
+			io.github.ibuildthecloud.dstack.core.model.tables.TaskInstanceTable.TASK_INSTANCE,
 			io.github.ibuildthecloud.dstack.core.model.tables.VnetTable.VNET,
 			io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME,
 			io.github.ibuildthecloud.dstack.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP,

@@ -14,35 +14,35 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface Setting extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.setting.id</code>. 
+	 * Setter for <code>dstack.setting.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.setting.id</code>. 
+	 * Getter for <code>dstack.setting.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.setting.name</code>. 
+	 * Setter for <code>dstack.setting.name</code>.
 	 */
 	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.setting.name</code>. 
+	 * Getter for <code>dstack.setting.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.setting.value</code>. 
+	 * Setter for <code>dstack.setting.value</code>.
 	 */
 	public void setValue(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.setting.value</code>. 
+	 * Getter for <code>dstack.setting.value</code>.
 	 */
 	@javax.persistence.Column(name = "value", nullable = false, length = 1024)
 	public java.lang.String getValue();

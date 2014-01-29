@@ -13,10 +13,10 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "item_pool_generator", schema = "dstack")
 public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ItemPoolGeneratorRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record7<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.core.model.ItemPoolGenerator {
 
-	private static final long serialVersionUID = -1041239706;
+	private static final long serialVersionUID = -719761210;
 
 	/**
-	 * Setter for <code>dstack.item_pool_generator.id</code>. 
+	 * Setter for <code>dstack.item_pool_generator.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Getter for <code>dstack.item_pool_generator.id</code>. 
+	 * Getter for <code>dstack.item_pool_generator.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Setter for <code>dstack.item_pool_generator.name</code>. 
+	 * Setter for <code>dstack.item_pool_generator.name</code>.
 	 */
 	@Override
 	public void setName(java.lang.String value) {
@@ -42,7 +42,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Getter for <code>dstack.item_pool_generator.name</code>. 
+	 * Getter for <code>dstack.item_pool_generator.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
 	@Override
@@ -51,7 +51,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Setter for <code>dstack.item_pool_generator.kind</code>. 
+	 * Setter for <code>dstack.item_pool_generator.kind</code>.
 	 */
 	@Override
 	public void setKind(java.lang.String value) {
@@ -59,7 +59,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Getter for <code>dstack.item_pool_generator.kind</code>. 
+	 * Getter for <code>dstack.item_pool_generator.kind</code>.
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
 	@Override
@@ -68,7 +68,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Setter for <code>dstack.item_pool_generator.state</code>. 
+	 * Setter for <code>dstack.item_pool_generator.state</code>.
 	 */
 	@Override
 	public void setState(java.lang.String value) {
@@ -76,7 +76,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Getter for <code>dstack.item_pool_generator.state</code>. 
+	 * Getter for <code>dstack.item_pool_generator.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 255)
 	@Override
@@ -85,7 +85,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Setter for <code>dstack.item_pool_generator.uuid</code>. 
+	 * Setter for <code>dstack.item_pool_generator.uuid</code>.
 	 */
 	@Override
 	public void setUuid(java.lang.String value) {
@@ -93,7 +93,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Getter for <code>dstack.item_pool_generator.uuid</code>. 
+	 * Getter for <code>dstack.item_pool_generator.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
 	@Override
@@ -102,7 +102,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Setter for <code>dstack.item_pool_generator.description</code>. 
+	 * Setter for <code>dstack.item_pool_generator.description</code>.
 	 */
 	@Override
 	public void setDescription(java.lang.String value) {
@@ -110,7 +110,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Getter for <code>dstack.item_pool_generator.description</code>. 
+	 * Getter for <code>dstack.item_pool_generator.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 255)
 	@Override
@@ -119,7 +119,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Setter for <code>dstack.item_pool_generator.data</code>. 
+	 * Setter for <code>dstack.item_pool_generator.data</code>.
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
@@ -127,7 +127,7 @@ public class ItemPoolGeneratorRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	/**
-	 * Getter for <code>dstack.item_pool_generator.data</code>. 
+	 * Getter for <code>dstack.item_pool_generator.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override

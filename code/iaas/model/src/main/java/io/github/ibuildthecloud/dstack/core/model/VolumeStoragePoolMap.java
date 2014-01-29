@@ -14,71 +14,71 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface VolumeStoragePoolMap extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.id</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.id</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.volume_id</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.volume_id</code>.
 	 */
 	public void setVolumeId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.volume_id</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.volume_id</code>.
 	 */
 	@javax.persistence.Column(name = "volume_id", nullable = false, precision = 19)
 	public java.lang.Long getVolumeId();
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
 	 */
 	public void setStoragePoolId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
 	 */
 	@javax.persistence.Column(name = "storage_pool_id", nullable = false, precision = 19)
 	public java.lang.Long getStoragePoolId();
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>.
 	 */
 	public void setStoragePoolLocation(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>.
 	 */
 	@javax.persistence.Column(name = "storage_pool_location", precision = 19)
 	public java.lang.Long getStoragePoolLocation();
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.state</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.state</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.removed</code>. 
+	 * Setter for <code>dstack.volume_storage_pool_map.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.removed</code>. 
+	 * Getter for <code>dstack.volume_storage_pool_map.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

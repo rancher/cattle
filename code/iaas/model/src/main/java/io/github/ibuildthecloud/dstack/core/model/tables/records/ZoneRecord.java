@@ -13,10 +13,10 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "zone", schema = "dstack")
 public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ZoneRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record6<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.util.Map<String,Object>, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Zone {
 
-	private static final long serialVersionUID = 600550500;
+	private static final long serialVersionUID = -1615845546;
 
 	/**
-	 * Setter for <code>dstack.zone.id</code>. 
+	 * Setter for <code>dstack.zone.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.zone.id</code>. 
+	 * Getter for <code>dstack.zone.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.zone.name</code>. 
+	 * Setter for <code>dstack.zone.name</code>.
 	 */
 	@Override
 	public void setName(java.lang.String value) {
@@ -42,7 +42,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.zone.name</code>. 
+	 * Getter for <code>dstack.zone.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 128)
 	@Override
@@ -51,7 +51,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.zone.description</code>. 
+	 * Setter for <code>dstack.zone.description</code>.
 	 */
 	@Override
 	public void setDescription(java.lang.String value) {
@@ -59,7 +59,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.zone.description</code>. 
+	 * Getter for <code>dstack.zone.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
 	@Override
@@ -68,7 +68,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.zone.uuid</code>. 
+	 * Setter for <code>dstack.zone.uuid</code>.
 	 */
 	@Override
 	public void setUuid(java.lang.String value) {
@@ -76,7 +76,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.zone.uuid</code>. 
+	 * Getter for <code>dstack.zone.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
 	@Override
@@ -85,7 +85,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.zone.data</code>. 
+	 * Setter for <code>dstack.zone.data</code>.
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
@@ -93,7 +93,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.zone.data</code>. 
+	 * Getter for <code>dstack.zone.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
@@ -102,7 +102,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.zone.state</code>. 
+	 * Setter for <code>dstack.zone.state</code>.
 	 */
 	@Override
 	public void setState(java.lang.String value) {
@@ -110,7 +110,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.zone.state</code>. 
+	 * Getter for <code>dstack.zone.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	@Override

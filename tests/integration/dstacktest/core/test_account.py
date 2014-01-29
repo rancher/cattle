@@ -1,6 +1,4 @@
-from common_fixtures import *
-import time
-import random
+from common_fixtures import *  # NOQA
 import re
 
 
@@ -32,4 +30,3 @@ def test_account_create(admin_client):
     assert len(creds[0].publicValue) == 20
     assert re.match("[a-zA-Z0-9]*", creds[0].secretValue)
     assert len(creds[0].secretValue) == 40
-

@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.engine.server.impl;
 
+import io.github.ibuildthecloud.dstack.deferred.util.DeferredUtils;
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
 import io.github.ibuildthecloud.dstack.engine.server.ProcessInstanceDispatcher;
 import io.github.ibuildthecloud.dstack.engine.server.ProcessServer;
@@ -8,20 +9,26 @@ import javax.inject.Inject;
 
 public class ProcessServerImpl implements ProcessServer {
 
-    Long serverId;
-
     ProcessManager repository;
     ProcessInstanceDispatcher dispatcher;
 
     @Override
-    public Long getId() {
-        return serverId;
+    public void runOutstandingJobs() {
+        for ( Long id : repository.pendingTasks() ) {
+            dispatcher.execute(id);
+        }
     }
 
     @Override
-    public void runOutstandingJobs() {
-        for ( Long id : repository.pendingTasks() ) {
-            dispatcher.execute(this, id);
+    public void runRemainingTasks(long processId) {
+        final Long nextId = repository.getRemainingTask(processId);
+        if ( nextId != null ) {
+            DeferredUtils.defer(new Runnable() {
+                @Override
+                public void run() {
+                    dispatcher.execute(nextId);
+                }
+            });
         }
     }
 

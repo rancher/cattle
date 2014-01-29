@@ -33,8 +33,7 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
     }
 
     protected void deallocate(Instance instance) {
-        ProcessInstance pi = getObjectProcessManager().createProcessInstance("instance.deallocate", instance, null);
-        pi.execute();
+        deallocate(instance, null);
     }
 
     protected void storage(Instance instance) {
@@ -49,7 +48,9 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
         List<InstanceHostMap> maps = getObjectManager().children(instance, InstanceHostMap.class);
 
         for ( InstanceHostMap map : maps ) {
-            deactivate(map, null);
+            if ( map.getRemoved() == null ) {
+                deactivate(map, null);
+            }
         }
     }
 

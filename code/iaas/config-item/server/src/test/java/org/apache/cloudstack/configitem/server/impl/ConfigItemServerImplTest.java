@@ -12,6 +12,7 @@ import io.github.ibuildthecloud.dstack.configitem.version.ConfigItemStatusManage
 import org.apache.cloudstack.configitem.server.model.impl.TestRequest;
 import org.apache.cloudstack.configitem.server.model.impl.WriteStringConfigItem;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -48,6 +49,7 @@ public class ConfigItemServerImplTest {
     }
 
     @Test
+    @Ignore
     public void test_write_string() throws Exception {
         registry.register(new WriteStringConfigItem("string", "content"));
         req.setItemName("string");
@@ -58,6 +60,7 @@ public class ConfigItemServerImplTest {
     }
 
     @Test
+    @Ignore
     public void test_applied() throws Exception {
         ArgumentCaptor<ItemVersion> itemVersion = ArgumentCaptor.forClass(ItemVersion.class);
         DefaultItemVersion version = DefaultItemVersion.fromString("000000042-ok");
@@ -73,6 +76,7 @@ public class ConfigItemServerImplTest {
     }
 
     @Test
+    @Ignore
     public void test_applied_latest() throws Exception {
         DefaultItemVersion version = DefaultItemVersion.fromString("latest");
 

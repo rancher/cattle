@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.object.util;
 
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -77,6 +78,22 @@ public class DataUtils {
         }
 
         Map<String,Object> fields = CollectionUtils.castMap(data.get(FIELDS));
+        Object value = fields.get(name);
+
+        if ( value == null ) {
+            return null;
+        }
+
+        return (T)ConvertUtils.convert(value, type);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldFromRequest(ApiRequest request, String name, Class<T> type) {
+        if ( request == null ) {
+            return null;
+        }
+
+        Map<String,Object> fields = CollectionUtils.castMap(request.getRequestObject());
         Object value = fields.get(name);
 
         if ( value == null ) {

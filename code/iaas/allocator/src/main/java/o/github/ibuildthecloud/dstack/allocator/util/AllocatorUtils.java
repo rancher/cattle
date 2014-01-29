@@ -14,20 +14,25 @@ public class AllocatorUtils {
             log.info("{} [{}] is already allocated", logType, resourceId);
             return true;
         } else if ( ! CommonStatesConstants.ACTIVATING.equals(state) ) {
-            log.error("Can not allocate {} [{}] in state [{}]", logType, resourceId, state);
+            log.error("Can not allocate {} [{}] in allocation state [{}]", logType, resourceId, state);
             return false;
         }
 
         return null;
     }
 
-    public static boolean checkDeallocateState(long resourceId, String state, String logType) {
-        if ( CommonStatesConstants.ACTIVE.equals(state) ) {
+    public static Boolean checkDeallocateState(long resourceId, String state, String logType) {
+        if ( CommonStatesConstants.INACTIVE.equals(state) ) {
+            log.info("{} [{}] is already deallocated", logType, resourceId);
             return true;
         }
 
-        log.info("Can not deallocate {}:{}, is not in an active state", logType, resourceId);
-        return false;
+        if ( ! CommonStatesConstants.DEACTIVATING.equals(state) ) {
+            log.info("Can not deallocate {} [{}], is not in an deactivating allocation state", logType, resourceId);
+            return false;
+        }
+
+        return null;
     }
 
 }

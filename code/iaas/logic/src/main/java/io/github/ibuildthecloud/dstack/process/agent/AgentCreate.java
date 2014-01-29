@@ -8,7 +8,6 @@ import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
-import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 import io.github.ibuildthecloud.dstack.process.base.AbstractDefaultProcessHandler;
 import io.github.ibuildthecloud.dstack.process.dao.AccountDao;
 
@@ -30,11 +29,11 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
         Long accountId = agent.getAccountId();
 
         if ( accountId != null || ! CREATE_ACCOUNT.get() ) {
-            return new HandlerResult();
+            return new HandlerResult(AGENT.ACCOUNT_ID, accountId);
         }
 
         Account account = createAccountObj(agent);
-        getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, account, null);
+        create(account, state.getData());
 
         return new HandlerResult(AGENT.ACCOUNT_ID, account.getId());
     }

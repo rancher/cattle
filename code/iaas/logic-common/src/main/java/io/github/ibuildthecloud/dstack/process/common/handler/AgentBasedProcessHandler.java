@@ -13,6 +13,7 @@ import io.github.ibuildthecloud.dstack.object.serialization.ObjectSerializer;
 import io.github.ibuildthecloud.dstack.object.serialization.ObjectSerializerFactory;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.dstack.process.common.util.ProcessUtils;
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.dstack.util.type.Priority;
 
@@ -85,7 +86,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         ObjectSerializer serializer = getObjectSerializer(dataResource);
         Map<String,Object> data = serializer.serialize(dataResource);
-        EventVO event = EventVO.newEvent(getCommandName() == null ? process.getName() : getCommandName())
+        EventVO<Object> event = EventVO.newEvent(getCommandName() == null ? process.getName() : getCommandName())
                 .withData(data)
                 .withResourceType(getObjectManager().getType(eventResource))
                 .withResourceId(ObjectUtils.getId(eventResource).toString());
@@ -96,14 +97,14 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         postProcessEvent(event, reply, state, process, eventResource, dataResource, agentResource);
 
-        return null;
+        return new HandlerResult(CollectionUtils.castMap(reply.getData()));
     }
 
-    protected void postProcessEvent(EventVO event, Event reply, ProcessState state, ProcessInstance process,
+    protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process,
             Object eventResource, Object dataResource, Object agentResource) {
     }
 
-    protected void preProcessEvent(EventVO event, ProcessState state, ProcessInstance process, Object eventResource,
+    protected void preProcessEvent(EventVO<?> event, ProcessState state, ProcessInstance process, Object eventResource,
             Object dataResource, Object agentResource) {
     }
 

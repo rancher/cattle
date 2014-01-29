@@ -13,10 +13,10 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "config_item", schema = "dstack")
 public class ConfigItemRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record3<java.lang.Long, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.ConfigItem {
 
-	private static final long serialVersionUID = 86319805;
+	private static final long serialVersionUID = -329995107;
 
 	/**
-	 * Setter for <code>dstack.config_item.id</code>. 
+	 * Setter for <code>dstack.config_item.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class ConfigItemRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Getter for <code>dstack.config_item.id</code>. 
+	 * Getter for <code>dstack.config_item.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 20)
@@ -34,7 +34,7 @@ public class ConfigItemRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Setter for <code>dstack.config_item.name</code>. 
+	 * Setter for <code>dstack.config_item.name</code>.
 	 */
 	@Override
 	public void setName(java.lang.String value) {
@@ -42,7 +42,7 @@ public class ConfigItemRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Getter for <code>dstack.config_item.name</code>. 
+	 * Getter for <code>dstack.config_item.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
 	@Override
@@ -51,7 +51,7 @@ public class ConfigItemRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Setter for <code>dstack.config_item.source_version</code>. 
+	 * Setter for <code>dstack.config_item.source_version</code>.
 	 */
 	@Override
 	public void setSourceVersion(java.lang.String value) {
@@ -59,7 +59,7 @@ public class ConfigItemRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
-	 * Getter for <code>dstack.config_item.source_version</code>. 
+	 * Getter for <code>dstack.config_item.source_version</code>.
 	 */
 	@javax.persistence.Column(name = "source_version", nullable = false, length = 1024)
 	@Override

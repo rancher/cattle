@@ -11,12 +11,12 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "data", schema = "dstack")
-public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record3<java.lang.Long, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Data {
+public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Data {
 
-	private static final long serialVersionUID = 1578289905;
+	private static final long serialVersionUID = 1492118859;
 
 	/**
-	 * Setter for <code>dstack.data.id</code>. 
+	 * Setter for <code>dstack.data.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.data.id</code>. 
+	 * Getter for <code>dstack.data.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
@@ -34,7 +34,7 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.data.name</code>. 
+	 * Setter for <code>dstack.data.name</code>.
 	 */
 	@Override
 	public void setName(java.lang.String value) {
@@ -42,7 +42,7 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Getter for <code>dstack.data.name</code>. 
+	 * Getter for <code>dstack.data.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", nullable = false, length = 255)
 	@Override
@@ -51,20 +51,37 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	/**
-	 * Setter for <code>dstack.data.value</code>. 
+	 * Setter for <code>dstack.data.visible</code>.
 	 */
 	@Override
-	public void setValue(java.lang.String value) {
+	public void setVisible(java.lang.Boolean value) {
 		setValue(2, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.data.value</code>. 
+	 * Getter for <code>dstack.data.visible</code>.
 	 */
-	@javax.persistence.Column(name = "value", nullable = false, length = 1024)
+	@javax.persistence.Column(name = "visible", nullable = false, precision = 1)
+	@Override
+	public java.lang.Boolean getVisible() {
+		return (java.lang.Boolean) getValue(2);
+	}
+
+	/**
+	 * Setter for <code>dstack.data.value</code>.
+	 */
+	@Override
+	public void setValue(java.lang.String value) {
+		setValue(3, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.data.value</code>.
+	 */
+	@javax.persistence.Column(name = "value", nullable = false, length = 16777215)
 	@Override
 	public java.lang.String getValue() {
-		return (java.lang.String) getValue(2);
+		return (java.lang.String) getValue(3);
 	}
 
 	// -------------------------------------------------------------------------
@@ -80,23 +97,23 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	}
 
 	// -------------------------------------------------------------------------
-	// Record3 type implementation
+	// Record4 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row3<java.lang.Long, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row3) super.fieldsRow();
+	public org.jooq.Row4<java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String> fieldsRow() {
+		return (org.jooq.Row4) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row3<java.lang.Long, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row3) super.valuesRow();
+	public org.jooq.Row4<java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String> valuesRow() {
+		return (org.jooq.Row4) super.valuesRow();
 	}
 
 	/**
@@ -119,7 +136,15 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field3() {
+	public org.jooq.Field<java.lang.Boolean> field3() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.DataTable.DATA.VISIBLE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.String> field4() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.DataTable.DATA.VALUE;
 	}
 
@@ -143,7 +168,15 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value3() {
+	public java.lang.Boolean value3() {
+		return getVisible();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value4() {
 		return getValue();
 	}
 
@@ -169,7 +202,16 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DataRecord value3(java.lang.String value) {
+	public DataRecord value3(java.lang.Boolean value) {
+		setVisible(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DataRecord value4(java.lang.String value) {
 		setValue(value);
 		return this;
 	}
@@ -178,7 +220,7 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DataRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3) {
+	public DataRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Boolean value3, java.lang.String value4) {
 		return this;
 	}
 
@@ -193,6 +235,7 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	public void from(io.github.ibuildthecloud.dstack.core.model.Data from) {
 		setId(from.getId());
 		setName(from.getName());
+		setVisible(from.getVisible());
 		setValue(from.getValue());
 	}
 
@@ -219,11 +262,12 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Create a detached, initialised DataRecord
 	 */
-	public DataRecord(java.lang.Long id, java.lang.String name, java.lang.String value) {
+	public DataRecord(java.lang.Long id, java.lang.String name, java.lang.Boolean visible, java.lang.String value) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.DataTable.DATA);
 
 		setValue(0, id);
 		setValue(1, name);
-		setValue(2, value);
+		setValue(2, visible);
+		setValue(3, value);
 	}
 }

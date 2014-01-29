@@ -14,167 +14,167 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface Network extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.network.id</code>. 
+	 * Setter for <code>dstack.network.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.network.id</code>. 
+	 * Getter for <code>dstack.network.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.network.name</code>. 
+	 * Setter for <code>dstack.network.name</code>.
 	 */
 	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.network.name</code>. 
+	 * Getter for <code>dstack.network.name</code>.
 	 */
 	@javax.persistence.Column(name = "name", length = 255)
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.network.uuid</code>. 
+	 * Setter for <code>dstack.network.uuid</code>.
 	 */
 	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.network.uuid</code>. 
+	 * Getter for <code>dstack.network.uuid</code>.
 	 */
 	@javax.persistence.Column(name = "uuid", length = 255)
 	public java.lang.String getUuid();
 
 	/**
-	 * Setter for <code>dstack.network.account_id</code>. 
+	 * Setter for <code>dstack.network.account_id</code>.
 	 */
 	public void setAccountId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.network.account_id</code>. 
+	 * Getter for <code>dstack.network.account_id</code>.
 	 */
 	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
 	public java.lang.Long getAccountId();
 
 	/**
-	 * Setter for <code>dstack.network.is_public</code>. 
+	 * Setter for <code>dstack.network.is_public</code>.
 	 */
 	public void setIsPublic(java.lang.Boolean value);
 
 	/**
-	 * Getter for <code>dstack.network.is_public</code>. 
+	 * Getter for <code>dstack.network.is_public</code>.
 	 */
 	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
 	public java.lang.Boolean getIsPublic();
 
 	/**
-	 * Setter for <code>dstack.network.description</code>. 
+	 * Setter for <code>dstack.network.description</code>.
 	 */
 	public void setDescription(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.network.description</code>. 
+	 * Getter for <code>dstack.network.description</code>.
 	 */
 	@javax.persistence.Column(name = "description", length = 1024)
 	public java.lang.String getDescription();
 
 	/**
-	 * Setter for <code>dstack.network.vnet_id</code>. 
+	 * Setter for <code>dstack.network.vnet_id</code>.
 	 */
 	public void setVnetId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.network.vnet_id</code>. 
+	 * Getter for <code>dstack.network.vnet_id</code>.
 	 */
 	@javax.persistence.Column(name = "vnet_id", precision = 19)
 	public java.lang.Long getVnetId();
 
 	/**
-	 * Setter for <code>dstack.network.offering_id</code>. 
+	 * Setter for <code>dstack.network.offering_id</code>.
 	 */
 	public void setOfferingId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.network.offering_id</code>. 
+	 * Getter for <code>dstack.network.offering_id</code>.
 	 */
 	@javax.persistence.Column(name = "offering_id", precision = 19)
 	public java.lang.Long getOfferingId();
 
 	/**
-	 * Setter for <code>dstack.network.state</code>. 
+	 * Setter for <code>dstack.network.state</code>.
 	 */
 	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.network.state</code>. 
+	 * Getter for <code>dstack.network.state</code>.
 	 */
 	@javax.persistence.Column(name = "state", length = 255)
 	public java.lang.String getState();
 
 	/**
-	 * Setter for <code>dstack.network.is_default</code>. 
+	 * Setter for <code>dstack.network.is_default</code>.
 	 */
 	public void setIsDefault(java.lang.Boolean value);
 
 	/**
-	 * Getter for <code>dstack.network.is_default</code>. 
+	 * Getter for <code>dstack.network.is_default</code>.
 	 */
 	@javax.persistence.Column(name = "is_default", nullable = false, precision = 1)
 	public java.lang.Boolean getIsDefault();
 
 	/**
-	 * Setter for <code>dstack.network.created</code>. 
+	 * Setter for <code>dstack.network.created</code>.
 	 */
-	public void setCreated(java.sql.Timestamp value);
+	public void setCreated(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.network.created</code>. 
+	 * Getter for <code>dstack.network.created</code>.
 	 */
 	@javax.persistence.Column(name = "created")
-	public java.sql.Timestamp getCreated();
+	public java.util.Date getCreated();
 
 	/**
-	 * Setter for <code>dstack.network.removed</code>. 
+	 * Setter for <code>dstack.network.removed</code>.
 	 */
-	public void setRemoved(java.sql.Timestamp value);
+	public void setRemoved(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.network.removed</code>. 
+	 * Getter for <code>dstack.network.removed</code>.
 	 */
 	@javax.persistence.Column(name = "removed")
-	public java.sql.Timestamp getRemoved();
+	public java.util.Date getRemoved();
 
 	/**
-	 * Setter for <code>dstack.network.remove_time</code>. 
+	 * Setter for <code>dstack.network.remove_time</code>.
 	 */
-	public void setRemoveTime(java.sql.Timestamp value);
+	public void setRemoveTime(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.network.remove_time</code>. 
+	 * Getter for <code>dstack.network.remove_time</code>.
 	 */
 	@javax.persistence.Column(name = "remove_time")
-	public java.sql.Timestamp getRemoveTime();
+	public java.util.Date getRemoveTime();
 
 	/**
-	 * Setter for <code>dstack.network.kind</code>. 
+	 * Setter for <code>dstack.network.kind</code>.
 	 */
 	public void setKind(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.network.kind</code>. 
+	 * Getter for <code>dstack.network.kind</code>.
 	 */
 	@javax.persistence.Column(name = "kind", nullable = false, length = 128)
 	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.network.data</code>. 
+	 * Setter for <code>dstack.network.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
 
 	/**
-	 * Getter for <code>dstack.network.data</code>. 
+	 * Getter for <code>dstack.network.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();

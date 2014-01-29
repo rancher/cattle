@@ -14,6 +14,10 @@ public interface ProcessState {
 
     String getState();
 
+    ProcessPhase getPhase();
+
+    void setPhase(ProcessPhase phase);
+
     Map<String,Object> getData();
 
     boolean shouldCancel();

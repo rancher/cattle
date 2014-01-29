@@ -2,24 +2,28 @@ import random
 import dstack
 import pytest
 import time
+from datetime import datetime, timedelta
 
 
 NOT_NONE = object()
 
 
 def _admin_client():
-    return dstack.from_env("DSAPI", access_key="admin", secrect_key="adminpass")
+    return dstack.from_env("DSTACK", access_key="admin",
+                           secrect_key="adminpass")
 
 
 def _client_for_user(name, accounts):
-    return dstack.from_env("DSAPI", access_key=accounts[name][0], secret_key=accounts[name][1])
+    return dstack.from_env("DSTACK", access_key=accounts[name][0],
+                           secret_key=accounts[name][1])
 
 
 @pytest.fixture(scope="module")
 def accounts():
     result = {}
     admin_client = _admin_client()
-    for user_name in ["admin", "agent", "user", "agentRegister", "test", "readAdmin"]:
+    for user_name in ["admin", "agent", "user", "agentRegister", "test",
+                      "readAdmin"]:
         password = user_name + "pass"
         account = create_type_by_uuid(admin_client, "account", user_name,
                                       kind=user_name,
@@ -46,7 +50,8 @@ def accounts():
         result[user_name] = [user_name, password]
 
     #for setting in admin_client.list_setting():
-    #    if setting.name == "api.security.enabled" and setting.activeValue != "true":
+    #    if setting.name == "api.security.enabled" and
+    #               setting.activeValue != "true":
     #        admin_client.update(setting, {
     #            "value": "true"
     #        })
@@ -56,7 +61,8 @@ def accounts():
 
 @pytest.fixture(scope="module")
 def client(accounts):
-    return _client_for_user("test", accounts)
+    #TODO: Switch to user
+    return _client_for_user("admin", accounts)
 
 
 @pytest.fixture(scope="module")
@@ -66,17 +72,20 @@ def admin_client(accounts):
 
 @pytest.fixture(scope="module")
 def sim_host(admin_client, sim_agent):
-    return create_type_by_uuid(admin_client, "host", "simhost1", kind="sim", agentId=sim_agent.id)
+    return create_type_by_uuid(admin_client, "host", "simhost1", kind="sim",
+                               agentId=sim_agent.id)
 
 
 @pytest.fixture(scope="module")
 def sim_external_pool(admin_client):
-    return create_type_by_uuid(admin_client, "storagePool", "simexternalpool", kind="sim", external=True)
+    return create_type_by_uuid(admin_client, "storagePool", "simexternalpool",
+                               kind="sim", external=True)
 
 
 @pytest.fixture(scope="module")
 def sim_pool(admin_client, sim_host, sim_agent):
-    pool = create_type_by_uuid(admin_client, "storagePool", "simpool1", kind="sim", agentId=sim_agent.id)
+    pool = create_type_by_uuid(admin_client, "storagePool", "simpool1",
+                               kind="sim", agentId=sim_agent.id)
     assert not pool.external
 
     create_type_by_uuid(admin_client, "storagePoolHostMap", "simpool1-simhost",
@@ -87,7 +96,8 @@ def sim_pool(admin_client, sim_host, sim_agent):
 
 @pytest.fixture(scope="module")
 def sim_agent(admin_client):
-    return create_type_by_uuid(admin_client, "agent", "simagent1", kind="sim", uri="sim://")
+    return create_type_by_uuid(admin_client, "agent", "simagent1", kind="sim",
+                               uri="sim://")
 
 
 @pytest.fixture(scope="module")
@@ -123,7 +133,7 @@ def create_type_by_uuid(admin_client, type, uuid, activate=True, **kw):
 
 
 def random_num():
-    return random.randint(0, 1000000);
+    return random.randint(0, 1000000)
 
 
 def wait_success(client, obj):
@@ -151,3 +161,23 @@ def assert_fields(obj, fields):
             assert obj[k] is not None
         else:
             assert obj[k] == v
+
+
+def assert_removed_fields(obj):
+    assert obj.removed is not None
+    assert obj.removeTime is not None
+
+    assert obj.removeTimeTS > obj.removedTS
+
+
+def assert_restored_fields(obj):
+    assert obj.removed is None
+    assert obj.removeTime is None
+
+
+def now():
+    return datetime.utcnow()
+
+
+def format_time(time):
+    return (time - timedelta(microseconds=time.microsecond)).isoformat() + 'Z'

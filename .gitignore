@@ -1,4 +1,3 @@
-_*
 __pycache__
 
 .cache
@@ -9,7 +8,6 @@ __pycache__
 .tox
 
 code/packaging/app/db-*
-build
 dist
 MANIFEST
 resources/content/db/mysql/dstack_dump*.sql

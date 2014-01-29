@@ -22,7 +22,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     String name = getClass().getSimpleName();
     String kind;
-    SimpleAllocatorDao simulatorAllocatorDao;
+    SimpleAllocatorDao simpleAllocatorDao;
 
     @Override
     protected LockDefinition getAllocationLock(AllocationRequest request, AllocationAttempt attempt) {
@@ -37,9 +37,9 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         }
 
         if ( request.getInstance() == null ) {
-            return simulatorAllocatorDao.iteratorPools(volumeIds, kind);
+            return simpleAllocatorDao.iteratorPools(volumeIds, kind);
         } else {
-            return simulatorAllocatorDao.iteratorHosts(volumeIds, kind);
+            return simpleAllocatorDao.iteratorHosts(volumeIds, kind);
         }
     }
 
@@ -57,21 +57,21 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     protected boolean supports(AllocationRequest request) {
         switch(request.getType()) {
         case INSTANCE:
-            return simulatorAllocatorDao.isInstance(request.getResourceId(), kind);
+            return simpleAllocatorDao.isInstance(request.getResourceId(), kind);
         case VOLUME:
-            return simulatorAllocatorDao.isVolume(request.getResourceId(), kind);
+            return simpleAllocatorDao.isVolume(request.getResourceId(), kind);
         }
 
         return false;
     }
 
     public SimpleAllocatorDao getSimulatorAllocatorDao() {
-        return simulatorAllocatorDao;
+        return simpleAllocatorDao;
     }
 
     @Inject
     public void setSimulatorAllocatorDao(SimpleAllocatorDao simulatorAllocatorDao) {
-        this.simulatorAllocatorDao = simulatorAllocatorDao;
+        this.simpleAllocatorDao = simulatorAllocatorDao;
     }
 
     @Override

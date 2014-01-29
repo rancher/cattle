@@ -56,7 +56,7 @@ public class Configuration extends DefaultConfiguration {
 
         set(settings);
 
-        if ( listeners != null ) {
+        if ( listeners != null && listeners.size() > 0 ) {
             settings().setExecuteLogging(false);
             set(DefaultExecuteListenerProvider.providers(listeners.toArray(new ExecuteListener[listeners.size()])));
         }

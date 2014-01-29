@@ -5,5 +5,12 @@
             "create": true,
             "type": "reference[agent]"
         }
+    },
+    "collectionFilters": {
+        "eventNames": {
+            "modifiers": [
+                "eq"
+            ]
+        }
     }
 }

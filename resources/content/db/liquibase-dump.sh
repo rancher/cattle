@@ -7,4 +7,4 @@ DRIVER=${DRIVER:-"$HOME/.m2/repository/mysql/mysql-connector-java/5.1.26/mysql-c
 
 $LIQUIBASE_HOME/liquibase --classpath="$DRIVER" --driver=com.mysql.jdbc.Driver --changeLogFile=dump.xml --url="jdbc:mysql://localhost:3306/$DB" --username=$DB --password=$DB generateChangeLog
 
-sed -i -E 's/138[0-9]+-([0-9]+)/dump\1/g' dump.xml
+sed -i -E 's/id="[0-9]+-([0-9]+)/id="dump\1/g' dump.xml

@@ -11,12 +11,12 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "process_instance", schema = "dstack")
-public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long>, io.github.ibuildthecloud.dstack.core.model.ProcessInstance {
+public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.ProcessInstance {
 
-	private static final long serialVersionUID = -1593679050;
+	private static final long serialVersionUID = 1719293508;
 
 	/**
-	 * Setter for <code>dstack.process_instance.id</code>. 
+	 * Setter for <code>dstack.process_instance.id</code>.
 	 */
 	@Override
 	public void setId(java.lang.Long value) {
@@ -24,7 +24,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.id</code>. 
+	 * Getter for <code>dstack.process_instance.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 20)
@@ -34,41 +34,41 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.start_time</code>. 
+	 * Setter for <code>dstack.process_instance.start_time</code>.
 	 */
 	@Override
-	public void setStartTime(java.sql.Timestamp value) {
+	public void setStartTime(java.util.Date value) {
 		setValue(1, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.start_time</code>. 
+	 * Getter for <code>dstack.process_instance.start_time</code>.
 	 */
 	@javax.persistence.Column(name = "start_time")
 	@Override
-	public java.sql.Timestamp getStartTime() {
-		return (java.sql.Timestamp) getValue(1);
+	public java.util.Date getStartTime() {
+		return (java.util.Date) getValue(1);
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.end_time</code>. 
+	 * Setter for <code>dstack.process_instance.end_time</code>.
 	 */
 	@Override
-	public void setEndTime(java.sql.Timestamp value) {
+	public void setEndTime(java.util.Date value) {
 		setValue(2, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.end_time</code>. 
+	 * Getter for <code>dstack.process_instance.end_time</code>.
 	 */
 	@javax.persistence.Column(name = "end_time")
 	@Override
-	public java.sql.Timestamp getEndTime() {
-		return (java.sql.Timestamp) getValue(2);
+	public java.util.Date getEndTime() {
+		return (java.util.Date) getValue(2);
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.log</code>. 
+	 * Setter for <code>dstack.process_instance.log</code>.
 	 */
 	@Override
 	public void setLog(java.util.Map<String,Object> value) {
@@ -76,7 +76,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.log</code>. 
+	 * Getter for <code>dstack.process_instance.log</code>.
 	 */
 	@javax.persistence.Column(name = "log", length = 16777215)
 	@Override
@@ -85,7 +85,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.data</code>. 
+	 * Setter for <code>dstack.process_instance.data</code>.
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
@@ -93,7 +93,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.data</code>. 
+	 * Getter for <code>dstack.process_instance.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
@@ -102,7 +102,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.process_name</code>. 
+	 * Setter for <code>dstack.process_instance.process_name</code>.
 	 */
 	@Override
 	public void setProcessName(java.lang.String value) {
@@ -110,7 +110,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.process_name</code>. 
+	 * Getter for <code>dstack.process_instance.process_name</code>.
 	 */
 	@javax.persistence.Column(name = "process_name", length = 128)
 	@Override
@@ -119,7 +119,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.resource_type</code>. 
+	 * Setter for <code>dstack.process_instance.resource_type</code>.
 	 */
 	@Override
 	public void setResourceType(java.lang.String value) {
@@ -127,7 +127,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.resource_type</code>. 
+	 * Getter for <code>dstack.process_instance.resource_type</code>.
 	 */
 	@javax.persistence.Column(name = "resource_type", length = 128)
 	@Override
@@ -136,7 +136,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.resource_id</code>. 
+	 * Setter for <code>dstack.process_instance.resource_id</code>.
 	 */
 	@Override
 	public void setResourceId(java.lang.String value) {
@@ -144,7 +144,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.resource_id</code>. 
+	 * Getter for <code>dstack.process_instance.resource_id</code>.
 	 */
 	@javax.persistence.Column(name = "resource_id", length = 128)
 	@Override
@@ -153,7 +153,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.result</code>. 
+	 * Setter for <code>dstack.process_instance.result</code>.
 	 */
 	@Override
 	public void setResult(java.lang.String value) {
@@ -161,7 +161,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.result</code>. 
+	 * Getter for <code>dstack.process_instance.result</code>.
 	 */
 	@javax.persistence.Column(name = "result", length = 128)
 	@Override
@@ -170,7 +170,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.exit_reason</code>. 
+	 * Setter for <code>dstack.process_instance.exit_reason</code>.
 	 */
 	@Override
 	public void setExitReason(java.lang.String value) {
@@ -178,7 +178,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.exit_reason</code>. 
+	 * Getter for <code>dstack.process_instance.exit_reason</code>.
 	 */
 	@javax.persistence.Column(name = "exit_reason", length = 128)
 	@Override
@@ -187,7 +187,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.phase</code>. 
+	 * Setter for <code>dstack.process_instance.phase</code>.
 	 */
 	@Override
 	public void setPhase(java.lang.String value) {
@@ -195,7 +195,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.phase</code>. 
+	 * Getter for <code>dstack.process_instance.phase</code>.
 	 */
 	@javax.persistence.Column(name = "phase", length = 128)
 	@Override
@@ -204,37 +204,37 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.start_process_server_id</code>. 
+	 * Setter for <code>dstack.process_instance.start_process_server_id</code>.
 	 */
 	@Override
-	public void setStartProcessServerId(java.lang.Long value) {
+	public void setStartProcessServerId(java.lang.String value) {
 		setValue(11, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.start_process_server_id</code>. 
+	 * Getter for <code>dstack.process_instance.start_process_server_id</code>.
 	 */
-	@javax.persistence.Column(name = "start_process_server_id", precision = 20)
+	@javax.persistence.Column(name = "start_process_server_id", length = 128)
 	@Override
-	public java.lang.Long getStartProcessServerId() {
-		return (java.lang.Long) getValue(11);
+	public java.lang.String getStartProcessServerId() {
+		return (java.lang.String) getValue(11);
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.running_process_server_id</code>. 
+	 * Setter for <code>dstack.process_instance.running_process_server_id</code>.
 	 */
 	@Override
-	public void setRunningProcessServerId(java.lang.Long value) {
+	public void setRunningProcessServerId(java.lang.String value) {
 		setValue(12, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.process_instance.running_process_server_id</code>. 
+	 * Getter for <code>dstack.process_instance.running_process_server_id</code>.
 	 */
-	@javax.persistence.Column(name = "running_process_server_id", precision = 20)
+	@javax.persistence.Column(name = "running_process_server_id", length = 128)
 	@Override
-	public java.lang.Long getRunningProcessServerId() {
-		return (java.lang.Long) getValue(12);
+	public java.lang.String getRunningProcessServerId() {
+		return (java.lang.String) getValue(12);
 	}
 
 	// -------------------------------------------------------------------------
@@ -257,7 +257,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long> fieldsRow() {
+	public org.jooq.Row13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
 		return (org.jooq.Row13) super.fieldsRow();
 	}
 
@@ -265,7 +265,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.sql.Timestamp, java.sql.Timestamp, java.util.Map<String,Object>, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long> valuesRow() {
+	public org.jooq.Row13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
 		return (org.jooq.Row13) super.valuesRow();
 	}
 
@@ -281,7 +281,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field2() {
+	public org.jooq.Field<java.util.Date> field2() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.START_TIME;
 	}
 
@@ -289,7 +289,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.sql.Timestamp> field3() {
+	public org.jooq.Field<java.util.Date> field3() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.END_TIME;
 	}
 
@@ -361,7 +361,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field12() {
+	public org.jooq.Field<java.lang.String> field12() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.START_PROCESS_SERVER_ID;
 	}
 
@@ -369,7 +369,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field13() {
+	public org.jooq.Field<java.lang.String> field13() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.RUNNING_PROCESS_SERVER_ID;
 	}
 
@@ -385,7 +385,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value2() {
+	public java.util.Date value2() {
 		return getStartTime();
 	}
 
@@ -393,7 +393,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.sql.Timestamp value3() {
+	public java.util.Date value3() {
 		return getEndTime();
 	}
 
@@ -465,7 +465,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value12() {
+	public java.lang.String value12() {
 		return getStartProcessServerId();
 	}
 
@@ -473,7 +473,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value13() {
+	public java.lang.String value13() {
 		return getRunningProcessServerId();
 	}
 
@@ -490,7 +490,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProcessInstanceRecord value2(java.sql.Timestamp value) {
+	public ProcessInstanceRecord value2(java.util.Date value) {
 		setStartTime(value);
 		return this;
 	}
@@ -499,7 +499,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProcessInstanceRecord value3(java.sql.Timestamp value) {
+	public ProcessInstanceRecord value3(java.util.Date value) {
 		setEndTime(value);
 		return this;
 	}
@@ -580,7 +580,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProcessInstanceRecord value12(java.lang.Long value) {
+	public ProcessInstanceRecord value12(java.lang.String value) {
 		setStartProcessServerId(value);
 		return this;
 	}
@@ -589,7 +589,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProcessInstanceRecord value13(java.lang.Long value) {
+	public ProcessInstanceRecord value13(java.lang.String value) {
 		setRunningProcessServerId(value);
 		return this;
 	}
@@ -598,7 +598,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProcessInstanceRecord values(java.lang.Long value1, java.sql.Timestamp value2, java.sql.Timestamp value3, java.util.Map<String,Object> value4, java.util.Map<String,Object> value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.String value9, java.lang.String value10, java.lang.String value11, java.lang.Long value12, java.lang.Long value13) {
+	public ProcessInstanceRecord values(java.lang.Long value1, java.util.Date value2, java.util.Date value3, java.util.Map<String,Object> value4, java.util.Map<String,Object> value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.String value9, java.lang.String value10, java.lang.String value11, java.lang.String value12, java.lang.String value13) {
 		return this;
 	}
 
@@ -649,7 +649,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Create a detached, initialised ProcessInstanceRecord
 	 */
-	public ProcessInstanceRecord(java.lang.Long id, java.sql.Timestamp startTime, java.sql.Timestamp endTime, java.util.Map<String,Object> log, java.util.Map<String,Object> data, java.lang.String processName, java.lang.String resourceType, java.lang.String resourceId, java.lang.String result, java.lang.String exitReason, java.lang.String phase, java.lang.Long startProcessServerId, java.lang.Long runningProcessServerId) {
+	public ProcessInstanceRecord(java.lang.Long id, java.util.Date startTime, java.util.Date endTime, java.util.Map<String,Object> log, java.util.Map<String,Object> data, java.lang.String processName, java.lang.String resourceType, java.lang.String resourceId, java.lang.String result, java.lang.String exitReason, java.lang.String phase, java.lang.String startProcessServerId, java.lang.String runningProcessServerId) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE);
 
 		setValue(0, id);

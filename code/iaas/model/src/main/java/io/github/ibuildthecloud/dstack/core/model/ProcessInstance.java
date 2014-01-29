@@ -14,148 +14,148 @@ package io.github.ibuildthecloud.dstack.core.model;
 public interface ProcessInstance extends java.io.Serializable {
 
 	/**
-	 * Setter for <code>dstack.process_instance.id</code>. 
+	 * Setter for <code>dstack.process_instance.id</code>.
 	 */
 	public void setId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.id</code>. 
+	 * Getter for <code>dstack.process_instance.id</code>.
 	 */
 	@javax.persistence.Id
 	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 20)
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.process_instance.start_time</code>. 
+	 * Setter for <code>dstack.process_instance.start_time</code>.
 	 */
-	public void setStartTime(java.sql.Timestamp value);
+	public void setStartTime(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.start_time</code>. 
+	 * Getter for <code>dstack.process_instance.start_time</code>.
 	 */
 	@javax.persistence.Column(name = "start_time")
-	public java.sql.Timestamp getStartTime();
+	public java.util.Date getStartTime();
 
 	/**
-	 * Setter for <code>dstack.process_instance.end_time</code>. 
+	 * Setter for <code>dstack.process_instance.end_time</code>.
 	 */
-	public void setEndTime(java.sql.Timestamp value);
+	public void setEndTime(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.end_time</code>. 
+	 * Getter for <code>dstack.process_instance.end_time</code>.
 	 */
 	@javax.persistence.Column(name = "end_time")
-	public java.sql.Timestamp getEndTime();
+	public java.util.Date getEndTime();
 
 	/**
-	 * Setter for <code>dstack.process_instance.log</code>. 
+	 * Setter for <code>dstack.process_instance.log</code>.
 	 */
 	public void setLog(java.util.Map<String,Object> value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.log</code>. 
+	 * Getter for <code>dstack.process_instance.log</code>.
 	 */
 	@javax.persistence.Column(name = "log", length = 16777215)
 	public java.util.Map<String,Object> getLog();
 
 	/**
-	 * Setter for <code>dstack.process_instance.data</code>. 
+	 * Setter for <code>dstack.process_instance.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.data</code>. 
+	 * Getter for <code>dstack.process_instance.data</code>.
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
 	/**
-	 * Setter for <code>dstack.process_instance.process_name</code>. 
+	 * Setter for <code>dstack.process_instance.process_name</code>.
 	 */
 	public void setProcessName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.process_name</code>. 
+	 * Getter for <code>dstack.process_instance.process_name</code>.
 	 */
 	@javax.persistence.Column(name = "process_name", length = 128)
 	public java.lang.String getProcessName();
 
 	/**
-	 * Setter for <code>dstack.process_instance.resource_type</code>. 
+	 * Setter for <code>dstack.process_instance.resource_type</code>.
 	 */
 	public void setResourceType(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.resource_type</code>. 
+	 * Getter for <code>dstack.process_instance.resource_type</code>.
 	 */
 	@javax.persistence.Column(name = "resource_type", length = 128)
 	public java.lang.String getResourceType();
 
 	/**
-	 * Setter for <code>dstack.process_instance.resource_id</code>. 
+	 * Setter for <code>dstack.process_instance.resource_id</code>.
 	 */
 	public void setResourceId(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.resource_id</code>. 
+	 * Getter for <code>dstack.process_instance.resource_id</code>.
 	 */
 	@javax.persistence.Column(name = "resource_id", length = 128)
 	public java.lang.String getResourceId();
 
 	/**
-	 * Setter for <code>dstack.process_instance.result</code>. 
+	 * Setter for <code>dstack.process_instance.result</code>.
 	 */
 	public void setResult(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.result</code>. 
+	 * Getter for <code>dstack.process_instance.result</code>.
 	 */
 	@javax.persistence.Column(name = "result", length = 128)
 	public java.lang.String getResult();
 
 	/**
-	 * Setter for <code>dstack.process_instance.exit_reason</code>. 
+	 * Setter for <code>dstack.process_instance.exit_reason</code>.
 	 */
 	public void setExitReason(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.exit_reason</code>. 
+	 * Getter for <code>dstack.process_instance.exit_reason</code>.
 	 */
 	@javax.persistence.Column(name = "exit_reason", length = 128)
 	public java.lang.String getExitReason();
 
 	/**
-	 * Setter for <code>dstack.process_instance.phase</code>. 
+	 * Setter for <code>dstack.process_instance.phase</code>.
 	 */
 	public void setPhase(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.phase</code>. 
+	 * Getter for <code>dstack.process_instance.phase</code>.
 	 */
 	@javax.persistence.Column(name = "phase", length = 128)
 	public java.lang.String getPhase();
 
 	/**
-	 * Setter for <code>dstack.process_instance.start_process_server_id</code>. 
+	 * Setter for <code>dstack.process_instance.start_process_server_id</code>.
 	 */
-	public void setStartProcessServerId(java.lang.Long value);
+	public void setStartProcessServerId(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.start_process_server_id</code>. 
+	 * Getter for <code>dstack.process_instance.start_process_server_id</code>.
 	 */
-	@javax.persistence.Column(name = "start_process_server_id", precision = 20)
-	public java.lang.Long getStartProcessServerId();
+	@javax.persistence.Column(name = "start_process_server_id", length = 128)
+	public java.lang.String getStartProcessServerId();
 
 	/**
-	 * Setter for <code>dstack.process_instance.running_process_server_id</code>. 
+	 * Setter for <code>dstack.process_instance.running_process_server_id</code>.
 	 */
-	public void setRunningProcessServerId(java.lang.Long value);
+	public void setRunningProcessServerId(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.process_instance.running_process_server_id</code>. 
+	 * Getter for <code>dstack.process_instance.running_process_server_id</code>.
 	 */
-	@javax.persistence.Column(name = "running_process_server_id", precision = 20)
-	public java.lang.Long getRunningProcessServerId();
+	@javax.persistence.Column(name = "running_process_server_id", length = 128)
+	public java.lang.String getRunningProcessServerId();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

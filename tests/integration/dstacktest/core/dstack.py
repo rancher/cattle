@@ -25,7 +25,6 @@ CREATE = "create-"
 UPDATE = "update-"
 DELETE = "delete-"
 ACTION = "action-"
-COMMAND_TYPES = [LIST, CREATE, UPDATE, DELETE, ACTION]
 
 GET_METHOD = "GET"
 POST_METHOD = "POST"
@@ -59,7 +58,11 @@ def timed_url(fn):
 
 
 class RestObject:
-    def _is_public(self, k, v):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def _is_public(k, v):
         return k not in ["links", "actions", "id", "type"] and not callable(v)
 
     def __str__(self):
@@ -100,6 +103,7 @@ class RestObject:
     def __iter__(self):
         if self._is_list():
             return iter(self.data)
+
 
 class Schema:
     def __init__(self, text, obj):
@@ -154,7 +158,8 @@ class ApiError(Exception):
     def __init__(self, obj):
         self.error = obj
         try:
-            super(ApiError, self).__init__(self, "{} : {}\n{}".format(obj.code, obj.message, obj))
+            msg = "{} : {}\n{}".format(obj.code, obj.message, obj)
+            super(ApiError, self).__init__(self, msg)
         except:
             super(ApiError, self).__init__(self, "API Error")
 
@@ -164,7 +169,7 @@ class ClientApiError(Exception):
 
 
 class Client:
-    def __init__(self, access_key=None, secret_key=None, url=None, cache=None,
+    def __init__(self, access_key=None, secret_key=None, url=None, cache=False,
                  cache_time=86400, strict=False, **kw):
         self._access_key = access_key
         self._secret_key = secret_key
@@ -195,7 +200,8 @@ class Client:
             for k, v in obj.iteritems():
                 setattr(result, k, self.object_hook(v))
 
-            if hasattr(result, "type") and isinstance(getattr(result, "type"), basestring):
+            if hasattr(result, "type") and isinstance(getattr(result, "type"),
+                                                      basestring):
                 if hasattr(result, "links"):
                     for link_name, link in result.links.iteritems():
                         cb = lambda link=link: \
@@ -330,13 +336,13 @@ class Client:
         if not self._strict:
             return
 
-        collectionFilters = self.schema.types[type].collectionFilters
+        collection_filters = self.schema.types[type].collectionFilters
 
         for k in kw:
-            if hasattr(collectionFilters, k):
+            if hasattr(collection_filters, k):
                 return
 
-            for filter_name, filter_value in collectionFilters.iteritems():
+            for filter_name, filter_value in collection_filters.iteritems():
                 for m in filter_value.modifiers:
                     if k == "_".join([filter_name, m]):
                         return
@@ -361,7 +367,7 @@ class Client:
     def delete(self, *args):
         for i in args:
             if isinstance(i, RestObject):
-                self._delete(i.links.self)
+                return self._delete(i.links.self)
 
     def action(self, obj, action_name, *args, **kw):
         url = obj.actions[action_name]
@@ -434,6 +440,9 @@ class Client:
             f.write(text)
 
     def _get_cached_schema(self):
+        if not self._cache:
+            return None
+
         cached_schema = self._get_cached_schema_file_name()
 
         if not cached_schema:
@@ -447,117 +456,6 @@ class Client:
                 return data
 
         return None
-
-    def _all_commands(self, lst=True, update=True, remove=True, create=True):
-        for type, schema in self.schema.types.iteritems():
-            if schema.listable:
-                yield LIST + type
-            if schema.creatable:
-                yield CREATE + type
-            if schema.updatable:
-                yield UPDATE + type
-            if schema.deletable:
-                yield DELETE + type
-
-            if hasattr(schema, "resourceActions"):
-                for k in schema.resourceActions:
-                    yield ACTION + "-".join([type, k])
-
-    def _possible_args(self, command_type, type_name, action_name):
-        result = []
-        type_def = self.schema.types[type_name]
-
-        if command_type == ACTION:
-            result.append("id")
-            action_def = type_def.resourceActions[action_name]
-            if hasattr(action_def, "input"):
-                type_def = self.schema.types[action_def.input]
-
-        if command_type == LIST and type_def.listable:
-            try:
-                for name, filter in type_def.collectionFilters.iteritems():
-                    result.append(name)
-                    for m in filter.modifiers:
-                        if m != "eq":
-                            result.append(name + "_" + m)
-            except:
-                pass
-
-        try:
-            for name, field in type_def.resourceFields.iteritems():
-                if ((command_type == CREATE and type_def.creatable) or
-                        command_type == ACTION) and \
-                        hasattr(field, "create") and field.create:
-                    result.append(name)
-                if command_type == UPDATE and type_def.updatable and \
-                        hasattr(field, "update") and field.update:
-                    result.append(name)
-        except:
-            pass
-
-        if command_type == DELETE and type_def.deletable:
-            result.append("id")
-
-        if command_type == UPDATE and type_def.updatable:
-            result.append("id")
-
-        return result
-
-    def _is_list_type(self, type_name, field_name):
-        try:
-            return self.schema.types[type_name].resourceFields[field_name]\
-                .type.startswith("array")
-        except:
-            return False
-
-    def _run(self, cmd, args):
-        if cmd not in self._all_commands():
-            return
-
-        command_type, type_name, action_name = self._decompose_command(cmd)
-        possible_args_map = {}
-        for i in self._possible_args(command_type, type_name, action_name):
-            possible_args_map[i.lower()] = i
-        new_args = {}
-
-        for k, v in args.iteritems():
-            k_l = k.lower()
-            if k_l in possible_args_map:
-                k = possible_args_map[k_l]
-
-            if self._is_list_type(type_name, k):
-                new_args[k] = v
-            else:
-                if len(v) and v[0] != "null":
-                    new_args[k] = v[0]
-                else:
-                    new_args[k] = None
-
-        if command_type == LIST:
-            for i in self.list(type_name, **new_args):
-                _print_cli(i)
-
-        if command_type == CREATE:
-            _print_cli(self.create(type_name, **new_args))
-
-        if command_type == DELETE:
-            obj = self.by_id(type_name, new_args["id"])
-            if obj:
-                self.delete(obj)
-                _print_cli(obj)
-
-        if command_type == UPDATE:
-            _print_cli(self.update_by_id(type_name, new_args["id"], new_args))
-
-        if command_type == ACTION:
-            obj = self.by_id(type_name, new_args["id"])
-            if obj:
-                _print_cli(self.action(obj, action_name, new_args))
-
-
-def _list(client, type, args):
-    for i in client.list(type, **args):
-        _print_cli(i)
 
 
 def _print_cli(obj):
@@ -590,23 +488,26 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left',
         # closure for breaking logical rows to physical, using wrapfunc
         def rowWrapper(row):
                 newRows = [wrapfunc(item).split('\n') for item in row]
-                return [[substr or '' for substr in item] for item in map(None, *newRows)]
+                return [[substr or '' for substr in item] for item in map(None, *newRows)]  # NOQA
         # break each logical row into one or more physical ones
         logicalRows = [rowWrapper(row) for row in rows]
         # columns of physical rows
         columns = map(None, *reduce(operator.add, logicalRows))
         # get the maximum of each column by the string length of its items
-        maxWidths = [max([len(str(item)) for item in column]) for column in columns]
-        rowSeparator = headerChar * (len(prefix) + len(postfix) + sum(maxWidths) + len(delim)*(len(maxWidths)-1))
+        maxWidths = [max([len(str(item)) for item in column])
+                     for column in columns]
+        rowSeparator = headerChar * (len(prefix) + len(postfix) +
+                                     sum(maxWidths) +
+                                     len(delim)*(len(maxWidths)-1))
         # select the appropriate justify method
-        justify = {'center': str.center, 'right': str.rjust, 'left': str.ljust}[justify.lower()]
+        justify = {'center': str.center, 'right': str.rjust, 'left': str.ljust}[justify.lower()]  # NOQA
         output = cStringIO.StringIO()
         if separateRows:
             print >> output, rowSeparator
         for physicalRows in logicalRows:
             for row in physicalRows:
                 print >> output, prefix \
-                    + delim.join([justify(str(item), width) for (item, width) in zip(row, maxWidths)]) + postfix
+                    + delim.join([justify(str(item), width) for (item, width) in zip(row, maxWidths)]) + postfix  # NOQA
             if separateRows or hasHeader:
                 print >> output, rowSeparator
                 hasHeader = False
@@ -619,7 +520,8 @@ def _env_prefix(cmd):
 
 
 def from_env(prefix, **kw):
-    args = dict((x, None) for x in ["access_key", "secret_key", "url", "cache", "cache_time", "strict"])
+    args = dict((x, None) for x in ["access_key", "secret_key", "url", "cache",
+                                    "cache_time", "strict"])
     args.update(kw)
     if not prefix.endswith("_"):
         prefix += "_"
@@ -638,6 +540,11 @@ def _from_env(prefix=PREFIX + "_", **kw):
         if result[k] is None:
             del result[k]
 
+    if 'cache_time' in result:
+        result['cache_time'] = int(result['cache_time'])
+
+    if 'cache' in result:
+        result['cache'] = result['cache'] is True or result['cache'] == 'true'
     return Client(**result)
 
 
@@ -648,7 +555,8 @@ def _general_args(help=True):
     parser.add_argument("--access-key")
     parser.add_argument("--secret-key")
     parser.add_argument("--url")
-    parser.add_argument("--cache", dest="cache", action="store_true", default=True)
+    parser.add_argument("--cache", dest="cache", action="store_true",
+                        default=True)
     parser.add_argument("--no-cache", dest="cache", action="store_false")
     parser.add_argument("--cache-time", type=int)
     parser.add_argument("--strict", type=bool)
@@ -657,7 +565,8 @@ def _general_args(help=True):
 
 
 def _list_args(subparsers, client, type, schema):
-    subparser = subparsers.add_parser(LIST + type, help=LIST[0:len(LIST)-1].capitalize() + " " + type)
+    help_msg = LIST[0:len(LIST)-1].capitalize() + " " + type
+    subparser = subparsers.add_parser(LIST + type, help=help_msg)
     for name, filter in schema.collectionFilters.iteritems():
         subparser.add_argument("--" + name)
         for m in filter.modifiers:
@@ -669,8 +578,9 @@ def _list_args(subparsers, client, type, schema):
 
 def _generic_args(subparsers, operation, field_key, type, schema):
     prefix = operation + type
-    subparser = subparsers.add_parser(prefix,
-                                      help=operation[0:len(operation)-1].capitalize() + " " + type + " resource")
+    help_msg_prefix = operation[0:len(operation)-1].capitalize()
+    help_msg = help_msg_prefix + " " + type + " resource"
+    subparser = subparsers.add_parser(prefix, help=help_msg)
 
     for name, field in schema.resourceFields.iteritems():
         if field.get(field_key) is True:
@@ -682,10 +592,6 @@ def _generic_args(subparsers, operation, field_key, type, schema):
     return subparser
 
 
-def log(msg):
-    print "HI", msg
-
-
 def _full_args(client):
     parser = _general_args()
     subparsers = parser.add_subparsers(help="Sub-Command Help")
@@ -694,10 +600,12 @@ def _full_args(client):
             subparser = _list_args(subparsers, client, type, schema)
             subparser.set_defaults(_action=LIST, _type=type)
         if schema.creatable:
-            subparser = _generic_args(subparsers, CREATE, "create", type, schema)
+            subparser = _generic_args(subparsers, CREATE, "create", type,
+                                      schema)
             subparser.set_defaults(_action=CREATE, _type=type)
         if schema.updatable:
-            subparser = _generic_args(subparsers, UPDATE, "update", type, schema)
+            subparser = _generic_args(subparsers, UPDATE, "update", type,
+                                      schema)
             subparser.add_argument("--id")
             subparser.set_defaults(_action=UPDATE, _type=type)
     argcomplete.autocomplete(parser)
@@ -727,7 +635,8 @@ def _run_cli(client, namespace):
         if command_type == ACTION:
             obj = client.by_id(type_name, args["id"])
             if obj:
-                _print_cli(client.action(obj, action_name, args))
+                raise Exception("Unsupported")
+                #_print_cli(client.action(obj, action_name, args))
     except ApiError, e:
         import sys
 
