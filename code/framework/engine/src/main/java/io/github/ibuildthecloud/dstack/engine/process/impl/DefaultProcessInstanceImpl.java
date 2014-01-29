@@ -456,7 +456,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         String newState = state.getState();
         if ( ! previousState.equals(newState) ) {
             preRunStateCheck();
-            throw new ProcessExecutionExitException(STATE_CHANGED);
+            throw new ProcessExecutionExitException("Previous state [" + previousState +
+                    "] does not equal current state [" + newState + "]", STATE_CHANGED);
         }
     }
 
@@ -484,6 +485,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
         String previousState = state.getState();
         String newState = state.setTransitioning();
+        log.info("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(),
+                record.getResourceId());
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, "transitioning", now()));
         publishChanged();
     }
@@ -493,6 +496,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
         String previousState = state.getState();
         String newState = state.setDone();
+        log.info("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(),
+                record.getResourceId());
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, "done", now()));
         publishChanged();
     }

@@ -7,7 +7,7 @@
             <level>INFO</level>
         </filter>
         <encoder>
-            <pattern>%date{ISO8601} %-5.5p [%25.25X{prettyResource}] [%-15.15t] [%-36.36logger{36}] %m -- [%X{agentId}][%X{processUuid}:%X{processId}][%X{logicPath}] %xEx%n</pattern>
+            <pattern>%date{ISO8601} %-5.5p [%X{processUuid}:%X{processId}] [%X{prettyResource}] [%X{logicPath}] [%X{agentId}] [%-15.15t] [%-36.36logger{36}] %m %xEx%n</pattern>
         </encoder>
     </appender>
 

@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.dstack.object.impl;
 
 import io.github.ibuildthecloud.dstack.engine.idempotent.Idempotent;
+import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecution;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecutionNoReturn;
 import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
@@ -105,9 +106,18 @@ public class JooqObjectManager extends AbstractObjectManager {
         return obj;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T setFields(final Object obj, final Map<String,Object> values) {
+        return Idempotent.change(new IdempotentExecution<T>() {
+            @Override
+            public T execute() {
+                return setFieldsInternal(obj, values);
+            }
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T setFieldsInternal(final Object obj, final Map<String,Object> values) {
         final List<UpdatableRecord<?>> pending = new ArrayList<UpdatableRecord<?>>();
         Map<Object,Object> toWrite = toObjectsToWrite(obj, values);
         setFields(obj, toWrite, pending);
@@ -164,18 +174,13 @@ public class JooqObjectManager extends AbstractObjectManager {
     }
 
     protected void persistRecord(final UpdatableRecord<?> record) {
-        Idempotent.change(new IdempotentExecutionNoReturn() {
-            @Override
-            protected void executeNoResult() {
-                record.attach(getLockingConfiguration());
+        record.attach(getLockingConfiguration());
 
-                if ( record.changed() ) {
-                    if ( record.update() == 0 ) {
-                        throw new IllegalStateException("Failed to update [" + record + "]");
-                    }
-                }
+        if ( record.changed() ) {
+            if ( record.update() == 0 ) {
+                throw new IllegalStateException("Failed to update [" + record + "]");
             }
-        });
+        }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

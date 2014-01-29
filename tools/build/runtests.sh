@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+trap cleanup EXIT
+
+cleanup()
+{
+    if [ "$LASTPID" != "" ]
+    then
+        kill $LASTPID
+    fi
+}
+
 PORT=8080
 
 cd $(dirname $0)/../..
@@ -38,8 +48,3 @@ cd tests/integration
 tox $TOXARGS
 cd ../../code/agent/src/agents/pyagent
 tox $TOXARGS
-
-if [ "$LASTPID" != "" ]
-then
-    kill $LASTPID
-fi

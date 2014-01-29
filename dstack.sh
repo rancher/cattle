@@ -14,7 +14,7 @@ run()
     mkdir -p runtime
     cd runtime
 
-    java -jar $WAR
+    exec java -jar $WAR
 }
 
 build()

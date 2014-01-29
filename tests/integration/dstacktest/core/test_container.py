@@ -1,5 +1,5 @@
 from common_fixtures import *  # NOQA
-from datetime import datetime, timedelta
+from datetime import timedelta
 import time
 
 

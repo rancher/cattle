@@ -16,6 +16,7 @@ resources/content/modules.properties
 runtime
 target
 
+*.egg-info
 *.launch
 *.log
 *.pyc

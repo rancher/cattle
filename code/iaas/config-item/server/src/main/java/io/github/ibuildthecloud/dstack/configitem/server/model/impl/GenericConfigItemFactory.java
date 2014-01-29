@@ -86,6 +86,7 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
         }
 
         Map<String,Map<String,URL>> config = new TreeMap<String, Map<String,URL>>();
+        outer:
         for ( URL resource : resources ) {
             String name = null;
             String path = null;
@@ -119,7 +120,7 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
 
             for ( String part : path.split("[/\\\\]") ) {
                 if ( AbstractCachingResourceRoot.shouldIgnore(part) ) {
-                    continue;
+                    continue outer;
                 }
             }
 

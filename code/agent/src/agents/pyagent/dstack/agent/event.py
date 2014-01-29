@@ -91,7 +91,8 @@ def _worker(queue, ppid):
 
 
 class EventClient:
-    def __init__(self, url, auth=None, workers=20, agent_id=None, queue_depth=Config.queue_depth()):
+    def __init__(self, url, auth=None, workers=20, agent_id=None,
+                 queue_depth=Config.queue_depth()):
         if url.endswith("/schemas"):
             url = url[0:len(url)-len("/schemas")]
         self._url = url + "/subscribe"
