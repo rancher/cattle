@@ -1,0 +1,6 @@
+FROM ibuildthecloud/ubuntu-core-base:13.10
+RUN yes | apt-get install --no-install-recommends openjdk-7-jre-headless
+FROM ibuildthecloud/dstack-buildenv
+ADD artifacts /var/lib/dstack
+CMD ["/var/lib/dstack/dstack.sh" ]
+EXPOSE 8080

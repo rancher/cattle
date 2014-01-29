@@ -17,6 +17,7 @@
         <jooq.version>3.3.0-SNAPSHOT</jooq.version>
         <spring.version>3.2.4.RELEASE</spring.version>
         <metrics.version>3.0.1</metrics.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
         <dependency>

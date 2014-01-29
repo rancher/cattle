@@ -20,6 +20,10 @@ run()
 build()
 {
     mvn install
+    mkdir -p dist/artifacts
+    cp code/packaging/app/target/*.war dist/artifacts/dstack.war
+    cp tools/docker/wrapper.sh dist/artifacts/dstack.sh
+    cp tools/docker/Dockerfile.dist dist/Dockerfile
 }
 
 if [ "$#" = "0" ]; then

@@ -3,6 +3,7 @@ __pycache__
 .cache
 .classpath
 .idea
+.m2
 .project
 .settings
 .tox
