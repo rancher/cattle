@@ -35,9 +35,9 @@ fi
 
 cd tests/integration
 . ./env
-tox
+tox $TOXARGS
 cd ../../code/agent/src/agents/pyagent
-tox
+tox $TOXARGS
 
 if [ "$LASTPID" != "" ]
 then
