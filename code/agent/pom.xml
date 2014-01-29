@@ -12,6 +12,9 @@
         <resources>
             <resource>
                 <directory>src</directory>
+                <excludes>
+                    <exclude>**/.tox/**/*</exclude>
+                </excludes>
             </resource>
         </resources>
     </build>

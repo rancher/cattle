@@ -3,6 +3,6 @@ set -e
 
 cd $(dirname $0)/../..
 
-mvn -DskipTests -Dnot-iaas -Dnot-implementation install
-mvn -DskipTests -P!gdapi-java-server,!jedis,!jooq -Dnot-implementation install
-mvn -P!gdapi-java-server,!jedis,!jooq install
+mvn -T1.5C -B -DskipTests -Dnot-iaas -Dnot-implementation install
+mvn -T1.5C -B -DskipTests -P!gdapi-java-server,!jedis,!jooq -Dnot-implementation install
+mvn -T1.5C -B -P!gdapi-java-server,!jedis,!jooq install

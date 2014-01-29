@@ -1,5 +1,12 @@
 package io.github.ibuildthecloud.dstack.core.dao.impl;
 
+import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
+import io.github.ibuildthecloud.dstack.core.dao.GenericMapDao;
+import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.dstack.object.meta.Relationship;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+
 import java.util.List;
 import java.util.Map;
 
@@ -8,13 +15,6 @@ import javax.inject.Inject;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.UpdatableRecord;
-
-import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
-import io.github.ibuildthecloud.dstack.core.dao.GenericMapDao;
-import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
-import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
-import io.github.ibuildthecloud.dstack.object.meta.Relationship;
-import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao {
 
@@ -25,7 +25,8 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
     public <T> List<? extends T> findNonRemoved(Class<T> mapType, Class<?> resourceType, long resourceId) {
         String type = schemaFactory.getSchemaName(mapType);
 
-        Table<? extends T> table = getTable(mapType);
+        @SuppressWarnings("unchecked")
+        Table<? extends T> table = (Table<? extends T>)getTable(mapType);
 
         Relationship reference = getRelationship(mapType, resourceType);
         TableField<?, Object> removed = JooqUtils.getTableField(metaDataManager, type, ObjectMetaDataManager.REMOVED_FIELD);
@@ -49,7 +50,8 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
             Class<?> rightResourceType, long rightResourceId) {
         String type = schemaFactory.getSchemaName(mapType);
 
-        Table<? extends T> table = getTable(mapType);
+        @SuppressWarnings("unchecked")
+        Table<? extends T> table = (Table<? extends T>)getTable(mapType);
 
         Relationship leftReference = getRelationship(mapType, leftResourceType);
         Relationship rightReference = getRelationship(mapType, rightResourceType);
@@ -75,7 +77,8 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
     public <T> List<? extends T> findToRemove(Class<T> mapType, Class<?> resourceType, long resourceId) {
         String type = schemaFactory.getSchemaName(mapType);
 
-        Table<? extends T> table = getTable(mapType);
+        @SuppressWarnings("unchecked")
+        Table<? extends T> table = (Table<? extends T>)getTable(mapType);
 
         Relationship reference = getRelationship(mapType, resourceType);
         TableField<?, Object> removed = JooqUtils.getTableField(metaDataManager, type, ObjectMetaDataManager.REMOVED_FIELD);
