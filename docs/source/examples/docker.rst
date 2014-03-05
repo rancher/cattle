@@ -8,7 +8,7 @@ To get a basic overview of how Docker works we will use Docker to deploy a simpl
 .. image:: https://docs.google.com/drawings/d/1jXfAGAb2h0oYGZlRh-ihFWGp2bPvI4M2drOaV3ESrHc/pub?w=402&h=219
    :align: center
 
-The application will we be deploying is dStack itself and additionally log aggregation with Logstash/Elasticsearch and Kibana for the UI.  The full script to run all of the below commands is `dstack-scripts.zip download <https://github.com/ibuildthecloud/dstack/tree/master#1-download>` in docker-example.sh.
+The application will we be deploying is dStack itself and additionally log aggregation with Logstash/Elasticsearch and Kibana for the UI.  The full script to run all of the below commands is `dstack-scripts.zip download <https://github.com/ibuildthecloud/dstack/tree/master#2-download>`_ in docker-example.sh.
 
 Launch Logstash/Elastisearch
 ****************************

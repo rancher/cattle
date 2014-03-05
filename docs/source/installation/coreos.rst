@@ -13,14 +13,14 @@ The key things to note is that you must run dStack in Docker, you're not going t
 
 Adding a Server
 ***************
-When registering a server you need to specify that the user will be this core and not the root user.
+When registering a server you need to specify that the user will be the core user and not the root user.
 
 Don't put the SSH key in /home/core/.ssh/authorized_keys because that file may later be clobbered by update-ssh-keys used in CoreOS.  Instead use the update-ssh-keys script to register the key.  Additionally, when adding the agent you need specify the core user also.  Run the below commands instead of the commands in the :ref:`generic-install`.
 
 .. code-block:: bash
 
     curl -s http://<HOST:PORT>/v1/authorized_keys | update-ssh-keys -A dstack
-    curl -X POST http://<HOST:PORT>:8080/v1/agents -F user=core
+    curl -X POST http://<HOST:PORT>/v1/agents -F user=core
 
 Fleet
 *****

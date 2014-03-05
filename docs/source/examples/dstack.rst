@@ -8,7 +8,7 @@ To get a basic overview of how Docker in dStack works we will use dStack to depl
 .. image:: https://docs.google.com/drawings/d/1jXfAGAb2h0oYGZlRh-ihFWGp2bPvI4M2drOaV3ESrHc/pub?w=402&h=219
    :align: center
 
-The application will we be deploying is dStack itself and additionally log aggregation with Logstash/Elasticsearch and Kibana for the UI.  The full script to run all of the below commands is `dstack-scripts.zip download <https://github.com/ibuildthecloud/dstack/tree/master#1-download>` in dstack-example.py.
+The application will we be deploying is dStack itself and additionally log aggregation with Logstash/Elasticsearch and Kibana for the UI.  The full script to run all of the below commands is `dstack-scripts.zip download <https://github.com/ibuildthecloud/dstack/tree/master#2-download>`_ in dstack-example.py.
 
 **NOTE: dStack doesn't currently have native support for links but the semantics of links can be easily mimiced on the client side.  The link() function referenced in the following sections is a small python function to emulate the functionality of Docker links across hosts.  The source of the link() function is in the common.py file.**
 
