@@ -13,13 +13,37 @@
 
 
     <bean class="io.github.ibuildthecloud.dstack.api.schema.ObjectBasedSubSchemaFactory" >
-        <property name="id" value="admin" />
+        <property name="id" value="superadmin" />
         <property name="schemaFactory" ref="CoreSchemaFactory" />
     </bean>
 
-    <bean class="io.github.ibuildthecloud.dstack.api.schema.ObjectBasedSubSchemaFactory" >
-        <property name="id" value="readadmin" />
+    <bean id="AdminSchema" class="io.github.ibuildthecloud.dstack.api.schema.ObjectBasedSubSchemaFactory" >
+        <property name="id" value="admin" />
         <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.github.ibuildthecloud.dstack.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/admin" />
+                </bean>
+                <bean class="io.github.ibuildthecloud.dstack.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.github.ibuildthecloud.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>schema/admin/auth.json</value>
+                                    <value>schema/admin/auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ReadAdminSchema" class="io.github.ibuildthecloud.dstack.api.schema.ObjectBasedSubSchemaFactory" >
+        <property name="id" value="readAdmin" />
+        <property name="schemaFactory" ref="AdminSchema" />
         <property name="postProcessors">
             <list>
                 <bean class="io.github.ibuildthecloud.dstack.schema.processor.NotWritablePostProcessor" />
@@ -32,16 +56,25 @@
         </property>
     </bean>
 
-    <bean class="io.github.ibuildthecloud.dstack.api.schema.ObjectBasedSubSchemaFactory" >
+    <bean id="User" class="io.github.ibuildthecloud.dstack.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="user" />
-        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="schemaFactory" ref="AdminSchema" />
         <property name="postProcessors">
             <list>
-                <bean class="io.github.ibuildthecloud.dstack.schema.processor.NotWritablePostProcessor" />
                 <bean class="io.github.ibuildthecloud.dstack.schema.processor.JsonFileOverlayPostProcessor" >
                     <property name="path" value="schema/user" />
-                    <property name="whiteList" value="true" />
-                    <property name="explicitByDefault" value="true" />
+                </bean>
+                <bean class="io.github.ibuildthecloud.dstack.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.github.ibuildthecloud.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>schema/user/auth.json</value>
+                                    <value>schema/user/auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
                 </bean>
             </list>
         </property>

@@ -80,6 +80,7 @@ public class DefaultTcpipForwarder implements TcpipForwarder, IoHandler {
         }
         SshdSocketAddress bound = doBind(local);
         localToRemote.put(bound.getPort(), remote);
+
         return bound;
     }
 
@@ -107,6 +108,15 @@ public class DefaultTcpipForwarder implements TcpipForwarder, IoHandler {
         int port = remote.getPort() == 0 ? result.getInt() : remote.getPort();
         // TODO: Is it really safe to only store the local address after the request ?
         remoteToLocal.put(port, local);
+
+        if ( remote.getPort() == 0 ) {
+            /* TODO: This will create a leak if stopRemotePortForwarding is called
+             * because it won't be removed.  So this hack is incomplete, but works
+             * if you never change forwarding during the session.
+             */
+            remoteToLocal.put(0, local);
+        }
+
         return new SshdSocketAddress(remote.getHostName(), port);
     }
 

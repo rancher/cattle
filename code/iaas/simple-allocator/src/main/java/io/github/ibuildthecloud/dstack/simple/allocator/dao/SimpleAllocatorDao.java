@@ -7,11 +7,8 @@ import java.util.List;
 
 public interface SimpleAllocatorDao {
 
-    boolean isInstance(long instanceId, String kind);
+    Iterator<AllocationCandidate> iteratorHosts(List<Long> volumeIds, QueryOptions options);
 
-    boolean isVolume(long volumeId, String kind);
+    Iterator<AllocationCandidate> iteratorPools(List<Long> volumeIds, QueryOptions options);
 
-    Iterator<AllocationCandidate> iteratorHosts(List<Long> volumeIds, String kind);
-
-    Iterator<AllocationCandidate> iteratorPools(List<Long> volumeIds, String kind);
 }

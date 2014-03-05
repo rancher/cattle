@@ -37,17 +37,6 @@ public interface Image extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.image.uuid</code>.
-	 */
-	public void setUuid(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.image.uuid</code>.
-	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 255)
-	public java.lang.String getUuid();
-
-	/**
 	 * Setter for <code>dstack.image.account_id</code>.
 	 */
 	public void setAccountId(java.lang.Long value);
@@ -55,19 +44,30 @@ public interface Image extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.image.account_id</code>.
 	 */
-	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
+	@javax.persistence.Column(name = "account_id", precision = 19)
 	public java.lang.Long getAccountId();
 
 	/**
-	 * Setter for <code>dstack.image.url</code>.
+	 * Setter for <code>dstack.image.kind</code>.
 	 */
-	public void setUrl(java.lang.String value);
+	public void setKind(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.image.url</code>.
+	 * Getter for <code>dstack.image.kind</code>.
 	 */
-	@javax.persistence.Column(name = "url", length = 255)
-	public java.lang.String getUrl();
+	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
+	public java.lang.String getKind();
+
+	/**
+	 * Setter for <code>dstack.image.uuid</code>.
+	 */
+	public void setUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.image.uuid</code>.
+	 */
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
 
 	/**
 	 * Setter for <code>dstack.image.description</code>.
@@ -81,17 +81,6 @@ public interface Image extends java.io.Serializable {
 	public java.lang.String getDescription();
 
 	/**
-	 * Setter for <code>dstack.image.is_public</code>.
-	 */
-	public void setIsPublic(java.lang.Boolean value);
-
-	/**
-	 * Getter for <code>dstack.image.is_public</code>.
-	 */
-	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
-	public java.lang.Boolean getIsPublic();
-
-	/**
 	 * Setter for <code>dstack.image.state</code>.
 	 */
 	public void setState(java.lang.String value);
@@ -99,63 +88,8 @@ public interface Image extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.image.state</code>.
 	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
-
-	/**
-	 * Setter for <code>dstack.image.prepopulate</code>.
-	 */
-	public void setPrepopulate(java.lang.Boolean value);
-
-	/**
-	 * Getter for <code>dstack.image.prepopulate</code>.
-	 */
-	@javax.persistence.Column(name = "prepopulate", nullable = false, precision = 1)
-	public java.lang.Boolean getPrepopulate();
-
-	/**
-	 * Setter for <code>dstack.image.prepopulate_stamp</code>.
-	 */
-	public void setPrepopulateStamp(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.image.prepopulate_stamp</code>.
-	 */
-	@javax.persistence.Column(name = "prepopulate_stamp", nullable = false, length = 255)
-	public java.lang.String getPrepopulateStamp();
-
-	/**
-	 * Setter for <code>dstack.image.physical_size_bytes</code>.
-	 */
-	public void setPhysicalSizeBytes(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.image.physical_size_bytes</code>.
-	 */
-	@javax.persistence.Column(name = "physical_size_bytes", precision = 19)
-	public java.lang.Long getPhysicalSizeBytes();
-
-	/**
-	 * Setter for <code>dstack.image.virtual_size_bytes</code>.
-	 */
-	public void setVirtualSizeBytes(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.image.virtual_size_bytes</code>.
-	 */
-	@javax.persistence.Column(name = "virtual_size_bytes", precision = 19)
-	public java.lang.Long getVirtualSizeBytes();
-
-	/**
-	 * Setter for <code>dstack.image.checksum</code>.
-	 */
-	public void setChecksum(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.image.checksum</code>.
-	 */
-	@javax.persistence.Column(name = "checksum", length = 255)
-	public java.lang.String getChecksum();
 
 	/**
 	 * Setter for <code>dstack.image.created</code>.
@@ -200,6 +134,72 @@ public interface Image extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
+
+	/**
+	 * Setter for <code>dstack.image.url</code>.
+	 */
+	public void setUrl(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.image.url</code>.
+	 */
+	@javax.persistence.Column(name = "url", length = 255)
+	public java.lang.String getUrl();
+
+	/**
+	 * Setter for <code>dstack.image.is_public</code>.
+	 */
+	public void setIsPublic(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>dstack.image.is_public</code>.
+	 */
+	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
+	public java.lang.Boolean getIsPublic();
+
+	/**
+	 * Setter for <code>dstack.image.physical_size_megabytes</code>.
+	 */
+	public void setPhysicalSizeMegabytes(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.image.physical_size_megabytes</code>.
+	 */
+	@javax.persistence.Column(name = "physical_size_megabytes", precision = 19)
+	public java.lang.Long getPhysicalSizeMegabytes();
+
+	/**
+	 * Setter for <code>dstack.image.virtual_size_megabytes</code>.
+	 */
+	public void setVirtualSizeMegabytes(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.image.virtual_size_megabytes</code>.
+	 */
+	@javax.persistence.Column(name = "virtual_size_megabytes", precision = 19)
+	public java.lang.Long getVirtualSizeMegabytes();
+
+	/**
+	 * Setter for <code>dstack.image.checksum</code>.
+	 */
+	public void setChecksum(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.image.checksum</code>.
+	 */
+	@javax.persistence.Column(name = "checksum", length = 255)
+	public java.lang.String getChecksum();
+
+	/**
+	 * Setter for <code>dstack.image.format</code>.
+	 */
+	public void setFormat(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.image.format</code>.
+	 */
+	@javax.persistence.Column(name = "format", length = 255)
+	public java.lang.String getFormat();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

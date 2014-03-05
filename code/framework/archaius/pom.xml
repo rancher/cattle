@@ -4,9 +4,9 @@
     <artifactId>dstack-framework-archaius</artifactId>
     <parent>
         <groupId>io.github.ibuildthecloud</groupId>
-        <artifactId>dstack-parent</artifactId>
+        <artifactId>dstack-meta-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../../parent/pom.xml</relativePath>
+        <relativePath>../../meta-parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>

@@ -37,15 +37,15 @@ public interface Agent extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.agent.description</code>.
+	 * Setter for <code>dstack.agent.account_id</code>.
 	 */
-	public void setDescription(java.lang.String value);
+	public void setAccountId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.agent.description</code>.
+	 * Getter for <code>dstack.agent.account_id</code>.
 	 */
-	@javax.persistence.Column(name = "description", length = 1024)
-	public java.lang.String getDescription();
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
 
 	/**
 	 * Setter for <code>dstack.agent.kind</code>.
@@ -59,26 +59,26 @@ public interface Agent extends java.io.Serializable {
 	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.agent.data</code>.
+	 * Setter for <code>dstack.agent.uuid</code>.
 	 */
-	public void setData(java.util.Map<String,Object> value);
+	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent.data</code>.
+	 * Getter for <code>dstack.agent.uuid</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
-	public java.util.Map<String,Object> getData();
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
 
 	/**
-	 * Setter for <code>dstack.agent.agent_group_id</code>.
+	 * Setter for <code>dstack.agent.description</code>.
 	 */
-	public void setAgentGroupId(java.lang.Long value);
+	public void setDescription(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.agent.agent_group_id</code>.
+	 * Getter for <code>dstack.agent.description</code>.
 	 */
-	@javax.persistence.Column(name = "agent_group_id", precision = 19)
-	public java.lang.Long getAgentGroupId();
+	@javax.persistence.Column(name = "description", length = 1024)
+	public java.lang.String getDescription();
 
 	/**
 	 * Setter for <code>dstack.agent.state</code>.
@@ -88,30 +88,8 @@ public interface Agent extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.agent.state</code>.
 	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
-
-	/**
-	 * Setter for <code>dstack.agent.uri</code>.
-	 */
-	public void setUri(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.agent.uri</code>.
-	 */
-	@javax.persistence.Column(name = "uri", length = 255)
-	public java.lang.String getUri();
-
-	/**
-	 * Setter for <code>dstack.agent.account_id</code>.
-	 */
-	public void setAccountId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.agent.account_id</code>.
-	 */
-	@javax.persistence.Column(name = "account_id", precision = 19)
-	public java.lang.Long getAccountId();
 
 	/**
 	 * Setter for <code>dstack.agent.created</code>.
@@ -121,19 +99,8 @@ public interface Agent extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.agent.created</code>.
 	 */
-	@javax.persistence.Column(name = "created", nullable = false)
+	@javax.persistence.Column(name = "created")
 	public java.util.Date getCreated();
-
-	/**
-	 * Setter for <code>dstack.agent.uuid</code>.
-	 */
-	public void setUuid(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.agent.uuid</code>.
-	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
-	public java.lang.String getUuid();
 
 	/**
 	 * Setter for <code>dstack.agent.removed</code>.
@@ -147,6 +114,39 @@ public interface Agent extends java.io.Serializable {
 	public java.util.Date getRemoved();
 
 	/**
+	 * Setter for <code>dstack.agent.remove_time</code>.
+	 */
+	public void setRemoveTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.agent.remove_time</code>.
+	 */
+	@javax.persistence.Column(name = "remove_time")
+	public java.util.Date getRemoveTime();
+
+	/**
+	 * Setter for <code>dstack.agent.data</code>.
+	 */
+	public void setData(java.util.Map<String,Object> value);
+
+	/**
+	 * Getter for <code>dstack.agent.data</code>.
+	 */
+	@javax.persistence.Column(name = "data", length = 16777215)
+	public java.util.Map<String,Object> getData();
+
+	/**
+	 * Setter for <code>dstack.agent.uri</code>.
+	 */
+	public void setUri(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.agent.uri</code>.
+	 */
+	@javax.persistence.Column(name = "uri", length = 255)
+	public java.lang.String getUri();
+
+	/**
 	 * Setter for <code>dstack.agent.managed_config</code>.
 	 */
 	public void setManagedConfig(java.lang.Boolean value);
@@ -156,6 +156,28 @@ public interface Agent extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "managed_config", nullable = false, precision = 1)
 	public java.lang.Boolean getManagedConfig();
+
+	/**
+	 * Setter for <code>dstack.agent.agent_group_id</code>.
+	 */
+	public void setAgentGroupId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.agent.agent_group_id</code>.
+	 */
+	@javax.persistence.Column(name = "agent_group_id", precision = 19)
+	public java.lang.Long getAgentGroupId();
+
+	/**
+	 * Setter for <code>dstack.agent.zone_id</code>.
+	 */
+	public void setZoneId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.agent.zone_id</code>.
+	 */
+	@javax.persistence.Column(name = "zone_id", precision = 19)
+	public java.lang.Long getZoneId();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

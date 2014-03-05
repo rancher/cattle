@@ -9,4 +9,5 @@ public class FrameworkEvents {
     public static final String EXECUTE_TASK = "execute.task";
 
     public static final String EVENT_SEP = ";";
+    public static final String REPLY_PREFIX = "reply.";
 }

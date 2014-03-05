@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.api.pubsub.manager.impl;
 
+import io.github.ibuildthecloud.api.pubsub.subscribe.ApiPubSubEventPostProcessor;
 import io.github.ibuildthecloud.api.pubsub.subscribe.SubscriptionHandler;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
@@ -27,6 +28,7 @@ public class ClassAvailableSubscriptionHandler implements SubscriptionHandler, P
     SubscriptionHandler handler;
     String testClass, className;
     int priority = Priority.SPECIFIC;
+    List<ApiPubSubEventPostProcessor> eventProcessors;
 
     @Override
     public boolean subscribe(List<String> eventNames, ApiRequest apiRequest, boolean strip) throws IOException {
@@ -42,7 +44,7 @@ public class ClassAvailableSubscriptionHandler implements SubscriptionHandler, P
         Class<?> clz = getClass(testClass);
         if ( clz != null ) {
             handler = (SubscriptionHandler)ConstructorUtils.invokeConstructor(clz, jsonMapper,
-                    eventService, retryTimeout, executorService);
+                    eventService, retryTimeout, executorService, eventProcessors);
             enabled = true;
         }
     }
@@ -117,6 +119,15 @@ public class ClassAvailableSubscriptionHandler implements SubscriptionHandler, P
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public List<ApiPubSubEventPostProcessor> getEventProcessors() {
+        return eventProcessors;
+    }
+
+    @Inject
+    public void setEventProcessors(List<ApiPubSubEventPostProcessor> eventProcessors) {
+        this.eventProcessors = eventProcessors;
     }
 
 }

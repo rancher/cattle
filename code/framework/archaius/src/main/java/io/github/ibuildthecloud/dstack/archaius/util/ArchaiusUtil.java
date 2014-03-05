@@ -5,6 +5,8 @@ import io.github.ibuildthecloud.dstack.archaius.polling.RefreshableFixedDelayPol
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.configuration.Configuration;
+
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicDoubleProperty;
 import com.netflix.config.DynamicFloatProperty;
@@ -40,6 +42,10 @@ public class ArchaiusUtil {
 
     public static DynamicStringProperty getString(String key) {
         return DynamicPropertyFactory.getInstance().getStringProperty(key, null);
+    }
+
+    public static Configuration getConfiguration() {
+        return (Configuration)DynamicPropertyFactory.getBackingConfigurationSource();
     }
 
     /**

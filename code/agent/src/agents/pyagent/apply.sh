@@ -41,8 +41,12 @@ start()
     fi
     echo $RANDOM > $RESTART
     chmod +x $MAIN
+    if [ "$DSTACK_PYPY" = "true" ] && which pypy >/dev/null; then
+        MAIN="pypy $MAIN"
+    fi
     if [ "$DAEMON" = false ]; then
         info Executing $MAIN
+        cleanup
         exec $MAIN
     else
         info Backgrounding $MAIN

@@ -6,20 +6,14 @@ import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.lock.definition.MultiLockDefinition;
 import io.github.ibuildthecloud.dstack.lock.provider.LockProvider;
-import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
-
-import java.util.List;
-
-import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LockManagerImpl extends AbstractLockManagerImpl implements LockManager, InitializationTask {
+public class LockManagerImpl extends AbstractLockManagerImpl implements LockManager {
 
     private static final Logger log = LoggerFactory.getLogger(LockManagerImpl.class);
 
-    List<LockProvider> lockProviders;
     LockProvider lockProvider;
 
     @Override
@@ -78,26 +72,8 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
         return lockProvider;
     }
 
-    @Override
-    public void start() {
-        if ( lockProviders.size() == 0 )
-            throw new IllegalStateException("Failed to find lock provider");
-
-        lockProvider = lockProviders.get(0);
-        lockProvider.activate();
-    }
-
-    @Override
-    public void stop() {
-    }
-
-    public List<LockProvider> getLockProviders() {
-        return lockProviders;
-    }
-
-    @Inject
-    public void setLockProviders(List<LockProvider> lockProviders) {
-        this.lockProviders = lockProviders;
+    public void setLockProvider(LockProvider lockProvider) {
+        this.lockProvider = lockProvider;
     }
 
 }

@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.api.pubsub.subscribe.jetty;
 
+import io.github.ibuildthecloud.api.pubsub.subscribe.ApiPubSubEventPostProcessor;
 import io.github.ibuildthecloud.api.pubsub.subscribe.MessageWriter;
 import io.github.ibuildthecloud.api.pubsub.subscribe.NonBlockingSubscriptionHandler;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
@@ -8,6 +9,7 @@ import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,8 +27,9 @@ public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHan
     }
 
     public JettyWebSocketSubcriptionHandler(JsonMapper jsonMapper, EventService eventService,
-            RetryTimeoutService retryTimeout, ExecutorService executorService) {
-        super(jsonMapper, eventService, retryTimeout, executorService);
+            RetryTimeoutService retryTimeout, ExecutorService executorService,
+            List<ApiPubSubEventPostProcessor> eventProcessors) {
+        super(jsonMapper, eventService, retryTimeout, executorService, eventProcessors);
         setSupportGet(true);
     }
 

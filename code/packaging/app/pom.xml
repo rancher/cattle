@@ -10,13 +10,16 @@
     </parent>
     <packaging>war</packaging>
     <dependencies>
-        <!-- Start Plugins -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-jmx</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>dstack-eventing-redis</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>dstack-docker-storage</artifactId>
@@ -43,14 +46,6 @@
             <artifactId>dstack-simulator-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-dev</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- End Plugins -->
-
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>dstack-framework-launcher</artifactId>
@@ -59,7 +54,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-db-loader</artifactId>
+            <artifactId>dstack-framework-db-loader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -82,6 +77,12 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-websocket</artifactId>
+            <version>${jetty.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlets</artifactId>
             <version>${jetty.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -148,7 +149,7 @@
                     <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
                     <archive>
                         <manifest>
-                            <mainClass>${project.groupId}.dstack.launcher.Main</mainClass>
+                            <mainClass>io.github.ibuildthecloud.dstack.launcher.Main</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Implementation-Version>${project.version}</Implementation-Version>
@@ -194,4 +195,21 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <property>
+                    <name>!release</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>dstack-dev</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

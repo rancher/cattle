@@ -12,7 +12,6 @@ import io.github.ibuildthecloud.dstack.lock.exception.FailedToAcquireLockExcepti
 import io.github.ibuildthecloud.dstack.lock.provider.LockProvider;
 
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
@@ -38,10 +37,7 @@ public class LockManagerImplTest {
         when(lockProvider.getLock(badLockDef)).thenReturn(badLock);
 
         lockManager = new LockManagerImpl();
-        lockManager.setLockProviders(Arrays.asList(lockProvider));
-        lockManager.start();
-
-        verify(lockProvider, times(1)).activate();
+        lockManager.setLockProvider(lockProvider);
     }
 
     @Test
@@ -102,7 +98,7 @@ public class LockManagerImplTest {
         verify(lockProvider, times(2)).releaseLock(goodLock);
         verify(lockProvider, times(1)).releaseLock(good2Lock);
     }
-    
+
     @Test
     public void test_exceptions() {
         try {
@@ -140,7 +136,7 @@ public class LockManagerImplTest {
         verify(lockProvider, times(1)).getLock(goodLockDef);
         verify(lockProvider, times(1)).releaseLock(goodLock);
     }
-    
+
     @Test
     public void test_return() {
         assertEquals(new Long(42), lockManager.lock(goodLockDef, new LockCallback<Long>() {

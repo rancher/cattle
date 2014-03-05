@@ -29,6 +29,7 @@
 
     <bean class="io.github.ibuildthecloud.api.pubsub.subscribe.BlockingSubscriptionHandler" >
         <property name="executorService" ref="CoreExecutorService" />
+        <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
     </bean>
 
     <bean id="ServletAsyncSubscriptionHandler" class="io.github.ibuildthecloud.api.pubsub.manager.impl.ClassAvailableSubscriptionHandler" >
@@ -38,6 +39,7 @@
         <property name="priority">
             <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT_OVERRIDE" />
         </property>
+        <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
     </bean>
 
 </beans>

@@ -37,6 +37,39 @@ public interface Volume extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
+	 * Setter for <code>dstack.volume.account_id</code>.
+	 */
+	public void setAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.volume.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
+
+	/**
+	 * Setter for <code>dstack.volume.kind</code>.
+	 */
+	public void setKind(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.volume.kind</code>.
+	 */
+	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
+	public java.lang.String getKind();
+
+	/**
+	 * Setter for <code>dstack.volume.uuid</code>.
+	 */
+	public void setUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.volume.uuid</code>.
+	 */
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
+
+	/**
 	 * Setter for <code>dstack.volume.description</code>.
 	 */
 	public void setDescription(java.lang.String value);
@@ -48,28 +81,6 @@ public interface Volume extends java.io.Serializable {
 	public java.lang.String getDescription();
 
 	/**
-	 * Setter for <code>dstack.volume.account_id</code>.
-	 */
-	public void setAccountId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.volume.account_id</code>.
-	 */
-	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
-	public java.lang.Long getAccountId();
-
-	/**
-	 * Setter for <code>dstack.volume.uuid</code>.
-	 */
-	public void setUuid(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.volume.uuid</code>.
-	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
-	public java.lang.String getUuid();
-
-	/**
 	 * Setter for <code>dstack.volume.state</code>.
 	 */
 	public void setState(java.lang.String value);
@@ -77,118 +88,8 @@ public interface Volume extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.volume.state</code>.
 	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
-
-	/**
-	 * Setter for <code>dstack.volume.physical_size_bytes</code>.
-	 */
-	public void setPhysicalSizeBytes(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.volume.physical_size_bytes</code>.
-	 */
-	@javax.persistence.Column(name = "physical_size_bytes", precision = 19)
-	public java.lang.Long getPhysicalSizeBytes();
-
-	/**
-	 * Setter for <code>dstack.volume.virtual_size_bytes</code>.
-	 */
-	public void setVirtualSizeBytes(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.volume.virtual_size_bytes</code>.
-	 */
-	@javax.persistence.Column(name = "virtual_size_bytes", precision = 19)
-	public java.lang.Long getVirtualSizeBytes();
-
-	/**
-	 * Setter for <code>dstack.volume.format</code>.
-	 */
-	public void setFormat(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.volume.format</code>.
-	 */
-	@javax.persistence.Column(name = "format", length = 255)
-	public java.lang.String getFormat();
-
-	/**
-	 * Setter for <code>dstack.volume.image_id</code>.
-	 */
-	public void setImageId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.volume.image_id</code>.
-	 */
-	@javax.persistence.Column(name = "image_id", precision = 19)
-	public java.lang.Long getImageId();
-
-	/**
-	 * Setter for <code>dstack.volume.offering_id</code>.
-	 */
-	public void setOfferingId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.volume.offering_id</code>.
-	 */
-	@javax.persistence.Column(name = "offering_id", precision = 19)
-	public java.lang.Long getOfferingId();
-
-	/**
-	 * Setter for <code>dstack.volume.device_number</code>.
-	 */
-	public void setDeviceNumber(java.lang.Integer value);
-
-	/**
-	 * Getter for <code>dstack.volume.device_number</code>.
-	 */
-	@javax.persistence.Column(name = "device_number", precision = 10)
-	public java.lang.Integer getDeviceNumber();
-
-	/**
-	 * Setter for <code>dstack.volume.instance_id</code>.
-	 */
-	public void setInstanceId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.volume.instance_id</code>.
-	 */
-	@javax.persistence.Column(name = "instance_id", precision = 19)
-	public java.lang.Long getInstanceId();
-
-	/**
-	 * Setter for <code>dstack.volume.recreatable</code>.
-	 */
-	public void setRecreatable(java.lang.Boolean value);
-
-	/**
-	 * Getter for <code>dstack.volume.recreatable</code>.
-	 */
-	@javax.persistence.Column(name = "recreatable", nullable = false, precision = 1)
-	public java.lang.Boolean getRecreatable();
-
-	/**
-	 * Setter for <code>dstack.volume.attached_state</code>.
-	 */
-	public void setAttachedState(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.volume.attached_state</code>.
-	 */
-	@javax.persistence.Column(name = "attached_state", nullable = false, length = 255)
-	public java.lang.String getAttachedState();
-
-	/**
-	 * Setter for <code>dstack.volume.allocation_state</code>.
-	 */
-	public void setAllocationState(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.volume.allocation_state</code>.
-	 */
-	@javax.persistence.Column(name = "allocation_state", nullable = false, length = 255)
-	public java.lang.String getAllocationState();
 
 	/**
 	 * Setter for <code>dstack.volume.created</code>.
@@ -233,6 +134,116 @@ public interface Volume extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
+
+	/**
+	 * Setter for <code>dstack.volume.physical_size_megabytes</code>.
+	 */
+	public void setPhysicalSizeMegabytes(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.volume.physical_size_megabytes</code>.
+	 */
+	@javax.persistence.Column(name = "physical_size_megabytes", precision = 19)
+	public java.lang.Long getPhysicalSizeMegabytes();
+
+	/**
+	 * Setter for <code>dstack.volume.virtual_size_megabytes</code>.
+	 */
+	public void setVirtualSizeMegabytes(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.volume.virtual_size_megabytes</code>.
+	 */
+	@javax.persistence.Column(name = "virtual_size_megabytes", precision = 19)
+	public java.lang.Long getVirtualSizeMegabytes();
+
+	/**
+	 * Setter for <code>dstack.volume.device_number</code>.
+	 */
+	public void setDeviceNumber(java.lang.Integer value);
+
+	/**
+	 * Getter for <code>dstack.volume.device_number</code>.
+	 */
+	@javax.persistence.Column(name = "device_number", precision = 10)
+	public java.lang.Integer getDeviceNumber();
+
+	/**
+	 * Setter for <code>dstack.volume.format</code>.
+	 */
+	public void setFormat(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.volume.format</code>.
+	 */
+	@javax.persistence.Column(name = "format", length = 255)
+	public java.lang.String getFormat();
+
+	/**
+	 * Setter for <code>dstack.volume.allocation_state</code>.
+	 */
+	public void setAllocationState(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.volume.allocation_state</code>.
+	 */
+	@javax.persistence.Column(name = "allocation_state", length = 255)
+	public java.lang.String getAllocationState();
+
+	/**
+	 * Setter for <code>dstack.volume.attached_state</code>.
+	 */
+	public void setAttachedState(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.volume.attached_state</code>.
+	 */
+	@javax.persistence.Column(name = "attached_state", length = 255)
+	public java.lang.String getAttachedState();
+
+	/**
+	 * Setter for <code>dstack.volume.instance_id</code>.
+	 */
+	public void setInstanceId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.volume.instance_id</code>.
+	 */
+	@javax.persistence.Column(name = "instance_id", precision = 19)
+	public java.lang.Long getInstanceId();
+
+	/**
+	 * Setter for <code>dstack.volume.image_id</code>.
+	 */
+	public void setImageId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.volume.image_id</code>.
+	 */
+	@javax.persistence.Column(name = "image_id", precision = 19)
+	public java.lang.Long getImageId();
+
+	/**
+	 * Setter for <code>dstack.volume.offering_id</code>.
+	 */
+	public void setOfferingId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.volume.offering_id</code>.
+	 */
+	@javax.persistence.Column(name = "offering_id", precision = 19)
+	public java.lang.Long getOfferingId();
+
+	/**
+	 * Setter for <code>dstack.volume.zone_id</code>.
+	 */
+	public void setZoneId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.volume.zone_id</code>.
+	 */
+	@javax.persistence.Column(name = "zone_id", precision = 19)
+	public java.lang.Long getZoneId();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

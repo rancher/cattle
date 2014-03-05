@@ -1,0 +1,45 @@
+{
+    "resourceFields": {
+        "environment": {
+            "type": "map[string]",
+            "create": true
+        },
+        "command": {
+            "type": "string",
+            "create": true,
+            "nullable": true,
+            "minLength": 1
+        },
+        "commandArgs": {
+            "type": "array[string]",
+            "nullable": true,
+            "create": true
+        },
+        "directory": {
+            "type": "string",
+            "create": true,
+            "nullable": true,
+            "minLength": 1
+        },
+        "hostname": {
+            "type": "string",
+            "create": true,
+            "nullable": true,
+            "minLength": 1
+        },
+        "user": {
+            "type": "string",
+            "create": true,
+            "nullable": true,
+            "minLength": 1
+        },
+        "tcpPorts": {
+            "type": "array[int]",
+            "create": true
+        },
+        "udpPorts": {
+            "type": "array[int]",
+            "create": true
+        }
+    }
+}

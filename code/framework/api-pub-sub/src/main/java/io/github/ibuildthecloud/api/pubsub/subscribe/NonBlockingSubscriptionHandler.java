@@ -8,8 +8,8 @@ import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
-import io.github.ibuildthecloud.dstack.framework.command.PingCommand;
 import io.github.ibuildthecloud.dstack.framework.event.FrameworkEvents;
+import io.github.ibuildthecloud.dstack.framework.event.Ping;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -46,17 +46,20 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
     RetryTimeoutService retryTimeout;
     ExecutorService executorService;
     boolean supportGet = false;
+    List<ApiPubSubEventPostProcessor> eventProcessors;
 
     public NonBlockingSubscriptionHandler() {
     }
 
     public NonBlockingSubscriptionHandler(JsonMapper jsonMapper, EventService eventService,
-            RetryTimeoutService retryTimeout, ExecutorService executorService) {
+            RetryTimeoutService retryTimeout, ExecutorService executorService,
+            List<ApiPubSubEventPostProcessor> eventProcessors) {
         super();
         this.jsonMapper = jsonMapper;
         this.eventService = eventService;
         this.retryTimeout = retryTimeout;
         this.executorService = executorService;
+        this.eventProcessors = eventProcessors;
     }
 
     @Override
@@ -65,10 +68,15 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
             return false;
         }
 
+        ApiContext apiContext = ApiContext.getContext();
+
         final Object writeLock = new Object();
         final MessageWriter writer = getMessageWriter(apiRequest);
         final AtomicBoolean disconnect = new AtomicBoolean(false);
-        final IdFormatter idFormatter = ApiContext.getContext().getIdFormatter();
+
+        final ApiRequest request = new ApiRequest(apiRequest);
+        final IdFormatter idFormatter = apiContext.getIdFormatter();
+        final Object policy = apiContext.getPolicy();
 
         if ( writer == null ) {
             return false;
@@ -78,15 +86,12 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
             @Override
             public void onEvent(Event event) {
                 try {
-                    EventVO<?> obfuscated = new EventVO<Object>(event);
-                    if ( obfuscated.getResourceType() == null ) {
-                        obfuscated.setResourceId(null);
-                    } else {
-                        String id = idFormatter.formatId(obfuscated.getResourceType(), obfuscated.getResourceId());
-                        obfuscated.setResourceId(id);
-                    }
+                    EventVO<Object> modified = new EventVO<Object>(event);
 
-                    write(obfuscated, writer, writeLock, strip);
+                    postProcess(modified, idFormatter, request, policy);
+                    obfuscateIds(modified, idFormatter);
+
+                    write(modified, writer, writeLock, strip);
                 } catch (IOException e) {
                     log.trace("IOException on write to client for pub sub, disconnecting", e);
                     disconnect.set(true);
@@ -95,6 +100,30 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         };
 
         return subscribe(eventNames, listener, writer, disconnect, writeLock, strip) != null;
+    }
+
+    protected void postProcess(EventVO<Object> event, IdFormatter idFormatter, ApiRequest request, Object policy) {
+        try {
+            ApiContext context = ApiContext.newContext();
+            context.setApiRequest(request);
+            context.setIdFormatter(idFormatter);
+            context.setPolicy(policy);
+
+            for ( ApiPubSubEventPostProcessor processor : eventProcessors ) {
+                processor.processEvent(event);
+            }
+        } finally {
+            ApiContext.remove();
+        }
+    }
+
+    protected void obfuscateIds(EventVO<?> event, IdFormatter idFormatter) {
+        if ( event.getResourceType() == null ) {
+            event.setResourceId(null);
+        } else {
+            String id = idFormatter.formatId(event.getResourceType(), event.getResourceId());
+            event.setResourceId(id);
+        }
     }
 
     protected MessageWriter getMessageWriter(ApiRequest apiRequest) throws IOException {
@@ -125,7 +154,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
             for ( String eventName : eventNames ) {
                 eventService.subscribe(eventName, listener).get(API_SUB_PING_INVERVAL.get(), TimeUnit.MILLISECONDS);
             }
-            write(new PingCommand(), writer, writeLock, strip);
+            write(new Ping(), writer, writeLock, strip);
             return schedulePing(listener, writer, disconnect, writeLock, strip);
         } catch (Throwable e) {
             unsubscribe = true;
@@ -150,7 +179,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
                     throw new CancelRetryException();
                 }
                 try {
-                    write(new PingCommand(), writer, writeLock, strip);
+                    write(new Ping(), writer, writeLock, strip);
                 } catch (IOException e) {
                     log.debug("Got exception on write, disconnecting [{}]", e.getMessage());
                     unsubscribe(disconnect, listener);
@@ -224,4 +253,14 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
     public void setSupportGet(boolean supportGet) {
         this.supportGet = supportGet;
     }
+
+    public List<ApiPubSubEventPostProcessor> getEventProcessors() {
+        return eventProcessors;
+    }
+
+    @Inject
+    public void setEventProcessors(List<ApiPubSubEventPostProcessor> eventProcessors) {
+        this.eventProcessors = eventProcessors;
+    }
+
 }

@@ -29,11 +29,6 @@ public class Tables {
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.AgentGroupTable AGENT_GROUP = io.github.ibuildthecloud.dstack.core.model.tables.AgentGroupTable.AGENT_GROUP;
 
 	/**
-	 * The table dstack.changelog_lock
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.ChangelogLockTable CHANGELOG_LOCK = io.github.ibuildthecloud.dstack.core.model.tables.ChangelogLockTable.CHANGELOG_LOCK;
-
-	/**
 	 * The table dstack.config_item
 	 */
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemTable CONFIG_ITEM = io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemTable.CONFIG_ITEM;
@@ -42,11 +37,6 @@ public class Tables {
 	 * The table dstack.config_item_status
 	 */
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemStatusTable CONFIG_ITEM_STATUS = io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS;
-
-	/**
-	 * The table dstack.core_changelog
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.CoreChangelogTable CORE_CHANGELOG = io.github.ibuildthecloud.dstack.core.model.tables.CoreChangelogTable.CORE_CHANGELOG;
 
 	/**
 	 * The table dstack.credential
@@ -79,11 +69,6 @@ public class Tables {
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.ImageTable IMAGE = io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE;
 
 	/**
-	 * The table dstack.image_format
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.ImageFormatTable IMAGE_FORMAT = io.github.ibuildthecloud.dstack.core.model.tables.ImageFormatTable.IMAGE_FORMAT;
-
-	/**
 	 * The table dstack.image_storage_pool_map
 	 */
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable IMAGE_STORAGE_POOL_MAP = io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP;
@@ -99,39 +84,14 @@ public class Tables {
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.InstanceHostMapTable INSTANCE_HOST_MAP = io.github.ibuildthecloud.dstack.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 
 	/**
-	 * The table dstack.ip_address
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.IpAddressTable IP_ADDRESS = io.github.ibuildthecloud.dstack.core.model.tables.IpAddressTable.IP_ADDRESS;
-
-	/**
-	 * The table dstack.ip_address_nic_map
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.IpAddressNicMapTable IP_ADDRESS_NIC_MAP = io.github.ibuildthecloud.dstack.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
-
-	/**
-	 * The table dstack.item_pool
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.ItemPoolTable ITEM_POOL = io.github.ibuildthecloud.dstack.core.model.tables.ItemPoolTable.ITEM_POOL;
-
-	/**
-	 * The table dstack.item_pool_generator
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.ItemPoolGeneratorTable ITEM_POOL_GENERATOR = io.github.ibuildthecloud.dstack.core.model.tables.ItemPoolGeneratorTable.ITEM_POOL_GENERATOR;
-
-	/**
-	 * The table dstack.network
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.NetworkTable NETWORK = io.github.ibuildthecloud.dstack.core.model.tables.NetworkTable.NETWORK;
-
-	/**
-	 * The table dstack.nic
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.NicTable NIC = io.github.ibuildthecloud.dstack.core.model.tables.NicTable.NIC;
-
-	/**
 	 * The table dstack.offering
 	 */
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable OFFERING = io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING;
+
+	/**
+	 * The table dstack.process_execution
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.ProcessExecutionTable PROCESS_EXECUTION = io.github.ibuildthecloud.dstack.core.model.tables.ProcessExecutionTable.PROCESS_EXECUTION;
 
 	/**
 	 * The table dstack.process_instance
@@ -162,11 +122,6 @@ public class Tables {
 	 * The table dstack.task_instance
 	 */
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.TaskInstanceTable TASK_INSTANCE = io.github.ibuildthecloud.dstack.core.model.tables.TaskInstanceTable.TASK_INSTANCE;
-
-	/**
-	 * The table dstack.vnet
-	 */
-	public static final io.github.ibuildthecloud.dstack.core.model.tables.VnetTable VNET = io.github.ibuildthecloud.dstack.core.model.tables.VnetTable.VNET;
 
 	/**
 	 * The table dstack.volume

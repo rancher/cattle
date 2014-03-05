@@ -8,6 +8,7 @@ import io.github.ibuildthecloud.dstack.storage.pool.StoragePoolDriver;
 public class SimulatorStoragePoolDriver extends AbstractKindBasedStoragePoolDriver implements StoragePoolDriver {
 
     public static final String SIM_KIND = "sim";
+    public static final String SIM_FORMAT = "sim";
 
     public SimulatorStoragePoolDriver() {
         super(SIM_KIND);
@@ -17,6 +18,7 @@ public class SimulatorStoragePoolDriver extends AbstractKindBasedStoragePoolDriv
     protected boolean populateExtenalImageInternal(StoragePool pool, String uuid, Image image) {
         image.setUuid(uuid);
         image.setIsPublic(true);
+        image.setFormat(SIM_FORMAT);
 
         return true;
     }

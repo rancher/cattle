@@ -37,6 +37,17 @@ public interface Host extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
+	 * Setter for <code>dstack.host.account_id</code>.
+	 */
+	public void setAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.host.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
+
+	/**
 	 * Setter for <code>dstack.host.kind</code>.
 	 */
 	public void setKind(java.lang.String value);
@@ -48,6 +59,28 @@ public interface Host extends java.io.Serializable {
 	public java.lang.String getKind();
 
 	/**
+	 * Setter for <code>dstack.host.uuid</code>.
+	 */
+	public void setUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.host.uuid</code>.
+	 */
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
+
+	/**
+	 * Setter for <code>dstack.host.description</code>.
+	 */
+	public void setDescription(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.host.description</code>.
+	 */
+	@javax.persistence.Column(name = "description", length = 1024)
+	public java.lang.String getDescription();
+
+	/**
 	 * Setter for <code>dstack.host.state</code>.
 	 */
 	public void setState(java.lang.String value);
@@ -55,7 +88,7 @@ public interface Host extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.host.state</code>.
 	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
 
 	/**
@@ -66,7 +99,7 @@ public interface Host extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.host.created</code>.
 	 */
-	@javax.persistence.Column(name = "created", nullable = false)
+	@javax.persistence.Column(name = "created")
 	public java.util.Date getCreated();
 
 	/**
@@ -81,6 +114,17 @@ public interface Host extends java.io.Serializable {
 	public java.util.Date getRemoved();
 
 	/**
+	 * Setter for <code>dstack.host.remove_time</code>.
+	 */
+	public void setRemoveTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.host.remove_time</code>.
+	 */
+	@javax.persistence.Column(name = "remove_time")
+	public java.util.Date getRemoveTime();
+
+	/**
 	 * Setter for <code>dstack.host.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
@@ -92,26 +136,37 @@ public interface Host extends java.io.Serializable {
 	public java.util.Map<String,Object> getData();
 
 	/**
-	 * Setter for <code>dstack.host.uuid</code>.
+	 * Setter for <code>dstack.host.uri</code>.
 	 */
-	public void setUuid(java.lang.String value);
+	public void setUri(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.host.uuid</code>.
+	 * Getter for <code>dstack.host.uri</code>.
 	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
-	public java.lang.String getUuid();
+	@javax.persistence.Column(name = "uri", length = 255)
+	public java.lang.String getUri();
 
 	/**
-	 * Setter for <code>dstack.host.description</code>.
+	 * Setter for <code>dstack.host.compute_free</code>.
 	 */
-	public void setDescription(java.lang.String value);
+	public void setComputeFree(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.host.description</code>.
+	 * Getter for <code>dstack.host.compute_free</code>.
 	 */
-	@javax.persistence.Column(name = "description", length = 255)
-	public java.lang.String getDescription();
+	@javax.persistence.Column(name = "compute_free", precision = 19)
+	public java.lang.Long getComputeFree();
+
+	/**
+	 * Setter for <code>dstack.host.compute_total</code>.
+	 */
+	public void setComputeTotal(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.host.compute_total</code>.
+	 */
+	@javax.persistence.Column(name = "compute_total", precision = 19)
+	public java.lang.Long getComputeTotal();
 
 	/**
 	 * Setter for <code>dstack.host.agent_id</code>.
@@ -123,6 +178,17 @@ public interface Host extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "agent_id", precision = 19)
 	public java.lang.Long getAgentId();
+
+	/**
+	 * Setter for <code>dstack.host.zone_id</code>.
+	 */
+	public void setZoneId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.host.zone_id</code>.
+	 */
+	@javax.persistence.Column(name = "zone_id", precision = 19)
+	public java.lang.Long getZoneId();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

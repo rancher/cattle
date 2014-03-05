@@ -49,11 +49,15 @@ import org.springframework.util.StringUtils;
 public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultModuleDefinitionSet.class);
+    private static final Logger consoleLog = LoggerFactory.getLogger("ConsoleStatus");
+
+    private static final String CONTAINS = "DSTACK";
+    private static final String PREFIX = "DSTACK_";
 
     public static final String DEFAULT_CONFIG_RESOURCES = "DefaultConfigResources";
     public static final String DEFAULT_CONFIG_PROPERTIES = "DefaultConfigProperties";
     public static final String SERVER_PROFILE = "server.profile";
-    public static final String SERVER_PROFILE_FORMAT = "module-profile-%s.properties";
+    public static final String SERVER_PROFILE_FORMAT = "server-profile-%s.properties";
     public static final String MODULES_EXCLUDE = "modules.exclude";
     public static final String MODULES_INCLUDE_PREFIX = "modules.include.";
     public static final String PROFILE_PREFIX = "module.profile.";
@@ -68,6 +72,10 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
     ApplicationContext rootContext = null;
     Set<String> excludes = new HashSet<String>();
     Properties configProperties = null;
+    int count = 0;
+    int total = 0;
+    long start = 0;
+    String messagePrefix = null;
 
     public DefaultModuleDefinitionSet(Map<String, ModuleDefinition> modules, String root) {
         super();
@@ -79,9 +87,20 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         if ( ! loadRootContext() )
             return;
 
+        count = 0;
         printHierarchy();
+
+        start = System.currentTimeMillis();
+        total = count * 2;
+        count = 0;
+        messagePrefix = "Loading";
         loadContexts();
+
+        messagePrefix = "Starting";
         startContexts();
+
+        count = 0;
+        messagePrefix = null;
     }
 
     protected boolean loadRootContext() {
@@ -130,6 +149,7 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
             }
         });
     }
+
     protected ApplicationContext loadContext(ModuleDefinition def, ApplicationContext parent) {
         ResourceApplicationContext context = new ResourceApplicationContext();
         context.setApplicationName("/" + def.getName());
@@ -197,6 +217,7 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         }
 
         configProperties.putAll(System.getProperties());
+        configProperties.putAll(getEnvValues());
 
         String[] profiles = configProperties.getProperty(SERVER_PROFILE, "").trim().split("\\s*,\\s*");
         if ( profiles.length > 0 ) {
@@ -211,6 +232,28 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
 
         return context;
     }
+
+    protected static Map<String,Object> getEnvValues() {
+        Map<String,Object> values = new HashMap<String, Object>();
+
+        for ( Map.Entry<String, String> entry : System.getenv().entrySet() ) {
+            String key = entry.getKey();
+            if ( ! key.contains(CONTAINS) ) {
+                continue;
+            }
+
+            if ( key.startsWith(PREFIX) ) {
+                key = key.substring(PREFIX.length());
+            }
+
+            key = key.replace('_', '.').toLowerCase();
+
+            values.put(key, entry.getValue());
+        }
+
+        return values;
+    }
+
 
     protected void parseExcludes() {
         for ( String exclude : configProperties.getProperty(MODULES_EXCLUDE, "").trim().split("\\s*,\\s*") ) {
@@ -280,6 +323,7 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
     }
 
     protected void withModule(ModuleDefinition def, Stack<ModuleDefinition> parents, WithModule with) {
+        long moduleStart = System.currentTimeMillis();
         if ( def == null )
             return;
 
@@ -288,7 +332,16 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
             return;
         }
 
+        count++;
+
         with.with(def, parents);
+
+        if ( messagePrefix != null ) {
+            consoleLog.info("[{}/{}] [{}ms] [{}ms] {} {}", count, total,
+                    (System.currentTimeMillis() - start),
+                    (System.currentTimeMillis() - moduleStart),
+                    messagePrefix, def.getName());
+        }
 
         parents.push(def);
 

@@ -1,0 +1,127 @@
+{
+    "queries" : [
+        {
+            "objectName" : "org.apache.commons.pool2:type=GenericObjectPool,name=eventing.reply.pool",
+            "resultAlias" : "pool.eventing_reply",
+            "attributes" : [
+                {
+                    "name" : "BorrowedCount"
+                },
+                {
+                    "name" : "CreatedCount"
+                },
+                {
+                    "name" : "NumActive"
+                },
+                {
+                    "name" : "MaxActive"
+                },
+                {
+                    "name" : "NumIdle"
+                },
+                {
+                    "name" : "ReturnedCount"
+                }
+            ]
+        },
+        {
+            "objectName" : "org.apache.commons.pool2:type=GenericObjectPool,name=redis",
+            "resultAlias" : "pool.redis",
+            "attributes" : [
+                {
+                    "name" : "BorrowedCount"
+                },
+                {
+                    "name" : "CreatedCount"
+                },
+                {
+                    "name" : "NumActive"
+                },
+                {
+                    "name" : "MaxActive"
+                },
+                {
+                    "name" : "NumIdle"
+                },
+                {
+                    "name" : "ReturnedCount"
+                }
+            ]
+        },
+        {
+            "objectName" : "org.apache.commons.dbcp:ManagedBasicDataSource=dstack",
+            "resultAlias" : "database",
+            "attributes" : [
+                {
+                    "name" : "NumActive"
+                },
+                {
+                    "name" : "MaxActive"
+                },
+                {
+                    "name" : "NumIdle"
+                }
+            ]
+        },
+        {
+            "objectName" : "java.util.concurrent:type=ThreadPoolExecutor,name=CoreExecutorService",
+            "resultAlias" : "thread_pool.core",
+            "attributes" : [
+                {
+                    "name" : "ActiveCount"
+                },
+                {
+                    "name" : "CompletedTaskCount"
+                },
+                {
+                    "name" : "CorePoolSize"
+                },
+                {
+                    "name" : "LargestPoolSize"
+                },
+                {
+                    "name" : "MaximumPoolSize"
+                },
+                {
+                    "name" : "QueueRemainingCapacity"
+                },
+                {
+                    "name" : "RejectedExecutionCount"
+                },
+                {
+                    "name" : "TaskCount"
+                }
+            ]
+        },
+        {
+            "objectName" : "java.util.concurrent:type=ThreadPoolExecutor,name=ProcessExecutorService",
+            "resultAlias" : "thread_pool.process",
+            "attributes" : [
+                {
+                    "name" : "ActiveCount"
+                },
+                {
+                    "name" : "CompletedTaskCount"
+                },
+                {
+                    "name" : "CorePoolSize"
+                },
+                {
+                    "name" : "LargestPoolSize"
+                },
+                {
+                    "name" : "MaximumPoolSize"
+                },
+                {
+                    "name" : "QueueRemainingCapacity"
+                },
+                {
+                    "name" : "RejectedExecutionCount"
+                },
+                {
+                    "name" : "TaskCount"
+                }
+            ]
+        }
+    ]
+}

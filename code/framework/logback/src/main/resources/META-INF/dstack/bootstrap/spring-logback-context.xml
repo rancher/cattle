@@ -9,6 +9,6 @@
                       http://www.springframework.org/schema/context/spring-context-3.0.xsd"
                       >
 
-    <bean class="io.github.ibuildthecloud.dstack.logback.Startup" />
+    <bean class="io.github.ibuildthecloud.dstack.logback.Startup" depends-on="ConfigContext" />
 
 </beans>

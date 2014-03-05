@@ -1,139 +1,182 @@
 <configuration scan="true" scanPeriod="5 seconds">
 
+    <define name="logstash" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.output.logstash</name>
+    </define>
+
+    <define name="events" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.output.events</name>
+    </define>
+
+    <define name="file" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.output.file</name>
+    </define>
+
+    <define name="error" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.output.error</name>
+    </define>
+
+    <define name="gelf" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.output.gelf</name>
+    </define>
+
+    <define name="console" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.output.console</name>
+    </define>
+
+    <define name="pattern" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.pattern</name>
+    </define>
+
+    <define name="consolePattern" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.console.pattern</name>
+    </define>
+
+    <define name="jooqLevel" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.jooq.level</name>
+    </define>
+
+    <define name="fileNamePattern" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.file.name.pattern</name>
+    </define>
+
+    <define name="jooqLevel" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.jooq.level</name>
+    </define>
+
+    <define name="rootLevel" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.root.level</name>
+    </define>
+
+    <define name="consoleLevel" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.console.level</name>
+    </define>
+
+    <define name="consoleStatusLevel" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.console.status.level</name>
+    </define>
+
+    <define name="otherLevel" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.other.level</name>
+    </define>
+
+    <define name="aggregationLevel" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.aggregation.level</name>
+    </define>
+
+    <define name="maxHistory" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.max.history</name>
+    </define>
+
+    <define name="logDir" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.log.dir</name>
+    </define>
+
+    <define name="serverId" class="io.github.ibuildthecloud.dstack.logback.ServerIdProperty" />
+
     <jmxConfigurator/>
 
-    <appender name="CONSOLE_INFO" class="ch.qos.logback.core.ConsoleAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-        <encoder>
-            <pattern>%date{ISO8601} %-5.5p [%X{processUuid}:%X{processId}] [%X{prettyResource}] [%X{logicPath}] [%X{agentId}] [%-15.15t] [%-36.36logger{36}] %m %xEx%n</pattern>
-        </encoder>
-    </appender>
+    <if condition='property("logstashFile").equals("true")' >
+        <then>
+            <include resource="logback/logback-logstash-file.xml" />
+        </then>
+    </if>
 
-    <appender name="CONSOLE_ALL" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%date{ISO8601} %-5.5p [%25.25X{prettyResource}] [%-15.15t] [%-36.36logger{36}] %m -- [%X{agentId}][%X{processUuid}:%X{processId}][%X{logicPath}] %xEx%n</pattern>
-        </encoder>
-    </appender>
+    <if condition='property("logstashSyslog").equals("true")' >
+        <then>
+            <include resource="logback/logback-logstash-syslog.xml" />
+        </then>
+    </if>
 
-    <appender name="LOGSTASH" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logstash.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- daily rollover -->
-            <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+    <if condition='property("file").equals("true")' >
+        <then>
+            <include resource="logback/logback-file.xml" />
+        </then>
+    </if>
 
-            <!-- keep 30 days' worth of history -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
+    <if condition='property("error").equals("true")' >
+        <then>
+            <include resource="logback/logback-error.xml" />
+        </then>
+    </if>
 
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
-    </appender>
+    <if condition='property("events").equals("true")' >
+        <then>
+            <include resource="logback/logback-events.xml" />
+        </then>
+    </if>
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>debug.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- daily rollover -->
-            <fileNamePattern>debug.%d{yyyy-MM-dd}.log</fileNamePattern>
+    <if condition='property("gelf").equals("true")' >
+        <then>
+            <include resource="logback/logback-gelf.xml" />
+        </then>
+    </if>
 
-            <!-- keep 30 days' worth of history -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%date{ISO8601} %-5.5p [%25.25X{prettyResource}] [%-15.15t] [%-36.36logger{36}] %m -- [%X{agentId}][%X{processUuid}:%X{processId}][%X{logicPath}] %xEx%n</pattern>
-        </encoder>
-    </appender>
+    <if condition='property("console").equals("true")' >
+        <then>
+            <include resource="logback/logback-console.xml" />
+        </then>
+    </if>
 
-    <appender name="FILE_EVENT_IN" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>event-in.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- daily rollover -->
-            <fileNamePattern>event-out.%d{yyyy-MM-dd}.log</fileNamePattern>
-
-            <!-- keep 30 days' worth of history -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%date{ISO8601} : %m%n</pattern>
-        </encoder>
-    </appender>
-
-    <appender name="FILE_EVENT_OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>event-out.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- daily rollover -->
-            <fileNamePattern>event-out.%d{yyyy-MM-dd}.log</fileNamePattern>
-
-            <!-- keep 30 days' worth of history -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%date{ISO8601} : %m%n</pattern>
-        </encoder>
-    </appender> 
-
-    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>WARN</level>
-        </filter>
-        <file>error.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- daily rollover -->
-            <fileNamePattern>error.%d{yyyy-MM-dd}.log</fileNamePattern>
-
-            <!-- keep 30 days' worth of history -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%date{ISO8601} %-5.5p [%25.25X{prettyResource}] [%-15.15t] [%-36.36logger{36}] %m -- [%X{agentId}][%X{processUuid}:%X{processId}][%X{logicPath}] %xEx%n</pattern>
-        </encoder>
-    </appender>
+    <include optional="true" resource="logback-additional.xml" />
 
     <logger name="liquibase">
-        <level value="DEBUG" />
+        <level value="${otherLevel}" />
     </logger>
 
     <logger name="com">
-        <level value="INFO" />
+        <level value="${otherLevel}" />
     </logger>
 
     <logger name="org">
-        <level value="INFO" />
+        <level value="${otherLevel}" />
     </logger>
 
     <logger name="io">
-        <level value="INFO" />
+        <level value="${otherLevel}" />
+    </logger>
+
+    <logger name="org.eclipse.jetty.server" >
+        <level value="${rootLevel}" />
+    </logger>
+
+    <logger name="com.hazelcast">
+        <level value="DEBUG" />
     </logger>
 
     <logger name="io.github.ibuildthecloud">
-        <level value="DEBUG" />
+        <level value="${rootLevel}" />
     </logger>
 
-    <logger name="org.jooq">
-        <level value="INFO" />
-<!--         <appender-ref ref="CONSOLE_ALL" /> -->
+    <logger name="org.apache.cloudstack">
+        <level value="${rootLevel}" />
     </logger>
 
-    <logger name="org.springframework">
-        <level value="WARN" />
+    <logger name="EventLogOut" additivity="false" >
     </logger>
 
-    <logger name="EventLogOut">
-        <level value="DEBUG" />
-        <appender-ref ref="FILE_EVENT_OUT" />
+    <logger name="EventLogIn" additivity="false" >
     </logger>
 
-    <logger name="EventLogIn">
-        <level value="DEBUG" />
-        <appender-ref ref="FILE_EVENT_IN" />
+<!--
+    <logger name="io.github.ibuildthecloud.dstack.lock.provider.impl.StandardLock" additivity="false">
+        <level value="TRACE" />
+        <appender-ref ref="FILE" />
+    </logger>
+-->
+
+<!--
+    <logger name="org.apache.cloudstack.spring.module.context.TimedXmlBeanDefinitionReader" >
+        <level value="${otherLevel}" />
+    </logger>
+-->
+
+    <logger name="org.jooq" >
+        <level value="${jooqLevel}" />
     </logger>
 
     <root>
-        <level value="DEBUG" />
-        <appender-ref ref="CONSOLE_INFO" />
-        <appender-ref ref="FILE" />
-        <appender-ref ref="FILE_ERROR" />
-        <appender-ref ref="LOGSTASH" />
+        <level value="${rootLevel}" />
     </root>
 
 </configuration>

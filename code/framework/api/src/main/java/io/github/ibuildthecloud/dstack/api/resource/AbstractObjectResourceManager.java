@@ -6,7 +6,6 @@ import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessNotFoundException;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
-import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstanceException;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
@@ -294,13 +293,11 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         return String.format("%s.%s", baseType == null ? request.getType() : baseType, request.getAction()).toLowerCase();
     }
 
-    protected void scheduleProcess(String processName, Object resource, Map<String, Object> data) {
-        final ProcessInstance pi = objectProcessManager.createProcessInstance(processName, resource, data);
-
+    protected void scheduleProcess(final String processName, final Object resource, final Map<String, Object> data) {
         scheduleProcess(new Runnable() {
             @Override
             public void run() {
-                pi.schedule();
+                objectProcessManager.scheduleProcessInstance(processName, resource, data);
             }
         });
     }
@@ -318,7 +315,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         try {
             run.run();
         } catch ( ProcessInstanceException e ) {
-            if ( e.getExitReason() == ExitReason.FAILED_TO_ACQUIRE_LOCK || e.getExitReason() == ExitReason.CANCELED ) {
+            if ( e.getExitReason() == ExitReason.RESOURCE_BUSY || e.getExitReason() == ExitReason.CANCELED ) {
                 throw new ClientVisibleException(ResponseCodes.CONFLICT);
             } else {
                 throw e;

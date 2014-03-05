@@ -12,7 +12,6 @@
         <dependency>
             <groupId>fr.xebia.management</groupId>
             <artifactId>xebia-management-extras</artifactId>
-            <version>1.2.2</version>
         </dependency>
         <dependency>
             <groupId>com.codahale.metrics</groupId>

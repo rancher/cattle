@@ -17,6 +17,7 @@ public class EventVO<T> implements Event {
     String[] previousIds, previousNames;
     T data;
     Date time;
+    Long timeoutMillis;
     String listenerKey;
     Integer transitioningProgress;
     Map<String,Object> context;
@@ -50,6 +51,7 @@ public class EventVO<T> implements Event {
         this.transitioningInternalMessage = event.getTransitioningInternalMessage();
         this.transitioningProgress = event.getTransitioningProgress();
         this.context = event.getContext();
+        this.timeoutMillis = event.getTimeoutMillis();
     }
 
     public static EventVO<Object> reply(Event request) {
@@ -313,6 +315,20 @@ public class EventVO<T> implements Event {
 
     public void setContext(Map<String, Object> context) {
         this.context = context;
+    }
+
+    @Override
+    public Long getTimeoutMillis() {
+        return timeoutMillis;
+    }
+
+    public void setTimeoutMillis(Long timeout) {
+        this.timeoutMillis = timeout;
+    }
+
+    public EventVO<T> withTimeoutMillis(Long timeout) {
+        this.timeoutMillis = timeout;
+        return this;
     }
 
     public EventVO<T> withContext(Map<String, Object> context) {

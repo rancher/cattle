@@ -6,17 +6,18 @@ import io.github.ibuildthecloud.agent.server.service.AgentService;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
 import io.github.ibuildthecloud.dstack.async.utils.AsyncUtils;
 import io.github.ibuildthecloud.dstack.async.utils.TimeoutException;
+import io.github.ibuildthecloud.dstack.core.constants.AgentConstants;
 import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.exception.EventExecutionException;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
+import io.github.ibuildthecloud.dstack.iaas.event.IaasEvents;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -31,10 +32,11 @@ import com.google.common.util.concurrent.ListenableFuture;
 public class AgentServiceImpl implements AgentService {
 
     private static final Logger log = LoggerFactory.getLogger(AgentServiceImpl.class);
-    private static final Set<String> GOOD_AGENT_STATES = new HashSet<String>(Arrays.asList(
+    public static final Set<String> GOOD_AGENT_STATES = CollectionUtils.set(
             CommonStatesConstants.ACTIVATING,
-            CommonStatesConstants.ACTIVE
-        ));
+            CommonStatesConstants.ACTIVE,
+            AgentConstants.STATE_RECONNECTING
+        );
 
     AgentConnectionManager connectionManager;
     ObjectManager objectManager;
@@ -55,22 +57,37 @@ public class AgentServiceImpl implements AgentService {
             return;
         }
 
-        AgentConnection connection = connectionManager.getConnection(agent);
-        if ( connection != null ) {
-            eventService.publish(agentEvent);
-            final ListenableFuture<Event> future = connection.execute(agentEvent);
-            future.addListener(new NoExceptionRunnable() {
-                @Override
-                protected void doRun() throws Exception {
-                    try {
-                        handleResponse(event, AsyncUtils.get(future));
-                    } catch ( EventExecutionException e ) {
-                        handleError(event, e.getEvent());
-                    } catch ( TimeoutException t ) {
-                        log.info("Timeout waiting for response to [{}] id [{}]", agentEvent.getName(), agentEvent.getId());
+        if ( IaasEvents.AGENT_CLOSE.equals(agentEvent.getName()) ) {
+            connectionManager.closeConnection(agent);
+            handleResponse(event, EventVO.reply(agentEvent));
+        } else {
+            if ( ! GOOD_AGENT_STATES.contains(agent.getState()) ) {
+                log.info("Dropping event [{}] for agent [{}] in state [{}]", event, agent.getId(), agent.getState());
+                return;
+            }
+
+            AgentConnection connection = connectionManager.getConnection(agent);
+            if ( connection != null ) {
+                eventService.publish(agentEvent);
+                final ListenableFuture<Event> future = connection.execute(agentEvent);
+                future.addListener(new NoExceptionRunnable() {
+                    @Override
+                    protected void doRun() throws Exception {
+                        try {
+                            Event agentEventResponse = AsyncUtils.get(future);
+                            if ( Event.TRANSITIONING_ERROR.equals(agentEventResponse.getTransitioning()) ) {
+                                throw new EventExecutionException(agentEventResponse);
+                            }
+
+                            handleResponse(event, agentEventResponse);
+                        } catch ( EventExecutionException e ) {
+                            handleError(event, e.getEvent());
+                        } catch ( TimeoutException t ) {
+                            log.info("Timeout waiting for response to [{}] id [{}]", agentEvent.getName(), agentEvent.getId());
+                        }
                     }
-                }
-            }, executorService);
+                }, executorService);
+            }
         }
     }
 
@@ -100,17 +117,15 @@ public class AgentServiceImpl implements AgentService {
 
         EventVO<?> agentEvent = jsonMapper.convertValue(event.getData(), EventVO.class);
         agentEvent.setReplyTo(agentEvent.getName() + Event.REPLY_SUFFIX);
+        if ( agentEvent.getTimeoutMillis() == null ) {
+            agentEvent.setTimeoutMillis(event.getTimeoutMillis());
+        }
 
         return agentEvent;
     }
 
     protected Agent getAgent(Event event) {
-        Agent agent = objectManager.loadResource(Agent.class, event.getResourceId());
-        if ( agent != null && GOOD_AGENT_STATES.contains(agent.getState()) ) {
-            return agent;
-        }
-
-        return null;
+        return objectManager.loadResource(Agent.class, event.getResourceId());
     }
 
     public ObjectManager getObjectManager() {

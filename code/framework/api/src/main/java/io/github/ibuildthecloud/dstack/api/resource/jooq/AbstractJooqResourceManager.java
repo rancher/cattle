@@ -7,6 +7,7 @@ import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship.RelationshipType;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Include;
@@ -26,6 +27,7 @@ import javax.inject.Inject;
 import org.jooq.Condition;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
+import org.jooq.JoinType;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -52,22 +54,73 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         }
 
         type = schemaFactory.getSchemaName(clz);
-        Table<?> table = JooqUtils.getTable(clz);
+        Table<?> table = JooqUtils.getTableFromRecordClass(clz);
         Sort sort = options == null ? null : options.getSort();
         Pagination pagination = options == null ? null : options.getPagination();
         Include include = options ==null ? null : options.getInclude();
-        Long marker = getMarker(pagination);
 
         if ( table == null )
             return null;
 
         SelectQuery<?> query = create().selectQuery();
-        MultiTableMapper mapper = addTables(schemaFactory, query, type, table, criteria, include);
-        addConditions(schemaFactory, query, type, table, criteria, marker);
+        MultiTableMapper mapper = addTables(schemaFactory, query, type, table, criteria, include, pagination);
+        addConditions(schemaFactory, query, type, table, criteria);
         addSort(schemaFactory, type, sort, query);
         addLimit(schemaFactory, type, pagination, query);
 
-        return mapper == null ? query.fetch() : query.fetchInto(mapper);
+        List<?> result = mapper == null ? query.fetch() : query.fetchInto(mapper);
+
+        processPaginationResult(result, pagination, mapper);
+
+        return result;
+    }
+
+    protected void processPaginationResult(List<?> result, Pagination pagination, MultiTableMapper mapper) {
+        Integer limit = pagination == null ? null : pagination.getLimit();
+        if ( limit == null ) {
+            return;
+        }
+
+        long offset = getOffset(pagination);
+        boolean partial = false;
+
+        if ( mapper == null ) {
+            partial = result.size() > limit;
+            if ( partial ) {
+                result.remove(result.size() - 1);
+            }
+        } else {
+            partial = mapper.getResultSize() > limit;
+        }
+
+        if ( partial ) {
+            Pagination paginationResponse = new Pagination(limit);
+            paginationResponse.setPartial(true);
+            paginationResponse.setNext(ApiContext.getUrlBuilder().next("m" + (offset + limit)));
+
+            pagination.setResponse(paginationResponse);
+        } else {
+            pagination.setResponse(new Pagination(limit));
+        }
+    }
+
+    protected int getOffset(Pagination pagination) {
+        Object marker = getMarker(pagination);
+        if ( marker == null ) {
+            return 0;
+        } else if ( marker instanceof String ) {
+            /* Important to check that marker is a string.  If you don't then
+             * somebody could use the marker functionality to deobfuscate ID's
+             * and find their long value.
+             */
+            try {
+                return Integer.parseInt((String)marker);
+            } catch ( NumberFormatException nfe) {
+                return 0;
+            }
+        }
+
+        return 0;
     }
 
     protected Class<?> getClass(SchemaFactory schemaFactory, String type, Map<Object,Object> criteria, boolean alterCriteria) {
@@ -84,13 +137,14 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         return clz;
     }
 
-    protected MultiTableMapper addTables(SchemaFactory schemaFactory, SelectQuery<?> query, String type, Table<?> table, Map<Object, Object> criteria, Include include) {
+    protected MultiTableMapper addTables(SchemaFactory schemaFactory, SelectQuery<?> query, String type, Table<?> table,
+            Map<Object, Object> criteria, Include include, Pagination pagination) {
         if ( include == null || include.getLinks().size() == 0 ) {
             query.addFrom(table);
             return null;
         }
 
-        MultiTableMapper tableMapper = new MultiTableMapper(getMetaDataManager());
+        MultiTableMapper tableMapper = new MultiTableMapper(getMetaDataManager(), pagination);
         tableMapper.map(table);
 
         List<Relationship> rels = new ArrayList<Relationship>();
@@ -98,7 +152,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
 
         for ( Map.Entry<String, Relationship> entry : getLinkRelationships(schemaFactory, type, include).entrySet() ) {
             Relationship rel = entry.getValue();
-            Table<?> childTable = JooqUtils.getTable(rel.getObjectType());
+            Table<?> childTable = JooqUtils.getTableFromRecordClass(rel.getObjectType());
             if ( childTable == null ) {
                 throw new IllegalStateException("Failed to find table for type [" + rel.getObjectType() + "]");
             } else {
@@ -118,7 +172,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
             Relationship rel = rels.get(i);
             Table<?> toTable = tables.get(i);
             if ( rel != null ) {
-                query.addJoin(toTable, getJoinCondition(schemaFactory, type, table, toTable.getName(), rel));
+                query.addJoin(toTable, JoinType.LEFT_OUTER_JOIN, getJoinCondition(schemaFactory, type, table, toTable.getName(), rel));
             }
         }
 
@@ -150,10 +204,8 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         return fieldFrom.eq(fieldTo.getTable().as(asName).field(fieldTo.getName()));
     }
 
-    protected void addConditions(SchemaFactory schemaFactory, SelectQuery<?> query, String type, Table<?> table, Map<Object, Object> criteria, Long marker) {
+    protected void addConditions(SchemaFactory schemaFactory, SelectQuery<?> query, String type, Table<?> table, Map<Object, Object> criteria) {
         org.jooq.Condition condition = JooqUtils.toConditions(getMetaDataManager(), type, criteria);
-
-        condition = addMarker(type, marker, condition);
 
         if ( condition != null ) {
             query.addConditions(condition);
@@ -161,12 +213,13 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     }
 
     protected void addLimit(SchemaFactory schemaFactory, String type, Pagination pagination, SelectQuery<?> query) {
-        if ( pagination == null ) {
+        if ( pagination == null || pagination.getLimit() == null ) {
             return;
         }
 
         int limit = pagination.getLimit() + 1;
-        query.addLimit(limit);
+        int offset = getOffset(pagination);
+        query.addLimit(offset, limit);
     }
 
     protected void addSort(SchemaFactory schemaFactory, String type, Sort sort, SelectQuery<?> query) {
@@ -185,20 +238,6 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         default:
             query.addOrderBy(sortField.asc());
         }
-    }
-
-    protected org.jooq.Condition addMarker(String type, Long marker, org.jooq.Condition existing) {
-        if ( marker == null ) {
-            return existing;
-        }
-
-        TableField<?, Object> field = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
-        if ( field != null ) {
-            org.jooq.Condition newCondition = field.ge(marker);
-            return existing == null ? newCondition : existing.and(newCondition);
-        }
-
-        return existing;
     }
 
     @Override
@@ -228,7 +267,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
 
     @Override
     protected Object removeFromStore(String type, String id, Object obj, ApiRequest request) {
-        Table<?> table = JooqUtils.getTable(JooqUtils.getRecordClass(request.getSchemaFactory(), obj.getClass()));
+        Table<?> table = JooqUtils.getTableFromRecordClass(JooqUtils.getRecordClass(request.getSchemaFactory(), obj.getClass()));
         TableField<?, Object> idField = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
 
         int result = create()

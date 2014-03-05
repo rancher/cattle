@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.dstack.engine.process.impl;
 
 import static io.github.ibuildthecloud.dstack.engine.process.ExitReason.*;
 import static io.github.ibuildthecloud.dstack.util.time.TimeUtils.*;
+import io.github.ibuildthecloud.dstack.async.utils.TimeoutException;
 import io.github.ibuildthecloud.dstack.deferred.util.DeferredUtils;
 import io.github.ibuildthecloud.dstack.engine.context.EngineContext;
 import io.github.ibuildthecloud.dstack.engine.eventing.EngineEvents;
@@ -67,8 +68,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     boolean schedule = false;
 
     public DefaultProcessInstanceImpl(ProcessServiceContext context, ProcessRecord record, ProcessDefinition processDefinition,
-            ProcessState state) {
+            ProcessState state, boolean schedule) {
         super();
+        this.schedule = schedule;
         this.context = context;
         this.instanceContext = new ProcessInstanceContext();
         this.instanceContext.setProcessDefinition(processDefinition);
@@ -80,26 +82,16 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     @Override
-    public void schedule() {
-        schedule = true;
-        try {
-            execute();
-        } catch ( ProcessInstanceException e ) {
-            if ( e.getExitReason() == SCHEDULED ) {
-                return;
-            } else {
-                throw e;
-            }
-        }
-    }
-
-    @Override
     public ExitReason execute() {
         synchronized (this) {
             if ( executed ) {
                 throw new IllegalStateException("A process can only be executed once");
             }
             executed = true;
+        }
+
+        if ( record.getEndTime() != null ) {
+            return exit(ALREADY_DONE);
         }
 
         try {
@@ -111,13 +103,12 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 }
             });
         } catch ( FailedToAcquireLockException e ) {
-            exit(FAILED_TO_ACQUIRE_PROCESS_INSTANCE_LOCK);
-            throw new ProcessInstanceException(this, new ProcessExecutionExitException(FAILED_TO_ACQUIRE_PROCESS_INSTANCE_LOCK));
+            exit(PROCESS_ALREADY_IN_PROGRESS);
+            throw new ProcessInstanceException(this, new ProcessExecutionExitException(PROCESS_ALREADY_IN_PROGRESS));
         } finally {
             log.info("Exiting [{}] process [{}] id [{}] on resource [{}]", finalReason, getName(),  getId(), instanceContext.state.getResourceId());
             if ( finalReason == null ) {
                 log.error("final ExitReason is null, should not be");
-                throw new IllegalStateException("final ExitReason is null, should not be");
             }
         }
     }
@@ -161,10 +152,10 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         try {
             runDelegateLoop(engineContext);
 
-            return exit(ExitReason.ACTIVE);
+            return exit(ExitReason.DONE);
         } catch ( ProcessExecutionExitException e ) {
             exit(e.getExitReason());
-            if ( e.getExitReason() == ALREADY_ACTIVE ) {
+            if ( e.getExitReason() == ALREADY_DONE ) {
                 return e.getExitReason();
             }
 
@@ -186,7 +177,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             }
             throw new ProcessInstanceException(this, e);
         } finally {
-            context.getProcessManager().persistState(this);
+            context.getProcessManager().persistState(this, schedule);
         }
     }
 
@@ -213,6 +204,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             } catch ( IdempotentRetryException e ) {
                 execution.setException(new ExceptionLog(e));
                 throw new ProcessExecutionExitException(RETRY_EXCEPTION, e);
+            } catch ( TimeoutException t ) {
+                throw new ProcessExecutionExitException(TIMEOUT, t);
             } catch ( Throwable t) {
                 execution.setException(new ExceptionLog(t));
                 throw new ProcessExecutionExitException(UNKNOWN_EXCEPTION, t);
@@ -261,8 +254,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void preRunStateCheck() {
-        if ( instanceContext.getState().isDone() ) {
-            throw new ProcessExecutionExitException(ALREADY_ACTIVE);
+        if ( instanceContext.getState().isDone(schedule) ) {
+            throw new ProcessExecutionExitException(ALREADY_DONE);
         }
 
         if ( instanceContext.getState().shouldCancel() ) {
@@ -281,7 +274,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             if ( instanceContext.getPhase() == ProcessPhase.REQUESTED ) {
                 instanceContext.setPhase(ProcessPhase.STARTED);
-                getProcessManager().persistState(this);
+                getProcessManager().persistState(this, schedule);
             }
 
             if ( instanceContext.getState().isStart() ) {
@@ -488,7 +481,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         log.info("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(),
                 record.getResourceId());
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, "transitioning", now()));
-        publishChanged();
+        publishChanged(schedule);
     }
 
     protected void setDone() {
@@ -499,14 +492,20 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         log.info("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(),
                 record.getResourceId());
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, "done", now()));
-        publishChanged();
+        publishChanged(schedule);
     }
 
-    protected void publishChanged() {
-        context.getEventService().publish(EventVO
+    protected void publishChanged(boolean defer) {
+        Event event = EventVO
                 .newEvent(FrameworkEvents.STATE_CHANGE)
                 .withResourceType(record.getResourceType())
-                .withResourceId(record.getResourceId()));
+                .withResourceId(record.getResourceId());
+
+        if ( defer ) {
+            DeferredUtils.deferPublish(context.getEventService(), event);
+        } else {
+            context.getEventService().publish(event);
+        }
     }
 
     protected void startLock() {
@@ -534,7 +533,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     protected void lockFailed(LockDefinition lockDef, FailedToAcquireLockException e) {
         execution.setFailedToAcquireLock(LockUtils.serializeLock(lockDef));
         execution.setLockAcquireFailed(now());
-        throw new ProcessExecutionExitException(FAILED_TO_ACQUIRE_LOCK, e);
+        throw new ProcessExecutionExitException(RESOURCE_BUSY, e);
     }
 
     protected ExitReason exit(ExitReason reason) {

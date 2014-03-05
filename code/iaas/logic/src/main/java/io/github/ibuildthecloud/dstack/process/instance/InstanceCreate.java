@@ -1,11 +1,9 @@
 package io.github.ibuildthecloud.dstack.process.instance;
 
-import static io.github.ibuildthecloud.dstack.core.model.tables.NicTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.*;
 import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
 import io.github.ibuildthecloud.dstack.core.constants.InstanceConstants;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
-import io.github.ibuildthecloud.dstack.core.model.Nic;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
@@ -14,11 +12,11 @@ import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
+import io.github.ibuildthecloud.dstack.object.util.DataAccessor;
 import io.github.ibuildthecloud.dstack.object.util.DataUtils;
 import io.github.ibuildthecloud.dstack.process.base.AbstractDefaultProcessHandler;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,14 +34,16 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        setCreateStart(state);
+
         Instance instance = (Instance)state.getResource();
         List<Volume> volumes = objectManager.children(instance, Volume.class);
-        List<Nic> nics = objectManager.children(instance, Nic.class);
+//        List<Nic> nics = objectManager.children(instance, Nic.class);
 
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
-        Set<Long> nicIds = createNics(instance, nics, state.getData());
+//        Set<Long> nicIds = createNics(instance, nics, state.getData());
 
-        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds);
+        HandlerResult result = new HandlerResult("_volumeIds", volumesIds);//, "_nicIds", nicIds);
         result.shouldDelegate(shouldStart(instance));
 
         return result;
@@ -129,37 +129,53 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
                 );
     }
 
-    protected Set<Long> createNics(Instance instance, List<Nic> nics, Map<String,Object> data) {
-        List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_NETWORK_IDS, Long.class);
-        if ( networkIds == null )
-            return Collections.emptySet();
+//    protected Set<Long> createNics(Instance instance, List<Nic> nics, Map<String,Object> data) {
+//        List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_NETWORK_IDS, Long.class);
+//        if ( networkIds == null )
+//            return Collections.emptySet();
+//
+//        Set<Long> nicIds = new TreeSet<Long>();
+//
+//        for ( int i = 0 ; i < networkIds.size() ; i++ ) {
+//            Number createId = networkIds.get(i);
+//            Nic newNic = null;
+//            for ( Nic nic : nics ) {
+//                if ( nic.getNetworkId() == createId.longValue() ) {
+//                    newNic = nic;
+//                    break;
+//                }
+//            }
+//
+//            if ( newNic == null ) {
+//                newNic = objectManager.create(Nic.class,
+//                        NIC.ACCOUNT_ID, instance.getAccountId(),
+//                        NIC.NETWORK_ID, createId,
+//                        NIC.INSTANCE_ID, instance.getId(),
+//                        NIC.DEVICE_NUMBER, i);
+//
+//            }
+//
+//            processManager.executeStandardProcess(StandardProcess.CREATE, newNic, data);
+//            nicIds.add(newNic.getId());
+//        }
+//
+//        return nicIds;
+//    }
 
-        Set<Long> nicIds = new TreeSet<Long>();
+    public static boolean isCreateStart(ProcessState state) {
+        Boolean startOnCreate = DataAccessor.fromMap(state.getData())
+                .withScope(InstanceCreate.class)
+                .withKey(InstanceConstants.FIELD_START_ON_CREATE)
+                .as(Boolean.class);
 
-        for ( int i = 0 ; i < networkIds.size() ; i++ ) {
-            Number createId = networkIds.get(i);
-            Nic newNic = null;
-            for ( Nic nic : nics ) {
-                if ( nic.getNetworkId() == createId.longValue() ) {
-                    newNic = nic;
-                    break;
-                }
-            }
+        return startOnCreate == null ? false : startOnCreate;
+    }
 
-            if ( newNic == null ) {
-                newNic = objectManager.create(Nic.class,
-                        NIC.ACCOUNT_ID, instance.getAccountId(),
-                        NIC.NETWORK_ID, createId,
-                        NIC.INSTANCE_ID, instance.getId(),
-                        NIC.DEVICE_NUMBER, i);
-
-            }
-
-            processManager.executeStandardProcess(StandardProcess.CREATE, newNic, data);
-            nicIds.add(newNic.getId());
-        }
-
-        return nicIds;
+    protected void setCreateStart(ProcessState state) {
+        DataAccessor.fromMap(state.getData())
+            .withScope(InstanceCreate.class)
+            .withKey(InstanceConstants.FIELD_START_ON_CREATE)
+            .set(true);
     }
 
     public JsonMapper getJsonMapper() {

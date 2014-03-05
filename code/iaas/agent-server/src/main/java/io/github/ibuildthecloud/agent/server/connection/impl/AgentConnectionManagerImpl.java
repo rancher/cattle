@@ -3,11 +3,11 @@ package io.github.ibuildthecloud.agent.server.connection.impl;
 import io.github.ibuildthecloud.agent.server.connection.AgentConnection;
 import io.github.ibuildthecloud.agent.server.connection.AgentConnectionFactory;
 import io.github.ibuildthecloud.agent.server.connection.AgentConnectionManager;
-import io.github.ibuildthecloud.agent.server.lock.AgentConnectionLockDefinition;
+import io.github.ibuildthecloud.agent.server.group.AgentGroupManager;
 import io.github.ibuildthecloud.agent.server.lock.AgentConnectionManagementLock;
+import io.github.ibuildthecloud.agent.server.util.AgentConnectionUtils;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
-import io.github.ibuildthecloud.dstack.core.model.AgentGroup;
 import io.github.ibuildthecloud.dstack.lock.LockCallback;
 import io.github.ibuildthecloud.dstack.lock.LockDelegator;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
@@ -15,37 +15,29 @@ import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.netflix.config.DynamicLongProperty;
-import com.netflix.config.DynamicStringProperty;
 
 public class AgentConnectionManagerImpl implements AgentConnectionManager {
 
-    private static final Logger log =LoggerFactory.getLogger(AgentConnectionManagerImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(AgentConnectionManagerImpl.class);
 
-    public static final String WILDCARD = "*";
-    public static final String UNASSIGNED = "!";
-
-    private static final DynamicStringProperty AGENT_GROUPS = ArchaiusUtil.getString("agent.groups");
     private static final DynamicLongProperty AGENT_LOCK_FAILURE_CACHE_TIME = ArchaiusUtil.getLong("agent.lock.failure.cache.time.millis");
 
+    AgentGroupManager groupManager;
     ObjectManager objectManager;
-    Set<String> groups;
     LockDelegator lockDelegator;
     LockManager lockManager;
     Cache<String, Object> cache = CacheBuilder.newBuilder()
@@ -55,16 +47,24 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
     List<AgentConnectionFactory> factories;
 
     @Override
+    public void closeConnection(Agent agent) {
+        AgentConnection connection = connections.get(agent.getId());
+        if ( connection != null ) {
+            closeConnection(agent, connection);
+        }
+    }
+
+    @Override
     public AgentConnection getConnection(Agent agent) {
         if ( agent == null )
             return null;
 
-        if ( ! shouldHandleAgent(agent) ) {
+        if ( ! groupManager.shouldHandle(agent) ) {
             closeIfExists(agent);
             return null;
         }
 
-        LockDefinition lockDefinition = getLockDefinition(agent);
+        LockDefinition lockDefinition = AgentConnectionUtils.getConnectionLock(agent);
         if ( ! haveLock(lockDefinition) ) {
             closeIfExists(agent);
             return null;
@@ -94,10 +94,11 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
             return;
         }
 
+        log.info("Closing connection to agent [{}] [{}]", agent.getId(), agent.getUri());
         connection.close();
         connections.remove(agent.getId());
 
-        LockDefinition lockDef = getLockDefinition(agent);
+        LockDefinition lockDef = AgentConnectionUtils.getConnectionLock(agent);
         lockDelegator.unlock(lockDef);
         cache.invalidate(agent.getId());
     }
@@ -141,15 +142,6 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
         return connection;
     }
 
-    protected boolean shouldHandleAgent(Agent agent) {
-        AgentGroup group = objectManager.loadResource(AgentGroup.class, agent.getAgentGroupId());
-        if ( group == null ) {
-            return groups.contains(WILDCARD) || groups.contains(UNASSIGNED);
-        }
-
-        return groups.contains(group.getId()) || groups.contains(WILDCARD);
-    }
-
     protected boolean haveLock(LockDefinition lockDef) {
         Object dontCheck = cache.getIfPresent(lockDef.getLockId());
 
@@ -163,18 +155,6 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
         }
 
         return success;
-    }
-
-    @PostConstruct
-    public void init() {
-        groups = new HashSet<String>();
-        for ( String group : AGENT_GROUPS.get().trim().split("\\s*,\\s*") ) {
-            groups.add(group);
-        }
-    }
-
-    protected LockDefinition getLockDefinition(Agent agent) {
-        return new AgentConnectionLockDefinition(agent);
     }
 
     public LockDelegator getLockDelegator() {
@@ -212,4 +192,14 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
     public void setLockManager(LockManager lockManager) {
         this.lockManager = lockManager;
     }
+
+    public AgentGroupManager getGroupManager() {
+        return groupManager;
+    }
+
+    @Inject
+    public void setGroupManager(AgentGroupManager groupManager) {
+        this.groupManager = groupManager;
+    }
+
 }

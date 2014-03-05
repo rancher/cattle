@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "instance", schema = "dstack")
-public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long>, io.github.ibuildthecloud.dstack.core.model.Instance {
+public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long>, io.github.ibuildthecloud.dstack.core.model.Instance {
 
-	private static final long serialVersionUID = -1636219712;
+	private static final long serialVersionUID = -1066561810;
 
 	/**
 	 * Setter for <code>dstack.instance.id</code>.
@@ -51,11 +51,28 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	}
 
 	/**
+	 * Setter for <code>dstack.instance.account_id</code>.
+	 */
+	@Override
+	public void setAccountId(java.lang.Long value) {
+		setValue(2, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.instance.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	@Override
+	public java.lang.Long getAccountId() {
+		return (java.lang.Long) getValue(2);
+	}
+
+	/**
 	 * Setter for <code>dstack.instance.kind</code>.
 	 */
 	@Override
 	public void setKind(java.lang.String value) {
-		setValue(2, value);
+		setValue(3, value);
 	}
 
 	/**
@@ -64,24 +81,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
 	@Override
 	public java.lang.String getKind() {
-		return (java.lang.String) getValue(2);
-	}
-
-	/**
-	 * Setter for <code>dstack.instance.account_id</code>.
-	 */
-	@Override
-	public void setAccountId(java.lang.Long value) {
-		setValue(3, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.instance.account_id</code>.
-	 */
-	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
-	@Override
-	public java.lang.Long getAccountId() {
-		return (java.lang.Long) getValue(3);
+		return (java.lang.String) getValue(3);
 	}
 
 	/**
@@ -95,7 +95,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Getter for <code>dstack.instance.uuid</code>.
 	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
 	@Override
 	public java.lang.String getUuid() {
 		return (java.lang.String) getValue(4);
@@ -119,156 +119,20 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	}
 
 	/**
-	 * Setter for <code>dstack.instance.requested_state</code>.
-	 */
-	@Override
-	public void setRequestedState(java.lang.String value) {
-		setValue(6, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.instance.requested_state</code>.
-	 */
-	@javax.persistence.Column(name = "requested_state", length = 255)
-	@Override
-	public java.lang.String getRequestedState() {
-		return (java.lang.String) getValue(6);
-	}
-
-	/**
 	 * Setter for <code>dstack.instance.state</code>.
 	 */
 	@Override
 	public void setState(java.lang.String value) {
-		setValue(7, value);
+		setValue(6, value);
 	}
 
 	/**
 	 * Getter for <code>dstack.instance.state</code>.
 	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	@Override
 	public java.lang.String getState() {
-		return (java.lang.String) getValue(7);
-	}
-
-	/**
-	 * Setter for <code>dstack.instance.allocation_state</code>.
-	 */
-	@Override
-	public void setAllocationState(java.lang.String value) {
-		setValue(8, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.instance.allocation_state</code>.
-	 */
-	@javax.persistence.Column(name = "allocation_state", nullable = false, length = 255)
-	@Override
-	public java.lang.String getAllocationState() {
-		return (java.lang.String) getValue(8);
-	}
-
-	/**
-	 * Setter for <code>dstack.instance.post_compute_state</code>.
-	 */
-	@Override
-	public void setPostComputeState(java.lang.String value) {
-		setValue(9, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.instance.post_compute_state</code>.
-	 */
-	@javax.persistence.Column(name = "post_compute_state", length = 255)
-	@Override
-	public java.lang.String getPostComputeState() {
-		return (java.lang.String) getValue(9);
-	}
-
-	/**
-	 * Setter for <code>dstack.instance.image_id</code>.
-	 */
-	@Override
-	public void setImageId(java.lang.Long value) {
-		setValue(10, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.instance.image_id</code>.
-	 */
-	@javax.persistence.Column(name = "image_id", precision = 19)
-	@Override
-	public java.lang.Long getImageId() {
-		return (java.lang.Long) getValue(10);
-	}
-
-	/**
-	 * Setter for <code>dstack.instance.offering_id</code>.
-	 */
-	@Override
-	public void setOfferingId(java.lang.Long value) {
-		setValue(11, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.instance.offering_id</code>.
-	 */
-	@javax.persistence.Column(name = "offering_id", precision = 19)
-	@Override
-	public java.lang.Long getOfferingId() {
-		return (java.lang.Long) getValue(11);
-	}
-
-	/**
-	 * Setter for <code>dstack.instance.requested_offering_id</code>.
-	 */
-	@Override
-	public void setRequestedOfferingId(java.lang.Long value) {
-		setValue(12, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.instance.requested_offering_id</code>.
-	 */
-	@javax.persistence.Column(name = "requested_offering_id", precision = 19)
-	@Override
-	public java.lang.Long getRequestedOfferingId() {
-		return (java.lang.Long) getValue(12);
-	}
-
-	/**
-	 * Setter for <code>dstack.instance.on_crash</code>.
-	 */
-	@Override
-	public void setOnCrash(java.lang.String value) {
-		setValue(13, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.instance.on_crash</code>.
-	 */
-	@javax.persistence.Column(name = "on_crash", nullable = false, length = 255)
-	@Override
-	public java.lang.String getOnCrash() {
-		return (java.lang.String) getValue(13);
-	}
-
-	/**
-	 * Setter for <code>dstack.instance.hostname</code>.
-	 */
-	@Override
-	public void setHostname(java.lang.String value) {
-		setValue(14, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.instance.hostname</code>.
-	 */
-	@javax.persistence.Column(name = "hostname", length = 255)
-	@Override
-	public java.lang.String getHostname() {
-		return (java.lang.String) getValue(14);
+		return (java.lang.String) getValue(6);
 	}
 
 	/**
@@ -276,7 +140,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 */
 	@Override
 	public void setCreated(java.util.Date value) {
-		setValue(15, value);
+		setValue(7, value);
 	}
 
 	/**
@@ -285,7 +149,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	@javax.persistence.Column(name = "created")
 	@Override
 	public java.util.Date getCreated() {
-		return (java.util.Date) getValue(15);
+		return (java.util.Date) getValue(7);
 	}
 
 	/**
@@ -293,7 +157,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 */
 	@Override
 	public void setRemoved(java.util.Date value) {
-		setValue(16, value);
+		setValue(8, value);
 	}
 
 	/**
@@ -302,7 +166,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	@javax.persistence.Column(name = "removed")
 	@Override
 	public java.util.Date getRemoved() {
-		return (java.util.Date) getValue(16);
+		return (java.util.Date) getValue(8);
 	}
 
 	/**
@@ -310,7 +174,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 */
 	@Override
 	public void setRemoveTime(java.util.Date value) {
-		setValue(17, value);
+		setValue(9, value);
 	}
 
 	/**
@@ -319,7 +183,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	@javax.persistence.Column(name = "remove_time")
 	@Override
 	public java.util.Date getRemoveTime() {
-		return (java.util.Date) getValue(17);
+		return (java.util.Date) getValue(9);
 	}
 
 	/**
@@ -327,7 +191,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
-		setValue(18, value);
+		setValue(10, value);
 	}
 
 	/**
@@ -336,7 +200,92 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
-		return (java.util.Map<String,Object>) getValue(18);
+		return (java.util.Map<String,Object>) getValue(10);
+	}
+
+	/**
+	 * Setter for <code>dstack.instance.allocation_state</code>.
+	 */
+	@Override
+	public void setAllocationState(java.lang.String value) {
+		setValue(11, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.instance.allocation_state</code>.
+	 */
+	@javax.persistence.Column(name = "allocation_state", length = 255)
+	@Override
+	public java.lang.String getAllocationState() {
+		return (java.lang.String) getValue(11);
+	}
+
+	/**
+	 * Setter for <code>dstack.instance.compute</code>.
+	 */
+	@Override
+	public void setCompute(java.lang.Long value) {
+		setValue(12, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.instance.compute</code>.
+	 */
+	@javax.persistence.Column(name = "compute", precision = 19)
+	@Override
+	public java.lang.Long getCompute() {
+		return (java.lang.Long) getValue(12);
+	}
+
+	/**
+	 * Setter for <code>dstack.instance.image_id</code>.
+	 */
+	@Override
+	public void setImageId(java.lang.Long value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.instance.image_id</code>.
+	 */
+	@javax.persistence.Column(name = "image_id", precision = 19)
+	@Override
+	public java.lang.Long getImageId() {
+		return (java.lang.Long) getValue(13);
+	}
+
+	/**
+	 * Setter for <code>dstack.instance.offering_id</code>.
+	 */
+	@Override
+	public void setOfferingId(java.lang.Long value) {
+		setValue(14, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.instance.offering_id</code>.
+	 */
+	@javax.persistence.Column(name = "offering_id", precision = 19)
+	@Override
+	public java.lang.Long getOfferingId() {
+		return (java.lang.Long) getValue(14);
+	}
+
+	/**
+	 * Setter for <code>dstack.instance.hostname</code>.
+	 */
+	@Override
+	public void setHostname(java.lang.String value) {
+		setValue(15, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.instance.hostname</code>.
+	 */
+	@javax.persistence.Column(name = "hostname", length = 255)
+	@Override
+	public java.lang.String getHostname() {
+		return (java.lang.String) getValue(15);
 	}
 
 	/**
@@ -344,16 +293,16 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 */
 	@Override
 	public void setZoneId(java.lang.Long value) {
-		setValue(19, value);
+		setValue(16, value);
 	}
 
 	/**
 	 * Getter for <code>dstack.instance.zone_id</code>.
 	 */
-	@javax.persistence.Column(name = "zone_id", nullable = false, precision = 19)
+	@javax.persistence.Column(name = "zone_id", precision = 19)
 	@Override
 	public java.lang.Long getZoneId() {
-		return (java.lang.Long) getValue(19);
+		return (java.lang.Long) getValue(16);
 	}
 
 	// -------------------------------------------------------------------------
@@ -369,23 +318,23 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	}
 
 	// -------------------------------------------------------------------------
-	// Record20 type implementation
+	// Record17 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row20) super.fieldsRow();
+	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row17) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long> valuesRow() {
-		return (org.jooq.Row20) super.valuesRow();
+	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long> valuesRow() {
+		return (org.jooq.Row17) super.valuesRow();
 	}
 
 	/**
@@ -408,16 +357,16 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field3() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.KIND;
+	public org.jooq.Field<java.lang.Long> field3() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.ACCOUNT_ID;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field4() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.ACCOUNT_ID;
+	public org.jooq.Field<java.lang.String> field4() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.KIND;
 	}
 
 	/**
@@ -441,14 +390,6 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field7() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.REQUESTED_STATE;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field8() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.STATE;
 	}
 
@@ -456,63 +397,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field9() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.ALLOCATION_STATE;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field10() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.POST_COMPUTE_STATE;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field11() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.IMAGE_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field12() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.OFFERING_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field13() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.REQUESTED_OFFERING_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field14() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.ON_CRASH;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field15() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.HOSTNAME;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.util.Date> field16() {
+	public org.jooq.Field<java.util.Date> field8() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.CREATED;
 	}
 
@@ -520,7 +405,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Date> field17() {
+	public org.jooq.Field<java.util.Date> field9() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.REMOVED;
 	}
 
@@ -528,7 +413,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Date> field18() {
+	public org.jooq.Field<java.util.Date> field10() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.REMOVE_TIME;
 	}
 
@@ -536,7 +421,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Map<String,Object>> field19() {
+	public org.jooq.Field<java.util.Map<String,Object>> field11() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.DATA;
 	}
 
@@ -544,7 +429,47 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field20() {
+	public org.jooq.Field<java.lang.String> field12() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.ALLOCATION_STATE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field13() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.COMPUTE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field14() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.IMAGE_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field15() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.OFFERING_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.String> field16() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.HOSTNAME;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field17() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE.ZONE_ID;
 	}
 
@@ -568,16 +493,16 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value3() {
-		return getKind();
+	public java.lang.Long value3() {
+		return getAccountId();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value4() {
-		return getAccountId();
+	public java.lang.String value4() {
+		return getKind();
 	}
 
 	/**
@@ -601,14 +526,6 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 */
 	@Override
 	public java.lang.String value7() {
-		return getRequestedState();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value8() {
 		return getState();
 	}
 
@@ -616,63 +533,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value9() {
-		return getAllocationState();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value10() {
-		return getPostComputeState();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value11() {
-		return getImageId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value12() {
-		return getOfferingId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value13() {
-		return getRequestedOfferingId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value14() {
-		return getOnCrash();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value15() {
-		return getHostname();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.util.Date value16() {
+	public java.util.Date value8() {
 		return getCreated();
 	}
 
@@ -680,7 +541,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Date value17() {
+	public java.util.Date value9() {
 		return getRemoved();
 	}
 
@@ -688,7 +549,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Date value18() {
+	public java.util.Date value10() {
 		return getRemoveTime();
 	}
 
@@ -696,7 +557,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Map<String,Object> value19() {
+	public java.util.Map<String,Object> value11() {
 		return getData();
 	}
 
@@ -704,7 +565,47 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value20() {
+	public java.lang.String value12() {
+		return getAllocationState();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value13() {
+		return getCompute();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value14() {
+		return getImageId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value15() {
+		return getOfferingId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value16() {
+		return getHostname();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value17() {
 		return getZoneId();
 	}
 
@@ -730,8 +631,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public InstanceRecord value3(java.lang.String value) {
-		setKind(value);
+	public InstanceRecord value3(java.lang.Long value) {
+		setAccountId(value);
 		return this;
 	}
 
@@ -739,8 +640,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public InstanceRecord value4(java.lang.Long value) {
-		setAccountId(value);
+	public InstanceRecord value4(java.lang.String value) {
+		setKind(value);
 		return this;
 	}
 
@@ -767,15 +668,6 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 */
 	@Override
 	public InstanceRecord value7(java.lang.String value) {
-		setRequestedState(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value8(java.lang.String value) {
 		setState(value);
 		return this;
 	}
@@ -784,70 +676,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public InstanceRecord value9(java.lang.String value) {
-		setAllocationState(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value10(java.lang.String value) {
-		setPostComputeState(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value11(java.lang.Long value) {
-		setImageId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value12(java.lang.Long value) {
-		setOfferingId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value13(java.lang.Long value) {
-		setRequestedOfferingId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value14(java.lang.String value) {
-		setOnCrash(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value15(java.lang.String value) {
-		setHostname(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value16(java.util.Date value) {
+	public InstanceRecord value8(java.util.Date value) {
 		setCreated(value);
 		return this;
 	}
@@ -856,7 +685,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public InstanceRecord value17(java.util.Date value) {
+	public InstanceRecord value9(java.util.Date value) {
 		setRemoved(value);
 		return this;
 	}
@@ -865,7 +694,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public InstanceRecord value18(java.util.Date value) {
+	public InstanceRecord value10(java.util.Date value) {
 		setRemoveTime(value);
 		return this;
 	}
@@ -874,7 +703,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public InstanceRecord value19(java.util.Map<String,Object> value) {
+	public InstanceRecord value11(java.util.Map<String,Object> value) {
 		setData(value);
 		return this;
 	}
@@ -883,7 +712,52 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public InstanceRecord value20(java.lang.Long value) {
+	public InstanceRecord value12(java.lang.String value) {
+		setAllocationState(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public InstanceRecord value13(java.lang.Long value) {
+		setCompute(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public InstanceRecord value14(java.lang.Long value) {
+		setImageId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public InstanceRecord value15(java.lang.Long value) {
+		setOfferingId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public InstanceRecord value16(java.lang.String value) {
+		setHostname(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public InstanceRecord value17(java.lang.Long value) {
 		setZoneId(value);
 		return this;
 	}
@@ -892,7 +766,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public InstanceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.Long value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.String value9, java.lang.String value10, java.lang.Long value11, java.lang.Long value12, java.lang.Long value13, java.lang.String value14, java.lang.String value15, java.util.Date value16, java.util.Date value17, java.util.Date value18, java.util.Map<String,Object> value19, java.lang.Long value20) {
+	public InstanceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.Long value15, java.lang.String value16, java.lang.Long value17) {
 		return this;
 	}
 
@@ -907,23 +781,20 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	public void from(io.github.ibuildthecloud.dstack.core.model.Instance from) {
 		setId(from.getId());
 		setName(from.getName());
-		setKind(from.getKind());
 		setAccountId(from.getAccountId());
+		setKind(from.getKind());
 		setUuid(from.getUuid());
 		setDescription(from.getDescription());
-		setRequestedState(from.getRequestedState());
 		setState(from.getState());
-		setAllocationState(from.getAllocationState());
-		setPostComputeState(from.getPostComputeState());
-		setImageId(from.getImageId());
-		setOfferingId(from.getOfferingId());
-		setRequestedOfferingId(from.getRequestedOfferingId());
-		setOnCrash(from.getOnCrash());
-		setHostname(from.getHostname());
 		setCreated(from.getCreated());
 		setRemoved(from.getRemoved());
 		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
+		setAllocationState(from.getAllocationState());
+		setCompute(from.getCompute());
+		setImageId(from.getImageId());
+		setOfferingId(from.getOfferingId());
+		setHostname(from.getHostname());
 		setZoneId(from.getZoneId());
 	}
 
@@ -950,28 +821,25 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Create a detached, initialised InstanceRecord
 	 */
-	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.Long accountId, java.lang.String uuid, java.lang.String description, java.lang.String requestedState, java.lang.String state, java.lang.String allocationState, java.lang.String postComputeState, java.lang.Long imageId, java.lang.Long offeringId, java.lang.Long requestedOfferingId, java.lang.String onCrash, java.lang.String hostname, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long zoneId) {
+	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.INSTANCE);
 
 		setValue(0, id);
 		setValue(1, name);
-		setValue(2, kind);
-		setValue(3, accountId);
+		setValue(2, accountId);
+		setValue(3, kind);
 		setValue(4, uuid);
 		setValue(5, description);
-		setValue(6, requestedState);
-		setValue(7, state);
-		setValue(8, allocationState);
-		setValue(9, postComputeState);
-		setValue(10, imageId);
-		setValue(11, offeringId);
-		setValue(12, requestedOfferingId);
-		setValue(13, onCrash);
-		setValue(14, hostname);
-		setValue(15, created);
-		setValue(16, removed);
-		setValue(17, removeTime);
-		setValue(18, data);
-		setValue(19, zoneId);
+		setValue(6, state);
+		setValue(7, created);
+		setValue(8, removed);
+		setValue(9, removeTime);
+		setValue(10, data);
+		setValue(11, allocationState);
+		setValue(12, compute);
+		setValue(13, imageId);
+		setValue(14, offeringId);
+		setValue(15, hostname);
+		setValue(16, zoneId);
 	}
 }

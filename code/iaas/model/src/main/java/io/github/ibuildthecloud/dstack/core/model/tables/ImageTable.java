@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> {
 
-	private static final long serialVersionUID = -1133275960;
+	private static final long serialVersionUID = -796086196;
 
 	/**
 	 * The singleton instance of <code>dstack.image</code>
@@ -37,19 +37,19 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.image.uuid</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
-
-	/**
 	 * The column <code>dstack.image.account_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>dstack.image.url</code>.
+	 * The column <code>dstack.image.kind</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> URL = createField("url", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
+
+	/**
+	 * The column <code>dstack.image.uuid</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
 	 * The column <code>dstack.image.description</code>.
@@ -57,39 +57,9 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
-	 * The column <code>dstack.image.is_public</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
-
-	/**
 	 * The column <code>dstack.image.state</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
-
-	/**
-	 * The column <code>dstack.image.prepopulate</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Boolean> PREPOPULATE = createField("prepopulate", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
-
-	/**
-	 * The column <code>dstack.image.prepopulate_stamp</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> PREPOPULATE_STAMP = createField("prepopulate_stamp", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false).defaulted(true), this, "");
-
-	/**
-	 * The column <code>dstack.image.physical_size_bytes</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> PHYSICAL_SIZE_BYTES = createField("physical_size_bytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>dstack.image.virtual_size_bytes</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> VIRTUAL_SIZE_BYTES = createField("virtual_size_bytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>dstack.image.checksum</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> CHECKSUM = createField("checksum", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
 	 * The column <code>dstack.image.created</code>.
@@ -110,6 +80,36 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	 * The column <code>dstack.image.data</code>.
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.image.url</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> URL = createField("url", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>dstack.image.is_public</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>dstack.image.physical_size_megabytes</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> PHYSICAL_SIZE_MEGABYTES = createField("physical_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.image.virtual_size_megabytes</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> VIRTUAL_SIZE_MEGABYTES = createField("virtual_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.image.checksum</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> CHECKSUM = createField("checksum", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>dstack.image.format</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.String> FORMAT = createField("format", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>dstack.image</code> table reference
@@ -154,7 +154,7 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_IMAGE_PRIMARY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_IMAGE_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_IMAGE_IDX_IMAGE_UUID);
 	}
 
 	/**
@@ -162,7 +162,7 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_TEMPLATE_ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_IMAGE__ACCOUNT_ID);
 	}
 
 	/**

@@ -37,6 +37,17 @@ public interface Instance extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
+	 * Setter for <code>dstack.instance.account_id</code>.
+	 */
+	public void setAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.instance.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
+
+	/**
 	 * Setter for <code>dstack.instance.kind</code>.
 	 */
 	public void setKind(java.lang.String value);
@@ -48,17 +59,6 @@ public interface Instance extends java.io.Serializable {
 	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.instance.account_id</code>.
-	 */
-	public void setAccountId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.instance.account_id</code>.
-	 */
-	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
-	public java.lang.Long getAccountId();
-
-	/**
 	 * Setter for <code>dstack.instance.uuid</code>.
 	 */
 	public void setUuid(java.lang.String value);
@@ -66,7 +66,7 @@ public interface Instance extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.instance.uuid</code>.
 	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
 	public java.lang.String getUuid();
 
 	/**
@@ -81,17 +81,6 @@ public interface Instance extends java.io.Serializable {
 	public java.lang.String getDescription();
 
 	/**
-	 * Setter for <code>dstack.instance.requested_state</code>.
-	 */
-	public void setRequestedState(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.instance.requested_state</code>.
-	 */
-	@javax.persistence.Column(name = "requested_state", length = 255)
-	public java.lang.String getRequestedState();
-
-	/**
 	 * Setter for <code>dstack.instance.state</code>.
 	 */
 	public void setState(java.lang.String value);
@@ -99,85 +88,8 @@ public interface Instance extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.instance.state</code>.
 	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
-
-	/**
-	 * Setter for <code>dstack.instance.allocation_state</code>.
-	 */
-	public void setAllocationState(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.instance.allocation_state</code>.
-	 */
-	@javax.persistence.Column(name = "allocation_state", nullable = false, length = 255)
-	public java.lang.String getAllocationState();
-
-	/**
-	 * Setter for <code>dstack.instance.post_compute_state</code>.
-	 */
-	public void setPostComputeState(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.instance.post_compute_state</code>.
-	 */
-	@javax.persistence.Column(name = "post_compute_state", length = 255)
-	public java.lang.String getPostComputeState();
-
-	/**
-	 * Setter for <code>dstack.instance.image_id</code>.
-	 */
-	public void setImageId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.instance.image_id</code>.
-	 */
-	@javax.persistence.Column(name = "image_id", precision = 19)
-	public java.lang.Long getImageId();
-
-	/**
-	 * Setter for <code>dstack.instance.offering_id</code>.
-	 */
-	public void setOfferingId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.instance.offering_id</code>.
-	 */
-	@javax.persistence.Column(name = "offering_id", precision = 19)
-	public java.lang.Long getOfferingId();
-
-	/**
-	 * Setter for <code>dstack.instance.requested_offering_id</code>.
-	 */
-	public void setRequestedOfferingId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.instance.requested_offering_id</code>.
-	 */
-	@javax.persistence.Column(name = "requested_offering_id", precision = 19)
-	public java.lang.Long getRequestedOfferingId();
-
-	/**
-	 * Setter for <code>dstack.instance.on_crash</code>.
-	 */
-	public void setOnCrash(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.instance.on_crash</code>.
-	 */
-	@javax.persistence.Column(name = "on_crash", nullable = false, length = 255)
-	public java.lang.String getOnCrash();
-
-	/**
-	 * Setter for <code>dstack.instance.hostname</code>.
-	 */
-	public void setHostname(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.instance.hostname</code>.
-	 */
-	@javax.persistence.Column(name = "hostname", length = 255)
-	public java.lang.String getHostname();
 
 	/**
 	 * Setter for <code>dstack.instance.created</code>.
@@ -224,6 +136,61 @@ public interface Instance extends java.io.Serializable {
 	public java.util.Map<String,Object> getData();
 
 	/**
+	 * Setter for <code>dstack.instance.allocation_state</code>.
+	 */
+	public void setAllocationState(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.instance.allocation_state</code>.
+	 */
+	@javax.persistence.Column(name = "allocation_state", length = 255)
+	public java.lang.String getAllocationState();
+
+	/**
+	 * Setter for <code>dstack.instance.compute</code>.
+	 */
+	public void setCompute(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.instance.compute</code>.
+	 */
+	@javax.persistence.Column(name = "compute", precision = 19)
+	public java.lang.Long getCompute();
+
+	/**
+	 * Setter for <code>dstack.instance.image_id</code>.
+	 */
+	public void setImageId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.instance.image_id</code>.
+	 */
+	@javax.persistence.Column(name = "image_id", precision = 19)
+	public java.lang.Long getImageId();
+
+	/**
+	 * Setter for <code>dstack.instance.offering_id</code>.
+	 */
+	public void setOfferingId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.instance.offering_id</code>.
+	 */
+	@javax.persistence.Column(name = "offering_id", precision = 19)
+	public java.lang.Long getOfferingId();
+
+	/**
+	 * Setter for <code>dstack.instance.hostname</code>.
+	 */
+	public void setHostname(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.instance.hostname</code>.
+	 */
+	@javax.persistence.Column(name = "hostname", length = 255)
+	public java.lang.String getHostname();
+
+	/**
 	 * Setter for <code>dstack.instance.zone_id</code>.
 	 */
 	public void setZoneId(java.lang.Long value);
@@ -231,7 +198,7 @@ public interface Instance extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.instance.zone_id</code>.
 	 */
-	@javax.persistence.Column(name = "zone_id", nullable = false, precision = 19)
+	@javax.persistence.Column(name = "zone_id", precision = 19)
 	public java.lang.Long getZoneId();
 
 	// -------------------------------------------------------------------------

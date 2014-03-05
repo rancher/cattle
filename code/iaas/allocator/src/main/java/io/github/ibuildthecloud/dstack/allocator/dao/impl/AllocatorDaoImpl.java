@@ -1,13 +1,17 @@
 package io.github.ibuildthecloud.dstack.allocator.dao.impl;
 
 import static io.github.ibuildthecloud.dstack.core.model.tables.HostTable.*;
+import static io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.*;
+import static io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.InstanceHostMapTable.*;
+import static io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.VolumeStoragePoolMapTable.*;
 import io.github.ibuildthecloud.dstack.allocator.dao.AllocatorDao;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationAttempt;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationCandidate;
+import io.github.ibuildthecloud.dstack.core.dao.GenericMapDao;
 import io.github.ibuildthecloud.dstack.core.model.Host;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.InstanceHostMap;
@@ -18,6 +22,7 @@ import io.github.ibuildthecloud.dstack.core.model.tables.records.HostRecord;
 import io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.object.util.DataAccessor;
 
 import java.util.List;
 import java.util.Map;
@@ -35,6 +40,32 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     private static final Logger log = LoggerFactory.getLogger(AllocatorDaoImpl.class);
 
     ObjectManager objectManager;
+    GenericMapDao mapDao;
+
+    @Override
+    public boolean isInstanceImageKind(long instanceId, String kind) {
+        return create().select(STORAGE_POOL.fields())
+                .from(STORAGE_POOL)
+                .join(IMAGE_STORAGE_POOL_MAP)
+                    .on(STORAGE_POOL.ID.eq(IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID))
+                .join(IMAGE)
+                    .on(IMAGE.ID.eq(IMAGE_STORAGE_POOL_MAP.IMAGE_ID))
+                .join(INSTANCE)
+                    .on(INSTANCE.IMAGE_ID.eq(IMAGE.ID))
+                .where(
+                    INSTANCE.ID.eq(instanceId)
+                    .and(IMAGE_STORAGE_POOL_MAP.REMOVED.isNull())
+                    .and(STORAGE_POOL.KIND.eq(kind)))
+                .fetch().size() > 0;
+    }
+
+    @Override
+    public boolean isVolumeInstanceImageKind(long volumeId, String kind) {
+        Volume volume = objectManager.loadResource(Volume.class, volumeId);
+        Long instanceId = volume.getInstanceId();
+
+        return instanceId == null ? false : isInstanceImageKind(instanceId, kind);
+    }
 
     @Override
     public List<? extends StoragePool> getAssociatedPools(Volume volume) {
@@ -46,6 +77,19 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .where(
                     VOLUME_STORAGE_POOL_MAP.REMOVED.isNull()
                     .and(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(volume.getId())))
+                .fetchInto(StoragePoolRecord.class);
+    }
+
+    @Override
+    public List<? extends StoragePool> getAssociatedPools(Host host) {
+        return create()
+                .select(STORAGE_POOL.fields())
+                .from(STORAGE_POOL)
+                .join(STORAGE_POOL_HOST_MAP)
+                    .on(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
+                .where(
+                    STORAGE_POOL_HOST_MAP.REMOVED.isNull()
+                    .and(STORAGE_POOL_HOST_MAP.HOST_ID.eq(host.getId())))
                 .fetchInto(StoragePoolRecord.class);
     }
 
@@ -74,6 +118,29 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .fetchInto(HostRecord.class);
     }
 
+    protected void modifyCompute(long hostId, Instance instance, boolean add) {
+        Host host = objectManager.loadResource(Host.class, hostId);
+        Long computeFree = host.getComputeFree();
+
+        if ( computeFree == null ) {
+            return;
+        }
+
+        long delta = AllocatorUtils.getCompute(instance);
+        long newValue;
+        if ( add ) {
+            newValue = computeFree + delta;
+        } else {
+            newValue = computeFree - delta;
+        }
+
+        log.debug("Modifying computeFree on host [{}], {} {} {} = {}", host.getId(), computeFree,
+                add ? "+" : "-", delta, newValue);
+
+        host.setComputeFree(newValue);
+        objectManager.persist(host);
+    }
+
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
         Set<Long> existingHosts = attempt.getHostIds();
@@ -85,6 +152,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 objectManager.create(InstanceHostMap.class,
                         INSTANCE_HOST_MAP.HOST_ID, hostId,
                         INSTANCE_HOST_MAP.INSTANCE_ID, attempt.getInstance().getId());
+
+                modifyCompute(hostId, attempt.getInstance(), false);
             }
         } else {
             if ( ! existingHosts.equals(newHosts) ) {
@@ -103,16 +172,16 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 long volumeId = entry.getKey();
                 for ( long poolId : entry.getValue() ) {
                     boolean inRightState = true;
-                    for ( Volume v : attempt.getVolumes() ) {
-                        if ( v.getId().longValue() == volumeId ) {
-                            Boolean stateCheck = AllocatorUtils.checkAllocateState(v.getId(), v.getAllocationState(), "Volume");
-                            if ( stateCheck != null && ! stateCheck.booleanValue() ) {
-                                log.error("Not assigning volume [{}] to pool [{}] because it is in state [{}]",
-                                        v.getId(), poolId, v.getAllocationState());
-                                inRightState = false;
-                            }
-                        }
-                    }
+//                    for ( Volume v : attempt.getVolumes() ) {
+//                        if ( v.getId().longValue() == volumeId ) {
+//                            Boolean stateCheck = AllocatorUtils.checkAllocateState(v.getId(), v.getAllocationState(), "Volume");
+//                            if ( stateCheck != null && ! stateCheck.booleanValue() ) {
+//                                log.error("Not assigning volume [{}] to pool [{}] because it is in state [{}]",
+//                                        v.getId(), poolId, v.getAllocationState());
+//                                inRightState = false;
+//                            }
+//                        }
+//                    }
                     if ( inRightState ) {
                         log.info("Associating volume [{}] to storage pool [{}]", volumeId, poolId);
                         objectManager.create(VolumeStoragePoolMap.class,
@@ -143,7 +212,19 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public void releaseAllocation(Instance instance) {
-        // Nothing to do?
+        for ( InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()) ) {
+            DataAccessor data = DataAccessor.fromDataFieldOf(map)
+                                    .withScope(AllocatorDaoImpl.class)
+                                    .withKey("deallocated");
+
+            Boolean done = data.as(Boolean.class);
+            if ( done == null || ! done.booleanValue() ) {
+                modifyCompute(map.getHostId(), instance, true);
+
+                data.set(true);
+                objectManager.persist(map);
+            }
+        }
     }
 
     @Override
@@ -158,6 +239,15 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     @Inject
     public void setObjectManager(ObjectManager objectManager) {
         this.objectManager = objectManager;
+    }
+
+    public GenericMapDao getMapDao() {
+        return mapDao;
+    }
+
+    @Inject
+    public void setMapDao(GenericMapDao mapDao) {
+        this.mapDao = mapDao;
     }
 
 }

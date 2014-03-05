@@ -1,7 +1,19 @@
 #!/bin/bash
 set -e
 
-cd $(dirname $0)
+BASE=$(dirname $0)
+cd $BASE
+
+trap fixperms EXIT
+
+fixperms()
+{
+    if [ -n "$BUILD_USER_ID" ]; then
+        cd $BASE
+        echo "Assign files to $BUILD_USER_ID"
+        chown -R $BUILD_USER_ID .
+    fi
+}
 
 run()
 {
@@ -14,14 +26,19 @@ run()
     mkdir -p runtime
     cd runtime
 
-    exec java -jar $WAR
+    exec java -jar $WAR "$@"
 }
 
 build()
 {
-    mvn install
+    mvn $MAVEN_ARGS ${MAVEN_TARGET:-install}
     mkdir -p dist/artifacts
-    cp code/packaging/app/target/*.war dist/artifacts/dstack.war
+    cp code/packaging/app/target/*.war dist/artifacts/dstack.jar
+    if [ -e code/packaging/bundle/target/dstack-bundle*.jar ]; then
+        if [ code/packaging/bundle/target/dstack-bundle*.jar -nt code/packaging/app/target/*.war ]; then
+            cp code/packaging/bundle/target/dstack-bundle*.jar dist/artifacts/dstack.jar
+        fi
+    fi
     cp tools/docker/wrapper.sh dist/artifacts/dstack.sh
     cp tools/docker/Dockerfile.dist dist/Dockerfile
 }
@@ -34,14 +51,13 @@ if [ "$#" = "0" ]; then
     exit 1
 fi
 
-while [ "$#" -gt 0 ]; do
-    case $1 in
-    build)
-        build
-        ;;
-    run)
-        run
-        ;;
-    esac
-    shift 1
-done
+case $1 in
+build)
+    shift
+    build "$@"
+    ;;
+run)
+    shift
+    run "$@"
+    ;;
+esac

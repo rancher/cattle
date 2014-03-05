@@ -136,10 +136,11 @@ public class ApiUtils {
     public static Resource createResourceWithAttachments(final SchemaFactory schemaFactory, final IdFormatter idFormatter,
             final Schema schema, Object obj, Map<String,Object> inputAdditionalFields) {
         Map<String,Object> additionalFields = new LinkedHashMap<String, Object>();
+        additionalFields.putAll(DataUtils.getFields(obj));
+
         if ( inputAdditionalFields != null && inputAdditionalFields.size() > 0 ) {
             additionalFields.putAll(inputAdditionalFields);
         }
-        additionalFields.putAll(DataUtils.getFields(obj));
 
         Map<String,Object> attachments = ApiUtils.getAttachements(obj, new Transformer() {
             @Override

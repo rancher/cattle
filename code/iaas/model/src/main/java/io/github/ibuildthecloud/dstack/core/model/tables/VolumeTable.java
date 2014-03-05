@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord> {
 
-	private static final long serialVersionUID = -1663322602;
+	private static final long serialVersionUID = 1356831008;
 
 	/**
 	 * The singleton instance of <code>dstack.volume</code>
@@ -37,14 +37,14 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.github.ibuildtheclou
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.volume.description</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
-
-	/**
 	 * The column <code>dstack.volume.account_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.volume.kind</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
 	 * The column <code>dstack.volume.uuid</code>.
@@ -52,59 +52,14 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.github.ibuildtheclou
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
+	 * The column <code>dstack.volume.description</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
+
+	/**
 	 * The column <code>dstack.volume.state</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
-
-	/**
-	 * The column <code>dstack.volume.physical_size_bytes</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> PHYSICAL_SIZE_BYTES = createField("physical_size_bytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>dstack.volume.virtual_size_bytes</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> VIRTUAL_SIZE_BYTES = createField("virtual_size_bytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>dstack.volume.format</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> FORMAT = createField("format", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-	/**
-	 * The column <code>dstack.volume.image_id</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> IMAGE_ID = createField("image_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>dstack.volume.offering_id</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> OFFERING_ID = createField("offering_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>dstack.volume.device_number</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Integer> DEVICE_NUMBER = createField("device_number", org.jooq.impl.SQLDataType.INTEGER, this, "");
-
-	/**
-	 * The column <code>dstack.volume.instance_id</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> INSTANCE_ID = createField("instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>dstack.volume.recreatable</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Boolean> RECREATABLE = createField("recreatable", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
-
-	/**
-	 * The column <code>dstack.volume.attached_state</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> ATTACHED_STATE = createField("attached_state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
-
-	/**
-	 * The column <code>dstack.volume.allocation_state</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> ALLOCATION_STATE = createField("allocation_state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
 	 * The column <code>dstack.volume.created</code>.
@@ -125,6 +80,56 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.github.ibuildtheclou
 	 * The column <code>dstack.volume.data</code>.
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.volume.physical_size_megabytes</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> PHYSICAL_SIZE_MEGABYTES = createField("physical_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.volume.virtual_size_megabytes</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> VIRTUAL_SIZE_MEGABYTES = createField("virtual_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.volume.device_number</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Integer> DEVICE_NUMBER = createField("device_number", org.jooq.impl.SQLDataType.INTEGER, this, "");
+
+	/**
+	 * The column <code>dstack.volume.format</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> FORMAT = createField("format", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>dstack.volume.allocation_state</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> ALLOCATION_STATE = createField("allocation_state", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>dstack.volume.attached_state</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.String> ATTACHED_STATE = createField("attached_state", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>dstack.volume.instance_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> INSTANCE_ID = createField("instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.volume.image_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> IMAGE_ID = createField("image_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.volume.offering_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> OFFERING_ID = createField("offering_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.volume.zone_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> ZONE_ID = createField("zone_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>dstack.volume</code> table reference
@@ -169,7 +174,7 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.github.ibuildtheclou
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_VOLUME_PRIMARY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_VOLUME_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_VOLUME_IDX_VOLUME_UUID);
 	}
 
 	/**
@@ -177,7 +182,7 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.github.ibuildtheclou
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME_ACCOUNT_ID, io.github.ibuildthecloud.dstack.core.model.Keys.VOLUME_IBFK_1, io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME_OFFERING_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME_INSTANCE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME__ACCOUNT_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME__INSTANCE_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME__IMAGE_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME__OFFERING_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME__ZONE_ID);
 	}
 
 	/**

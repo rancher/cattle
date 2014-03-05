@@ -13,7 +13,9 @@ import java.net.URLClassLoader;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -22,6 +24,7 @@ public class Main {
 
 	public static final String LIB_PREFIX = "WEB-INF/lib";
 	public static final String JETTY_PREFIX = "WEB-INF/jetty";
+	public static final String[] URL_PATHS = new String[] { JETTY_PREFIX, LIB_PREFIX };
 	public static final String JETTY_LAUNCHER = "io.github.ibuildthecloud.dstack.launcher.jetty.Main";
 
 	JarInJarHandlerFactory factory = new JarInJarHandlerFactory();
@@ -63,11 +66,13 @@ public class Main {
 	protected ClassLoader getClassLoader() throws Exception {
 		URL thisLocation = getThisLocation();
 
-		if ( ! isJar(thisLocation) ) {
-			return this.getClass().getClassLoader();
-		}
+		List<URL> urls = Collections.emptyList();
 
-		List<URL> urls = collectionUrls(thisLocation);
+		if ( isJar(thisLocation) ) {
+			urls = collectJarUrls(thisLocation);
+		} else {
+		    urls = collectDirectoryUrls(thisLocation);
+		}
 
 		if ( urls.size() == 0 )
 			return this.getClass().getClassLoader();
@@ -77,11 +82,38 @@ public class Main {
 
 		URL[] urlArray = urls.toArray(new URL[urls.size()]);
 
-		return new URLClassLoader(urlArray, null, factory);
+		ClassLoader cl = Boolean.getBoolean("dstack.main.inherit.cl") ? Main.class.getClassLoader() : null;
+		return new URLClassLoader(urlArray, cl, factory);
 	}
 
 
-	protected List<URL> collectionUrls(URL jarUrl) throws IOException {
+	protected List<URL> collectDirectoryUrls(URL url) throws IOException {
+	    if ( ! url.getProtocol().equals("file") ) {
+	        return Collections.emptyList();
+	    }
+
+	    File dir = new File(url.getPath());
+	    List<URL> urls = new ArrayList<URL>();
+
+	    for ( String name : URL_PATHS ) {
+	        File path = new File(dir, name);
+	        if ( path.exists() ) {
+	            File[] children = path.listFiles();
+
+	            if ( children != null ) {
+    	            for ( File child : path.listFiles() ) {
+    	                if ( !child.isDirectory() && child.getName().endsWith(".jar") ) {
+    	                    urls.add(child.toURI().toURL());
+    	                }
+    	            }
+	            }
+	        }
+	    }
+
+	    return urls;
+	}
+
+	protected List<URL> collectJarUrls(URL jarUrl) throws IOException {
 		List<URL> jarsInJar = new ArrayList<URL>();
 
 		InputStream is = null;
@@ -115,13 +147,20 @@ public class Main {
 		return jarsInJar;
 	}
 
+	protected String getMain() {
+	    return System.getProperty("main", JETTY_LAUNCHER);
+	}
+
 	public void run(String... args) throws Exception {
+	    /* The world is better place without time zones.  Well, at least for computers */
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
 		try {
 			ClassLoader cl = getClassLoader();
 
 			Thread.currentThread().setContextClassLoader(cl);
 
-			Class<?> mainClass = cl.loadClass(JETTY_LAUNCHER);
+			Class<?> mainClass = cl.loadClass(getMain());
 			Method mainMethod = mainClass.getMethod("main", String[].class);
 
 			mainMethod.invoke(null, (Object)args);
@@ -132,8 +171,14 @@ public class Main {
 		}
 	}
 
-	protected List<URL> getPlugins() {
-		String[] paths = System.getProperty("dstack.plugins", "plugins").trim().split("\\s*:\\s*");
+	protected List<URL> getPlugins() throws IOException {
+	    String base = System.getProperty("dstack.home", "");
+	    String pathStrings = System.getenv("DSTACK_EXTENSIONS");
+	    if ( pathStrings == null ) {
+	        pathStrings = System.getProperty("dstack.extensions", "etc/dstack,extensions");
+	    }
+
+	    String[] paths = pathStrings.trim().split("\\s*[,;:]\\s*");
 
 		final List<URL> result = new ArrayList<URL>();
 
@@ -141,11 +186,12 @@ public class Main {
 			if ( path.length() == 0 )
 				continue;
 
-			File file = new File(path);
+			File file = new File(base, path);
 
 	        if ( file.exists() ) {
-	            System.out.println("Scanning [" + path + "] for plugins");
-	            traverse(path, result);
+	            result.add(file.toURI().toURL());
+	            System.out.println("[MAIN] Scanning [" + path + "] for extensions");
+	            traverse(file.getAbsolutePath(), result);
 	        }
 		}
 
@@ -156,7 +202,7 @@ public class Main {
 		File file = new File(path);
 
 		if ( ! file.exists() ) {
-			System.err.println("Failed to find : " + path);
+			System.err.println("[MAIN] Failed to find : " + path);
 			return;
 		}
 
@@ -166,7 +212,7 @@ public class Main {
 			} else if ( testFile.getName().endsWith(".jar") ) {
 				try {
 					URL plugin = testFile.toURI().toURL();
-					System.out.println("Plugin : " + plugin);
+					System.out.println("[MAIN] Plugin : " + plugin);
 					result.add(plugin);
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
@@ -177,7 +223,7 @@ public class Main {
 
 	public static void main(String... args) {
 		try {
-			new Main().run(args);
+		    new Main().run(args);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);

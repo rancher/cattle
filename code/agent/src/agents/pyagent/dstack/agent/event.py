@@ -1,30 +1,25 @@
-import logging
-import requests
 import json
+import logging
 import os
-import sys
-import uuid
 import re
-from Queue import Empty, Full
-if os.environ.get("DSTACK_AGENT_MULTI_PROC") is None:
-    from Queue import Queue
-    from threading import Thread
-    Worker = Thread
-else:
-    from multiprocessing import Queue, Process
-    Worker = Process
+import requests
+import sys
+import time
+import uuid
 
-from dstack.plugins.core.publisher import Publisher
-from dstack.agent import Agent
-from dstack import type_manager
 from dstack import Config
+from dstack import type_manager
 from dstack import utils
+from dstack.agent import Agent
 from dstack.lock import FailedToLock
+from dstack.plugins.core.publisher import Publisher
+from dstack.concurrency import Queue, Full, Empty, Worker, run
 
-PSUTIL = False
+
+PS_UTIL = False
 if not sys.platform.startswith("linux"):
     import psutil
-    PSUTIL = True
+    PS_UTIL = True
 
 log = logging.getLogger("agent")
 
@@ -49,7 +44,7 @@ def _data(events, agent_id):
 
 
 def _pid_exists(pid):
-    if PSUTIL:
+    if PS_UTIL:
         return psutil.pid_exists(pid)
     else:
         return os.path.exists("/proc/%s" % pid)
@@ -66,10 +61,18 @@ def _worker(queue, ppid):
             log.info("Request: %s" % line)
 
             req = marshaller.from_string(line)
-            resp = agent.execute(req)
-            if resp is not None:
-                publisher.publish(resp)
 
+            id = req.id
+            start = time.time()
+            try:
+                log.info("Starting request %s for %s", id, req.name)
+                resp = agent.execute(req)
+                if resp is not None:
+                    publisher.publish(resp)
+            finally:
+                duration = time.time() - start
+                log.info("Done request %s for %s [%s] seconds", id, req.name,
+                         duration)
         except Empty:
             if not _pid_exists(ppid):
                 break
@@ -85,9 +88,10 @@ def _worker(queue, ppid):
                 msg = "{0} : {1}".format(error_id, e)
 
                 resp = utils.reply(req)
-                resp["transitioning"] = "error"
-                resp["transitioningInternalMessage"] = msg
-                publisher.publish(resp)
+                if resp is not None:
+                    resp["transitioning"] = "error"
+                    resp["transitioningInternalMessage"] = msg
+                    publisher.publish(resp)
 
 
 class EventClient:
@@ -101,6 +105,7 @@ class EventClient:
         self._children = []
         self._agent_id = agent_id
         self._queue = Queue(queue_depth)
+        self._ping_queue = Queue(queue_depth)
 
         type_manager.register_type(type_manager.PUBLISHER,
                                    Publisher(url + "/publish", auth))
@@ -113,7 +118,15 @@ class EventClient:
             p.start()
             self._children.append(p)
 
+        p = Worker(target=_worker, args=(self._ping_queue, pid))
+        p.daemon = True
+        p.start()
+        self._children.append(p)
+
     def run(self, events):
+        run(self._run, events)
+
+    def _run(self, events):
         ppid = os.environ.get("AGENT_PARENT_PID")
         headers = {}
         args = {
@@ -138,7 +151,11 @@ class EventClient:
             for line in r.iter_lines(chunk_size=1):
                 try:
                     if len(line) > 0:
-                        self._queue.put(line, block=False)
+                        #TODO Need a better approach here
+                        if '"ping' in line:
+                            self._ping_queue.put(line, block=False)
+                        else:
+                            self._queue.put(line, block=False)
                 except Full:
                     log.info("Dropping request %s" % line)
                 if ppid is not None and not _pid_exists(ppid):

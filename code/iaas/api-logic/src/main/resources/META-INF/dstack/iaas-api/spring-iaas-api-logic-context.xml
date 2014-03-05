@@ -14,6 +14,7 @@
 
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.manager.DataManager" />
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.filter.agent.AgentFilter" />
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.filter.container.ContainerFilter" />
 
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
@@ -26,10 +27,17 @@
         </property>
         <property name="authorizationProviders" value="#{extensionManager.list('authorization.provider')}" />
     </bean>
+    <bean class="io.github.ibuildthecloud.dstack.api.handler.AddClientIpHeader" />
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.request.handler.IdFormatterRequestHandler" >
+        <property name="plainFormatter">
+            <bean class="io.github.ibuildthecloud.gdapi.id.IdentityFormatter" />
+        </property>
+    </bean>
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.CSRFCookieHandler" />
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.request.handler.PostChildLinkHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.ParseCollectionAttributes" />
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.request.handler.UIRedirect" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.SchemasHandler" />
@@ -43,7 +51,7 @@
             <bean class="io.github.ibuildthecloud.gdapi.request.handler.write.DefaultReadWriteApiDelegate" >
                 <property name="handlers">
                     <list>
-                        <bean id="_inner_ResourceManagerRequestHandler" class="io.github.ibuildthecloud.gdapi.request.handler.ResourceManagerRequestHandler" />
+                        <bean id="InnerResourceManagerRequestHandler" class="io.github.ibuildthecloud.gdapi.request.handler.ResourceManagerRequestHandler" />
                     </list>
                 </property>
             </bean>
@@ -74,10 +82,38 @@
     </bean>
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.impl.AgentAuthorizationProvider" />
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.AchaiusPolicyOptionsFactory" />
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.change.impl.ResourceChangeEventListenerImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.change.impl.ResourceChangeEventProcessor" />
+
+    <bean id="DocTypes" class="io.github.ibuildthecloud.dstack.object.meta.TypeSet" >
+        <property name="typeClasses">
+            <list>
+                <value>io.github.ibuildthecloud.gdapi.doc.TypeDocumentation</value>
+                <value>io.github.ibuildthecloud.gdapi.doc.FieldDocumentation</value>
+            </list>
+        </property>
+    </bean>
+    <bean class="io.github.ibuildthecloud.gdapi.doc.handler.DocumentationHandler" />
+    <bean class="io.github.ibuildthecloud.dstack.schema.doc.DocumentationLoader" >
+        <property name="resources">
+            <bean class="io.github.ibuildthecloud.spring.resource.SpringUrlListFactory" >
+                <property name="resources">
+                    <list>
+                        <value>schema/base/documentation.json</value>
+                        <value>schema/base/documentation.json.d/**/*.json</value>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
 
     <tx:advice id="ApiDelegateAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="read" isolation="READ_COMMITTED" read-only="true" />
+            <!--
+                Don't do read only transaction because it will keep a DB connection open for the
+                entire web request, which is not good for /publish and /subscribe
+                <tx:method name="read" isolation="READ_COMMITTED" read-only="true" /> 
+            -->
             <tx:method name="write" isolation="READ_COMMITTED" />
         </tx:attributes>
     </tx:advice>
@@ -88,5 +124,6 @@
 
     <extension:discover class="io.github.ibuildthecloud.gdapi.factory.SchemaFactory"/>
     <extension:discover class="io.github.ibuildthecloud.dstack.iaas.api.auth.AuthorizationProvider"/>
+    <extension:discover class="io.github.ibuildthecloud.api.pubsub.subscribe.ApiPubSubEventPostProcessor"/>
 
 </beans>

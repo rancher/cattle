@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CredentialTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord> {
 
-	private static final long serialVersionUID = -786487712;
+	private static final long serialVersionUID = 264269536;
 
 	/**
 	 * The singleton instance of <code>dstack.credential</code>
@@ -39,12 +39,7 @@ public class CredentialTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	/**
 	 * The column <code>dstack.credential.account_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
-
-	/**
-	 * The column <code>dstack.credential.state</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>dstack.credential.kind</code>.
@@ -52,19 +47,24 @@ public class CredentialTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.credential.public_value</code>.
+	 * The column <code>dstack.credential.uuid</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> PUBLIC_VALUE = createField("public_value", org.jooq.impl.SQLDataType.CLOB.length(16777215), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.credential.secret_value</code>.
+	 * The column <code>dstack.credential.description</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> SECRET_VALUE = createField("secret_value", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
+
+	/**
+	 * The column <code>dstack.credential.state</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
 	 * The column <code>dstack.credential.created</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
 	 * The column <code>dstack.credential.removed</code>.
@@ -72,14 +72,24 @@ public class CredentialTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.util.Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
+	 * The column <code>dstack.credential.remove_time</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.util.Date> REMOVE_TIME = createField("remove_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
+
+	/**
 	 * The column <code>dstack.credential.data</code>.
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.credential.uuid</code>.
+	 * The column <code>dstack.credential.public_value</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> PUBLIC_VALUE = createField("public_value", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
+
+	/**
+	 * The column <code>dstack.credential.secret_value</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.lang.String> SECRET_VALUE = createField("secret_value", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
 
 	/**
 	 * Create a <code>dstack.credential</code> table reference
@@ -124,7 +134,7 @@ public class CredentialTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CREDENTIAL_PRIMARY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CREDENTIAL_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CREDENTIAL_IDX_CREDENTIAL_UUID);
 	}
 
 	/**
@@ -132,7 +142,7 @@ public class CredentialTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_CREDENTIAL_ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_CREDENTIAL__ACCOUNT_ID);
 	}
 
 	/**

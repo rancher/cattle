@@ -10,8 +10,6 @@ public interface ProcessInstance {
 
     ExitReason execute();
 
-    void schedule();
-
     boolean isRunningLogic();
 
     ExitReason getExitReason();

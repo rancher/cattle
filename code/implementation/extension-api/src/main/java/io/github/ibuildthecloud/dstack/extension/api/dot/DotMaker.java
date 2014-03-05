@@ -137,7 +137,7 @@ public class DotMaker {
             if ( buffer.length() == size ) {
                 buffer.append("no-op");
             }
-            buffer.append("]");
+            buffer.append("]  ");
         }
 
         String result = buffer.toString();

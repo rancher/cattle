@@ -1,5 +1,7 @@
 package io.github.ibuildthecloud.dstack.allocator.service;
 
+import io.github.ibuildthecloud.dstack.allocator.constraint.AllocationConstraintsProvider;
+import io.github.ibuildthecloud.dstack.allocator.constraint.Constraint;
 import io.github.ibuildthecloud.dstack.allocator.dao.AllocatorDao;
 import io.github.ibuildthecloud.dstack.allocator.exception.UnsupportedAllocation;
 import io.github.ibuildthecloud.dstack.allocator.lock.AllocateResourceLock;
@@ -13,9 +15,9 @@ import io.github.ibuildthecloud.dstack.lock.LockCallback;
 import io.github.ibuildthecloud.dstack.lock.LockCallbackNoReturn;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
+import io.github.ibuildthecloud.dstack.metrics.util.MetricsUtil;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
-import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,15 +33,21 @@ import o.github.ibuildthecloud.dstack.allocator.util.AllocatorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.Timer.Context;
+
 public abstract class AbstractAllocator implements Allocator {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractAllocator.class);
+
+    Timer allocateTimer = MetricsUtil.getRegistry().timer("allocator.allocate");
+    Timer deallocateTimer = MetricsUtil.getRegistry().timer("allocator.deallocate");
 
     AllocatorDao allocatorDao;
     LockManager lockManager;
     ObjectManager objectManager;
     ObjectProcessManager processManager;
-    boolean unallocateOnFailure;
+    List<AllocationConstraintsProvider> allocationConstraintProviders;
 
     @Override
     public boolean allocate(final AllocationRequest request) {
@@ -75,20 +83,38 @@ public abstract class AbstractAllocator implements Allocator {
             return lockManager.lock(new AllocateResourceLock(request), new LockCallback<Boolean>() {
                 @Override
                 public Boolean doWithLock() {
-                    switch (request.getType()) {
-                    case INSTANCE:
-                        return deallocateInstance(request);
-                    case VOLUME:
-                        return deallocateVolume(request);
+                    Context c = deallocateTimer.time();
+                    try {
+                        return acquireLockAndDeallocate(request);
+                    } finally {
+                        c.stop();
                     }
-
-                    return false;
                 }
             });
         } catch( UnsupportedAllocation e ) {
             log.info("Unsupported allocation for [{}] : {}", this, e.getMessage());
             return false;
         }
+    }
+
+    protected boolean acquireLockAndDeallocate(final AllocationRequest request) {
+        return lockManager.lock(getAllocationLock(request, null), new LockCallback<Boolean>() {
+            @Override
+            public Boolean doWithLock() {
+                return runDeallocation(request);
+            }
+        });
+    }
+
+    protected boolean runDeallocation(final AllocationRequest request) {
+        switch (request.getType()) {
+        case INSTANCE:
+            return deallocateInstance(request);
+        case VOLUME:
+            return deallocateVolume(request);
+        }
+
+        return false;
     }
 
     protected boolean deallocateInstance(final AllocationRequest request) {
@@ -170,6 +196,15 @@ public abstract class AbstractAllocator implements Allocator {
         AllocationLog log = getLog(request);
         populateConstraints(attempt, log);
 
+        Context c = allocateTimer.time();
+        try {
+            return acquireLockAndAllocate(request, attempt, deallocate);
+        } finally {
+            c.stop();
+        }
+    }
+
+    protected boolean acquireLockAndAllocate(final AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
@@ -178,9 +213,6 @@ public abstract class AbstractAllocator implements Allocator {
         });
 
         if ( attempt.getMatchedCandidate() == null ) {
-            if ( unallocateOnFailure ) {
-                processManager.scheduleStandardProcess(StandardProcess.DEALLOCATE, deallocate, null);
-            }
             return false;
         }
 
@@ -278,42 +310,9 @@ public abstract class AbstractAllocator implements Allocator {
 
     protected void populateConstraints(AllocationAttempt attempt, AllocationLog log) {
         List<Constraint> constraints = attempt.getConstraints();
-        addLogConstraints(attempt, log);
-        addComputeConstraints(attempt, constraints);
-        addStorageConstraints(attempt, constraints);
-    }
 
-    protected void addLogConstraints(AllocationAttempt attempt, AllocationLog log) {
-    }
-
-    protected void addComputeConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
-        ValidHostsConstraint hostSet = new ValidHostsConstraint();
-        for ( Host host : attempt.getHosts() ) {
-            hostSet.addHost(host.getId());
-        }
-
-        if ( hostSet.getHosts().size() > 0 ) {
-            constraints.add(hostSet);
-        }
-    }
-
-    protected void addStorageConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
-        for ( Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet() ) {
-            Volume volume = entry.getKey();
-            VolumeValidStoragePoolConstraint volumeToPoolConstraint = new VolumeValidStoragePoolConstraint(volume);
-
-            for ( StoragePool pool : entry.getValue() ) {
-                volumeToPoolConstraint.getStoragePools().add(pool.getId());
-                ValidHostsConstraint hostSet = new ValidHostsConstraint();
-                for ( Host host : allocatorDao.getHosts(pool) ) {
-                    hostSet.addHost(host.getId());
-                }
-                constraints.add(hostSet);
-            }
-
-            if ( volumeToPoolConstraint.getStoragePools().size() > 0 ) {
-                constraints.add(volumeToPoolConstraint);
-            }
+        for ( AllocationConstraintsProvider provider : allocationConstraintProviders ) {
+            provider.appendConstraints(attempt, log, constraints);
         }
     }
 
@@ -346,14 +345,6 @@ public abstract class AbstractAllocator implements Allocator {
         this.allocatorDao = allocatorDao;
     }
 
-    public boolean isUnallocateOnFailure() {
-        return unallocateOnFailure;
-    }
-
-    public void setUnallocateOnFailure(boolean unallocateOnFailure) {
-        this.unallocateOnFailure = unallocateOnFailure;
-    }
-
     public ObjectProcessManager getProcessManager() {
         return processManager;
     }
@@ -361,6 +352,15 @@ public abstract class AbstractAllocator implements Allocator {
     @Inject
     public void setProcessManager(ObjectProcessManager processManager) {
         this.processManager = processManager;
+    }
+
+    public List<AllocationConstraintsProvider> getAllocationConstraintProviders() {
+        return allocationConstraintProviders;
+    }
+
+    @Inject
+    public void setAllocationConstraintProviders(List<AllocationConstraintsProvider> allocationConstraintProviders) {
+        this.allocationConstraintProviders = allocationConstraintProviders;
     }
 
 }

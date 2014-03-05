@@ -1,0 +1,35 @@
+<included>
+    <define name="eventPattern" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+        <name>logback.event.pattern</name>
+    </define>
+
+    <appender name="FILE_EVENT_IN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logDir}event-in.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logDir}event-in${fileNamePattern}</fileNamePattern>
+            <maxHistory>${maxHistory}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${eventPattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE_EVENT_OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logDir}event-out.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logDir}event-out${fileNamePattern}</fileNamePattern>
+            <maxHistory>${maxHistory}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${eventPattern}</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="EventLogOut" additivity="false" >
+        <appender-ref ref="FILE_EVENT_OUT" />
+    </logger>
+
+    <logger name="EventLogIn" additivity="false" >
+        <appender-ref ref="FILE_EVENT_IN" />
+    </logger>
+</included>

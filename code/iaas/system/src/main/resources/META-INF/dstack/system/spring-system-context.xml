@@ -3,21 +3,47 @@
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:task="http://www.springframework.org/schema/task"
+    xmlns:management="http://www.xebia.fr/schema/xebia-management-extras"
+    xmlns:extension="http://dstack.io/schemas/spring/extension"
     xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.xebia.fr/schema/xebia-management-extras http://www.xebia.fr/schema/management/xebia-management-extras.xsd
+        http://dstack.io/schemas/spring/extension http://dstack.io/schemas/spring/extension-1.0.xsd">
 
-    <task:scheduler id="CoreTaskScheduler" pool-size="100" />
+    <task:scheduler id="CoreTaskScheduler" pool-size="2" />
+
+    <bean id="ResourceLoader" class="io.github.ibuildthecloud.spring.resource.SpringResourceLoader" />
 
     <bean id="CoreJsonMapper" class="io.github.ibuildthecloud.dstack.json.JacksonJsonMapper" autowire="byType" />
 
     <bean id="NoOpJacksonModule" class="com.fasterxml.jackson.databind.module.SimpleModule" />
 
-    <bean id="CoreExecutorService" class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean">
-        <property name="corePoolSize" value="10" />
-        <property name="maxPoolSize" value="1000" />
-        <property name="allowCoreThreadTimeOut" value="true" />
+    <context:mbean-export />
+
+    <management:executor-service 
+        id="ProcessExecutorService"
+        keep-alive="120"
+        pool-size="25-150"
+        queue-capacity="25"
+        />
+
+    <management:executor-service 
+        id="CoreExecutorService"
+        keep-alive="120"
+        pool-size="0-1000000"
+        queue-capacity="0"
+        />
+
+    <bean class="io.github.ibuildthecloud.dstack.util.concurrent.NamedExecutorService" >
+        <property name="name" value="core" />
+        <property name="executorService" ref="CoreExecutorService" />
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.dstack.util.concurrent.NamedExecutorService" >
+        <property name="name" value="process" />
+        <property name="executorService" ref="ProcessExecutorService" />
     </bean>
 
     <bean id="CoreListeningExecutorService" class="com.google.common.util.concurrent.MoreExecutors" factory-method="listeningDecorator" >
@@ -25,7 +51,9 @@
     </bean>
 
     <bean id="CoreScheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" >
-        <property name="poolSize" value="100" />
+        <property name="poolSize" value="10" />
     </bean>
+
+    <extension:discover class="io.github.ibuildthecloud.dstack.util.concurrent.NamedExecutorService" />
 
 </beans>

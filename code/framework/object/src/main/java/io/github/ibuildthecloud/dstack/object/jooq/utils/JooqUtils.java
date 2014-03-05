@@ -26,7 +26,7 @@ public class JooqUtils {
         if ( id == null )
             return null;
 
-        Table<?> table = getTable(clz);
+        Table<?> table = getTableFromRecordClass(clz);
         if ( table == null )
             return null;
 
@@ -44,8 +44,13 @@ public class JooqUtils {
                 .fetchOne();
     }
 
+
+    public static Table<?> getTable(SchemaFactory schemaFactory, Class<?> clz) {
+        return getTableFromRecordClass(getRecordClass(schemaFactory, clz));
+    }
+
     @SuppressWarnings("unchecked")
-    public static Table<?> getTable(Class<?> clz) {
+    public static Table<?> getTableFromRecordClass(Class<?> clz) {
         if ( clz == null )
             return null;
 

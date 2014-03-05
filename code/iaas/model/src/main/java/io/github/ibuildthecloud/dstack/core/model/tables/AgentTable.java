@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord> {
 
-	private static final long serialVersionUID = -640016454;
+	private static final long serialVersionUID = 793930981;
 
 	/**
 	 * The singleton instance of <code>dstack.agent</code>
@@ -37,9 +37,9 @@ public class AgentTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.agent.description</code>.
+	 * The column <code>dstack.agent.account_id</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>dstack.agent.kind</code>.
@@ -47,39 +47,24 @@ public class AgentTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.agent.data</code>.
+	 * The column <code>dstack.agent.uuid</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.agent.agent_group_id</code>.
+	 * The column <code>dstack.agent.description</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.Long> AGENT_GROUP_ID = createField("agent_group_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
 	 * The column <code>dstack.agent.state</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
-
-	/**
-	 * The column <code>dstack.agent.uri</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> URI = createField("uri", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-	/**
-	 * The column <code>dstack.agent.account_id</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
 	 * The column <code>dstack.agent.created</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
-
-	/**
-	 * The column <code>dstack.agent.uuid</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
 	 * The column <code>dstack.agent.removed</code>.
@@ -87,9 +72,34 @@ public class AgentTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.util.Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
+	 * The column <code>dstack.agent.remove_time</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.util.Date> REMOVE_TIME = createField("remove_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.agent.data</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.agent.uri</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.String> URI = createField("uri", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
 	 * The column <code>dstack.agent.managed_config</code>.
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.Boolean> MANAGED_CONFIG = createField("managed_config", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>dstack.agent.agent_group_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.Long> AGENT_GROUP_ID = createField("agent_group_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.agent.zone_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, java.lang.Long> ZONE_ID = createField("zone_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>dstack.agent</code> table reference
@@ -134,7 +144,7 @@ public class AgentTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_AGENT_PRIMARY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_AGENT_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_AGENT_IDX_AGENT_UUID);
 	}
 
 	/**
@@ -142,7 +152,7 @@ public class AgentTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.AGENT_IBFK_1, io.github.ibuildthecloud.dstack.core.model.Keys.AGENT_IBFK_2);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_AGENT__ACCOUNT_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_AGENT__AGENT_GROUP_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_AGENT__ZONE_ID);
 	}
 
 	/**

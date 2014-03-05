@@ -4,6 +4,7 @@ import io.github.ibuildthecloud.dstack.eventing.lock.EventLock;
 import io.github.ibuildthecloud.dstack.framework.event.ExecuteTask;
 import io.github.ibuildthecloud.dstack.lock.LockCallbackNoReturn;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
+import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.task.TaskManager;
 import io.github.ibuildthecloud.dstack.task.eventing.TaskManagerEventListener;
 
@@ -25,13 +26,21 @@ public class TaskManagerEventListenerImpl implements TaskManagerEventListener {
         final Runnable runnable = taskManager.getRunnable(name);
 
         if ( runnable != null ) {
-            lockManager.lock(new EventLock(event), new LockCallbackNoReturn() {
+            lockManager.lock(getLock(event), new LockCallbackNoReturn() {
                 @Override
                 public void doWithLockNoResult() {
                     log.info("Running task [{}]", name);
                     runnable.run();
                 }
             });
+        }
+    }
+
+    protected LockDefinition getLock(ExecuteTask event) {
+        if ( taskManager.shouldLock(event.getName()) ) {
+            return new EventLock(event);
+        } else {
+            return null;
         }
     }
 

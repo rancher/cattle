@@ -1,0 +1,27 @@
+<included>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${consoleLevel}</level>
+        </filter>
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE_STATUS" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${consoleStatusLevel}</level>
+        </filter>
+        <encoder>
+            <pattern>${consolePattern}</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="ConsoleStatus" additivity="false" >
+        <appender-ref ref="CONSOLE_STATUS" />
+    </logger>
+
+    <root>
+        <appender-ref ref="CONSOLE" />
+    </root>
+</included>

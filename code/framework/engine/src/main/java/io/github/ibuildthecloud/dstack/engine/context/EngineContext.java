@@ -70,10 +70,7 @@ public class EngineContext {
                 resourceId = ((ProcessExecutionLog)log).getResourceId();
             } else if ( log instanceof ProcessLogicExecutionLog ) {
                 fullPath.append("(").append(log.getName()).append(")");
-
-                if ( logicName == null ) {
-                    logicName = log.getName();
-                }
+                logicName = log.getName();
             }
         }
 

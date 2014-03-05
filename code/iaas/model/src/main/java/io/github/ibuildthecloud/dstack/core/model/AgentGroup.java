@@ -37,6 +37,39 @@ public interface AgentGroup extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
+	 * Setter for <code>dstack.agent_group.account_id</code>.
+	 */
+	public void setAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.agent_group.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
+
+	/**
+	 * Setter for <code>dstack.agent_group.kind</code>.
+	 */
+	public void setKind(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.agent_group.kind</code>.
+	 */
+	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
+	public java.lang.String getKind();
+
+	/**
+	 * Setter for <code>dstack.agent_group.uuid</code>.
+	 */
+	public void setUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.agent_group.uuid</code>.
+	 */
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
+
+	/**
 	 * Setter for <code>dstack.agent_group.description</code>.
 	 */
 	public void setDescription(java.lang.String value);
@@ -48,6 +81,50 @@ public interface AgentGroup extends java.io.Serializable {
 	public java.lang.String getDescription();
 
 	/**
+	 * Setter for <code>dstack.agent_group.state</code>.
+	 */
+	public void setState(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.agent_group.state</code>.
+	 */
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
+	public java.lang.String getState();
+
+	/**
+	 * Setter for <code>dstack.agent_group.created</code>.
+	 */
+	public void setCreated(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.agent_group.created</code>.
+	 */
+	@javax.persistence.Column(name = "created")
+	public java.util.Date getCreated();
+
+	/**
+	 * Setter for <code>dstack.agent_group.removed</code>.
+	 */
+	public void setRemoved(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.agent_group.removed</code>.
+	 */
+	@javax.persistence.Column(name = "removed")
+	public java.util.Date getRemoved();
+
+	/**
+	 * Setter for <code>dstack.agent_group.remove_time</code>.
+	 */
+	public void setRemoveTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.agent_group.remove_time</code>.
+	 */
+	@javax.persistence.Column(name = "remove_time")
+	public java.util.Date getRemoveTime();
+
+	/**
 	 * Setter for <code>dstack.agent_group.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
@@ -57,17 +134,6 @@ public interface AgentGroup extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
-
-	/**
-	 * Setter for <code>dstack.agent_group.state</code>.
-	 */
-	public void setState(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.agent_group.state</code>.
-	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
-	public java.lang.String getState();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

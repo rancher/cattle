@@ -22,7 +22,7 @@ public interface ProcessInstance extends java.io.Serializable {
 	 * Getter for <code>dstack.process_instance.id</code>.
 	 */
 	@javax.persistence.Id
-	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 20)
+	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	public java.lang.Long getId();
 
 	/**
@@ -48,17 +48,6 @@ public interface ProcessInstance extends java.io.Serializable {
 	public java.util.Date getEndTime();
 
 	/**
-	 * Setter for <code>dstack.process_instance.log</code>.
-	 */
-	public void setLog(java.util.Map<String,Object> value);
-
-	/**
-	 * Getter for <code>dstack.process_instance.log</code>.
-	 */
-	@javax.persistence.Column(name = "log", length = 16777215)
-	public java.util.Map<String,Object> getLog();
-
-	/**
 	 * Setter for <code>dstack.process_instance.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
@@ -68,6 +57,17 @@ public interface ProcessInstance extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
+
+	/**
+	 * Setter for <code>dstack.process_instance.priority</code>.
+	 */
+	public void setPriority(java.lang.Integer value);
+
+	/**
+	 * Getter for <code>dstack.process_instance.priority</code>.
+	 */
+	@javax.persistence.Column(name = "priority", precision = 10)
+	public java.lang.Integer getPriority();
 
 	/**
 	 * Setter for <code>dstack.process_instance.process_name</code>.

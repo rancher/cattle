@@ -12,6 +12,7 @@
 
     <bean id="EventService" class="io.github.ibuildthecloud.dstack.redis.RedisEventingService" >
         <property name="executorService" ref="CoreExecutorService" />
+        <property name="namedExecutorServiceList" value="#{extensionManager.list('named.executor.service')}" />
     </bean>
 
 </beans>

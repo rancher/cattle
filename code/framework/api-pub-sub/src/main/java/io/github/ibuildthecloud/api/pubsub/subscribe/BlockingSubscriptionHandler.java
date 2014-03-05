@@ -18,8 +18,9 @@ public class BlockingSubscriptionHandler extends NonBlockingSubscriptionHandler 
     }
 
     public BlockingSubscriptionHandler(JsonMapper jsonMapper, EventService eventService,
-            RetryTimeoutService retryTimeout, ExecutorService executorService) {
-        super(jsonMapper, eventService, retryTimeout, executorService);
+            RetryTimeoutService retryTimeout, ExecutorService executorService,
+            List<ApiPubSubEventPostProcessor> eventProcessors) {
+        super(jsonMapper, eventService, retryTimeout, executorService, eventProcessors);
     }
 
     @Override

@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.configuration.MapConfiguration;
+import org.apache.commons.lang.StringUtils;
 
 public class TransformedEnvironmentProperties extends MapConfiguration {
 
+    private static final String CONTAINS = "DSTACK";
     private static final String PREFIX = "DSTACK_";
 
     public TransformedEnvironmentProperties() {
@@ -18,11 +20,19 @@ public class TransformedEnvironmentProperties extends MapConfiguration {
 
         for ( Map.Entry<String, String> entry : System.getenv().entrySet() ) {
             String key = entry.getKey();
-            if ( ! key.startsWith(PREFIX) ) {
+            if ( ! key.contains(CONTAINS) ) {
                 continue;
             }
-            key = key.substring(PREFIX.length()).replace('_', '.').toLowerCase();
-            values.put(key, entry.getValue());
+
+            if ( key.startsWith(PREFIX) ) {
+                key = key.substring(PREFIX.length());
+            }
+
+            key = key.replace('_', '.').toLowerCase();
+
+            if ( ! StringUtils.isBlank(entry.getValue()) ) {
+                values.put(key, entry.getValue());
+            }
         }
 
         return values;

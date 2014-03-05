@@ -23,21 +23,21 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
         String oldState = getState();
         String newState = statesDefinition.getTransitioningState(oldState);
 
-        if ( ! setState(oldState, newState) ) {
+        if ( ! setState(true, oldState, newState) ) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
 
         return newState;
     }
 
-    protected abstract boolean setState(String oldState, String newState);
+    protected abstract boolean setState(boolean transitioning, String oldState, String newState);
 
     @Override
     public String setDone() {
         String oldState = getState();
         String newState = statesDefinition.getDoneState(oldState);
 
-        if ( ! setState(oldState, newState) ) {
+        if ( ! setState(false, oldState, newState) ) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
 
@@ -50,8 +50,17 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
     }
 
     @Override
-    public boolean isDone() {
-        return statesDefinition.isDone(getState());
+    public boolean isDone(boolean schedule) {
+        String state = getState();
+        if ( statesDefinition.isDone(state) ) {
+            if ( schedule && statesDefinition.isStartAndDone(state) ) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     @Override

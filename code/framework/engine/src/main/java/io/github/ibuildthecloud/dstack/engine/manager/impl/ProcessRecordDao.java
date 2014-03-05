@@ -7,7 +7,7 @@ public interface ProcessRecordDao {
 
     ProcessRecord insert(ProcessRecord record);
 
-    void update(ProcessRecord record);
+    void update(ProcessRecord record, boolean schedule);
 
     List<Long> pendingTasks(String resourceType, String resourceId);
 

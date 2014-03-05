@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import javax.servlet.AsyncContext;
@@ -15,8 +16,9 @@ import javax.servlet.http.HttpServletResponse;
 public class ServletAsyncSubscriptionHandler extends NonBlockingSubscriptionHandler {
 
     public ServletAsyncSubscriptionHandler(JsonMapper jsonMapper, EventService eventService,
-            RetryTimeoutService retryTimeout, ExecutorService executorService) {
-        super(jsonMapper, eventService, retryTimeout, executorService);
+            RetryTimeoutService retryTimeout, ExecutorService executorService,
+            List<ApiPubSubEventPostProcessor> eventProcessors) {
+        super(jsonMapper, eventService, retryTimeout, executorService, eventProcessors);
     }
 
     @Override

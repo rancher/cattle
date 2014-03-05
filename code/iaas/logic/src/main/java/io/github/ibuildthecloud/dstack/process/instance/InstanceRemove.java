@@ -7,20 +7,25 @@ import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.process.base.AbstractDefaultProcessHandler;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
 public class InstanceRemove extends AbstractDefaultProcessHandler {
 
+    InstanceStop instanceStop;
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance)state.getResource();
 
-        Map<String,Object> result = new ConcurrentHashMap<String,Object>();
+        instanceStop.handle(state, process);
+
+        Map<String,Object> result = new HashMap<String,Object>();
 
         storage(instance, state.getData());
 
@@ -37,6 +42,15 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
                 execute("volume.detach", volume, null);
             }
         }
+    }
+
+    public InstanceStop getInstanceStop() {
+        return instanceStop;
+    }
+
+    @Inject
+    public void setInstanceStop(InstanceStop instanceStop) {
+        this.instanceStop = instanceStop;
     }
 
 }

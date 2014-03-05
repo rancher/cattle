@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class TaskInstanceTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.TaskInstanceRecord> {
 
-	private static final long serialVersionUID = 479419238;
+	private static final long serialVersionUID = -454916978;
 
 	/**
 	 * The singleton instance of <code>dstack.task_instance</code>
@@ -112,7 +112,7 @@ public class TaskInstanceTable extends org.jooq.impl.TableImpl<io.github.ibuildt
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.TaskInstanceRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.TaskInstanceRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.TASK_INSTANCE_IBFK_1);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.TaskInstanceRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_TASK_INSTANCE__TASK_ID);
 	}
 
 	/**

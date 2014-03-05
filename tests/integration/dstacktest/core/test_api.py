@@ -1,0 +1,184 @@
+from common_fixtures import *  # NOQA
+
+
+def test_pagination(admin_client, sim_context):
+    name = random_str()
+    containers = []
+    for i in range(4):
+        c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                          name=name)
+        containers.append(c)
+
+    for c in containers:
+        wait_success(admin_client, c)
+
+    r = admin_client.list_container(name=name)
+
+    assert len(r) == 4
+    try:
+        assert r.pagination.next is None
+    except AttributeError:
+        pass
+
+    collected = {}
+    r = admin_client.list_container(name=name, limit=2)
+    assert len(r) == 2
+    assert r.pagination.next is not None
+
+    for i in r:
+        collected[i.id] = True
+
+    r = r.next()
+
+    assert len(r) == 2
+    try:
+        assert r.pagination.next is None
+    except AttributeError:
+        pass
+
+    for i in r:
+        collected[i.id] = True
+
+    assert len(collected) == 4
+
+
+def test_pagination_include(admin_client, sim_context):
+    name = random_str()
+    container_ids = []
+    containers = []
+    for i in range(5):
+        c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                          name=name)
+        containers.append(c)
+        container_ids.append(c.id)
+
+    for c in containers:
+        wait_success(admin_client, c)
+
+    assert len(containers[0].instanceHostMaps()) == 1
+    host = containers[0].instanceHostMaps()[0].host()
+    r = admin_client.list_container(name=name)
+
+    assert len(r) == 5
+    for c in r:
+        assert len(c.instanceHostMaps()) == 1
+        assert c.instanceHostMaps()[0].hostId == host.id
+
+    collected = {}
+    r = admin_client.list_container(name=name, include='instanceHostMaps',
+                                    limit=2)
+    assert len(r) == 2
+    for c in r:
+        collected[c.id] = True
+        assert len(c.instanceHostMaps) == 1
+        assert c.instanceHostMaps[0].hostId == host.id
+
+    r = r.next()
+
+    assert len(r) == 2
+    for c in r:
+        collected[c.id] = True
+        assert len(c.instanceHostMaps) == 1
+        assert c.instanceHostMaps[0].hostId == host.id
+
+    r = r.next()
+
+    assert len(r) == 1
+    for c in r:
+        collected[c.id] = True
+        assert len(c.instanceHostMaps) == 1
+        assert c.instanceHostMaps[0].hostId == host.id
+
+    assert not r.pagination.partial
+
+    maps = []
+    for id in container_ids:
+        maps.extend(admin_client.list_instanceHostMap(hostId=host.id,
+                                                      instanceId=id))
+
+    assert len(maps) == 5
+
+    maps_from_include = []
+    r = admin_client.list_host(include='instanceHostMaps', limit=2)
+
+    while True:
+        for h in r:
+            if h.id == host.id:
+                assert len(h.instanceHostMaps) <= 2
+                for m in h.instanceHostMaps:
+                    if m.instanceId in container_ids:
+                        maps_from_include.append(m)
+
+        try:
+            r = r.next()
+        except AttributeError:
+            break
+
+    assert len(maps) == len(maps_from_include)
+
+
+def test_include_left_join(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+    container = admin_client.create_container(imageUuid=image_uuid,
+                                              startOnCreate=False)
+    container = wait_success(admin_client, container)
+
+    c = admin_client.by_id('container', container.id,
+                           include='instanceHostMaps')
+
+    assert container.id == c.id
+
+
+def test_include(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+    container = admin_client.create_container(imageUuid=image_uuid,
+                                              name='include_test')
+    container = wait_success(admin_client, container)
+
+    for link_name in ['instanceHostMaps', 'instancehostmaps']:
+        found = False
+        for c in admin_client.list_container(name_like='include_test%'):
+            if c.id == container.id:
+                found = True
+                assert len(c.instanceHostMaps()) == 1
+                assert callable(c.instanceHostMaps)
+
+        assert found
+
+        found = False
+        for c in admin_client.list_container(include=link_name,
+                                             name_like='include_test%'):
+            if c.id == container.id:
+                found = True
+                assert len(c.instanceHostMaps) == 1
+
+        assert found
+
+        c = admin_client.by_id('container', container.id)
+        assert callable(c.instanceHostMaps)
+        c = admin_client.by_id('container', container.id, include=link_name)
+        assert len(c.instanceHostMaps) == 1
+
+
+def test_limit(admin_client, sim_context):
+    result = admin_client.list_container()
+    assert result.pagination.limit == 100
+
+    result = admin_client.list_container(limit=105)
+    assert result.pagination.limit == 105
+
+    result = admin_client.list_container(limit=1005)
+    assert result.pagination.limit == 1000
+
+
+def test_schema_boolean_default(admin_client):
+    con_schema = admin_client.schema.types['container']
+
+    assert isinstance(con_schema.resourceFields.startOnCreate.default, bool)
+
+
+def test_schema_self_link(admin_client):
+    con_schema = admin_client.schema.types['container']
+
+    assert con_schema.links.self is not None
+    assert con_schema.links.self.startswith("http")

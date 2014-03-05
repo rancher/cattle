@@ -22,7 +22,7 @@ public interface ProcessState {
 
     boolean shouldCancel();
 
-    boolean isDone();
+    boolean isDone(boolean schedule);
 
     boolean isStart();
 

@@ -35,6 +35,10 @@ public class ProcessParser implements BeanDefinitionParser {
         String delegate = element.getAttribute("delegate");
         String resourceType = element.getAttribute("resourceType");
 
+        if ( StringUtils.isBlank(delegate) ) {
+            delegate = null;
+        }
+
         return parse(id, stateField, name, start, transitioning, done, resourceType, delegate, new HashMap<String, String>(), parserContext);
     }
 

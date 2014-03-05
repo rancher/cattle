@@ -78,7 +78,6 @@ applied()
 {
     echo Sending applied ${dir} ${version}
     curl -X PUT -s -u $AUTH "${DOWNLOAD_URL}?version=${version}" > /dev/null
-    echo OK
 }
 
 dump()

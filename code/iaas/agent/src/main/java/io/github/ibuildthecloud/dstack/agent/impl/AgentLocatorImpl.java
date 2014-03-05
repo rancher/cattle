@@ -2,22 +2,34 @@ package io.github.ibuildthecloud.dstack.agent.impl;
 
 import io.github.ibuildthecloud.dstack.agent.AgentLocator;
 import io.github.ibuildthecloud.dstack.agent.RemoteAgent;
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicLongProperty;
+
 public class AgentLocatorImpl implements AgentLocator {
+
+    private static final DynamicLongProperty CACHE_TIME = ArchaiusUtil.getLong("agent.group.id.cache.seconds");
+    private static final DynamicBooleanProperty DIRECT = ArchaiusUtil.getBoolean("agent.direct.request");
 
     ObjectManager objectManager;
     EventService eventService;
     JsonMapper jsonMapper;
-    ExecutorService executorService;
+    Cache<Long, Long> groupIdCache = CacheBuilder
+            .newBuilder()
+            .expireAfterWrite(CACHE_TIME.get(), TimeUnit.SECONDS)
+            .build();
 
     @Override
     public RemoteAgent lookupAgent(Object resource) {
@@ -26,18 +38,29 @@ public class AgentLocatorImpl implements AgentLocator {
         }
 
         Long agentId = null;
+        Long groupId = null;
 
         if ( resource instanceof Long ) {
             agentId = (Long)resource;
         } else if ( resource instanceof Agent ) {
             agentId = ((Agent)resource).getId();
+            groupId = ((Agent)resource).getAgentGroupId();
         }
 
         if ( agentId == null ) {
             agentId = getAgentId(resource);
         }
 
-        return agentId == null ? null : new RemoteAgentImpl(executorService, jsonMapper, eventService, agentId);
+        if ( agentId == null ) {
+            return null;
+        }
+
+        if ( DIRECT.get() && groupId == null ) {
+            Agent agent = objectManager.loadResource(Agent.class, agentId);
+            groupId = agent.getAgentGroupId();
+        }
+
+        return agentId == null ? null : new RemoteAgentImpl(jsonMapper, eventService, agentId, groupId);
     }
 
     protected Long getAgentId(Object resource) {
@@ -74,14 +97,6 @@ public class AgentLocatorImpl implements AgentLocator {
     @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
-    }
-
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
     }
 
 }

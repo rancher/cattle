@@ -8,8 +8,12 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="${logback.bootstrap.level:-INFO}">
         <appender-ref ref="STDOUT" />
     </root>
+
+    <logger level="INFO" name="ConsoleStatus" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
 
 </configuration>

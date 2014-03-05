@@ -44,19 +44,8 @@ public interface Credential extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.credential.account_id</code>.
 	 */
-	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
+	@javax.persistence.Column(name = "account_id", precision = 19)
 	public java.lang.Long getAccountId();
-
-	/**
-	 * Setter for <code>dstack.credential.state</code>.
-	 */
-	public void setState(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.credential.state</code>.
-	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
-	public java.lang.String getState();
 
 	/**
 	 * Setter for <code>dstack.credential.kind</code>.
@@ -70,26 +59,37 @@ public interface Credential extends java.io.Serializable {
 	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.credential.public_value</code>.
+	 * Setter for <code>dstack.credential.uuid</code>.
 	 */
-	public void setPublicValue(java.lang.String value);
+	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.credential.public_value</code>.
+	 * Getter for <code>dstack.credential.uuid</code>.
 	 */
-	@javax.persistence.Column(name = "public_value", length = 16777215)
-	public java.lang.String getPublicValue();
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
 
 	/**
-	 * Setter for <code>dstack.credential.secret_value</code>.
+	 * Setter for <code>dstack.credential.description</code>.
 	 */
-	public void setSecretValue(java.lang.String value);
+	public void setDescription(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.credential.secret_value</code>.
+	 * Getter for <code>dstack.credential.description</code>.
 	 */
-	@javax.persistence.Column(name = "secret_value", length = 1024)
-	public java.lang.String getSecretValue();
+	@javax.persistence.Column(name = "description", length = 1024)
+	public java.lang.String getDescription();
+
+	/**
+	 * Setter for <code>dstack.credential.state</code>.
+	 */
+	public void setState(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.credential.state</code>.
+	 */
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
+	public java.lang.String getState();
 
 	/**
 	 * Setter for <code>dstack.credential.created</code>.
@@ -99,7 +99,7 @@ public interface Credential extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.credential.created</code>.
 	 */
-	@javax.persistence.Column(name = "created", nullable = false)
+	@javax.persistence.Column(name = "created")
 	public java.util.Date getCreated();
 
 	/**
@@ -114,6 +114,17 @@ public interface Credential extends java.io.Serializable {
 	public java.util.Date getRemoved();
 
 	/**
+	 * Setter for <code>dstack.credential.remove_time</code>.
+	 */
+	public void setRemoveTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.credential.remove_time</code>.
+	 */
+	@javax.persistence.Column(name = "remove_time")
+	public java.util.Date getRemoveTime();
+
+	/**
 	 * Setter for <code>dstack.credential.data</code>.
 	 */
 	public void setData(java.util.Map<String,Object> value);
@@ -125,15 +136,26 @@ public interface Credential extends java.io.Serializable {
 	public java.util.Map<String,Object> getData();
 
 	/**
-	 * Setter for <code>dstack.credential.uuid</code>.
+	 * Setter for <code>dstack.credential.public_value</code>.
 	 */
-	public void setUuid(java.lang.String value);
+	public void setPublicValue(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.credential.uuid</code>.
+	 * Getter for <code>dstack.credential.public_value</code>.
 	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
-	public java.lang.String getUuid();
+	@javax.persistence.Column(name = "public_value", length = 4096)
+	public java.lang.String getPublicValue();
+
+	/**
+	 * Setter for <code>dstack.credential.secret_value</code>.
+	 */
+	public void setSecretValue(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.credential.secret_value</code>.
+	 */
+	@javax.persistence.Column(name = "secret_value", length = 4096)
+	public java.lang.String getSecretValue();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

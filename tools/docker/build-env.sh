@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-TAG=ibuildthecloud/dstack-buildenv
+TAG=dstack-buildenv
 
 cd $(dirname $0)
 

@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "data", schema = "dstack")
 public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Data {
 
-	private static final long serialVersionUID = 1492118859;
+	private static final long serialVersionUID = 1082506923;
 
 	/**
 	 * Setter for <code>dstack.data.id</code>.
@@ -44,7 +44,7 @@ public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Getter for <code>dstack.data.name</code>.
 	 */
-	@javax.persistence.Column(name = "name", nullable = false, length = 255)
+	@javax.persistence.Column(name = "name", unique = true, nullable = false, length = 255)
 	@Override
 	public java.lang.String getName() {
 		return (java.lang.String) getValue(1);

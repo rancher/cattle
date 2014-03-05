@@ -4,14 +4,15 @@ import io.github.ibuildthecloud.dstack.async.utils.AsyncUtils;
 import io.github.ibuildthecloud.dstack.lock.Lock;
 import io.github.ibuildthecloud.dstack.lock.LockDelegator;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
+import io.github.ibuildthecloud.dstack.lock.definition.BlockingLockDefinition;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.lock.definition.MultiLockDefinition;
 import io.github.ibuildthecloud.dstack.lock.provider.LockProvider;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -28,10 +29,19 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
     private static final Logger log = LoggerFactory.getLogger(LockDelegatorImpl.class);
 
     LockManager lockManager;
-    Map<String,Lock> holding = new HashMap<String,Lock>();
+    Map<String,Lock> holding = new ConcurrentHashMap<String,Lock>();
     BlockingQueue<LockOp> ops = new LinkedBlockingQueue<LockOp>();
     ExecutorService executorService;
     boolean shutdown = false;
+
+    @Override
+    public boolean isLocked(LockDefinition lockDef) {
+        if ( ! acceptableLock(lockDef) ) {
+            return false;
+        }
+
+        return holding.containsKey(lockDef.getLockId());
+    }
 
     @Override
     public boolean tryLock(LockDefinition lockDef) {
@@ -66,43 +76,55 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
     }
 
     protected void runLoop() {
+        /* This loop should never end, unless it has been shutdown */
+        LockOp op = null;
         while ( true ) {
-            LockOp op = null;
-            while ( true ) {
+            try {
+                op = ops.take();
                 try {
-                    op = ops.take();
-                    try {
-                        if ( op.lock ) {
-                            lock(op);
-                        } else {
-                            unlock(op);
-                        }
-                    } catch ( Throwable t ) {
-                        op.future.set(false);
-                        log.error("Exception in lock delegator, lockdef [{}]", op.lock, t);
+                    if ( op.lock ) {
+                        lock(op);
+                    } else {
+                        unlock(op);
                     }
-                } catch (Throwable t ) {
-                    if ( shutdown ) {
-                        return;
-                    }
-
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        log.info("Interrupted", e);
-                    }
+                } catch ( Throwable t ) {
+                    op.future.set(false);
+                    log.error("Exception in lock delegator, lockdef [{}]", op.lock, t);
                 }
-
+            } catch (Throwable t ) {
                 if ( shutdown ) {
                     return;
                 }
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    log.info("Interrupted", e);
+                }
+            }
+
+            if ( shutdown ) {
+                return;
             }
         }
     }
 
-    protected void lock(LockOp op) {
-        if ( op.def instanceof MultiLockDefinition ) {
+    protected boolean acceptableLock(LockDefinition lockDef) {
+        if ( lockDef instanceof MultiLockDefinition ) {
             log.error("Can not lock a multilock with a lock delegator");
+            return false;
+        }
+
+        if ( lockDef instanceof BlockingLockDefinition ) {
+            log.error("Can not lock a blocking lock with a lock delegator");
+            return false;
+        }
+
+        return true;
+    }
+
+    protected void lock(LockOp op) {
+        if ( ! acceptableLock(op.def) ) {
             op.future.set(false);
             return;
         }
@@ -173,4 +195,5 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
             this.future = future;
         }
     }
+
 }

@@ -1,10 +1,10 @@
 package io.github.ibuildthecloud.dstack.schema.processor;
 
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
+import io.github.ibuildthecloud.dstack.util.resource.ResourceLoader;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.AbstractSchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
-import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.model.impl.SchemaImpl;
 
 import java.beans.PropertyDescriptor;
@@ -13,11 +13,13 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -32,27 +34,20 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
     private static final Logger log = LoggerFactory.getLogger(JsonFileOverlayPostProcessor.class);
 
     public static final String REMOVE = "-";
-    public static final String OVERRIDE = "-overrdie";
 
     JsonMapper jsonMapper;
     io.github.ibuildthecloud.gdapi.json.JsonMapper schemaMashaller;
     boolean explicitByDefault = false;
     boolean whiteList = false;
     Set<String> ignoreTypes = new HashSet<String>();
+    Map<String,List<URL>> resources = new HashMap<String, List<URL>>();
 
     String path;
-    String overridePath;
+    ResourceLoader resourceLoader;
 
     public JsonFileOverlayPostProcessor() {
         ignoreTypes.add("schema");
         ignoreTypes.add("error");
-    }
-
-    @PostConstruct
-    public void init() {
-        if ( overridePath == null ) {
-            overridePath = path + OVERRIDE;
-        }
     }
 
     @Override
@@ -61,10 +56,38 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
             return schema;
         }
 
-        if ( whiteList && ! jsonFileExists(path, schema) && ! jsonFileExists(path, schema) ) {
-            return null;
+        try {
+            List<URL> resources = lookUpResource(schema.getId());
+            if ( whiteList && resources.size() == 0 ) {
+                return null;
+            }
+        } catch ( IOException e) {
+            throw new IllegalStateException("Failed to lookup schema for [" + schema.getId() +
+                    "] at [" + path + "]");
         }
+
         return super.postProcessRegister(schema, factory);
+    }
+
+    protected List<URL> lookUpResource(String id) throws IOException {
+        List<URL> result = new ArrayList<URL>();
+        String base = String.format("%s/%s.json", path, id);
+        String override = String.format("%s/%s.json.d/**/*.json", path, id);
+
+        URL url = getClass().getClassLoader().getResource(base);
+        if ( url != null ) {
+            log.info("Loading JSON schema overlay for type [{}] from [{}]", id, url);
+            result.add(url);
+        }
+
+        for ( URL overrideUrl : resourceLoader.getResources(override) ) {
+            log.info("Loading JSON schema overlay for type [{}] from [{}]", id, overrideUrl);
+            result.add(overrideUrl);
+        }
+
+        resources.put(id, result);
+
+        return result;
     }
 
     @Override
@@ -73,33 +96,38 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
             return schema;
         }
 
-        InputStream is = loadJsonFile(overridePath, schema);
-        if ( is == null ) {
-            is = loadJsonFile(path, schema);
-        }
-
-        if ( is == null ) {
+        List<URL> resources = this.resources.get(schema.getId());
+        if ( resources == null || resources.size() == 0 ) {
             return schema;
         }
 
-        try {
-            byte[] bytes = IOUtils.toByteArray(is);
+        for ( URL resource : resources ) {
+            InputStream is = null;
+            try {
+                is = resource.openStream();
 
-            Map<String,Object> mapData = jsonMapper.readValue(bytes);
-            SchemaOverlayImpl data = schemaMashaller.readValue(bytes, explicitByDefault ? ExplicitByDefaultSchemaOverlayImpl.class :
-                SchemaOverlayImpl.class);
+                if ( is == null ) {
+                    continue;
+                }
 
-            processSchema(schema, data, mapData);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException(e);
-        } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(e);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        } finally {
-            IOUtils.closeQuietly(is);
+                byte[] bytes = IOUtils.toByteArray(is);
+
+                Map<String,Object> mapData = jsonMapper.readValue(bytes);
+                SchemaOverlayImpl data = schemaMashaller.readValue(bytes, explicitByDefault ? ExplicitByDefaultSchemaOverlayImpl.class :
+                    SchemaOverlayImpl.class);
+
+                processSchema(schema, data, mapData);
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException(e);
+            } catch (InvocationTargetException e) {
+                throw new IllegalStateException(e);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalStateException(e);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
         }
 
         return schema;
@@ -172,21 +200,6 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         }
     }
 
-    protected InputStream loadJsonFile(String prefix, Schema schema) {
-        String path = String.format("%s/%s.json", prefix, schema.getId());
-        InputStream is = schema.getClass().getClassLoader().getResourceAsStream(path);
-        if ( is != null ) {
-            log.info("Loading JSON schema overlay for type [{}] from [{}]", schema.getId(), path);
-        }
-        return is;
-    }
-
-    protected boolean jsonFileExists(String prefix, Schema schema) {
-        String path = String.format("%s/%s.json", prefix, schema.getId());
-        URL url = schema.getClass().getClassLoader().getResource(path);
-        return url != null;
-    }
-
     public JsonMapper getJsonMapper() {
         return jsonMapper;
     }
@@ -213,14 +226,6 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         this.path = path;
     }
 
-    public String getOverridePath() {
-        return overridePath;
-    }
-
-    public void setOverridePath(String overridePath) {
-        this.overridePath = overridePath;
-    }
-
     public io.github.ibuildthecloud.gdapi.json.JsonMapper getSchemaMashaller() {
         return schemaMashaller;
     }
@@ -244,6 +249,15 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
 
     public void setIgnoreTypes(Set<String> ignoreTypes) {
         this.ignoreTypes = ignoreTypes;
+    }
+
+    public ResourceLoader getResourceLoader() {
+        return resourceLoader;
+    }
+
+    @Inject
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
     }
 
 }

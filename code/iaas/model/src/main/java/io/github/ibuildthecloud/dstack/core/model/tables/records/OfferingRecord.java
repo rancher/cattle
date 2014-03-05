@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "offering", schema = "dstack")
-public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record8<java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.Boolean, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Offering {
+public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.OfferingRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean>, io.github.ibuildthecloud.dstack.core.model.Offering {
 
-	private static final long serialVersionUID = -29119582;
+	private static final long serialVersionUID = 1069398969;
 
 	/**
 	 * Setter for <code>dstack.offering.id</code>.
@@ -51,11 +51,28 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	}
 
 	/**
+	 * Setter for <code>dstack.offering.account_id</code>.
+	 */
+	@Override
+	public void setAccountId(java.lang.Long value) {
+		setValue(2, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.offering.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	@Override
+	public java.lang.Long getAccountId() {
+		return (java.lang.Long) getValue(2);
+	}
+
+	/**
 	 * Setter for <code>dstack.offering.kind</code>.
 	 */
 	@Override
 	public void setKind(java.lang.String value) {
-		setValue(2, value);
+		setValue(3, value);
 	}
 
 	/**
@@ -64,58 +81,24 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
 	@Override
 	public java.lang.String getKind() {
-		return (java.lang.String) getValue(2);
+		return (java.lang.String) getValue(3);
 	}
 
 	/**
-	 * Setter for <code>dstack.offering.created</code>.
+	 * Setter for <code>dstack.offering.uuid</code>.
 	 */
 	@Override
-	public void setCreated(java.util.Date value) {
-		setValue(3, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.offering.created</code>.
-	 */
-	@javax.persistence.Column(name = "created", nullable = false)
-	@Override
-	public java.util.Date getCreated() {
-		return (java.util.Date) getValue(3);
-	}
-
-	/**
-	 * Setter for <code>dstack.offering.removed</code>.
-	 */
-	@Override
-	public void setRemoved(java.util.Date value) {
+	public void setUuid(java.lang.String value) {
 		setValue(4, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.offering.removed</code>.
+	 * Getter for <code>dstack.offering.uuid</code>.
 	 */
-	@javax.persistence.Column(name = "removed")
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
 	@Override
-	public java.util.Date getRemoved() {
-		return (java.util.Date) getValue(4);
-	}
-
-	/**
-	 * Setter for <code>dstack.offering.is_public</code>.
-	 */
-	@Override
-	public void setIsPublic(java.lang.Boolean value) {
-		setValue(5, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.offering.is_public</code>.
-	 */
-	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
-	@Override
-	public java.lang.Boolean getIsPublic() {
-		return (java.lang.Boolean) getValue(5);
+	public java.lang.String getUuid() {
+		return (java.lang.String) getValue(4);
 	}
 
 	/**
@@ -123,7 +106,7 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 */
 	@Override
 	public void setDescription(java.lang.String value) {
-		setValue(6, value);
+		setValue(5, value);
 	}
 
 	/**
@@ -132,24 +115,109 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	@javax.persistence.Column(name = "description", length = 1024)
 	@Override
 	public java.lang.String getDescription() {
+		return (java.lang.String) getValue(5);
+	}
+
+	/**
+	 * Setter for <code>dstack.offering.state</code>.
+	 */
+	@Override
+	public void setState(java.lang.String value) {
+		setValue(6, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.offering.state</code>.
+	 */
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
+	@Override
+	public java.lang.String getState() {
 		return (java.lang.String) getValue(6);
 	}
 
 	/**
-	 * Setter for <code>dstack.offering.uuid</code>.
+	 * Setter for <code>dstack.offering.created</code>.
 	 */
 	@Override
-	public void setUuid(java.lang.String value) {
+	public void setCreated(java.util.Date value) {
 		setValue(7, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.offering.uuid</code>.
+	 * Getter for <code>dstack.offering.created</code>.
 	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@javax.persistence.Column(name = "created")
 	@Override
-	public java.lang.String getUuid() {
-		return (java.lang.String) getValue(7);
+	public java.util.Date getCreated() {
+		return (java.util.Date) getValue(7);
+	}
+
+	/**
+	 * Setter for <code>dstack.offering.removed</code>.
+	 */
+	@Override
+	public void setRemoved(java.util.Date value) {
+		setValue(8, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.offering.removed</code>.
+	 */
+	@javax.persistence.Column(name = "removed")
+	@Override
+	public java.util.Date getRemoved() {
+		return (java.util.Date) getValue(8);
+	}
+
+	/**
+	 * Setter for <code>dstack.offering.remove_time</code>.
+	 */
+	@Override
+	public void setRemoveTime(java.util.Date value) {
+		setValue(9, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.offering.remove_time</code>.
+	 */
+	@javax.persistence.Column(name = "remove_time")
+	@Override
+	public java.util.Date getRemoveTime() {
+		return (java.util.Date) getValue(9);
+	}
+
+	/**
+	 * Setter for <code>dstack.offering.data</code>.
+	 */
+	@Override
+	public void setData(java.util.Map<String,Object> value) {
+		setValue(10, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.offering.data</code>.
+	 */
+	@javax.persistence.Column(name = "data", length = 16777215)
+	@Override
+	public java.util.Map<String,Object> getData() {
+		return (java.util.Map<String,Object>) getValue(10);
+	}
+
+	/**
+	 * Setter for <code>dstack.offering.is_public</code>.
+	 */
+	@Override
+	public void setIsPublic(java.lang.Boolean value) {
+		setValue(11, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.offering.is_public</code>.
+	 */
+	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
+	@Override
+	public java.lang.Boolean getIsPublic() {
+		return (java.lang.Boolean) getValue(11);
 	}
 
 	// -------------------------------------------------------------------------
@@ -165,23 +233,23 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	}
 
 	// -------------------------------------------------------------------------
-	// Record8 type implementation
+	// Record12 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row8<java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.Boolean, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row8) super.fieldsRow();
+	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean> fieldsRow() {
+		return (org.jooq.Row12) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row8<java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.lang.Boolean, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row8) super.valuesRow();
+	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean> valuesRow() {
+		return (org.jooq.Row12) super.valuesRow();
 	}
 
 	/**
@@ -204,7 +272,15 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field3() {
+	public org.jooq.Field<java.lang.Long> field3() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.ACCOUNT_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.String> field4() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.KIND;
 	}
 
@@ -212,31 +288,15 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Date> field4() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.CREATED;
+	public org.jooq.Field<java.lang.String> field5() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.UUID;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Date> field5() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.REMOVED;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Boolean> field6() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.IS_PUBLIC;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field7() {
+	public org.jooq.Field<java.lang.String> field6() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.DESCRIPTION;
 	}
 
@@ -244,8 +304,48 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field8() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.UUID;
+	public org.jooq.Field<java.lang.String> field7() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.STATE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.util.Date> field8() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.CREATED;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.util.Date> field9() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.REMOVED;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.util.Date> field10() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.REMOVE_TIME;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.util.Map<String,Object>> field11() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.DATA;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Boolean> field12() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING.IS_PUBLIC;
 	}
 
 	/**
@@ -268,7 +368,15 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value3() {
+	public java.lang.Long value3() {
+		return getAccountId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value4() {
 		return getKind();
 	}
 
@@ -276,31 +384,15 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Date value4() {
-		return getCreated();
+	public java.lang.String value5() {
+		return getUuid();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Date value5() {
-		return getRemoved();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Boolean value6() {
-		return getIsPublic();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value7() {
+	public java.lang.String value6() {
 		return getDescription();
 	}
 
@@ -308,8 +400,48 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value8() {
-		return getUuid();
+	public java.lang.String value7() {
+		return getState();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Date value8() {
+		return getCreated();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Date value9() {
+		return getRemoved();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Date value10() {
+		return getRemoveTime();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Map<String,Object> value11() {
+		return getData();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Boolean value12() {
+		return getIsPublic();
 	}
 
 	/**
@@ -334,7 +466,16 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public OfferingRecord value3(java.lang.String value) {
+	public OfferingRecord value3(java.lang.Long value) {
+		setAccountId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public OfferingRecord value4(java.lang.String value) {
 		setKind(value);
 		return this;
 	}
@@ -343,43 +484,7 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public OfferingRecord value4(java.util.Date value) {
-		setCreated(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public OfferingRecord value5(java.util.Date value) {
-		setRemoved(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public OfferingRecord value6(java.lang.Boolean value) {
-		setIsPublic(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public OfferingRecord value7(java.lang.String value) {
-		setDescription(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public OfferingRecord value8(java.lang.String value) {
+	public OfferingRecord value5(java.lang.String value) {
 		setUuid(value);
 		return this;
 	}
@@ -388,7 +493,70 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public OfferingRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.util.Date value4, java.util.Date value5, java.lang.Boolean value6, java.lang.String value7, java.lang.String value8) {
+	public OfferingRecord value6(java.lang.String value) {
+		setDescription(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public OfferingRecord value7(java.lang.String value) {
+		setState(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public OfferingRecord value8(java.util.Date value) {
+		setCreated(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public OfferingRecord value9(java.util.Date value) {
+		setRemoved(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public OfferingRecord value10(java.util.Date value) {
+		setRemoveTime(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public OfferingRecord value11(java.util.Map<String,Object> value) {
+		setData(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public OfferingRecord value12(java.lang.Boolean value) {
+		setIsPublic(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public OfferingRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Boolean value12) {
 		return this;
 	}
 
@@ -403,12 +571,16 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	public void from(io.github.ibuildthecloud.dstack.core.model.Offering from) {
 		setId(from.getId());
 		setName(from.getName());
+		setAccountId(from.getAccountId());
 		setKind(from.getKind());
+		setUuid(from.getUuid());
+		setDescription(from.getDescription());
+		setState(from.getState());
 		setCreated(from.getCreated());
 		setRemoved(from.getRemoved());
+		setRemoveTime(from.getRemoveTime());
+		setData(from.getData());
 		setIsPublic(from.getIsPublic());
-		setDescription(from.getDescription());
-		setUuid(from.getUuid());
 	}
 
 	/**
@@ -434,16 +606,20 @@ public class OfferingRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Create a detached, initialised OfferingRecord
 	 */
-	public OfferingRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.util.Date created, java.util.Date removed, java.lang.Boolean isPublic, java.lang.String description, java.lang.String uuid) {
+	public OfferingRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Boolean isPublic) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.OfferingTable.OFFERING);
 
 		setValue(0, id);
 		setValue(1, name);
-		setValue(2, kind);
-		setValue(3, created);
-		setValue(4, removed);
-		setValue(5, isPublic);
-		setValue(6, description);
-		setValue(7, uuid);
+		setValue(2, accountId);
+		setValue(3, kind);
+		setValue(4, uuid);
+		setValue(5, description);
+		setValue(6, state);
+		setValue(7, created);
+		setValue(8, removed);
+		setValue(9, removeTime);
+		setValue(10, data);
+		setValue(11, isPublic);
 	}
 }

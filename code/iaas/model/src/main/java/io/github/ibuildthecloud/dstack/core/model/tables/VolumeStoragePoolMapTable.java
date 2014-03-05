@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord> {
 
-	private static final long serialVersionUID = 813826811;
+	private static final long serialVersionUID = -2043289230;
 
 	/**
 	 * The singleton instance of <code>dstack.volume_storage_pool_map</code>
@@ -32,19 +32,24 @@ public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.volume_storage_pool_map.volume_id</code>.
+	 * The column <code>dstack.volume_storage_pool_map.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.Long> VOLUME_ID = createField("volume_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
+	 * The column <code>dstack.volume_storage_pool_map.kind</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.Long> STORAGE_POOL_ID = createField("storage_pool_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.volume_storage_pool_map.storage_pool_location</code>.
+	 * The column <code>dstack.volume_storage_pool_map.uuid</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.Long> STORAGE_POOL_LOCATION = createField("storage_pool_location", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
+
+	/**
+	 * The column <code>dstack.volume_storage_pool_map.description</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
 	 * The column <code>dstack.volume_storage_pool_map.state</code>.
@@ -52,9 +57,34 @@ public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
+	 * The column <code>dstack.volume_storage_pool_map.created</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
+
+	/**
 	 * The column <code>dstack.volume_storage_pool_map.removed</code>.
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.util.Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.volume_storage_pool_map.remove_time</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.util.Date> REMOVE_TIME = createField("remove_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.volume_storage_pool_map.data</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.volume_storage_pool_map.volume_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.Long> VOLUME_ID = createField("volume_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.lang.Long> STORAGE_POOL_ID = createField("storage_pool_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>dstack.volume_storage_pool_map</code> table reference
@@ -99,7 +129,7 @@ public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_VOLUME_STORAGE_POOL_MAP_PRIMARY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_VOLUME_STORAGE_POOL_MAP_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_VOLUME_STORAGE_POOL_MAP_IDX_VOLUME_STORAGE_POOL_MAP_UUID);
 	}
 
 	/**
@@ -107,7 +137,7 @@ public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.VOLUME_STORAGE_POOL_MAP_IBFK_1, io.github.ibuildthecloud.dstack.core.model.Keys.VOLUME_STORAGE_POOL_MAP_IBFK_2);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME_STORAGE_POOL_MAP__VOLUME_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_VOLUME_STORAGE_POOL_MAP__STORAGE_POOL_ID);
 	}
 
 	/**

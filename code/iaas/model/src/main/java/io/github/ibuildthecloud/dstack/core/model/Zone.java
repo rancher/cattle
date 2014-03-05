@@ -33,8 +33,41 @@ public interface Zone extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.zone.name</code>.
 	 */
-	@javax.persistence.Column(name = "name", length = 128)
+	@javax.persistence.Column(name = "name", length = 255)
 	public java.lang.String getName();
+
+	/**
+	 * Setter for <code>dstack.zone.account_id</code>.
+	 */
+	public void setAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.zone.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
+
+	/**
+	 * Setter for <code>dstack.zone.kind</code>.
+	 */
+	public void setKind(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.zone.kind</code>.
+	 */
+	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
+	public java.lang.String getKind();
+
+	/**
+	 * Setter for <code>dstack.zone.uuid</code>.
+	 */
+	public void setUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.zone.uuid</code>.
+	 */
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
 
 	/**
 	 * Setter for <code>dstack.zone.description</code>.
@@ -48,15 +81,48 @@ public interface Zone extends java.io.Serializable {
 	public java.lang.String getDescription();
 
 	/**
-	 * Setter for <code>dstack.zone.uuid</code>.
+	 * Setter for <code>dstack.zone.state</code>.
 	 */
-	public void setUuid(java.lang.String value);
+	public void setState(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.zone.uuid</code>.
+	 * Getter for <code>dstack.zone.state</code>.
 	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
-	public java.lang.String getUuid();
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
+	public java.lang.String getState();
+
+	/**
+	 * Setter for <code>dstack.zone.created</code>.
+	 */
+	public void setCreated(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.zone.created</code>.
+	 */
+	@javax.persistence.Column(name = "created")
+	public java.util.Date getCreated();
+
+	/**
+	 * Setter for <code>dstack.zone.removed</code>.
+	 */
+	public void setRemoved(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.zone.removed</code>.
+	 */
+	@javax.persistence.Column(name = "removed")
+	public java.util.Date getRemoved();
+
+	/**
+	 * Setter for <code>dstack.zone.remove_time</code>.
+	 */
+	public void setRemoveTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.zone.remove_time</code>.
+	 */
+	@javax.persistence.Column(name = "remove_time")
+	public java.util.Date getRemoveTime();
 
 	/**
 	 * Setter for <code>dstack.zone.data</code>.
@@ -68,17 +134,6 @@ public interface Zone extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
-
-	/**
-	 * Setter for <code>dstack.zone.state</code>.
-	 */
-	public void setState(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.zone.state</code>.
-	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 128)
-	public java.lang.String getState();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

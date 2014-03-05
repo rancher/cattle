@@ -2,13 +2,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
     xmlns:util="http://www.springframework.org/schema/util"
     xmlns:extension="http://dstack.io/schemas/spring/extension"
     xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
         http://dstack.io/schemas/spring/extension http://dstack.io/schemas/spring/extension-1.0.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <bean class="io.github.ibuildthecloud.agent.server.service.impl.AgentServiceImpl" >
         <property name="executorService" ref="CoreExecutorService" />
@@ -20,6 +22,46 @@
         <property name="factories" value="#{extensionManager.list('agent.connection.factory')}" />
     </bean>
 
+    <bean class="io.github.ibuildthecloud.agent.server.group.impl.AgentGroupManagerImpl" />
+
+    <bean class="io.github.ibuildthecloud.agent.server.ping.dao.imp.PingDaoImpl" />
+    <bean class="io.github.ibuildthecloud.agent.server.ping.impl.PingMonitorImpl" />
+    <bean class="io.github.ibuildthecloud.agent.server.resource.impl.AgentResourcesMonitorImpl" >
+        <property name="changeHandlers" value="#{extensionManager.list('agent.resource.change.handler')}" />
+    </bean>
+
+    <bean id="HostChangeHandler" class="io.github.ibuildthecloud.agent.server.resource.impl.GenericTypeAgentResourceChangeHandler" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
+        </property>
+        <property name="type" value="host" />
+    </bean>
+    <bean id="StoragePoolChangeHandler" class="io.github.ibuildthecloud.agent.server.resource.impl.MappedTypeAgentResourceChangeHandler" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
+        </property>
+        <property name="type" value="storagePool" />
+        <property name="resourceUuidKey" value="hostUuid" />
+        <property name="resourceType" value="io.github.ibuildthecloud.dstack.core.model.StoragePool" />
+        <property name="mappingType" value="io.github.ibuildthecloud.dstack.core.model.StoragePoolHostMap" />
+        <property name="otherType" value="io.github.ibuildthecloud.dstack.core.model.Host" />
+    </bean>
+
+    <bean id="MappedResourceChangeHandlerDaoImpl" 
+        class="io.github.ibuildthecloud.agent.server.resource.dao.impl.MappedResourceChangeHandlerDaoImpl" />
+
     <extension:discover class="io.github.ibuildthecloud.agent.server.connection.AgentConnectionFactory" />
+    <extension:discover class="io.github.ibuildthecloud.agent.server.resource.AgentResourceChangeHandler" />
+
+    <tx:advice id="MappedResourceChangeHandlerDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="newResource" isolation="READ_COMMITTED" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="MappedResourceChangeHandlerDaoImplAdvice" 
+            pointcut="execution(* io.github.ibuildthecloud.agent.server.resource.dao.MappedResourceChangeHandlerDao.*(..))" />
+    </aop:config>
 
 </beans>

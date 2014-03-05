@@ -15,6 +15,8 @@ public @interface EventHandler {
 
     String name() default "";
 
+    Class<? extends EventNameProvider> nameProvider() default EventNameProvider.class;
+
     boolean allowQueueing() default false;
 
     int queueDepth() default 0;

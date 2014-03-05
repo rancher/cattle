@@ -1,10 +1,16 @@
 package io.github.ibuildthecloud.dstack.api.servlet;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+import io.github.ibuildthecloud.dstack.metrics.util.MetricsUtil;
 import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.servlet.FilterChain;
@@ -17,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.spring.module.web.ModuleBasedFilter;
 
+import com.codahale.metrics.Timer;
 import com.netflix.config.DynamicStringListProperty;
 
 public class ApiRequestFilter extends ModuleBasedFilter {
@@ -25,6 +32,7 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
 
     ApiRequestFilterDelegate delegate;
+    Map<String,Timer> timers = new ConcurrentHashMap<String, Timer>();
 
     @Override
     public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException,
@@ -46,12 +54,18 @@ public class ApiRequestFilter extends ModuleBasedFilter {
                 new ManagedContextRunnable() {
                     @Override
                     protected void runInContext() {
+                        long start = System.currentTimeMillis();
+                        boolean success = false;
+                        ApiContext context = null;
                         try {
-                            delegate.doFilter(request, response, chain);
+                            context = delegate.doFilter(request, response, chain);
+                            success = true;
                         } catch (IOException e) {
                             throw new WrappedException(e);
                         } catch (ServletException e) {
                             throw new WrappedException(e);
+                        } finally {
+                            done(context, start, success);
                         }
                     }
                 }.run();
@@ -61,6 +75,37 @@ public class ApiRequestFilter extends ModuleBasedFilter {
                 ExceptionUtils.rethrow(t, ServletException.class);
                 ExceptionUtils.rethrowExpectedRuntime(t);
             }
+        }
+    }
+
+    protected void done(ApiContext context, long start, boolean success) {
+        if ( context == null ) {
+            return;
+        }
+
+        ApiRequest request = context.getApiRequest();
+        if ( request == null ) {
+            return;
+        }
+
+        if ( request.getResponseCode() >= 400 ) {
+            success = false;
+        }
+
+        long duration = System.currentTimeMillis() - start;
+        if ( request != null ) {
+            String key = String.format(
+                    "api.%s.%s.%s",
+                    success ? "success" : "failed",
+                    request.getType(),
+                    request.getMethod().toLowerCase());
+
+            Timer timer = timers.get(key);
+            if ( timer == null ) {
+                timer = MetricsUtil.getRegistry().timer(key);
+                timers.put(key, timer);
+            }
+            timer.update(duration, TimeUnit.MILLISECONDS);
         }
     }
 

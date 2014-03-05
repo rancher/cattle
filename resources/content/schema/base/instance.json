@@ -1,14 +1,26 @@
 {
     "resourceFields" : {
+        "requestedHostId" : {
+            "type" : "reference[host]",
+            "create" : true,
+            "update" : true,
+            "nullable" : true
+        },
         "imageUuid" : {
             "type" : "string",
-            "create" : true,
-            "nullable" : true
+            "nullable" : true,
+            "create" : true
         },
         "startOnCreate" : {
             "type" : "boolean",
             "create" : true,
             "default" : true
+        }
+    },
+    "resourceActions" : {
+        "stop" : {
+            "input" : "instanceStop",
+            "output" : "instance"
         }
     }
 }

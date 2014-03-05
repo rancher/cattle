@@ -1,5 +1,7 @@
 package io.github.ibuildthecloud.agent.connection.ssh;
 
+import io.github.ibuildthecloud.agent.connection.ssh.connection.EofClosingTcpipServerChannel;
+import io.github.ibuildthecloud.agent.connection.ssh.connection.SharedExecutorMinaServiceServiceFactory;
 import io.github.ibuildthecloud.agent.connection.ssh.dao.SshAgentDao;
 import io.github.ibuildthecloud.agent.server.connection.AgentConnection;
 import io.github.ibuildthecloud.agent.server.connection.AgentConnectionFactory;
@@ -8,6 +10,7 @@ import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.iaas.config.ScopedConfig;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.server.context.ServerContext;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 
 import java.io.FileNotFoundException;
@@ -15,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -22,6 +26,8 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,8 +43,12 @@ import org.apache.sshd.client.SftpClient.Attributes;
 import org.apache.sshd.client.SftpClient.Handle;
 import org.apache.sshd.client.SftpClient.OpenMode;
 import org.apache.sshd.client.future.ConnectFuture;
+import org.apache.sshd.client.future.OpenFuture;
+import org.apache.sshd.common.Channel;
 import org.apache.sshd.common.KeyPairProvider;
+import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.SshdSocketAddress;
+import org.apache.sshd.common.io.mina.MinaServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +63,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
     public static final String URL_CONFIG = "urlConfig";
 
     private static final DynamicStringProperty ADDITIONAL_ENV = ArchaiusUtil.getString("ssh.agent.env");
-    private static final DynamicLongProperty AUTH_TIMEOUT = ArchaiusUtil.getLong("ssh.auth.timeout.millis");
+    private static final DynamicLongProperty SSH_TIMEOUT = ArchaiusUtil.getLong("ssh.timeout.millis");
     private static final DynamicStringProperty BOOTSTRAP_FILE = ArchaiusUtil.getString("ssh.bootstrap.destination");
     private static final DynamicStringProperty BOOTSTRAP_SOURCE = ArchaiusUtil.getString("ssh.bootstrap.source");
     private static final DynamicStringProperty BOOTSTRAP_SOURCE_OVERRIDE = ArchaiusUtil.getString("ssh.bootstrap.source.override");
@@ -80,6 +90,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
     Set<SshAgentConnection> connections = new ConcurrentHashSet<SshAgentConnection>();
     KeyPairProvider keyPairProvider;
     ScopedConfig scopedConfig;
+    ExecutorService executorService;
 
     @Override
     public AgentConnection createConnection(Agent agent) throws IOException {
@@ -116,17 +127,26 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         return new SshConnectionOptions(host, port, username, password);
     }
 
+    protected String getIp(SshConnectionOptions opts) throws IOException {
+        InetAddress address = InetAddress.getByName(opts.getHost());
+        if ( address.isLoopbackAddress() ) {
+            address = InetAddress.getByName(ServerContext.getServerAddress().getUrl().getHost());
+        }
+        return address.getHostAddress();
+    }
+
     protected AgentConnection createConnection(Agent agent, SshConnectionOptions opts) throws IOException, InterruptedException {
         SshClient client = getClient();
         ClientSession session = null;
         boolean success = false;
         try {
             session = connect(client, opts);
+            String hostIp = getIp(opts);
 
             String script = copyBootStrap(session);
             int port = setForwarding(session);
             log.info("Allocated random port [{}] on [{}]", port, opts.getHost());
-            EofAwareChannelExec exec = callBootStrap(agent, session, script);
+            EofAwareChannelExec exec = callBootStrap(agent, session, String.format("%s --port %d --ip %s", script, port, hostIp));
 
             final SshAgentConnection sshAgent = new SshAgentConnection(agent.getId(), agent.getUri(), eventService, this, session, exec, port);
             success = true;
@@ -138,9 +158,22 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
                     sshAgent.close();
                 }
             });
+
             CloseListener listener = new CloseListener(sshAgent);
             session.addListener(listener);
-            exec.open().addListener(listener);
+            OpenFuture execOpen = exec.open();
+
+            execOpen.addListener(listener);
+
+            try {
+                execOpen.await(SSH_TIMEOUT.get(), TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException("Interrupted waiting for script [" + script + "]", e);
+            }
+
+            if ( ! execOpen.isOpened() ) {
+                throw new IOException("Failed to start script [" + script + "]");
+            }
 
             success = writeAuth(sshAgent);
             if ( ! success ) {
@@ -164,6 +197,9 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
 
     protected EofAwareChannelExec callBootStrap(Agent agent, ClientSession session, String script) throws IOException {
         EofAwareChannelExec exec = new EofAwareChannelExec(script);
+        exec.setOut(new LogOutputStream(log, "{}", agent.getId().toString(), false));
+        exec.setErr(new LogOutputStream(log, "{}", agent.getId().toString(), true));
+
         try {
             session.registerChannel(exec);
         } catch (IOException e) {
@@ -171,8 +207,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to register exec channel", e);
         }
-        exec.setOut(new LogOutputStream(log, "Agent [" + agent.getId() + "] Output [{}]", agent.getId().toString(), false));
-        exec.setErr(new LogOutputStream(log, "Agent [" + agent.getId() + "] Error  [{}]", agent.getId().toString(), true));
+
         return exec;
     }
 
@@ -202,10 +237,10 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
 
     protected ClientSession connect(SshClient client, SshConnectionOptions opts) throws IOException, InterruptedException {
         ConnectFuture connect = client.connect(opts.getHost(), opts.getPort());
-        connect.await(AUTH_TIMEOUT.get());
+        connect.await(SSH_TIMEOUT.get());
         ClientSession session = connect.getSession();
         if ( session == null ) {
-            throw new IOException("Failed to create session to [" + opts.getHost() + "]");
+            throw new IOException("Failed to create session to [" + opts + "]");
         }
 
         KeyPair kp = keyPairProvider.loadKey(KeyPairProvider.SSH_RSA);
@@ -215,14 +250,14 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         }
 
         if ( ! authSuccess(session) ) {
-            throw new IOException("Failed to authenticate with [" + opts.getHost() + "]");
+            throw new IOException("Failed to authenticate with [" + opts + "]");
         }
 
         return session;
     }
 
     protected boolean authSuccess(ClientSession session) {
-        int ret = session.waitFor(ClientSession.CLOSED | ClientSession.AUTHED | ClientSession.WAIT_AUTH, AUTH_TIMEOUT.get());
+        int ret = session.waitFor(ClientSession.CLOSED | ClientSession.AUTHED | ClientSession.WAIT_AUTH, SSH_TIMEOUT.get());
 
         if ((ret & ClientSession.AUTHED) != ClientSession.AUTHED) {
             return false;
@@ -231,6 +266,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     protected synchronized SshClient getClient() {
         if ( client != null ) {
             return client;
@@ -239,6 +275,10 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         SshClient client = SshClient.setUpDefaultClient();
         client.setTcpipForwarderFactory(new DefaultTcpipForwarderFactory());
         client.setTcpipForwardingFilter(new ReverseConnectAllowFilter());
+        client.setIoServiceFactory(new SharedExecutorMinaServiceServiceFactory(executorService));
+        client.setIoServiceFactory(new MinaServiceFactory());
+        client.setChannelFactories(Arrays.<NamedFactory<Channel>>asList(
+                new EofClosingTcpipServerChannel.EofClosingTcpipServerChannelFactory(executorService)));
 
         client.start();
 
@@ -366,6 +406,15 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
     @Inject
     public void setScopedConfig(ScopedConfig scopedConfig) {
         this.scopedConfig = scopedConfig;
+    }
+
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    @Inject
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
     }
 
 }

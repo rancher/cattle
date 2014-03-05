@@ -21,6 +21,7 @@
             },
             "storagePoolId": 6,
             "storagePoolLocation": null,
+            "type": "volumeStoragePoolMap",
             "volume": {
                 "accountId": 1,
                 "allocationState": "active",

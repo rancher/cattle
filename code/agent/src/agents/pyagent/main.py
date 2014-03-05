@@ -3,18 +3,39 @@
 import sys
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 import argparse
+
+if __name__ == '__main__':
+    dist = os.path.join(os.path.dirname(__file__), "dist")
+    if os.path.exists(dist):
+        sys.path.insert(0, dist)
+
 from dstack import plugins
 from dstack import Config
 from dstack.agent.event import EventClient
 from dstack.type_manager import types
 
-level = logging.INFO
-if Config.debug():
-    level = logging.DEBUG
-logging.basicConfig(file=Config.log(), level=level)
 
 log = logging.getLogger("agent")
+
+
+def _setup_logger():
+    format = '%(asctime)s %(levelname)s %(name)s [%(filename)s:%(lineno)s] %(message)s '
+    level = logging.INFO
+    if Config.debug():
+        level = logging.DEBUG
+    logging.root.setLevel(level)
+
+    file_handler = RotatingFileHandler(Config.log(), maxBytes=2*1024*1024, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(format))
+
+    std_err_handler = logging.StreamHandler(sys.stderr)
+    std_err_handler.setFormatter(logging.Formatter(format))
+    std_err_handler.setLevel(logging.WARN)
+
+    logging.root.addHandler(file_handler)
+    logging.root.addHandler(std_err_handler)
 
 
 def _gather_events():
@@ -44,12 +65,20 @@ def _args():
 
 
 def main():
+    _setup_logger()
+
     args = _args()
+
+    Config.set_access_key(args.access_key)
+    Config.set_secret_key(args.secret_key)
+    Config.set_api_url(args.url)
 
     plugins.load()
 
-    auth = (args.access_key, args.secret_key)
-    client = EventClient(args.url, auth=auth, workers=args.workers, agent_id=args.agent_id)
+    log.info('API URL %s', Config.api_url())
+
+    client = EventClient(Config.api_url(), auth=Config.api_auth(), workers=args.workers,
+                         agent_id=args.agent_id)
     events = _gather_events()
 
     log.info("Subscribing to %s", events)
@@ -58,8 +87,4 @@ def main():
 
 
 if __name__ == '__main__':
-    dist = os.path.join(os.path.dirname(__file__), "dist")
-    if os.path.exists(dist):
-        sys.path.insert(0, dist)
-
     main()

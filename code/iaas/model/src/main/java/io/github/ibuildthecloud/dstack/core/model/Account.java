@@ -26,15 +26,15 @@ public interface Account extends java.io.Serializable {
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.account.uuid</code>.
+	 * Setter for <code>dstack.account.name</code>.
 	 */
-	public void setUuid(java.lang.String value);
+	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.account.uuid</code>.
+	 * Getter for <code>dstack.account.name</code>.
 	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
-	public java.lang.String getUuid();
+	@javax.persistence.Column(name = "name", length = 255)
+	public java.lang.String getName();
 
 	/**
 	 * Setter for <code>dstack.account.kind</code>.
@@ -48,15 +48,26 @@ public interface Account extends java.io.Serializable {
 	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.account.name</code>.
+	 * Setter for <code>dstack.account.uuid</code>.
 	 */
-	public void setName(java.lang.String value);
+	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.account.name</code>.
+	 * Getter for <code>dstack.account.uuid</code>.
 	 */
-	@javax.persistence.Column(name = "name", length = 255)
-	public java.lang.String getName();
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
+
+	/**
+	 * Setter for <code>dstack.account.description</code>.
+	 */
+	public void setDescription(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.account.description</code>.
+	 */
+	@javax.persistence.Column(name = "description", length = 1024)
+	public java.lang.String getDescription();
 
 	/**
 	 * Setter for <code>dstack.account.state</code>.
@@ -66,19 +77,8 @@ public interface Account extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.account.state</code>.
 	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
-
-	/**
-	 * Setter for <code>dstack.account.hold_data</code>.
-	 */
-	public void setHoldData(java.lang.Boolean value);
-
-	/**
-	 * Getter for <code>dstack.account.hold_data</code>.
-	 */
-	@javax.persistence.Column(name = "hold_data", nullable = false, precision = 1)
-	public java.lang.Boolean getHoldData();
 
 	/**
 	 * Setter for <code>dstack.account.created</code>.
@@ -123,17 +123,6 @@ public interface Account extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
-
-	/**
-	 * Setter for <code>dstack.account.description</code>.
-	 */
-	public void setDescription(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.account.description</code>.
-	 */
-	@javax.persistence.Column(name = "description", length = 255)
-	public java.lang.String getDescription();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

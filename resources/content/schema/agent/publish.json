@@ -22,6 +22,9 @@
         "time": {
             "create": true
         },
+        "data": {
+            "create": true
+        },
         "transitioning": {
             "create": true
         },

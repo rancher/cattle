@@ -13,14 +13,11 @@
 
     <bean id="CoreSchemaFactory" class="io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl">
         <property name="postProcessors" value="#{extensionManager.list('schema.post.processor')}" />
-        <property name="id">
-            <util:constant static-field="io.github.ibuildthecloud.gdapi.factory.SchemaFactory.BASE_SCHEMA"/>
-        </property>
+        <property name="id" value="base" />
     </bean>
 
-    <bean class="io.github.ibuildthecloud.dstack.schema.processor.JsonFileOverlayPostProcessor" >
+    <bean id="BaseSchemaOverlay" class="io.github.ibuildthecloud.dstack.schema.processor.JsonFileOverlayPostProcessor" >
         <property name="path" value="schema/base" />
-        <property name="overridePath" value="schema/base-override" />
         <property name="schemaMashaller">
             <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
         </property>

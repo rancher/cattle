@@ -40,7 +40,7 @@ public class AgentEventingConnection implements AgentConnection {
         EventVO<Object> withAgentEvent = new EventVO<Object>(event);
         withAgentEvent.setName(IaasEvents.appendAgent(event.getName(), getAgentId()));
 
-        return eventService.call(withAgentEvent, new EventCallOptions(0, 15000L));
+        return eventService.call(withAgentEvent, new EventCallOptions(0, event.getTimeoutMillis()));
     }
 
     @Override

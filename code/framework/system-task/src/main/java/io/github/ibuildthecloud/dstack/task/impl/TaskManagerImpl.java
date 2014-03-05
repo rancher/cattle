@@ -6,9 +6,11 @@ import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.framework.event.ExecuteTask;
 import io.github.ibuildthecloud.dstack.task.Task;
 import io.github.ibuildthecloud.dstack.task.TaskManager;
+import io.github.ibuildthecloud.dstack.task.TaskOptions;
 import io.github.ibuildthecloud.dstack.task.dao.TaskDao;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +40,7 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
     boolean running = false;
     Map<String,ScheduledFuture<?>> futures = new ConcurrentHashMap<String, ScheduledFuture<?>>();
     Map<String,Runnable> runnables = new ConcurrentHashMap<String, Runnable>();
+    Map<String,Task> taskMap = new HashMap<String,Task>();
     TaskDao taskDao;
 
     @Override
@@ -48,6 +51,17 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
     @Override
     public Runnable getRunnable(String name) {
         return runnables.get(name);
+    }
+
+
+    @Override
+    public boolean shouldLock(String name) {
+        Task task = taskMap.get(name);
+        if ( task instanceof TaskOptions ) {
+            return ((TaskOptions)task).isShouldLock();
+        }
+
+        return true;
     }
 
     @Override
@@ -83,22 +97,25 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
             Runnable runnable = new NoExceptionRunnable() {
                 @Override
                 protected void doRun() throws Exception {
-                    Object record = taskDao.newRecord(name);
+                    Object record = taskDao.newRecord(task);
                     try {
                         task.run();
                         taskDao.finish(record);
                     } catch ( Throwable t ) {
+                        log.error("Task [{}] failed", name, t);
                         taskDao.failed(record, t);
                     }
                 }
             };
             taskDao.register(name);
             runnables.put(name, runnable);
+            taskMap.put(name, task);
 
             if ( ! StringUtils.isBlank(prop.get()) ) {
-                long delay = new Long(prop.get());
+                long delay = (long)(Float.parseFloat(prop.get()) * 1000);
                 log.info("Scheduling task [{}] for every [{}] seconds", name, delay);
-                future = executorService.scheduleWithFixedDelay(runnable, Math.min(DELAY_SECONDS.get(), delay), delay, TimeUnit.SECONDS);
+                future = executorService.scheduleWithFixedDelay(runnable,
+                        Math.min(DELAY_SECONDS.get() * 1000, delay), delay, TimeUnit.MILLISECONDS);
                 futures.put(name, future);
             }
         } catch ( NumberFormatException nfe ) {

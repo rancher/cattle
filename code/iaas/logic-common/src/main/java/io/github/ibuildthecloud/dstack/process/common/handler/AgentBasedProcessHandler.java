@@ -34,6 +34,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     ObjectSerializerFactory factory;
     ObjectSerializer serializer;
 
+    boolean shouldContinue;
     String configPrefix = "event.data.";
     String dataType;
     Class<?> dataTypeClass;
@@ -81,11 +82,11 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         RemoteAgent agent = agentLocator.lookupAgent(agentResource);
 
         if ( agent == null ) {
-            return new HandlerResult("_noAgent", true);
+            return new HandlerResult(true, CollectionUtils.asMap("_noAgent", true));
         }
 
         ObjectSerializer serializer = getObjectSerializer(dataResource);
-        Map<String,Object> data = serializer.serialize(dataResource);
+        Map<String,Object> data = serializer == null ? null : serializer.serialize(dataResource);
         EventVO<Object> event = EventVO.newEvent(getCommandName() == null ? process.getName() : getCommandName())
                 .withData(data)
                 .withResourceType(getObjectManager().getType(eventResource))
@@ -97,7 +98,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         postProcessEvent(event, reply, state, process, eventResource, dataResource, agentResource);
 
-        return new HandlerResult(CollectionUtils.castMap(reply.getData()));
+        return new HandlerResult(shouldContinue, CollectionUtils.castMap(reply.getData()));
     }
 
     protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process,
@@ -175,7 +176,12 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
             return serializer;
         }
 
-        serializer = factory.compile(type, getExpression(type));
+        String expression = getExpression(type);
+        if ( expression == null ) {
+            return null;
+        }
+
+        serializer = factory.compile(type, expression);
         serializers.put(type, serializer);
 
         return serializer;
@@ -200,8 +206,12 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         DynamicStringProperty prop = getExpressionProperty(type);
         if ( StringUtils.isBlank(prop.get()) ) {
-            throw new IllegalStateException("Failed to find expression for object serialization for type [" + type +
-                    "] config property [" + getConfigPrefix() + type + "] is blank");
+            if ( dataTypeClass != null || dataType != null || dataResourceRelationship != null ) {
+                throw new IllegalStateException("Failed to find expression for object serialization for type [" + type +
+                        "] config property [" + getConfigPrefix() + type + "] is blank");
+            } else {
+                return null;
+            }
         }
 
         prop.addCallback(new Runnable() {
@@ -337,6 +347,14 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public boolean isShouldContinue() {
+        return shouldContinue;
+    }
+
+    public void setShouldContinue(boolean shouldContinue) {
+        this.shouldContinue = shouldContinue;
     }
 
 }

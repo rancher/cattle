@@ -18,6 +18,7 @@
         <property name="priority">
             <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.SPECIFIC" />
         </property>
+        <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
     </bean>
 
 </beans>

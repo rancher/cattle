@@ -27,7 +27,9 @@
                 "data": {
                     "fields": {
                         "imageUuid": "docker:ibuildthecloud/helloworld",
-                        "startOnCreate": "true"
+                        "startOnCreate": "true",
+                        "tcpPorts": [8080],
+                        "udpPorts": [12201]
                     }
                 },
                 "description": null,

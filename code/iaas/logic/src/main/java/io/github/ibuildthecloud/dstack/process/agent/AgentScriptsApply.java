@@ -3,6 +3,7 @@ package io.github.ibuildthecloud.dstack.process.agent;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.configitem.request.ConfigUpdateRequest;
 import io.github.ibuildthecloud.dstack.configitem.version.ConfigItemStatusManager;
+import io.github.ibuildthecloud.dstack.core.constants.AgentConstants;
 import io.github.ibuildthecloud.dstack.core.model.Agent;
 import io.github.ibuildthecloud.dstack.engine.handler.AbstractProcessLogic;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
@@ -29,7 +30,7 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
 
     @Override
     public String[] getProcessNames() {
-       return new String[] { "agent.activate" };
+       return new String[] { AgentConstants.PROCESS_ACTIVATE, AgentConstants.PROCESS_RECONNECT };
     }
 
     @Override

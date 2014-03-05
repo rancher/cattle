@@ -33,7 +33,6 @@
     -->
 
 
-    <process:defaultProcesses resourceType="agent" />
     <process:defaultProcesses resourceType="agentgroup" />
     <process:defaultProcesses resourceType="account" />
     <process:defaultProcesses resourceType="credential" />
@@ -45,6 +44,12 @@
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="storagePoolHostMap" />
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
+
+    <!-- Agent -->
+    <process:defaultProcesses resourceType="agent" exclude="agent.deactivate" />
+    <process:process name="agent.deactivate" resourceType="agent" start="active,activating,reconnecting,updating-active,updating-inactive" 
+                                            transitioning="deactivating" done="inactive" delegate="agent.remove" />
+    <process:process name="agent.reconnect" resourceType="agent" start="active,activating" transitioning="reconnecting" done="active" />
 
     <!-- Instance -->
     <process:defaultProcesses resourceType="instance" 

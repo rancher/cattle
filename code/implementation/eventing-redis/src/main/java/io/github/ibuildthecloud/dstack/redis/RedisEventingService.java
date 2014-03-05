@@ -27,7 +27,7 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
     public void reconnect() {
         List<RedisConnection> newConnections = new ArrayList<RedisConnection>();
 
-        for ( String host : REDIS_HOST.get().trim().split("\\*s,\\s*") ) {
+        for ( String host : REDIS_HOST.get().trim().split("\\s*,\\s*") ) {
             String[] parts = host.split(":");
             if ( parts.length > 2 ) {
                 throw new IllegalArgumentException("Invalid redis host [" + host + "] should be in host:port format");
@@ -61,6 +61,8 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
 
     @Override
     public void start() {
+        super.start();
+
         reconnect();
 
         REDIS_HOST.addCallback(new Runnable() {
@@ -73,6 +75,8 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
 
     @Override
     public void stop() {
+        super.stop();
+
         for ( RedisConnection conn : connections ) {
             conn.stop();
         }

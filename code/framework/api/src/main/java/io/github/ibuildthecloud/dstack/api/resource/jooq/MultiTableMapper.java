@@ -3,6 +3,7 @@ package io.github.ibuildthecloud.dstack.api.resource.jooq;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
+import io.github.ibuildthecloud.model.Pagination;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
@@ -29,9 +30,15 @@ public class MultiTableMapper extends AbstractSequentialList<Object> implements 
     Map<String,TableMapping> fieldsMapping = new HashMap<String,TableMapping>();
     List<Field<?>> fields = new ArrayList<Field<?>>();
     Map<Object,Object> result = new LinkedHashMap<Object, Object>();
+    int resultSize;
+    Pagination pagination;
+    Integer limit;
 
-    public MultiTableMapper(ObjectMetaDataManager metaDataManager) {
+    public MultiTableMapper(ObjectMetaDataManager metaDataManager, Pagination pagination) {
         this.metaDataManager = metaDataManager;
+        this.pagination = pagination;
+
+        limit = pagination == null ? null : pagination.getLimit();
     }
 
     public MultiTableMapper map(Table<?> table) {
@@ -78,6 +85,12 @@ public class MultiTableMapper extends AbstractSequentialList<Object> implements 
 
     @Override
     public void next(Record record) {
+        resultSize++;
+
+        if ( limit != null && resultSize > limit ) {
+            return;
+        }
+
         Map<String,Object> objects = new HashMap<String, Object>();
 
         for ( Field<?> field : record.fields() ) {
@@ -157,6 +170,10 @@ public class MultiTableMapper extends AbstractSequentialList<Object> implements 
     @Override
     public int size() {
         return result.size();
+    }
+
+    public int getResultSize() {
+        return resultSize;
     }
 
 }

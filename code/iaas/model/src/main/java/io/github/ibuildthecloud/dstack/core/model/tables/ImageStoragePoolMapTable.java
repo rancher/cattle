@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ImageStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord> {
 
-	private static final long serialVersionUID = -1221916230;
+	private static final long serialVersionUID = 712279246;
 
 	/**
 	 * The singleton instance of <code>dstack.image_storage_pool_map</code>
@@ -32,24 +32,29 @@ public class ImageStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github.
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.image_storage_pool_map.image_id</code>.
+	 * The column <code>dstack.image_storage_pool_map.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.Long> IMAGE_ID = createField("image_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.image_storage_pool_map.storage_pool_id</code>.
+	 * The column <code>dstack.image_storage_pool_map.kind</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.Long> STORAGE_POOL_ID = createField("storage_pool_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
+
+	/**
+	 * The column <code>dstack.image_storage_pool_map.uuid</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
+
+	/**
+	 * The column <code>dstack.image_storage_pool_map.description</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
 	 * The column <code>dstack.image_storage_pool_map.state</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
-
-	/**
-	 * The column <code>dstack.image_storage_pool_map.uri</code>.
-	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.String> URI = createField("uri", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
 	 * The column <code>dstack.image_storage_pool_map.created</code>.
@@ -67,9 +72,19 @@ public class ImageStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github.
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.util.Date> REMOVE_TIME = createField("remove_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.image_storage_pool_map.remove_locked</code>.
+	 * The column <code>dstack.image_storage_pool_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.Boolean> REMOVE_LOCKED = createField("remove_locked", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.image_storage_pool_map.image_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.Long> IMAGE_ID = createField("image_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.image_storage_pool_map.storage_pool_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, java.lang.Long> STORAGE_POOL_ID = createField("storage_pool_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>dstack.image_storage_pool_map</code> table reference
@@ -114,7 +129,7 @@ public class ImageStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github.
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_IMAGE_STORAGE_POOL_MAP_PRIMARY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_IMAGE_STORAGE_POOL_MAP_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_IMAGE_STORAGE_POOL_MAP_IDX_IMAGE_STORAGE_POOL_MAP_UUID);
 	}
 
 	/**
@@ -122,7 +137,7 @@ public class ImageStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github.
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.IMAGE_STORAGE_POOL_MAP_IBFK_1, io.github.ibuildthecloud.dstack.core.model.Keys.FK_TEMPLATE_STORAGE_POOL_MAP_STORAGE_POOL_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageStoragePoolMapRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_IMAGE_STORAGE_POOL_MAP__IMAGE_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_IMAGE_STORAGE_POOL_MAP__STORAGE_POOL_ID);
 	}
 
 	/**

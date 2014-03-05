@@ -26,17 +26,6 @@ public interface StoragePool extends java.io.Serializable {
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.storage_pool.uuid</code>.
-	 */
-	public void setUuid(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.storage_pool.uuid</code>.
-	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 255)
-	public java.lang.String getUuid();
-
-	/**
 	 * Setter for <code>dstack.storage_pool.name</code>.
 	 */
 	public void setName(java.lang.String value);
@@ -48,15 +37,15 @@ public interface StoragePool extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.storage_pool.description</code>.
+	 * Setter for <code>dstack.storage_pool.account_id</code>.
 	 */
-	public void setDescription(java.lang.String value);
+	public void setAccountId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool.description</code>.
+	 * Getter for <code>dstack.storage_pool.account_id</code>.
 	 */
-	@javax.persistence.Column(name = "description", length = 1024)
-	public java.lang.String getDescription();
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
 
 	/**
 	 * Setter for <code>dstack.storage_pool.kind</code>.
@@ -70,6 +59,28 @@ public interface StoragePool extends java.io.Serializable {
 	public java.lang.String getKind();
 
 	/**
+	 * Setter for <code>dstack.storage_pool.uuid</code>.
+	 */
+	public void setUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool.uuid</code>.
+	 */
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
+
+	/**
+	 * Setter for <code>dstack.storage_pool.description</code>.
+	 */
+	public void setDescription(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool.description</code>.
+	 */
+	@javax.persistence.Column(name = "description", length = 1024)
+	public java.lang.String getDescription();
+
+	/**
 	 * Setter for <code>dstack.storage_pool.state</code>.
 	 */
 	public void setState(java.lang.String value);
@@ -77,41 +88,8 @@ public interface StoragePool extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.storage_pool.state</code>.
 	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	public java.lang.String getState();
-
-	/**
-	 * Setter for <code>dstack.storage_pool.physical_total_bytes</code>.
-	 */
-	public void setPhysicalTotalBytes(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.storage_pool.physical_total_bytes</code>.
-	 */
-	@javax.persistence.Column(name = "physical_total_bytes", precision = 19)
-	public java.lang.Long getPhysicalTotalBytes();
-
-	/**
-	 * Setter for <code>dstack.storage_pool.physical_used_bytes</code>.
-	 */
-	public void setPhysicalUsedBytes(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.storage_pool.physical_used_bytes</code>.
-	 */
-	@javax.persistence.Column(name = "physical_used_bytes", precision = 19)
-	public java.lang.Long getPhysicalUsedBytes();
-
-	/**
-	 * Setter for <code>dstack.storage_pool.virtual_total_bytes</code>.
-	 */
-	public void setVirtualTotalBytes(java.lang.Long value);
-
-	/**
-	 * Getter for <code>dstack.storage_pool.virtual_total_bytes</code>.
-	 */
-	@javax.persistence.Column(name = "virtual_total_bytes", precision = 19)
-	public java.lang.Long getVirtualTotalBytes();
 
 	/**
 	 * Setter for <code>dstack.storage_pool.created</code>.
@@ -121,7 +99,7 @@ public interface StoragePool extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.storage_pool.created</code>.
 	 */
-	@javax.persistence.Column(name = "created", nullable = false)
+	@javax.persistence.Column(name = "created")
 	public java.util.Date getCreated();
 
 	/**
@@ -136,15 +114,48 @@ public interface StoragePool extends java.io.Serializable {
 	public java.util.Date getRemoved();
 
 	/**
-	 * Setter for <code>dstack.storage_pool.agent_id</code>.
+	 * Setter for <code>dstack.storage_pool.remove_time</code>.
 	 */
-	public void setAgentId(java.lang.Long value);
+	public void setRemoveTime(java.util.Date value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool.agent_id</code>.
+	 * Getter for <code>dstack.storage_pool.remove_time</code>.
 	 */
-	@javax.persistence.Column(name = "agent_id", precision = 19)
-	public java.lang.Long getAgentId();
+	@javax.persistence.Column(name = "remove_time")
+	public java.util.Date getRemoveTime();
+
+	/**
+	 * Setter for <code>dstack.storage_pool.data</code>.
+	 */
+	public void setData(java.util.Map<String,Object> value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool.data</code>.
+	 */
+	@javax.persistence.Column(name = "data", length = 16777215)
+	public java.util.Map<String,Object> getData();
+
+	/**
+	 * Setter for <code>dstack.storage_pool.physical_total_size_megabytes</code>.
+	 */
+	public void setPhysicalTotalSizeMegabytes(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool.physical_total_size_megabytes</code>.
+	 */
+	@javax.persistence.Column(name = "physical_total_size_megabytes", precision = 19)
+	public java.lang.Long getPhysicalTotalSizeMegabytes();
+
+	/**
+	 * Setter for <code>dstack.storage_pool.virtual_total_size_megabytes</code>.
+	 */
+	public void setVirtualTotalSizeMegabytes(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool.virtual_total_size_megabytes</code>.
+	 */
+	@javax.persistence.Column(name = "virtual_total_size_megabytes", precision = 19)
+	public java.lang.Long getVirtualTotalSizeMegabytes();
 
 	/**
 	 * Setter for <code>dstack.storage_pool.external</code>.
@@ -156,6 +167,28 @@ public interface StoragePool extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "external", nullable = false, precision = 1)
 	public java.lang.Boolean getExternal();
+
+	/**
+	 * Setter for <code>dstack.storage_pool.agent_id</code>.
+	 */
+	public void setAgentId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool.agent_id</code>.
+	 */
+	@javax.persistence.Column(name = "agent_id", precision = 19)
+	public java.lang.Long getAgentId();
+
+	/**
+	 * Setter for <code>dstack.storage_pool.zone_id</code>.
+	 */
+	public void setZoneId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.storage_pool.zone_id</code>.
+	 */
+	@javax.persistence.Column(name = "zone_id", precision = 19)
+	public java.lang.Long getZoneId();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

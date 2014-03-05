@@ -1,6 +1,3 @@
-[submodule "deps/jooq"]
-	path = deps/jooq
-	url = https://github.com/ibuildthecloud/jOOQ.git
 [submodule "deps/gdapi-java-server"]
 	path = deps/gdapi-java-server
 	url = https://github.com/ibuildthecloud/gdapi-java-server.git

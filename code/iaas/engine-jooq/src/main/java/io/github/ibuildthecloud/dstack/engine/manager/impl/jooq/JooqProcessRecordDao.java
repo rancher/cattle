@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.engine.manager.impl.jooq;
 
+import static io.github.ibuildthecloud.dstack.core.model.tables.ProcessExecutionTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.*;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord;
@@ -69,10 +70,10 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         create()
             .select(PROCESS_INSTANCE.ID,
                     PROCESS_INSTANCE.RESOURCE_TYPE,
-                    PROCESS_INSTANCE.RESOURCE_TYPE)
+                    PROCESS_INSTANCE.RESOURCE_ID)
                 .from(PROCESS_INSTANCE)
             .where(processCondition(resourceType, resourceId))
-            .orderBy(PROCESS_INSTANCE.ID.asc())
+            .orderBy(PROCESS_INSTANCE.PRIORITY.desc(), PROCESS_INSTANCE.ID.asc())
             .limit(PROCESS_REPLAY_BATCH.get())
             .fetchInto(new RecordHandler<Record3<Long,String,String>>() {
                 @Override
@@ -116,7 +117,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         result.setId(record.getId());
         result.setStartTime(toTimestamp(record.getStartTime()));
         result.setEndTime(toTimestamp(record.getEndTime()));
-        result.setProcessLog(convertToType(record.getLog(), ProcessLog.class));
+        result.setProcessLog(new ProcessLog());
         result.setResult(EnumUtils.getEnum(ProcessResult.class, record.getResult()));
         result.setExitReason(EnumUtils.getEnum(ExitReason.class, record.getExitReason()));
         result.setPhase(EnumUtils.getEnum(ProcessPhase.class, record.getPhase()));
@@ -141,7 +142,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     }
 
     @Override
-    public void update(ProcessRecord record) {
+    public void update(ProcessRecord record, boolean schedule) {
         ProcessInstanceRecord pi =
                 create().selectFrom(PROCESS_INSTANCE)
                         .where(PROCESS_INSTANCE.ID.eq(record.getId()))
@@ -154,12 +155,42 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         merge(pi, record);
 
         pi.update();
+
+        /* TODO: This is really a hack.  For some reason if you persist the
+         * process execution in schedule, the API thread will deadlock with a
+         * process server thread in H2.
+         *
+         * Need to retest removing this.  This may have been fixed by some changes
+         * in the queries in the process server.
+         */
+        if ( schedule ) {
+            return;
+        }
+
+        ProcessLog processLog = record.getProcessLog();
+
+        if ( record.getId() != null && processLog != null && processLog.getUuid() != null ) {
+            String uuid = processLog.getUuid();
+            Map<String,Object> log = convertToMap(record, processLog);
+
+            int result = create()
+                    .update(PROCESS_EXECUTION)
+                    .set(PROCESS_EXECUTION.LOG, log)
+                    .where(PROCESS_EXECUTION.UUID.eq(uuid))
+                    .execute();
+
+            if ( result == 0 ) {
+                create()
+                    .insertInto(PROCESS_EXECUTION, PROCESS_EXECUTION.PROCESS_INSTANCE_ID, PROCESS_EXECUTION.UUID, PROCESS_EXECUTION.LOG)
+                    .values(record.getId(), uuid, log)
+                    .execute();
+            }
+        }
     }
 
     protected void merge(ProcessInstanceRecord pi, ProcessRecord record) {
         pi.setStartTime(toTimestamp(record.getStartTime()));
         pi.setEndTime(toTimestamp(record.getEndTime()));
-        pi.setLog(convertToMap(record, record.getProcessLog()));
         pi.setResult(ObjectUtils.toString(record.getResult(), null));
         pi.setExitReason(ObjectUtils.toString(record.getExitReason(), null));
         pi.setPhase(ObjectUtils.toString(record.getPhase(), null));
@@ -170,6 +201,9 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         pi.setResourceId(record.getResourceId());
         pi.setProcessName(record.getProcessName());
         pi.setData(record.getData());
+
+        int priority = ArchaiusUtil.getInt("process." + record.getProcessName() + ".priority").get();
+        pi.setPriority(priority);
     }
 
     protected Timestamp toTimestamp(Date date) {
@@ -188,7 +222,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         try {
             String stringData = jsonMapper.writeValueAsString(obj);
             if ( stringData.length() > 1000000 ) {
-                log.error("Process log is too long for id [{}] truncating executions : {}", record.getId(), null);
+                log.error("Process log is too long for id [{}] truncating executions : {}", record.getId(), stringData);
                 obj.getExecutions().clear();
             }
         } catch (IOException e) {

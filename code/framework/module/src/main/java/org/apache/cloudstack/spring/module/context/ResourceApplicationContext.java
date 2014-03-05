@@ -21,10 +21,6 @@ package org.apache.cloudstack.spring.module.context;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.xml.ResourceEntityResolver;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.Resource;
 
@@ -41,23 +37,23 @@ public class ResourceApplicationContext extends ClassPathXmlApplicationContext {
         this.configResources = configResources;
     }
 
-    @Override
-    protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
-        // Create a new XmlBeanDefinitionReader for the given BeanFactory.
-        XmlBeanDefinitionReader beanDefinitionReader = new TimedXmlBeanDefinitionReader(beanFactory);
-
-        // Configure the bean definition reader with this context's
-        // resource loading environment.
-        beanDefinitionReader.setEnvironment(this.getEnvironment());
-        beanDefinitionReader.setResourceLoader(this);
-        beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
-        beanDefinitionReader.setDocumentLoader(new TimedDocumentLoader());
-
-        // Allow a subclass to provide custom initialization of the reader,
-        // then proceed with actually loading the bean definitions.
-        initBeanDefinitionReader(beanDefinitionReader);
-        loadBeanDefinitions(beanDefinitionReader);
-    }
+//    @Override
+//    protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
+//        // Create a new XmlBeanDefinitionReader for the given BeanFactory.
+//        XmlBeanDefinitionReader beanDefinitionReader = new TimedXmlBeanDefinitionReader(beanFactory);
+//
+//        // Configure the bean definition reader with this context's
+//        // resource loading environment.
+//        beanDefinitionReader.setEnvironment(this.getEnvironment());
+//        beanDefinitionReader.setResourceLoader(this);
+//        beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
+//        beanDefinitionReader.setDocumentLoader(new TimedDocumentLoader());
+//
+//        // Allow a subclass to provide custom initialization of the reader,
+//        // then proceed with actually loading the bean definitions.
+//        initBeanDefinitionReader(beanDefinitionReader);
+//        loadBeanDefinitions(beanDefinitionReader);
+//    }
 
     @Override
     protected Resource[] getConfigResources() {

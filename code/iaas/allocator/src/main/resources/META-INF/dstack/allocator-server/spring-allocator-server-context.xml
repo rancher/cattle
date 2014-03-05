@@ -19,10 +19,15 @@
     <bean class="io.github.ibuildthecloud.dstack.allocator.dao.impl.AllocatorDaoImpl" />
 
     <extension:discover class="io.github.ibuildthecloud.dstack.allocator.service.Allocator" />
+    <extension:discover class="io.github.ibuildthecloud.dstack.allocator.constraint.AllocationConstraintsProvider" />
+
+    <bean class="io.github.ibuildthecloud.dstack.allocator.constraint.ComputeConstraintProvider" />
+    <bean class="io.github.ibuildthecloud.dstack.allocator.constraint.BaseConstraintsProvider" />
 
     <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="recordCandidate" isolation="READ_COMMITTED" />
+            <tx:method name="releaseAllocation" isolation="READ_COMMITTED" />
         </tx:attributes>
     </tx:advice>
 

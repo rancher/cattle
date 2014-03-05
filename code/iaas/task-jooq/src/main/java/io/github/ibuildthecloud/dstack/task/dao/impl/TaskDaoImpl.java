@@ -7,6 +7,7 @@ import io.github.ibuildthecloud.dstack.core.model.Task;
 import io.github.ibuildthecloud.dstack.core.model.tables.records.TaskInstanceRecord;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
 import io.github.ibuildthecloud.dstack.server.context.ServerContext;
+import io.github.ibuildthecloud.dstack.task.TaskOptions;
 import io.github.ibuildthecloud.dstack.task.dao.TaskDao;
 import io.github.ibuildthecloud.dstack.util.exception.ExceptionUtils;
 
@@ -54,7 +55,12 @@ public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
     }
 
     @Override
-    public Object newRecord(String name) {
+    public Object newRecord(io.github.ibuildthecloud.dstack.task.Task taskObj) {
+        if ( taskObj instanceof TaskOptions && ! ((TaskOptions)taskObj).isShouldRecord() ) {
+            return null;
+        }
+
+        String name = taskObj.getName();
         Task task = getTask(name);
         if ( task == null ) {
             throw new IllegalStateException("Unknown task [" + name + "]");
@@ -73,6 +79,10 @@ public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
 
     @Override
     public void finish(Object record) {
+        if ( record == null ) {
+            return;
+        }
+
         TaskInstanceRecord task = (TaskInstanceRecord)record;
         task.setEndTime(new Timestamp(System.currentTimeMillis()));
         task.update();
@@ -80,6 +90,10 @@ public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
 
     @Override
     public void failed(Object record, Throwable t) {
+        if ( record == null ) {
+            return;
+        }
+
         TaskInstanceRecord task = (TaskInstanceRecord)record;
         task.setEndTime(new Timestamp(System.currentTimeMillis()));
         String exception = ExceptionUtils.toString(t);

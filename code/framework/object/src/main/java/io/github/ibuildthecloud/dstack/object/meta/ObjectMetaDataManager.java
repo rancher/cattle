@@ -18,13 +18,16 @@ public interface ObjectMetaDataManager {
     public static final String TRANSITIONING_MESSAGE_FIELD = "transitioningMessage";
     public static final String TRANSITIONING_MESSAGE_DEFAULT_FIELD = "In Progress";
 
-    public static final String KIND_FIELD = "kind";
     public static final String STATE_FIELD = "state";
+
     public static final String ACCOUNT_FIELD = "accountId";
-    public static final String PUBLIC_FIELD = "isPublic";
+    public static final String KIND_FIELD = "kind";
     public static final String ID_FIELD = TypeUtils.ID_FIELD;
+    public static final String PUBLIC_FIELD = "isPublic";
     public static final String REMOVED_FIELD = "removed";
     public static final String REMOVE_TIME_FIELD = "removeTime";
+    public static final String TYPE_FIELD = "type";
+    public static final String UUID_FIELD = "uuid";
 
     String convertToPropertyNameString(Class<?> recordClass, Object key);
 

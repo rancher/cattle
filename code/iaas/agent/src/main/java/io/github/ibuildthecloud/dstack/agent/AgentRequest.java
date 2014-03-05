@@ -10,12 +10,17 @@ public class AgentRequest extends EventVO<Event> {
     public AgentRequest() {
     }
 
-    public AgentRequest(Long agentId, Event event) {
+    public AgentRequest(Long agentId, Long groupId, Event event) {
         if ( agentId == null ) {
             throw new IllegalArgumentException("Agent id is null");
         }
 
-        setName(IaasEvents.AGENT_REQUEST);
+        if ( groupId == null ) {
+            setName(IaasEvents.AGENT_REQUEST);
+        } else {
+            setName(IaasEvents.appendAgentGroup(IaasEvents.AGENT_REQUEST, groupId));
+        }
+
         setResourceId(agentId.toString());
         setResourceType(TypeConstants.AGENT);
         setData(event);

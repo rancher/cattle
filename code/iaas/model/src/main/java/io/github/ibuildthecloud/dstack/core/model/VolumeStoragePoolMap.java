@@ -26,37 +26,48 @@ public interface VolumeStoragePoolMap extends java.io.Serializable {
 	public java.lang.Long getId();
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.volume_id</code>.
+	 * Setter for <code>dstack.volume_storage_pool_map.name</code>.
 	 */
-	public void setVolumeId(java.lang.Long value);
+	public void setName(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.volume_id</code>.
+	 * Getter for <code>dstack.volume_storage_pool_map.name</code>.
 	 */
-	@javax.persistence.Column(name = "volume_id", nullable = false, precision = 19)
-	public java.lang.Long getVolumeId();
+	@javax.persistence.Column(name = "name", length = 255)
+	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
+	 * Setter for <code>dstack.volume_storage_pool_map.kind</code>.
 	 */
-	public void setStoragePoolId(java.lang.Long value);
+	public void setKind(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
+	 * Getter for <code>dstack.volume_storage_pool_map.kind</code>.
 	 */
-	@javax.persistence.Column(name = "storage_pool_id", nullable = false, precision = 19)
-	public java.lang.Long getStoragePoolId();
+	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
+	public java.lang.String getKind();
 
 	/**
-	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>.
+	 * Setter for <code>dstack.volume_storage_pool_map.uuid</code>.
 	 */
-	public void setStoragePoolLocation(java.lang.Long value);
+	public void setUuid(java.lang.String value);
 
 	/**
-	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_location</code>.
+	 * Getter for <code>dstack.volume_storage_pool_map.uuid</code>.
 	 */
-	@javax.persistence.Column(name = "storage_pool_location", precision = 19)
-	public java.lang.Long getStoragePoolLocation();
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
+
+	/**
+	 * Setter for <code>dstack.volume_storage_pool_map.description</code>.
+	 */
+	public void setDescription(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.volume_storage_pool_map.description</code>.
+	 */
+	@javax.persistence.Column(name = "description", length = 1024)
+	public java.lang.String getDescription();
 
 	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.state</code>.
@@ -70,6 +81,17 @@ public interface VolumeStoragePoolMap extends java.io.Serializable {
 	public java.lang.String getState();
 
 	/**
+	 * Setter for <code>dstack.volume_storage_pool_map.created</code>.
+	 */
+	public void setCreated(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.volume_storage_pool_map.created</code>.
+	 */
+	@javax.persistence.Column(name = "created")
+	public java.util.Date getCreated();
+
+	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.removed</code>.
 	 */
 	public void setRemoved(java.util.Date value);
@@ -79,6 +101,50 @@ public interface VolumeStoragePoolMap extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "removed")
 	public java.util.Date getRemoved();
+
+	/**
+	 * Setter for <code>dstack.volume_storage_pool_map.remove_time</code>.
+	 */
+	public void setRemoveTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.volume_storage_pool_map.remove_time</code>.
+	 */
+	@javax.persistence.Column(name = "remove_time")
+	public java.util.Date getRemoveTime();
+
+	/**
+	 * Setter for <code>dstack.volume_storage_pool_map.data</code>.
+	 */
+	public void setData(java.util.Map<String,Object> value);
+
+	/**
+	 * Getter for <code>dstack.volume_storage_pool_map.data</code>.
+	 */
+	@javax.persistence.Column(name = "data", length = 16777215)
+	public java.util.Map<String,Object> getData();
+
+	/**
+	 * Setter for <code>dstack.volume_storage_pool_map.volume_id</code>.
+	 */
+	public void setVolumeId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.volume_storage_pool_map.volume_id</code>.
+	 */
+	@javax.persistence.Column(name = "volume_id", precision = 19)
+	public java.lang.Long getVolumeId();
+
+	/**
+	 * Setter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
+	 */
+	public void setStoragePoolId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.volume_storage_pool_map.storage_pool_id</code>.
+	 */
+	@javax.persistence.Column(name = "storage_pool_id", precision = 19)
+	public java.lang.Long getStoragePoolId();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

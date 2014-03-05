@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "process_instance", schema = "dstack")
-public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.ProcessInstance {
+public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.ProcessInstance {
 
-	private static final long serialVersionUID = 1719293508;
+	private static final long serialVersionUID = 1896455329;
 
 	/**
 	 * Setter for <code>dstack.process_instance.id</code>.
@@ -27,7 +27,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * Getter for <code>dstack.process_instance.id</code>.
 	 */
 	@javax.persistence.Id
-	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 20)
+	@javax.persistence.Column(name = "id", unique = true, nullable = false, precision = 19)
 	@Override
 	public java.lang.Long getId() {
 		return (java.lang.Long) getValue(0);
@@ -68,28 +68,11 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	/**
-	 * Setter for <code>dstack.process_instance.log</code>.
-	 */
-	@Override
-	public void setLog(java.util.Map<String,Object> value) {
-		setValue(3, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.process_instance.log</code>.
-	 */
-	@javax.persistence.Column(name = "log", length = 16777215)
-	@Override
-	public java.util.Map<String,Object> getLog() {
-		return (java.util.Map<String,Object>) getValue(3);
-	}
-
-	/**
 	 * Setter for <code>dstack.process_instance.data</code>.
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
-		setValue(4, value);
+		setValue(3, value);
 	}
 
 	/**
@@ -98,7 +81,24 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
-		return (java.util.Map<String,Object>) getValue(4);
+		return (java.util.Map<String,Object>) getValue(3);
+	}
+
+	/**
+	 * Setter for <code>dstack.process_instance.priority</code>.
+	 */
+	@Override
+	public void setPriority(java.lang.Integer value) {
+		setValue(4, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.process_instance.priority</code>.
+	 */
+	@javax.persistence.Column(name = "priority", precision = 10)
+	@Override
+	public java.lang.Integer getPriority() {
+		return (java.lang.Integer) getValue(4);
 	}
 
 	/**
@@ -257,7 +257,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
+	public org.jooq.Row13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
 		return (org.jooq.Row13) super.fieldsRow();
 	}
 
@@ -265,7 +265,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
+	public org.jooq.Row13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
 		return (org.jooq.Row13) super.valuesRow();
 	}
 
@@ -298,15 +298,15 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 */
 	@Override
 	public org.jooq.Field<java.util.Map<String,Object>> field4() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.LOG;
+		return io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.DATA;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Map<String,Object>> field5() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.DATA;
+	public org.jooq.Field<java.lang.Integer> field5() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.PRIORITY;
 	}
 
 	/**
@@ -402,15 +402,15 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 */
 	@Override
 	public java.util.Map<String,Object> value4() {
-		return getLog();
+		return getData();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Map<String,Object> value5() {
-		return getData();
+	public java.lang.Integer value5() {
+		return getPriority();
 	}
 
 	/**
@@ -509,7 +509,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 */
 	@Override
 	public ProcessInstanceRecord value4(java.util.Map<String,Object> value) {
-		setLog(value);
+		setData(value);
 		return this;
 	}
 
@@ -517,8 +517,8 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProcessInstanceRecord value5(java.util.Map<String,Object> value) {
-		setData(value);
+	public ProcessInstanceRecord value5(java.lang.Integer value) {
+		setPriority(value);
 		return this;
 	}
 
@@ -598,7 +598,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProcessInstanceRecord values(java.lang.Long value1, java.util.Date value2, java.util.Date value3, java.util.Map<String,Object> value4, java.util.Map<String,Object> value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.String value9, java.lang.String value10, java.lang.String value11, java.lang.String value12, java.lang.String value13) {
+	public ProcessInstanceRecord values(java.lang.Long value1, java.util.Date value2, java.util.Date value3, java.util.Map<String,Object> value4, java.lang.Integer value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.String value9, java.lang.String value10, java.lang.String value11, java.lang.String value12, java.lang.String value13) {
 		return this;
 	}
 
@@ -614,8 +614,8 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 		setId(from.getId());
 		setStartTime(from.getStartTime());
 		setEndTime(from.getEndTime());
-		setLog(from.getLog());
 		setData(from.getData());
+		setPriority(from.getPriority());
 		setProcessName(from.getProcessName());
 		setResourceType(from.getResourceType());
 		setResourceId(from.getResourceId());
@@ -649,14 +649,14 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Create a detached, initialised ProcessInstanceRecord
 	 */
-	public ProcessInstanceRecord(java.lang.Long id, java.util.Date startTime, java.util.Date endTime, java.util.Map<String,Object> log, java.util.Map<String,Object> data, java.lang.String processName, java.lang.String resourceType, java.lang.String resourceId, java.lang.String result, java.lang.String exitReason, java.lang.String phase, java.lang.String startProcessServerId, java.lang.String runningProcessServerId) {
+	public ProcessInstanceRecord(java.lang.Long id, java.util.Date startTime, java.util.Date endTime, java.util.Map<String,Object> data, java.lang.Integer priority, java.lang.String processName, java.lang.String resourceType, java.lang.String resourceId, java.lang.String result, java.lang.String exitReason, java.lang.String phase, java.lang.String startProcessServerId, java.lang.String runningProcessServerId) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE);
 
 		setValue(0, id);
 		setValue(1, startTime);
 		setValue(2, endTime);
-		setValue(3, log);
-		setValue(4, data);
+		setValue(3, data);
+		setValue(4, priority);
 		setValue(5, processName);
 		setValue(6, resourceType);
 		setValue(7, resourceId);

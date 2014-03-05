@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "account", schema = "dstack")
-public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.AccountRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Account {
+public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.AccountRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record10<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.core.model.Account {
 
-	private static final long serialVersionUID = -1743709339;
+	private static final long serialVersionUID = 1804351763;
 
 	/**
 	 * Setter for <code>dstack.account.id</code>.
@@ -34,19 +34,19 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	}
 
 	/**
-	 * Setter for <code>dstack.account.uuid</code>.
+	 * Setter for <code>dstack.account.name</code>.
 	 */
 	@Override
-	public void setUuid(java.lang.String value) {
+	public void setName(java.lang.String value) {
 		setValue(1, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.account.uuid</code>.
+	 * Getter for <code>dstack.account.name</code>.
 	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@javax.persistence.Column(name = "name", length = 255)
 	@Override
-	public java.lang.String getUuid() {
+	public java.lang.String getName() {
 		return (java.lang.String) getValue(1);
 	}
 
@@ -68,20 +68,37 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	}
 
 	/**
-	 * Setter for <code>dstack.account.name</code>.
+	 * Setter for <code>dstack.account.uuid</code>.
 	 */
 	@Override
-	public void setName(java.lang.String value) {
+	public void setUuid(java.lang.String value) {
 		setValue(3, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.account.name</code>.
+	 * Getter for <code>dstack.account.uuid</code>.
 	 */
-	@javax.persistence.Column(name = "name", length = 255)
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
 	@Override
-	public java.lang.String getName() {
+	public java.lang.String getUuid() {
 		return (java.lang.String) getValue(3);
+	}
+
+	/**
+	 * Setter for <code>dstack.account.description</code>.
+	 */
+	@Override
+	public void setDescription(java.lang.String value) {
+		setValue(4, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.account.description</code>.
+	 */
+	@javax.persistence.Column(name = "description", length = 1024)
+	@Override
+	public java.lang.String getDescription() {
+		return (java.lang.String) getValue(4);
 	}
 
 	/**
@@ -89,33 +106,16 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public void setState(java.lang.String value) {
-		setValue(4, value);
+		setValue(5, value);
 	}
 
 	/**
 	 * Getter for <code>dstack.account.state</code>.
 	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	@Override
 	public java.lang.String getState() {
-		return (java.lang.String) getValue(4);
-	}
-
-	/**
-	 * Setter for <code>dstack.account.hold_data</code>.
-	 */
-	@Override
-	public void setHoldData(java.lang.Boolean value) {
-		setValue(5, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.account.hold_data</code>.
-	 */
-	@javax.persistence.Column(name = "hold_data", nullable = false, precision = 1)
-	@Override
-	public java.lang.Boolean getHoldData() {
-		return (java.lang.Boolean) getValue(5);
+		return (java.lang.String) getValue(5);
 	}
 
 	/**
@@ -186,23 +186,6 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 		return (java.util.Map<String,Object>) getValue(9);
 	}
 
-	/**
-	 * Setter for <code>dstack.account.description</code>.
-	 */
-	@Override
-	public void setDescription(java.lang.String value) {
-		setValue(10, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.account.description</code>.
-	 */
-	@javax.persistence.Column(name = "description", length = 255)
-	@Override
-	public java.lang.String getDescription() {
-		return (java.lang.String) getValue(10);
-	}
-
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -216,23 +199,23 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	}
 
 	// -------------------------------------------------------------------------
-	// Record11 type implementation
+	// Record10 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String> fieldsRow() {
-		return (org.jooq.Row11) super.fieldsRow();
+	public org.jooq.Row10<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>> fieldsRow() {
+		return (org.jooq.Row10) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String> valuesRow() {
-		return (org.jooq.Row11) super.valuesRow();
+	public org.jooq.Row10<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>> valuesRow() {
+		return (org.jooq.Row10) super.valuesRow();
 	}
 
 	/**
@@ -248,7 +231,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT.UUID;
+		return io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT.NAME;
 	}
 
 	/**
@@ -264,7 +247,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT.NAME;
+		return io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT.UUID;
 	}
 
 	/**
@@ -272,15 +255,15 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field5() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT.STATE;
+		return io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT.DESCRIPTION;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Boolean> field6() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT.HOLD_DATA;
+	public org.jooq.Field<java.lang.String> field6() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT.STATE;
 	}
 
 	/**
@@ -319,14 +302,6 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field11() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT.DESCRIPTION;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -336,7 +311,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public java.lang.String value2() {
-		return getUuid();
+		return getName();
 	}
 
 	/**
@@ -352,7 +327,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public java.lang.String value4() {
-		return getName();
+		return getUuid();
 	}
 
 	/**
@@ -360,15 +335,15 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public java.lang.String value5() {
-		return getState();
+		return getDescription();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Boolean value6() {
-		return getHoldData();
+	public java.lang.String value6() {
+		return getState();
 	}
 
 	/**
@@ -407,14 +382,6 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value11() {
-		return getDescription();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public AccountRecord value1(java.lang.Long value) {
 		setId(value);
 		return this;
@@ -425,7 +392,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public AccountRecord value2(java.lang.String value) {
-		setUuid(value);
+		setName(value);
 		return this;
 	}
 
@@ -443,7 +410,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public AccountRecord value4(java.lang.String value) {
-		setName(value);
+		setUuid(value);
 		return this;
 	}
 
@@ -452,7 +419,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 */
 	@Override
 	public AccountRecord value5(java.lang.String value) {
-		setState(value);
+		setDescription(value);
 		return this;
 	}
 
@@ -460,8 +427,8 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public AccountRecord value6(java.lang.Boolean value) {
-		setHoldData(value);
+	public AccountRecord value6(java.lang.String value) {
+		setState(value);
 		return this;
 	}
 
@@ -505,16 +472,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public AccountRecord value11(java.lang.String value) {
-		setDescription(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public AccountRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.Boolean value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.String value11) {
+	public AccountRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10) {
 		return this;
 	}
 
@@ -528,16 +486,15 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	@Override
 	public void from(io.github.ibuildthecloud.dstack.core.model.Account from) {
 		setId(from.getId());
-		setUuid(from.getUuid());
-		setKind(from.getKind());
 		setName(from.getName());
+		setKind(from.getKind());
+		setUuid(from.getUuid());
+		setDescription(from.getDescription());
 		setState(from.getState());
-		setHoldData(from.getHoldData());
 		setCreated(from.getCreated());
 		setRemoved(from.getRemoved());
 		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
-		setDescription(from.getDescription());
 	}
 
 	/**
@@ -563,19 +520,18 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.i
 	/**
 	 * Create a detached, initialised AccountRecord
 	 */
-	public AccountRecord(java.lang.Long id, java.lang.String uuid, java.lang.String kind, java.lang.String name, java.lang.String state, java.lang.Boolean holdData, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String description) {
+	public AccountRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.AccountTable.ACCOUNT);
 
 		setValue(0, id);
-		setValue(1, uuid);
+		setValue(1, name);
 		setValue(2, kind);
-		setValue(3, name);
-		setValue(4, state);
-		setValue(5, holdData);
+		setValue(3, uuid);
+		setValue(4, description);
+		setValue(5, state);
 		setValue(6, created);
 		setValue(7, removed);
 		setValue(8, removeTime);
 		setValue(9, data);
-		setValue(10, description);
 	}
 }

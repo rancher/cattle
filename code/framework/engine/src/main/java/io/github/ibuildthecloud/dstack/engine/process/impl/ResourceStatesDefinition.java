@@ -96,6 +96,10 @@ public class ResourceStatesDefinition {
         return startStates.contains(currentState);
     }
 
+    public boolean isStartAndDone(String currentState) {
+        return isStart(currentState) && isDone(currentState);
+    }
+
     public boolean isValidState(String currentState) {
         boolean result = isStart(currentState) || isTransitioning(currentState) || isDone(currentState);
         if ( ! result ) {

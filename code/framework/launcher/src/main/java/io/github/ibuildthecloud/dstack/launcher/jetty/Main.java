@@ -2,34 +2,62 @@ package io.github.ibuildthecloud.dstack.launcher.jetty;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.TimeZone;
 
+import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class Main {
 
-	public static final String WEB_XML = "/WEB-INF/web.xml";
+	public static final String WEB_XML = "WEB-INF/web.xml";
+	public static final String OVERRIDE_WEB_XML = "WEB-INF/override-web.xml";
+	public static final String STATIC_WEB_XML = "WEB-INF/static-override-web.xml";
+	public static final String DEFAULT_WEB_XML = "WEB-INF/default-web.xml";
 
-	public static final String[] WEB_XML_PATHS = new String[] {
-			"app/src/main/webapp/WEB-INF/web.xml",
-			"src/main/webapp/WEB-INF/web.xml",
-			"WEB-INF/web.xml" };
+//	private static final Logger log = LoggerFactory.getLogger(Main.class);
+	private static final Logger consoleLog = LoggerFactory.getLogger("ConsoleStatus");
 
-	protected static File getWebXml() {
-		for (String webXmlPath : WEB_XML_PATHS) {
-			File webXml = new File(webXmlPath);
+	public static final String[] PREFIXES = new String[] {
+			"code/packaging/app/src/main/webapp/",
+			"src/main/webapp/",
+			"" };
 
-			if (webXml.exists())
-				return new File(webXml.getAbsolutePath());
-		}
+	protected static URL findUrl(String suffix) throws IOException {
+	    File file = findFile(suffix);
+	    if ( file != null ) {
+	        return file.toURI().toURL();
+	    }
 
-		return null;
+	    return Main.class.getResource("/" + suffix);
+	}
+
+	protected static File findFile(String suffix) {
+        for ( String prefix : PREFIXES ) {
+            File file = new File(prefix + suffix);
+
+            if (file.exists())
+                return new File(file.getAbsolutePath());
+        }
+
+        URL url = Main.class.getResource("/" + suffix);
+        if ( url != null && "file".equals(url.getProtocol()) ) {
+            return new File(url.getPath());
+        }
+
+        return null;
 	}
 
 	protected static URL getContextRoot(URL webXml) throws IOException {
@@ -43,6 +71,11 @@ public class Main {
         return Main.class.getResource("");
 	}
 
+	protected static String getHttpPort() {
+	    String port = System.getenv("DSTACK_HTTP_PORT");
+	    return port == null ? System.getProperty("dstack.http.port","8080") : port;
+	}
+
 	public static void main(String... args) {
 		/* The world is better place without time zones.  Well, at least for computers */
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
@@ -50,20 +83,37 @@ public class Main {
 		long start = System.currentTimeMillis();
 
 		try {
-			Server s = new Server(Integer.parseInt(System.getProperty("dstack.http.port","8080")));
+			Server s = new Server(Integer.parseInt(getHttpPort()));
+			MBeanContainer mbContainer=new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+			s.getContainer().addEventListener(mbContainer);
+			s.addBean(mbContainer);
+			mbContainer.addBean(Log.getRootLogger());
 
 			WebAppContext context = new WebAppContext();
 			context.setThrowUnavailableOnStartupException(true);
 
-			File webXmlFile = getWebXml();
+			File webXmlFile = findFile(WEB_XML);
 
-			URL webXml = webXmlFile == null ? Main.class.getResource(WEB_XML) : webXmlFile.toURI().toURL();
+			URL webXml = findUrl(WEB_XML);
 			URL contextRoot = webXmlFile == null ? getContextRoot(webXml) :
 				webXmlFile.getParentFile().getParentFile().toURI().toURL();
 
-			if ( webXml != null ) {
-				context.setDescriptor(webXml.toExternalForm());
+			URL override = findUrl(OVERRIDE_WEB_XML);
+			if ( override != null ) {
+			    context.setOverrideDescriptors(Arrays.asList(override.toExternalForm()));
 			}
+
+            URL defaultWebXml = findUrl(DEFAULT_WEB_XML);
+            if ( defaultWebXml != null ) {
+                context.setDefaultsDescriptor(defaultWebXml.toExternalForm());
+            }
+
+            URL staticOverideXml = findUrl(STATIC_WEB_XML);
+            if ( staticOverideXml != null && new File("./content").exists() ) {
+                List<String> overrides = new ArrayList<String>(context.getOverrideDescriptors());
+                overrides.add(staticOverideXml.toExternalForm());
+                context.setOverrideDescriptors(overrides);
+            }
 
 			if ( contextRoot != null ) {
 				context.setWar(contextRoot.toExternalForm());
@@ -75,9 +125,21 @@ public class Main {
 			s.setHandler(context);
 
 			s.start();
+
+			consoleLog.info("[DONE ] [{}ms] Startup Succeeded, Listening on port {}",
+			        (System.currentTimeMillis() - start),
+			        getHttpPort());
+
+			for ( String arg : args ) {
+			    if ( "--exit".equals(arg) ) {
+			        System.exit(0);
+			    }
+			}
+
 			s.join();
 		} catch (Exception e) {
 			e.printStackTrace();
+			consoleLog.error("Startup Failed [{}ms]", (System.currentTimeMillis() - start), e);
 			System.err.println("STARTUP FAILED [" + (System.currentTimeMillis() - start) + "] ms");
 			System.exit(1);
 		}

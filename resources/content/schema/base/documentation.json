@@ -1,0 +1,27 @@
+[
+    {
+        "id" : "container",
+        "description" : "Container is abstraction of a docker container or similar technology",
+        "resourceFields" : {
+            "imageUuid" : {
+                "description" : "If you are deploying a docker image enter a imageUuid in the format docker:<name>",
+                "placeholder" : "e.g. docker:stackbrew/ubuntu:13.04"
+            },
+            "system" : {
+                "description" : "Similar to the command field except that the string will be parsed similar to how the shell would parse it"
+            },
+            "command" : {
+                "description" : "The command in an array form"
+            }
+        }
+    },
+    {
+        "id" : "credential",
+        "description" : "Represents a credential like an API key or username/password pair",
+        "resourceFields" : {
+            "kind" : {
+                "description" : "Enter kind=apiKey if you want an API key to be auto generated"
+            }
+        }
+    }
+]

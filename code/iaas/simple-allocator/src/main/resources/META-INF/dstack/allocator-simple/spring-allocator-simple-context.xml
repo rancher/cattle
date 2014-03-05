@@ -10,4 +10,8 @@
 
     <bean class="io.github.ibuildthecloud.dstack.simple.allocator.dao.impl.SimpleAllocatorDaoImpl" />
 
+    <bean class="io.github.ibuildthecloud.dstack.simple.allocator.SimpleAllocator" >
+        <property name="allocationConstraintProviders" value="#{extensionManager.list('allocation.constraints.provider')}" />
+    </bean>
+
 </beans>

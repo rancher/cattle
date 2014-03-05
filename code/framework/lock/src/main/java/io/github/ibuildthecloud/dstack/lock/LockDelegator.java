@@ -8,5 +8,6 @@ public interface LockDelegator {
 
     boolean unlock(LockDefinition lockDef);
 
+    boolean isLocked(LockDefinition lockDef);
 
 }

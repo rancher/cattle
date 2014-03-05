@@ -16,7 +16,7 @@ public abstract class AbstractResourceRootConfigItem extends AbstractConfigItem 
     public String getSourceRevision() {
         return resourceRoot.getSourceRevision();
     }
-    
+
     public ResourceRoot getResourceRoot() {
         return resourceRoot;
     }

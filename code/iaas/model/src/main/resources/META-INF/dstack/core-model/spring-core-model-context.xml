@@ -20,6 +20,7 @@
         <property name="typeNames">
             <set>
                 <value>container,parent=instance</value>
+                <value>instanceStop</value>
             </set>
         </property>
     </bean>

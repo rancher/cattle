@@ -2,20 +2,19 @@ package io.github.ibuildthecloud.dstack.eventing.annotation;
 
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
+import io.github.ibuildthecloud.dstack.eventing.util.EventUtils;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
-import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-
-import org.apache.commons.lang.StringUtils;
 
 public class AnnotatedListenerRegistration implements InitializationTask {
 
@@ -40,12 +39,22 @@ public class AnnotatedListenerRegistration implements InitializationTask {
         }
     }
 
-    protected String getEventName(EventHandler handler, Method method) {
-        String name = handler.name();
-        if ( StringUtils.isEmpty(name) ) {
-            return NamedUtils.toDotSeparated(method.getName());
+    protected List<String> getEventNames(EventHandler handler, AnnotatedEventListener listener, Method method) {
+        Class<? extends EventNameProvider> supplierClass = handler.nameProvider();
+
+        if ( supplierClass == EventNameProvider.class ) {
+            return Arrays.asList(EventUtils.getEventNameNonProvided(handler, listener, method));
         } else {
-            return name;
+            EventNameProvider supplier = null;
+            try {
+                supplier = supplierClass.newInstance();
+            } catch (InstantiationException e) {
+                throw new IllegalArgumentException("Failed to instantiate [" + supplierClass + "]", e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException("Failed to instantiate [" + supplierClass + "]", e);
+            }
+
+            return supplier.events(handler, listener, method);
         }
     }
 
@@ -59,8 +68,9 @@ public class AnnotatedListenerRegistration implements InitializationTask {
                     continue;
                 }
 
-                String eventName = getEventName(h, m);
-                result.put(eventName, new MethodInvokingListener(lockManager, jsonMapper, h, m, listener));
+                for ( String eventName : getEventNames(h, listener, m) ) {
+                    result.put(eventName, new MethodInvokingListener(lockManager, jsonMapper, h, m, listener));
+                }
             }
         }
 

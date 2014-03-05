@@ -37,6 +37,17 @@ public interface Offering extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
+	 * Setter for <code>dstack.offering.account_id</code>.
+	 */
+	public void setAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.offering.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
+
+	/**
 	 * Setter for <code>dstack.offering.kind</code>.
 	 */
 	public void setKind(java.lang.String value);
@@ -48,6 +59,39 @@ public interface Offering extends java.io.Serializable {
 	public java.lang.String getKind();
 
 	/**
+	 * Setter for <code>dstack.offering.uuid</code>.
+	 */
+	public void setUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.offering.uuid</code>.
+	 */
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	public java.lang.String getUuid();
+
+	/**
+	 * Setter for <code>dstack.offering.description</code>.
+	 */
+	public void setDescription(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.offering.description</code>.
+	 */
+	@javax.persistence.Column(name = "description", length = 1024)
+	public java.lang.String getDescription();
+
+	/**
+	 * Setter for <code>dstack.offering.state</code>.
+	 */
+	public void setState(java.lang.String value);
+
+	/**
+	 * Getter for <code>dstack.offering.state</code>.
+	 */
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
+	public java.lang.String getState();
+
+	/**
 	 * Setter for <code>dstack.offering.created</code>.
 	 */
 	public void setCreated(java.util.Date value);
@@ -55,7 +99,7 @@ public interface Offering extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.offering.created</code>.
 	 */
-	@javax.persistence.Column(name = "created", nullable = false)
+	@javax.persistence.Column(name = "created")
 	public java.util.Date getCreated();
 
 	/**
@@ -70,6 +114,28 @@ public interface Offering extends java.io.Serializable {
 	public java.util.Date getRemoved();
 
 	/**
+	 * Setter for <code>dstack.offering.remove_time</code>.
+	 */
+	public void setRemoveTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>dstack.offering.remove_time</code>.
+	 */
+	@javax.persistence.Column(name = "remove_time")
+	public java.util.Date getRemoveTime();
+
+	/**
+	 * Setter for <code>dstack.offering.data</code>.
+	 */
+	public void setData(java.util.Map<String,Object> value);
+
+	/**
+	 * Getter for <code>dstack.offering.data</code>.
+	 */
+	@javax.persistence.Column(name = "data", length = 16777215)
+	public java.util.Map<String,Object> getData();
+
+	/**
 	 * Setter for <code>dstack.offering.is_public</code>.
 	 */
 	public void setIsPublic(java.lang.Boolean value);
@@ -79,28 +145,6 @@ public interface Offering extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
 	public java.lang.Boolean getIsPublic();
-
-	/**
-	 * Setter for <code>dstack.offering.description</code>.
-	 */
-	public void setDescription(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.offering.description</code>.
-	 */
-	@javax.persistence.Column(name = "description", length = 1024)
-	public java.lang.String getDescription();
-
-	/**
-	 * Setter for <code>dstack.offering.uuid</code>.
-	 */
-	public void setUuid(java.lang.String value);
-
-	/**
-	 * Getter for <code>dstack.offering.uuid</code>.
-	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
-	public java.lang.String getUuid();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

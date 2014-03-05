@@ -14,17 +14,17 @@ import com.netflix.config.DynamicStringProperty;
 
 public class ServerContext {
 
-    private static final DynamicIntProperty HTTP_PORT = ArchaiusUtil.getInt("dstack.http.port");
-    private static final DynamicIntProperty HTTPS_PORT = ArchaiusUtil.getInt("dstack.https.port");
-    private static final DynamicStringProperty URL_PATH = ArchaiusUtil.getString("dstack.url.path");
-    private static final DynamicStringProperty SERVER_IP = ArchaiusUtil.getString("dstack.server.ip");
-    private static final DynamicStringProperty SERVER_ID = ArchaiusUtil.getString("dstack.server.id");
+    public static final DynamicIntProperty HTTP_PORT = ArchaiusUtil.getInt("dstack.http.port");
+    public static final DynamicIntProperty HTTPS_PORT = ArchaiusUtil.getInt("dstack.https.port");
+    public static final DynamicStringProperty URL_PATH = ArchaiusUtil.getString("dstack.url.path");
+    public static final DynamicStringProperty SERVER_IP = ArchaiusUtil.getString("dstack.server.ip");
+    public static final DynamicStringProperty SERVER_ID = ArchaiusUtil.getString("dstack.server.id");
 
     private static final String URL_SETTING_FORMAT = "dstack.%s.url";
     private static final String DEFAULT_URL = "dstack.url";
     private static final String FOUND_SERVER_IP = lookupServerIp();
-    private static final String SERVER_ID_FORMAT = "%s-%s";
-    private static final String RANDOM_ID = UUID.randomUUID().toString();
+    private static final String SERVER_ID_FORMAT = "%s.%s";
+    private static final String RANDOM_ID = UUID.randomUUID().toString().replaceAll("-", "");
 
     public static ServerAddress getServerAddress() {
         return getServerAddress(null);

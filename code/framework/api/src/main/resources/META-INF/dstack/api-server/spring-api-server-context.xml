@@ -30,6 +30,11 @@
 
     <bean id="DefaultIdFormatter" class="io.github.ibuildthecloud.dstack.api.formatter.DefaultIdFormatter" >
         <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="plainTypes">
+            <set>
+                <value>typeDocumentation</value>
+            </set>
+        </property>
     </bean>
 
     <bean class="io.github.ibuildthecloud.dstack.api.resource.ExtensionResourceManagerLocator" >
@@ -47,7 +52,7 @@
         </property>
     </bean>
 
-    <bean class="io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser" />
+    <bean class="io.github.ibuildthecloud.dstack.api.parser.ApiRequestParser" />
     <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
 
     <!-- This is here only to ensure that there are two SchemaFactories in the context

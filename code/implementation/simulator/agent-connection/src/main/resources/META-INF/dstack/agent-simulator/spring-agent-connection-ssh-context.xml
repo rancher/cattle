@@ -16,6 +16,7 @@
 
     <extension:discover class="io.github.ibuildthecloud.agent.connection.simulator.AgentSimulatorEventProcessor"/>
 
-    <bean class="io.github.ibuildthecloud.agent.connection.simulator.impl.SimulatorConfigUpdateDownloadHandler" />
-
+    <bean class="io.github.ibuildthecloud.agent.connection.simulator.impl.SimulatorConfigUpdateProcessor" />
+    <bean class="io.github.ibuildthecloud.agent.connection.simulator.impl.SimulatorPingProcessor" />
+    <bean class="io.github.ibuildthecloud.agent.connection.simulator.impl.SimulatorFailedProcessor" />
 </beans>

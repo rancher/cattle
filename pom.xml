@@ -16,12 +16,14 @@
         <module>code/framework/api-pub-sub-jetty</module>
         <module>code/framework/archaius</module>
         <module>code/framework/async</module>
+        <module>code/framework/db-loader</module>
         <module>code/framework/deferred</module>
         <module>code/framework/engine</module>
         <module>code/framework/eventing</module>
         <module>code/framework/events</module>
         <module>code/framework/extension</module>
         <module>code/framework/extension-spring</module>
+        <module>code/framework/jmx</module>
         <module>code/framework/jooq</module>
         <module>code/framework/json</module>
         <module>code/framework/launcher</module>
@@ -40,6 +42,9 @@
         <module>code/meta-parent</module>
         <module>code/parent</module>
     </modules>
+    <build>
+        <defaultGoal>package</defaultGoal>
+    </build>
     <profiles>
         <profile>
             <id>iaas</id>
@@ -60,7 +65,6 @@
                 <module>code/iaas/config-item/common</module>
                 <module>code/iaas/config-item/scripts</module>
                 <module>code/iaas/config-item/server</module>
-                <module>code/iaas/db-loader</module>
                 <module>code/iaas/engine-jooq</module>
                 <module>code/iaas/events</module>
                 <module>code/iaas/logic</module>
@@ -84,13 +88,18 @@
                 <module>code/implementation/agent-connection-event</module>
                 <module>code/implementation/agent-connection-ssh</module>
                 <module>code/implementation/docker/allocator</module>
+                <module>code/implementation/docker/api</module>
                 <module>code/implementation/docker/storage</module>
                 <module>code/implementation/eventing-redis</module>
                 <module>code/implementation/extension-api</module>
+                <module>code/implementation/hazelcast/common</module>
+                <module>code/implementation/hazelcast/eventing</module>
+                <module>code/implementation/hazelcast/lock</module>
                 <module>code/implementation/settings-api</module>
                 <module>code/implementation/simulator/agent-connection</module>
                 <module>code/implementation/simulator/allocator</module>
                 <module>code/implementation/simulator/storage</module>
+                <module>code/implementation/zookeeper</module>
                 <module>code/packaging/app</module>
                 <module>code/packaging/dev</module>
                 <module>code/packaging/meta</module>
@@ -138,6 +147,17 @@
             </activation>
             <modules>
                 <module>deps/jedis</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>bundle</id>
+            <activation>
+                <property>
+                    <name>release</name>
+                </property>
+            </activation>
+            <modules>
+                <module>code/packaging/bundle</module>
             </modules>
         </profile>
     </profiles>

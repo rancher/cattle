@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.api.handler;
 
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.deferred.util.DeferredUtils;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
@@ -12,18 +13,29 @@ import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 
+import com.netflix.config.DynamicStringListProperty;
+
 public class EventNotificationHandler implements ApiRequestHandler {
 
+    private static final DynamicStringListProperty EXCLUDE = ArchaiusUtil.getList("api.event.change.exclude.types");
     EventService eventService;
+    Set<String> excludeTypes = new HashSet<String>();
 
     @Override
     public void handle(ApiRequest request) throws IOException {
         if ( Method.GET.isMethod(request.getMethod()) ) {
+            return;
+        }
+
+        if ( excludeTypes.contains(request.getType()) ) {
             return;
         }
 
@@ -59,6 +71,22 @@ public class EventNotificationHandler implements ApiRequestHandler {
                 .withData(data));
 
         return false;
+    }
+
+    @PostConstruct
+    public void init() {
+        load();
+        EXCLUDE.addCallback(new Runnable() {
+            @Override
+            public void run() {
+                load();
+            }
+        });
+    }
+
+    public void load() {
+        excludeTypes = new HashSet<String>();
+        excludeTypes.addAll(EXCLUDE.get());
     }
 
     public EventService getEventService() {

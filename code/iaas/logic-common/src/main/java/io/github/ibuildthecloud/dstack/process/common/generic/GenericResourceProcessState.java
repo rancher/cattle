@@ -6,6 +6,8 @@ import io.github.ibuildthecloud.dstack.engine.process.impl.ResourceStatesDefinit
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.dstack.object.util.DataAccessor;
 import io.github.ibuildthecloud.dstack.process.common.lock.ResourceChangeLock;
 
 import java.lang.reflect.InvocationTargetException;
@@ -66,8 +68,20 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     }
 
     @Override
-    protected boolean setState(String oldState, String newState) {
-        Object newResource = objectManager.setFields(resource, getStatesDefinition().getStateField(), newState);
+    protected boolean setState(boolean transitioning, String oldState, String newState) {
+        if ( resource != null && transitioning &&
+                ObjectMetaDataManager.STATE_FIELD.equals(getStatesDefinition().getStateField())) {
+            DataAccessor.fields(resource)
+                        .withKey(ObjectMetaDataManager.TRANSITIONING_FIELD)
+                        .remove();
+
+            DataAccessor.fields(resource)
+                        .withKey(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD)
+                        .remove();
+        }
+
+        Object newResource = objectManager.setFields(resource,
+                getStatesDefinition().getStateField(), newState);
         if ( newResource == null ) {
             return false;
         } else {

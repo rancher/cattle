@@ -5,7 +5,6 @@
             "create": true
         },
         "user": {
-            "type": "string",
             "create": true
         }
     }

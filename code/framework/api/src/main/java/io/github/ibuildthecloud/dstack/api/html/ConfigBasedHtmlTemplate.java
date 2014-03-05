@@ -1,9 +1,14 @@
 package io.github.ibuildthecloud.dstack.api.html;
 
+import java.net.URL;
+
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.impl.DefaultHtmlTemplate;
+import io.github.ibuildthecloud.url.UrlBuilder;
 
 import com.netflix.config.DynamicStringProperty;
 
@@ -28,5 +33,18 @@ public class ConfigBasedHtmlTemplate extends DefaultHtmlTemplate {
         return ApiUtils.getPolicy().getUserName();
     }
 
+    @Override
+    protected String getStringHeader(ApiRequest request, Object response) {
+        String result = super.getStringHeader(request, response);
+
+        UrlBuilder builder = ApiContext.getUrlBuilder();
+        URL link = builder.resourceCollection(TypeDocumentation.class);
+
+        if ( link != null ) {
+            result = result.replace("//BEFORE DATA", String.format("var docJson = '%s';", link.toExternalForm()));
+        }
+
+        return result;
+    }
 
 }

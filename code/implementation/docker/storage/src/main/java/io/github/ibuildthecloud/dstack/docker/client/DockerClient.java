@@ -88,16 +88,22 @@ public class DockerClient {
 
     @PostConstruct
     public void init() {
-        Runnable onChange = new Runnable() {
-            @Override
-            public void run() {
-                init();
-            }
-        };
+        reload(true);
+    }
 
-        INDEX_URL.addCallback(onChange);
-        INDEX_USER.addCallback(onChange);
-        INDEX_PASS.addCallback(onChange);
+    public void reload(boolean initial) {
+        if ( initial ) {
+            Runnable onChange = new Runnable() {
+                @Override
+                public void run() {
+                    reload(false);
+                }
+            };
+
+            INDEX_URL.addCallback(onChange);
+            INDEX_USER.addCallback(onChange);
+            INDEX_PASS.addCallback(onChange);
+        }
 
         log.info("Using docker index url [{}] and user [{}]", INDEX_URL.get(), INDEX_USER.get());
 

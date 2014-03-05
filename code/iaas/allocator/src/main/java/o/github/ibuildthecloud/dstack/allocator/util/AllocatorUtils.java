@@ -1,11 +1,17 @@
 package o.github.ibuildthecloud.dstack.allocator.util;
 
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
+import io.github.ibuildthecloud.dstack.core.model.Instance;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
+import com.netflix.config.DynamicLongProperty;
 
 public class AllocatorUtils {
+
+    public static final DynamicLongProperty DEFAULT_COMPUTE = ArchaiusUtil.getLong("instance.compute.default");
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorUtils.class);
 
@@ -33,6 +39,14 @@ public class AllocatorUtils {
         }
 
         return null;
+    }
+
+    public static long getCompute(Instance instance) {
+        if ( instance == null ) {
+            return 0;
+        }
+
+        return instance.getCompute() == null ? DEFAULT_COMPUTE.get() : instance.getCompute();
     }
 
 }

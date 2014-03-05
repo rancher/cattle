@@ -4,11 +4,22 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class CollectionUtils {
+
+    public static <T> Set<T> set(T... objects) {
+        Set<T> set = new HashSet<T>();
+        for ( T obj : objects) {
+            set.add(obj);
+        }
+
+        return set;
+    }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <K,V extends Collection<T>,T> void addToMap(Map<K,V> data, K key, T value, Class<? extends Collection> clz) {

@@ -1,14 +1,12 @@
 {
     "data": {
-        "image": {
-            "+data": {
-                "dockerImage": {
-                    "Created": 1389713609,
-                    "Id": "0654b1f8af8d7e7c4a6f27b7b0538211cb57a4ec62bfd7e022ec6f21171454c1",
-                    "Repository": "ibuildthecloud/helloworld",
-                    "Size": 7,
-                    "Tag": "latest"
-                }
+        "+data": {
+            "dockerImage": {
+                "Created": 1389713609,
+                "Id": "0654b1f8af8d7e7c4a6f27b7b0538211cb57a4ec62bfd7e022ec6f21171454c1",
+                "ParentId": "a135c685393154abe3835b4b63e3b97f16c74dd1180afd5529a65a3bcc7de629",
+                "RepoTags": ["ibuildthecloud/helloworld:latest"],
+                "Size": 7
             }
         }
     },

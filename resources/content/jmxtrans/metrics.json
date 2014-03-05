@@ -1,0 +1,109 @@
+{
+    "queries" : [
+        {
+            "objectName" : "metrics:name=process_execution.*",
+            "resultAlias" : "metric.process_server.%name%",
+            "attributes" : [
+                {
+                    "name" : "Count"
+                }
+            ]
+        },
+        {
+            "objectName" : "metrics:name=event.publish*",
+            "resultAlias" : "metric.event.publish.%name%",
+            "attributes" : [
+                {
+                    "name" : "Count"
+                }
+            ]
+        },
+        {
+            "objectName" : "metrics:name=event.request.*",
+            "resultAlias" : "metric.event.request.%name%",
+            "attributes" : [
+                {
+                    "name" : "Count"
+                }
+            ]
+        },
+        {
+            "objectName" : "metrics:name=event.dropped.*",
+            "resultAlias" : "metric.event.dropped.%name%",
+            "attributes" : [
+                {
+                    "name" : "Count"
+                }
+            ]
+        },
+        {
+            "objectName" : "metrics:name=event.failed.*",
+            "resultAlias" : "metric.event.failed.%name%",
+            "attributes" : [
+                {
+                    "name" : "Count"
+                }
+            ]
+        },
+        {
+            "objectName" : "metrics:name=event.time.*",
+            "resultAlias" : "metric.event.time.%name%",
+            "attributes" : [
+                {
+                    "name" : "95thPercentile"
+                },
+                {
+                    "name" : "Count"
+                },
+                {
+                    "name" : "Max"
+                },
+                {
+                    "name" : "Mean"
+                },
+                {
+                    "name" : "Min"
+                },
+                {
+                    "name" : "OneMinuteRate"
+                },
+                {
+                    "name" : "FiveMinuteRate"
+                },
+                {
+                    "name" : "FifteenMinuteRate"
+                }
+            ]
+        },
+        {
+            "objectName" : "metrics:name=api.*",
+            "resultAlias" : "metric.api.%name%",
+            "attributes" : [
+                {
+                    "name" : "95thPercentile"
+                },
+                {
+                    "name" : "Count"
+                },
+                {
+                    "name" : "Max"
+                },
+                {
+                    "name" : "Mean"
+                },
+                {
+                    "name" : "Min"
+                },
+                {
+                    "name" : "OneMinuteRate"
+                },
+                {
+                    "name" : "FiveMinuteRate"
+                },
+                {
+                    "name" : "FifteenMinuteRate"
+                }
+            ]
+        }
+    ]
+}

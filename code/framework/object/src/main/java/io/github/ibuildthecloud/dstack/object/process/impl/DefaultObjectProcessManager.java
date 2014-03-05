@@ -30,8 +30,13 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
     @Override
     public void scheduleStandardProcess(StandardProcess process, Object resource, Map<String, Object> data) {
         String processName = getProcessName(resource, process);
-        ProcessInstance pi = createProcessInstance(processName, resource, data);
-        pi.schedule();
+        scheduleProcessInstance(processName, resource, data);
+    }
+
+    @Override
+    public void scheduleProcessInstance(String processName, Object resource, Map<String, Object> data) {
+        LaunchConfiguration config = ObjectLaunchConfigurationUtils.createConfig(schemaFactory, processName, resource, data);
+        processManager.scheduleProcessInstance(config);
     }
 
     protected String getProcessName(Object resource, StandardProcess process) {
@@ -45,18 +50,8 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
     }
 
     @Override
-    public ProcessInstance createProcessInstance(LaunchConfiguration config) {
-        return processManager.createProcessInstance(config);
-    }
-
-    @Override
-    public LaunchConfiguration createLaunchConfiguration(String processName, Object resource, Map<String, Object> data) {
-        return ObjectLaunchConfigurationUtils.createConfig(schemaFactory, processName, resource, data);
-    }
-
-    @Override
     public ProcessInstance createProcessInstance(String processName, Object resource, Map<String, Object> data) {
-        LaunchConfiguration config = createLaunchConfiguration(processName, resource, data);
+        LaunchConfiguration config = ObjectLaunchConfigurationUtils.createConfig(schemaFactory, processName, resource, data);
         return processManager.createProcessInstance(config);
     }
 

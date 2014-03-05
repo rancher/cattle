@@ -11,6 +11,7 @@ import io.github.ibuildthecloud.dstack.eventing.exception.EventExecutionExceptio
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
+import io.github.ibuildthecloud.dstack.metrics.util.MetricsUtil;
 import io.github.ibuildthecloud.dstack.pool.PoolConfig;
 
 import java.io.IOException;
@@ -20,18 +21,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.netflix.config.DynamicIntProperty;
@@ -55,9 +63,17 @@ public abstract class AbstractEventService implements EventService {
     Map<EventListener, Set<String>> listenerToEvents = new HashMap<EventListener, Set<String>>();
     JsonMapper jsonMapper;
     ObjectPool<FutureEventListener> listenerPool;
+    Map<String,Counter> request = new ConcurrentHashMap<String, Counter>();
+    Map<String,Counter> publish = new ConcurrentHashMap<String, Counter>();
+    Map<String,Counter> failed = new ConcurrentHashMap<String, Counter>();
+    Map<String,Timer> timers = new ConcurrentHashMap<String, Timer>();
 
     @Override
     public boolean publish(Event event) {
+        return publish(event, false);
+    }
+
+    protected boolean publish(Event event, boolean request) {
         if ( event == null ) {
             return false;
         }
@@ -76,6 +92,7 @@ public abstract class AbstractEventService implements EventService {
 
         try {
             getEventLogOut().debug("{} : {}", event.getName(), eventString);
+            increment(event, request);
             return doPublish(event.getName(), event, eventString);
         } catch ( Throwable e ) {
             log.warn("Failed to publish event [" + eventString + "]", e);
@@ -254,13 +271,19 @@ public abstract class AbstractEventService implements EventService {
     }
 
     @Override
-    public ListenableFuture<Event> call(Event event, EventCallOptions options) {
+    public ListenableFuture<Event> call(final Event event, EventCallOptions options) {
+        final long start = System.currentTimeMillis();
         Integer retries = options.getRetry();
         Long timeoutMillis = options.getTimeoutMillis();
+
+        if ( event.getTimeoutMillis() != null ) {
+            timeoutMillis = event.getTimeoutMillis();
+        }
 
         if ( retries == null ) {
             retries = DEFAULT_RETRIES.get();
         }
+
         if ( timeoutMillis == null ) {
             timeoutMillis = DEFAULT_TIMEOUT.get();
         }
@@ -275,11 +298,13 @@ public abstract class AbstractEventService implements EventService {
             return future;
         }
 
-        final Event request = new EventVO<Object>(event, listener.getReplyTo());
+        final EventVO<Object> request = new EventVO<Object>(event, listener.getReplyTo());
+        request.setTimeoutMillis(timeoutMillis);
+
         Retry retry = new Retry(retries, timeoutMillis, future, new Runnable() {
             @Override
             public void run() {
-                publish(request);
+                publish(request, true);
             }
         });
 
@@ -295,7 +320,16 @@ public abstract class AbstractEventService implements EventService {
                 try {
                     timeoutService.completed(cancel);
                     future.get();
+                    time(event, start);
+                } catch (ExecutionException t) {
+                    error(event);
+                    if ( t.getCause() instanceof TimeoutException ) {
+                        // Ignore don't treat as a bad listener
+                    } else {
+                        listener.setFailed(true);
+                    }
                 } catch (Throwable t) {
+                    error(event);
                     listener.setFailed(true);
                 } finally {
                     try {
@@ -307,7 +341,7 @@ public abstract class AbstractEventService implements EventService {
             }
         }, executorService);
 
-        publish(request);
+        publish(request, true);
 
         return future;
     }
@@ -323,6 +357,61 @@ public abstract class AbstractEventService implements EventService {
         }
     }
 
+    protected void increment(Event event, boolean request) {
+        String metricName = metricName(event, request ? "request" : "publish");
+        if ( metricName == null ) {
+            return;
+        }
+
+        Map<String,Counter> counters = request ? this.request : publish;
+        Counter counter = counters.get(metricName);
+        if ( counter == null ) {
+            counter = MetricsUtil.getRegistry().counter(metricName);
+            counters.put(metricName, counter);
+        }
+
+        counter.inc();
+    }
+
+    protected void error(Event event) {
+        String metricName = metricName(event, "failed");
+        if ( metricName == null ) {
+            return;
+        }
+
+        Counter counter = failed.get(metricName);
+        if ( counter == null ) {
+            counter = MetricsUtil.getRegistry().counter(metricName);
+            failed.put(metricName, counter);
+        }
+
+        counter.inc();
+    }
+
+    protected void time(Event event, long start) {
+        long duration = System.currentTimeMillis() - start;
+        String metricName = metricName(event, "time");
+        if ( metricName == null ) {
+            return;
+        }
+
+        Timer timer = timers.get(metricName);
+        if ( timer == null ) {
+            timer = MetricsUtil.getRegistry().timer(metricName);
+            timers.put(metricName, timer);
+        }
+
+        timer.update(duration, TimeUnit.MILLISECONDS);
+    }
+
+    protected String metricName(Event event, String prefix) {
+        String name = event.getName();
+        if ( name.startsWith(REPLY_PREFIX) ) {
+            return null;
+        }
+
+        return "event." + prefix + "." + StringUtils.substringBefore(name, EVENT_SEP).replace('.', '_');
+    }
 
     protected abstract void disconnect();
 

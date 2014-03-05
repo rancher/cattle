@@ -15,7 +15,5 @@ public interface LockProvider extends Named {
      */
     Lock getLock(LockDefinition lockDefinition);
 
-    void activate();
-
     void releaseLock(Lock lock);
 }

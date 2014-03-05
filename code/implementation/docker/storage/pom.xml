@@ -15,6 +15,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.github.ibuildthecloud</groupId>
+            <artifactId>dstack-iaas-logic-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>fluent-hc</artifactId>
         </dependency>

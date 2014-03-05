@@ -8,8 +8,11 @@ __pycache__
 .settings
 .tox
 
+code/agent/src/agents/pyagent/locks
+code/agent/src/agents/pyagent/tests/locks/
 code/packaging/app/db-*
 dist
+docs/build
 MANIFEST
 resources/content/db/mysql/dstack_dump*.sql
 resources/content/dstack-local.properties
@@ -20,6 +23,8 @@ target
 *.egg-info
 *.launch
 *.log
+*.log.gz
 *.pyc
 *.pyo
 *.swp
+*~

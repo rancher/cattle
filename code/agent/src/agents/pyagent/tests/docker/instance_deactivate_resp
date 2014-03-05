@@ -2,15 +2,17 @@
     "data": {
         "instance": {
             "+data": {
+                "+fields": {
+                    "dockerHostIp": "1.2.3.4",
+                    "dockerPorts": {}
+                },
                 "dockerContainer": {
                     "Command": "sleep 120",
                     "Image": "ibuildthecloud/helloworld:latest",
                     "Names": [
                         "/c861f990-4472-4fa1-960f-65171b544c28"
                     ],
-                    "Ports": null,
-                    "SizeRootFs": 0,
-                    "SizeRw": 0
+                    "Ports": []
                 }
             }
         }

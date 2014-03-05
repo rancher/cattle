@@ -93,4 +93,14 @@
         </property>
     </bean>
 
+    <bean class="io.github.ibuildthecloud.dstack.process.common.handler.AgentBasedProcessHandler"
+        p:shouldContinue="true"
+        p:name="AgentConnectionClose"
+        p:commandName="agent.close"
+        p:processNames="agent.deactivate,agent.remove" >
+        <property name="priority">
+            <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.PRE"/>
+        </property>
+    </bean>
+
 </beans>

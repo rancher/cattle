@@ -1,5 +1,7 @@
 package io.github.ibuildthecloud.dstack.logback;
 
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
+
 import java.net.URL;
 
 import org.slf4j.Logger;
@@ -8,11 +10,12 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.util.StatusPrinter;
+
+import com.netflix.config.DynamicStringProperty;
 
 public class LogbackStartup implements Runnable {
 
-    private static final String LOGBACK_CONFIG = "logback/logback.xml";
+    private static final DynamicStringProperty LOGBACK_CONFIG = ArchaiusUtil.getString("logback.config");
 
     final static Logger log = LoggerFactory.getLogger(LogbackStartup.class);
 
@@ -20,7 +23,8 @@ public class LogbackStartup implements Runnable {
     public void run() {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
-        URL url = LogbackStartup.class.getClassLoader().getResource(LOGBACK_CONFIG);
+        URL url = LogbackStartup.class.getClassLoader().getResource(LOGBACK_CONFIG.get());
+
         if ( url != null ) {
             try {
                 JoranConfigurator configurator = new JoranConfigurator();
@@ -32,7 +36,8 @@ public class LogbackStartup implements Runnable {
             } catch (JoranException je) {
             }
         }
-        StatusPrinter.printInCaseOfErrorsOrWarnings(context);
+
+//        StatusPrinter.printInCaseOfErrorsOrWarnings(context);
     }
 
 }

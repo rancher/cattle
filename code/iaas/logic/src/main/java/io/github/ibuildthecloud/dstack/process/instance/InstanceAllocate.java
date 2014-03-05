@@ -8,7 +8,6 @@ import io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
-import io.github.ibuildthecloud.dstack.object.process.StandardProcess;
 import io.github.ibuildthecloud.dstack.process.common.handler.EventBasedProcessHandler;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 

@@ -1,3 +1,4 @@
+from dstack import ApiError
 from common_fixtures import *  # NOQA
 from datetime import timedelta
 import time
@@ -48,8 +49,10 @@ def test_container_create_only(client, sim_context):
     volume_mappings = root_volume.volumeStoragePoolMaps()
     assert len(volume_mappings) == 0
 
-    nics = container.nics()
-    assert len(nics) == 0
+    # No nics right now
+    #
+    # nics = container.nics()
+    # assert len(nics) == 0
 
     image = wait_success(client, client.list_image(uuid=uuid)[0])
     assert_fields(image, {
@@ -190,6 +193,23 @@ def test_container_stop(client, sim_context):
     assert instance_host_mappings[0].removed is not None
 
 
+def _assert_removed(container):
+    assert container.state == "removed"
+    assert_removed_fields(container)
+
+    volumes = container.volumes()
+    assert len(volumes) == 1
+
+    assert volumes[0].state == "removed"
+    assert_removed_fields(volumes[0])
+
+    volume_mappings = volumes[0].volumeStoragePoolMaps()
+    assert len(volume_mappings) == 1
+    assert volume_mappings[0].state == "inactive"
+
+    return container
+
+
 def test_container_remove(client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = client.create_container(name="test",
@@ -206,20 +226,7 @@ def test_container_remove(client, sim_context):
 
     container = wait_success(client, container)
 
-    assert container.state == "removed"
-    assert_removed_fields(container)
-
-    volumes = container.volumes()
-    assert len(volumes) == 1
-
-    assert volumes[0].state == "removed"
-    assert_removed_fields(volumes[0])
-
-    volume_mappings = volumes[0].volumeStoragePoolMaps()
-    assert len(volume_mappings) == 1
-    assert volume_mappings[0].state == "inactive"
-
-    return container
+    return _assert_removed(container)
 
 
 def test_container_restore(client, sim_context):
@@ -288,3 +295,66 @@ def test_container_purge(client, sim_context):
     pool_maps = volume.volumeStoragePoolMaps()
     assert len(pool_maps) == 1
     assert pool_maps[0].state == 'removed'
+
+
+def test_start_stop(client, sim_context):
+    uuid = "sim:{}".format(random_num())
+
+    container = client.create_container(name="test",
+                                        imageUuid=uuid)
+
+    container = wait_success(client, container)
+
+    for _ in range(5):
+        assert container.state == 'running'
+        container = wait_success(client, container.stop())
+        assert container.state == 'stopped'
+        container = wait_success(client, container.start())
+        assert container.state == 'running'
+
+
+def test_container_image_required(client, sim_context):
+    try:
+        client.create_container()
+        assert False
+    except ApiError as e:
+        assert e.error.status == 422
+        assert e.error.code == 'MissingRequired'
+        assert e.error.fieldName == 'imageUuid'
+
+
+def test_container_compute_fail(client, sim_context):
+    data = {
+        'compute.instance.activate::fail': True,
+        'io.github.ibuildthecloud.dstack.process.instance.InstanceStart': {
+            'computeTries': 1
+        }
+    }
+
+    container = client.create_container(imageUuid=sim_context['imageUuid'],
+                                        data=data)
+
+    container = wait_transitioning(client, container)
+
+    assert container.transitioning == 'error'
+    assert container.transitioningMessage == \
+        'Failing [compute.instance.activate]'
+
+    _assert_removed(container)
+
+
+def test_container_storage_fail(client, sim_context):
+    data = {
+        'storage.volume.activate::fail': True,
+    }
+
+    container = client.create_container(imageUuid=sim_context['imageUuid'],
+                                        data=data)
+
+    container = wait_transitioning(client, container)
+
+    assert container.transitioning == 'error'
+    assert container.transitioningMessage == \
+        'Failing [storage.volume.activate]'
+
+    _assert_removed(container)

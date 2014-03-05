@@ -1,18 +1,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>dstack-resources</artifactId>
-  <parent>
-    <artifactId>dstack-parent</artifactId>
-    <groupId>io.github.ibuildthecloud</groupId>
-    <version>0.1-SNAPSHOT</version>
-    <relativePath>../code/parent/pom.xml</relativePath>
-  </parent>
-  <build>
-    <resources>
-      <resource>
-        <directory>content</directory>
-      </resource>
-    </resources>
-  </build>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>dstack-resources</artifactId>
+    <parent>
+        <artifactId>dstack-parent</artifactId>
+        <groupId>io.github.ibuildthecloud</groupId>
+        <version>0.1-SNAPSHOT</version>
+        <relativePath>../code/parent/pom.xml</relativePath>
+    </parent>
+    <build>
+        <resources>
+            <resource>
+                <directory>content</directory>
+                <excludes>
+                    <exclude>db/mysql/dstack_dump*sql</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
 </project>

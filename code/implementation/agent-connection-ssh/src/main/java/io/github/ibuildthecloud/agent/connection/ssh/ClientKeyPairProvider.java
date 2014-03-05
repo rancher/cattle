@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.agent.connection.ssh;
 
 import io.github.ibuildthecloud.agent.connection.ssh.dao.SshAgentDao;
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.lock.LockCallbackWithException;
 import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
@@ -30,8 +31,11 @@ import org.bouncycastle.openssl.PEMWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicBooleanProperty;
+
 public class ClientKeyPairProvider extends AbstractKeyPairProvider implements InitializationTask {
 
+    private static final DynamicBooleanProperty GEN_ON_STARTUP = ArchaiusUtil.getBoolean("ssh.keygen.on.startup");
     private static final Logger log = LoggerFactory.getLogger(ClientKeyPairProvider.class);
     private static final byte[] HEADER = new byte[] {'s', 's', 'h', '-', 'r', 's', 'a'};
     private static final String SSH_RSA_FORMAT = "ssh-rsa %s dstack@dstack";
@@ -138,13 +142,15 @@ public class ClientKeyPairProvider extends AbstractKeyPairProvider implements In
 
     @Override
     public void start() {
-        executorService.execute(new NoExceptionRunnable() {
-            @Override
-            protected void doRun() throws Exception {
-                SecurityUtils.getSecurityProvider();
-                loadKeys();
-            }
-        });
+        if ( GEN_ON_STARTUP.get() ) {
+            executorService.execute(new NoExceptionRunnable() {
+                @Override
+                protected void doRun() throws Exception {
+                    SecurityUtils.getSecurityProvider();
+                    loadKeys();
+                }
+            });
+        }
     }
 
     @Override

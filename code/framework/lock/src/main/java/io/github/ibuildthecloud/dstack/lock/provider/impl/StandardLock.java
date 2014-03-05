@@ -17,10 +17,11 @@ public class StandardLock implements Lock {
     LockDefinition lockDefinition;
     java.util.concurrent.locks.Lock lock;
     long timeout;
-    long referenceCount = 0;
+    volatile long referenceCount = 0;
+    volatile Thread owner = null;
+    long ownerCount = 0;
 
     public StandardLock(LockDefinition lockDefinition, java.util.concurrent.locks.Lock lock) {
-        super();
         this.lockDefinition = lockDefinition;
         this.lock = lock;
         if ( lockDefinition instanceof BlockingLockDefinition ) {
@@ -31,24 +32,73 @@ public class StandardLock implements Lock {
 
     @Override
     public boolean tryLock() {
-        return lock.tryLock();
+        log.trace("Try Lock Attempt [{}]", timeout);
+        boolean result = lock.tryLock();
+        log.trace("Try Lock [{}] result [{}]", lockDefinition, result);
+
+        if ( result ) {
+            incrementOwner();
+        }
+
+        return result;
     }
 
     @Override
     public void lock() throws FailedToAcquireLockException {
+        log.trace("Lock Attempt [{}], timeout [{}]", lockDefinition, timeout);
         try {
-            if ( ! lock.tryLock(timeout, TimeUnit.MILLISECONDS) )
+            if ( ! doLock() ) {
+                log.trace("Lock [{}], timeout [{}] failed", lockDefinition, timeout);
                 throw new FailedToAcquireLockException(lockDefinition);
+            }
         } catch (InterruptedException e) {
             log.error("Failed to lock [{}], interrupted", lockDefinition, e);
             throw new FailedToAcquireLockException(lockDefinition);
+        }
+
+        incrementOwner();
+        log.trace("Lock [{}] owner", lockDefinition);
+    }
+
+    protected void incrementOwner() {
+        ownerCount++;
+        if ( owner == null ) {
+            log.trace("Lock [{}] acquiring ownernship count [{}]", lockDefinition, ownerCount);
+            owner = Thread.currentThread();
+        } else {
+            log.trace("Lock [{}] ownernship count [{}]", lockDefinition, ownerCount);
+        }
+    }
+
+    protected void decrementOwner() {
+        ownerCount--;
+        if ( ownerCount <= 0 ) {
+            log.trace("Lock [{}] releasing ownernship count [{}]", lockDefinition, ownerCount);
+            ownerCount = 0;
+            owner = null;
+        } else {
+            log.trace("Lock [{}] ownernship count [{}]", lockDefinition, ownerCount);
+        }
+    }
+
+    protected boolean doLock() throws InterruptedException {
+        if ( timeout <= 0 ) {
+            return lock.tryLock();
+        } else {
+            return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
         }
     }
 
     @Override
     public void unlock() {
         try {
-            lock.unlock();
+            if ( Thread.currentThread() == owner ) {
+                log.trace("Unlock [{}] owner", lockDefinition);
+                decrementOwner();
+                lock.unlock();
+            } else {
+                log.trace("Unlock [{}] not owner", lockDefinition);
+            }
         } catch ( Throwable t ) {
             log.trace("Failed to unlock [{}], may not own lock", lockDefinition, t);
         }
@@ -64,10 +114,16 @@ public class StandardLock implements Lock {
     }
 
     public long incrementReference() {
+        log.trace("Lock [{}] reference count increment [{}]", lockDefinition, referenceCount);
         return ++referenceCount;
     }
 
     public long decrementReference() {
+        log.trace("Lock [{}] reference count decrement [{}]", lockDefinition, referenceCount);
         return --referenceCount;
+    }
+
+    public java.util.concurrent.locks.Lock getLock() {
+        return lock;
     }
 }

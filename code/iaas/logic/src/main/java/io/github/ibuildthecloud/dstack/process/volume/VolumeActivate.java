@@ -10,7 +10,10 @@ import io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap;
 import io.github.ibuildthecloud.dstack.engine.handler.HandlerResult;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
+import io.github.ibuildthecloud.dstack.lock.LockCallback;
+import io.github.ibuildthecloud.dstack.lock.LockManager;
 import io.github.ibuildthecloud.dstack.process.base.AbstractDefaultProcessHandler;
+import io.github.ibuildthecloud.dstack.process.lock.ImageAssociateLock;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -23,6 +26,7 @@ import javax.inject.Named;
 public class VolumeActivate extends AbstractDefaultProcessHandler {
 
     GenericMapDao mapDao;
+    LockManager lockManager;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -44,24 +48,42 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
         activate(map, data);
     }
 
-    protected void activateImageInPool(Volume volume, Image image, long poolId, Map<String,Object> data) {
+    protected void activateImageInPool(Volume volume, final Image image, final long poolId, Map<String,Object> data) {
         if ( image == null ) {
             return;
         }
 
         activate(image, data);
 
-        ImageStoragePoolMap map = mapDao.findNonRemoved(ImageStoragePoolMap.class,
-                Image.class, image.getId(),
-                StoragePool.class, poolId);
+        ImageStoragePoolMap map = getMap(image, poolId);
+        if ( map == null ) {
+            map = lockManager.lock(new ImageAssociateLock(image.getId(), poolId), new LockCallback<ImageStoragePoolMap>() {
+                @Override
+                public ImageStoragePoolMap doWithLock() {
+                    return associate(image, poolId);
+                }
+            });
+        }
+
+        create(map, data);
+        activate(map, data);
+    }
+
+    protected ImageStoragePoolMap associate(Image image, long poolId) {
+        ImageStoragePoolMap map = getMap(image, poolId);
         if ( map == null ) {
             map = getObjectManager().create(ImageStoragePoolMap.class,
                     IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId,
                     IMAGE_STORAGE_POOL_MAP.IMAGE_ID, image.getId());
         }
 
-        create(map, data);
-        activate(map, data);
+        return map;
+    }
+
+    protected ImageStoragePoolMap getMap(Image image, long poolId) {
+        return mapDao.findNonRemoved(ImageStoragePoolMap.class,
+                Image.class, image.getId(),
+                StoragePool.class, poolId);
     }
 
     public GenericMapDao getMapDao() {
@@ -71,5 +93,14 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
     @Inject
     public void setMapDao(GenericMapDao mapDao) {
         this.mapDao = mapDao;
+    }
+
+    public LockManager getLockManager() {
+        return lockManager;
+    }
+
+    @Inject
+    public void setLockManager(LockManager lockManager) {
+        this.lockManager = lockManager;
     }
 }

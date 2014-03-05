@@ -1,0 +1,13 @@
+{
+    "resourceFields": {
+        "dockerPorts": {
+            "type": "map[string]"
+        },
+        "dockerHostIp": {
+            "type": "string"
+        },
+        "dockerIp": {
+            "type": "string"
+        }
+    }
+}

@@ -3,8 +3,13 @@ jdk:
   - openjdk6
   - openjdk7
   - oraclejdk7
+env:
+  - DSTACK_DB_DSTACK_DATABASE=mysql
+  - DSTACK_DB_DSTACK_DATABASE=h2
+  - DSTACK_DB_DSTACK_DATABASE=hsqldb
 services:
   - redis
+before_install: ./tools/build/before.sh
 install: 
   - sudo pip install tox
   - ./tools/build/build.sh

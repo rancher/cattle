@@ -11,8 +11,6 @@ import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;
 
-import java.util.concurrent.ExecutorService;
-
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -24,21 +22,21 @@ public class RemoteAgentImpl implements RemoteAgent {
     private static final DynamicLongProperty AGENT_DEFAULT_TIMEOUT = ArchaiusUtil.getLong("agent.timeout.millis");
     private static final DynamicIntProperty AGENT_RETRIES = ArchaiusUtil.getInt("agent.retries");
 
-    ExecutorService executorService;
     JsonMapper jsonMapper;
     EventService eventService;
     Long agentId;
+    Long groupId;
 
-    public RemoteAgentImpl(ExecutorService executorService, JsonMapper jsonMapper, EventService eventService,
-            Long agentId) {
-        this.executorService = executorService;
+    public RemoteAgentImpl(JsonMapper jsonMapper, EventService eventService,
+            Long agentId, Long groupId) {
         this.jsonMapper = jsonMapper;
         this.eventService = eventService;
         this.agentId = agentId;
+        this.groupId = groupId;
     }
 
     protected Event createRequest(Event event) {
-        return new AgentRequest(agentId, event);
+        return new AgentRequest(agentId, groupId, event);
     }
 
     @Override
@@ -48,9 +46,14 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public <T extends Event> T callSync(Event event, Class<T> reply, long timeout) {
+        return callSync(event, reply, new EventCallOptions(AGENT_RETRIES.get(), timeout));
+    }
+
+    @Override
+    public <T extends Event> T callSync(Event event, Class<T> reply, EventCallOptions options) {
         /* NOTE: Forever blocking get() used only because underlying future will always timeout */
         try {
-            return AsyncUtils.get(call(event, reply, timeout));
+            return AsyncUtils.get(call(event, reply, options));
         } catch ( EventExecutionException e ) {
             /* This is done so that the exception will have a better stack trace.
              * Normally the exceptions from a future will have a pretty sparse stack
@@ -62,9 +65,14 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public <T extends Event> ListenableFuture<T> call(final Event event, final Class<T> reply, long timeout) {
+        return call(event, reply, new EventCallOptions(AGENT_RETRIES.get(), timeout));
+    }
+
+    @Override
+    public <T extends Event> ListenableFuture<T> call(final Event event, final Class<T> reply, EventCallOptions options) {
         Event request = createRequest(event);
 
-        ListenableFuture<Event> future = eventService.call(request, new EventCallOptions(AGENT_RETRIES.get(), timeout));
+        ListenableFuture<Event> future = eventService.call(request, options);
         return Futures.transform(future, new Function<Event, T>() {
             @Override
             public T apply(Event input) {
@@ -94,6 +102,11 @@ public class RemoteAgentImpl implements RemoteAgent {
     }
 
     @Override
+    public Event callSync(Event event, EventCallOptions options) {
+        return callSync(event, EventVO.class, options);
+    }
+
+    @Override
     public Event callSync(Event event, long timeout) {
         return callSync(event, EventVO.class, timeout);
     }
@@ -101,6 +114,11 @@ public class RemoteAgentImpl implements RemoteAgent {
     @Override
     public ListenableFuture<? extends Event> call(Event event) {
         return call(event, AGENT_DEFAULT_TIMEOUT.get());
+    }
+
+    @Override
+    public ListenableFuture<? extends Event> call(Event event, EventCallOptions options) {
+        return call(event, EventVO.class, options);
     }
 
     @Override

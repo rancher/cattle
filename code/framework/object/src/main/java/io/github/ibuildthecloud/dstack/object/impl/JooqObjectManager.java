@@ -5,8 +5,10 @@ import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecution;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecutionNoReturn;
 import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
+import io.github.ibuildthecloud.dstack.object.util.DataAccessor;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -140,6 +142,9 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @SuppressWarnings("unchecked")
     protected void setFields(Object obj, Map<Object,Object> toWrite, List<UpdatableRecord<?>> result) {
+        String type = getType(obj);
+        Schema schema = schemaFactory.getSchema(type);
+
         UpdatableRecord<?> record = JooqUtils.getRecordObject(obj);
 
         for ( Map.Entry<Object, Object> entry : toWrite.entrySet() ) {
@@ -151,11 +156,11 @@ public class JooqObjectManager extends AbstractObjectManager {
                     name = name.substring(PLUS.length());
                     Object mapObj = ObjectUtils.getPropertyIgnoreErrors(obj, name);
                     if ( mapObj instanceof Map<?, ?> ) {
-                        ((Map<Object,Object>)mapObj).putAll((Map<Object,Object>)value);
+                        mergeMap((Map<Object,Object>)value, (Map<Object,Object>)mapObj);
                     }
-                    setField(record, name, value);
+                    setField(schema, record, name, mapObj);
                 } else {
-                    setField(record, (String)key, value);
+                    setField(schema, record, (String)key, value);
                 }
             } else if ( key instanceof Relationship && value instanceof Map<?,?> ) {
                 Relationship rel = (Relationship)key;
@@ -170,6 +175,30 @@ public class JooqObjectManager extends AbstractObjectManager {
 
         if ( record.changed() ) {
             result.add(record);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void mergeMap(Map<Object,Object> src, Map<Object,Object> dest) {
+        for ( Map.Entry<Object, Object> entry : src.entrySet() ) {
+            Object key = entry.getKey();
+            Object value = entry.getValue();
+
+            if ( key instanceof String ) {
+                String name = (String)key;
+                if ( name.startsWith(PLUS) && value instanceof Map<?,?> ) {
+                    name = name.substring(PLUS.length());
+                    Object mapObj = dest.get(name);
+
+                    if ( mapObj instanceof Map<?,?> ) {
+                        mergeMap((Map<Object,Object>)value, (Map<Object,Object>)mapObj);
+                    } else {
+                        dest.put(name, value);
+                    }
+                } else {
+                    dest.put(name, value);
+                }
+            }
         }
     }
 
@@ -196,7 +225,7 @@ public class JooqObjectManager extends AbstractObjectManager {
 
         ForeignKey<?, ?> foreignKey = childReferenceCache.get(key);
         if ( foreignKey == null ) {
-            Table<?> childTable = JooqUtils.getTable(child);
+            Table<?> childTable = JooqUtils.getTableFromRecordClass(child);
             for ( ForeignKey<?, ?> foreignKeyTest : childTable.getReferences() ) {
                 if ( foreignKeyTest.getKey().getTable().getRecordType() == parent ) {
                     if ( foreignKey == null ) {
@@ -272,7 +301,7 @@ public class JooqObjectManager extends AbstractObjectManager {
             throw new IllegalArgumentException("Failed to find type of class [" + clz + "]");
         }
         Class<UpdatableRecord<?>> recordClass = JooqUtils.getRecordClass(schemaFactory, clz);
-        Table<?> table = JooqUtils.getTable(recordClass);
+        Table<?> table = JooqUtils.getTableFromRecordClass(recordClass);
         return create()
                 .selectFrom(table)
                 .where(JooqUtils.toConditions(metaDataManager, type, values));
@@ -282,20 +311,29 @@ public class JooqObjectManager extends AbstractObjectManager {
         return new DefaultDSLContext(configuration);
     }
 
-    protected void setField(Object obj, String name, Object value) {
+    protected void setField(Schema schema, Object obj, String name, Object value) {
         try {
-            /* BeanUtils doesn't always like setting null values */
-            if ( value == null ) {
-                PropertyUtils.setProperty(obj, name, value);
+            if ( PropertyUtils.getPropertyDescriptor(obj, name) == null ) {
+                if ( schema != null && schema.getResourceFields().containsKey(name) ) {
+                    DataAccessor
+                        .fields(obj)
+                        .withKey(name)
+                        .set(value);
+                }
             } else {
-                BeanUtils.setProperty(obj, name, value);
+                /* BeanUtils doesn't always like setting null values */
+                if ( value == null ) {
+                    PropertyUtils.setProperty(obj, name, value);
+                } else {
+                    BeanUtils.setProperty(obj, name, value);
+                }
             }
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException("Failed to set [" + name + "] to value [" + value + "] on [" + obj + "]");
         } catch (InvocationTargetException e) {
             throw new IllegalArgumentException("Failed to set [" + name + "] to value [" + value + "] on [" + obj + "]");
         } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("Failed to set [" + name + "] to value [" + value + "] on [" + obj + "]");
+            // Ignore if it doesn't exists
         }
     }
 

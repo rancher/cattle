@@ -38,6 +38,8 @@ public interface Event {
 
     Date getTime();
 
+    Long getTimeoutMillis();
+
     String getPublisher();
 
     Map<String,Object> getContext();

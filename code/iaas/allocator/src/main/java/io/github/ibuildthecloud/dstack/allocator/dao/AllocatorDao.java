@@ -13,6 +13,8 @@ public interface AllocatorDao {
 
     List<? extends StoragePool> getAssociatedPools(Volume volume);
 
+    List<? extends StoragePool> getAssociatedPools(Host host);
+
     List<? extends Host> getHosts(Instance instance);
 
     List<? extends Host> getHosts(StoragePool pool);
@@ -22,5 +24,9 @@ public interface AllocatorDao {
     void releaseAllocation(Instance instance);
 
     void releaseAllocation(Volume volume);
+
+    boolean isInstanceImageKind(long instanceId, String kind);
+
+    boolean isVolumeInstanceImageKind(long volumeId, String kind);
 
 }

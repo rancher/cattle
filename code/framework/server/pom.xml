@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>dstack-framework-server</artifactId>
     <parent>
-        <artifactId>dstack-parent</artifactId>
+        <artifactId>dstack-meta-parent</artifactId>
         <groupId>io.github.ibuildthecloud</groupId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath>../../parent/pom.xml</relativePath>
+        <relativePath>../../meta-parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>

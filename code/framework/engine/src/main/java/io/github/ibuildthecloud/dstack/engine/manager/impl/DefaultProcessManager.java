@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.engine.manager.impl;
 
+import static io.github.ibuildthecloud.dstack.engine.process.ExitReason.*;
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.engine.context.EngineContext;
 import io.github.ibuildthecloud.dstack.engine.manager.ProcessManager;
@@ -8,6 +9,7 @@ import io.github.ibuildthecloud.dstack.engine.process.HandlerResultListener;
 import io.github.ibuildthecloud.dstack.engine.process.LaunchConfiguration;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessDefinition;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstance;
+import io.github.ibuildthecloud.dstack.engine.process.ProcessInstanceException;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessServiceContext;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessState;
 import io.github.ibuildthecloud.dstack.engine.process.impl.DefaultProcessInstanceImpl;
@@ -17,6 +19,7 @@ import io.github.ibuildthecloud.dstack.util.concurrent.DelayedObject;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,16 +42,30 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     List<HandlerResultListener> listeners;
     Map<String, ProcessDefinition> definitions = new HashMap<String, ProcessDefinition>();
     LockManager lockManager;
-    DelayQueue<DelayedObject<ProcessInstance>> toPersist = new DelayQueue<DelayedObject<ProcessInstance>>();
+    DelayQueue<DelayedObject<WeakReference<ProcessInstance>>> toPersist = new DelayQueue<DelayedObject<WeakReference<ProcessInstance>>>();
     ScheduledExecutorService executor;
     EventService eventService;
 
     @Override
     public ProcessInstance createProcessInstance(LaunchConfiguration config) {
-        return createProcessInstance(new ProcessRecord(config, null, null));
+        return createProcessInstance(new ProcessRecord(config, null, null), false);
     }
 
-    protected ProcessInstance createProcessInstance(ProcessRecord record) {
+    @Override
+    public void scheduleProcessInstance(LaunchConfiguration config) {
+        ProcessInstance pi = createProcessInstance(new ProcessRecord(config, null, null), true);
+        try {
+            pi.execute();
+        } catch ( ProcessInstanceException e ) {
+            if ( e.getExitReason() == SCHEDULED ) {
+                return;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    protected ProcessInstance createProcessInstance(ProcessRecord record, boolean schedule) {
         if ( record == null )
             return null;
 
@@ -61,12 +78,14 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         if ( state == null )
             throw new ProcessNotFoundException("Failed to construct ProcessState for [" + record.getProcessName() + "]");
 
-        if ( record.getId() == null && ! EngineContext.hasParentProcess() )
+        if ( record.getId() == null && (schedule || ! EngineContext.hasParentProcess()) )
             record = processRecordDao.insert(record);
 
         ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, listeners);
-        DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(context, record, processDef, state);
-        queue(process);
+        DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(context, record, processDef, state, schedule);
+
+        if ( record.getId() != null )
+            queue(process);
 
         return process;
     }
@@ -89,7 +108,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     }
 
     @Override
-    public void persistState(ProcessInstance process) {
+    public void persistState(ProcessInstance process, boolean schedule) {
         if ( ! ( process instanceof DefaultProcessInstanceImpl ) ) {
             throw new IllegalArgumentException("Can only persist ProcessInstances that are created by this repository");
         }
@@ -99,7 +118,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         synchronized (processImpl) {
             ProcessRecord record = processImpl.getProcessRecord();
             if ( record.getId() != null )
-                processRecordDao.update(record);
+                processRecordDao.update(record, schedule);
         }
     }
 
@@ -125,15 +144,19 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         if ( record == null ) {
             throw new ProcessNotFoundException("Failed to find ProcessRecord for [" + id + "]");
         }
-        return createProcessInstance(record);
+        return createProcessInstance(record, false);
     }
 
     protected void persistInProgress() throws InterruptedException {
         while ( true ) {
-            ProcessInstance process = toPersist.take().getObject();
+            ProcessInstance process = toPersist.take().getObject().get();
+            if ( process == null ) {
+                return;
+            }
+
             synchronized (process) {
                 if ( process.isRunningLogic() ) {
-                    persistState(process);
+                    persistState(process, false);
                 }
                 if ( process.getExitReason() == null ) {
                     queue(process);
@@ -143,7 +166,8 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     }
 
     protected void queue(ProcessInstance process) {
-        toPersist.put(new DelayedObject<ProcessInstance>(System.currentTimeMillis() + EXECUTION_DELAY.get(), process));
+        WeakReference<ProcessInstance> ref = new WeakReference<ProcessInstance>(process);
+        toPersist.put(new DelayedObject<WeakReference<ProcessInstance>>(System.currentTimeMillis() + EXECUTION_DELAY.get(), ref));
     }
 
     @Override

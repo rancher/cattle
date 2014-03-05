@@ -2,15 +2,26 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-                      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-                      http://www.springframework.org/schema/context
-                      http://www.springframework.org/schema/context/spring-context-3.0.xsd"
-                      >
+                      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+                      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd" >
 
     <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.AccountDaoImpl" />
     <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.AgentDaoImpl" />
     <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.GenericMapDaoImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.core.dao.impl.GenericResourceDaoImpl" />
+
+    <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createAndSchedule" isolation="READ_COMMITTED" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="GenericResourceDaoImplAdvice"
+            pointcut="execution(* io.github.ibuildthecloud.dstack.core.dao.GenericResourceDao.*(..))" />
+    </aop:config>
 
 </beans>

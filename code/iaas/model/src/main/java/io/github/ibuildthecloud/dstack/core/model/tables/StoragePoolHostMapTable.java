@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolHostMapTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord> {
 
-	private static final long serialVersionUID = 1616067203;
+	private static final long serialVersionUID = -1647219014;
 
 	/**
 	 * The singleton instance of <code>dstack.storage_pool_host_map</code>
@@ -32,14 +32,24 @@ public class StoragePoolHostMapTable extends org.jooq.impl.TableImpl<io.github.i
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.Long> ID = createField("id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
-	 * The column <code>dstack.storage_pool_host_map.host_id</code>.
+	 * The column <code>dstack.storage_pool_host_map.name</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.Long> HOST_ID = createField("host_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>dstack.storage_pool_host_map.storage_pool_id</code>.
+	 * The column <code>dstack.storage_pool_host_map.kind</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.Long> STORAGE_POOL_ID = createField("storage_pool_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.String> KIND = createField("kind", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
+
+	/**
+	 * The column <code>dstack.storage_pool_host_map.uuid</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
+
+	/**
+	 * The column <code>dstack.storage_pool_host_map.description</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
 	 * The column <code>dstack.storage_pool_host_map.state</code>.
@@ -49,7 +59,7 @@ public class StoragePoolHostMapTable extends org.jooq.impl.TableImpl<io.github.i
 	/**
 	 * The column <code>dstack.storage_pool_host_map.created</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
 	 * The column <code>dstack.storage_pool_host_map.removed</code>.
@@ -57,9 +67,24 @@ public class StoragePoolHostMapTable extends org.jooq.impl.TableImpl<io.github.i
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.util.Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.storage_pool_host_map.uuid</code>.
+	 * The column <code>dstack.storage_pool_host_map.remove_time</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.String> UUID = createField("uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.util.Date> REMOVE_TIME = createField("remove_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.storage_pool_host_map.data</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+
+	/**
+	 * The column <code>dstack.storage_pool_host_map.storage_pool_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.Long> STORAGE_POOL_ID = createField("storage_pool_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.storage_pool_host_map.host_id</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, java.lang.Long> HOST_ID = createField("host_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>dstack.storage_pool_host_map</code> table reference
@@ -104,7 +129,7 @@ public class StoragePoolHostMapTable extends org.jooq.impl.TableImpl<io.github.i
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_STORAGE_POOL_HOST_MAP_PRIMARY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_STORAGE_POOL_HOST_MAP_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_STORAGE_POOL_HOST_MAP_IDX_STORAGE_POOL_HOST_MAP_UUID);
 	}
 
 	/**
@@ -112,7 +137,7 @@ public class StoragePoolHostMapTable extends org.jooq.impl.TableImpl<io.github.i
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.STORAGE_POOL_HOST_MAP_IBFK_1, io.github.ibuildthecloud.dstack.core.model.Keys.STORAGE_POOL_HOST_MAP_IBFK_2);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolHostMapRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_STORAGE_POOL_HOST_MAP__STORAGE_POOL_ID, io.github.ibuildthecloud.dstack.core.model.Keys.FK_STORAGE_POOL_HOST_MAP__HOST_ID);
 	}
 
 	/**

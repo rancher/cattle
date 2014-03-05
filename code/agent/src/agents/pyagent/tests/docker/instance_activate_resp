@@ -2,15 +2,31 @@
     "data": {
         "instance": {
             "+data": {
+                "+fields": {
+                    "dockerHostIp": "1.2.3.4",
+                    "dockerPorts": {
+                        "8080/tcp": "1234",
+                        "12201/udp": "5678"
+                    }
+                },
                 "dockerContainer": {
                     "Command": "sleep 120",
                     "Image": "ibuildthecloud/helloworld:latest",
                     "Names": [
                         "/c861f990-4472-4fa1-960f-65171b544c28"
                     ],
-                    "Ports": null,
-                    "SizeRootFs": 0,
-                    "SizeRw": 0
+                    "Ports": [
+                        {
+                            "IP": "0.0.0.0",
+                            "Type": "udp",
+                            "PrivatePort": 12201
+                        },
+                        {
+                            "IP": "0.0.0.0",
+                            "Type": "tcp",
+                            "PrivatePort": 8080
+                        }
+                    ]
                 }
             }
         }

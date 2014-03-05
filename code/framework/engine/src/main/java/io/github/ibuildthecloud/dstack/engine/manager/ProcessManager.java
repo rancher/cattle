@@ -16,7 +16,9 @@ public interface ProcessManager {
 
     ProcessInstance createProcessInstance(LaunchConfiguration config);
 
-    void persistState(ProcessInstance process);
+    void scheduleProcessInstance(LaunchConfiguration config);
+
+    void persistState(ProcessInstance process, boolean schedule);
 
     ProcessDefinition getProcessDelegate(ProcessDefinition def);
 

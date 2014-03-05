@@ -33,7 +33,7 @@ public interface Data extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.data.name</code>.
 	 */
-	@javax.persistence.Column(name = "name", nullable = false, length = 255)
+	@javax.persistence.Column(name = "name", unique = true, nullable = false, length = 255)
 	public java.lang.String getName();
 
 	/**

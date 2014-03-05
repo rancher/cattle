@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.dstack.allocator.service;
 
+import io.github.ibuildthecloud.dstack.allocator.constraint.Constraint;
 import io.github.ibuildthecloud.dstack.core.model.Host;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
 import io.github.ibuildthecloud.dstack.core.model.StoragePool;
@@ -57,6 +58,10 @@ public class AllocationAttempt {
 
     public Instance getInstance() {
         return instance;
+    }
+
+    public Long getInstanceId() {
+        return instance == null ? null : instance.getId();
     }
 
     public Set<Host> getHosts() {

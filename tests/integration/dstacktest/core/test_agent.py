@@ -2,7 +2,9 @@ from common_fixtures import *  # NOQA
 import time
 
 
-def test_agent_create(admin_client):
+# sim_context is included to ensure that the simulator context creates
+# the first agent and thus the first external simulator pool
+def test_agent_create(admin_client, sim_context):
     client = admin_client
 
     uri = "sim://" + str(time.time())

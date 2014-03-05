@@ -22,6 +22,7 @@ checkPort()
 
 if ! checkPort
 then
+    export DSTACK_LOGBACK_ROOT_LEVEL=WARN
     ./dstack.sh run &
     LASTPID=$!
 fi

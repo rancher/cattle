@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DataTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord> {
 
-	private static final long serialVersionUID = 122214348;
+	private static final long serialVersionUID = 1181709729;
 
 	/**
 	 * The singleton instance of <code>dstack.data</code>
@@ -89,7 +89,7 @@ public class DataTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_DATA_PRIMARY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_DATA_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_DATA_IDX_DATA_NAME);
 	}
 
 	/**

@@ -6,7 +6,11 @@ import io.github.ibuildthecloud.dstack.lock.definition.AbstractLockDefinition;
 public class AgentConnectionLockDefinition extends AbstractLockDefinition {
 
     public AgentConnectionLockDefinition(Agent agent) {
-        super("AGENT.CONNECTION." + agent.getId());
+        this(agent.getId());
+    }
+
+    public AgentConnectionLockDefinition(Long agentId) {
+        super("AGENT.CONNECTION." + agentId);
     }
 
 }

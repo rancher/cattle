@@ -1,6 +1,7 @@
 FROM ibuildthecloud/ubuntu-core-base:13.10
-RUN yes | apt-get install --no-install-recommends openjdk-7-jre-headless
-FROM ibuildthecloud/dstack-buildenv
+RUN apt-get update && apt-get install -y --no-install-recommends openjdk-7-jre-headless
+RUN apt-get update && apt-get install -y curl
 ADD artifacts /var/lib/dstack
-CMD ["/var/lib/dstack/dstack.sh" ]
+RUN DSTACK_SSH_KEYGEN_ON_STARTUP=false /var/lib/dstack/dstack.sh --exit
+CMD ["/var/lib/dstack/dstack.sh"]
 EXPOSE 8080

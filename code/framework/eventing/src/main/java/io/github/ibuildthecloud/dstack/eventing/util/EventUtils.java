@@ -1,26 +1,23 @@
 package io.github.ibuildthecloud.dstack.eventing.util;
 
+import io.github.ibuildthecloud.dstack.eventing.annotation.AnnotatedEventListener;
+import io.github.ibuildthecloud.dstack.eventing.annotation.EventHandler;
+import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
+
+import java.lang.reflect.Method;
+
+import org.apache.commons.lang.StringUtils;
+
 
 public class EventUtils {
 
-
-
-//    public static EventVO newEventFromData(String name, Object data) {
-//        EventVO result = new EventVO();
-//        result.setData(data);
-//        return result;
-//    }
-//
-//    public static EventVO newEventFromResourceId(String name, Object resourceId) {
-//        return newEventFromResource(name, null, resourceId);
-//    }
-//
-//    public static EventVO newEventFromResource(String name, String type, Object resourceId) {
-//        EventVO event = new EventVO();
-//        event.setName(name);
-//        event.setResourceType(type);
-//        event.setResourceId(resourceId == null ? null : resourceId.toString());
-//        return event;
-//    }
+    public static String getEventNameNonProvided(EventHandler handler, AnnotatedEventListener listener, Method method) {
+        String name = handler.name();
+        if ( StringUtils.isEmpty(name) ) {
+            return NamedUtils.toDotSeparated(method.getName());
+        } else {
+            return name;
+        }
+    }
 
 }

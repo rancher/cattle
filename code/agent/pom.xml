@@ -13,7 +13,7 @@
             <resource>
                 <directory>src</directory>
                 <excludes>
-                    <exclude>**/.tox/**/*</exclude>
+                    <exclude>**/.*/**/*</exclude>
                 </excludes>
             </resource>
         </resources>

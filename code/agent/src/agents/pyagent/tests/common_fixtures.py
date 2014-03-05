@@ -1,6 +1,6 @@
 import pytest
-import os.path
 from os.path import dirname
+from datadiff.tools import assert_equals
 import os
 import sys
 
@@ -37,6 +37,19 @@ def json_data(name):
         return marshaller.from_string(f.read())
 
 
+def _diff_dict(left, right):
+    for k in left.keys():
+        left_value = left.get(k)
+        right_value = right.get(k)
+        try:
+            _diff_dict(dict(left_value), dict(right_value))
+            assert_equals(dict(left_value), dict(right_value))
+        except AssertionError, e:
+            raise e
+        except:
+            pass
+
+
 def event_test(agent, name, post_func=None):
     req = json_data(name)
     resp_valid = json_data(name + '_resp')
@@ -47,6 +60,7 @@ def event_test(agent, name, post_func=None):
     del resp["id"]
     del resp["time"]
 
-    assert dict(resp) == dict(resp_valid)
+    _diff_dict(dict(resp), dict(resp_valid))
+    assert_equals(dict(resp), dict(resp_valid))
 
     return req, resp

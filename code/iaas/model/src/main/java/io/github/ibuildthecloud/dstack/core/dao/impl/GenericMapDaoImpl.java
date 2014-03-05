@@ -102,7 +102,7 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
 
     protected <T> Table<?> getTable(Class<?> mapType) {
         Class<UpdatableRecord<?>> record = JooqUtils.getRecordClass(schemaFactory, mapType);
-        return JooqUtils.getTable(record);
+        return JooqUtils.getTableFromRecordClass(record);
     }
 
     protected Relationship getRelationship(Class<?> mapType, Class<?> resourceType) {

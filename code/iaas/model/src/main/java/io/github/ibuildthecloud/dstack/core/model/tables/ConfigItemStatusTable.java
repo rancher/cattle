@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord> {
 
-	private static final long serialVersionUID = 1368597367;
+	private static final long serialVersionUID = 1213661998;
 
 	/**
 	 * The singleton instance of <code>dstack.config_item_status</code>
@@ -109,7 +109,7 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.github.ibu
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_STATUS_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_STATUS_NAME);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_STATUS_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_STATUS_IDX_CONFIG_ITEM_STATUS_NAME_AGENT_ID);
 	}
 
 	/**
@@ -117,7 +117,7 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.github.ibu
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.CONFIG_ITEM_STATUS_IBFK_1);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemStatusRecord, ?>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.FK_CONFIG_ITEM__AGENT_ID);
 	}
 
 	/**

@@ -48,5 +48,10 @@
             <artifactId>dstack-framework-managed-context</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dstack-framework-metrics</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

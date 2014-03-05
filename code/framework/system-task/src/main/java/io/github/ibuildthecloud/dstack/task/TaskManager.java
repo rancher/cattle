@@ -6,4 +6,6 @@ public interface TaskManager {
 
     Runnable getRunnable(String name);
 
+    boolean shouldLock(String name);
+
 }

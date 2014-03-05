@@ -11,9 +11,9 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "credential", schema = "dstack")
-public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Credential {
+public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Credential {
 
-	private static final long serialVersionUID = -1525272172;
+	private static final long serialVersionUID = -1650568746;
 
 	/**
 	 * Setter for <code>dstack.credential.id</code>.
@@ -61,27 +61,10 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Getter for <code>dstack.credential.account_id</code>.
 	 */
-	@javax.persistence.Column(name = "account_id", nullable = false, precision = 19)
+	@javax.persistence.Column(name = "account_id", precision = 19)
 	@Override
 	public java.lang.Long getAccountId() {
 		return (java.lang.Long) getValue(2);
-	}
-
-	/**
-	 * Setter for <code>dstack.credential.state</code>.
-	 */
-	@Override
-	public void setState(java.lang.String value) {
-		setValue(3, value);
-	}
-
-	/**
-	 * Getter for <code>dstack.credential.state</code>.
-	 */
-	@javax.persistence.Column(name = "state", nullable = false, length = 255)
-	@Override
-	public java.lang.String getState() {
-		return (java.lang.String) getValue(3);
 	}
 
 	/**
@@ -89,7 +72,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public void setKind(java.lang.String value) {
-		setValue(4, value);
+		setValue(3, value);
 	}
 
 	/**
@@ -98,40 +81,57 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
 	@Override
 	public java.lang.String getKind() {
+		return (java.lang.String) getValue(3);
+	}
+
+	/**
+	 * Setter for <code>dstack.credential.uuid</code>.
+	 */
+	@Override
+	public void setUuid(java.lang.String value) {
+		setValue(4, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.credential.uuid</code>.
+	 */
+	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
+	@Override
+	public java.lang.String getUuid() {
 		return (java.lang.String) getValue(4);
 	}
 
 	/**
-	 * Setter for <code>dstack.credential.public_value</code>.
+	 * Setter for <code>dstack.credential.description</code>.
 	 */
 	@Override
-	public void setPublicValue(java.lang.String value) {
+	public void setDescription(java.lang.String value) {
 		setValue(5, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.credential.public_value</code>.
+	 * Getter for <code>dstack.credential.description</code>.
 	 */
-	@javax.persistence.Column(name = "public_value", length = 16777215)
+	@javax.persistence.Column(name = "description", length = 1024)
 	@Override
-	public java.lang.String getPublicValue() {
+	public java.lang.String getDescription() {
 		return (java.lang.String) getValue(5);
 	}
 
 	/**
-	 * Setter for <code>dstack.credential.secret_value</code>.
+	 * Setter for <code>dstack.credential.state</code>.
 	 */
 	@Override
-	public void setSecretValue(java.lang.String value) {
+	public void setState(java.lang.String value) {
 		setValue(6, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.credential.secret_value</code>.
+	 * Getter for <code>dstack.credential.state</code>.
 	 */
-	@javax.persistence.Column(name = "secret_value", length = 1024)
+	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	@Override
-	public java.lang.String getSecretValue() {
+	public java.lang.String getState() {
 		return (java.lang.String) getValue(6);
 	}
 
@@ -146,7 +146,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Getter for <code>dstack.credential.created</code>.
 	 */
-	@javax.persistence.Column(name = "created", nullable = false)
+	@javax.persistence.Column(name = "created")
 	@Override
 	public java.util.Date getCreated() {
 		return (java.util.Date) getValue(7);
@@ -170,11 +170,28 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	/**
+	 * Setter for <code>dstack.credential.remove_time</code>.
+	 */
+	@Override
+	public void setRemoveTime(java.util.Date value) {
+		setValue(9, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.credential.remove_time</code>.
+	 */
+	@javax.persistence.Column(name = "remove_time")
+	@Override
+	public java.util.Date getRemoveTime() {
+		return (java.util.Date) getValue(9);
+	}
+
+	/**
 	 * Setter for <code>dstack.credential.data</code>.
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
-		setValue(9, value);
+		setValue(10, value);
 	}
 
 	/**
@@ -183,24 +200,41 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
-		return (java.util.Map<String,Object>) getValue(9);
+		return (java.util.Map<String,Object>) getValue(10);
 	}
 
 	/**
-	 * Setter for <code>dstack.credential.uuid</code>.
+	 * Setter for <code>dstack.credential.public_value</code>.
 	 */
 	@Override
-	public void setUuid(java.lang.String value) {
-		setValue(10, value);
+	public void setPublicValue(java.lang.String value) {
+		setValue(11, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.credential.uuid</code>.
+	 * Getter for <code>dstack.credential.public_value</code>.
 	 */
-	@javax.persistence.Column(name = "uuid", nullable = false, length = 128)
+	@javax.persistence.Column(name = "public_value", length = 4096)
 	@Override
-	public java.lang.String getUuid() {
-		return (java.lang.String) getValue(10);
+	public java.lang.String getPublicValue() {
+		return (java.lang.String) getValue(11);
+	}
+
+	/**
+	 * Setter for <code>dstack.credential.secret_value</code>.
+	 */
+	@Override
+	public void setSecretValue(java.lang.String value) {
+		setValue(12, value);
+	}
+
+	/**
+	 * Getter for <code>dstack.credential.secret_value</code>.
+	 */
+	@javax.persistence.Column(name = "secret_value", length = 4096)
+	@Override
+	public java.lang.String getSecretValue() {
+		return (java.lang.String) getValue(12);
 	}
 
 	// -------------------------------------------------------------------------
@@ -216,23 +250,23 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	}
 
 	// -------------------------------------------------------------------------
-	// Record11 type implementation
+	// Record13 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String> fieldsRow() {
-		return (org.jooq.Row11) super.fieldsRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String> fieldsRow() {
+		return (org.jooq.Row13) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String> valuesRow() {
-		return (org.jooq.Row11) super.valuesRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String> valuesRow() {
+		return (org.jooq.Row13) super.valuesRow();
 	}
 
 	/**
@@ -264,14 +298,6 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.STATE;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field5() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.KIND;
 	}
 
@@ -279,8 +305,16 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field5() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.UUID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public org.jooq.Field<java.lang.String> field6() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.PUBLIC_VALUE;
+		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.DESCRIPTION;
 	}
 
 	/**
@@ -288,7 +322,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field7() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.SECRET_VALUE;
+		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.STATE;
 	}
 
 	/**
@@ -311,7 +345,15 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Map<String,Object>> field10() {
+	public org.jooq.Field<java.util.Date> field10() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.REMOVE_TIME;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.util.Map<String,Object>> field11() {
 		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.DATA;
 	}
 
@@ -319,8 +361,16 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field11() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.UUID;
+	public org.jooq.Field<java.lang.String> field12() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.PUBLIC_VALUE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.String> field13() {
+		return io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL.SECRET_VALUE;
 	}
 
 	/**
@@ -352,14 +402,6 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public java.lang.String value4() {
-		return getState();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value5() {
 		return getKind();
 	}
 
@@ -367,8 +409,16 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
+	public java.lang.String value5() {
+		return getUuid();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.String value6() {
-		return getPublicValue();
+		return getDescription();
 	}
 
 	/**
@@ -376,7 +426,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public java.lang.String value7() {
-		return getSecretValue();
+		return getState();
 	}
 
 	/**
@@ -399,7 +449,15 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Map<String,Object> value10() {
+	public java.util.Date value10() {
+		return getRemoveTime();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Map<String,Object> value11() {
 		return getData();
 	}
 
@@ -407,8 +465,16 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value11() {
-		return getUuid();
+	public java.lang.String value12() {
+		return getPublicValue();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value13() {
+		return getSecretValue();
 	}
 
 	/**
@@ -443,15 +509,6 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public CredentialRecord value4(java.lang.String value) {
-		setState(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public CredentialRecord value5(java.lang.String value) {
 		setKind(value);
 		return this;
 	}
@@ -460,8 +517,17 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
+	public CredentialRecord value5(java.lang.String value) {
+		setUuid(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public CredentialRecord value6(java.lang.String value) {
-		setPublicValue(value);
+		setDescription(value);
 		return this;
 	}
 
@@ -470,7 +536,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 */
 	@Override
 	public CredentialRecord value7(java.lang.String value) {
-		setSecretValue(value);
+		setState(value);
 		return this;
 	}
 
@@ -496,7 +562,16 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CredentialRecord value10(java.util.Map<String,Object> value) {
+	public CredentialRecord value10(java.util.Date value) {
+		setRemoveTime(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public CredentialRecord value11(java.util.Map<String,Object> value) {
 		setData(value);
 		return this;
 	}
@@ -505,8 +580,8 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CredentialRecord value11(java.lang.String value) {
-		setUuid(value);
+	public CredentialRecord value12(java.lang.String value) {
+		setPublicValue(value);
 		return this;
 	}
 
@@ -514,7 +589,16 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CredentialRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.String value11) {
+	public CredentialRecord value13(java.lang.String value) {
+		setSecretValue(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public CredentialRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13) {
 		return this;
 	}
 
@@ -530,14 +614,16 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 		setId(from.getId());
 		setName(from.getName());
 		setAccountId(from.getAccountId());
-		setState(from.getState());
 		setKind(from.getKind());
-		setPublicValue(from.getPublicValue());
-		setSecretValue(from.getSecretValue());
+		setUuid(from.getUuid());
+		setDescription(from.getDescription());
+		setState(from.getState());
 		setCreated(from.getCreated());
 		setRemoved(from.getRemoved());
+		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
-		setUuid(from.getUuid());
+		setPublicValue(from.getPublicValue());
+		setSecretValue(from.getSecretValue());
 	}
 
 	/**
@@ -563,19 +649,21 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Create a detached, initialised CredentialRecord
 	 */
-	public CredentialRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String state, java.lang.String kind, java.lang.String publicValue, java.lang.String secretValue, java.util.Date created, java.util.Date removed, java.util.Map<String,Object> data, java.lang.String uuid) {
+	public CredentialRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String publicValue, java.lang.String secretValue) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL);
 
 		setValue(0, id);
 		setValue(1, name);
 		setValue(2, accountId);
-		setValue(3, state);
-		setValue(4, kind);
-		setValue(5, publicValue);
-		setValue(6, secretValue);
+		setValue(3, kind);
+		setValue(4, uuid);
+		setValue(5, description);
+		setValue(6, state);
 		setValue(7, created);
 		setValue(8, removed);
-		setValue(9, data);
-		setValue(10, uuid);
+		setValue(9, removeTime);
+		setValue(10, data);
+		setValue(11, publicValue);
+		setValue(12, secretValue);
 	}
 }

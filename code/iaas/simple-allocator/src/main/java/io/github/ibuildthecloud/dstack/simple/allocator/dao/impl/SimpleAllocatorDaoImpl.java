@@ -1,16 +1,15 @@
 package io.github.ibuildthecloud.dstack.simple.allocator.dao.impl;
 
+import static io.github.ibuildthecloud.dstack.core.model.tables.AgentTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.HostTable.*;
-import static io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.*;
-import static io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.*;
-import static io.github.ibuildthecloud.dstack.core.model.tables.InstanceTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolHostMapTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.*;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationCandidate;
+import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.constants.CommonStatesConstants;
-import io.github.ibuildthecloud.dstack.core.model.Volume;
 import io.github.ibuildthecloud.dstack.db.jooq.dao.impl.AbstractJooqDao;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.simple.allocator.dao.QueryOptions;
 import io.github.ibuildthecloud.dstack.simple.allocator.dao.SimpleAllocatorDao;
 
 import java.util.Iterator;
@@ -18,41 +17,30 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.Record2;
+import org.jooq.impl.DSL;
+
+import com.netflix.config.DynamicBooleanProperty;
 
 public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAllocatorDao {
+
+    private static final DynamicBooleanProperty SPREAD = ArchaiusUtil.getBoolean("simple.allocator.spread");
 
     ObjectManager objectManager;
 
     @Override
-    public boolean isInstance(long instanceId, String kind) {
-        return create().select(STORAGE_POOL.fields())
-                .from(STORAGE_POOL)
-                .join(IMAGE_STORAGE_POOL_MAP)
-                    .on(STORAGE_POOL.ID.eq(IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID))
-                .join(IMAGE)
-                    .on(IMAGE.ID.eq(IMAGE_STORAGE_POOL_MAP.IMAGE_ID))
-                .join(INSTANCE)
-                    .on(INSTANCE.IMAGE_ID.eq(IMAGE.ID))
-                .where(
-                    INSTANCE.ID.eq(instanceId)
-                    .and(IMAGE_STORAGE_POOL_MAP.REMOVED.isNull())
-                    .and(STORAGE_POOL.KIND.eq(kind)))
-                .fetch().size() > 0;
+    public Iterator<AllocationCandidate> iteratorPools(List<Long> volumes, QueryOptions options) {
+        return iteratorHosts(volumes, options, false);
     }
 
     @Override
-    public Iterator<AllocationCandidate> iteratorPools(List<Long> volumes, String kind) {
-        return iteratorHosts(volumes, kind, false);
+    public Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options) {
+        return iteratorHosts(volumes, options, true);
     }
 
-    @Override
-    public Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, String kind) {
-        return iteratorHosts(volumes, kind, true);
-    }
-
-    protected Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, String kind, boolean hosts) {
+    protected Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options, boolean hosts) {
         final Cursor<Record2<Long,Long>> cursor = create()
                 .select(HOST.ID, STORAGE_POOL.ID)
                 .from(HOST)
@@ -61,22 +49,44 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                         .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull()))
                 .join(STORAGE_POOL)
                     .on(STORAGE_POOL.ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
+                .leftOuterJoin(AGENT)
+                    .on(AGENT.ID.eq(HOST.AGENT_ID))
                 .where(
-                    HOST.STATE.eq(CommonStatesConstants.ACTIVE)
+                    AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
+                    .and(HOST.STATE.eq(CommonStatesConstants.ACTIVE))
                     .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
-                    .and(STORAGE_POOL.KIND.eq(kind))
-                    .and(HOST.KIND.eq(kind)))
+                    .and(getQueryOptionCondition(options)))
+                .orderBy(SPREAD.get() ? HOST.COMPUTE_FREE.asc() : HOST.COMPUTE_FREE.desc())
                 .fetchLazy();
 
-        return new AllocationCandidateIterator(cursor, volumes, hosts);
+        return new AllocationCandidateIterator(objectManager, cursor, volumes, hosts);
     }
 
-    @Override
-    public boolean isVolume(long volumeId, String kind) {
-        Volume volume = objectManager.loadResource(Volume.class, volumeId);
-        Long instanceId = volume.getInstanceId();
+    protected Condition getQueryOptionCondition(QueryOptions options) {
+        Condition condition = null;
 
-        return instanceId == null ? false : isInstance(instanceId, kind);
+        if ( options.getHosts().size() > 0 ) {
+            condition = append(condition, HOST.ID.in(options.getHosts()));
+        }
+
+        if ( options.getCompute() != null ) {
+            condition = append(condition, HOST.COMPUTE_FREE.ge(options.getCompute()));
+        }
+
+        if ( options.getKind() != null ) {
+            condition = append(condition,
+                    HOST.KIND.eq(options.getKind()).and(STORAGE_POOL.KIND.eq(options.getKind())));
+        }
+
+        return condition == null ? DSL.trueCondition() : condition;
+    }
+
+    protected Condition append(Condition base, Condition next) {
+        if ( base == null ) {
+            return next;
+        } else {
+            return base.and(next);
+        }
     }
 
     public ObjectManager getObjectManager() {

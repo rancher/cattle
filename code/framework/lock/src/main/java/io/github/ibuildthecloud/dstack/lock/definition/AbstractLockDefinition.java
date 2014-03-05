@@ -20,4 +20,10 @@ public class AbstractLockDefinition implements LockDefinition {
             super(lockId);
         }
     }
+
+    @Override
+    public String toString() {
+        return getLockId();
+    }
+
 }

@@ -1,0 +1,9 @@
+{
+    "collectionMethods" : [],
+    "resourceFields" : {
+        "remove" : {
+            "type" : "boolean",
+            "create" : true
+        }
+    }
+}

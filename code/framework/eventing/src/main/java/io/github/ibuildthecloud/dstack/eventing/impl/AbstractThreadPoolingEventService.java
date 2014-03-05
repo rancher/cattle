@@ -1,24 +1,24 @@
 package io.github.ibuildthecloud.dstack.eventing.impl;
 
-import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.PoolSpecificListener;
 import io.github.ibuildthecloud.dstack.eventing.annotation.EventHandler;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.lock.exception.FailedToAcquireLockException;
+import io.github.ibuildthecloud.dstack.metrics.util.MetricsUtil;
+import io.github.ibuildthecloud.dstack.util.concurrent.NamedExecutorService;
+import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
@@ -26,14 +26,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-public abstract class AbstractThreadPoolingEventService extends AbstractEventService {
+import com.codahale.metrics.Counter;
+
+public abstract class AbstractThreadPoolingEventService extends AbstractEventService implements InitializationTask {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractThreadPoolingEventService.class);
 
     String threadCountSetting = "eventing.pool.%s.count";
     String defaultPoolName = EventHandler.DEFAULT_POOL_KEY;
-    Map<String,Executor> executors = new ConcurrentHashMap<String, Executor>();
-    Map<String,Executor> queuedExecutors = new ConcurrentHashMap<String, Executor>();
+    List<NamedExecutorService> namedExecutorServiceList;
+    Map<String,ExecutorService> executorServices;
+    Map<String,Counter> dropped = new ConcurrentHashMap<String, Counter>();
 
     protected void onEvent(String listenerKey, String eventName, byte[] bytes) {
         try {
@@ -98,10 +101,27 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
             try {
                 executor.execute(runnable);
             } catch ( RejectedExecutionException e ) {
-                log.info("Too busy to process [{}]", event);
+                dropped(event);
+                log.debug("Too busy to process [{}]", event);
             }
         }
     }
+
+    protected void dropped(Event event) {
+        String metricName = metricName(event, "dropped");
+        if ( metricName == null ) {
+            return;
+        }
+
+        Counter counter = dropped.get(metricName);
+        if ( counter == null ) {
+            counter = MetricsUtil.getRegistry().counter(metricName);
+            dropped.put(metricName, counter);
+        }
+
+        counter.inc();
+    }
+
 
     protected Runnable getRunnable(final Event event, final EventListener listener) {
         return new NoExceptionRunnable() {
@@ -122,46 +142,32 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     }
 
     protected Executor getExecutor(Event event, EventListener listener) {
+        Executor executor = null;
         if ( listener instanceof PoolSpecificListener ) {
-            return getExecutor(((PoolSpecificListener)listener).getPoolKey(),
-                    ((PoolSpecificListener)listener).isAllowQueueing(),
-                    ((PoolSpecificListener)listener).getQueueDepth());
-        } else {
-            return getDefaultExecutor();
-        }
-    }
-
-    protected Executor getDefaultExecutor() {
-        return getExecutor(defaultPoolName, false, 0);
-    }
-
-    protected Executor getExecutor(String name, boolean queued, int size) {
-        Map<String,Executor> executors = queued ? queuedExecutors : this.executors;
-        Executor executor = executors.get(name);
-
-        if ( executor != null ) {
-            return executor;
+            executor = executorServices.get(((PoolSpecificListener)listener).getPoolKey());
         }
 
-        int threadCount = getThreadCount(name, defaultPoolName);
-        if ( queued ) {
-            executor = new ThreadPoolExecutor(threadCount, threadCount, 0L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(size));
-        } else {
-            executor = new ThreadPoolExecutor(Math.min(5, threadCount), threadCount, 3L, TimeUnit.MINUTES, new SynchronousQueue<Runnable>());
+        if ( executor == null ) {
+            executor = getDefaultExecutor();
         }
-
-        executors.put(name, executor);
 
         return executor;
     }
 
-    protected int getThreadCount(String name, String defaultSetting) {
-        int count = ArchaiusUtil.getInt(String.format(threadCountSetting, name)).get();
-        if ( count > 0 ) {
-            return count;
-        } else {
-            return ArchaiusUtil.getInt(String.format(threadCountSetting, defaultSetting)).get();
+    protected Executor getDefaultExecutor() {
+        return executorService;
+    }
+
+    @Override
+    public void start() {
+        executorServices = new HashMap<String, ExecutorService>();
+        for ( NamedExecutorService named : namedExecutorServiceList ) {
+            executorServices.put(named.getName(), named.getExecutorService());
         }
+    }
+
+    @Override
+    public void stop() {
     }
 
     public String getThreadCountSetting() {
@@ -178,5 +184,13 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
     public void setDefaultPoolName(String defaultPoolName) {
         this.defaultPoolName = defaultPoolName;
+    }
+
+    public List<NamedExecutorService> getNamedExecutorServiceList() {
+        return namedExecutorServiceList;
+    }
+
+    public void setNamedExecutorServiceList(List<NamedExecutorService> namedExecutorServiceList) {
+        this.namedExecutorServiceList = namedExecutorServiceList;
     }
 }

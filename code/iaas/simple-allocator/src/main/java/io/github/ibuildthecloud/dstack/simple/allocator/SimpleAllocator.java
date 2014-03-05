@@ -1,5 +1,9 @@
 package io.github.ibuildthecloud.dstack.simple.allocator;
 
+import io.github.ibuildthecloud.dstack.allocator.constraint.ComputeContstraint;
+import io.github.ibuildthecloud.dstack.allocator.constraint.Constraint;
+import io.github.ibuildthecloud.dstack.allocator.constraint.KindConstraint;
+import io.github.ibuildthecloud.dstack.allocator.constraint.ValidHostsConstraint;
 import io.github.ibuildthecloud.dstack.allocator.service.AbstractAllocator;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationAttempt;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationCandidate;
@@ -7,6 +11,7 @@ import io.github.ibuildthecloud.dstack.allocator.service.AllocationRequest;
 import io.github.ibuildthecloud.dstack.allocator.service.Allocator;
 import io.github.ibuildthecloud.dstack.core.model.Volume;
 import io.github.ibuildthecloud.dstack.lock.definition.LockDefinition;
+import io.github.ibuildthecloud.dstack.simple.allocator.dao.QueryOptions;
 import io.github.ibuildthecloud.dstack.simple.allocator.dao.SimpleAllocatorDao;
 import io.github.ibuildthecloud.dstack.simple.allocator.dao.impl.AllocationCandidateIterator;
 import io.github.ibuildthecloud.dstack.util.type.Named;
@@ -21,12 +26,23 @@ import javax.inject.Inject;
 public class SimpleAllocator extends AbstractAllocator implements Allocator, Named {
 
     String name = getClass().getSimpleName();
-    String kind;
     SimpleAllocatorDao simpleAllocatorDao;
 
     @Override
+    protected synchronized boolean acquireLockAndAllocate(AllocationRequest request, AllocationAttempt attempt, Object deallocate) {
+        /* Overriding just to add synchronized */
+        return super.acquireLockAndAllocate(request, attempt, deallocate);
+    }
+
+    @Override
+    protected synchronized boolean acquireLockAndDeallocate(AllocationRequest request) {
+        /* Overriding just to add synchronized */
+        return super.acquireLockAndDeallocate(request);
+    }
+
+    @Override
     protected LockDefinition getAllocationLock(AllocationRequest request, AllocationAttempt attempt) {
-        return null;
+        return new SimpleAllocatorLock();
     }
 
     @Override
@@ -36,10 +52,26 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             volumeIds.add(v.getId());
         }
 
+        QueryOptions options = new QueryOptions();
+
+        for ( Constraint constraint : request.getConstraints() ) {
+            if ( constraint instanceof KindConstraint ) {
+                options.setKind(((KindConstraint)constraint).getKind());
+            }
+
+            if ( constraint instanceof ComputeContstraint ) {
+                options.setCompute(((ComputeContstraint)constraint).getComputeFree());
+            }
+
+            if ( constraint instanceof ValidHostsConstraint ) {
+                options.getHosts().addAll(((ValidHostsConstraint)constraint).getHosts());
+            }
+        }
+
         if ( request.getInstance() == null ) {
-            return simpleAllocatorDao.iteratorPools(volumeIds, kind);
+            return simpleAllocatorDao.iteratorPools(volumeIds, options);
         } else {
-            return simpleAllocatorDao.iteratorHosts(volumeIds, kind);
+            return simpleAllocatorDao.iteratorHosts(volumeIds, options);
         }
     }
 
@@ -55,14 +87,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Override
     protected boolean supports(AllocationRequest request) {
-        switch(request.getType()) {
-        case INSTANCE:
-            return simpleAllocatorDao.isInstance(request.getResourceId(), kind);
-        case VOLUME:
-            return simpleAllocatorDao.isVolume(request.getResourceId(), kind);
-        }
-
-        return false;
+        return true;
     }
 
     public SimpleAllocatorDao getSimulatorAllocatorDao() {
@@ -77,15 +102,6 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     @Override
     public String toString() {
         return NamedUtils.getName(this);
-    }
-
-    public String getKind() {
-        return kind;
-    }
-
-    @Inject
-    public void setKind(String kind) {
-        this.kind = kind;
     }
 
     @Override

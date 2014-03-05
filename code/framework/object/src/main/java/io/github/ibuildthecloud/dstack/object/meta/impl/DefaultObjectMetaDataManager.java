@@ -7,8 +7,10 @@ import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.meta.TypeSet;
+import io.github.ibuildthecloud.dstack.object.util.DataAccessor;
 import io.github.ibuildthecloud.dstack.object.util.DataUtils;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
+import io.github.ibuildthecloud.dstack.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
@@ -45,7 +47,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Table;
 import org.jooq.TableField;
 
-public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, SchemaPostProcessor, InitializationTask {
+public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, SchemaPostProcessor, InitializationTask, Priority {
 
     SchemaFactory schemaFactory;
     List<TypeSet> typeSets;
@@ -122,7 +124,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     protected void registerRelationships() {
         for ( TypeSet typeSet : typeSets ) {
             for ( Class<?> clz : typeSet.getTypeClasses() ) {
-                Table<?> table = JooqUtils.getTable(clz);
+                Table<?> table = JooqUtils.getTableFromRecordClass(clz);
                 if ( table == null ) {
                     continue;
                 }
@@ -154,7 +156,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     }
 
     protected List<Schema> registerTypes() {
-        schemaFactory.addPostProcessor(this);
+//        schemaFactory.addPostProcessor(this);
         List<Schema> schemas = new ArrayList<Schema>();
 
         for ( TypeSet typeSet : typeSets ) {
@@ -360,9 +362,8 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         Map<String,Relationship> relationships = this.relationships.get(factory.getSchemaClass(schema.getId()));
 
         if ( relationships != null ) {
-            for ( Map.Entry<String,Relationship> entry : relationships.entrySet() ) {
-                String linkName = entry.getKey();
-                Relationship relationship = entry.getValue();
+            for ( Relationship relationship : relationships.values() ) {
+                String linkName = relationship.getName();
 
                 if ( relationship.getRelationshipType() != REFERENCE ) {
                     schema.getIncludeableLinks().add(linkName);
@@ -513,6 +514,10 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
             result.put(TRANSITIONING_FIELD, TRANSITIONING_YES);
             result.put(TRANSITIONING_MESSAGE_FIELD, TRANSITIONING_MESSAGE_DEFAULT_FIELD);
             result.put(TRANSITIONING_PROGRESS_FIELD, null);
+        } else {
+            if ( DataAccessor.fields(obj).withKey(TRANSITIONING_FIELD).get() != null ) {
+                return Collections.emptyMap();
+            }
         }
 
         return result;
@@ -543,6 +548,11 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     @Inject
     public void setProcessDefinitions(List<ProcessDefinition> processDefinitions) {
         this.processDefinitions = processDefinitions;
+    }
+
+    @Override
+    public int getPriority() {
+        return Priority.PRE;
     }
 
 }

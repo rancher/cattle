@@ -3,6 +3,7 @@ package io.github.ibuildthecloud.dstack.simple.allocator.dao.impl;
 import static io.github.ibuildthecloud.dstack.core.model.tables.HostTable.*;
 import static io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.*;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationCandidate;
+import io.github.ibuildthecloud.dstack.object.ObjectManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,18 +19,24 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Cursor;
 import org.jooq.Record2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class AllocationCandidateIterator implements Iterator<AllocationCandidate> {
+
+    private static final Logger log = LoggerFactory.getLogger(AllocationCandidateIterator.class);
 
     List<Long> volumeIds;
     Cursor<Record2<Long,Long>> cursor;
     Record2<Long,Long> last;
     Stack<AllocationCandidate> candidates = new Stack<AllocationCandidate>();
+    ObjectManager objectManager;
     boolean hosts;
 
-    public AllocationCandidateIterator(Cursor<Record2<Long,Long>> cursor, List<Long> volumeIds, boolean hosts) {
+    public AllocationCandidateIterator(ObjectManager objectManager, Cursor<Record2<Long,Long>> cursor, List<Long> volumeIds, boolean hosts) {
         super();
+        this.objectManager = objectManager;
         this.volumeIds = volumeIds;
         this.cursor = cursor;
         this.hosts = hosts;
@@ -59,10 +66,10 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
             Record2<Long,Long> record = cursor.fetchOne();
             long nextHostId = record.getValue(HOST.ID);
             Long poolId = record.getValue(STORAGE_POOL.ID);
-            if ( hostId == null || hostId == poolId.longValue()) {
+            if ( hostId == null || hostId.longValue() == nextHostId) {
                 hostId = nextHostId;
                 pools.add(poolId);
-            } else if ( hostId != poolId.longValue() ) {
+            } else if ( hostId.longValue() != nextHostId ) {
                 last = record;
                 break;
             }
@@ -74,24 +81,29 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     }
 
     protected void enumerate(Long hostId, Set<Long> pools) {
-         if ( hostId == null ) {
-             return;
-         }
+        log.debug("Enumerating canditates hostId [{}] pools {}", hostId, pools);
 
-         Long candidateHostId = this.hosts ? hostId : null;
+        if ( hostId == null ) {
+            return;
+        }
 
-         if ( volumeIds.size() == 0 ) {
-             candidates.push(new AllocationCandidate(candidateHostId, Collections.<Long, Long>emptyMap()));
-         }
+        Long candidateHostId = this.hosts ? hostId : null;
 
-         for ( List<Pair<Long, Long>> pairs : traverse(volumeIds, pools) ) {
-             Map<Long,Long> volumeToPool = new HashMap<Long, Long>();
-             for ( Pair<Long, Long> pair : pairs ) {
-                 volumeToPool.put(pair.getLeft(), pair.getRight());
-             }
+        Map<Pair<Class<?>, Long>, Object> cache = new HashMap<Pair<Class<?>,Long>, Object>();
 
-             candidates.push(new AllocationCandidate(candidateHostId, volumeToPool));
-         }
+        if ( volumeIds.size() == 0 ) {
+            candidates.push(new AllocationCandidate(objectManager, cache, candidateHostId,
+                    Collections.<Long, Long>emptyMap()));
+        }
+
+        for ( List<Pair<Long, Long>> pairs : traverse(volumeIds, pools) ) {
+            Map<Long,Long> volumeToPool = new HashMap<Long, Long>();
+            for ( Pair<Long, Long> pair : pairs ) {
+                volumeToPool.put(pair.getLeft(), pair.getRight());
+            }
+
+            candidates.push(new AllocationCandidate(objectManager, cache, candidateHostId, volumeToPool));
+        }
     }
 
     public static <L,R> List<List<Pair<L,R>>> traverse(List<L> lefts, Set<R> rights) {

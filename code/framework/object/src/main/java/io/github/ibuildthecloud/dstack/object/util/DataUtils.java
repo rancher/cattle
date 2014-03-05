@@ -35,6 +35,10 @@ public class DataUtils {
         return CollectionUtils.toMap(getData(obj).get(FIELDS));
     }
 
+    public static void setData(Object obj, Map<String,Object> data) {
+        ObjectUtils.setPropertyIgnoreErrors(obj, DATA, data);
+    }
+
     public static Map<String,Object> getData(Object obj) {
         try {
             return CollectionUtils.toMap(PropertyUtils.getProperty(obj, DATA));
