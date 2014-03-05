@@ -46,9 +46,11 @@ def test_pagination_include(admin_client, sim_context):
     name = random_str()
     container_ids = []
     containers = []
+    host = sim_context['host']
     for i in range(5):
         c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                          name=name)
+                                          name=name,
+                                          requestedHostId=host.id)
         containers.append(c)
         container_ids.append(c.id)
 
@@ -56,7 +58,7 @@ def test_pagination_include(admin_client, sim_context):
         wait_success(admin_client, c)
 
     assert len(containers[0].instanceHostMaps()) == 1
-    host = containers[0].instanceHostMaps()[0].host()
+    assert host.id == containers[0].instanceHostMaps()[0].host().id
     r = admin_client.list_container(name=name)
 
     assert len(r) == 5

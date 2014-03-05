@@ -30,7 +30,12 @@ def test_compute_free(admin_client, sim_context):
 
 
 def _get_sim_hosts(admin_client):
-    return admin_client.list_host(removed_null=True, kind='sim')
+    ret = []
+    for h in admin_client.list_host(removed_null=True, kind='sim'):
+        if h.agent().state == 'active':
+            ret.append(h)
+
+    return ret
 
 
 def test_inactive_agent(admin_client, sim_context):
