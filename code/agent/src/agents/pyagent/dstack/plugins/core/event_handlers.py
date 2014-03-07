@@ -37,7 +37,8 @@ class ConfigUpdateHandler:
         pass
 
     def events(self):
-        return ["config.update"]
+        return []
+        #return ["config.update"]
 
     def execute(self, event):
         if not _should_handle(self, event):

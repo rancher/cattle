@@ -1,28 +1,20 @@
 import logging
-import requests.exceptions
-import time
 
-from . import docker_client
-from . import DockerConfig
+from . import LIBVIRT_KIND
+from .utils import pool_drivers
+from .config import LibvirtConfig
+from dstack.type_manager import get_type_list
 from dstack import Config
 from dstack.compute import BaseComputeDriver
 from dstack.agent.handler import KindBasedMixin
 from dstack import utils
 
-log = logging.getLogger('docker')
+log = logging.getLogger('libvirt-compute')
 
 
-def _is_running(container):
-    return container is not None and container['Status'].startswith('Up')
-
-
-def _is_stopped(container):
-    return container is None or container['Status'].startswith('Exit')
-
-
-class DockerCompute(KindBasedMixin, BaseComputeDriver):
+class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
     def __init__(self):
-        KindBasedMixin.__init__(self, kind='docker')
+        KindBasedMixin.__init__(self, kind='libvirt')
         BaseComputeDriver.__init__(self)
 
     @staticmethod
@@ -43,20 +35,21 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
 
         compute = {
             'type': 'host',
-            'kind': 'docker',
+            'kind': LIBVIRT_KIND,
             'name': Config.hostname(),
-            'uuid': DockerConfig.docker_uuid()
+            'uuid': LibvirtConfig.libvirt_uuid()
         }
 
-        pool = {
-            'type': 'storagePool',
-            'kind': 'docker',
-            'name': compute['name'] + ' Storage Pool',
-            'hostUuid': compute['uuid'],
-            'uuid': compute['uuid'] + '-pool'
-        }
+        resources = [compute]
 
-        utils.ping_add_resources(pong, compute, pool)
+        for driver in pool_drivers():
+            for pool in driver.discover(compute):
+                data = utils.get_data(pool, 'data', 'libvirt')
+                data['driver'] = driver.driver_name()
+
+                resources.append(pool)
+
+        utils.ping_add_resources(pong, *resources)
 
     def get_container_by_name(self, name):
         name = '/{0}'.format(name)

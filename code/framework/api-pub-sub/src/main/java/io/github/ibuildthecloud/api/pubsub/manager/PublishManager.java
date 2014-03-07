@@ -7,7 +7,10 @@ import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.id.IdentityFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
@@ -47,7 +50,7 @@ public class PublishManager extends AbstractNoOpResourceManager {
 
         event.setId(publish.getId());
         event.setName(publish.getName());
-        event.setResourceId(publish.getResourceId());
+        event.setResourceId(getResourceId(publish.getResourceId()));
         event.setResourceType(publish.getResourceType());
         event.setData(publish.getData());
         event.setPublisher(publish.getPublisher());
@@ -64,6 +67,11 @@ public class PublishManager extends AbstractNoOpResourceManager {
         }
 
         return event;
+    }
+
+    protected String getResourceId(String resourceId) {
+        IdFormatter formatter = ApiContext.getContext().getIdFormatter();
+        return formatter.parseId(resourceId);
     }
 
     public EventService getEventService() {

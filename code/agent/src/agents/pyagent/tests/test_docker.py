@@ -7,7 +7,7 @@ import dstack.plugins.docker  # NOQA
 
 from .common_fixtures import *  # NOQA
 import pytest
-from dstack import CONFIG_OVERRIDE
+from dstack import CONFIG_OVERRIDE, Config
 
 
 if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") != "true"',
@@ -143,7 +143,7 @@ def test_ping(agent, responses):
     CONFIG_OVERRIDE['DOCKER_UUID'] = 'testuuid'
 
     def post(req, resp):
-        hostname = socket.gethostname()
+        hostname = Config.hostname()
         pool_name = hostname + ' Storage Pool'
         assert resp['data']['resources'][0]['name'] == hostname
         assert resp['data']['resources'][1]['name'] == pool_name

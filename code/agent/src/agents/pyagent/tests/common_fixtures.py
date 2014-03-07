@@ -8,6 +8,7 @@ _file = os.path.abspath(__file__)
 sys.path.insert(0, dirname(dirname(_file)))
 
 import tests
+import shutil
 from .response_holder import ResponseHolder
 from dstack import type_manager, plugins
 from dstack.agent import Agent
@@ -17,6 +18,11 @@ plugins.load()
 
 
 TEST_DIR = os.path.join(dirname(tests.__file__))
+SCRATCH_DIR = os.path.join(TEST_DIR, 'scratch')
+
+if os.path.exists(SCRATCH_DIR):
+    shutil.rmtree(SCRATCH_DIR)
+os.makedirs(SCRATCH_DIR)
 
 
 @pytest.fixture(scope="module")

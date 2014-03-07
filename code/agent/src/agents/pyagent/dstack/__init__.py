@@ -1,4 +1,8 @@
 import os
+import socket
+
+from os import path
+from uuid import uuid4
 
 CONFIG_OVERRIDE = {}
 
@@ -18,6 +22,29 @@ def default_value(name, default):
 class Config:
     def __init__(self):
         pass
+
+    @staticmethod
+    def get_uuid_from_file(env_name, uuid_file):
+        uuid = default_value(env_name, None)
+        if uuid is not None:
+            return uuid
+
+        if path.exists(uuid_file):
+            with open(uuid_file) as f:
+                uuid = f.read().strip()
+            if len(uuid) == 0:
+                uuid = None
+
+        if uuid is None:
+            uuid = str(uuid4())
+            with open(uuid_file, 'w') as f:
+                f.write(uuid)
+
+        return uuid
+
+    @staticmethod
+    def hostname():
+        return default_value('HOSTNAME', socket.gethostname())
 
     @staticmethod
     def workers():
