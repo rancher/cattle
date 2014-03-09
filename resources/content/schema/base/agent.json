@@ -8,6 +8,10 @@
             "type": "string",
             "nullable": true,
             "create": true
+        },
+        "uri": {
+            "type": "string",
+            "unique": true
         }
     },
     "resourceActions" : {
