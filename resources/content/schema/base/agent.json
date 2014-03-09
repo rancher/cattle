@@ -7,6 +7,10 @@
         "user": {
             "type": "string",
             "create": true
+        },
+        "uri": {
+            "type": "string",
+            "unique": true
         }
     },
     "resourceActions" : {

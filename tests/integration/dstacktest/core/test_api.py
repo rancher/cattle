@@ -1,4 +1,20 @@
+from dstack import ApiError
 from common_fixtures import *  # NOQA
+
+
+def test_agent_unique(admin_client):
+    agents = admin_client.list_agent(uri='sim://unique')
+
+    if len(agents) == 0:
+        agent = admin_client.create_agent(uri='sim://unique')
+        agent.deactivate()
+
+    try:
+        admin_client.create_agent(uri='sim://unique')
+        assert False
+    except ApiError, e:
+        assert e.error.code == 'NotUnique'
+        pass
 
 
 def test_pagination(admin_client, sim_context):
