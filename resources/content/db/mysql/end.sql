@@ -4,7 +4,7 @@ CREATE TABLE `config_item` (
   `name` varchar(255) NOT NULL,
   `source_version` varchar(1024) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_config_item__name` (`name`)
+  UNIQUE KEY `idx_config_item__name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `config_item_status`;
@@ -101,7 +101,3 @@ CREATE TABLE `task_instance` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `process_instance` ADD INDEX `idx_process_instance_et_rt_ri` ( `end_time` , `resource_type` , `resource_id` );
-
-ALTER TABLE `config_item_status` ADD CONSTRAINT `fk_config_item__name` FOREIGN KEY ( `name` ) REFERENCES `dstack`.`config_item` (
-  `name`
-) ON DELETE CASCADE ON UPDATE CASCADE;
