@@ -30,8 +30,8 @@ end host
 start image
 string url
 bool is_public
-bigint physical_size_megabytes
-bigint virtual_size_megabytes
+bigint physical_size_mb
+bigint virtual_size_mb
 string checksum
 string format
 end image
@@ -43,6 +43,7 @@ end offering
 start instance
 string allocation_state
 bigint compute
+bigint memory_mb
 ref image
 ref offering
 string hostname
@@ -50,16 +51,16 @@ ref zone
 end instance
 
 start storage_pool
-bigint physical_total_size_megabytes
-bigint virtual_total_size_megabytes
+bigint physical_total_size_mb
+bigint virtual_total_size_mb
 bool external
 ref agent
 ref zone
 end storage_pool
 
 start volume
-bigint physical_size_megabytes
-bigint virtual_size_megabytes
+bigint physical_size_mb
+bigint virtual_size_mb
 int device_number
 string format
 string allocation_state

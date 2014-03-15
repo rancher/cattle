@@ -44,7 +44,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         compute = {
             'type': 'host',
             'kind': 'docker',
-            'name': Config.hostname(),
+            'name': Config.hostname() + '/docker',
             'uuid': DockerConfig.docker_uuid()
         }
 

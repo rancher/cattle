@@ -25,6 +25,19 @@ QCOW_TEST_FILE = os.path.join(TEST_DIR, 'libvirt/qcow2.img')
 POOL_DIR = os.path.join(TEST_DIR, 'scratch/libvirtpool')
 
 
+@pytest.fixture
+def random_volume(pool_dir, random_qcow2):
+    volume = fake_volume(image_file=random_qcow2)
+    image = volume.image
+    pool = fake_pool(pool_dir)
+
+    driver = DirectoryPoolDriver()
+    driver.image_activate(image, pool, LogProgress())
+    driver.volume_activate(volume, pool, LogProgress())
+
+    return volume, driver.get_volume(volume, pool), driver, pool
+
+
 @pytest.fixture(scope='module')
 def pool_dir():
     if not os.path.exists(POOL_DIR):
@@ -65,22 +78,27 @@ def test_promote(pool_dir, random_qcow2):
     os.remove(dest_file)
 
 
-def _fake_volume(image_file=file):
+def fake_volume(image_file=file):
     url = 'file://{0}'.format(file)
 
     ret = JsonObject({
+        'id': str(uuid4()),
+        'type': 'volume',
         'uuid': str(uuid4()),
         'url': url,
-        'image': _fake_image(image_file)
+        'deviceNumber': 0,
+        'image': fake_image(image_file)
     })
 
     return ret
 
 
-def _fake_image(file):
+def fake_image(file):
     url = 'file://{0}'.format(file)
 
     ret = JsonObject({
+        'id': str(uuid4()),
+        'type': 'image',
         'uuid': str(uuid4()),
         'url': url,
     })
@@ -91,11 +109,14 @@ def _fake_image(file):
     return ret
 
 
-def _fake_pool(directory):
+def fake_pool(directory):
     return JsonObject({
+        'id': str(uuid4()),
+        'type': 'storagePool',
         'kind': 'libvirt',
         'data': {
             'libvirt': {
+                'driver': 'directory',
                 'poolPath': directory
             }
         }
@@ -104,8 +125,8 @@ def _fake_pool(directory):
 
 @if_libvirt
 def test_download(pool_dir, random_qcow2):
-    image = _fake_image(file=random_qcow2)
-    pool = _fake_pool(pool_dir)
+    image = fake_image(file=random_qcow2)
+    pool = fake_pool(pool_dir)
 
     driver = DirectoryPoolDriver()
     driver.image_activate(image, pool, LogProgress())
@@ -120,8 +141,8 @@ def test_download(pool_dir, random_qcow2):
 def test_image_exists(pool_dir, random_qcow2):
     uuid = test_download(pool_dir, random_qcow2)
 
-    image = _fake_image(None)
-    pool = _fake_pool(pool_dir)
+    image = fake_image(None)
+    pool = fake_pool(pool_dir)
     image.uuid = uuid
 
     driver = DirectoryPoolDriver()
@@ -130,8 +151,8 @@ def test_image_exists(pool_dir, random_qcow2):
 
 @if_libvirt
 def test_get_image(pool_dir, random_qcow2):
-    image = _fake_image(file=random_qcow2)
-    pool = _fake_pool(pool_dir)
+    image = fake_image(file=random_qcow2)
+    pool = fake_pool(pool_dir)
 
     driver = DirectoryPoolDriver()
     driver.image_activate(image, pool, LogProgress())
@@ -141,20 +162,47 @@ def test_get_image(pool_dir, random_qcow2):
     assert found is not None
     assert found.file == os.path.join(pool_dir, '{0}.qcow2'.format(image.uuid))
     assert found.get_format() == 'qcow2'
+    assert not os.access(found.file, os.W_OK)
 
 
 @if_libvirt
 def test_volume_activate(pool_dir, random_qcow2):
-    volume = _fake_volume(image_file=random_qcow2)
+    volume = fake_volume(image_file=random_qcow2)
     image = volume.image
-    pool = _fake_pool(pool_dir)
+    pool = fake_pool(pool_dir)
 
     driver = DirectoryPoolDriver()
     driver.image_activate(image, pool, LogProgress())
     driver.volume_activate(volume, pool, LogProgress())
 
     found = driver.get_volume(volume, pool)
+    found_image = driver.get_image(image, pool)
 
     assert found is not None
-    assert found.info['backing_file'] == os.path.basename(image.file)
+    assert found.info['backing-filename'] == os.path.basename(found_image.file)
+    assert found.info['virtual-size'] == found_image.info['virtual-size']
     assert os.path.dirname(found.file) == pool_dir
+
+
+@if_libvirt
+def test_volume_remove(random_volume, pool_dir, random_qcow2):
+    volume, volume_obj, driver, pool = random_volume
+    image_obj = driver.get_image(volume.image, pool)
+
+    assert os.path.exists(volume_obj.file)
+    assert os.path.exists(image_obj.file)
+    assert not driver.is_volume_removed(volume, pool)
+
+    driver.volume_remove(volume, pool, LogProgress())
+
+    assert not os.path.exists(volume_obj.file)
+    assert os.path.exists(image_obj.file)
+    assert driver.is_volume_removed(volume, pool)
+
+@if_libvirt
+def test_volume_deactivate(random_volume, pool_dir, random_qcow2):
+    volume, volume_obj, driver, pool = random_volume
+    image_obj = driver.get_image(volume.image, pool)
+
+    # There is not deactivate in a directory pool
+    assert driver.is_volume_inactive(volume, pool)

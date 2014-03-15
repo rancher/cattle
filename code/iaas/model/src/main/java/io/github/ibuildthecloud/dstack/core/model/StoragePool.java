@@ -136,26 +136,26 @@ public interface StoragePool extends java.io.Serializable {
 	public java.util.Map<String,Object> getData();
 
 	/**
-	 * Setter for <code>dstack.storage_pool.physical_total_size_megabytes</code>.
+	 * Setter for <code>dstack.storage_pool.physical_total_size_mb</code>.
 	 */
-	public void setPhysicalTotalSizeMegabytes(java.lang.Long value);
+	public void setPhysicalTotalSizeMb(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool.physical_total_size_megabytes</code>.
+	 * Getter for <code>dstack.storage_pool.physical_total_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "physical_total_size_megabytes", precision = 19)
-	public java.lang.Long getPhysicalTotalSizeMegabytes();
+	@javax.persistence.Column(name = "physical_total_size_mb", precision = 19)
+	public java.lang.Long getPhysicalTotalSizeMb();
 
 	/**
-	 * Setter for <code>dstack.storage_pool.virtual_total_size_megabytes</code>.
+	 * Setter for <code>dstack.storage_pool.virtual_total_size_mb</code>.
 	 */
-	public void setVirtualTotalSizeMegabytes(java.lang.Long value);
+	public void setVirtualTotalSizeMb(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.storage_pool.virtual_total_size_megabytes</code>.
+	 * Getter for <code>dstack.storage_pool.virtual_total_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "virtual_total_size_megabytes", precision = 19)
-	public java.lang.Long getVirtualTotalSizeMegabytes();
+	@javax.persistence.Column(name = "virtual_total_size_mb", precision = 19)
+	public java.lang.Long getVirtualTotalSizeMb();
 
 	/**
 	 * Setter for <code>dstack.storage_pool.external</code>.

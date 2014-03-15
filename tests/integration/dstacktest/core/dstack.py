@@ -12,7 +12,7 @@ import argcomplete
 
 def _prefix(cmd):
     prefix = os.path.basename(cmd.replace('-', '_'))
-    for i in ['.py', '-cli', '-tool', '-util']:
+    for i in ['.pyc', '.py', '-cli', '-tool', '-util']:
         prefix = prefix.replace(i, '')
     return prefix.upper()
 
@@ -527,7 +527,7 @@ def _env_prefix(cmd):
     return _prefix(cmd) + '_'
 
 
-def from_env(prefix, **kw):
+def from_env(prefix=PREFIX + '_', **kw):
     args = dict((x, None) for x in ['access_key', 'secret_key', 'url', 'cache',
                                     'cache_time', 'strict'])
     args.update(kw)

@@ -56,9 +56,13 @@ def _diff_dict(left, right):
             pass
 
 
-def event_test(agent, name, post_func=None):
+def event_test(agent, name, pre_func=None, post_func=None):
     req = json_data(name)
     resp_valid = json_data(name + '_resp')
+
+    if pre_func is not None:
+        pre_func(req)
+
     resp = agent.execute(req)
     if post_func is not None:
         post_func(req, resp)

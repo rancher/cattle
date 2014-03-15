@@ -23,7 +23,13 @@ class LibvirtStoragePoolDriver(object):
     def is_volume_active(self, volume, storage_pool):
         raise Exception("Unsupported operation")
 
+    def volume_activate(self, volume, storage_pool):
+        raise Exception("Unsupported operation")
+
     def is_volume_inactive(self, volume, storage_pool):
+        raise Exception("Unsupported operation")
+
+    def volume_deactivate(self, volume, storage_pool):
         raise Exception("Unsupported operation")
 
     def is_volume_removed(self, volume, storage_pool):
@@ -37,5 +43,5 @@ class LibvirtVolumeDriver(object):
     def __init__(self):
         pass
 
-    def inspect(self, storage_pool, file):
+    def inspect(self, storage_pool, file, volume=None):
         raise Exception("Unsupported operation")

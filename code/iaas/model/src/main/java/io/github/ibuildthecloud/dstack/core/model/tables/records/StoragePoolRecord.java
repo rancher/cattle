@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "storage_pool", schema = "dstack")
 public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long, java.lang.Long>, io.github.ibuildthecloud.dstack.core.model.StoragePool {
 
-	private static final long serialVersionUID = 265545963;
+	private static final long serialVersionUID = 1825154803;
 
 	/**
 	 * Setter for <code>dstack.storage_pool.id</code>.
@@ -204,36 +204,36 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.physical_total_size_megabytes</code>.
+	 * Setter for <code>dstack.storage_pool.physical_total_size_mb</code>.
 	 */
 	@Override
-	public void setPhysicalTotalSizeMegabytes(java.lang.Long value) {
+	public void setPhysicalTotalSizeMb(java.lang.Long value) {
 		setValue(11, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.physical_total_size_megabytes</code>.
+	 * Getter for <code>dstack.storage_pool.physical_total_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "physical_total_size_megabytes", precision = 19)
+	@javax.persistence.Column(name = "physical_total_size_mb", precision = 19)
 	@Override
-	public java.lang.Long getPhysicalTotalSizeMegabytes() {
+	public java.lang.Long getPhysicalTotalSizeMb() {
 		return (java.lang.Long) getValue(11);
 	}
 
 	/**
-	 * Setter for <code>dstack.storage_pool.virtual_total_size_megabytes</code>.
+	 * Setter for <code>dstack.storage_pool.virtual_total_size_mb</code>.
 	 */
 	@Override
-	public void setVirtualTotalSizeMegabytes(java.lang.Long value) {
+	public void setVirtualTotalSizeMb(java.lang.Long value) {
 		setValue(12, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.storage_pool.virtual_total_size_megabytes</code>.
+	 * Getter for <code>dstack.storage_pool.virtual_total_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "virtual_total_size_megabytes", precision = 19)
+	@javax.persistence.Column(name = "virtual_total_size_mb", precision = 19)
 	@Override
-	public java.lang.Long getVirtualTotalSizeMegabytes() {
+	public java.lang.Long getVirtualTotalSizeMb() {
 		return (java.lang.Long) getValue(12);
 	}
 
@@ -413,7 +413,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field12() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.STORAGE_POOL.PHYSICAL_TOTAL_SIZE_MEGABYTES;
+		return io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.STORAGE_POOL.PHYSICAL_TOTAL_SIZE_MB;
 	}
 
 	/**
@@ -421,7 +421,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field13() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.STORAGE_POOL.VIRTUAL_TOTAL_SIZE_MEGABYTES;
+		return io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.STORAGE_POOL.VIRTUAL_TOTAL_SIZE_MB;
 	}
 
 	/**
@@ -541,7 +541,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@Override
 	public java.lang.Long value12() {
-		return getPhysicalTotalSizeMegabytes();
+		return getPhysicalTotalSizeMb();
 	}
 
 	/**
@@ -549,7 +549,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@Override
 	public java.lang.Long value13() {
-		return getVirtualTotalSizeMegabytes();
+		return getVirtualTotalSizeMb();
 	}
 
 	/**
@@ -680,7 +680,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@Override
 	public StoragePoolRecord value12(java.lang.Long value) {
-		setPhysicalTotalSizeMegabytes(value);
+		setPhysicalTotalSizeMb(value);
 		return this;
 	}
 
@@ -689,7 +689,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	 */
 	@Override
 	public StoragePoolRecord value13(java.lang.Long value) {
-		setVirtualTotalSizeMegabytes(value);
+		setVirtualTotalSizeMb(value);
 		return this;
 	}
 
@@ -748,8 +748,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 		setRemoved(from.getRemoved());
 		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
-		setPhysicalTotalSizeMegabytes(from.getPhysicalTotalSizeMegabytes());
-		setVirtualTotalSizeMegabytes(from.getVirtualTotalSizeMegabytes());
+		setPhysicalTotalSizeMb(from.getPhysicalTotalSizeMb());
+		setVirtualTotalSizeMb(from.getVirtualTotalSizeMb());
 		setExternal(from.getExternal());
 		setAgentId(from.getAgentId());
 		setZoneId(from.getZoneId());
@@ -778,7 +778,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Create a detached, initialised StoragePoolRecord
 	 */
-	public StoragePoolRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalTotalSizeMegabytes, java.lang.Long virtualTotalSizeMegabytes, java.lang.Boolean external, java.lang.Long agentId, java.lang.Long zoneId) {
+	public StoragePoolRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalTotalSizeMb, java.lang.Long virtualTotalSizeMb, java.lang.Boolean external, java.lang.Long agentId, java.lang.Long zoneId) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.StoragePoolTable.STORAGE_POOL);
 
 		setValue(0, id);
@@ -792,8 +792,8 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 		setValue(8, removed);
 		setValue(9, removeTime);
 		setValue(10, data);
-		setValue(11, physicalTotalSizeMegabytes);
-		setValue(12, virtualTotalSizeMegabytes);
+		setValue(11, physicalTotalSizeMb);
+		setValue(12, virtualTotalSizeMb);
 		setValue(13, external);
 		setValue(14, agentId);
 		setValue(15, zoneId);

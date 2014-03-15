@@ -1,2 +1,3 @@
+mako
 docker-py==0.3.0
 portalocker

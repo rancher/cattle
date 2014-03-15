@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord> {
 
-	private static final long serialVersionUID = -207443293;
+	private static final long serialVersionUID = -1586230113;
 
 	/**
 	 * The singleton instance of <code>dstack.storage_pool</code>
@@ -82,14 +82,14 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.github.ibuildth
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.storage_pool.physical_total_size_megabytes</code>.
+	 * The column <code>dstack.storage_pool.physical_total_size_mb</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.lang.Long> PHYSICAL_TOTAL_SIZE_MEGABYTES = createField("physical_total_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.lang.Long> PHYSICAL_TOTAL_SIZE_MB = createField("physical_total_size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>dstack.storage_pool.virtual_total_size_megabytes</code>.
+	 * The column <code>dstack.storage_pool.virtual_total_size_mb</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.lang.Long> VIRTUAL_TOTAL_SIZE_MEGABYTES = createField("virtual_total_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord, java.lang.Long> VIRTUAL_TOTAL_SIZE_MB = createField("virtual_total_size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>dstack.storage_pool.external</code>.

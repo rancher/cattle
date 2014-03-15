@@ -1,15 +1,69 @@
 import logging
+import os
 
 from . import LIBVIRT_KIND
+from .connection import LibvirtConnection
+from .storage import get_pool_driver
 from .utils import pool_drivers
 from .config import LibvirtConfig
-from dstack.type_manager import get_type_list
 from dstack import Config
 from dstack.compute import BaseComputeDriver
 from dstack.agent.handler import KindBasedMixin
 from dstack import utils
 
+from mako.template import Template
+from mako.lookup import TemplateLookup
+
+DEFAULT_CONFIG_PATHS = [
+    ['host', 'data', 'libvirt'],
+    ['instance', 'data', 'libvirt'],
+    ['instance', 'offering', 'data', 'libvirt'],
+]
+
 log = logging.getLogger('libvirt-compute')
+
+
+def _is_running(conn, instance):
+    if instance is None:
+        return False
+    return True
+
+
+class TemplateConfig(object):
+    def __init__(self, instance, host, paths=DEFAULT_CONFIG_PATHS):
+        self.instance = instance
+        self.host = host
+        self.paths = paths
+
+    def param(self, name, default=None):
+        for path in self.paths:
+            do_continue = False
+            src = self
+
+            for part in path:
+                if src is None:
+                    do_continue = True
+                    break
+                else:
+                    try:
+                        src = getattr(src, part)
+                    except AttributeError:
+                        try:
+                            src = src[part]
+                        except KeyError:
+                            do_continue = True
+                            break
+
+            if do_continue:
+                continue
+
+            try:
+                if src is not None:
+                    return src[name]
+            except KeyError:
+                pass
+
+        return default
 
 
 class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
@@ -18,10 +72,8 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         BaseComputeDriver.__init__(self)
 
     @staticmethod
-    def get_container_by(func):
-        c = docker_client()
-        containers = c.containers(all=True, trunc=False)
-        containers = filter(func, containers)
+    def get_instance_by(conn, func):
+        containers = filter(func, conn.listAllDomains())
 
         if len(containers) > 0:
             return containers[0]
@@ -36,7 +88,7 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         compute = {
             'type': 'host',
             'kind': LIBVIRT_KIND,
-            'name': Config.hostname(),
+            'name': Config.hostname() + '/libvirt',
             'uuid': LibvirtConfig.libvirt_uuid()
         }
 
@@ -51,97 +103,60 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
         utils.ping_add_resources(pong, *resources)
 
-    def get_container_by_name(self, name):
-        name = '/{0}'.format(name)
-        return self.get_container_by(lambda x: name in x['Names'])
+    def get_instance_by_uuid(self, conn, uuid):
+        return self.get_instance_by(conn, lambda x: uuid in x['Names'])
 
     def _is_instance_active(self, instance, host):
-        container = self.get_container_by_name(instance.uuid)
-        return _is_running(container)
+        with LibvirtConnection() as conn:
+            instance = self.get_instance_by_uuid(conn, instance.uuid)
+            return _is_running(conn, instance)
 
-    @staticmethod
-    def _setup_command(config, instance):
-        command = ""
+    def _get_template(self, instance, host):
+        template = LibvirtConfig.default_template_name()
+
         try:
-            command = instance.data.fields.command
-        except (KeyError, AttributeError):
-            return None
-
-        if len(command.strip()) == 0:
-            return None
-
-        command_args = []
-        try:
-            command_args = instance.data.fields.commandArgs
-        except (KeyError, AttributeError):
-            pass
-
-        if len(command_args) > 0:
-            command = [command]
-            command.extend(command_args)
-
-        if command is not None:
-            config['command'] = command
-
-    @staticmethod
-    def _setup_ports(config, instance):
-        ports = []
-        try:
-            for port in instance.data.fields.tcpPorts:
-                ports.append((port, 'tcp'))
-        except (AttributeError, KeyError):
+            template = instance.offering.data.libvirt.template
+        except AttributeError:
             pass
 
         try:
-            for port in instance.data.fields.udpPorts:
-                ports.append((port, 'udp'))
-        except (AttributeError, KeyError):
+            template = instance.data.libvirt.template
+        except AttributeError:
             pass
 
-        if len(ports) > 0:
-            config['ports'] = ports
+        dirs = LibvirtConfig.template_dirs()
+        for template_dir in dirs:
+            full_path = os.path.join(template_dir, template)
+            if os.path.exists(full_path):
+                return Template(filename=full_path,
+                                lookup=TemplateLookup(directories=dirs))
+
+        raise Exception('Failed to find template [{0}]'.format(template))
+
+    def _get_volumes(self, instance):
+        ret = []
+
+        for volume in instance.volumes:
+            if len(volume.storagePools) > 0:
+                storage_pool = volume.storagePools[0]
+                driver = get_pool_driver(storage_pool)
+                volume_obj = driver.get_volume(volume, storage_pool)
+                ret.append(volume_obj)
+
+        return ret
 
     def _do_instance_activate(self, instance, host, progress):
-        name = instance.uuid
-        try:
-            image = instance.image.data.dockerImage.id
-        except KeyError:
-            raise Exception('Can not start container with no image')
+        template = self._get_template(instance, host)
+        config = TemplateConfig(instance, host)
+        output = template.render(instance=instance,
+                                 volumes=self._get_volumes(instance),
+                                 host=host,
+                                 config=config)
 
-        c = docker_client()
-
-        config = {
-            'name': name,
-            'detach': True
-        }
-
-        # Docker-py doesn't support working_dir, maybe in 0.2.4?
-        copy_fields = [
-            ('environment', 'environment'),
-            ('hostname', 'hostname'),
-            ('user', 'user')]
-
-        for src, dest in copy_fields:
-            try:
-                config[dest] = instance.data.fields[src]
-            except (KeyError, AttributeError):
-                pass
-
-        self._setup_command(config, instance)
-        self._setup_ports(config, instance)
-
-        container = self.get_container_by_name(name)
-        if container is None:
-            log.info('Creating docker container [%s] from config %s', name,
-                     config)
-            container = c.create_container(image, **config)
-
-        log.info('Starting docker container [%s] docker id [%s]', name,
-                 container['Id'])
-        c.start(container['Id'], publish_all_ports=True)
+        print output
 
     def _get_instance_host_map_data(self, obj):
-        existing = self.get_container_by_name(obj.instance.uuid)
+        existing = self.get_instance_by_name(obj.instance.uuid)
         docker_ports = {}
         docker_ip = None
 

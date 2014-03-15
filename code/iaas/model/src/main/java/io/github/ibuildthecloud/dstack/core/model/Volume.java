@@ -136,26 +136,26 @@ public interface Volume extends java.io.Serializable {
 	public java.util.Map<String,Object> getData();
 
 	/**
-	 * Setter for <code>dstack.volume.physical_size_megabytes</code>.
+	 * Setter for <code>dstack.volume.physical_size_mb</code>.
 	 */
-	public void setPhysicalSizeMegabytes(java.lang.Long value);
+	public void setPhysicalSizeMb(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.volume.physical_size_megabytes</code>.
+	 * Getter for <code>dstack.volume.physical_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "physical_size_megabytes", precision = 19)
-	public java.lang.Long getPhysicalSizeMegabytes();
+	@javax.persistence.Column(name = "physical_size_mb", precision = 19)
+	public java.lang.Long getPhysicalSizeMb();
 
 	/**
-	 * Setter for <code>dstack.volume.virtual_size_megabytes</code>.
+	 * Setter for <code>dstack.volume.virtual_size_mb</code>.
 	 */
-	public void setVirtualSizeMegabytes(java.lang.Long value);
+	public void setVirtualSizeMb(java.lang.Long value);
 
 	/**
-	 * Getter for <code>dstack.volume.virtual_size_megabytes</code>.
+	 * Getter for <code>dstack.volume.virtual_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "virtual_size_megabytes", precision = 19)
-	public java.lang.Long getVirtualSizeMegabytes();
+	@javax.persistence.Column(name = "virtual_size_mb", precision = 19)
+	public java.lang.Long getVirtualSizeMb();
 
 	/**
 	 * Setter for <code>dstack.volume.device_number</code>.

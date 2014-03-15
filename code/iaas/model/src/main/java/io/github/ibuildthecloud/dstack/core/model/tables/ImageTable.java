@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> {
 
-	private static final long serialVersionUID = -796086196;
+	private static final long serialVersionUID = -5775488;
 
 	/**
 	 * The singleton instance of <code>dstack.image</code>
@@ -92,14 +92,14 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>dstack.image.physical_size_megabytes</code>.
+	 * The column <code>dstack.image.physical_size_mb</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> PHYSICAL_SIZE_MEGABYTES = createField("physical_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> PHYSICAL_SIZE_MB = createField("physical_size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>dstack.image.virtual_size_megabytes</code>.
+	 * The column <code>dstack.image.virtual_size_mb</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> VIRTUAL_SIZE_MEGABYTES = createField("virtual_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord, java.lang.Long> VIRTUAL_SIZE_MB = createField("virtual_size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>dstack.image.checksum</code>.

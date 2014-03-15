@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord> {
 
-	private static final long serialVersionUID = 1595014578;
+	private static final long serialVersionUID = -647195474;
 
 	/**
 	 * The singleton instance of <code>dstack.config_item</code>
@@ -84,7 +84,7 @@ public class ConfigItemTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_PRIMARY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.github.ibuildthecloud.dstack.core.model.tables.records.ConfigItemRecord>>asList(io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_PRIMARY, io.github.ibuildthecloud.dstack.core.model.Keys.KEY_CONFIG_ITEM_IDX_CONFIG_ITEM__NAME);
 	}
 
 	/**

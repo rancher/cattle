@@ -73,10 +73,14 @@ class BaseHandler(object):
         if type is not None:
             inner_name = re.sub("([A-Z])", r'_\1', type)
             method_name = "_get_{0}_data".format(inner_name).lower()
+            method = None
             try:
-                return getattr(self, method_name)(obj)
+                method = getattr(self, method_name)
             except AttributeError:
                 pass
+
+            if method is not None:
+                return method(obj)
 
         return {}
 

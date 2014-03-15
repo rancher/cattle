@@ -63,8 +63,12 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
             return None
 
     def get_image(self, image, storage_pool):
-        return _get_objec
-    def _get_obj(self, image, storage_pool):
+        return self._get_object(image, storage_pool)
+
+    def get_volume(self, volume, storage_pool):
+        return self._get_object(volume, storage_pool)
+
+    def _get_object(self, image, storage_pool):
         if image is None:
             return None
 
@@ -74,7 +78,7 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
             return None
 
         for driver in volume_drivers():
-            image = driver.inspect(storage_pool, file)
+            image = driver.inspect(storage_pool, file, volume=image)
             if image is not None:
                 break
 
@@ -85,6 +89,9 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
 
     def is_image_active(self, image, storage_pool):
         return self._is_active(image, storage_pool)
+
+    def is_volume_inactive(self, image, storage_pool):
+        return True
 
     def is_volume_active(self, volume, storage_pool):
         return self._is_active(volume, storage_pool)
@@ -129,3 +136,10 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
         pool_path = self._get_path(storage_pool)
 
         cloned.promote(pool_path, volume)
+
+    def is_volume_removed(self, volume, storage_pool):
+        return self._get_object(volume, storage_pool) is None
+
+    def volume_remove(self, volume, storage_pool, progress):
+        volume = self._get_object(volume, storage_pool)
+        volume.remove()

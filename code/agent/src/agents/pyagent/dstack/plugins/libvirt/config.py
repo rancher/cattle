@@ -26,3 +26,12 @@ class LibvirtConfig:
     def libvirt_uuid():
         return Config.get_uuid_from_file('LIBVIRT_UUID',
                                          LibvirtConfig.libvirt_uuid_file())
+
+    @staticmethod
+    def template_dirs():
+        default = path.join(path.dirname(__file__))
+        return default_value('LIBVIRT_TEMPLATE_DIR', default).split()
+
+    @staticmethod
+    def default_template_name():
+        return default_value('LIBVIRT_DEFAULT_TEMPLATE', 'default_template.tmpl')

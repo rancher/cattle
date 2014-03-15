@@ -1,11 +1,11 @@
 {
     "authorize" : {
         "image" : "cru",
-        "image.checksum" : "cru",
+        "image.checksum" : "cr",
         "image.format" : "r",
         "image.isPublic" : "cru",
-        "image.physicalSizeMegabytes" : "r",
-        "image.virtualSizeMegabytes" : "r",
+        "image.physicalSizeMb" : "r",
+        "image.virtualSizeMb" : "r",
         "image.url" : "cr"
     }
 }

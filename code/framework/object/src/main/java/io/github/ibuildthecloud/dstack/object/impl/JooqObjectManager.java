@@ -4,6 +4,8 @@ import io.github.ibuildthecloud.dstack.engine.idempotent.Idempotent;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecution;
 import io.github.ibuildthecloud.dstack.engine.idempotent.IdempotentExecutionNoReturn;
 import io.github.ibuildthecloud.dstack.object.jooq.utils.JooqUtils;
+import io.github.ibuildthecloud.dstack.object.meta.MapRelationship;
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.util.DataAccessor;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
@@ -25,8 +27,11 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.ForeignKey;
+import org.jooq.JoinType;
 import org.jooq.ResultQuery;
+import org.jooq.SelectQuery;
 import org.jooq.Table;
+import org.jooq.TableField;
 import org.jooq.UpdatableRecord;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDSLContext;
@@ -248,6 +253,32 @@ public class JooqObjectManager extends AbstractObjectManager {
     }
 
 
+    @SuppressWarnings("unchecked")
+    @Override
+    protected <T> List<T> getListByRelationshipMap(Object obj, MapRelationship rel) {
+        Class<UpdatableRecord<?>> typeClass = JooqUtils.getRecordClass(schemaFactory, rel.getObjectType());
+
+        String mappingType = schemaFactory.getSchemaName(rel.getMappingType());
+        String fromType = schemaFactory.getSchemaName(rel.getObjectType());
+
+        TableField<?, Object> fieldFrom = JooqUtils.getTableField(getMetaDataManager(), fromType, ObjectMetaDataManager.ID_FIELD);
+        TableField<?, Object> mappingTo = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getOtherRelationship().getPropertyName());
+        TableField<?, Object> mappingOther = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getPropertyName());
+        TableField<?, Object> mappingRemoved = JooqUtils.getTableField(getMetaDataManager(), mappingType, ObjectMetaDataManager.REMOVED_FIELD);
+
+        Table<?> table = JooqUtils.getTable(schemaFactory, typeClass);
+        Table<?> mapTable = JooqUtils.getTable(schemaFactory, rel.getMappingType());
+
+        SelectQuery<?> query = create().selectQuery();
+        query.addFrom(table);
+        query.addSelect(table.fields());
+        query.addJoin(mapTable, fieldFrom.eq(mappingTo)
+                .and(mappingRemoved.isNull())
+                .and(mappingOther.eq(ObjectUtils.getId(obj))));
+
+        return (List<T>)query.fetchInto(typeClass);
+    }
+
     @Override
     public Map<String,Object> convertToPropertiesFor(Object obj, Map<Object,Object> values) {
         Map<String,Object> result = new LinkedHashMap<String, Object>();
@@ -401,5 +432,6 @@ public class JooqObjectManager extends AbstractObjectManager {
     public void setTransactionDelegate(TransactionDelegate transactionDelegate) {
         this.transactionDelegate = transactionDelegate;
     }
+
 
 }

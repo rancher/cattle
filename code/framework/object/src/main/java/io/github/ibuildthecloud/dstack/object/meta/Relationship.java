@@ -3,7 +3,7 @@ package io.github.ibuildthecloud.dstack.object.meta;
 public interface Relationship {
 
     enum RelationshipType {
-        CHILD, REFERENCE
+        CHILD, REFERENCE, MAP
     }
 
     boolean isListResult();

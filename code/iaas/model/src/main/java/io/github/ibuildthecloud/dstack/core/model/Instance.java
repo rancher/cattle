@@ -158,6 +158,17 @@ public interface Instance extends java.io.Serializable {
 	public java.lang.Long getCompute();
 
 	/**
+	 * Setter for <code>dstack.instance.memory_mb</code>.
+	 */
+	public void setMemoryMb(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.instance.memory_mb</code>.
+	 */
+	@javax.persistence.Column(name = "memory_mb", precision = 19)
+	public java.lang.Long getMemoryMb();
+
+	/**
 	 * Setter for <code>dstack.instance.image_id</code>.
 	 */
 	public void setImageId(java.lang.Long value);
