@@ -64,7 +64,7 @@ You can either run dStack within docker or manually.  It is really a matter of p
 
 Java 6+ is required, Java 7+ is recommended.
 
-    java -jar dstack-latest.war
+    java -jar dstack.jar
 
 ### 3. Make sure it's running
 
