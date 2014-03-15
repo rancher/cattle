@@ -107,9 +107,9 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         return self.get_instance_by(conn, lambda x: uuid in x['Names'])
 
     def _is_instance_active(self, instance, host):
-        with LibvirtConnection() as conn:
-            instance = self.get_instance_by_uuid(conn, instance.uuid)
-            return _is_running(conn, instance)
+        conn = LibvirtConnection.open()
+        instance = self.get_instance_by_uuid(conn, instance.uuid)
+        return _is_running(conn, instance)
 
     def _get_template(self, instance, host):
         template = LibvirtConfig.default_template_name()
@@ -153,7 +153,10 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
                                  host=host,
                                  config=config)
 
+        conn = LibvirtConnection.open()
+        dom = conn.createXML(output, 0)
         print output
+        print dom
 
     def _get_instance_host_map_data(self, obj):
         existing = self.get_instance_by_name(obj.instance.uuid)
