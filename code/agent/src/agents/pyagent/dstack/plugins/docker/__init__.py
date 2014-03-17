@@ -19,6 +19,10 @@ class DockerConfig:
         pass
 
     @staticmethod
+    def docker_enabled():
+        return default_value('DOCKER_ENABLED', 'true') == 'true'
+
+    @staticmethod
     def docker_host_ip():
         return default_value('DOCKER_HOST_IP', Config.agent_ip())
 

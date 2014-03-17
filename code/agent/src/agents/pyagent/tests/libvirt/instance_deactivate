@@ -58,7 +58,7 @@
         }
     },
     "id": "fe8fe34c-1b13-4287-a094-a2c5f902722b",
-    "name": "compute.instance.activate;agent=91",
+    "name": "compute.instance.deactivate;agent=91",
     "previousIds": null,
     "previousNames": null,
     "publisher": null,

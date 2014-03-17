@@ -29,7 +29,7 @@ def _is_running(conn, instance):
     return True
 
 
-class TemplateConfig(object):
+class InstanceConfig(object):
     def __init__(self, instance, host, paths=DEFAULT_CONFIG_PATHS):
         self.instance = instance
         self.host = host
@@ -80,8 +80,7 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
         return None
 
-    @staticmethod
-    def on_ping(ping, pong):
+    def on_ping(self, ping, pong):
         if not utils.ping_include_resources(ping):
             return
 
@@ -104,15 +103,21 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         utils.ping_add_resources(pong, *resources)
 
     def get_instance_by_uuid(self, conn, uuid):
-        return self.get_instance_by(conn, lambda x: uuid in x['Names'])
+        return self.get_instance_by(conn, lambda x: x.name() == uuid)
 
     def _is_instance_active(self, instance, host):
-        conn = LibvirtConnection.open()
+        conn = self._get_connection(instance, host)
         instance = self.get_instance_by_uuid(conn, instance.uuid)
         return _is_running(conn, instance)
 
-    def _get_template(self, instance, host):
+    @staticmethod
+    def _get_template(instance, host):
         template = LibvirtConfig.default_template_name()
+
+        try:
+            template = host.data.libvirt.template
+        except AttributeError:
+            pass
 
         try:
             template = instance.offering.data.libvirt.template
@@ -133,7 +138,8 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
         raise Exception('Failed to find template [{0}]'.format(template))
 
-    def _get_volumes(self, instance):
+    @staticmethod
+    def _get_volumes(instance):
         ret = []
 
         for volume in instance.volumes:
@@ -147,70 +153,55 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
     def _do_instance_activate(self, instance, host, progress):
         template = self._get_template(instance, host)
-        config = TemplateConfig(instance, host)
+        config = InstanceConfig(instance, host)
         output = template.render(instance=instance,
                                  volumes=self._get_volumes(instance),
                                  host=host,
                                  config=config)
 
-        conn = LibvirtConnection.open()
-        dom = conn.createXML(output, 0)
-        print output
-        print dom
+        conn = self._get_connection(instance, host)
+        log.info('Starting %s', instance.uuid)
+        conn.createXML(output, 0)
+
+    def _get_connection(self, instance, host):
+        type = InstanceConfig(instance, host).param('type', 'kvm')
+        return LibvirtConnection.open(type)
 
     def _get_instance_host_map_data(self, obj):
-        existing = self.get_instance_by_name(obj.instance.uuid)
-        docker_ports = {}
-        docker_ip = None
+        conn = self._get_connection(obj.instance, obj.host)
+        existing = self.get_instance_by_uuid(conn, obj.instance.uuid)
 
-        if existing is not None:
-            inspect = docker_client().inspect_container(existing['Id'])
-            docker_ip = inspect['NetworkSettings']['IPAddress']
-            if existing.get('Ports') is not None:
-                for port in existing['Ports']:
-                    private_port = '{0}/{1}'.format(port['PrivatePort'],
-                                                    port['Type'])
-                    docker_ports[private_port] = str(port['PublicPort'])
-
-        return {
-            'instance': {
-                '+data': {
-                    'dockerContainer': existing,
-                    '+fields': {
-                        'dockerHostIp': DockerConfig.docker_host_ip(),
-                        'dockerPorts': docker_ports,
-                        'dockerIp': docker_ip
+        if existing is None:
+            return {}
+        else:
+            return {
+                'instance': {
+                    '+data': {
+                        '+libvirt': {
+                            'xml': existing.XMLDesc()
+                        }
                     }
                 }
             }
-        }
 
     def _is_instance_inactive(self, instance, host):
-        name = instance.uuid
-        container = self.get_container_by_name(name)
+        conn = self._get_connection(instance, host)
+        vm = self.get_instance_by_uuid(conn, instance.uuid)
 
-        return _is_stopped(container)
+        return vm is None
 
     def _do_instance_deactivate(self, instance, host, progress):
-        name = instance.uuid
-        c = docker_client()
+        conn = self._get_connection(instance, host)
+        vm = self.get_instance_by_uuid(conn, instance.uuid)
 
-        container = self.get_container_by_name(name)
+        if vm is None:
+            return
 
-        start = time.time()
-        while True:
-            try:
-                c.stop(container['Id'], timeout=1)
-                break
-            except requests.exceptions.Timeout:
-                if (time.time() - start) > Config.stop_timeout():
-                    break
-
-        container = self.get_container_by_name(name)
-        if not _is_stopped(container):
-            c.kill(container['Id'])
-
-        container = self.get_container_by_name(name)
-        if not _is_stopped(container):
-            raise Exception('Failed to stop container for VM [{0}]'
-                            .format(name))
+        try:
+            log.info('Stopping %s', instance.uuid)
+            vm.shutdown()
+        except:
+            pass
+        finally:
+            log.info('Destroy %s', instance.uuid)
+            vm.destroy()

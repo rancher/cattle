@@ -57,7 +57,7 @@ class LibvirtStorage(KindBasedMixin, BaseStoragePool):
         storage_pool = volume_storage_pool_map.storagePool
         volume_obj = get_pool_driver(storage_pool).get_volume(volume, storage_pool)
         return {
-            'virtualSizeMegabytes': _to_megabytes(volume_obj.get_virtual_size()),
+            'virtualSizeMb': _to_megabytes(volume_obj.get_virtual_size()),
             'format': volume_obj.get_format(),
             '+data': {
                 'libvirt': volume_obj.data()

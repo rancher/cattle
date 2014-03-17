@@ -41,6 +41,9 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         if not utils.ping_include_resources(ping):
             return
 
+        if not DockerConfig.docker_enabled():
+            return
+
         compute = {
             'type': 'host',
             'kind': 'docker',

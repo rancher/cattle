@@ -15,7 +15,16 @@ from .test_libvirt_storage import fake_volume
 from dstack.plugins.libvirt import enabled
 
 if enabled():
+    import libvirt
     from dstack.plugins.libvirt_directory_pool import DirectoryPoolDriver
+    CONFIG_OVERRIDE['HOME'] = SCRATCH_DIR
+
+
+def _delete_instance(name):
+    conn = libvirt.open('qemu:///system')
+    for c in conn.listAllDomains():
+        if c.name() == name:
+            c.destroy()
 
 
 @if_libvirt
@@ -72,6 +81,8 @@ def test_volume_deactivate(random_qcow2, pool_dir, agent, responses):
 
 @if_libvirt
 def test_instance_activate(random_qcow2, pool_dir, agent, responses):
+    _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
+
     volume = fake_volume(image_file=random_qcow2)
     image = volume.image
     pool = fake_pool(pool_dir)
@@ -85,83 +96,31 @@ def test_instance_activate(random_qcow2, pool_dir, agent, responses):
         req.data.instanceHostMap.instance.image = image
         req.data.instanceHostMap.instance.volumes.append(volume)
 
-    def post(req, resp):
-        docker_container = resp['data']['instance']['+data']['dockerContainer']
-        fields = resp['data']['instance']['+data']['+fields']
-        del docker_container['Created']
-        del docker_container['Id']
-        del docker_container['Status']
-        del docker_container['Ports'][0]['PublicPort']
-        del docker_container['Ports'][1]['PublicPort']
-        del fields['dockerIp']
-        assert fields['dockerPorts']['8080/tcp'] is not None
-        assert fields['dockerPorts']['12201/udp'] is not None
-        fields['dockerPorts']['8080/tcp'] = '1234'
-        fields['dockerPorts']['12201/udp'] = '5678'
+    def post(_, resp):
+        assert resp['data']['instance']['+data']['+libvirt']['xml'] is not None
+        resp['data']['instance']['+data']['+libvirt']['xml'] = '<xml/>'
 
     event_test(agent, 'libvirt/instance_activate', pre_func=pre, post_func=post)
-#
-#
-#@if_libvirt
-#def test_instance_activate_command(agent, responses):
-#    _delete_container('/c-c861f990-4472-4fa1-960f-65171b544c28')
-#
-#    def post(req, resp):
-#        docker_container = resp['data']['instance']['+data']['dockerContainer']
-#        fields = resp['data']['instance']['+data']['+fields']
-#        del docker_container['Created']
-#        del docker_container['Id']
-#        del docker_container['Status']
-#        del docker_container['Ports'][0]['PublicPort']
-#        del docker_container['Ports'][1]['PublicPort']
-#        del fields['dockerIp']
-#        assert fields['dockerPorts']['8080/tcp'] is not None
-#        assert fields['dockerPorts']['12201/udp'] is not None
-#        fields['dockerPorts']['8080/tcp'] = '1234'
-#        fields['dockerPorts']['12201/udp'] = '5678'
-#
-#    event_test(agent, 'docker/instance_activate_command', post_func=post)
-#
-#
-#@if_libvirt
-#def test_instance_activate_command_args(agent, responses):
-#    _delete_container('/ca-c861f990-4472-4fa1-960f-65171b544c28')
-#
-#    def post(req, resp):
-#        docker_container = resp['data']['instance']['+data']['dockerContainer']
-#        fields = resp['data']['instance']['+data']['+fields']
-#        del docker_container['Created']
-#        del docker_container['Id']
-#        del docker_container['Status']
-#        del docker_container['Ports'][0]['PublicPort']
-#        del docker_container['Ports'][1]['PublicPort']
-#        del fields['dockerIp']
-#        assert fields['dockerPorts']['8080/tcp'] is not None
-#        assert fields['dockerPorts']['12201/udp'] is not None
-#        fields['dockerPorts']['8080/tcp'] = '1234'
-#        fields['dockerPorts']['12201/udp'] = '5678'
-#
-#    event_test(agent, 'docker/instance_activate_command_args', post_func=post)
-#
-#
-#@if_libvirt
-#def test_instance_deactivate(agent, responses):
-#    CONFIG_OVERRIDE['STOP_TIMEOUT'] = 1
-#
-#    test_instance_activate(agent, responses)
-#
-#    def post(req, resp):
-#        del resp['data']['instance']['+data']['dockerContainer']['Created']
-#        del resp['data']['instance']['+data']['dockerContainer']['Id']
-#        del resp['data']['instance']['+data']['dockerContainer']['Status']
-#        del resp['data']['instance']['+data']['+fields']['dockerIp']
-#
-#    event_test(agent, 'docker/instance_deactivate', post_func=post)
-#
-#
+
+    _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
+
+
+@if_libvirt
+def test_instance_deactivate(random_qcow2, pool_dir, agent, responses):
+    CONFIG_OVERRIDE['STOP_TIMEOUT'] = 1
+
+    test_instance_activate(random_qcow2, pool_dir, agent, responses)
+
+    def post(req, resp):
+        pass
+
+    event_test(agent, 'libvirt/instance_deactivate', post_func=post)
+
+
 
 @if_libvirt
 def test_ping(agent, responses):
+    CONFIG_OVERRIDE['DOCKER_ENABLED'] = 'false'
     CONFIG_OVERRIDE['HOSTNAME'] = 'localhost'
     CONFIG_OVERRIDE['LIBVIRT_UUID'] = 'testuuid'
 

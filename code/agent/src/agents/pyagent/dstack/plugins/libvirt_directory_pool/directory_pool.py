@@ -38,7 +38,7 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
                 pool = {
                     'type': 'storagePool',
                     'kind': LIBVIRT_KIND,
-                    'name': '{} Storage Pool {}'.format(compute['name'], p),
+                    'name': '{0} Storage Pool {1}'.format(compute['name'], p),
                     'hostUuid': compute['uuid'],
                     'uuid': uuid,
                     'data': {
