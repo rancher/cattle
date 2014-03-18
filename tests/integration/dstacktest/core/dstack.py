@@ -247,7 +247,8 @@ class Client:
         return r.text
 
     def _get_response(self, url, data=None):
-        r = self._session.get(url, auth=self._auth, params=data, headers=HEADERS)
+        r = self._session.get(url, auth=self._auth, params=data,
+                              headers=HEADERS)
         if r.status_code < 200 or r.status_code >= 300:
             self._error(r.text)
 
