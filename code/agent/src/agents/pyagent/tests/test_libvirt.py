@@ -2,8 +2,9 @@ from .common_fixtures import *  # NOQA
 from dstack import CONFIG_OVERRIDE
 from dstack.progress import LogProgress
 from .test_libvirt_storage import if_libvirt, fake_image
-from .test_libvirt_storage import fake_pool
-from .test_libvirt_storage import fake_volume
+from .test_libvirt_storage import fake_pool, fake_volume
+from .test_libvirt_storage import random_qcow2, random_qcow2_bz2  # NOQA
+from .test_libvirt_storage import random_qcow2_gz, pool_dir  # NOQA
 from dstack.plugins.libvirt import enabled
 
 

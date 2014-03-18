@@ -56,6 +56,28 @@ class JsonObject:
     def __getattr__(self, name):
         return getattr(self.__dict__, name)
 
+    @staticmethod
+    def unwrap(json_object):
+        if isinstance(json_object, list):
+            ret = []
+            for i in json_object:
+                ret.append(JsonObject.unwrap(i))
+            return ret
+
+        if isinstance(json_object, dict):
+            ret = {}
+            for k, v in json_object.items():
+                ret[k] = JsonObject.unwrap(v)
+            return ret
+
+        if isinstance(json_object, JsonObject):
+            ret = {}
+            for k, v in json_object.__dict__.items():
+                ret[k] = JsonObject.unwrap(v)
+            return ret
+
+        return json_object
+
 
 def ping_include_resources(ping):
     try:
@@ -96,7 +118,7 @@ def reply(event):
         })
 
 
-def get_map_value(obj, prefix=None, strip_prefix=True):
+def get_data(obj, prefix=None, strip_prefix=True):
     result = {}
 
     if obj is None:
@@ -135,7 +157,7 @@ def memoize(function):
     return wrapper
 
 
-def get_data(obj, *args):
+def get_map_value(obj, *args):
     current = obj
     for arg in args:
         child = current.get(arg)

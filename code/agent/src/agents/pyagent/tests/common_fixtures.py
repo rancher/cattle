@@ -12,6 +12,7 @@ import shutil
 from .response_holder import ResponseHolder
 from dstack import type_manager, plugins
 from dstack.agent import Agent
+from dstack.utils import JsonObject
 
 
 plugins.load()
@@ -70,7 +71,7 @@ def event_test(agent, name, pre_func=None, post_func=None):
     del resp["id"]
     del resp["time"]
 
-    _diff_dict(dict(resp), dict(resp_valid))
-    assert_equals(dict(resp), dict(resp_valid))
+    _diff_dict(JsonObject.unwrap(resp), JsonObject.unwrap(resp_valid))
+    assert_equals(JsonObject.unwrap(resp), JsonObject.unwrap(resp_valid))
 
     return req, resp
