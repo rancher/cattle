@@ -7,8 +7,8 @@ import time
 def test_container_create_only(admin_client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = admin_client.create_container(name="test",
-                                        imageUuid=uuid,
-                                        startOnCreate=False)
+                                              imageUuid=uuid,
+                                              startOnCreate=False)
 
     assert_fields(container, {
         "type": "container",
@@ -133,8 +133,8 @@ def test_container_create_then_start(admin_client, sim_context):
 def test_container_stop(admin_client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = admin_client.create_container(name="test",
-                                        imageUuid=uuid,
-                                        startOnCreate=True)
+                                              imageUuid=uuid,
+                                              startOnCreate=True)
     container = wait_success(admin_client, container)
 
     assert_fields(container, {
@@ -213,8 +213,8 @@ def _assert_removed(container):
 def test_container_remove(admin_client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = admin_client.create_container(name="test",
-                                        imageUuid=uuid,
-                                        startOnCreate=True)
+                                              imageUuid=uuid,
+                                              startOnCreate=True)
     container = wait_success(admin_client, container)
     container = wait_success(admin_client, container.stop())
 
@@ -301,7 +301,7 @@ def test_start_stop(admin_client, sim_context):
     uuid = "sim:{}".format(random_num())
 
     container = admin_client.create_container(name="test",
-                                        imageUuid=uuid)
+                                              imageUuid=uuid)
 
     container = wait_success(admin_client, container)
 
@@ -324,6 +324,8 @@ def test_container_image_required(client, sim_context):
 
 
 def test_container_compute_fail(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+
     data = {
         'compute.instance.activate::fail': True,
         'io.github.ibuildthecloud.dstack.process.instance.InstanceStart': {
@@ -331,8 +333,8 @@ def test_container_compute_fail(admin_client, sim_context):
         }
     }
 
-    container = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                        data=data)
+    container = admin_client.create_container(imageUuid=image_uuid,
+                                              data=data)
 
     container = wait_transitioning(admin_client, container)
 
@@ -344,12 +346,14 @@ def test_container_compute_fail(admin_client, sim_context):
 
 
 def test_container_storage_fail(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+
     data = {
         'storage.volume.activate::fail': True,
     }
 
-    container = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                        data=data)
+    container = admin_client.create_container(imageUuid=image_uuid,
+                                              data=data)
 
     container = wait_transitioning(admin_client, container)
 

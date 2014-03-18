@@ -1,12 +1,11 @@
 from xml.etree import ElementTree
-from dstack import ApiError
 from common_fixtures import *  # NOQA
-from datetime import timedelta
 
 import time
 import os
 
-EMPTY_IMAGE = 'https://googledrive.com/host/0BwwEzt2Cd9h1ZmNRWnlUWTdhcDg/empty-10g.img.bz2'
+EMPTY_IMAGE = 'https://googledrive.com/host/0BwwEzt2Cd9h1ZmNRWnlUWTdhcDg/' \
+              'empty-10g.img.bz2'
 EMPTY_IMAGE_CHECKSUM = '94a457b11d44fbcc6b5e12b31e29ca1b20db7c7d'
 LIBVIRT_URI = 'ssh://root@localhost:22'
 LIBVIRT_AGENT_UUID = os.getenv('LIBVIRT_TEST_AGENT_UUID', 'localhost_agent')
@@ -77,6 +76,3 @@ def test_libvirt_stop_start(client, libvirt_context):
         assert vm.state == 'running'
 
     vm.stop(remove=True)
-
-
-

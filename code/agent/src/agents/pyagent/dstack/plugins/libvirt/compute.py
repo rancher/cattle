@@ -95,7 +95,7 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
         for driver in pool_drivers():
             for pool in driver.discover(compute):
-                data = utils.get_data(pool, 'data', 'libvirt')
+                data = utils.get_map_value(pool, 'data', 'libvirt')
                 data['driver'] = driver.driver_name()
 
                 resources.append(pool)

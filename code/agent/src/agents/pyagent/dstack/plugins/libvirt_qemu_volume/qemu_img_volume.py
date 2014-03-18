@@ -90,7 +90,8 @@ class QemuImgVolumeDriver(LibvirtVolumeDriver):
     def inspect(self, storage_pool, file, volume=None):
         try:
             info = QemuImg.info(file, format=self.get_supported_format())
-            return QemuVolume(file, info, volume=volume, storage_pool=storage_pool)
+            return QemuVolume(file, info, volume=volume,
+                              storage_pool=storage_pool)
         except Exception as e:
             log.debug('% is not a value %s file : exception %s', file,
                       self.get_supported_format(), e)

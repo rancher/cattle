@@ -1,5 +1,4 @@
 from common_fixtures import *  # NOQA
-import os
 
 TEST_IMAGE = 'ibuildthecloud/helloworld'
 TEST_IMAGE_LATEST = TEST_IMAGE + ':latest'
@@ -17,8 +16,9 @@ def docker_context(admin_client):
 @if_docker
 def test_docker_create_only(admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test', imageUuid=uuid,
-                                        startOnCreate=False)
+    container = admin_client.create_container(name='test',
+                                              imageUuid=uuid,
+                                              startOnCreate=False)
     container = wait_success(admin_client, container)
 
     assert container is not None
@@ -74,8 +74,8 @@ def test_docker_create_with_start(admin_client, docker_context):
 def test_docker_command(admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
     container = admin_client.create_container(name='test',
-                                        imageUuid=uuid,
-                                        command='sleep 42')
+                                              imageUuid=uuid,
+                                              command='sleep 42')
 
     container = wait_success(admin_client, container)
     assert container.data.dockerContainer.Command == 'sleep 42'
@@ -85,9 +85,9 @@ def test_docker_command(admin_client, docker_context):
 def test_docker_command_args(admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
     container = admin_client.create_container(name='test',
-                                        imageUuid=uuid,
-                                        command='sleep',
-                                        commandArgs=['1', '2', '3'])
+                                              imageUuid=uuid,
+                                              command='sleep',
+                                              commandArgs=['1', '2', '3'])
 
     container = wait_success(admin_client, container)
     assert container.data.dockerContainer.Command == 'sleep 1 2 3'

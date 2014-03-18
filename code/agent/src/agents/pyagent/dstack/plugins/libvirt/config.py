@@ -1,6 +1,5 @@
 from os import path
 from dstack import default_value, Config
-from dstack.utils import memoize
 
 
 class LibvirtConfig:
@@ -33,4 +32,5 @@ class LibvirtConfig:
 
     @staticmethod
     def default_template_name():
-        return default_value('LIBVIRT_DEFAULT_TEMPLATE', 'default_template.tmpl')
+        return default_value('LIBVIRT_DEFAULT_TEMPLATE',
+                             'default_template.tmpl')

@@ -1,6 +1,4 @@
 import logging
-from uuid import uuid4
-from os import path
 
 from dstack import default_value, Config
 from dstack.utils import memoize

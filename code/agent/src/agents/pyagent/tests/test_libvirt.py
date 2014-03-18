@@ -1,19 +1,11 @@
-from docker import Client
-import socket
-
-#TODO dstack.plugins.load_plugins() somehow make dstack.plugin.* modules
-#  unavailable, importing it first
-import dstack.plugins.docker  # NOQA
-
 from .common_fixtures import *  # NOQA
-import pytest
-from dstack import CONFIG_OVERRIDE, Config
+from dstack import CONFIG_OVERRIDE
 from dstack.progress import LogProgress
-from .test_libvirt_storage import if_libvirt, QCOW_TEST_FILE, fake_image
-from .test_libvirt_storage import random_qcow2, pool_dir, fake_pool
-from .test_libvirt_storage import random_qcow2_gz, random_qcow2_bz2
+from .test_libvirt_storage import if_libvirt, fake_image
+from .test_libvirt_storage import fake_pool
 from .test_libvirt_storage import fake_volume
 from dstack.plugins.libvirt import enabled
+
 
 if enabled():
     import libvirt
@@ -44,7 +36,8 @@ def test_image_activate(random_qcow2, pool_dir, agent, responses):
 @if_libvirt
 def test_image_activate_gz(random_qcow2_gz, pool_dir, agent, responses):
     def pre(req):
-        req['data']['imageStoragePoolMap']['image'] = fake_image(random_qcow2_gz)
+        req['data']['imageStoragePoolMap']['image'] = \
+            fake_image(random_qcow2_gz)
         req['data']['imageStoragePoolMap']['storagePool'] = fake_pool(pool_dir)
 
     def post(req, resp):
@@ -57,7 +50,8 @@ def test_image_activate_gz(random_qcow2_gz, pool_dir, agent, responses):
 @if_libvirt
 def test_image_activate_bz2(random_qcow2_bz2, pool_dir, agent, responses):
     def pre(req):
-        req['data']['imageStoragePoolMap']['image'] = fake_image(random_qcow2_bz2)
+        req['data']['imageStoragePoolMap']['image'] = \
+            fake_image(random_qcow2_bz2)
         req['data']['imageStoragePoolMap']['storagePool'] = fake_pool(pool_dir)
 
     def post(req, resp):
@@ -127,7 +121,8 @@ def test_instance_activate(random_qcow2, pool_dir, agent, responses):
         assert resp['data']['instance']['+data']['+libvirt']['xml'] is not None
         resp['data']['instance']['+data']['+libvirt']['xml'] = '<xml/>'
 
-    event_test(agent, 'libvirt/instance_activate', pre_func=pre, post_func=post)
+    event_test(agent, 'libvirt/instance_activate', pre_func=pre,
+               post_func=post)
 
     _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
 
@@ -142,7 +137,6 @@ def test_instance_deactivate(random_qcow2, pool_dir, agent, responses):
         pass
 
     event_test(agent, 'libvirt/instance_deactivate', post_func=post)
-
 
 
 @if_libvirt

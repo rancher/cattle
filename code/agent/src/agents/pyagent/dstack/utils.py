@@ -96,7 +96,7 @@ def reply(event):
         })
 
 
-def get_data(obj, prefix=None, strip_prefix=True):
+def get_map_value(obj, prefix=None, strip_prefix=True):
     result = {}
 
     if obj is None:
@@ -212,7 +212,6 @@ def validate_checksum(file_name, checksum_value, buffer_size=2**20):
     if digest is None:
         raise Exception("Invalid checksum format")
 
-
     d = digest()
 
     with open(file_name, 'rb') as input:
@@ -232,8 +231,8 @@ def get_command_output(*args, **kw):
     try:
         return _check_output(*args, **kw)
     except subprocess.CalledProcessError as e:
-        log.exception('Failed to call %s %s, exit [%s], output :\n%s', args, kw,
-                      e.returncode, e.output)
+        log.exception('Failed to call %s %s, exit [%s], output :\n%s', args,
+                      kw, e.returncode, e.output)
         raise e
 
 

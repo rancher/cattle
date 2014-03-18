@@ -1,5 +1,4 @@
 import logging
-import os
 
 log = logging.getLogger('libvirt')
 
@@ -32,7 +31,7 @@ if _ENABLED:
 else:
     log.info('Disabling libvirt, libvirt-python not found')
 
-from qemu_img import QemuImg
+from qemu_img import QemuImg  # NOQA
 
 
 def enabled():

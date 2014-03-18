@@ -6,7 +6,6 @@ import shutil
 from uuid import uuid4
 
 from dstack.plugins.core.marshaller import JsonObject
-from dstack import CONFIG_OVERRIDE, Config
 from dstack.progress import LogProgress
 from dstack import utils
 
@@ -16,7 +15,6 @@ if_libvirt = pytest.mark.skipif('os.environ.get("LIBVIRT_TEST") != "true"',
 
 from dstack.plugins.libvirt import enabled
 if enabled():
-    from dstack.plugins.libvirt import QemuImg
     from dstack.plugins.libvirt_qemu_volume import Qcow2ImageDriver
     from dstack.plugins.libvirt_directory_pool import DirectoryPoolDriver
 
@@ -46,6 +44,7 @@ def pool_dir():
         os.makedirs(POOL_DIR)
 
     return POOL_DIR
+
 
 @pytest.fixture
 def random_qcow2(pool_dir):
@@ -79,6 +78,7 @@ def test_qcow2_inspect():
     assert volume.get_format() == 'qcow2'
 
     return volume
+
 
 @if_libvirt
 def test_promote(pool_dir, random_qcow2):
@@ -217,10 +217,11 @@ def test_volume_remove(random_volume, pool_dir, random_qcow2):
     assert os.path.exists(image_obj.file)
     assert driver.is_volume_removed(volume, pool)
 
+
 @if_libvirt
 def test_volume_deactivate(random_volume, pool_dir, random_qcow2):
     volume, volume_obj, driver, pool = random_volume
-    image_obj = driver.get_image(volume.image, pool)
+    driver.get_image(volume.image, pool)
 
     # There is not deactivate in a directory pool
     assert driver.is_volume_inactive(volume, pool)

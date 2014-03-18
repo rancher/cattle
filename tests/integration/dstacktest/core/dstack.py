@@ -427,7 +427,8 @@ class Client:
                         lambda *args, **kw: method(type_name, *args, **kw)
                     if hasattr(type, type_collection) and \
                             test_method in type[type_collection]:
-                        setattr(self, '_'.join([method_name, name_variant]), cb())
+                        setattr(self, '_'.join([method_name, name_variant]),
+                                cb())
 
     def _get_schema_hash(self):
         h = hashlib.new('sha1')

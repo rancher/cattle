@@ -4,7 +4,6 @@ from os import path
 import glob
 import os
 
-from dstack import Config
 from dstack import utils
 from dstack.plugins.libvirt import LIBVIRT_KIND, volume_drivers
 from dstack.plugins.libvirt.config import LibvirtConfig

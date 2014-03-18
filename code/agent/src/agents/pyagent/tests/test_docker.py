@@ -1,5 +1,4 @@
 from docker import Client
-import socket
 
 #TODO dstack.plugins.load_plugins() somehow make dstack.plugin.* modules
 #  unavailable, importing it first
