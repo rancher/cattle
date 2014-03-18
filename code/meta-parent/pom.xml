@@ -241,19 +241,16 @@
                 <groupId>org.hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
                 <version>2.3.1</version>
-                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>9.3-1101-jdbc41</version>
-                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>5.1.26</version>
-                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>org.jooq</groupId>
