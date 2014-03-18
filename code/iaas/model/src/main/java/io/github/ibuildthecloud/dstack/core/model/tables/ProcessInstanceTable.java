@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ProcessInstanceTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord> {
 
-	private static final long serialVersionUID = 447493054;
+	private static final long serialVersionUID = -230248526;
 
 	/**
 	 * The singleton instance of <code>dstack.process_instance</code>
@@ -44,7 +44,7 @@ public class ProcessInstanceTable extends org.jooq.impl.TableImpl<io.github.ibui
 	/**
 	 * The column <code>dstack.process_instance.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>dstack.process_instance.priority</code>.

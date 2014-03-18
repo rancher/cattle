@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "instance", schema = "dstack")
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long>, io.github.ibuildthecloud.dstack.core.model.Instance {
 
-	private static final long serialVersionUID = 1379934951;
+	private static final long serialVersionUID = -1013583691;
 
 	/**
 	 * Setter for <code>dstack.instance.id</code>.
@@ -197,7 +197,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.
 	/**
 	 * Getter for <code>dstack.instance.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

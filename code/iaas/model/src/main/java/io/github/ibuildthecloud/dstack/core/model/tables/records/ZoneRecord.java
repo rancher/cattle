@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "zone", schema = "dstack")
 public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ZoneRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.core.model.Zone {
 
-	private static final long serialVersionUID = -2053277825;
+	private static final long serialVersionUID = -316121069;
 
 	/**
 	 * Setter for <code>dstack.zone.id</code>.
@@ -197,7 +197,7 @@ public class ZoneRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibui
 	/**
 	 * Getter for <code>dstack.zone.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

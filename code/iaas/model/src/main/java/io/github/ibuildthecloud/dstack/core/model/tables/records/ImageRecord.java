@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "image", schema = "dstack")
 public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Image {
 
-	private static final long serialVersionUID = 1293989835;
+	private static final long serialVersionUID = 2075204653;
 
 	/**
 	 * Setter for <code>dstack.image.id</code>.
@@ -197,7 +197,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Getter for <code>dstack.image.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

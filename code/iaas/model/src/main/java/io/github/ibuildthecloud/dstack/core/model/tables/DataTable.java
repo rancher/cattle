@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DataTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord> {
 
-	private static final long serialVersionUID = 1181709729;
+	private static final long serialVersionUID = 79246419;
 
 	/**
 	 * The singleton instance of <code>dstack.data</code>
@@ -44,7 +44,7 @@ public class DataTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.
 	/**
 	 * The column <code>dstack.data.value</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.CLOB.length(16777215).nullable(false), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.DataRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.CLOB.length(65535).nullable(false), this, "");
 
 	/**
 	 * Create a <code>dstack.data</code> table reference

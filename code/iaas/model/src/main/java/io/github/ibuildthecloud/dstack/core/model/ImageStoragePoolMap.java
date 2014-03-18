@@ -121,7 +121,7 @@ public interface ImageStoragePoolMap extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.image_storage_pool_map.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	public java.util.Map<String,Object> getData();
 
 	/**

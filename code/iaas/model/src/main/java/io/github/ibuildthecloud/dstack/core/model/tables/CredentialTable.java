@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CredentialTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord> {
 
-	private static final long serialVersionUID = 264269536;
+	private static final long serialVersionUID = -282077164;
 
 	/**
 	 * The singleton instance of <code>dstack.credential</code>
@@ -79,7 +79,7 @@ public class CredentialTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	/**
 	 * The column <code>dstack.credential.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>dstack.credential.public_value</code>.

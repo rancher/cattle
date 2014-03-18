@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "storage_pool", schema = "dstack")
 public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.StoragePoolRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long, java.lang.Long>, io.github.ibuildthecloud.dstack.core.model.StoragePool {
 
-	private static final long serialVersionUID = 1825154803;
+	private static final long serialVersionUID = 1898423483;
 
 	/**
 	 * Setter for <code>dstack.storage_pool.id</code>.
@@ -197,7 +197,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.gith
 	/**
 	 * Getter for <code>dstack.storage_pool.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

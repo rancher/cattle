@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "volume_storage_pool_map", schema = "dstack")
 public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long>, io.github.ibuildthecloud.dstack.core.model.VolumeStoragePoolMap {
 
-	private static final long serialVersionUID = -1535502565;
+	private static final long serialVersionUID = 1432704095;
 
 	/**
 	 * Setter for <code>dstack.volume_storage_pool_map.id</code>.
@@ -180,7 +180,7 @@ public class VolumeStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImp
 	/**
 	 * Getter for <code>dstack.volume_storage_pool_map.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(9);
