@@ -1,4 +1,4 @@
-package io.github.ibuildthecloud.dstack.iaas.api.filter.container;
+package io.github.ibuildthecloud.dstack.iaas.api.filter.instance;
 
 import io.github.ibuildthecloud.dstack.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.dstack.core.constants.InstanceConstants;
@@ -14,16 +14,16 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import com.netflix.config.DynamicBooleanProperty;
 
-public class ContainerFilter extends AbstractDefaultResourceManagerFilter {
+public class InstanceImageRequiredFilter extends AbstractDefaultResourceManagerFilter {
 
-    private static final DynamicBooleanProperty REQUIRE_CONTAINER_IMAGE = ArchaiusUtil.getBoolean("api.container.require.image");
+    private static final DynamicBooleanProperty REQUIRE_INSTANCE_IMAGE = ArchaiusUtil.getBoolean("api.instance.require.image");
 
     ResourceManagerLocator locator;
     AgentDao agentDao;
 
     @Override
     public String[] getTypes() {
-        return new String[] { "container" };
+        return new String[] { "container", "virtualMachine" };
     }
 
     @Override
@@ -33,7 +33,7 @@ public class ContainerFilter extends AbstractDefaultResourceManagerFilter {
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
-        if ( REQUIRE_CONTAINER_IMAGE.get() ) {
+        if ( REQUIRE_INSTANCE_IMAGE.get() ) {
             Instance container = request.proxyRequestObject(Instance.class);
             Long imageId = container.getImageId();
             String imageUuid = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_IMAGE_UUID, String.class);

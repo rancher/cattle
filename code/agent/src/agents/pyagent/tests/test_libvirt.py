@@ -11,6 +11,7 @@ from dstack import CONFIG_OVERRIDE, Config
 from dstack.progress import LogProgress
 from .test_libvirt_storage import if_libvirt, QCOW_TEST_FILE, fake_image
 from .test_libvirt_storage import random_qcow2, pool_dir, fake_pool
+from .test_libvirt_storage import random_qcow2_gz, random_qcow2_bz2
 from .test_libvirt_storage import fake_volume
 from dstack.plugins.libvirt import enabled
 
@@ -31,6 +32,32 @@ def _delete_instance(name):
 def test_image_activate(random_qcow2, pool_dir, agent, responses):
     def pre(req):
         req['data']['imageStoragePoolMap']['image'] = fake_image(random_qcow2)
+        req['data']['imageStoragePoolMap']['storagePool'] = fake_pool(pool_dir)
+
+    def post(req, resp):
+        assert resp['data']['+data']['libvirt']['filename'].endswith('.qcow2')
+        del resp['data']['+data']['libvirt']['filename']
+
+    event_test(agent, 'libvirt/image_activate', pre_func=pre, post_func=post)
+
+
+@if_libvirt
+def test_image_activate_gz(random_qcow2_gz, pool_dir, agent, responses):
+    def pre(req):
+        req['data']['imageStoragePoolMap']['image'] = fake_image(random_qcow2_gz)
+        req['data']['imageStoragePoolMap']['storagePool'] = fake_pool(pool_dir)
+
+    def post(req, resp):
+        assert resp['data']['+data']['libvirt']['filename'].endswith('.qcow2')
+        del resp['data']['+data']['libvirt']['filename']
+
+    event_test(agent, 'libvirt/image_activate', pre_func=pre, post_func=post)
+
+
+@if_libvirt
+def test_image_activate_bz2(random_qcow2_bz2, pool_dir, agent, responses):
+    def pre(req):
+        req['data']['imageStoragePoolMap']['image'] = fake_image(random_qcow2_bz2)
         req['data']['imageStoragePoolMap']['storagePool'] = fake_pool(pool_dir)
 
     def post(req, resp):

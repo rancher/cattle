@@ -105,10 +105,8 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
         try:
             downloaded = utils.download_file(image.url,
                                              pool_path,
-                                             reporthook=report)
-
-            if image.checksum is not None:
-                utils.validate_checksum(downloaded, image.checksum)
+                                             reporthook=report,
+                                             checksum=image.checksum)
 
             volume = None
             for driver in volume_drivers():

@@ -3,12 +3,14 @@ from os import path
 from urllib import urlretrieve
 from hashlib import md5, sha1, sha256, sha512
 
+import bz2
 import calendar
+import gzip
 import logging
 import os
+import subprocess
 import time
 import uuid
-import subprocess
 from subprocess import PIPE, Popen, CalledProcessError
 
 HASHES = {
@@ -18,19 +20,32 @@ HASHES = {
     128: sha512,
 }
 
+DECOMPRESS = {
+    '.gz': gzip.open,
+    '.bz2': bz2.BZ2File
+}
 
 log = logging.getLogger('dstack')
 
 _TEMP_NAME = 'work'
 
 
+def _to_json_object(v):
+    if isinstance(v, dict):
+        return JsonObject(v)
+    elif isinstance(v, list):
+        ret = []
+        for i in v:
+            ret.append(_to_json_object(i))
+        return ret
+    else:
+        return v
+
+
 class JsonObject:
     def __init__(self, data):
         for k, v in data.items():
-            if isinstance(v, dict):
-                self.__dict__[k] = JsonObject(v)
-            else:
-                self.__dict__[k] = v
+            self.__dict__[k] = _to_json_object(v)
 
     def __getitem__(self, item):
         value = self.__dict__[item]
@@ -143,13 +158,39 @@ def temp_file_in_work_dir(destination):
     return temp_dst.name
 
 
-def download_file(url, destination, reporthook=None):
+def download_file(url, destination, reporthook=None, decompression=True,
+                  checksum=None):
     temp_name = temp_file_in_work_dir(destination)
 
     log.info('Downloading %s to %s', url, temp_name)
     urlretrieve(url, filename=temp_name, reporthook=reporthook)
 
+    if checksum is not None:
+        validate_checksum(temp_name, checksum)
+
+    if decompression:
+        decompress(temp_name, url)
+
     return temp_name
+
+
+def decompress(file_name, name=None):
+    if name is None:
+        name = file_name
+
+    temp_name = '{0}.extract-temp'.format(file_name)
+    for ext, archive_open in DECOMPRESS.items():
+        if name.endswith(ext):
+            with open(temp_name, 'wb') as output:
+                input = archive_open(file_name)
+                for line in input:
+                    output.write(line)
+                input.close()
+
+            os.rename(temp_name, file_name)
+            return True
+
+    return False
 
 
 def checksum(file, digest=sha1, buffer_size=2**20):
@@ -165,7 +206,7 @@ def checksum(file, digest=sha1, buffer_size=2**20):
     return d.hexdigest()
 
 
-def validate_checksum(file, checksum_value, buffer_size=2**20):
+def validate_checksum(file_name, checksum_value, buffer_size=2**20):
     digest = HASHES.get(len(checksum_value))
 
     if digest is None:
@@ -174,14 +215,14 @@ def validate_checksum(file, checksum_value, buffer_size=2**20):
 
     d = digest()
 
-    with open(file, 'rb') as input:
+    with open(file_name, 'rb') as input:
         while True:
             data = input.read(buffer_size)
             if not data:
                 break
             d.update(data)
 
-    c = checksum(file, digest=digest, buffer_size=buffer_size)
+    c = checksum(file_name, digest=digest, buffer_size=buffer_size)
 
     if c != checksum_value:
         raise Exception('Invalid checksum [{0}]'.format(checksum_value))

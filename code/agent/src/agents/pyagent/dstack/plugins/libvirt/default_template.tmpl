@@ -9,7 +9,7 @@
         % try:
             ${instance.memory_mb * 1024}
         % except:
-            ${512 * 1024}
+            ${64 * 1024}
         % endtry
     </memory>
 </%def>\
@@ -81,7 +81,7 @@ ${k}="${v}" \
         </interface>
 </%block>\
 <%block name="graphics" >\
-        <graphics type="vnc" autoport="yes" keymap="en-us" listen="127.0.0.1"/>
+        <graphics type="vnc" autoport="yes" keymap="en-us" listen="127.0.0.1" passwd="test" />
         <video>
             <model type="cirrus"/>
         </video>

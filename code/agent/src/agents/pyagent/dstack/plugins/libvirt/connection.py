@@ -14,10 +14,12 @@ class LibvirtConnection:
         self.conn.close()
 
     @staticmethod
-    def open(host):
-        if host in ['qemu', 'kvm']:
+    def open(type):
+        if type in ['qemu', 'kvm']:
             return libvirt.open('qemu:///system')
-        elif host == 'xen':
+        elif type == 'xen':
             return libvirt.open('xen:///')
-
-        raise Exception('Unsupported connection [{0}]'.format(host))
+        else:
+            # This assumes you have setup libvirt aliases
+            #     http://libvirt.org/uri.html#URI_config
+            return libvirt.open(type)

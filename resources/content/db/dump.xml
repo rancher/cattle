@@ -203,8 +203,8 @@
             <column defaultValueNumeric="0" name="is_public" type="BIT(1)">
                 <constraints nullable="false"/>
             </column>
-            <column name="physical_size_megabytes" type="BIGINT(19)"/>
-            <column name="virtual_size_megabytes" type="BIGINT(19)"/>
+            <column name="physical_size_mb" type="BIGINT(19)"/>
+            <column name="virtual_size_mb" type="BIGINT(19)"/>
             <column name="checksum" type="VARCHAR(255)"/>
             <column name="format" type="VARCHAR(255)"/>
         </createTable>
@@ -256,6 +256,7 @@
             <column name="data" type="MEDIUMTEXT"/>
             <column name="allocation_state" type="VARCHAR(255)"/>
             <column name="compute" type="BIGINT(19)"/>
+            <column name="memory_mb" type="BIGINT(19)"/>
             <column name="image_id" type="BIGINT(19)"/>
             <column name="offering_id" type="BIGINT(19)"/>
             <column name="hostname" type="VARCHAR(255)"/>
@@ -379,8 +380,8 @@
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
             <column name="data" type="MEDIUMTEXT"/>
-            <column name="physical_total_size_megabytes" type="BIGINT(19)"/>
-            <column name="virtual_total_size_megabytes" type="BIGINT(19)"/>
+            <column name="physical_total_size_mb" type="BIGINT(19)"/>
+            <column name="virtual_total_size_mb" type="BIGINT(19)"/>
             <column defaultValueNumeric="0" name="external" type="BIT(1)">
                 <constraints nullable="false"/>
             </column>
@@ -464,8 +465,8 @@
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
             <column name="data" type="MEDIUMTEXT"/>
-            <column name="physical_size_megabytes" type="BIGINT(19)"/>
-            <column name="virtual_size_megabytes" type="BIGINT(19)"/>
+            <column name="physical_size_mb" type="BIGINT(19)"/>
+            <column name="virtual_size_mb" type="BIGINT(19)"/>
             <column name="device_number" type="INT(10)"/>
             <column name="format" type="VARCHAR(255)"/>
             <column name="allocation_state" type="VARCHAR(255)"/>

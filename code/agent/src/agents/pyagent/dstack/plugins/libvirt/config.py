@@ -22,7 +22,6 @@ class LibvirtConfig:
         return default_value('LIBVIRT_UUID_FILE', def_value)
 
     @staticmethod
-    @memoize
     def libvirt_uuid():
         return Config.get_uuid_from_file('LIBVIRT_UUID',
                                          LibvirtConfig.libvirt_uuid_file())

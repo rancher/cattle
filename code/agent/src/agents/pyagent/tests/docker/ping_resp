@@ -7,14 +7,14 @@
             {
                 "type" : "host",
                 "uuid" : "testuuid",
-                "name" : "localhost",
+                "name" : "localhost/docker",
                 "kind" : "docker"
             },
             {
                 "type" : "storagePool",
                 "uuid" : "testuuid-pool",
                 "hostUuid" : "testuuid",
-                "name" : "localhost Storage Pool",
+                "name" : "localhost/docker Storage Pool",
                 "kind" : "docker"
             }
         ]

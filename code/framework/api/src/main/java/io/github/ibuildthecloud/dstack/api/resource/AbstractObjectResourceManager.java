@@ -193,7 +193,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return null;
         }
 
-        Map<Object,Object> criteria = getDefaultCriteria(true, otherSchema.getId());
+        Map<Object,Object> criteria = new HashMap<Object, Object>();
         criteria.put(ObjectMetaDataManager.ID_FIELD, fieldValue);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherSchema.getId());

@@ -1,12 +1,15 @@
-import random
 import dstack
+import os
 import pytest
+import random
 import time
 from datetime import datetime, timedelta
 
 
 NOT_NONE = object()
 DEFAULT_TIMEOUT = 45
+DEFAULT_AGENT_URI = 'ssh://root@localhost:22'
+DEFAULT_AGENT_UUID = 'test-agent'
 
 
 def _admin_client():
@@ -62,8 +65,7 @@ def accounts():
 
 @pytest.fixture(scope='module')
 def client(accounts):
-    #TODO: Switch to user
-    return _client_for_user('admin', accounts)
+    return _client_for_user('user', accounts)
 
 
 @pytest.fixture(scope='module')
@@ -72,42 +74,12 @@ def admin_client(accounts):
 
 
 @pytest.fixture(scope='module')
-def sim_host(admin_client, sim_agent):
-    hosts = sim_agent.hosts()
-    return wait_success(admin_client, hosts[0])
+def sim_context(admin_client):
+    context = kind_context(admin_client, 'sim', external_pool=True,
+                           uri='sim://', uuid='simagent1')
+    context['imageUuid'] = 'sim:{}'.format(random_num())
 
-
-@pytest.fixture(scope='module')
-def sim_external_pool(admin_client, sim_host):
-    return find_by_uuid(admin_client, 'storagePool', 'sim-ext-pool')
-
-
-@pytest.fixture(scope='module')
-def sim_pool(admin_client, sim_host):
-    for storage_pool_map in sim_host.storagePoolHostMaps():
-        storage_pool = storage_pool_map.storagePool()
-        if not storage_pool.external:
-            return wait_success(admin_client, storage_pool)
-
-    raise Exception('Pool not found')
-
-
-@pytest.fixture(scope='module')
-def sim_agent(admin_client):
-    return create_type_by_uuid(admin_client, 'agent', 'simagent1', kind='sim',
-                               uri='sim://')
-
-
-@pytest.fixture(scope='module')
-def sim_context(admin_client, sim_host, sim_pool, sim_external_pool,
-                sim_agent):
-    return {
-        'host': sim_host,
-        'pool': sim_pool,
-        'external_pool': sim_external_pool,
-        'agent': sim_agent,
-        'imageUuid': 'sim:{}'.format(random_num())
-    }
+    return context
 
 
 def activate_resource(admin_client, obj):
@@ -129,7 +101,8 @@ def find_by_uuid(admin_client, type, uuid, activate=True, **kw):
     return obj
 
 
-def create_type_by_uuid(admin_client, type, uuid, activate=True, **kw):
+def create_type_by_uuid(admin_client, type, uuid, activate=True, validate=True,
+                        **kw):
     opts = dict(kw)
     opts['uuid'] = uuid
 
@@ -145,8 +118,9 @@ def create_type_by_uuid(admin_client, type, uuid, activate=True, **kw):
         obj.activate()
         obj = wait_success(admin_client, obj)
 
-    for k, v in opts.items():
-        assert getattr(obj, k) == v
+    if validate:
+        for k, v in opts.items():
+            assert getattr(obj, k) == v
 
     return obj
 
@@ -216,3 +190,44 @@ def now():
 
 def format_time(time):
     return (time - timedelta(microseconds=time.microsecond)).isoformat() + 'Z'
+
+
+def get_agent(admin_client, name, default_uri=DEFAULT_AGENT_URI,
+              default_agent_uuid=DEFAULT_AGENT_UUID):
+    name = name.upper()
+    uri_name = '{0}_URI'.format(name)
+    uuid_name = '{0}_AGENT_UUID'.format(name)
+
+    uri = os.getenv(uri_name, default_uri)
+    uuid = os.getenv(uuid_name, default_agent_uuid)
+
+    return create_type_by_uuid(admin_client, 'agent', uuid, validate=False,
+                               uri=uri)
+
+
+def kind_context(admin_client, kind, external_pool=False,
+                 uri=DEFAULT_AGENT_URI,
+                 uuid=DEFAULT_AGENT_UUID):
+    kind_agent = get_agent(admin_client, kind, default_agent_uuid=uuid,
+                           default_uri=uri)
+
+    hosts = filter(lambda x: x.kind == kind, kind_agent.hosts())
+    assert len(hosts) == 1
+    kind_host = activate_resource(admin_client, hosts[0])
+
+    pools = kind_host.storagePools()
+    assert len(pools) == 1
+    kind_pool = activate_resource(admin_client, pools[0])
+
+    context = {
+        'host': kind_host,
+        'pool': kind_pool,
+        'agent': kind_agent
+    }
+
+    if external_pool:
+        pools = admin_client.list_storagePool(kind=kind, external=True)
+        assert len(pools) == 1
+        context['external_pool'] = activate_resource(admin_client, pools[0])
+
+    return context

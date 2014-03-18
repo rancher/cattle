@@ -42,27 +42,33 @@ class LibvirtStorage(KindBasedMixin, BaseStoragePool):
         image = image_storage_pool_map.image
         storage_pool = image_storage_pool_map.storagePool
         image_obj = get_pool_driver(storage_pool).get_image(image, storage_pool)
-        return {
-            'virtualSizeMb': _to_megabytes(image_obj.get_virtual_size()),
-            'physicalSizeMb': _to_megabytes(image_obj.get_physical_size()),
-            'format': image_obj.get_format(),
-            '+data': {
-                'libvirt': image_obj.data()
+        if image_obj is None:
+            return {}
+        else:
+            return {
+                'virtualSizeMb': _to_megabytes(image_obj.get_virtual_size()),
+                'physicalSizeMb': _to_megabytes(image_obj.get_physical_size()),
+                'format': image_obj.get_format(),
+                '+data': {
+                    'libvirt': image_obj.data()
+                }
             }
-        }
 
     @staticmethod
     def _get_volume_storage_pool_map_data(volume_storage_pool_map):
         volume = volume_storage_pool_map.volume
         storage_pool = volume_storage_pool_map.storagePool
         volume_obj = get_pool_driver(storage_pool).get_volume(volume, storage_pool)
-        return {
-            'virtualSizeMb': _to_megabytes(volume_obj.get_virtual_size()),
-            'format': volume_obj.get_format(),
-            '+data': {
-                'libvirt': volume_obj.data()
+        if volume_obj is None:
+            return {}
+        else:
+            return {
+                'virtualSizeMb': _to_megabytes(volume_obj.get_virtual_size()),
+                'format': volume_obj.get_format(),
+                '+data': {
+                    'libvirt': volume_obj.data()
+                }
             }
-        }
 
     def _is_volume_active(self, volume, storage_pool):
         return get_pool_driver(storage_pool).is_volume_active(volume, storage_pool)

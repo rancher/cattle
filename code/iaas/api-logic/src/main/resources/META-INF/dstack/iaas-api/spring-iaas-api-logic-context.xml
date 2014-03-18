@@ -14,7 +14,7 @@
 
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.manager.DataManager" />
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.filter.agent.AgentFilter" />
-    <bean class="io.github.ibuildthecloud.dstack.iaas.api.filter.container.ContainerFilter" />
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.filter.instance.InstanceImageRequiredFilter" />
 
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 

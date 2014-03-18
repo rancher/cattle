@@ -28,6 +28,8 @@
                     "fields": {
                         "imageUuid": "docker:ibuildthecloud/helloworld",
                         "startOnCreate": "true",
+                        "command" : "sleep",
+                        "commandArgs" : [ "1", "2", "3" ],
                         "tcpPorts": [8080],
                         "udpPorts": [12201]
                     }

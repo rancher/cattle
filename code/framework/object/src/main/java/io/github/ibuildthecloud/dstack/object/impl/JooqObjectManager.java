@@ -27,7 +27,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.ForeignKey;
-import org.jooq.JoinType;
 import org.jooq.ResultQuery;
 import org.jooq.SelectQuery;
 import org.jooq.Table;

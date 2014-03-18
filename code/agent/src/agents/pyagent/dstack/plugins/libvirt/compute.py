@@ -203,5 +203,6 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         except:
             pass
         finally:
+            # TODO Wait for shutdown a bit before destroying
             log.info('Destroy %s', instance.uuid)
             vm.destroy()

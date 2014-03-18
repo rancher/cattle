@@ -22,6 +22,8 @@ if enabled():
 
 
 QCOW_TEST_FILE = os.path.join(TEST_DIR, 'libvirt/qcow2.img')
+QCOW_TEST_FILE_GZ = os.path.join(TEST_DIR, 'libvirt/qcow2.img.gz')
+QCOW_TEST_FILE_BZ2 = os.path.join(TEST_DIR, 'libvirt/qcow2.img.bz2')
 POOL_DIR = os.path.join(TEST_DIR, 'scratch/libvirtpool')
 
 
@@ -50,6 +52,22 @@ def random_qcow2(pool_dir):
     random_file = NamedTemporaryFile(dir=pool_dir)
     random_file.close()
     shutil.copy(QCOW_TEST_FILE, random_file.name)
+    return random_file.name
+
+
+@pytest.fixture
+def random_qcow2_bz2(pool_dir):
+    random_file = NamedTemporaryFile(dir=pool_dir, suffix='.bz2')
+    random_file.close()
+    shutil.copy(QCOW_TEST_FILE_BZ2, random_file.name)
+    return random_file.name
+
+
+@pytest.fixture
+def random_qcow2_gz(pool_dir):
+    random_file = NamedTemporaryFile(dir=pool_dir, suffix='.gz')
+    random_file.close()
+    shutil.copy(QCOW_TEST_FILE_GZ, random_file.name)
     return random_file.name
 
 

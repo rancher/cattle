@@ -25,9 +25,10 @@ class PingHandler:
             return
 
         resp = utils.reply(event)
-        for type in types():
-            if hasattr(type, 'on_ping'):
-                type.on_ping(event, resp)
+        if Config.do_ping():
+            for type in types():
+                if hasattr(type, 'on_ping'):
+                    type.on_ping(event, resp)
 
         return resp
 

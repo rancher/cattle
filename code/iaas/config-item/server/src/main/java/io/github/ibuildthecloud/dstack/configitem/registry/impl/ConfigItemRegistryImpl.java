@@ -45,7 +45,7 @@ public class ConfigItemRegistryImpl implements ConfigItemRegistry, Initializatio
                 items.put(item.getName(), item);
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to get config items from factory [" + type + "]");
+            throw new IllegalStateException("Failed to get config items from factory [" + type + "]", e);
         }
 
         return true;

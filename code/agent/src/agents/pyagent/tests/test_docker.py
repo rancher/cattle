@@ -143,11 +143,15 @@ def test_ping(agent, responses):
     CONFIG_OVERRIDE['DOCKER_UUID'] = 'testuuid'
 
     def post(req, resp):
-        hostname = Config.hostname()
+        hostname = Config.hostname() + '/docker'
         pool_name = hostname + ' Storage Pool'
+        resources = resp['data']['resources']
+        resources = filter(lambda x: x['kind'] == 'docker', resources)
+        resp['data']['resources'] = resources
+
         assert resp['data']['resources'][0]['name'] == hostname
         assert resp['data']['resources'][1]['name'] == pool_name
-        resp['data']['resources'][0]['name'] = 'localhost'
-        resp['data']['resources'][1]['name'] = 'localhost Storage Pool'
+        resp['data']['resources'][0]['name'] = 'localhost/docker'
+        resp['data']['resources'][1]['name'] = 'localhost/docker Storage Pool'
 
     event_test(agent, 'docker/ping', post_func=post)
