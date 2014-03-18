@@ -30,9 +30,7 @@ check_debug
 # End copy
 
 CONF=(/etc/dstack/agent/bootstrap.conf
-      /etc/dstack/agent/agent.conf
-      /var/lib/dstack/etc/dstack/agent/bootstrap.conf
-      /var/lib/dstack/etc/dstack/agent/agent.conf)
+      /var/lib/dstack/etc/dstack/agent/bootstrap.conf)
 CONTENT_URL=/configcontent/configscripts
 INSTALL_ITEMS="configscripts pyagent"
 DOCKER_AGENT="ibuildthecloud/agent"
