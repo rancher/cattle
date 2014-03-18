@@ -23,7 +23,7 @@ cat << EOF
   \`created\` datetime DEFAULT NULL,
   \`removed\` datetime DEFAULT NULL,
   \`remove_time\` datetime DEFAULT NULL,
-  \`data\` mediumtext,
+  \`data\` text,
 EOF
 }
 

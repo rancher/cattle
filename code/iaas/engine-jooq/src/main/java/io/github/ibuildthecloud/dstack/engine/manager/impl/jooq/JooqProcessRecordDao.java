@@ -221,7 +221,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
 
         try {
             String stringData = jsonMapper.writeValueAsString(obj);
-            if ( stringData.length() > 1000000 ) {
+            if ( stringData.length() > 65000 ) {
                 log.error("Process log is too long for id [{}] truncating executions : {}", record.getId(), stringData);
                 obj.getExecutions().clear();
             }
