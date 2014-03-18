@@ -2,7 +2,6 @@ flake8
 setuptools
 pytest==2.3.5
 datadiff==1.1.5
-libvirt-python
 
 mako
 docker-py==0.3.0
