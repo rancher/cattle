@@ -201,8 +201,13 @@ def get_agent(admin_client, name, default_uri=DEFAULT_AGENT_URI,
     uri = os.getenv(uri_name, default_uri)
     uuid = os.getenv(uuid_name, default_agent_uuid)
 
-    return create_type_by_uuid(admin_client, 'agent', uuid, validate=False,
-                               uri=uri)
+    agent = create_type_by_uuid(admin_client, 'agent', uuid, validate=False,
+                                uri=uri)
+
+    while len(agent.hosts()) == 0:
+        time.sleep(0.5)
+
+    return agent
 
 
 def kind_context(admin_client, kind, external_pool=False,
