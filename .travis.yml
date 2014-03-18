@@ -11,6 +11,7 @@ services:
   - redis
 before_install: ./tools/build/before.sh
 install: 
+  - sudo apt-get install -y python-libvirt
   - sudo pip install tox
   - ./tools/build/build.sh
 script: ./tools/build/runtests.sh
