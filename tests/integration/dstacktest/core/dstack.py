@@ -178,6 +178,7 @@ class Client:
         self._cache_time = cache_time
         self._strict = strict
         self.schema = None
+        self._session = requests.Session()
 
         if not self._cache_time:
             self._cache_time = 60 * 60 * 24  # 24 Hours
@@ -246,7 +247,7 @@ class Client:
         return r.text
 
     def _get_response(self, url, data=None):
-        r = requests.get(url, auth=self._auth, params=data, headers=HEADERS)
+        r = self._session.get(url, auth=self._auth, params=data, headers=HEADERS)
         if r.status_code < 200 or r.status_code >= 300:
             self._error(r.text)
 
@@ -254,8 +255,8 @@ class Client:
 
     @timed_url
     def _post(self, url, data=None):
-        r = requests.post(url, auth=self._auth, data=self._marshall(data),
-                          headers=HEADERS)
+        r = self._session.post(url, auth=self._auth, data=self._marshall(data),
+                               headers=HEADERS)
         if r.status_code < 200 or r.status_code >= 300:
             self._error(r.text)
 
@@ -263,8 +264,8 @@ class Client:
 
     @timed_url
     def _put(self, url, data=None):
-        r = requests.put(url, auth=self._auth, data=self._marshall(data),
-                         headers=HEADERS)
+        r = self._session.put(url, auth=self._auth, data=self._marshall(data),
+                              headers=HEADERS)
         if r.status_code < 200 or r.status_code >= 300:
             self._error(r.text)
 
@@ -272,7 +273,7 @@ class Client:
 
     @timed_url
     def _delete(self, url):
-        r = requests.delete(url, auth=self._auth, headers=HEADERS)
+        r = self._session.delete(url, auth=self._auth, headers=HEADERS)
         if r.status_code < 200 or r.status_code >= 300:
             self._error(r.text)
 
