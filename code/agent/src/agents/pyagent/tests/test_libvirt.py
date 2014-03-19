@@ -31,6 +31,9 @@ def test_image_activate(random_qcow2, pool_dir, agent, responses):
         assert resp['data']['+data']['libvirt']['filename'].endswith('.qcow2')
         del resp['data']['+data']['libvirt']['filename']
 
+        assert int(resp['data']['+data']['libvirt']['actual-size']) > 200000
+        del resp['data']['+data']['libvirt']['actual-size']
+
     event_test(agent, 'libvirt/image_activate', pre_func=pre, post_func=post)
 
 
@@ -45,6 +48,9 @@ def test_image_activate_gz(random_qcow2_gz, pool_dir, agent, responses):
         assert resp['data']['+data']['libvirt']['filename'].endswith('.qcow2')
         del resp['data']['+data']['libvirt']['filename']
 
+        assert int(resp['data']['+data']['libvirt']['actual-size']) > 200000
+        del resp['data']['+data']['libvirt']['actual-size']
+
     event_test(agent, 'libvirt/image_activate', pre_func=pre, post_func=post)
 
 
@@ -58,6 +64,9 @@ def test_image_activate_bz2(random_qcow2_bz2, pool_dir, agent, responses):
     def post(req, resp):
         assert resp['data']['+data']['libvirt']['filename'].endswith('.qcow2')
         del resp['data']['+data']['libvirt']['filename']
+
+        assert int(resp['data']['+data']['libvirt']['actual-size']) > 200000
+        del resp['data']['+data']['libvirt']['actual-size']
 
     event_test(agent, 'libvirt/image_activate', pre_func=pre, post_func=post)
 
@@ -81,6 +90,9 @@ def test_volume_activate(random_qcow2, pool_dir, agent, responses):
             .endswith('.qcow2')
         assert resp['data']['+data']['libvirt']['full-backing-filename']\
             .endswith('.qcow2')
+
+        assert int(resp['data']['+data']['libvirt']['actual-size']) > 200000
+        del resp['data']['+data']['libvirt']['actual-size']
 
         del resp['data']['+data']['libvirt']['filename']
         del resp['data']['+data']['libvirt']['backing-filename']

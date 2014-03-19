@@ -7,8 +7,7 @@
                 "cluster-size": 65536, 
                 "format": "qcow2", 
                 "virtual-size": 1073741824,
-                "dirty-flag": false,
-                "actual-size": 200704
+                "dirty-flag": false
             }
         }
     },
