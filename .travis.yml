@@ -7,7 +7,7 @@ env:
   - DSTACK_DB_DSTACK_DATABASE=mysql
   - DSTACK_DB_DSTACK_DATABASE=h2
   - DSTACK_DB_DSTACK_DATABASE=hsqldb
-  - DSTACK_DB_DSTACK_DATABASE=postgres
+  - DSTACK_DB_DSTACK_DATABASE=postgres MAVEN_ARGS=-Dpostgres
 services:
   - redis
 before_install: ./tools/build/before.sh
