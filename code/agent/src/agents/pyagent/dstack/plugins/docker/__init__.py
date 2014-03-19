@@ -3,10 +3,6 @@ import logging
 from dstack import default_value, Config
 from dstack.utils import memoize
 
-
-def docker_client():
-    return Client()
-
 log = logging.getLogger('docker')
 
 _ENABLED = True
@@ -39,6 +35,19 @@ class DockerConfig:
         return Config.get_uuid_from_file('DOCKER_UUID',
                                          DockerConfig.docker_uuid_file())
 
+    @staticmethod
+    def url_base():
+        return default_value('DOCKER_URL_BASE', None)
+
+    @staticmethod
+    def api_version():
+        return default_value('DOCKER_API_VERSION', '1.8')
+
+
+def docker_client():
+    return Client(base_url=DockerConfig.url_base(),
+                  version=DockerConfig.api_version())
+
 from .storage import DockerPool
 from .compute import DockerCompute
 from dstack import type_manager
@@ -56,6 +65,6 @@ except Exception, e:
     log.info('Disabling docker, could not contact docker')
     _ENABLED = False
 
-if _ENABLED:
+if _ENABLED and DockerConfig.docker_enabled():
     type_manager.register_type(type_manager.STORAGE_DRIVER, DockerPool())
     type_manager.register_type(type_manager.COMPUTE_DRIVER, DockerCompute())
