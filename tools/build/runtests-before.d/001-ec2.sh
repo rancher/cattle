@@ -41,5 +41,5 @@ cat authorized_keys | ssh $SSH_ARGS \
 
 curl -X POST http://localhost:8080/v1/agents -F uri="ssh://root@${DNS}:22"
 
-rsync -avz --delete --progress -e "ssh $SSH_ARGS" ../../../ $DNS:/usr/src/dstack
+rsync -az --delete -e "ssh $SSH_ARGS" ../../../ $DNS:/usr/src/dstack
 ssh $SSH_ARGS $DNS -- /usr/src/dstack/tools/build/runtests-agent.sh
