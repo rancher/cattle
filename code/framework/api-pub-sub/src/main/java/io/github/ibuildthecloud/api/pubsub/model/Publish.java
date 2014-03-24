@@ -9,7 +9,7 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 @Type(pluralName = "publish", create = true, list = false)
 public interface Publish {
 
-    @Field(create = true, required = true)
+    @Field(create = true)
     String getId();
 
     @Field(create = true, required = true)
@@ -27,7 +27,7 @@ public interface Publish {
     @Field(create = true, nullable = true)
     Map<String,Object> getData();
 
-    @Field(create = true, required = true)
+    @Field(create = true)
     Long getTime();
 
     @Field(create = true)
