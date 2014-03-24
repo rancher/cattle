@@ -2,7 +2,7 @@ import logging
 import requests.exceptions
 import time
 
-from . import docker_client
+from . import docker_client, pull_image
 from . import DockerConfig
 from dstack import Config
 from dstack.compute import BaseComputeDriver
@@ -114,9 +114,13 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
     def _do_instance_activate(self, instance, host, progress):
         name = instance.uuid
         try:
-            image = instance.image.data.dockerImage.id
+            image_tag = instance.image.data.dockerImage.fullName
         except KeyError:
             raise Exception('Can not start container with no image')
+
+        # Ensure image is pulled, somebody could have deleted it behind the
+        # scenes
+        pull_image(instance.image, progress)
 
         c = docker_client()
 
@@ -144,7 +148,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         if container is None:
             log.info('Creating docker container [%s] from config %s', name,
                      config)
-            container = c.create_container(image, **config)
+            container = c.create_container(image_tag, **config)
 
         log.info('Starting docker container [%s] docker id [%s]', name,
                  container['Id'])

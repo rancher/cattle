@@ -44,9 +44,19 @@ class DockerConfig:
         return default_value('DOCKER_API_VERSION', '1.8')
 
 
-def docker_client():
+def docker_client(version=None):
+    if version is None:
+        version = DockerConfig.api_version()
     return Client(base_url=DockerConfig.url_base(),
-                  version=DockerConfig.api_version())
+                  version=version)
+
+
+def pull_image(image, progress):
+    _DOCKER_POOL.pull_image(image, progress)
+
+
+def get_compute():
+    return _DOCKER_COMPUTE
 
 from .storage import DockerPool
 from .compute import DockerCompute
@@ -66,5 +76,7 @@ except Exception, e:
     _ENABLED = False
 
 if _ENABLED and DockerConfig.docker_enabled():
-    type_manager.register_type(type_manager.STORAGE_DRIVER, DockerPool())
-    type_manager.register_type(type_manager.COMPUTE_DRIVER, DockerCompute())
+    _DOCKER_POOL = DockerPool()
+    _DOCKER_COMPUTE = DockerCompute()
+    type_manager.register_type(type_manager.STORAGE_DRIVER, _DOCKER_POOL)
+    type_manager.register_type(type_manager.COMPUTE_DRIVER, _DOCKER_COMPUTE)

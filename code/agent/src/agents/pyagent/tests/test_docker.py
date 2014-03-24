@@ -1,4 +1,4 @@
-from docker import Client
+from docker import Client, APIError
 
 #TODO dstack.plugins.load_plugins() somehow make dstack.plugin.* modules
 #  unavailable, importing it first
@@ -43,6 +43,11 @@ def test_image_list():
 
 @if_docker
 def test_image_activate(agent, responses):
+    try:
+        Client().remove_image('ibuildthecloud/helloworld:latest')
+    except APIError:
+        pass
+
     def post(req, resp):
         del resp['data']['+data']['dockerImage']['VirtualSize']
 
@@ -57,6 +62,16 @@ def test_volume_activate(agent, responses):
 @if_docker
 def test_volume_deactivate(agent, responses):
     event_test(agent, 'docker/volume_deactivate')
+
+
+@if_docker
+def test_instance_activate_need_pull_image(agent, responses):
+    try:
+        Client().remove_image('ibuildthecloud/helloworld:latest')
+    except APIError:
+        pass
+
+    test_instance_activate(agent, responses)
 
 
 @if_docker

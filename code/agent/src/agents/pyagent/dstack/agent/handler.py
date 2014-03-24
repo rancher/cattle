@@ -45,6 +45,8 @@ class BaseHandler(object):
             return None
 
     def _reply(self, req, response_data):
+        if req is None:
+            return None
         resp = utils.reply(req)
         resp.data = response_data
 

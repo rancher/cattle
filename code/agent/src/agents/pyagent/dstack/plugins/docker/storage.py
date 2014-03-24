@@ -1,8 +1,7 @@
 import logging
 from dstack.storage import BaseStoragePool
 from dstack.agent.handler import KindBasedMixin
-from dstack.plugins.docker.compute import DockerCompute
-from . import docker_client
+from . import docker_client, get_compute
 
 
 log = logging.getLogger('docker')
@@ -10,7 +9,6 @@ log = logging.getLogger('docker')
 
 class DockerPool(KindBasedMixin, BaseStoragePool):
     def __init__(self):
-        self._compute = DockerCompute()
         KindBasedMixin.__init__(self, kind='docker')
         BaseStoragePool.__init__(self)
 
@@ -23,8 +21,22 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
             return templates[0]
         return None
 
+    @staticmethod
+    def _get_image_by_label(tag):
+        templates = docker_client().images(all=True)
+        templates = filter(lambda x: tag in x['RepoTags'], templates)
+
+        if len(templates) > 0:
+            return templates[0]
+        return None
+
+    def pull_image(self, image, progress):
+        if not self._is_image_active(image, None):
+            self._do_image_activate(image, None, progress)
+
     def _is_image_active(self, image, storage_pool):
-        return self._get_image_by_id(image.data.dockerImage.id) is not None
+        image_obj = self._get_image_by_label(image.data.dockerImage.fullName)
+        return image_obj is not None
 
     def _do_image_activate(self, image, storage_pool, progress):
         client = docker_client()
@@ -35,7 +47,7 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
             progress.update(status)
 
     def _get_image_storage_pool_map_data(self, obj):
-        image = self._get_image_by_id(obj.image.data.dockerImage.id)
+        image = self._get_image_by_label(obj.image.data.dockerImage.fullName)
         return {
             '+data': {
                 'dockerImage': image
@@ -63,7 +75,7 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
         if volume.deviceNumber != 0:
             raise Exception("Non-root volumes are not supported")
 
-        container = self._compute.get_container_by_name(volume.instance.uuid)
+        container = get_compute().get_container_by_name(volume.instance.uuid)
         return container is None
 
     def _do_volume_remove(self, volume, storage_pool, progress):
