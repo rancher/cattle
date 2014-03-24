@@ -80,7 +80,7 @@
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.impl.DefaultAuthorizationProvider" >
         <property name="schemaFactoryList" value="#{extensionManager.list('schema.factory')}" />
     </bean>
-    <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.impl.AgentAuthorizationProvider" />
+    <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.impl.AgentQualifierAuthorizationProvider" />
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.auth.AchaiusPolicyOptionsFactory" />
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.change.impl.ResourceChangeEventListenerImpl" />
     <bean class="io.github.ibuildthecloud.dstack.iaas.api.change.impl.ResourceChangeEventProcessor" />
