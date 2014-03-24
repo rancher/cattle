@@ -6,7 +6,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class FileBasedResourceRoot extends AbstractCachingResourceRoot implements ResourceRoot {
+
+    private static final Logger log = LoggerFactory.getLogger(FileBasedResourceRoot.class);
 
     File base;
     boolean useCache;
@@ -48,7 +53,11 @@ public class FileBasedResourceRoot extends AbstractCachingResourceRoot implement
             if ( childFile.isDirectory() ) {
                 scan(childName, childFile, result);
             } else {
-                result.put(childName, new FileResource(childName, childFile));
+                if ( childFile.canRead() ) {
+                    result.put(childName, new FileResource(childName, childFile));
+                } else {
+                    log.warn("Can not read [{}], ignoring", childFile.getAbsolutePath());
+                }
             }
         }
     }
