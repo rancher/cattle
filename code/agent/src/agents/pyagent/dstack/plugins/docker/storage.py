@@ -41,10 +41,18 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
     def _do_image_activate(self, image, storage_pool, progress):
         client = docker_client()
         data = image.data.dockerImage
-        for status in client.pull(repository=data.qualifiedName, tag=data.tag,
-                                  stream=True):
-            log.info('Pulling [%s] status : %s', data.fullName, status)
-            progress.update(status)
+
+        #TODO: Disable progress until 0.3.0+ is released, bug makes this fail
+        progress = None
+
+        if progress is None:
+            client.pull(repository=data.qualifiedName, tag=data.tag)
+        else:
+            for status in client.pull(repository=data.qualifiedName,
+                                      tag=data.tag,
+                                      stream=True):
+                log.info('Pulling [%s] status : %s', data.fullName, status)
+                progress.update(status)
 
     def _get_image_storage_pool_map_data(self, obj):
         image = self._get_image_by_label(obj.image.data.dockerImage.fullName)
