@@ -14,10 +14,6 @@ public interface ExtensionManager {
 
     <T> List<T> getExtensionList(String key, Class<T> type);
 
-//    <T> Map<String, List<T>> getExtensionMap(String key, Class<T> type);
-
-//    void onChange(String key, Runnable runnable);
-
     List<ExtensionPoint> getExtensions();
 
     ExtensionPoint getExtensionPoint(Class<?> type);

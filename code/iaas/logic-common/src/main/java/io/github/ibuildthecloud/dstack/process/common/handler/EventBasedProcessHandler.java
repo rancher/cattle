@@ -8,6 +8,8 @@ import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.dstack.util.type.NamedUtils;
@@ -27,6 +29,15 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
     Integer retry;
     Long timeoutMillis;
     int priority = Priority.SPECIFIC;
+
+    public EventBasedProcessHandler(EventService eventService, ObjectManager objectManager,
+            ObjectProcessManager objectProcessManager, ObjectMetaDataManager objectMetaDataManager) {
+        this();
+        this.eventService = eventService;
+        this.objectManager = objectManager;
+        this.objectProcessManager = objectProcessManager;
+        this.objectMetaDataManager = objectMetaDataManager;
+    }
 
     public EventBasedProcessHandler() {
         if ( this.getClass() == EventBasedProcessHandler.class ) {
@@ -60,8 +71,10 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
             idString = id.toString();
         }
 
+        String eventName = getEventName() == null ? process.getName() : getEventName();
+
         Event request = EventVO
-                            .newEvent(process.getName())
+                            .newEvent(eventName)
                             .withResourceId(idString)
                             .withResourceType(type)
                             .withData(state.getData());

@@ -153,6 +153,75 @@
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump8">
+        <createTable tableName="external_handler">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="priority" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump9">
+        <createTable tableName="external_handler_external_handler_process_map">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="external_handler_id" type="BIGINT"/>
+            <column name="external_handler_process_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump10">
+        <createTable tableName="external_handler_process">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump11">
         <createTable tableName="host">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -180,7 +249,7 @@
             <column name="zone_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump9">
+    <changeSet author="darren (generated)" id="dump12">
         <createTable tableName="image">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -211,7 +280,7 @@
             <column name="format" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump10">
+    <changeSet author="darren (generated)" id="dump13">
         <createTable tableName="image_storage_pool_map">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -235,7 +304,7 @@
             <column name="storage_pool_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump11">
+    <changeSet author="darren (generated)" id="dump14">
         <createTable tableName="instance">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -265,7 +334,7 @@
             <column name="zone_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump12">
+    <changeSet author="darren (generated)" id="dump15">
         <createTable tableName="instance_host_map">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -289,7 +358,7 @@
             <column name="host_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump13">
+    <changeSet author="darren (generated)" id="dump16">
         <createTable tableName="offering">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -315,7 +384,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump14">
+    <changeSet author="darren (generated)" id="dump17">
         <createTable tableName="process_execution">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -329,7 +398,7 @@
             <column name="log" type="${mediumtext}"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump15">
+    <changeSet author="darren (generated)" id="dump18">
         <createTable tableName="process_instance">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -348,7 +417,7 @@
             <column name="running_process_server_id" type="VARCHAR(128)"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump16">
+    <changeSet author="darren (generated)" id="dump19">
         <createTable tableName="setting">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -361,7 +430,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump17">
+    <changeSet author="darren (generated)" id="dump20">
         <createTable tableName="storage_pool">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -391,7 +460,7 @@
             <column name="zone_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump18">
+    <changeSet author="darren (generated)" id="dump21">
         <createTable tableName="storage_pool_host_map">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -415,7 +484,7 @@
             <column name="host_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump19">
+    <changeSet author="darren (generated)" id="dump22">
         <createTable tableName="task">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -425,7 +494,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump20">
+    <changeSet author="darren (generated)" id="dump23">
         <createTable tableName="task_instance">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -446,7 +515,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump21">
+    <changeSet author="darren (generated)" id="dump24">
         <createTable tableName="volume">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -479,7 +548,7 @@
             <column name="zone_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump22">
+    <changeSet author="darren (generated)" id="dump25">
         <createTable tableName="volume_storage_pool_map">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -503,7 +572,7 @@
             <column name="storage_pool_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump23">
+    <changeSet author="darren (generated)" id="dump26">
         <createTable tableName="zone">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -526,501 +595,576 @@
             <column name="data" type="TEXT"/>
         </createTable>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump24">
+    <changeSet author="darren (generated)" id="dump27">
         <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="agent" constraintName="fk_agent__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump25">
+    <changeSet author="darren (generated)" id="dump28">
         <addForeignKeyConstraint baseColumnNames="agent_group_id" baseTableName="agent" constraintName="fk_agent__agent_group_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="agent_group"/>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump26">
+    <changeSet author="darren (generated)" id="dump29">
         <addForeignKeyConstraint baseColumnNames="zone_id" baseTableName="agent" constraintName="fk_agent__zone_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="zone"/>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump27">
+    <changeSet author="darren (generated)" id="dump30">
         <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="agent_group" constraintName="fk_agent_group__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump28">
+    <changeSet author="darren (generated)" id="dump31">
         <addForeignKeyConstraint baseColumnNames="agent_id" baseTableName="config_item_status" constraintName="fk_config_item__agent_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="agent"/>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump29">
+    <changeSet author="darren (generated)" id="dump33">
         <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="credential" constraintName="fk_credential__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump30">
-        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="host" constraintName="fk_host__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump31">
-        <addForeignKeyConstraint baseColumnNames="agent_id" baseTableName="host" constraintName="fk_host__agent_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="agent"/>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump32">
-        <addForeignKeyConstraint baseColumnNames="zone_id" baseTableName="host" constraintName="fk_host__zone_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="zone"/>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump33">
-        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="image" constraintName="fk_image__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
-    </changeSet>
     <changeSet author="darren (generated)" id="dump34">
-        <addForeignKeyConstraint baseColumnNames="image_id" baseTableName="image_storage_pool_map" constraintName="fk_image_storage_pool_map__image_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="image"/>
+        <addForeignKeyConstraint baseColumnNames="external_handler_id" baseTableName="external_handler_external_handler_process_map" constraintName="fk_eh_eh_process_map__external_handler_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="external_handler"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump35">
-        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="image_storage_pool_map" constraintName="fk_image_storage_pool_map__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
+        <addForeignKeyConstraint baseColumnNames="external_handler_process_id" baseTableName="external_handler_external_handler_process_map" constraintName="fk_eh_eh_process_map__external_handler_process_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="external_handler_process"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump36">
-        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="instance" constraintName="fk_instance__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="host" constraintName="fk_host__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump37">
-        <addForeignKeyConstraint baseColumnNames="image_id" baseTableName="instance" constraintName="fk_instance__image_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="image"/>
+        <addForeignKeyConstraint baseColumnNames="agent_id" baseTableName="host" constraintName="fk_host__agent_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="agent"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump38">
-        <addForeignKeyConstraint baseColumnNames="offering_id" baseTableName="instance" constraintName="fk_instance__offering_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="offering"/>
+        <addForeignKeyConstraint baseColumnNames="zone_id" baseTableName="host" constraintName="fk_host__zone_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="zone"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump39">
-        <addForeignKeyConstraint baseColumnNames="zone_id" baseTableName="instance" constraintName="fk_instance__zone_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="zone"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="image" constraintName="fk_image__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump40">
-        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="instance_host_map" constraintName="fk_instance_host_map__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
+        <addForeignKeyConstraint baseColumnNames="image_id" baseTableName="image_storage_pool_map" constraintName="fk_image_storage_pool_map__image_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="image"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump41">
-        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="instance_host_map" constraintName="fk_instance_host_map__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="image_storage_pool_map" constraintName="fk_image_storage_pool_map__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump42">
-        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="offering" constraintName="fk_offering__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="instance" constraintName="fk_instance__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump43">
-        <addForeignKeyConstraint baseColumnNames="process_instance_id" baseTableName="process_execution" constraintName="fk_process_execution_process_instance_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="process_instance"/>
+        <addForeignKeyConstraint baseColumnNames="image_id" baseTableName="instance" constraintName="fk_instance__image_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="image"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump44">
-        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="storage_pool" constraintName="fk_storage_pool__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="offering_id" baseTableName="instance" constraintName="fk_instance__offering_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="offering"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump45">
-        <addForeignKeyConstraint baseColumnNames="agent_id" baseTableName="storage_pool" constraintName="fk_storage_pool__agent_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="agent"/>
+        <addForeignKeyConstraint baseColumnNames="zone_id" baseTableName="instance" constraintName="fk_instance__zone_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="zone"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump46">
-        <addForeignKeyConstraint baseColumnNames="zone_id" baseTableName="storage_pool" constraintName="fk_storage_pool__zone_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="zone"/>
+        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="instance_host_map" constraintName="fk_instance_host_map__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump47">
-        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="storage_pool_host_map" constraintName="fk_storage_pool_host_map__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
+        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="instance_host_map" constraintName="fk_instance_host_map__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump48">
-        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="storage_pool_host_map" constraintName="fk_storage_pool_host_map__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="offering" constraintName="fk_offering__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump49">
-        <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="task_instance" constraintName="fk_task_instance__task_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="task"/>
+        <addForeignKeyConstraint baseColumnNames="process_instance_id" baseTableName="process_execution" constraintName="fk_process_execution_process_instance_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="process_instance"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump50">
-        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="volume" constraintName="fk_volume__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="storage_pool" constraintName="fk_storage_pool__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump51">
-        <addForeignKeyConstraint baseColumnNames="image_id" baseTableName="volume" constraintName="fk_volume__image_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="image"/>
+        <addForeignKeyConstraint baseColumnNames="agent_id" baseTableName="storage_pool" constraintName="fk_storage_pool__agent_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="agent"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump52">
-        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="volume" constraintName="fk_volume__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+        <addForeignKeyConstraint baseColumnNames="zone_id" baseTableName="storage_pool" constraintName="fk_storage_pool__zone_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="zone"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump53">
-        <addForeignKeyConstraint baseColumnNames="offering_id" baseTableName="volume" constraintName="fk_volume__offering_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="offering"/>
+        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="storage_pool_host_map" constraintName="fk_storage_pool_host_map__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump54">
-        <addForeignKeyConstraint baseColumnNames="zone_id" baseTableName="volume" constraintName="fk_volume__zone_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="zone"/>
+        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="storage_pool_host_map" constraintName="fk_storage_pool_host_map__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump55">
-        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="volume_storage_pool_map" constraintName="fk_volume_storage_pool_map__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
+        <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="task_instance" constraintName="fk_task_instance__task_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="task"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump56">
-        <addForeignKeyConstraint baseColumnNames="volume_id" baseTableName="volume_storage_pool_map" constraintName="fk_volume_storage_pool_map__volume_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="volume"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="volume" constraintName="fk_volume__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump57">
-        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="zone" constraintName="fk_zone__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="image_id" baseTableName="volume" constraintName="fk_volume__image_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="image"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump58">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_account_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="volume" constraintName="fk_volume__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump59">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_agent_group_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="agent_group"/>
+        <addForeignKeyConstraint baseColumnNames="offering_id" baseTableName="volume" constraintName="fk_volume__offering_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="offering"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump60">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_agent_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="agent"/>
+        <addForeignKeyConstraint baseColumnNames="zone_id" baseTableName="volume" constraintName="fk_volume__zone_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="zone"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump61">
-        <addUniqueConstraint columnNames="name" constraintName="idx_config_item__name" deferrable="false" disabled="false" initiallyDeferred="false" tableName="config_item"/>
+        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="volume_storage_pool_map" constraintName="fk_volume_storage_pool_map__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump62">
-        <addUniqueConstraint columnNames="name, agent_id" constraintName="idx_config_item_status_name_agent_id" deferrable="false" disabled="false" initiallyDeferred="false" tableName="config_item_status"/>
+        <addForeignKeyConstraint baseColumnNames="volume_id" baseTableName="volume_storage_pool_map" constraintName="fk_volume_storage_pool_map__volume_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="volume"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump63">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_credential_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="credential"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="zone" constraintName="fk_zone__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump64">
-        <addUniqueConstraint columnNames="name" constraintName="idx_data_name" deferrable="false" disabled="false" initiallyDeferred="false" tableName="data"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_account_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="account"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump65">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_host_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="host"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_agent_group_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="agent_group"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump66">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_image_storage_pool_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="image_storage_pool_map"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_agent_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="agent"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump67">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_image_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="image"/>
+        <addUniqueConstraint columnNames="name" constraintName="idx_config_item__name" deferrable="false" disabled="false" initiallyDeferred="false" tableName="config_item"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump68">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_instance_host_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="instance_host_map"/>
+        <addUniqueConstraint columnNames="name, agent_id" constraintName="idx_config_item_status_name_agent_id" deferrable="false" disabled="false" initiallyDeferred="false" tableName="config_item_status"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump69">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_instance_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="instance"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_credential_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="credential"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump70">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_offering_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="offering"/>
+        <addUniqueConstraint columnNames="name" constraintName="idx_data_name" deferrable="false" disabled="false" initiallyDeferred="false" tableName="data"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump71">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_process_execution__uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="process_execution"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_eh_eh_process_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="external_handler_external_handler_process_map"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump72">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_storage_pool_host_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="storage_pool_host_map"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_external_handler_process_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="external_handler_process"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump73">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_storage_pool_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="storage_pool"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_external_handler_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="external_handler"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump74">
-        <addUniqueConstraint columnNames="name" constraintName="idx_task_name" deferrable="false" disabled="false" initiallyDeferred="false" tableName="task"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_host_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="host"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump75">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_volume_storage_pool_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="volume_storage_pool_map"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_image_storage_pool_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="image_storage_pool_map"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump76">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_volume_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="volume"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_image_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="image"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump77">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_zone_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="zone"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_instance_host_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="instance_host_map"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump78">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_instance_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="instance"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump79">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_offering_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="offering"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump80">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_process_execution__uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="process_execution"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump81">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_storage_pool_host_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="storage_pool_host_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump82">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_storage_pool_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="storage_pool"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump83">
+        <addUniqueConstraint columnNames="name" constraintName="idx_task_name" deferrable="false" disabled="false" initiallyDeferred="false" tableName="task"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump84">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_volume_storage_pool_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="volume_storage_pool_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump85">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_volume_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="volume"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump86">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_zone_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="zone"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump87">
         <createIndex indexName="idx_account_name" tableName="account" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump79">
+    <changeSet author="darren (generated)" id="dump88">
         <createIndex indexName="idx_account_remove_time" tableName="account" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump80">
+    <changeSet author="darren (generated)" id="dump89">
         <createIndex indexName="idx_account_removed" tableName="account" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump81">
+    <changeSet author="darren (generated)" id="dump90">
         <createIndex indexName="idx_account_state" tableName="account" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump82">
+    <changeSet author="darren (generated)" id="dump91">
         <createIndex indexName="idx_agent_group_name" tableName="agent_group" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump83">
+    <changeSet author="darren (generated)" id="dump92">
         <createIndex indexName="idx_agent_group_remove_time" tableName="agent_group" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump84">
+    <changeSet author="darren (generated)" id="dump93">
         <createIndex indexName="idx_agent_group_removed" tableName="agent_group" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump85">
+    <changeSet author="darren (generated)" id="dump94">
         <createIndex indexName="idx_agent_group_state" tableName="agent_group" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump86">
+    <changeSet author="darren (generated)" id="dump95">
         <createIndex indexName="idx_agent_name" tableName="agent" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump87">
+    <changeSet author="darren (generated)" id="dump96">
         <createIndex indexName="idx_agent_remove_time" tableName="agent" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump88">
+    <changeSet author="darren (generated)" id="dump97">
         <createIndex indexName="idx_agent_removed" tableName="agent" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump89">
+    <changeSet author="darren (generated)" id="dump98">
         <createIndex indexName="idx_agent_state" tableName="agent" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump90">
+    <changeSet author="darren (generated)" id="dump99">
         <createIndex indexName="idx_config_item_source_version" tableName="config_item_status" unique="false">
             <column name="source_version"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump91">
+    <changeSet author="darren (generated)" id="dump100">
         <createIndex indexName="idx_credential_name" tableName="credential" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump92">
+    <changeSet author="darren (generated)" id="dump101">
         <createIndex indexName="idx_credential_remove_time" tableName="credential" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump93">
+    <changeSet author="darren (generated)" id="dump102">
         <createIndex indexName="idx_credential_removed" tableName="credential" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump94">
+    <changeSet author="darren (generated)" id="dump103">
         <createIndex indexName="idx_credential_state" tableName="credential" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump95">
-        <createIndex indexName="idx_host_compute_free" tableName="host" unique="false">
-            <column name="compute_free"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump96">
-        <createIndex indexName="idx_host_name" tableName="host" unique="false">
-            <column name="name"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump97">
-        <createIndex indexName="idx_host_remove_time" tableName="host" unique="false">
-            <column name="remove_time"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump98">
-        <createIndex indexName="idx_host_removed" tableName="host" unique="false">
-            <column name="removed"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump99">
-        <createIndex indexName="idx_host_state" tableName="host" unique="false">
-            <column name="state"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump100">
-        <createIndex indexName="idx_image_name" tableName="image" unique="false">
-            <column name="name"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump101">
-        <createIndex indexName="idx_image_remove_time" tableName="image" unique="false">
-            <column name="remove_time"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump102">
-        <createIndex indexName="idx_image_removed" tableName="image" unique="false">
-            <column name="removed"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump103">
-        <createIndex indexName="idx_image_state" tableName="image" unique="false">
-            <column name="state"/>
-        </createIndex>
-    </changeSet>
     <changeSet author="darren (generated)" id="dump104">
-        <createIndex indexName="idx_image_storage_pool_map_name" tableName="image_storage_pool_map" unique="false">
+        <createIndex indexName="idx_eh_eh_process_map_name" tableName="external_handler_external_handler_process_map" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump105">
-        <createIndex indexName="idx_image_storage_pool_map_remove_time" tableName="image_storage_pool_map" unique="false">
+        <createIndex indexName="idx_eh_eh_process_map_remove_time" tableName="external_handler_external_handler_process_map" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump106">
-        <createIndex indexName="idx_image_storage_pool_map_removed" tableName="image_storage_pool_map" unique="false">
+        <createIndex indexName="idx_eh_eh_process_map_removed" tableName="external_handler_external_handler_process_map" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump107">
-        <createIndex indexName="idx_image_storage_pool_map_state" tableName="image_storage_pool_map" unique="false">
+        <createIndex indexName="idx_eh_eh_process_map_state" tableName="external_handler_external_handler_process_map" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump108">
-        <createIndex indexName="idx_instance_host_map_name" tableName="instance_host_map" unique="false">
+        <createIndex indexName="idx_external_handler_name" tableName="external_handler" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump109">
-        <createIndex indexName="idx_instance_host_map_remove_time" tableName="instance_host_map" unique="false">
-            <column name="remove_time"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump110">
-        <createIndex indexName="idx_instance_host_map_removed" tableName="instance_host_map" unique="false">
-            <column name="removed"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump111">
-        <createIndex indexName="idx_instance_host_map_state" tableName="instance_host_map" unique="false">
-            <column name="state"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump112">
-        <createIndex indexName="idx_instance_name" tableName="instance" unique="false">
+        <createIndex indexName="idx_external_handler_process_name" tableName="external_handler_process" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
+    <changeSet author="darren (generated)" id="dump110">
+        <createIndex indexName="idx_external_handler_process_remove_time" tableName="external_handler_process" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump111">
+        <createIndex indexName="idx_external_handler_process_removed" tableName="external_handler_process" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump112">
+        <createIndex indexName="idx_external_handler_process_state" tableName="external_handler_process" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
     <changeSet author="darren (generated)" id="dump113">
-        <createIndex indexName="idx_instance_remove_time" tableName="instance" unique="false">
+        <createIndex indexName="idx_external_handler_remove_time" tableName="external_handler" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump114">
-        <createIndex indexName="idx_instance_removed" tableName="instance" unique="false">
+        <createIndex indexName="idx_external_handler_removed" tableName="external_handler" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump115">
-        <createIndex indexName="idx_instance_state" tableName="instance" unique="false">
+        <createIndex indexName="idx_external_handler_state" tableName="external_handler" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump116">
+        <createIndex indexName="idx_host_compute_free" tableName="host" unique="false">
+            <column name="compute_free"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump117">
+        <createIndex indexName="idx_host_name" tableName="host" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump118">
+        <createIndex indexName="idx_host_remove_time" tableName="host" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump119">
+        <createIndex indexName="idx_host_removed" tableName="host" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump120">
+        <createIndex indexName="idx_host_state" tableName="host" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump121">
+        <createIndex indexName="idx_image_name" tableName="image" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump122">
+        <createIndex indexName="idx_image_remove_time" tableName="image" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump123">
+        <createIndex indexName="idx_image_removed" tableName="image" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump124">
+        <createIndex indexName="idx_image_state" tableName="image" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump125">
+        <createIndex indexName="idx_image_storage_pool_map_name" tableName="image_storage_pool_map" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump126">
+        <createIndex indexName="idx_image_storage_pool_map_remove_time" tableName="image_storage_pool_map" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump127">
+        <createIndex indexName="idx_image_storage_pool_map_removed" tableName="image_storage_pool_map" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump128">
+        <createIndex indexName="idx_image_storage_pool_map_state" tableName="image_storage_pool_map" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump129">
+        <createIndex indexName="idx_instance_host_map_name" tableName="instance_host_map" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump130">
+        <createIndex indexName="idx_instance_host_map_remove_time" tableName="instance_host_map" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump131">
+        <createIndex indexName="idx_instance_host_map_removed" tableName="instance_host_map" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump132">
+        <createIndex indexName="idx_instance_host_map_state" tableName="instance_host_map" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump133">
+        <createIndex indexName="idx_instance_name" tableName="instance" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump134">
+        <createIndex indexName="idx_instance_remove_time" tableName="instance" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump135">
+        <createIndex indexName="idx_instance_removed" tableName="instance" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump136">
+        <createIndex indexName="idx_instance_state" tableName="instance" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump137">
         <createIndex indexName="idx_offering_name" tableName="offering" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump117">
+    <changeSet author="darren (generated)" id="dump138">
         <createIndex indexName="idx_offering_remove_time" tableName="offering" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump118">
+    <changeSet author="darren (generated)" id="dump139">
         <createIndex indexName="idx_offering_removed" tableName="offering" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump119">
+    <changeSet author="darren (generated)" id="dump140">
         <createIndex indexName="idx_offering_state" tableName="offering" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump120">
+    <changeSet author="darren (generated)" id="dump141">
         <createIndex indexName="idx_process_instance_end_time" tableName="process_instance" unique="false">
             <column name="end_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump121">
+    <changeSet author="darren (generated)" id="dump142">
         <createIndex indexName="idx_process_instance_et_rt_ri" tableName="process_instance" unique="false">
             <column name="end_time"/>
             <column name="resource_type"/>
             <column name="resource_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump122">
+    <changeSet author="darren (generated)" id="dump143">
         <createIndex indexName="idx_process_instance_priority" tableName="process_instance" unique="false">
             <column name="priority"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump123">
+    <changeSet author="darren (generated)" id="dump144">
         <createIndex indexName="idx_process_instance_start_time" tableName="process_instance" unique="false">
             <column name="start_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump124">
+    <changeSet author="darren (generated)" id="dump145">
         <createIndex indexName="idx_setting_name" tableName="setting" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump125">
+    <changeSet author="darren (generated)" id="dump146">
         <createIndex indexName="idx_storage_pool_host_map_name" tableName="storage_pool_host_map" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump126">
+    <changeSet author="darren (generated)" id="dump147">
         <createIndex indexName="idx_storage_pool_host_map_remove_time" tableName="storage_pool_host_map" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump127">
+    <changeSet author="darren (generated)" id="dump148">
         <createIndex indexName="idx_storage_pool_host_map_removed" tableName="storage_pool_host_map" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump128">
+    <changeSet author="darren (generated)" id="dump149">
         <createIndex indexName="idx_storage_pool_host_map_state" tableName="storage_pool_host_map" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump129">
+    <changeSet author="darren (generated)" id="dump150">
         <createIndex indexName="idx_storage_pool_name" tableName="storage_pool" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump130">
+    <changeSet author="darren (generated)" id="dump151">
         <createIndex indexName="idx_storage_pool_remove_time" tableName="storage_pool" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump131">
+    <changeSet author="darren (generated)" id="dump152">
         <createIndex indexName="idx_storage_pool_removed" tableName="storage_pool" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump132">
+    <changeSet author="darren (generated)" id="dump153">
         <createIndex indexName="idx_storage_pool_state" tableName="storage_pool" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump133">
+    <changeSet author="darren (generated)" id="dump154">
         <createIndex indexName="idx_volume_name" tableName="volume" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump134">
+    <changeSet author="darren (generated)" id="dump155">
         <createIndex indexName="idx_volume_remove_time" tableName="volume" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump135">
+    <changeSet author="darren (generated)" id="dump156">
         <createIndex indexName="idx_volume_removed" tableName="volume" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump136">
+    <changeSet author="darren (generated)" id="dump157">
         <createIndex indexName="idx_volume_state" tableName="volume" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump137">
+    <changeSet author="darren (generated)" id="dump158">
         <createIndex indexName="idx_volume_storage_pool_map_name" tableName="volume_storage_pool_map" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump138">
+    <changeSet author="darren (generated)" id="dump159">
         <createIndex indexName="idx_volume_storage_pool_map_remove_time" tableName="volume_storage_pool_map" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump139">
+    <changeSet author="darren (generated)" id="dump160">
         <createIndex indexName="idx_volume_storage_pool_map_removed" tableName="volume_storage_pool_map" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump140">
+    <changeSet author="darren (generated)" id="dump161">
         <createIndex indexName="idx_volume_storage_pool_map_state" tableName="volume_storage_pool_map" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump141">
+    <changeSet author="darren (generated)" id="dump162">
         <createIndex indexName="idx_zone_name" tableName="zone" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump142">
+    <changeSet author="darren (generated)" id="dump163">
         <createIndex indexName="idx_zone_remove_time" tableName="zone" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump143">
+    <changeSet author="darren (generated)" id="dump164">
         <createIndex indexName="idx_zone_removed" tableName="zone" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump144">
+    <changeSet author="darren (generated)" id="dump165">
         <createIndex indexName="idx_zone_state" tableName="zone" unique="false">
             <column name="state"/>
         </createIndex>
