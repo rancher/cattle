@@ -2,7 +2,7 @@ FROM ibuildthecloud/ubuntu-core-base:13.10
 RUN apt-get update && apt-get install -y --no-install-recommends openjdk-7-jre-headless
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip \
-        git
+        git net-tools
 RUN pip install --upgrade pip tox
 RUN git clone --recursive https://github.com/ibuildthecloud/dstack.git /opt/dstack-git && \
     cd /opt/dstack-git && \

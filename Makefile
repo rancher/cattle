@@ -12,6 +12,9 @@ enter: build-env
 clean:
 	MAVEN_TARGET='clean' ./tools/docker/build.sh
 
+test: build
+	./tools/docker/build.sh test
+
 bundle: clean
 	MAVEN_ARGS='-Drelease' ./tools/docker/build.sh
 
