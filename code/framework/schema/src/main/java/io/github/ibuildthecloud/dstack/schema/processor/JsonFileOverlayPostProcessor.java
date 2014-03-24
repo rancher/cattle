@@ -190,12 +190,14 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
                 continue;
             }
 
+            Map<String,Object> mapProperty = (Map<String, Object>)mapData.get(name);
+
             if ( oldValue == null ) {
+                BeanUtils.copyProperties(newValue, mapProperty.get(key));
                 oldValues.put(key, newValue);
                 continue;
             }
 
-            Map<String,Object> mapProperty = (Map<String, Object>)mapData.get(name);
             BeanUtils.copyProperties(oldValue, mapProperty.get(key));
         }
     }
