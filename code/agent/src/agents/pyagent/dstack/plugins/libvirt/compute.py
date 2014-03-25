@@ -16,8 +16,8 @@ from mako.lookup import TemplateLookup
 
 DEFAULT_CONFIG_PATHS = [
     ['host', 'data', 'libvirt'],
-    ['instance', 'data', 'libvirt'],
     ['instance', 'offering', 'data', 'libvirt'],
+    ['instance', 'data', 'libvirt'],
 ]
 
 log = logging.getLogger('libvirt-compute')
@@ -154,13 +154,26 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
     def _do_instance_activate(self, instance, host, progress):
         template = self._get_template(instance, host)
         config = InstanceConfig(instance, host)
+        default_network = config.param('defaultNetwork', {
+            'type': 'network',
+            'source': [
+                {'network': 'default'}
+            ]
+        })
+
+        if not isinstance(default_network, dict):
+            interfaces = []
+        else:
+            interfaces = [default_network]
+
         output = template.render(instance=instance,
                                  volumes=self._get_volumes(instance),
+                                 interfaces=interfaces,
                                  host=host,
                                  config=config)
 
         conn = self._get_connection(instance, host)
-        log.info('Starting %s', instance.uuid)
+        log.info('Starting %s : XML %s', instance.uuid, output)
         conn.createXML(output, 0)
 
     def _get_connection(self, instance, host):
