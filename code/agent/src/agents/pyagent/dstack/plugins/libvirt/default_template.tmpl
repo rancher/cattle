@@ -27,6 +27,23 @@
 ${k}="${v}" \
 % endfor
 </%def>\
+<%def name="nestedattr(name, map)" >\
+<${name} \
+% for k, v in map.items():
+% if not isinstance(v, list):
+${k}="${v}" \
+% endif
+% endfor
+>
+% for k, v in map.items():
+% if isinstance(v, list):
+% for o in v:
+${nestedattr(k, o)}
+% endfor
+% endif
+% endfor
+</${name}>
+</%def>\
 <%block name="header" >\
 <domain type="${config.param('type', 'kvm')}" >
 </%block>\
@@ -76,12 +93,12 @@ ${k}="${v}" \
         % endfor
 </%block>\
 <%block name="network_interfaces" >\
-        <interface type="network">
-            <source network="default" />
-        </interface>
+        % for iface in interfaces:
+        ${nestedattr('interface', iface)}
+        % endfor
 </%block>\
 <%block name="graphics" >\
-        <graphics type="vnc" autoport="yes" keymap="en-us" listen="127.0.0.1" passwd="test" />
+        <graphics type="vnc" autoport="yes" keymap="en-us" listen="0.0.0.0" />
         <video>
             <model type="cirrus"/>
         </video>

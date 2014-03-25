@@ -11,6 +11,7 @@ from dstack.plugins.libvirt import enabled
 if enabled():
     import libvirt
     from dstack.plugins.libvirt_directory_pool import DirectoryPoolDriver
+    from dstack.plugins.libvirt.utils import get_preferred_libvirt_type
     CONFIG_OVERRIDE['HOME'] = SCRATCH_DIR
 
 
@@ -176,4 +177,15 @@ def test_ping(agent, responses):
 
         resp['data']['resources'][1]['uuid'] = 'testuuid-pool'
 
+        assert resp['data']['resources'][0]['data']['libvirt']['type'] in \
+            ['kvm', 'qemu']
+
+        resp['data']['resources'][0]['data']['libvirt']['type'] = 'qemu'
+
     event_test(agent, 'libvirt/ping', post_func=post)
+
+
+@if_libvirt
+def test_preferred_libvirt_type():
+    type = get_preferred_libvirt_type()
+    assert type in ['qemu', 'kvm']

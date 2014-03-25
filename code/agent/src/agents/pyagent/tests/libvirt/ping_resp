@@ -8,7 +8,12 @@
                 "type" : "host",
                 "uuid" : "testuuid",
                 "name" : "localhost/libvirt",
-                "kind" : "libvirt"
+                "kind" : "libvirt",
+                "data" : {
+                    "libvirt" : {
+                        "type" : "qemu"
+                    }
+                }
             },
             {
                 "type" : "storagePool",
