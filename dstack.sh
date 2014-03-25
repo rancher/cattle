@@ -47,7 +47,9 @@ build()
         mvn "$@"
     fi
     mkdir -p dist/artifacts
-    cp code/packaging/app/target/*.war dist/artifacts/dstack.jar
+    if [ -e code/packaging/app/target/*.war ]; then
+        cp code/packaging/app/target/*.war dist/artifacts/dstack.jar
+    fi
     if [ -e code/packaging/bundle/target/dstack-bundle*.jar ]; then
         if [ code/packaging/bundle/target/dstack-bundle*.jar -nt code/packaging/app/target/*.war ]; then
             cp code/packaging/bundle/target/dstack-bundle*.jar dist/artifacts/dstack.jar
