@@ -99,6 +99,9 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         messagePrefix = "Starting";
         startContexts();
 
+        messagePrefix = null;
+        postStartContexts();
+
         count = 0;
         messagePrefix = null;
     }
@@ -117,14 +120,22 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
     }
 
     protected void startContexts() {
+        runHookInContexts("Starting", "moduleStartup");
+    }
+
+    protected void postStartContexts() {
+        runHookInContexts("Post startup", "postModuleStartup");
+    }
+
+    protected void runHookInContexts(final String logAction, final String name) {
         withModule(new WithModule() {
             @Override
             public void with(ModuleDefinition def, Stack<ModuleDefinition> parents) {
                 try {
                     ApplicationContext context = getApplicationContext(def.getName());
                     try {
-                        Runnable runnable = context.getBean("moduleStartup", Runnable.class);
-                        log.info("Starting module [{}]", def.getName());
+                        Runnable runnable = context.getBean(name, Runnable.class);
+                        log.info("{} module [{}]", logAction, def.getName());
                         runnable.run();
                     } catch ( BeansException e ) {
                        // Ignore

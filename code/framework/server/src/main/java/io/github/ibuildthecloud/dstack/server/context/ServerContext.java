@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collections;
-import java.util.UUID;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
@@ -23,8 +22,7 @@ public class ServerContext {
     private static final String URL_SETTING_FORMAT = "dstack.%s.url";
     private static final String DEFAULT_URL = "dstack.url";
     private static final String FOUND_SERVER_IP = lookupServerIp();
-    private static final String SERVER_ID_FORMAT = "%s.%s";
-    private static final String RANDOM_ID = UUID.randomUUID().toString().replaceAll("-", "");
+    private static final String SERVER_ID_FORMAT = System.getProperty("dstack.server.id.format", "%s");
 
     public static ServerAddress getServerAddress() {
         return getServerAddress(null);
@@ -77,7 +75,7 @@ public class ServerContext {
             return String.format(id, ip);
         }
 
-        return String.format(SERVER_ID_FORMAT, ip, RANDOM_ID);
+        return String.format(SERVER_ID_FORMAT, ip);
     }
 
     protected static String getServerIp() {
