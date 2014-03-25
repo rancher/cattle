@@ -1,6 +1,11 @@
 #!/bin/bash
 
 cd $(dirname $0)
+
+if [ -e dist ]; then
+    exit 0
+fi
+
 VER=$(pip --version | awk '{print $2}')
 MAJOR=$(echo $VER | cut -f1 -d.)
 MINOR=$(echo $VER | cut -f2 -d.)
@@ -11,6 +16,5 @@ then
     echo "[ERROR] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" 1>&2
     exit 1
 fi
-if [ ! -e dist ]; then
-    pip install -t dist -r dist-requirements.txt
-fi
+
+pip install -t dist -r dist-requirements.txt

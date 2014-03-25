@@ -272,7 +272,7 @@ public class JooqObjectManager extends AbstractObjectManager {
         query.addFrom(table);
         query.addSelect(table.fields());
         query.addJoin(mapTable, fieldFrom.eq(mappingTo)
-                .and(mappingRemoved.isNull())
+                .and(mappingRemoved == null ? DSL.trueCondition() : mappingRemoved.isNull())
                 .and(mappingOther.eq(ObjectUtils.getId(obj))));
 
         return (List<T>)query.fetchInto(typeClass);

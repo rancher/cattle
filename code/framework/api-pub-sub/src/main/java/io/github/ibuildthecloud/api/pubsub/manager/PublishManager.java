@@ -47,6 +47,10 @@ public class PublishManager extends AbstractNoOpResourceManager {
     protected Event createEvent(Publish publish) {
         EventVO<Object> event = new EventVO<Object>();
 
+        if ( publish.getId() != null ) {
+            event.setId(publish.getId());
+        }
+
         event.setId(publish.getId());
         event.setName(publish.getName());
         event.setResourceId(getResourceId(publish.getResourceId()));
@@ -58,7 +62,9 @@ public class PublishManager extends AbstractNoOpResourceManager {
         event.setTransitioningMessage(event.getTransitioningMessage());
         event.setTransitioningProgress(event.getTransitioningProgress());
 
-        event.setTime(new Date(publish.getTime()));
+        if ( publish.getTime() != null ) {
+            event.setTime(new Date(publish.getTime()));
+        }
 
         List<String> previous = publish.getPreviousIds();
         if ( previous != null ) {

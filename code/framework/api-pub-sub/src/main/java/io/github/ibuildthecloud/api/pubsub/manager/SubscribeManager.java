@@ -59,10 +59,6 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
             filteredEventNames.add(eventName);
         }
 
-        if ( filteredEventNames.size() == 0 ) {
-            return null;
-        }
-
         request.setResponseContentType("text/plain");
 
         try {

@@ -34,6 +34,7 @@ import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,7 +216,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         TableField<?, Object> fieldTo = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getPropertyName());
         TableField<?, Object> fieldRemoved = JooqUtils.getTableField(getMetaDataManager(), mappingType, ObjectMetaDataManager.REMOVED_FIELD);
 
-        org.jooq.Condition cond = fieldFrom.eq(fieldTo.getTable().field(fieldTo.getName())).and(fieldRemoved.isNull());
+        org.jooq.Condition cond = fieldFrom.eq(fieldTo.getTable().field(fieldTo.getName())).and(fieldRemoved == null ? DSL.trueCondition() : fieldRemoved.isNull());
         query.addJoin(mappingTable, JoinType.LEFT_OUTER_JOIN, cond);
 
         fieldFrom = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getOtherRelationship().getPropertyName());
@@ -278,7 +279,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         TableField<?, Object> fromTypeIdField = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getSelfRelationship().getPropertyName());
 
         org.jooq.Condition cond = fieldFrom.eq(fieldTo.getTable().field(fieldTo.getName()))
-                                    .and(fieldRemoved.isNull());
+                                    .and(fieldRemoved == null ? DSL.trueCondition() : fieldRemoved.isNull());
 
         joins.put(mappingTable, cond);
         criteria.put(Condition.class, fromTypeIdField.eq(id));

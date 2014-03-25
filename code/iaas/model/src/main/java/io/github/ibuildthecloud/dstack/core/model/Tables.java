@@ -49,6 +49,31 @@ public class Tables {
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.DataTable DATA = io.github.ibuildthecloud.dstack.core.model.tables.DataTable.DATA;
 
 	/**
+	 * The table dstack.DATABASECHANGELOG
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangelogTable DATABASECHANGELOG = io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangelogTable.DATABASECHANGELOG;
+
+	/**
+	 * The table dstack.DATABASECHANGELOGLOCK
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangeloglockTable DATABASECHANGELOGLOCK = io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK;
+
+	/**
+	 * The table dstack.external_handler
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.ExternalHandlerTable EXTERNAL_HANDLER = io.github.ibuildthecloud.dstack.core.model.tables.ExternalHandlerTable.EXTERNAL_HANDLER;
+
+	/**
+	 * The table dstack.external_handler_external_handler_process_map
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP = io.github.ibuildthecloud.dstack.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP;
+
+	/**
+	 * The table dstack.external_handler_process
+	 */
+	public static final io.github.ibuildthecloud.dstack.core.model.tables.ExternalHandlerProcessTable EXTERNAL_HANDLER_PROCESS = io.github.ibuildthecloud.dstack.core.model.tables.ExternalHandlerProcessTable.EXTERNAL_HANDLER_PROCESS;
+
+	/**
 	 * The table dstack.host
 	 */
 	public static final io.github.ibuildthecloud.dstack.core.model.tables.HostTable HOST = io.github.ibuildthecloud.dstack.core.model.tables.HostTable.HOST;

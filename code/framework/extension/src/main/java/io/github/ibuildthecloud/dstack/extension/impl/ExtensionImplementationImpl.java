@@ -20,7 +20,9 @@ public class ExtensionImplementationImpl implements ExtensionImplementation {
         this.className = obj.getClass().getName();
         try {
             for ( PropertyDescriptor desc : PropertyUtils.getPropertyDescriptors(obj) ) {
-                if ( desc.getReadMethod() != null && desc.getPropertyType().getName().startsWith("java.")
+                if ( desc.getReadMethod() != null &&
+                        ( desc.getPropertyType().isPrimitive() ||
+                                desc.getPropertyType().getName().startsWith("java.") )
                         && ! desc.getName().equals("class") ) {
                     Object value = PropertyUtils.getProperty(obj, desc.getName());
                     properties.put(desc.getName(), value == null ? null : value.toString());

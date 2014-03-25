@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.api.pubsub.util;
 
 import io.github.ibuildthecloud.dstack.api.auth.Policy;
+import io.github.ibuildthecloud.dstack.api.auth.impl.PolicyOptions;
 
 public class SubscriptionUtils {
 
@@ -22,8 +23,14 @@ public class SubscriptionUtils {
     }
 
     public static SubscriptionStyle getSubscriptionStyle(Policy policy) {
-        String style = policy.getOption(POLICY_SUBSCRIPTION_STYLE);
+        return getSubscriptionStyleFromString(policy.getOption(POLICY_SUBSCRIPTION_STYLE));
+    }
 
+    public static SubscriptionStyle getSubscriptionStyle(PolicyOptions policyOptions) {
+        return getSubscriptionStyleFromString(policyOptions.getOption(POLICY_SUBSCRIPTION_STYLE));
+    }
+
+    public static SubscriptionStyle getSubscriptionStyleFromString(String style) {
         if ( style == null ) {
             return SubscriptionStyle.QUALIFIED;
         }
