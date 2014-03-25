@@ -39,7 +39,12 @@ cat authorized_keys | ssh $SSH_ARGS \
                           $DNS --   \
                           tee -a /root/.ssh/authorized_keys
 
-curl -X POST http://localhost:8080/v1/agents -F uri="ssh://root@${DNS}:22"
+curl -X POST http://localhost:8080/v1/agents -F uri="ssh://root@${DNS}:22" -F uuid=ec2-host1
+
+cat > $(basename $0)-integration-env << EOF
+export DOCKER_AGENT_UUID=ec2-host1
+export LIBVIRT_AGENT_UUID=ec2-host1
+EOF
 
 rsync -az --delete -e "ssh $SSH_ARGS" ../../../ $DNS:/usr/src/dstack
 ssh $SSH_ARGS $DNS -- /usr/src/dstack/tools/build/runtests-agent.sh
