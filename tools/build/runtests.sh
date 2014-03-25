@@ -19,6 +19,12 @@ before()
             $i
         fi
     done
+
+    for i in $BASE_DIR/before.d/*-integration-env; do
+        if [ -e $i ]; then
+            source $i
+        fi
+    done
 }
 
 PORT=8080

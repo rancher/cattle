@@ -195,8 +195,8 @@ def format_time(time):
 def get_agent(admin_client, name, default_uri=DEFAULT_AGENT_URI,
               default_agent_uuid=DEFAULT_AGENT_UUID):
     name = name.upper()
-    uri_name = '{0}_URI'.format(name)
-    uuid_name = '{0}_AGENT_UUID'.format(name)
+    uri_name = '{0}_URI'.format(name.upper())
+    uuid_name = '{0}_AGENT_UUID'.format(name.upper())
 
     uri = os.getenv(uri_name, default_uri)
     uuid = os.getenv(uuid_name, default_agent_uuid)

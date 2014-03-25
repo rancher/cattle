@@ -90,7 +90,7 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
         if volume.deviceNumber != 0:
             raise Exception("Non-root volumes are not supported")
 
-        container = self._compute.get_container_by_name(volume.instance.uuid)
+        container = get_compute().get_container_by_name(volume.instance.uuid)
         if container is None:
             return
 

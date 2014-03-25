@@ -9,11 +9,11 @@ env:
     - secure: "UuPbPTh9rKykXT6QIlvCTn+S5Zq/DfkeA+uf+4Tb0JJXlPivMIMZ1+6PEvVh9JvWDTDqILHVFrstuM4N/SHSwudivIdVNjEfTWAn2YS8gqyKquv76tAeyJJzsPmUL1hF5+cjpPiWxm5NJi3zq66zl/VBpPKaDmkodVhJ7httEXQ="
     - secure: "oFf0zdd3fGxSO2Z9Z1thETcg4WbGf6ucsEiZTUx2n7f9a49f1GGorJ9YMl1lyQRsXLLXcgtuqxgUzTeLWxWcCHzzmxW4hoAEZfCkYX9OHoRSmNqY/JXv1s11Y9cxnkpZn6mMyhr2KJxRlJrUrKGnIaD9WOkFKxKurWYA3/5zueM="
   matrix:
+    - EXTERNAL_AGENT_TEST=true EC2_TEST=true LIBVIRT_TEST=true DOCKER_TEST=true
     - DSTACK_DB_DSTACK_DATABASE=mysql
     - DSTACK_DB_DSTACK_DATABASE=h2
     - DSTACK_DB_DSTACK_DATABASE=hsqldb
     - DSTACK_DB_DSTACK_DATABASE=postgres MAVEN_ARGS=-Dpostgres
-    - EXTERNAL_AGENT_TEST=true EC2_TEST=true LIBVIRT_TEST=true DOCKER_TEST=true
 matrix:
   exclude:
     - jdk: openjdk6
