@@ -133,7 +133,7 @@ def random_str():
     return 'random-{0}'.format(random_num())
 
 
-def wait_all_success(client, objs, timeout=15):
+def wait_all_success(client, objs, timeout=DEFAULT_TIMEOUT):
     ret = []
     for obj in objs:
         obj = wait_success(client, obj, timeout)
@@ -142,13 +142,13 @@ def wait_all_success(client, objs, timeout=15):
     return ret
 
 
-def wait_success(client, obj, timeout=15):
+def wait_success(client, obj, timeout=DEFAULT_TIMEOUT):
     obj = wait_transitioning(client, obj, timeout)
     assert obj.transitioning == 'no'
     return obj
 
 
-def wait_transitioning(client, obj, timeout=15):
+def wait_transitioning(client, obj, timeout=DEFAULT_TIMEOUT):
     start = time.time()
     obj = client.reload(obj)
     while obj.transitioning == 'yes':

@@ -1,4 +1,3 @@
-from dstack import ApiError
 from common_fixtures import *  # NOQA
 
 TEST_HANDLER_PREFIX = 'test-handler-'
@@ -98,8 +97,9 @@ def test_properties(admin_client):
 
 def test_pre_handler(admin_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
+    process_names = ['pre.instance.start']
     h = admin_client.create_external_handler(name=name,
-                                             processNames=['pre.instance.start'],
+                                             processNames=process_names,
                                              timeoutMillis=2000,
                                              retries=4,
                                              priority=1234)
@@ -110,7 +110,7 @@ def test_pre_handler(admin_client):
                         name)
     assert ep is not None
     assert ep.properties.eventName == \
-           'pre.instance.start;handler={}'.format(name)
+        'pre.instance.start;handler={}'.format(name)
 
 
 def test_post_handler(admin_client):
@@ -128,7 +128,7 @@ def test_post_handler(admin_client):
                         name)
     assert ep is not None
     assert ep.properties.eventName == \
-           'post.instance.start;handler={}'.format(name)
+        'post.instance.start;handler={}'.format(name)
 
 
 def test_enabled_disable(admin_client):
