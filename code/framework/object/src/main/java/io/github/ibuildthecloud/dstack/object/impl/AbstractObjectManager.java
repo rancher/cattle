@@ -3,8 +3,10 @@ package io.github.ibuildthecloud.dstack.object.impl;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
 import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler;
 import io.github.ibuildthecloud.dstack.object.lifecycle.ObjectLifeCycleHandler.LifeCycleEvent;
+import io.github.ibuildthecloud.dstack.object.meta.MapRelationship;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
+import io.github.ibuildthecloud.dstack.object.meta.Relationship.RelationshipType;
 import io.github.ibuildthecloud.dstack.object.postinit.ObjectPostInstantiationHandler;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
 import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
@@ -163,8 +165,16 @@ public abstract class AbstractObjectManager implements ObjectManager {
             throw new IllegalArgumentException("Relationation arguement is not a list result");
         }
 
-        return (List<T>)children(obj, rel.getObjectType());
+        if (  rel.getRelationshipType() == RelationshipType.CHILD ) {
+            return (List<T>)children(obj, rel.getObjectType());
+        } else if ( rel.getRelationshipType() == RelationshipType.MAP ) {
+            return getListByRelationshipMap(obj, (MapRelationship)rel);
+        }
+
+        return Collections.emptyList();
     }
+
+    protected abstract <T> List<T> getListByRelationshipMap(Object obj, MapRelationship rel);
 
     @SuppressWarnings("unchecked")
     @Override

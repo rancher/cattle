@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DstackTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 845760127;
+	private static final long serialVersionUID = -1212083489;
 
 	/**
 	 * The singleton instance of <code>dstack</code>
@@ -41,8 +41,6 @@ public class DstackTable extends org.jooq.impl.SchemaImpl {
 			io.github.ibuildthecloud.dstack.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS,
 			io.github.ibuildthecloud.dstack.core.model.tables.CredentialTable.CREDENTIAL,
 			io.github.ibuildthecloud.dstack.core.model.tables.DataTable.DATA,
-			io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangelogTable.DATABASECHANGELOG,
-			io.github.ibuildthecloud.dstack.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK,
 			io.github.ibuildthecloud.dstack.core.model.tables.HostTable.HOST,
 			io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE,
 			io.github.ibuildthecloud.dstack.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP,

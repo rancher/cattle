@@ -1,8 +1,12 @@
+import logging
+
 from dstack import utils
 from dstack.plugins.core.publisher import publish
 
+log = logging.getLogger('progress')
 
-class Progress(object):
+
+class EventProgress(object):
     def __init__(self, req):
         self._req = req
 
@@ -13,3 +17,13 @@ class Progress(object):
         resp["transitionProgress"] = progress
 
         publish(resp)
+
+Progress = EventProgress
+
+
+class LogProgress(object):
+    def __init__(self):
+        pass
+
+    def update(self, msg, progress=None):
+        log.info('Progress %s %s', msg, progress)

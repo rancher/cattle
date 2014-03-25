@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceHostMapTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceHostMapRecord> {
 
-	private static final long serialVersionUID = -1076166225;
+	private static final long serialVersionUID = 111022795;
 
 	/**
 	 * The singleton instance of <code>dstack.instance_host_map</code>
@@ -74,7 +74,7 @@ public class InstanceHostMapTable extends org.jooq.impl.TableImpl<io.github.ibui
 	/**
 	 * The column <code>dstack.instance_host_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceHostMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceHostMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>dstack.instance_host_map.instance_id</code>.

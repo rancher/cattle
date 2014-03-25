@@ -1,9 +1,11 @@
 package io.github.ibuildthecloud.dstack.eventing.memory;
 
+import io.github.ibuildthecloud.dstack.eventing.EventListener;
 import io.github.ibuildthecloud.dstack.eventing.impl.AbstractThreadPoolingEventService;
 import io.github.ibuildthecloud.dstack.eventing.model.Event;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +17,17 @@ public class InMemoryEventService extends AbstractThreadPoolingEventService {
     private static final Logger log = LoggerFactory.getLogger(InMemoryEventService.class);
 
     @Override
-    protected boolean doPublish(final String name, Event event, final String eventString) throws IOException {
+    protected boolean doPublish(final String name, final Event event, final String eventString) throws IOException {
         getDefaultExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                onEvent(null, name, eventString);
+                /* Don't send events we know there are no listeners for.
+                 * This emulates the behavior of endpoints only getting what they've subscribed to.
+                 */
+                List<EventListener> listeners = getEventListeners(event);
+                if ( listeners != null && listeners.size() > 0 ) {
+                    onEvent(null, name, eventString);
+                }
             }
         });
 

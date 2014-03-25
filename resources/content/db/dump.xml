@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
     <changeSet author="darren (generated)" id="dump1">
         <createTable tableName="account">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
@@ -19,16 +21,16 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="TEXT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump2">
         <createTable tableName="agent">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -42,22 +44,22 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="TEXT"/>
             <column name="uri" type="VARCHAR(255)"/>
-            <column defaultValueNumeric="1" name="managed_config" type="BIT(1)">
+            <column defaultValueNumeric="1" name="managed_config" type="BIT">
                 <constraints nullable="false"/>
             </column>
-            <column name="agent_group_id" type="BIGINT(19)"/>
-            <column name="zone_id" type="BIGINT(19)"/>
+            <column name="agent_group_id" type="BIGINT"/>
+            <column name="zone_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump3">
         <createTable tableName="agent_group">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -71,7 +73,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="TEXT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump4">
@@ -95,10 +97,10 @@
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueNumeric="0" name="requested_version" type="BIGINT(19)">
+            <column defaultValueNumeric="0" name="requested_version" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueNumeric="-1" name="applied_version" type="BIGINT(19)">
+            <column defaultValueNumeric="-1" name="applied_version" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="source_version" type="VARCHAR(255)"/>
@@ -106,16 +108,16 @@
                 <constraints nullable="false"/>
             </column>
             <column name="applied_updated" type="datetime"/>
-            <column name="agent_id" type="BIGINT(19)"/>
+            <column name="agent_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump6">
         <createTable tableName="credential">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -129,34 +131,34 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="TEXT"/>
             <column name="public_value" type="VARCHAR(4096)"/>
             <column name="secret_value" type="VARCHAR(4096)"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump7">
         <createTable tableName="data">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueNumeric="1" name="visible" type="BIT(1)">
+            <column defaultValueNumeric="1" name="visible" type="BIT">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="MEDIUMTEXT">
+            <column name="value" type="TEXT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump8">
         <createTable tableName="host">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -170,21 +172,21 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="TEXT"/>
             <column name="uri" type="VARCHAR(255)"/>
-            <column name="compute_free" type="BIGINT(19)"/>
-            <column name="compute_total" type="BIGINT(19)"/>
-            <column name="agent_id" type="BIGINT(19)"/>
-            <column name="zone_id" type="BIGINT(19)"/>
+            <column name="compute_free" type="BIGINT"/>
+            <column name="compute_total" type="BIGINT"/>
+            <column name="agent_id" type="BIGINT"/>
+            <column name="zone_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump9">
         <createTable tableName="image">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -198,20 +200,20 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="TEXT"/>
             <column name="url" type="VARCHAR(255)"/>
-            <column defaultValueNumeric="0" name="is_public" type="BIT(1)">
+            <column defaultValueNumeric="0" name="is_public" type="BIT">
                 <constraints nullable="false"/>
             </column>
-            <column name="physical_size_megabytes" type="BIGINT(19)"/>
-            <column name="virtual_size_megabytes" type="BIGINT(19)"/>
+            <column name="physical_size_mb" type="BIGINT"/>
+            <column name="virtual_size_mb" type="BIGINT"/>
             <column name="checksum" type="VARCHAR(255)"/>
             <column name="format" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump10">
         <createTable tableName="image_storage_pool_map">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
@@ -228,18 +230,18 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column name="image_id" type="BIGINT(19)"/>
-            <column name="storage_pool_id" type="BIGINT(19)"/>
+            <column name="data" type="TEXT"/>
+            <column name="image_id" type="BIGINT"/>
+            <column name="storage_pool_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump11">
         <createTable tableName="instance">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -253,18 +255,19 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="TEXT"/>
             <column name="allocation_state" type="VARCHAR(255)"/>
-            <column name="compute" type="BIGINT(19)"/>
-            <column name="image_id" type="BIGINT(19)"/>
-            <column name="offering_id" type="BIGINT(19)"/>
+            <column name="compute" type="BIGINT"/>
+            <column name="memory_mb" type="BIGINT"/>
+            <column name="image_id" type="BIGINT"/>
+            <column name="offering_id" type="BIGINT"/>
             <column name="hostname" type="VARCHAR(255)"/>
-            <column name="zone_id" type="BIGINT(19)"/>
+            <column name="zone_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump12">
         <createTable tableName="instance_host_map">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
@@ -281,18 +284,18 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column name="instance_id" type="BIGINT(19)"/>
-            <column name="host_id" type="BIGINT(19)"/>
+            <column name="data" type="TEXT"/>
+            <column name="instance_id" type="BIGINT"/>
+            <column name="host_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump13">
         <createTable tableName="offering">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -306,35 +309,35 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column defaultValueNumeric="0" name="is_public" type="BIT(1)">
+            <column name="data" type="TEXT"/>
+            <column defaultValueNumeric="0" name="is_public" type="BIT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump14">
         <createTable tableName="process_execution">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="process_instance_id" type="BIGINT(19)">
+            <column name="process_instance_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="uuid" type="VARCHAR(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="log" type="MEDIUMTEXT"/>
+            <column name="log" type="${mediumtext}"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump15">
         <createTable tableName="process_instance">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="start_time" type="datetime"/>
             <column name="end_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column defaultValueNumeric="0" name="priority" type="INT(10)"/>
+            <column name="data" type="TEXT"/>
+            <column defaultValueNumeric="0" name="priority" type="INT"/>
             <column name="process_name" type="VARCHAR(128)"/>
             <column name="resource_type" type="VARCHAR(128)"/>
             <column name="resource_id" type="VARCHAR(128)"/>
@@ -347,7 +350,7 @@
     </changeSet>
     <changeSet author="darren (generated)" id="dump16">
         <createTable tableName="setting">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)">
@@ -360,11 +363,11 @@
     </changeSet>
     <changeSet author="darren (generated)" id="dump17">
         <createTable tableName="storage_pool">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -378,19 +381,19 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column name="physical_total_size_megabytes" type="BIGINT(19)"/>
-            <column name="virtual_total_size_megabytes" type="BIGINT(19)"/>
-            <column defaultValueNumeric="0" name="external" type="BIT(1)">
+            <column name="data" type="TEXT"/>
+            <column name="physical_total_size_mb" type="BIGINT"/>
+            <column name="virtual_total_size_mb" type="BIGINT"/>
+            <column defaultValueNumeric="0" name="external" type="BIT">
                 <constraints nullable="false"/>
             </column>
-            <column name="agent_id" type="BIGINT(19)"/>
-            <column name="zone_id" type="BIGINT(19)"/>
+            <column name="agent_id" type="BIGINT"/>
+            <column name="zone_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump18">
         <createTable tableName="storage_pool_host_map">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
@@ -407,14 +410,14 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column name="storage_pool_id" type="BIGINT(19)"/>
-            <column name="host_id" type="BIGINT(19)"/>
+            <column name="data" type="TEXT"/>
+            <column name="storage_pool_id" type="BIGINT"/>
+            <column name="host_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump19">
         <createTable tableName="task">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(128)">
@@ -424,13 +427,13 @@
     </changeSet>
     <changeSet author="darren (generated)" id="dump20">
         <createTable tableName="task_instance">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="task_id" type="BIGINT(19)">
+            <column name="task_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="start_time" type="datetime">
@@ -445,11 +448,11 @@
     </changeSet>
     <changeSet author="darren (generated)" id="dump21">
         <createTable tableName="volume">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -463,22 +466,22 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column name="physical_size_megabytes" type="BIGINT(19)"/>
-            <column name="virtual_size_megabytes" type="BIGINT(19)"/>
-            <column name="device_number" type="INT(10)"/>
+            <column name="data" type="TEXT"/>
+            <column name="physical_size_mb" type="BIGINT"/>
+            <column name="virtual_size_mb" type="BIGINT"/>
+            <column name="device_number" type="INT"/>
             <column name="format" type="VARCHAR(255)"/>
             <column name="allocation_state" type="VARCHAR(255)"/>
             <column name="attached_state" type="VARCHAR(255)"/>
-            <column name="instance_id" type="BIGINT(19)"/>
-            <column name="image_id" type="BIGINT(19)"/>
-            <column name="offering_id" type="BIGINT(19)"/>
-            <column name="zone_id" type="BIGINT(19)"/>
+            <column name="instance_id" type="BIGINT"/>
+            <column name="image_id" type="BIGINT"/>
+            <column name="offering_id" type="BIGINT"/>
+            <column name="zone_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump22">
         <createTable tableName="volume_storage_pool_map">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
@@ -495,18 +498,18 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column name="volume_id" type="BIGINT(19)"/>
-            <column name="storage_pool_id" type="BIGINT(19)"/>
+            <column name="data" type="TEXT"/>
+            <column name="volume_id" type="BIGINT"/>
+            <column name="storage_pool_id" type="BIGINT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump23">
         <createTable tableName="zone">
-            <column autoIncrement="true" name="id" type="BIGINT(19)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -520,7 +523,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="TEXT"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump24">

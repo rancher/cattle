@@ -7,11 +7,11 @@
                 "description" : "If you are deploying a docker image enter a imageUuid in the format docker:<name>",
                 "placeholder" : "e.g. docker:stackbrew/ubuntu:13.04"
             },
-            "system" : {
-                "description" : "Similar to the command field except that the string will be parsed similar to how the shell would parse it"
+            "commandArgs" : {
+                "description" : "An array of arguments to pass to command"
             },
             "command" : {
-                "description" : "The command in an array form"
+                "description" : "The command.  This can either be the full command with arguments like 'sleep 120' or just the command 'sleep' and then use commandArgs to specify the arguements, such as [\"120\"]."
             }
         }
     },

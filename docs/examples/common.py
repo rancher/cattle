@@ -57,5 +57,3 @@ def link(env={}, **kw):
                 proto
 
     return result
-
-

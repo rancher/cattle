@@ -121,7 +121,7 @@ public interface InstanceHostMap extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.instance_host_map.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	public java.util.Map<String,Object> getData();
 
 	/**

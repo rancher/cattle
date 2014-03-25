@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "volume", schema = "dstack")
 public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record21<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long>, io.github.ibuildthecloud.dstack.core.model.Volume {
 
-	private static final long serialVersionUID = -1870046607;
+	private static final long serialVersionUID = 1399058681;
 
 	/**
 	 * Setter for <code>dstack.volume.id</code>.
@@ -197,43 +197,43 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	/**
 	 * Getter for <code>dstack.volume.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.physical_size_megabytes</code>.
+	 * Setter for <code>dstack.volume.physical_size_mb</code>.
 	 */
 	@Override
-	public void setPhysicalSizeMegabytes(java.lang.Long value) {
+	public void setPhysicalSizeMb(java.lang.Long value) {
 		setValue(11, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.physical_size_megabytes</code>.
+	 * Getter for <code>dstack.volume.physical_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "physical_size_megabytes", precision = 19)
+	@javax.persistence.Column(name = "physical_size_mb", precision = 19)
 	@Override
-	public java.lang.Long getPhysicalSizeMegabytes() {
+	public java.lang.Long getPhysicalSizeMb() {
 		return (java.lang.Long) getValue(11);
 	}
 
 	/**
-	 * Setter for <code>dstack.volume.virtual_size_megabytes</code>.
+	 * Setter for <code>dstack.volume.virtual_size_mb</code>.
 	 */
 	@Override
-	public void setVirtualSizeMegabytes(java.lang.Long value) {
+	public void setVirtualSizeMb(java.lang.Long value) {
 		setValue(12, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.volume.virtual_size_megabytes</code>.
+	 * Getter for <code>dstack.volume.virtual_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "virtual_size_megabytes", precision = 19)
+	@javax.persistence.Column(name = "virtual_size_mb", precision = 19)
 	@Override
-	public java.lang.Long getVirtualSizeMegabytes() {
+	public java.lang.Long getVirtualSizeMb() {
 		return (java.lang.Long) getValue(12);
 	}
 
@@ -498,7 +498,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field12() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME.PHYSICAL_SIZE_MEGABYTES;
+		return io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME.PHYSICAL_SIZE_MB;
 	}
 
 	/**
@@ -506,7 +506,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field13() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME.VIRTUAL_SIZE_MEGABYTES;
+		return io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME.VIRTUAL_SIZE_MB;
 	}
 
 	/**
@@ -666,7 +666,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 */
 	@Override
 	public java.lang.Long value12() {
-		return getPhysicalSizeMegabytes();
+		return getPhysicalSizeMb();
 	}
 
 	/**
@@ -674,7 +674,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 */
 	@Override
 	public java.lang.Long value13() {
-		return getVirtualSizeMegabytes();
+		return getVirtualSizeMb();
 	}
 
 	/**
@@ -845,7 +845,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 */
 	@Override
 	public VolumeRecord value12(java.lang.Long value) {
-		setPhysicalSizeMegabytes(value);
+		setPhysicalSizeMb(value);
 		return this;
 	}
 
@@ -854,7 +854,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	 */
 	@Override
 	public VolumeRecord value13(java.lang.Long value) {
-		setVirtualSizeMegabytes(value);
+		setVirtualSizeMb(value);
 		return this;
 	}
 
@@ -958,8 +958,8 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 		setRemoved(from.getRemoved());
 		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
-		setPhysicalSizeMegabytes(from.getPhysicalSizeMegabytes());
-		setVirtualSizeMegabytes(from.getVirtualSizeMegabytes());
+		setPhysicalSizeMb(from.getPhysicalSizeMb());
+		setVirtualSizeMb(from.getVirtualSizeMb());
 		setDeviceNumber(from.getDeviceNumber());
 		setFormat(from.getFormat());
 		setAllocationState(from.getAllocationState());
@@ -993,7 +993,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 	/**
 	 * Create a detached, initialised VolumeRecord
 	 */
-	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalSizeMegabytes, java.lang.Long virtualSizeMegabytes, java.lang.Integer deviceNumber, java.lang.String format, java.lang.String allocationState, java.lang.String attachedState, java.lang.Long instanceId, java.lang.Long imageId, java.lang.Long offeringId, java.lang.Long zoneId) {
+	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.Integer deviceNumber, java.lang.String format, java.lang.String allocationState, java.lang.String attachedState, java.lang.Long instanceId, java.lang.Long imageId, java.lang.Long offeringId, java.lang.Long zoneId) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.VolumeTable.VOLUME);
 
 		setValue(0, id);
@@ -1007,8 +1007,8 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ib
 		setValue(8, removed);
 		setValue(9, removeTime);
 		setValue(10, data);
-		setValue(11, physicalSizeMegabytes);
-		setValue(12, virtualSizeMegabytes);
+		setValue(11, physicalSizeMb);
+		setValue(12, virtualSizeMb);
 		setValue(13, deviceNumber);
 		setValue(14, format);
 		setValue(15, allocationState);

@@ -1,4 +1,10 @@
 import os
+import socket
+
+from os import path
+from uuid import uuid4
+
+from dstack.utils import memoize
 
 CONFIG_OVERRIDE = {}
 
@@ -18,6 +24,44 @@ def default_value(name, default):
 class Config:
     def __init__(self):
         pass
+
+    @staticmethod
+    @memoize
+    def _get_uuid_from_file(uuid_file):
+        uuid = None
+
+        if path.exists(uuid_file):
+            with open(uuid_file) as f:
+                uuid = f.read().strip()
+            if len(uuid) == 0:
+                uuid = None
+
+        if uuid is None:
+            uuid = str(uuid4())
+            with open(uuid_file, 'w') as f:
+                f.write(uuid)
+
+        return uuid
+
+    @staticmethod
+    def setup_logger():
+        return default_value('LOGGER', 'true') == 'true'
+
+    @staticmethod
+    def do_ping():
+        return default_value('PING_ENABLED', 'true') == 'true'
+
+    @staticmethod
+    def get_uuid_from_file(env_name, uuid_file):
+        uuid = default_value(env_name, None)
+        if uuid is not None:
+            return uuid
+
+        return Config._get_uuid_from_file(uuid_file)
+
+    @staticmethod
+    def hostname():
+        return default_value('HOSTNAME', socket.gethostname())
 
     @staticmethod
     def workers():

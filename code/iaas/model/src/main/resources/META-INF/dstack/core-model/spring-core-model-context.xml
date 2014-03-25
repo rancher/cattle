@@ -19,6 +19,7 @@
         </property>
         <property name="typeNames">
             <set>
+                <value>virtualMachine,parent=instance</value>
                 <value>container,parent=instance</value>
                 <value>instanceStop</value>
             </set>

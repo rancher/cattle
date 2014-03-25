@@ -31,6 +31,10 @@ run()
 
 build()
 {
+    echo HOME=$HOME
+    if [ ! -e $HOME/.m2 ] && [ -e /opt/m2-base ]; then
+        cp -rf /opt/m2-base $HOME/.m2
+    fi
     mvn $MAVEN_ARGS ${MAVEN_TARGET:-install}
     mkdir -p dist/artifacts
     cp code/packaging/app/target/*.war dist/artifacts/dstack.jar

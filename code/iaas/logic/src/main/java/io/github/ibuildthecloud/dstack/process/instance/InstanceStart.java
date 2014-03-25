@@ -39,7 +39,6 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance)state.getResource();
 
-
         Map<String,Object> resultData = new ConcurrentHashMap<String,Object>();
         HandlerResult result = new HandlerResult(resultData);
 

@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "instance_host_map", schema = "dstack")
 public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceHostMapRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long>, io.github.ibuildthecloud.dstack.core.model.InstanceHostMap {
 
-	private static final long serialVersionUID = 1839372532;
+	private static final long serialVersionUID = -1884674846;
 
 	/**
 	 * Setter for <code>dstack.instance_host_map.id</code>.
@@ -180,7 +180,7 @@ public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Getter for <code>dstack.instance_host_map.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(9);

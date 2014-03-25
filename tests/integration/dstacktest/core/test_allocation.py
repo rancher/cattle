@@ -76,8 +76,16 @@ def test_spread(admin_client, sim_context):
             agents.append(admin_client.create_agent(uri=uri))
 
         agents = wait_all_success(admin_client, agents)
+        for agent in agents:
+            while len(agent.hosts()) == 0 or len(agent.storagePools()) == 0:
+                time.sleep(1)
 
     hosts = wait_all_success(admin_client, _get_sim_hosts(admin_client))
+    for h in hosts:
+        assert h.state == 'active'
+        assert h.agent().state == 'active'
+        assert len(h.agent().storagePools()) == 1
+        assert h.agent().storagePools()[0].state == 'active'
 
     counts = []
     for i, h in enumerate(hosts):

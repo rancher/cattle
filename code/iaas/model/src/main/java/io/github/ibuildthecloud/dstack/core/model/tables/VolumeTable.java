@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord> {
 
-	private static final long serialVersionUID = 1356831008;
+	private static final long serialVersionUID = -950605040;
 
 	/**
 	 * The singleton instance of <code>dstack.volume</code>
@@ -79,17 +79,17 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.github.ibuildtheclou
 	/**
 	 * The column <code>dstack.volume.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
-	 * The column <code>dstack.volume.physical_size_megabytes</code>.
+	 * The column <code>dstack.volume.physical_size_mb</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> PHYSICAL_SIZE_MEGABYTES = createField("physical_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> PHYSICAL_SIZE_MB = createField("physical_size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>dstack.volume.virtual_size_megabytes</code>.
+	 * The column <code>dstack.volume.virtual_size_mb</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> VIRTUAL_SIZE_MEGABYTES = createField("virtual_size_megabytes", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeRecord, java.lang.Long> VIRTUAL_SIZE_MB = createField("virtual_size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>dstack.volume.device_number</code>.

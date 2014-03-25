@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 # PYTHON_ARGCOMPLETE_OK
 
+import re
 import requests
 import collections
 import hashlib
 import os
 import json
 import time
-import argcomplete
+try:
+    import argcomplete
+except ImportError:
+    pass
 
 
 def _prefix(cmd):
     prefix = os.path.basename(cmd.replace('-', '_'))
-    for i in ['.py', '-cli', '-tool', '-util']:
+    for i in ['.pyc', '.py', '-cli', '-tool', '-util']:
         prefix = prefix.replace(i, '')
     return prefix.upper()
 
@@ -174,6 +178,7 @@ class Client:
         self._cache_time = cache_time
         self._strict = strict
         self.schema = None
+        self._session = requests.Session()
 
         if not self._cache_time:
             self._cache_time = 60 * 60 * 24  # 24 Hours
@@ -242,7 +247,8 @@ class Client:
         return r.text
 
     def _get_response(self, url, data=None):
-        r = requests.get(url, auth=self._auth, params=data, headers=HEADERS)
+        r = self._session.get(url, auth=self._auth, params=data,
+                              headers=HEADERS)
         if r.status_code < 200 or r.status_code >= 300:
             self._error(r.text)
 
@@ -250,8 +256,8 @@ class Client:
 
     @timed_url
     def _post(self, url, data=None):
-        r = requests.post(url, auth=self._auth, data=self._marshall(data),
-                          headers=HEADERS)
+        r = self._session.post(url, auth=self._auth, data=self._marshall(data),
+                               headers=HEADERS)
         if r.status_code < 200 or r.status_code >= 300:
             self._error(r.text)
 
@@ -259,8 +265,8 @@ class Client:
 
     @timed_url
     def _put(self, url, data=None):
-        r = requests.put(url, auth=self._auth, data=self._marshall(data),
-                         headers=HEADERS)
+        r = self._session.put(url, auth=self._auth, data=self._marshall(data),
+                              headers=HEADERS)
         if r.status_code < 200 or r.status_code >= 300:
             self._error(r.text)
 
@@ -268,7 +274,7 @@ class Client:
 
     @timed_url
     def _delete(self, url):
-        r = requests.delete(url, auth=self._auth, headers=HEADERS)
+        r = self._session.delete(url, auth=self._auth, headers=HEADERS)
         if r.status_code < 200 or r.status_code >= 300:
             self._error(r.text)
 
@@ -397,6 +403,15 @@ class Client:
 
         return ret
 
+    @staticmethod
+    def _type_name_variants(name):
+        ret = [name]
+        python_name = re.sub(r'([a-z])([A-Z])', r'\1_\2', name)
+        if python_name != name:
+            ret.append(python_name.lower())
+
+        return ret
+
     def _bind_methods(self, schema):
         bindings = [
             ('list', 'collectionMethods', GET_METHOD, self.list),
@@ -406,13 +421,16 @@ class Client:
         ]
 
         for type_name, type in schema.types.iteritems():
-            for method_name, type_collection, test_method, m in bindings:
-                # double lambda for lexical binding hack
-                cb = lambda type_name=type_name, method=m: \
-                    lambda *args, **kw: method(type_name, *args, **kw)
-                if hasattr(type, type_collection) and \
-                        test_method in type[type_collection]:
-                    setattr(self, '_'.join([method_name, type_name]), cb())
+            for name_variant in self._type_name_variants(type_name):
+                for method_name, type_collection, test_method, m in bindings:
+                    # double lambda for lexical binding hack, I'm sure there's
+                    # a better way to do this
+                    cb = lambda type_name=type_name, method=m: \
+                        lambda *args, **kw: method(type_name, *args, **kw)
+                    if hasattr(type, type_collection) and \
+                            test_method in type[type_collection]:
+                        setattr(self, '_'.join([method_name, name_variant]),
+                                cb())
 
     def _get_schema_hash(self):
         h = hashlib.new('sha1')
@@ -527,7 +545,7 @@ def _env_prefix(cmd):
     return _prefix(cmd) + '_'
 
 
-def from_env(prefix, **kw):
+def from_env(prefix=PREFIX + '_', **kw):
     args = dict((x, None) for x in ['access_key', 'secret_key', 'url', 'cache',
                                     'cache_time', 'strict'])
     args.update(kw)
@@ -661,7 +679,9 @@ def _full_args(client):
 
         except (KeyError, AttributeError):
             pass
-    argcomplete.autocomplete(parser)
+
+    if 'argcomplete' in globals():
+        argcomplete.autocomplete(parser)
     return parser
 
 

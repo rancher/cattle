@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "process_instance", schema = "dstack")
 public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ProcessInstanceRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.ProcessInstance {
 
-	private static final long serialVersionUID = 1896455329;
+	private static final long serialVersionUID = 1789436769;
 
 	/**
 	 * Setter for <code>dstack.process_instance.id</code>.
@@ -78,7 +78,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Getter for <code>dstack.process_instance.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(3);

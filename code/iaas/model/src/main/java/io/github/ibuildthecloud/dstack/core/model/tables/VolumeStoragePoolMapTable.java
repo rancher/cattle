@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord> {
 
-	private static final long serialVersionUID = -2043289230;
+	private static final long serialVersionUID = -1297089274;
 
 	/**
 	 * The singleton instance of <code>dstack.volume_storage_pool_map</code>
@@ -74,7 +74,7 @@ public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.github
 	/**
 	 * The column <code>dstack.volume_storage_pool_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.VolumeStoragePoolMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>dstack.volume_storage_pool_map.volume_id</code>.

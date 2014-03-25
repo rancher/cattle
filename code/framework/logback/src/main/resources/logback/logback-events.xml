@@ -4,7 +4,7 @@
     </define>
 
     <appender name="FILE_EVENT_IN" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${logDir}event-in.log</file>
+        <file>${logDir}dstack-event-in.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${logDir}event-in${fileNamePattern}</fileNamePattern>
             <maxHistory>${maxHistory}</maxHistory>
@@ -15,7 +15,7 @@
     </appender>
 
     <appender name="FILE_EVENT_OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${logDir}event-out.log</file>
+        <file>${logDir}dstack-event-out.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${logDir}event-out${fileNamePattern}</fileNamePattern>
             <maxHistory>${maxHistory}</maxHistory>

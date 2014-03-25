@@ -132,7 +132,7 @@ public interface Instance extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.instance.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	public java.util.Map<String,Object> getData();
 
 	/**
@@ -156,6 +156,17 @@ public interface Instance extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "compute", precision = 19)
 	public java.lang.Long getCompute();
+
+	/**
+	 * Setter for <code>dstack.instance.memory_mb</code>.
+	 */
+	public void setMemoryMb(java.lang.Long value);
+
+	/**
+	 * Getter for <code>dstack.instance.memory_mb</code>.
+	 */
+	@javax.persistence.Column(name = "memory_mb", precision = 19)
+	public java.lang.Long getMemoryMb();
 
 	/**
 	 * Setter for <code>dstack.instance.image_id</code>.

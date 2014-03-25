@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentGroupTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord> {
 
-	private static final long serialVersionUID = 1571548297;
+	private static final long serialVersionUID = -379172941;
 
 	/**
 	 * The singleton instance of <code>dstack.agent_group</code>
@@ -79,7 +79,7 @@ public class AgentGroupTable extends org.jooq.impl.TableImpl<io.github.ibuildthe
 	/**
 	 * The column <code>dstack.agent_group.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * Create a <code>dstack.agent_group</code> table reference

@@ -31,7 +31,7 @@ CREATE TABLE `data` (
   `id` bigint(19) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `visible` bit(1) NOT NULL DEFAULT b'1',
-  `value` mediumtext NOT NULL,
+  `value` text NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_data_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -41,7 +41,7 @@ CREATE TABLE `process_instance` (
   `id` bigint(19) NOT NULL AUTO_INCREMENT,
   `start_time` datetime DEFAULT NULL,
   `end_time` datetime DEFAULT NULL,
-  `data` mediumtext,
+  `data` text,
   `priority` int(10) DEFAULT 0,
   `process_name` varchar(128) DEFAULT NULL,
   `resource_type` varchar(128) DEFAULT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE `process_execution` (
   `id` bigint(19) NOT NULL AUTO_INCREMENT,
   `process_instance_id` bigint(19) NOT NULL,
   `uuid` varchar(128) NOT NULL,
-  `log` mediumtext,
+  `log` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_process_execution__uuid` (`uuid`),
   KEY `fk_process_execution_process_instance_id` (`process_instance_id`),

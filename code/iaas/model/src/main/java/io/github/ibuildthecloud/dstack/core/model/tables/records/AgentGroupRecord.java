@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "agent_group", schema = "dstack")
 public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.AgentGroupRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>>, io.github.ibuildthecloud.dstack.core.model.AgentGroup {
 
-	private static final long serialVersionUID = -1972290077;
+	private static final long serialVersionUID = -1614171475;
 
 	/**
 	 * Setter for <code>dstack.agent_group.id</code>.
@@ -197,7 +197,7 @@ public class AgentGroupRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Getter for <code>dstack.agent_group.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

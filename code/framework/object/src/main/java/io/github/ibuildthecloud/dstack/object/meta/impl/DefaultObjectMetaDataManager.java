@@ -9,6 +9,7 @@ import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.meta.TypeSet;
 import io.github.ibuildthecloud.dstack.object.util.DataAccessor;
 import io.github.ibuildthecloud.dstack.object.util.DataUtils;
+import io.github.ibuildthecloud.dstack.util.type.CollectionUtils;
 import io.github.ibuildthecloud.dstack.util.type.InitializationTask;
 import io.github.ibuildthecloud.dstack.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
@@ -43,6 +44,8 @@ import javax.inject.Inject;
 import javax.persistence.Column;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.ForeignKey;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -135,6 +138,44 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
                 }
             }
         }
+
+        findMappings();
+    }
+
+    protected void findMappings() {
+        Map<Class<?>, List<Pair<Class<?>, Relationship>>> foundRelationship = new HashMap<Class<?>, List<Pair<Class<?>, Relationship>>>();
+
+        for ( Map.Entry<Class<?>,Map<String,Relationship>> entry : relationships.entrySet() ) {
+            for ( Map.Entry<String, Relationship> relEntry : entry.getValue().entrySet() ) {
+                Relationship rel = relEntry.getValue();
+                if ( rel.getRelationshipType() == Relationship.RelationshipType.CHILD ) {
+                    Schema schema = schemaFactory.getSchema(rel.getObjectType());
+                    if ( schema != null && schema.getId().endsWith(ObjectMetaDataManager.MAP_SUFFIX)) {
+                        CollectionUtils.addToMap(foundRelationship, rel.getObjectType(),
+                                (Pair<Class<?>, Relationship>)new ImmutablePair<Class<?>, Relationship>(entry.getKey(), rel),
+                                ArrayList.class);
+                    }
+                }
+            }
+        }
+
+        for ( Map.Entry<Class<?>, List<Pair<Class<?>, Relationship>>> entry : foundRelationship.entrySet() ) {
+            List<Pair<Class<?>, Relationship>> rels = entry.getValue();
+            if ( rels.size() != 2 ) {
+                continue;
+            }
+
+            Pair<Class<?>, Relationship> left = rels.get(0);
+            Pair<Class<?>, Relationship> right = rels.get(1);
+
+            register(entry.getKey(), left, right);
+            register(entry.getKey(), right, left);
+        }
+    }
+
+    protected void register(Class<?> mappingType, Pair<Class<?>, Relationship> left, Pair<Class<?>, Relationship> right) {
+        register(left.getLeft(), new MapRelationshipImpl(schemaFactory.getSchema(right.getLeft()).getPluralName(),
+                mappingType, right.getLeft(), left.getRight(), right.getRight()));
     }
 
     protected void registerTableFields(Table<?> table) {
@@ -472,14 +513,14 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         }
 
         for ( Relationship relationship : relationships.values() ) {
-            if ( relationship.getRelationshipType() == REFERENCE ) {
-                if ( schema.getResourceFields().containsKey(relationship.getPropertyName()) ) {
-                    links.put(relationship.getName(), relationship.getPropertyName());
-                }
-            } else if ( relationship.getRelationshipType() == CHILD ) {
+            if ( relationship.isListResult() ) {
                 Schema other = schemaFactory.getSchema(relationship.getObjectType());
                 if ( other != null )
                     links.put(relationship.getName(), null);
+            } else {
+                if ( schema.getResourceFields().containsKey(relationship.getPropertyName()) ) {
+                    links.put(relationship.getName(), relationship.getPropertyName());
+                }
             }
         }
 

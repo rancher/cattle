@@ -29,6 +29,8 @@ public interface ObjectMetaDataManager {
     public static final String TYPE_FIELD = "type";
     public static final String UUID_FIELD = "uuid";
 
+    public static final String MAP_SUFFIX = "Map";
+
     String convertToPropertyNameString(Class<?> recordClass, Object key);
 
     String lookupPropertyNameFromFieldName(Class<?> recordClass, String fieldName);

@@ -8,6 +8,7 @@ import io.github.ibuildthecloud.dstack.engine.manager.ProcessNotFoundException;
 import io.github.ibuildthecloud.dstack.engine.process.ExitReason;
 import io.github.ibuildthecloud.dstack.engine.process.ProcessInstanceException;
 import io.github.ibuildthecloud.dstack.object.ObjectManager;
+import io.github.ibuildthecloud.dstack.object.meta.MapRelationship;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.object.process.ObjectProcessManager;
@@ -129,8 +130,14 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return getChildLink(type, id, relationship, request);
         case REFERENCE:
             return getReferenceLink(type, id, relationship, request);
+        case MAP:
+            return getMapLink(type, id, (MapRelationship)relationship, request);
         }
 
+        return null;
+    }
+
+    protected Object getMapLink(String type, String id, MapRelationship relationship, ApiRequest request) {
         return null;
     }
 
@@ -186,7 +193,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return null;
         }
 
-        Map<Object,Object> criteria = getDefaultCriteria(true, otherSchema.getId());
+        Map<Object,Object> criteria = new HashMap<Object, Object>();
         criteria.put(ObjectMetaDataManager.ID_FIELD, fieldValue);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherSchema.getId());

@@ -132,7 +132,7 @@ public interface AgentGroup extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.agent_group.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	public java.util.Map<String,Object> getData();
 
 	// -------------------------------------------------------------------------

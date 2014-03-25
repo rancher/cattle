@@ -1,0 +1,16 @@
+{
+    "data": {
+        "instance": {
+            "+data": {
+                "+libvirt": {
+                    "xml": "<xml/>"
+                }
+            }
+        }
+    },
+    "previousIds": ["fe8fe34c-1b13-4287-a094-a2c5f902722b"],
+    "previousNames": ["compute.instance.activate;agent=91"],
+    "name": "reply.6533363327570546786",
+    "resourceId": "211",
+    "resourceType": "instance"
+}

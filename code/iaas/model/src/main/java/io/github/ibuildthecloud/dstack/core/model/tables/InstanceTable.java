@@ -11,7 +11,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = 158940670;
+	private static final long serialVersionUID = -557586924;
 
 	/**
 	 * The singleton instance of <code>dstack.instance</code>
@@ -79,7 +79,7 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.github.ibuildthecl
 	/**
 	 * The column <code>dstack.instance.data</code>.
 	 */
-	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>dstack.instance.allocation_state</code>.
@@ -90,6 +90,11 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.github.ibuildthecl
 	 * The column <code>dstack.instance.compute</code>.
 	 */
 	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceRecord, java.lang.Long> COMPUTE = createField("compute", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>dstack.instance.memory_mb</code>.
+	 */
+	public final org.jooq.TableField<io.github.ibuildthecloud.dstack.core.model.tables.records.InstanceRecord, java.lang.Long> MEMORY_MB = createField("memory_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>dstack.instance.image_id</code>.

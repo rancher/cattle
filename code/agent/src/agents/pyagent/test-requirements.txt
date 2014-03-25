@@ -3,6 +3,6 @@ setuptools
 pytest==2.3.5
 datadiff==1.1.5
 
-# https://github.com/kennethreitz/requests/issues/1879
+mako
 docker-py==0.3.0
 portalocker

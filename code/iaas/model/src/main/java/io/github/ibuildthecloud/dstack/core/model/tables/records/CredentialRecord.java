@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "credential", schema = "dstack")
 public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.CredentialRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Credential {
 
-	private static final long serialVersionUID = -1650568746;
+	private static final long serialVersionUID = -589476258;
 
 	/**
 	 * Setter for <code>dstack.credential.id</code>.
@@ -197,7 +197,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.githu
 	/**
 	 * Getter for <code>dstack.credential.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

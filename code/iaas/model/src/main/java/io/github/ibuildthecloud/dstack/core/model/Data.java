@@ -55,7 +55,7 @@ public interface Data extends java.io.Serializable {
 	/**
 	 * Getter for <code>dstack.data.value</code>.
 	 */
-	@javax.persistence.Column(name = "value", nullable = false, length = 16777215)
+	@javax.persistence.Column(name = "value", nullable = false, length = 65535)
 	public java.lang.String getValue();
 
 	// -------------------------------------------------------------------------

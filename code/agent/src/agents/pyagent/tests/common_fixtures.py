@@ -8,15 +8,22 @@ _file = os.path.abspath(__file__)
 sys.path.insert(0, dirname(dirname(_file)))
 
 import tests
+import shutil
 from .response_holder import ResponseHolder
 from dstack import type_manager, plugins
 from dstack.agent import Agent
+from dstack.utils import JsonObject
 
 
 plugins.load()
 
 
 TEST_DIR = os.path.join(dirname(tests.__file__))
+SCRATCH_DIR = os.path.join(TEST_DIR, 'scratch')
+
+if os.path.exists(SCRATCH_DIR):
+    shutil.rmtree(SCRATCH_DIR)
+os.makedirs(SCRATCH_DIR)
 
 
 @pytest.fixture(scope="module")
@@ -50,9 +57,13 @@ def _diff_dict(left, right):
             pass
 
 
-def event_test(agent, name, post_func=None):
+def event_test(agent, name, pre_func=None, post_func=None):
     req = json_data(name)
     resp_valid = json_data(name + '_resp')
+
+    if pre_func is not None:
+        pre_func(req)
+
     resp = agent.execute(req)
     if post_func is not None:
         post_func(req, resp)
@@ -60,7 +71,7 @@ def event_test(agent, name, post_func=None):
     del resp["id"]
     del resp["time"]
 
-    _diff_dict(dict(resp), dict(resp_valid))
-    assert_equals(dict(resp), dict(resp_valid))
+    _diff_dict(JsonObject.unwrap(resp), JsonObject.unwrap(resp_valid))
+    assert_equals(JsonObject.unwrap(resp), JsonObject.unwrap(resp_valid))
 
     return req, resp

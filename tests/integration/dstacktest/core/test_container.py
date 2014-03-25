@@ -4,11 +4,11 @@ from datetime import timedelta
 import time
 
 
-def test_container_create_only(client, sim_context):
+def test_container_create_only(admin_client, sim_context):
     uuid = "sim:{}".format(random_num())
-    container = client.create_container(name="test",
-                                        imageUuid=uuid,
-                                        startOnCreate=False)
+    container = admin_client.create_container(name="test",
+                                              imageUuid=uuid,
+                                              startOnCreate=False)
 
     assert_fields(container, {
         "type": "container",
@@ -18,7 +18,7 @@ def test_container_create_only(client, sim_context):
         "imageId": NOT_NONE,
     })
 
-    container = wait_success(client, container)
+    container = wait_success(admin_client, container)
 
     assert_fields(container, {
         "type": "container",
@@ -29,7 +29,7 @@ def test_container_create_only(client, sim_context):
     })
 
     image = container.image()
-    image = wait_success(client, image)
+    image = wait_success(admin_client, image)
     assert_fields(image, {
         "state": "inactive"
     })
@@ -37,7 +37,7 @@ def test_container_create_only(client, sim_context):
     volumes = container.volumes()
     assert len(volumes) == 1
 
-    root_volume = wait_success(client, volumes[0])
+    root_volume = wait_success(admin_client, volumes[0])
     assert_fields(root_volume, {
         "allocationState": "inactive",
         "attachedState": "active",
@@ -54,7 +54,7 @@ def test_container_create_only(client, sim_context):
     # nics = container.nics()
     # assert len(nics) == 0
 
-    image = wait_success(client, client.list_image(uuid=uuid)[0])
+    image = wait_success(admin_client, admin_client.list_image(uuid=uuid)[0])
     assert_fields(image, {
         "state": "inactive",
         "uuid": uuid,
@@ -64,7 +64,7 @@ def test_container_create_only(client, sim_context):
 
     assert len(image_mappings) == 1
 
-    image_mapping = wait_success(client, image_mappings[0])
+    image_mapping = wait_success(admin_client, image_mappings[0])
     assert_fields(image_mapping, {
         "imageId": image.id,
         "storagePoolId": sim_context["external_pool"].id,
@@ -74,15 +74,15 @@ def test_container_create_only(client, sim_context):
     return container
 
 
-def test_container_create_then_start(client, sim_context):
-    container = test_container_create_only(client, sim_context)
+def test_container_create_then_start(admin_client, sim_context):
+    container = test_container_create_only(admin_client, sim_context)
     container = container.start()
 
     assert_fields(container, {
         "state": "starting"
     })
 
-    container = wait_success(client, container)
+    container = wait_success(admin_client, container)
 
     assert_fields(container, {
         "allocationState": "active",
@@ -130,12 +130,12 @@ def test_container_create_then_start(client, sim_context):
     })
 
 
-def test_container_stop(client, sim_context):
+def test_container_stop(admin_client, sim_context):
     uuid = "sim:{}".format(random_num())
-    container = client.create_container(name="test",
-                                        imageUuid=uuid,
-                                        startOnCreate=True)
-    container = wait_success(client, container)
+    container = admin_client.create_container(name="test",
+                                              imageUuid=uuid,
+                                              startOnCreate=True)
+    container = wait_success(admin_client, container)
 
     assert_fields(container, {
         "state": "running"
@@ -147,7 +147,7 @@ def test_container_stop(client, sim_context):
         "state": "stopping"
     })
 
-    container = wait_success(client, container)
+    container = wait_success(admin_client, container)
 
     assert_fields(container, {
         "allocationState": "inactive",
@@ -210,27 +210,27 @@ def _assert_removed(container):
     return container
 
 
-def test_container_remove(client, sim_context):
+def test_container_remove(admin_client, sim_context):
     uuid = "sim:{}".format(random_num())
-    container = client.create_container(name="test",
-                                        imageUuid=uuid,
-                                        startOnCreate=True)
-    container = wait_success(client, container)
-    container = wait_success(client, container.stop())
+    container = admin_client.create_container(name="test",
+                                              imageUuid=uuid,
+                                              startOnCreate=True)
+    container = wait_success(admin_client, container)
+    container = wait_success(admin_client, container.stop())
 
     assert container.state == "stopped"
 
-    container = client.delete(container)
+    container = admin_client.delete(container)
 
     assert container.state == "removing"
 
-    container = wait_success(client, container)
+    container = wait_success(admin_client, container)
 
     return _assert_removed(container)
 
 
-def test_container_restore(client, sim_context):
-    container = test_container_remove(client, sim_context)
+def test_container_restore(admin_client, sim_context):
+    container = test_container_remove(admin_client, sim_context)
 
     assert container.state == "removed"
 
@@ -238,7 +238,7 @@ def test_container_restore(client, sim_context):
 
     assert container.state == "restoring"
 
-    container = wait_success(client, container)
+    container = wait_success(admin_client, container)
 
     assert container.state == "stopped"
     assert_restored_fields(container)
@@ -254,8 +254,8 @@ def test_container_restore(client, sim_context):
     assert volume_mappings[0].state == "inactive"
 
 
-def test_container_purge(client, sim_context):
-    container = test_container_remove(client, sim_context)
+def test_container_purge(admin_client, sim_context):
+    container = test_container_remove(admin_client, sim_context)
 
     assert container.state == "removed"
 
@@ -263,24 +263,24 @@ def test_container_purge(client, sim_context):
     # things too
 
     remove_time = now() - timedelta(hours=1)
-    client.update(container, {
+    admin_client.update(container, {
         'removeTime': format_time(remove_time)
     })
 
-    purge = client.list_task(name="purge.resources")[0]
+    purge = admin_client.list_task(name="purge.resources")[0]
     purge.execute()
 
-    container = client.reload(container)
+    container = admin_client.reload(container)
     for x in range(30):
         if container.state == "removed":
             time.sleep(0.5)
-            container = client.reload(container)
+            container = admin_client.reload(container)
         else:
             break
 
     assert container.state != "removed"
 
-    container = wait_success(client, container)
+    container = wait_success(admin_client, container)
     assert container.state == "purged"
 
     volume = container.volumes()[0]
@@ -289,7 +289,7 @@ def test_container_purge(client, sim_context):
     volume = volume.purge()
     assert volume.state == 'purging'
 
-    volume = wait_transitioning(client, volume)
+    volume = wait_transitioning(admin_client, volume)
     assert volume.state == 'purged'
 
     pool_maps = volume.volumeStoragePoolMaps()
@@ -297,19 +297,19 @@ def test_container_purge(client, sim_context):
     assert pool_maps[0].state == 'removed'
 
 
-def test_start_stop(client, sim_context):
+def test_start_stop(admin_client, sim_context):
     uuid = "sim:{}".format(random_num())
 
-    container = client.create_container(name="test",
-                                        imageUuid=uuid)
+    container = admin_client.create_container(name="test",
+                                              imageUuid=uuid)
 
-    container = wait_success(client, container)
+    container = wait_success(admin_client, container)
 
     for _ in range(5):
         assert container.state == 'running'
-        container = wait_success(client, container.stop())
+        container = wait_success(admin_client, container.stop())
         assert container.state == 'stopped'
-        container = wait_success(client, container.start())
+        container = wait_success(admin_client, container.start())
         assert container.state == 'running'
 
 
@@ -323,7 +323,9 @@ def test_container_image_required(client, sim_context):
         assert e.error.fieldName == 'imageUuid'
 
 
-def test_container_compute_fail(client, sim_context):
+def test_container_compute_fail(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+
     data = {
         'compute.instance.activate::fail': True,
         'io.github.ibuildthecloud.dstack.process.instance.InstanceStart': {
@@ -331,10 +333,10 @@ def test_container_compute_fail(client, sim_context):
         }
     }
 
-    container = client.create_container(imageUuid=sim_context['imageUuid'],
-                                        data=data)
+    container = admin_client.create_container(imageUuid=image_uuid,
+                                              data=data)
 
-    container = wait_transitioning(client, container)
+    container = wait_transitioning(admin_client, container)
 
     assert container.transitioning == 'error'
     assert container.transitioningMessage == \
@@ -343,15 +345,17 @@ def test_container_compute_fail(client, sim_context):
     _assert_removed(container)
 
 
-def test_container_storage_fail(client, sim_context):
+def test_container_storage_fail(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+
     data = {
         'storage.volume.activate::fail': True,
     }
 
-    container = client.create_container(imageUuid=sim_context['imageUuid'],
-                                        data=data)
+    container = admin_client.create_container(imageUuid=image_uuid,
+                                              data=data)
 
-    container = wait_transitioning(client, container)
+    container = wait_transitioning(admin_client, container)
 
     assert container.transitioning == 'error'
     assert container.transitioningMessage == \

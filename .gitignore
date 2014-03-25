@@ -9,7 +9,8 @@ __pycache__
 .tox
 
 code/agent/src/agents/pyagent/locks
-code/agent/src/agents/pyagent/tests/locks/
+code/agent/src/agents/pyagent/tests/scratch
+code/agent/src/agents/pyagent/tests/locks
 code/packaging/app/db-*
 dist
 docs/build

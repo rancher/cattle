@@ -1,10 +1,8 @@
 import logging
 import requests.exceptions
-import socket
 import time
 
 from . import docker_client
-from . import ENABLED
 from . import DockerConfig
 from dstack import Config
 from dstack.compute import BaseComputeDriver
@@ -40,13 +38,16 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
 
     @staticmethod
     def on_ping(ping, pong):
-        if not ENABLED or not utils.ping_include_resources(ping):
+        if not utils.ping_include_resources(ping):
+            return
+
+        if not DockerConfig.docker_enabled():
             return
 
         compute = {
             'type': 'host',
             'kind': 'docker',
-            'name': socket.gethostname(),
+            'name': Config.hostname() + '/docker',
             'uuid': DockerConfig.docker_uuid()
         }
 

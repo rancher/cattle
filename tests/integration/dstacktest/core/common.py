@@ -1,7 +1,13 @@
 from dstack import from_env
 from time import sleep
 
-client = from_env('DSTACK')
+client = None
+
+
+def create_client(url):
+    global client
+    client = from_env(url=url)
+    return client
 
 
 def get_url(obj, port):

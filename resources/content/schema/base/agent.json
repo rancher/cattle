@@ -6,6 +6,7 @@
         },
         "user": {
             "type": "string",
+            "nullable": true,
             "create": true
         },
         "uri": {

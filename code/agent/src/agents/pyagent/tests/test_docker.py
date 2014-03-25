@@ -1,5 +1,4 @@
 from docker import Client
-import socket
 
 #TODO dstack.plugins.load_plugins() somehow make dstack.plugin.* modules
 #  unavailable, importing it first
@@ -7,7 +6,7 @@ import dstack.plugins.docker  # NOQA
 
 from .common_fixtures import *  # NOQA
 import pytest
-from dstack import CONFIG_OVERRIDE
+from dstack import CONFIG_OVERRIDE, Config
 
 
 if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") != "true"',
@@ -143,11 +142,15 @@ def test_ping(agent, responses):
     CONFIG_OVERRIDE['DOCKER_UUID'] = 'testuuid'
 
     def post(req, resp):
-        hostname = socket.gethostname()
+        hostname = Config.hostname() + '/docker'
         pool_name = hostname + ' Storage Pool'
+        resources = resp['data']['resources']
+        resources = filter(lambda x: x['kind'] == 'docker', resources)
+        resp['data']['resources'] = resources
+
         assert resp['data']['resources'][0]['name'] == hostname
         assert resp['data']['resources'][1]['name'] == pool_name
-        resp['data']['resources'][0]['name'] = 'localhost'
-        resp['data']['resources'][1]['name'] = 'localhost Storage Pool'
+        resp['data']['resources'][0]['name'] = 'localhost/docker'
+        resp['data']['resources'][1]['name'] = 'localhost/docker Storage Pool'
 
     event_test(agent, 'docker/ping', post_func=post)

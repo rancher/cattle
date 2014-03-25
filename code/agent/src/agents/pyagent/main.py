@@ -65,7 +65,10 @@ def _args():
 
 
 def main():
-    _setup_logger()
+    if Config.setup_logger():
+        _setup_logger()
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     args = _args()
 

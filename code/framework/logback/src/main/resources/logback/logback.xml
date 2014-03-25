@@ -152,6 +152,10 @@
         <level value="${rootLevel}" />
     </logger>
 
+    <logger name="io.github.ibuildthecloud.agent.connection.ssh.connection.EofClosingTcpipServerChannel" >
+        <level value="${otherLevel}" />
+    </logger>
+
     <logger name="EventLogOut" additivity="false" >
     </logger>
 

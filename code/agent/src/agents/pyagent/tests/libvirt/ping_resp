@@ -1,0 +1,30 @@
+{
+    "resourceType" : "agent",
+    "previousNames" : [ "ping" ],
+    "name" : "ping.reply",
+    "data" : {
+        "resources" : [
+            {
+                "type" : "host",
+                "uuid" : "testuuid",
+                "name" : "localhost/libvirt",
+                "kind" : "libvirt"
+            },
+            {
+                "type" : "storagePool",
+                "uuid" : "testuuid-pool",
+                "hostUuid" : "testuuid",
+                "name" : "localhost/libvirt Storage Pool",
+                "kind" : "libvirt",
+                "data" : {
+                    "libvirt" : {
+                        "driver" : "directory",
+                        "poolPath" : "pool path"
+                    }
+                }
+            }
+        ]
+    },
+    "previousIds" : [ "bfc8ada5-e5c3-4ee0-aa0a-c3001ae96c83" ],
+    "resourceId" : "2"
+}

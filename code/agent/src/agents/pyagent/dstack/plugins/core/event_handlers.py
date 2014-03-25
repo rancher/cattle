@@ -25,9 +25,10 @@ class PingHandler:
             return
 
         resp = utils.reply(event)
-        for type in types():
-            if hasattr(type, 'on_ping'):
-                type.on_ping(event, resp)
+        if Config.do_ping():
+            for type in types():
+                if hasattr(type, 'on_ping'):
+                    type.on_ping(event, resp)
 
         return resp
 
@@ -37,7 +38,8 @@ class ConfigUpdateHandler:
         pass
 
     def events(self):
-        return ["config.update"]
+        return []
+        #return ["config.update"]
 
     def execute(self, event):
         if not _should_handle(self, event):

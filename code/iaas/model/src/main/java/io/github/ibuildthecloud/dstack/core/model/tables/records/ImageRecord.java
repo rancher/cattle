@@ -13,7 +13,7 @@ package io.github.ibuildthecloud.dstack.core.model.tables.records;
 @javax.persistence.Table(name = "image", schema = "dstack")
 public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibuildthecloud.dstack.core.model.tables.records.ImageRecord> implements io.github.ibuildthecloud.dstack.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String>, io.github.ibuildthecloud.dstack.core.model.Image {
 
-	private static final long serialVersionUID = -2073940219;
+	private static final long serialVersionUID = 2075204653;
 
 	/**
 	 * Setter for <code>dstack.image.id</code>.
@@ -197,7 +197,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Getter for <code>dstack.image.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 16777215)
+	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);
@@ -238,36 +238,36 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	}
 
 	/**
-	 * Setter for <code>dstack.image.physical_size_megabytes</code>.
+	 * Setter for <code>dstack.image.physical_size_mb</code>.
 	 */
 	@Override
-	public void setPhysicalSizeMegabytes(java.lang.Long value) {
+	public void setPhysicalSizeMb(java.lang.Long value) {
 		setValue(13, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.image.physical_size_megabytes</code>.
+	 * Getter for <code>dstack.image.physical_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "physical_size_megabytes", precision = 19)
+	@javax.persistence.Column(name = "physical_size_mb", precision = 19)
 	@Override
-	public java.lang.Long getPhysicalSizeMegabytes() {
+	public java.lang.Long getPhysicalSizeMb() {
 		return (java.lang.Long) getValue(13);
 	}
 
 	/**
-	 * Setter for <code>dstack.image.virtual_size_megabytes</code>.
+	 * Setter for <code>dstack.image.virtual_size_mb</code>.
 	 */
 	@Override
-	public void setVirtualSizeMegabytes(java.lang.Long value) {
+	public void setVirtualSizeMb(java.lang.Long value) {
 		setValue(14, value);
 	}
 
 	/**
-	 * Getter for <code>dstack.image.virtual_size_megabytes</code>.
+	 * Getter for <code>dstack.image.virtual_size_mb</code>.
 	 */
-	@javax.persistence.Column(name = "virtual_size_megabytes", precision = 19)
+	@javax.persistence.Column(name = "virtual_size_mb", precision = 19)
 	@Override
-	public java.lang.Long getVirtualSizeMegabytes() {
+	public java.lang.Long getVirtualSizeMb() {
 		return (java.lang.Long) getValue(14);
 	}
 
@@ -446,7 +446,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field14() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE.PHYSICAL_SIZE_MEGABYTES;
+		return io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE.PHYSICAL_SIZE_MB;
 	}
 
 	/**
@@ -454,7 +454,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field15() {
-		return io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE.VIRTUAL_SIZE_MEGABYTES;
+		return io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE.VIRTUAL_SIZE_MB;
 	}
 
 	/**
@@ -582,7 +582,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	 */
 	@Override
 	public java.lang.Long value14() {
-		return getPhysicalSizeMegabytes();
+		return getPhysicalSizeMb();
 	}
 
 	/**
@@ -590,7 +590,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	 */
 	@Override
 	public java.lang.Long value15() {
-		return getVirtualSizeMegabytes();
+		return getVirtualSizeMb();
 	}
 
 	/**
@@ -731,7 +731,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	 */
 	@Override
 	public ImageRecord value14(java.lang.Long value) {
-		setPhysicalSizeMegabytes(value);
+		setPhysicalSizeMb(value);
 		return this;
 	}
 
@@ -740,7 +740,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	 */
 	@Override
 	public ImageRecord value15(java.lang.Long value) {
-		setVirtualSizeMegabytes(value);
+		setVirtualSizeMb(value);
 		return this;
 	}
 
@@ -792,8 +792,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 		setData(from.getData());
 		setUrl(from.getUrl());
 		setIsPublic(from.getIsPublic());
-		setPhysicalSizeMegabytes(from.getPhysicalSizeMegabytes());
-		setVirtualSizeMegabytes(from.getVirtualSizeMegabytes());
+		setPhysicalSizeMb(from.getPhysicalSizeMb());
+		setVirtualSizeMb(from.getVirtualSizeMb());
 		setChecksum(from.getChecksum());
 		setFormat(from.getFormat());
 	}
@@ -821,7 +821,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 	/**
 	 * Create a detached, initialised ImageRecord
 	 */
-	public ImageRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String url, java.lang.Boolean isPublic, java.lang.Long physicalSizeMegabytes, java.lang.Long virtualSizeMegabytes, java.lang.String checksum, java.lang.String format) {
+	public ImageRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String url, java.lang.Boolean isPublic, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.String checksum, java.lang.String format) {
 		super(io.github.ibuildthecloud.dstack.core.model.tables.ImageTable.IMAGE);
 
 		setValue(0, id);
@@ -837,8 +837,8 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.github.ibu
 		setValue(10, data);
 		setValue(11, url);
 		setValue(12, isPublic);
-		setValue(13, physicalSizeMegabytes);
-		setValue(14, virtualSizeMegabytes);
+		setValue(13, physicalSizeMb);
+		setValue(14, virtualSizeMb);
 		setValue(15, checksum);
 		setValue(16, format);
 	}

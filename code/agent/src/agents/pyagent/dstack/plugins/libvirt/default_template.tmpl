@@ -1,0 +1,99 @@
+<%!
+    import re
+
+    def nowhitespace(text):
+        return re.sub('\\s*', '', text)
+%>\
+<%def name="memory()" filter="nowhitespace" >\
+    <memory>
+        % try:
+            ${instance.memory_mb * 1024}
+        % except:
+            ${64 * 1024}
+        % endtry
+    </memory>
+</%def>\
+<%def name="vcpu()" filter="nowhitespace" >\
+    <vcpu>
+        % try:
+            ${instance.data.fields.vcpu}
+        % except:
+            1
+        % endtry
+    </vcpu>
+</%def>\
+<%def name="attr(map)" >\
+% for k, v in map.items():
+${k}="${v}" \
+% endfor
+</%def>\
+<%block name="header" >\
+<domain type="${config.param('type', 'kvm')}" >
+</%block>\
+<%block name="instance_name" >\
+    <uuid>${instance.uuid}</uuid>
+    <name>${instance.uuid}</name>
+</%block>\
+<%block name="compute" >\
+    ${memory()}
+    ${vcpu()}
+</%block>\
+<%block name="other" >\
+</%block>\
+
+<%block name="os" >\
+    <os>
+    % if config.param('type', 'kvm') == 'xen':
+        <type>linux</type>
+    % else:
+        <type>hvm</type>
+    % endif:
+<%block name="os_other" >\
+</%block>\
+    </os>
+</%block>\
+
+<%block name="feature" >\
+    <features>
+        <acpi/>
+        <apic/>
+    </features>
+</%block>\
+
+<%block name="clock" >\
+    <clock offset="utc"/>
+</%block>\
+
+<%block name="devices" >\
+    <devices>
+<%block name="instance_volumes" >\
+        % for volume in volumes:
+        <disk type="${volume.get_disk_type()}" device="${volume.get_disk_device()}" ${attr(volume.get_disk_attributes())} >
+            <driver name="${volume.get_driver_name()}" type="${volume.get_driver_type()}" ${attr(volume.get_driver_attributes())} />
+            <source ${attr(volume.get_source_attributes())} />
+            <target ${attr(volume.get_target_attributes())} />
+        </disk>
+        % endfor
+</%block>\
+<%block name="network_interfaces" >\
+        <interface type="network">
+            <source network="default" />
+        </interface>
+</%block>\
+<%block name="graphics" >\
+        <graphics type="vnc" autoport="yes" keymap="en-us" listen="127.0.0.1" passwd="test" />
+        <video>
+            <model type="cirrus"/>
+        </video>
+</%block>\
+<%block name="devices_other" >\
+</%block>\
+    </devices>
+</%block>\
+    <!--
+    <serial type="file">
+      <source path=""/>
+    </serial>
+    <serial type="pty"/>
+    -->
+</domain>
