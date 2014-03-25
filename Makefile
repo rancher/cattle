@@ -1,22 +1,26 @@
 
 build: build-env
-	./tools/docker/build.sh
+	./tools/docker/build.sh mvn install
 
 build-env:
 	cd ./tools/docker && \
 	docker build -t dstack-buildenv .
 
 enter: build-env
-	./tools/docker/build.sh enter
+	./tools/docker/build.sh bash
 
-clean:
-	MAVEN_TARGET='clean' ./tools/docker/build.sh
+clean: build-env
+	./tools/docker/build.sh mvn clean
+	./tools/docker/build.sh rm -rf runtime
 
 test: build
-	./tools/docker/build.sh test
+	FORCE_DB=h2 ./tools/docker/build.sh ./tools/build/runtests.sh
 
 bundle: clean
-	MAVEN_ARGS='-Drelease' ./tools/docker/build.sh
+	./tools/docker/build.sh mvn -Drelease clean package
+
+release-docker-clean:
+	./tools/build/checkin-test.sh release
 
 release-docker: bundle
 	cd ./dist && \

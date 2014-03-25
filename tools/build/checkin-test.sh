@@ -3,7 +3,9 @@ set -e
 
 cd $(dirname $0)
 
-./flake8.sh
+if test -x $(which flake8); then
+    ./flake8.sh
+fi
 
 cd ../..
 
@@ -16,8 +18,7 @@ fi
 
 rsync -av --exclude '*.log' --exclude '*.gz' --delete . ${CHECK_DIR}/
 
-cd ${CHECK_DIR}/tools/build
-pushd ../..
+cd $CHECK_DIR
 
 find -depth -type d -name __pycache__ -exec rm -rf {} \;
 if [ -e resources/content/dstack-local.properties ]
@@ -25,11 +26,14 @@ then
     rm resources/content/dstack-local.properties
 fi
 
-rm -rf runtime
 find . -depth -type d -name .tox -exec rm -rf {} \;
-mvn clean
 
-popd
+pwd
 
-./build.sh
-TOXARGS="-e flake8,py27" ./runtests.sh
+if [ "$1" = "release" ]; then
+    git reset --hard HEAD
+    git clean -dxf
+    make release-docker
+else
+    make clean test "$@"
+fi
