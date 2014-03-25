@@ -1,5 +1,8 @@
 from dstack.type_manager import get_type_list, register_type
 
+from .connection import LibvirtConnection
+from xml.etree import ElementTree
+
 _LIBVIRT_POOL_DRIVER = 'LIBVIRT_POOL_DRIVER'
 _LIBVIRT_VOLUME_DRIVER = 'LIBVIRT_VOLUME_DRIVER'
 
@@ -18,3 +21,19 @@ def volume_drivers():
 
 def pool_drivers():
     return get_type_list(_LIBVIRT_POOL_DRIVER)
+
+
+def get_preferred_libvirt_type():
+    conn = LibvirtConnection.open('qemu')
+    caps = ElementTree.fromstring(conn.getCapabilities())
+
+    result = set()
+
+    for cap in caps.findall(".//domain"):
+        result.add(cap.get('type', default=''))
+
+    for i in ['kvm', 'qemu']:
+        if i in result:
+            return i
+
+    return None

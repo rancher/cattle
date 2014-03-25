@@ -4,7 +4,7 @@ import os
 from . import LIBVIRT_KIND
 from .connection import LibvirtConnection
 from .storage import get_pool_driver
-from .utils import pool_drivers
+from .utils import pool_drivers, get_preferred_libvirt_type
 from .config import LibvirtConfig
 from dstack import Config
 from dstack.compute import BaseComputeDriver
@@ -88,7 +88,12 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
             'type': 'host',
             'kind': LIBVIRT_KIND,
             'name': Config.hostname() + '/libvirt',
-            'uuid': LibvirtConfig.libvirt_uuid()
+            'uuid': LibvirtConfig.libvirt_uuid(),
+            'data': {
+                'libvirt': {
+                    'type': get_preferred_libvirt_type()
+                }
+            }
         }
 
         resources = [compute]
