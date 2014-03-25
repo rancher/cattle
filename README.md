@@ -2,10 +2,9 @@
 
 **This is early alpha stuff.  You've been warned.**
 
-## What is this?
-dStack is an experimental IaaS platform.  It was created as a sandbox to try out new architectural ideas that would be either too risky or too difficult to do within an established platform like OpenStack or Apache CloudStack.
+dStack is an infrastructure orchestration platform for such tasks as running containers and virtual machines.  It was created as a sandbox to try out new architectural ideas that would be either too risky or too difficult to do within an established platform like OpenStack or Apache CloudStack.
 
-The focus of dStack is to create a solid foundation and platform for IaaS.  The killer feature of dStack is intended to be the strength of the platform.  The strength and flexibility of the platform will then be used to foster innovation and new ideas in the IaaS space.
+The focus of dStack is to create a solid foundation and platform for orchestration.  The killer feature of dStack is intended to be the strength of the platform.  The strength and flexibility of the platform should then be used to foster innovation and new ideas in the IaaS/PaaS space.
 
 The key areas of focus are
 
@@ -17,7 +16,7 @@ The key areas of focus are
 
 ## What does it currently do?
 
-Not much.  As the focus is on the platform, much of the current effort has been on building a solid platform.  In terms of user functionality only the most basic Docker operations are supported.
+As the focus is on the platform, much of the current effort has been on building a solid platform.  In terms of user functionality only the most basic Docker and libvirt operations are supported.
 
 ### Features
 
@@ -26,9 +25,31 @@ Not much.  As the focus is on the platform, much of the current effort has been 
     * Start/Stop
     * Delete
 
-## More Info
+* Libvirt
+    * Create
+    * Start/Stop
+    * Delete
 
-Documentation: http://dstack.readthedocs.org/en/latest/toc.html
+### Coming Next
+
+A lot of networking features
+
+# Getting Started
+
+## Installing
+
+Your best bet at the moment is to run on Ubuntu 13.10+.  Anything that runs Docker will eventually be supported, but development is done on Ubuntu 13.10.
+
+### Management Server
+
+Install Docker if you don't have it already, you can read the [official instructions][9] or just run
+
+    curl -sL https://get.docker.io/ | sh
+
+Start dStack
+
+    docker run -p 8080:8080 cattle/server
+
 
 ## Specific Installation Instructions
 
@@ -101,6 +122,10 @@ There are some sample things you can do in dStack in the [Documentation][7].  Th
 
 Or you can just open the UI to http://localhost:8080/v1/containers and click "Create."  Enter a imageUuid in the format "docker:name" for example "docker:ibuildthecloud/dstack" or "docker:ubuntu" and a command, like "sleep 120."
 
+## More Info
+
+Documentation: http://dstack.readthedocs.org/en/latest/toc.html
+
 ### 7. Learn
 
 If you've gotten this far, you have a basic setup of dStack.  This setup will actually scale to hundreds of host and thousands of VMs just fine.  Basically >90% of existing clouds today will work with this simple setup.  There is the obvious downside that everything is running in a single process and there is no redundancy.  To learn how to do more complex setups with true redundancy and capable of scaling to the millions of things refer to the [Documentation][8].
@@ -116,3 +141,4 @@ If you've gotten this far, you have a basic setup of dStack.  This setup will ac
   [6]: http://dstack.readthedocs.org/en/latest/installation/coreos.html
   [7]: http://dstack.readthedocs.org/en/latest/examples/overview.html
   [8]: http://dstack.readthedocs.org/en/latest/toc.html
+  [9]: http://docs.docker.io/en/latest/installation/

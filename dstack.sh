@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+if [ -z "$BUG_INCEPTION" ]; then
+    # Work around issue https://github.com/dotcloud/docker/issues/4854
+    export BUG_INCEPTION=true
+    $0 "$@"
+fi
+
 BASE=$(dirname $0)
 cd $BASE
 
@@ -35,7 +41,11 @@ build()
     if [ ! -e $HOME/.m2 ] && [ -e /opt/m2-base ]; then
         cp -rf /opt/m2-base $HOME/.m2
     fi
-    mvn $MAVEN_ARGS ${MAVEN_TARGET:-install}
+    if [ "$#" = "0" ]; then
+        mvn $MAVEN_ARGS ${MAVEN_TARGET:-install}
+    else
+        mvn "$@"
+    fi
     mkdir -p dist/artifacts
     cp code/packaging/app/target/*.war dist/artifacts/dstack.jar
     if [ -e code/packaging/bundle/target/dstack-bundle*.jar ]; then
@@ -56,6 +66,10 @@ if [ "$#" = "0" ]; then
 fi
 
 case $1 in
+mvn)
+    shift
+    build "$@"
+    ;;
 build)
     shift
     build "$@"
@@ -63,5 +77,8 @@ build)
 run)
     shift
     run "$@"
+    ;;
+*)
+    "$@"
     ;;
 esac
