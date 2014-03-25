@@ -12,5 +12,5 @@ then
     exit 1
 fi
 if [ ! -e dist ]; then
-    pip install -t dist -r requirements.txt
+    pip install -t dist -r dist-requirements.txt
 fi

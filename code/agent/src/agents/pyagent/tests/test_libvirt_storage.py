@@ -3,6 +3,7 @@ from .common_fixtures import *  # NOQA
 from tempfile import NamedTemporaryFile
 import pytest
 import shutil
+import stat
 from uuid import uuid4
 
 from dstack.plugins.core.marshaller import JsonObject
@@ -180,7 +181,12 @@ def test_get_image(pool_dir, random_qcow2):
     assert found is not None
     assert found.file == os.path.join(pool_dir, '{0}.qcow2'.format(image.uuid))
     assert found.get_format() == 'qcow2'
-    assert not os.access(found.file, os.W_OK)
+
+    _check_file_mode(found.file, '400')
+
+
+def _check_file_mode(file_name, str_mode):
+    assert oct(os.stat(file_name)[stat.ST_MODE])[-3:] == str_mode
 
 
 @if_libvirt

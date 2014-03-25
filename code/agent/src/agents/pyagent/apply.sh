@@ -34,6 +34,19 @@ stage()
     rm -rf ${OLD}
 }
 
+conf()
+{
+    CONF=(/etc/dstack/agent/agent.conf
+          /var/lib/dstack/etc/dstack/agent/agent.conf)
+
+    for conf_file in "${CONF[@]}"; do
+        if [ -e $conf_file ]
+        then
+            source $conf_file
+        fi
+    done
+}
+
 start()
 {
     if [ -n "$NO_START" ]; then
@@ -70,5 +83,6 @@ while [ "$#" -gt 0 ]; do
     shift 1
 done
 
+conf
 stage
 start
