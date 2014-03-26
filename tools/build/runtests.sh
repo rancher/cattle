@@ -26,7 +26,7 @@ before()
         fi
     done
 
-    for i in $BASE_DIR/before.d/*-integration-env; do
+    for i in $BASE_DIR/*before.d/*-integration-env; do
         if [ -e $i ]; then
             source $i
         fi

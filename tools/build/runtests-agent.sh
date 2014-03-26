@@ -6,7 +6,7 @@ BASE_DIR=$(dirname $0)
 
 cd $BASE_DIR/../../code/agent/src/agents/pyagent
 
-for i in $BASE_DIR/before.d/*-agent-env; do
+for i in $BASE_DIR/*before.d/*-agent-env; do
     if [ -e $i ]; then
         source $i
     fi
