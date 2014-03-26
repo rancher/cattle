@@ -42,7 +42,7 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
         client = docker_client()
         data = image.data.dockerImage
 
-        #TODO: Disable progress until 0.3.0+ is released, bug makes this fail
+        # TODO: Disable progress until 0.3.0+ is released, bug makes this fail
         progress = None
 
         if progress is None:

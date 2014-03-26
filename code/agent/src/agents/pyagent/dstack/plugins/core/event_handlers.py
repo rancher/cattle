@@ -8,7 +8,7 @@ from dstack.type_manager import types
 
 def _should_handle(handler, event):
     name = event.name.split(';', 1)[0]
-    if not name in handler.events() or event.replyTo is None:
+    if name not in handler.events() or event.replyTo is None:
         return False
     return True
 
@@ -39,7 +39,6 @@ class ConfigUpdateHandler:
 
     def events(self):
         return []
-        #return ["config.update"]
 
     def execute(self, event):
         if not _should_handle(self, event):

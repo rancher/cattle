@@ -53,13 +53,6 @@ def accounts():
 
         result[user_name] = [user_name, password]
 
-    #for setting in admin_client.list_setting():
-    #    if setting.name == 'api.security.enabled' and
-    #               setting.activeValue != 'true':
-    #        admin_client.update(setting, {
-    #            'value': 'true'
-    #        })
-
     return result
 
 

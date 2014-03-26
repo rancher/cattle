@@ -1,7 +1,7 @@
 from docker import Client, APIError
 
-#TODO dstack.plugins.load_plugins() somehow make dstack.plugin.* modules
-#  unavailable, importing it first
+# TODO dstack.plugins.load_plugins() somehow make dstack.plugin.* modules
+# unavailable, importing it first
 import dstack.plugins.docker  # NOQA
 
 from .common_fixtures import *  # NOQA

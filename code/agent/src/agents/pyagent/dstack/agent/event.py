@@ -151,7 +151,7 @@ class EventClient:
             for line in r.iter_lines(chunk_size=1):
                 try:
                     if len(line) > 0:
-                        #TODO Need a better approach here
+                        # TODO Need a better approach here
                         if '"ping' in line:
                             self._ping_queue.put(line, block=False)
                         else:
