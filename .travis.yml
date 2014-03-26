@@ -1,8 +1,8 @@
 language: java
 jdk:
+  - oraclejdk7
   - openjdk6
   - openjdk7
-  - oraclejdk7
 env:
   global:
     - AWS_DEFAULT_REGION=us-west-1
