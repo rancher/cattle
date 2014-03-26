@@ -1,4 +1,4 @@
-import dstack
+import cattle
 import os
 import pytest
 import random
@@ -13,12 +13,12 @@ DEFAULT_AGENT_UUID = 'test-agent'
 
 
 def _admin_client():
-    return dstack.from_env('DSTACK', access_key='admin',
+    return cattle.from_env(access_key='admin',
                            secrect_key='adminpass')
 
 
 def _client_for_user(name, accounts):
-    return dstack.from_env('DSTACK', access_key=accounts[name][0],
+    return cattle.from_env(access_key=accounts[name][0],
                            secret_key=accounts[name][1])
 
 
@@ -143,21 +143,11 @@ def wait_all_success(client, objs, timeout=DEFAULT_TIMEOUT):
 
 
 def wait_success(client, obj, timeout=DEFAULT_TIMEOUT):
-    obj = wait_transitioning(client, obj, timeout)
-    assert obj.transitioning == 'no'
-    return obj
+    return client.wait_success(obj, timeout=timeout)
 
 
 def wait_transitioning(client, obj, timeout=DEFAULT_TIMEOUT):
-    start = time.time()
-    obj = client.reload(obj)
-    while obj.transitioning == 'yes':
-        time.sleep(.5)
-        obj = client.reload(obj)
-        if time.time() - start > timeout:
-            raise Exception('Timeout waiting for [{0}] to be done'.format(obj))
-
-    return obj
+    return client.wait_transitioning(obj, timeout=timeout)
 
 
 def assert_fields(obj, fields):

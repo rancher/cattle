@@ -1,4 +1,4 @@
-from dstack import ApiError
+from cattle import ApiError
 from common_fixtures import *  # NOQA
 from datetime import timedelta
 import time

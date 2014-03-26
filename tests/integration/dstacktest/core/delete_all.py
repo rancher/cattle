@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import dstack
+import cattle
 
-client = dstack.from_env('DSTACK')
+client = cattle.from_env()
 
 l = client.list_container(removed_null=True)
 while l is not None:

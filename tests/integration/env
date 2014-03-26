@@ -1,5 +1,5 @@
 
-export DSTACK_URL="http://localhost:8080/v1/schemas"
-export DSTACK_ACCESS_KEY="admin"
-export DSTACK_SECRET_KEY="adminpass"
-export DSTACK_CACHE="false"
+export CATTLE_URL="http://localhost:8080/v1/schemas"
+export CATTLE_ACCESS_KEY="admin"
+export CATTLE_SECRET_KEY="adminpass"
+export CATTLE_CACHE="false"
