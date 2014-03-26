@@ -55,11 +55,21 @@ EOF
 # 12.04 doesn't work, libvirt is too old for testing
 #AMI=${AMI:-ami-a498a4e1}
 AMI=${AMI:-ami-d8ac909d}
-ID=$(aws ec2 run-instances --image-id $AMI                              \
-                      --security-group-ids all                          \
-                      --user-data file://user-data                      \
-                      --instance-initiated-shutdown-behavior terminate  \
-                      --query 'Instances[0].InstanceId'                 \
-                      --output text)
+for ((i=0;i<10;i++)); do
+    ID=$(aws ec2 run-instances --image-id $AMI                            \
+                        --security-group-ids all                          \
+                        --user-data file://user-data                      \
+                        --instance-initiated-shutdown-behavior terminate  \
+                        --query 'Instances[0].InstanceId'                 \
+                        --output text)
+    if [ -n "$ID" ]; then
+        break
+    fi
+done
+
+if [ -z "$ID" ]; then
+    echo 'Failed to create EC2 node'
+    exit 1
+fi
 
 echo $ID > ec2-id
