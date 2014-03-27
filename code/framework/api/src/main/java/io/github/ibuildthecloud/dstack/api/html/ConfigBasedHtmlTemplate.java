@@ -8,7 +8,7 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.impl.DefaultHtmlTemplate;
-import io.github.ibuildthecloud.url.UrlBuilder;
+import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 
 import com.netflix.config.DynamicStringProperty;
 
