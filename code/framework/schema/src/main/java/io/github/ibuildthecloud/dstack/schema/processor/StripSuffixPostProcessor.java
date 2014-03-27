@@ -4,7 +4,7 @@ import io.github.ibuildthecloud.dstack.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.AbstractSchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
-import io.github.ibuildthecloud.model.impl.SchemaImpl;
+import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
 import org.apache.commons.lang3.StringUtils;
 

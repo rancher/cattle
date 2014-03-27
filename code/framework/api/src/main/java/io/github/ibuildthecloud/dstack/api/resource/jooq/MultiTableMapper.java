@@ -3,7 +3,7 @@ package io.github.ibuildthecloud.dstack.api.resource.jooq;
 import io.github.ibuildthecloud.dstack.api.utils.ApiUtils;
 import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.util.ObjectUtils;
-import io.github.ibuildthecloud.model.Pagination;
+import io.github.ibuildthecloud.gdapi.model.Pagination;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;

@@ -5,7 +5,7 @@ import io.github.ibuildthecloud.dstack.util.resource.ResourceLoader;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.AbstractSchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
-import io.github.ibuildthecloud.model.impl.SchemaImpl;
+import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;

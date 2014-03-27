@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.schema.processor;
 
-import io.github.ibuildthecloud.model.impl.SchemaImpl;
+import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
 public class SchemaOverlayImpl extends SchemaImpl {
 

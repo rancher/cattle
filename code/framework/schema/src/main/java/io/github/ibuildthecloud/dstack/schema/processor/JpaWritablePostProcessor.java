@@ -5,9 +5,9 @@ import io.github.ibuildthecloud.gdapi.factory.impl.AbstractSchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
+import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
+import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 import io.github.ibuildthecloud.gdapi.util.TypeUtils;
-import io.github.ibuildthecloud.model.impl.FieldImpl;
-import io.github.ibuildthecloud.model.impl.SchemaImpl;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;

@@ -4,7 +4,7 @@ import io.github.ibuildthecloud.dstack.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.dstack.object.meta.Relationship;
 import io.github.ibuildthecloud.dstack.util.type.Named;
 import io.github.ibuildthecloud.gdapi.factory.impl.SubSchemaFactory;
-import io.github.ibuildthecloud.model.impl.SchemaImpl;
+import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
 import java.util.Map;
 
