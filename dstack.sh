@@ -5,6 +5,7 @@ if [ -z "$BUG_INCEPTION" ]; then
     # Work around issue https://github.com/dotcloud/docker/issues/4854
     export BUG_INCEPTION=true
     $0 "$@"
+    exit $?
 fi
 
 BASE=$(dirname $0)

@@ -10,6 +10,8 @@ enter: build-env
 	./tools/docker/build.sh bash
 
 clean: build-env
+	./tools/docker/build.sh find -depth -name __pycache__ -type d -exec rm -rf {} \;
+	./tools/docker/build.sh find -depth -name .tox -type d -exec rm -rf {} \;
 	./tools/docker/build.sh mvn clean
 	./tools/docker/build.sh rm -rf runtime
 
