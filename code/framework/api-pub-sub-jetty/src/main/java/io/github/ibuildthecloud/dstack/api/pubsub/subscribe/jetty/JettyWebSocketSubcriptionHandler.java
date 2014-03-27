@@ -1,8 +1,8 @@
 package io.github.ibuildthecloud.dstack.api.pubsub.subscribe.jetty;
 
-import io.github.ibuildthecloud.api.pubsub.subscribe.ApiPubSubEventPostProcessor;
-import io.github.ibuildthecloud.api.pubsub.subscribe.MessageWriter;
-import io.github.ibuildthecloud.api.pubsub.subscribe.NonBlockingSubscriptionHandler;
+import io.github.ibuildthecloud.dstack.api.pubsub.subscribe.ApiPubSubEventPostProcessor;
+import io.github.ibuildthecloud.dstack.api.pubsub.subscribe.MessageWriter;
+import io.github.ibuildthecloud.dstack.api.pubsub.subscribe.NonBlockingSubscriptionHandler;
 import io.github.ibuildthecloud.dstack.async.retry.RetryTimeoutService;
 import io.github.ibuildthecloud.dstack.eventing.EventService;
 import io.github.ibuildthecloud.dstack.json.JsonMapper;

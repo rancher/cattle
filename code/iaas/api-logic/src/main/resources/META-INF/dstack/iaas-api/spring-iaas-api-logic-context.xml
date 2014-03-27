@@ -96,7 +96,7 @@
     <bean class="io.github.ibuildthecloud.gdapi.doc.handler.DocumentationHandler" />
     <bean class="io.github.ibuildthecloud.dstack.schema.doc.DocumentationLoader" >
         <property name="resources">
-            <bean class="io.github.ibuildthecloud.spring.resource.SpringUrlListFactory" >
+            <bean class="io.github.ibuildthecloud.dstack.spring.resource.SpringUrlListFactory" >
                 <property name="resources">
                     <list>
                         <value>schema/base/documentation.json</value>
@@ -124,6 +124,6 @@
 
     <extension:discover class="io.github.ibuildthecloud.gdapi.factory.SchemaFactory"/>
     <extension:discover class="io.github.ibuildthecloud.dstack.iaas.api.auth.AuthorizationProvider"/>
-    <extension:discover class="io.github.ibuildthecloud.api.pubsub.subscribe.ApiPubSubEventPostProcessor"/>
+    <extension:discover class="io.github.ibuildthecloud.dstack.api.pubsub.subscribe.ApiPubSubEventPostProcessor"/>
 
 </beans>

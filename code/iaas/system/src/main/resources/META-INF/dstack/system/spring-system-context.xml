@@ -14,7 +14,7 @@
 
     <task:scheduler id="CoreTaskScheduler" pool-size="2" />
 
-    <bean id="ResourceLoader" class="io.github.ibuildthecloud.spring.resource.SpringResourceLoader" />
+    <bean id="ResourceLoader" class="io.github.ibuildthecloud.dstack.spring.resource.SpringResourceLoader" />
 
     <bean id="CoreJsonMapper" class="io.github.ibuildthecloud.dstack.json.JacksonJsonMapper" autowire="byType" />
 

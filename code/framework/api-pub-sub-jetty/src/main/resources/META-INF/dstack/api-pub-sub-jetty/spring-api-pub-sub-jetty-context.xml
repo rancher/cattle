@@ -11,7 +11,7 @@
         http://dstack.io/schemas/spring/extension http://dstack.io/schemas/spring/extension-1.0.xsd">
 
 
-    <bean id="JettyWebSocketSubcriptionHandler" class="io.github.ibuildthecloud.api.pubsub.manager.impl.ClassAvailableSubscriptionHandler" >
+    <bean id="JettyWebSocketSubcriptionHandler" class="io.github.ibuildthecloud.dstack.api.pubsub.manager.impl.ClassAvailableSubscriptionHandler" >
         <property name="executorService" ref="CoreExecutorService" />
         <property name="testClass" value="org.eclipse.jetty.websocket.WebSocketFactory" />
         <property name="className" value="io.github.ibuildthecloud.dstack.api.pubsub.subscribe.jetty.JettyWebSocketSubcriptionHandler" />

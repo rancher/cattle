@@ -12,31 +12,31 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-    <bean class="io.github.ibuildthecloud.agent.server.service.impl.AgentServiceImpl" >
+    <bean class="io.github.ibuildthecloud.dstack.agent.server.service.impl.AgentServiceImpl" >
         <property name="executorService" ref="CoreExecutorService" />
     </bean>
 
-    <bean class="io.github.ibuildthecloud.agent.server.eventing.impl.AgentEventListenerImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.agent.server.eventing.impl.AgentEventListenerImpl" />
 
-    <bean class="io.github.ibuildthecloud.agent.server.connection.impl.AgentConnectionManagerImpl" >
+    <bean class="io.github.ibuildthecloud.dstack.agent.server.connection.impl.AgentConnectionManagerImpl" >
         <property name="factories" value="#{extensionManager.list('agent.connection.factory')}" />
     </bean>
 
-    <bean class="io.github.ibuildthecloud.agent.server.group.impl.AgentGroupManagerImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.agent.server.group.impl.AgentGroupManagerImpl" />
 
-    <bean class="io.github.ibuildthecloud.agent.server.ping.dao.imp.PingDaoImpl" />
-    <bean class="io.github.ibuildthecloud.agent.server.ping.impl.PingMonitorImpl" />
-    <bean class="io.github.ibuildthecloud.agent.server.resource.impl.AgentResourcesMonitorImpl" >
+    <bean class="io.github.ibuildthecloud.dstack.agent.server.ping.dao.imp.PingDaoImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.agent.server.ping.impl.PingMonitorImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.agent.server.resource.impl.AgentResourcesMonitorImpl" >
         <property name="changeHandlers" value="#{extensionManager.list('agent.resource.change.handler')}" />
     </bean>
 
-    <bean id="HostChangeHandler" class="io.github.ibuildthecloud.agent.server.resource.impl.GenericTypeAgentResourceChangeHandler" >
+    <bean id="HostChangeHandler" class="io.github.ibuildthecloud.dstack.agent.server.resource.impl.GenericTypeAgentResourceChangeHandler" >
         <property name="priority">
             <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
         </property>
         <property name="type" value="host" />
     </bean>
-    <bean id="StoragePoolChangeHandler" class="io.github.ibuildthecloud.agent.server.resource.impl.MappedTypeAgentResourceChangeHandler" >
+    <bean id="StoragePoolChangeHandler" class="io.github.ibuildthecloud.dstack.agent.server.resource.impl.MappedTypeAgentResourceChangeHandler" >
         <property name="priority">
             <util:constant static-field="io.github.ibuildthecloud.dstack.util.type.Priority.DEFAULT"/>
         </property>
@@ -48,10 +48,10 @@
     </bean>
 
     <bean id="MappedResourceChangeHandlerDaoImpl" 
-        class="io.github.ibuildthecloud.agent.server.resource.dao.impl.MappedResourceChangeHandlerDaoImpl" />
+        class="io.github.ibuildthecloud.dstack.agent.server.resource.dao.impl.MappedResourceChangeHandlerDaoImpl" />
 
-    <extension:discover class="io.github.ibuildthecloud.agent.server.connection.AgentConnectionFactory" />
-    <extension:discover class="io.github.ibuildthecloud.agent.server.resource.AgentResourceChangeHandler" />
+    <extension:discover class="io.github.ibuildthecloud.dstack.agent.server.connection.AgentConnectionFactory" />
+    <extension:discover class="io.github.ibuildthecloud.dstack.agent.server.resource.AgentResourceChangeHandler" />
 
     <tx:advice id="MappedResourceChangeHandlerDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
@@ -61,7 +61,7 @@
 
     <aop:config>
         <aop:advisor advice-ref="MappedResourceChangeHandlerDaoImplAdvice" 
-            pointcut="execution(* io.github.ibuildthecloud.agent.server.resource.dao.MappedResourceChangeHandlerDao.*(..))" />
+            pointcut="execution(* io.github.ibuildthecloud.dstack.agent.server.resource.dao.MappedResourceChangeHandlerDao.*(..))" />
     </aop:config>
 
 </beans>

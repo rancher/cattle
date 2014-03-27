@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.iaas.api.change.impl;
 
-import io.github.ibuildthecloud.api.pubsub.subscribe.ApiPubSubEventPostProcessor;
+import io.github.ibuildthecloud.dstack.api.pubsub.subscribe.ApiPubSubEventPostProcessor;
 import io.github.ibuildthecloud.dstack.eventing.model.EventVO;
 import io.github.ibuildthecloud.dstack.iaas.event.IaasEvents;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;

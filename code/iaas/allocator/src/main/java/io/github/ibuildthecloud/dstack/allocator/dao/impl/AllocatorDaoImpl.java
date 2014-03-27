@@ -11,6 +11,7 @@ import static io.github.ibuildthecloud.dstack.core.model.tables.VolumeStoragePoo
 import io.github.ibuildthecloud.dstack.allocator.dao.AllocatorDao;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationAttempt;
 import io.github.ibuildthecloud.dstack.allocator.service.AllocationCandidate;
+import io.github.ibuildthecloud.dstack.allocator.util.AllocatorUtils;
 import io.github.ibuildthecloud.dstack.core.dao.GenericMapDao;
 import io.github.ibuildthecloud.dstack.core.model.Host;
 import io.github.ibuildthecloud.dstack.core.model.Instance;
@@ -29,8 +30,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
-
-import o.github.ibuildthecloud.dstack.allocator.util.AllocatorUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

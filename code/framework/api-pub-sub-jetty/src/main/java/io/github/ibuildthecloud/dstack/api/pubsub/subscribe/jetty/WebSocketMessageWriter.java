@@ -1,6 +1,6 @@
 package io.github.ibuildthecloud.dstack.api.pubsub.subscribe.jetty;
 
-import io.github.ibuildthecloud.api.pubsub.subscribe.MessageWriter;
+import io.github.ibuildthecloud.dstack.api.pubsub.subscribe.MessageWriter;
 
 import java.io.IOException;
 

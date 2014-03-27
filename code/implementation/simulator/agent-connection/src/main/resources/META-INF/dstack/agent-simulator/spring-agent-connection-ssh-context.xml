@@ -10,13 +10,13 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
         http://dstack.io/schemas/spring/extension http://dstack.io/schemas/spring/extension-1.0.xsd">
 
-    <bean class="io.github.ibuildthecloud.agent.connection.simulator.AgentConnectionSimulatorFactory" >
+    <bean class="io.github.ibuildthecloud.dstack.agent.connection.simulator.AgentConnectionSimulatorFactory" >
         <property name="processors" value="#{extensionManager.list('agent.simulator.event.processor')}" />
     </bean>
 
-    <extension:discover class="io.github.ibuildthecloud.agent.connection.simulator.AgentSimulatorEventProcessor"/>
+    <extension:discover class="io.github.ibuildthecloud.dstack.agent.connection.simulator.AgentSimulatorEventProcessor"/>
 
-    <bean class="io.github.ibuildthecloud.agent.connection.simulator.impl.SimulatorConfigUpdateProcessor" />
-    <bean class="io.github.ibuildthecloud.agent.connection.simulator.impl.SimulatorPingProcessor" />
-    <bean class="io.github.ibuildthecloud.agent.connection.simulator.impl.SimulatorFailedProcessor" />
+    <bean class="io.github.ibuildthecloud.dstack.agent.connection.simulator.impl.SimulatorConfigUpdateProcessor" />
+    <bean class="io.github.ibuildthecloud.dstack.agent.connection.simulator.impl.SimulatorPingProcessor" />
+    <bean class="io.github.ibuildthecloud.dstack.agent.connection.simulator.impl.SimulatorFailedProcessor" />
 </beans>

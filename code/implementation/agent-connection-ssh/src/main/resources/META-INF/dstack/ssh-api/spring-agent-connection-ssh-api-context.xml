@@ -8,13 +8,13 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <bean class="io.github.ibuildthecloud.agent.connection.ssh.dao.impl.SshAgentDaoImpl" />
-    <bean class="io.github.ibuildthecloud.agent.connection.ssh.api.manager.AuthorizedManager" />
+    <bean class="io.github.ibuildthecloud.dstack.agent.connection.ssh.dao.impl.SshAgentDaoImpl" />
+    <bean class="io.github.ibuildthecloud.dstack.agent.connection.ssh.api.manager.AuthorizedManager" />
 
     <bean id="SshApiTypes" class="io.github.ibuildthecloud.dstack.object.meta.TypeSet" >
         <property name="typeClasses">
             <list>
-                <value>io.github.ibuildthecloud.agent.connection.ssh.api.model.Authorized</value>
+                <value>io.github.ibuildthecloud.dstack.agent.connection.ssh.api.model.Authorized</value>
             </list>
         </property>
     </bean>

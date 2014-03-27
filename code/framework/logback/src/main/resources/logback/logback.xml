@@ -152,7 +152,7 @@
         <level value="${rootLevel}" />
     </logger>
 
-    <logger name="io.github.ibuildthecloud.agent.connection.ssh.connection.EofClosingTcpipServerChannel" >
+    <logger name="io.github.ibuildthecloud.dstack.agent.connection.ssh.connection.EofClosingTcpipServerChannel" >
         <level value="${otherLevel}" />
     </logger>
 
