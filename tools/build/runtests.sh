@@ -1,12 +1,6 @@
 #!/bin/bash
 set -e -x
 
-if [ -z "$TEST_INCEPTION" ]; then
-    # Work around issue https://github.com/dotcloud/docker/issues/4854
-    export TEST_INCEPTION=true
-    $0 "$@"
-fi
-
 trap cleanup EXIT
 
 BASE_DIR=$(dirname $(readlink -f $0))
