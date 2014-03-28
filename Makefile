@@ -2,6 +2,9 @@
 build: build-env
 	./tools/docker/build.sh mvn install
 
+run: build
+	./tools/docker/build.sh run
+
 build-env:
 	cd ./tools/docker && \
 	docker build -t cattle-buildenv .
@@ -13,17 +16,16 @@ clean: build-env
 	./tools/docker/build.sh find -depth -name __pycache__ -type d -exec rm -rf {} \;
 	./tools/docker/build.sh find -depth -name .tox -type d -exec rm -rf {} \;
 	./tools/docker/build.sh mvn clean
-	./tools/docker/build.sh rm -rf runtime
+	./tools/docker/build.sh rm -rf runtime dist
 
 test: build
 	FORCE_DB=h2 ./tools/docker/build.sh ./tools/build/runtests.sh
 
-bundle: clean
+bundle:
 	./tools/docker/build.sh mvn -Drelease clean package
 
-release-docker-clean:
-	./tools/build/checkin-test.sh release
+images: bundle
+	./dist/package.sh
 
-release-docker: bundle
-	cd ./dist && \
-	docker build -t cattle .
+images-clean:
+	./tools/build/checkin-test.sh images

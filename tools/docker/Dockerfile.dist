@@ -1,7 +1,0 @@
-FROM ibuildthecloud/ubuntu-core-base:13.10
-RUN apt-get update && apt-get install -y --no-install-recommends openjdk-7-jre-headless
-RUN apt-get update && apt-get install -y curl
-ADD artifacts /var/lib/cattle
-RUN CATTLE_SSH_KEYGEN_ON_STARTUP=false /var/lib/cattle/cattle.sh --exit
-CMD ["/var/lib/cattle/cattle.sh"]
-EXPOSE 8080

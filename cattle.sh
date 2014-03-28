@@ -47,17 +47,16 @@ build()
     else
         mvn "$@"
     fi
-    mkdir -p dist/artifacts
+    mkdir -p dist/server/artifacts
     if [ -e code/packaging/app/target/*.war ]; then
-        cp code/packaging/app/target/*.war dist/artifacts/cattle.jar
+        cp code/packaging/app/target/*.war dist/server/artifacts/cattle.jar
     fi
     if [ -e code/packaging/bundle/target/cattle-bundle*.jar ]; then
         if [ code/packaging/bundle/target/cattle-bundle*.jar -nt code/packaging/app/target/*.war ]; then
-            cp code/packaging/bundle/target/cattle-bundle*.jar dist/artifacts/cattle.jar
+            cp code/packaging/bundle/target/cattle-bundle*.jar dist/server/artifacts/cattle.jar
         fi
     fi
-    cp tools/docker/wrapper.sh dist/artifacts/cattle.sh
-    cp tools/docker/Dockerfile.dist dist/Dockerfile
+    tar cv -C tools/docker/package . | tar xf - -C dist
 }
 
 if [ "$#" = "0" ]; then

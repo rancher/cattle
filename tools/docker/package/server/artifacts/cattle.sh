@@ -3,7 +3,7 @@ set -e
 
 cd /var/lib/cattle
 
-JAR=cattle.jar
+JAR=/usr/share/cattle/cattle.jar
 
 if [ "$URL" != "" ]
 then
