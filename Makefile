@@ -1,6 +1,7 @@
+MVN=install
 
 build: build-env
-	./tools/docker/build.sh mvn install
+	./tools/docker/build.sh mvn ${MVN}
 
 run: build
 	./tools/docker/build.sh run
@@ -16,7 +17,7 @@ clean: build-env
 	./tools/docker/build.sh find -depth -name __pycache__ -type d -exec rm -rf {} \;
 	./tools/docker/build.sh find -depth -name .tox -type d -exec rm -rf {} \;
 	./tools/docker/build.sh mvn clean
-	./tools/docker/build.sh rm -rf runtime dist
+	./tools/docker/build.sh rm -rf dist
 
 test: build
 	FORCE_DB=h2 ./tools/docker/build.sh ./tools/build/runtests.sh
