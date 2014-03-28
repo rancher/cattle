@@ -1,12 +1,12 @@
 from docker import Client, APIError
 
-# TODO dstack.plugins.load_plugins() somehow make dstack.plugin.* modules
+# TODO cattle.plugins.load_plugins() somehow make cattle.plugin.* modules
 # unavailable, importing it first
-import dstack.plugins.docker  # NOQA
+import cattle.plugins.docker  # NOQA
 
 from .common_fixtures import *  # NOQA
 import pytest
-from dstack import CONFIG_OVERRIDE, Config
+from cattle import CONFIG_OVERRIDE, Config
 
 
 if_docker = pytest.mark.skipif('os.environ.get("DOCKER_TEST") != "true"',

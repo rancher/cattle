@@ -1,11 +1,11 @@
 from distutils.core import setup
 
 setup(
-    name='dStackIntegrationTests',
+    name='CattleIntegrationTests',
     version='0.1',
     packages=[
-      'dstacktest',
-      'dstacktest.core',
+      'cattletest',
+      'cattletest.core',
     ],
     license='ASL 2.0',
     long_description=open('README.txt').read(),

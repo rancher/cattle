@@ -27,16 +27,16 @@ terminate()
 setup()
 {
     mkdir -p /root/.ssh
-    mkdir -p /mnt/dstack
-    mkdir -p /mnt/dstack-src
-    ln -s /mnt/dstack /var/lib
-    ln -s /mnt/dstack-src /usr/src/dstack
-    cd /usr/src/dstack
+    mkdir -p /mnt/cattle
+    mkdir -p /mnt/cattle-src
+    ln -s /mnt/cattle /var/lib
+    ln -s /mnt/cattle-src /usr/src/cattle
+    cd /usr/src/cattle
     add-apt-repository -y ppa:fkrull/deadsnakes
 
     apt-get update
     apt-get install git
-    git clone https://github.com/ibuildthecloud/dstack.git .
+    git clone https://github.com/cattleio/cattle.git .
 
     echo '$(<key.pub)' > /root/.ssh/authorized_keys
     curl -sL https://get.docker.io/ | sh

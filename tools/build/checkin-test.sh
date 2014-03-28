@@ -21,9 +21,9 @@ rsync -av --exclude '*.log' --exclude '*.gz' --delete . ${CHECK_DIR}/
 cd $CHECK_DIR
 
 find -depth -type d -name __pycache__ -exec rm -rf {} \;
-if [ -e resources/content/dstack-local.properties ]
+if [ -e resources/content/cattle-local.properties ]
 then
-    rm resources/content/dstack-local.properties
+    rm resources/content/cattle-local.properties
 fi
 
 find . -depth -type d -name .tox -exec rm -rf {} \;

@@ -6,18 +6,18 @@ import shutil
 import stat
 from uuid import uuid4
 
-from dstack.plugins.core.marshaller import JsonObject
-from dstack.progress import LogProgress
-from dstack import utils
+from cattle.plugins.core.marshaller import JsonObject
+from cattle.progress import LogProgress
+from cattle import utils
 
 
 if_libvirt = pytest.mark.skipif('os.environ.get("LIBVIRT_TEST") != "true"',
                                 reason='LIBVIRT_TEST is not set')
 
-from dstack.plugins.libvirt import enabled
+from cattle.plugins.libvirt import enabled
 if enabled():
-    from dstack.plugins.libvirt_qemu_volume import Qcow2ImageDriver
-    from dstack.plugins.libvirt_directory_pool import DirectoryPoolDriver
+    from cattle.plugins.libvirt_qemu_volume import Qcow2ImageDriver
+    from cattle.plugins.libvirt_directory_pool import DirectoryPoolDriver
 
 
 QCOW_TEST_FILE = os.path.join(TEST_DIR, 'libvirt/qcow2.img')

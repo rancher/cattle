@@ -15,4 +15,4 @@ if [ ! -e nsenter ]; then
     fi
 fi
 
-docker build -t ibuildthecloud/agent .
+docker build -t cattle/agent .

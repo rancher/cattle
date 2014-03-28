@@ -1,12 +1,12 @@
 Deployment Architecture
 =======================
 
-dStack can be deployed in many configurations to match the scale and needs of the deployed cloud.  The smallest configuration is a single process and the largest is a fully distributed set process with external system services such as MySQL, Redis, and Apache ZooKeeper.
+Cattle can be deployed in many configurations to match the scale and needs of the deployed cloud.  The smallest configuration is a single process and the largest is a fully distributed set process with external system services such as MySQL, Redis, and Apache ZooKeeper.
 
 Server Profiles
 ***************
 
-dStack is distributed as a single jar file.  All the code needed to run dStack is in that single file.  When the JVM is launched you can specify a server profile that with determine if the JVM will run as all servers or specific one.  For example, if you run with :option:`-Dserver.profile=api-server` the JVM will only run as an API server.  Additionally, based on configuration you can tell dStack which system services to use such as Hazelcast or Apache ZooKeeper for locking.
+Cattle is distributed as a single jar file.  All the code needed to run Cattle is in that single file.  When the JVM is launched you can specify a server profile that with determine if the JVM will run as all servers or specific one.  For example, if you run with :option:`-Dserver.profile=api-server` the JVM will only run as an API server.  Additionally, based on configuration you can tell Cattle which system services to use such as Hazelcast or Apache ZooKeeper for locking.
 
 Reconfiguring Environment
 ***********************************

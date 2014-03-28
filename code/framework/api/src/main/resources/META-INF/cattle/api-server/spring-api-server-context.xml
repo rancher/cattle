@@ -1,0 +1,70 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:extension="http://cattle.io/schemas/spring/extension"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd">
+
+    <bean id="Versions" class="io.github.ibuildthecloud.gdapi.version.Versions" >
+        <property name="versions">
+            <list>
+                <value type="java.lang.String">v1</value>
+            </list>
+        </property>
+        <property name="latest" value="v1" />
+    </bean>
+
+    <bean class="io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate" >
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="handlers" value="#{extensionManager.list('api.request.handler')}" />
+        <property name="version">
+            <bean factory-bean="Versions" factory-method="getLatest" />
+        </property>
+        <property name="idFormatter" value="#{extensionManager.first('id.formatter', 'io.github.ibuildthecloud.gdapi.id.IdFormatter')}" />
+    </bean>
+
+    <bean id="DefaultIdFormatter" class="io.cattle.platform.api.formatter.DefaultIdFormatter" >
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="plainTypes">
+            <set>
+                <value>typeDocumentation</value>
+            </set>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.api.resource.ExtensionResourceManagerLocator" >
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="defaultResourceManager" ref="DefaultResourceManager" />
+        <property name="resourceManagers" value="#{extensionManager.list('resource.manager')}" />
+        <property name="resourceManagerFilters" value="#{extensionManager.list('resource.manager.filter')}" />
+    </bean>
+
+    <bean id="DefaultResourceManager" class="io.cattle.platform.api.resource.jooq.DefaultJooqResourceManager" />
+
+    <bean class="io.cattle.platform.api.html.ConfigBasedHtmlTemplate" >
+        <property name="settings">
+            <bean class="io.cattle.platform.api.utils.ApiSettings" />
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.api.parser.ApiRequestParser" />
+    <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
+
+    <!-- This is here only to ensure that there are two SchemaFactories in the context
+         to make autowiring fail -->
+    <bean class="io.github.ibuildthecloud.gdapi.factory.impl.SubSchemaFactory" >
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="id" value="noop" />
+    </bean>
+
+    <extension:discover class="io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler" />
+    <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerFilter" />
+    <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManager" />
+    <extension:discover class="io.cattle.platform.api.action.ActionHandler" />
+
+</beans>

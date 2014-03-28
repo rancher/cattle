@@ -18,7 +18,7 @@ The super short instructions for installing boot2docker on OS X are:
 Log into boot2docker
 ********************
 
-Log into boot2docker with :command:`boot2docker ssh -L 8080:localhost:8080`.  This will forward port 8080 from your laptop/desktop to the VirtualBox VM.  boot2docker does not handle setting up port forwards, so adding :command:`-L 8080:localhost:8080` is essential if you wish to access the API/UI of dStack.
+Log into boot2docker with :command:`boot2docker ssh -L 8080:localhost:8080`.  This will forward port 8080 from your laptop/desktop to the VirtualBox VM.  boot2docker does not handle setting up port forwards, so adding :command:`-L 8080:localhost:8080` is essential if you wish to access the API/UI of Cattle.
 
 .. code-block:: bash
 
@@ -26,12 +26,12 @@ Log into boot2docker with :command:`boot2docker ssh -L 8080:localhost:8080`.  Th
 
 **The password is tcuser**
 
-Start dStack
+Start Cattle
 ************
 
 .. code-block:: bash
 
-    docker run -d -p 8080:8080 ibuildthecloud/dstack
+    docker run -d -p 8080:8080 cattle/cattle
 
 Setup SSH Keys
 **************

@@ -2,9 +2,9 @@
 
 cd $(dirname $0)
 
-if [ "$DSTACK_DB_DSTACK_DATABASE" = "postgres" ]
+if [ "$CATTLE_DB_CATTLE_DATABASE" = "postgres" ]
 then
-    echo Creating dstack database and user
-    psql -U postgres -c "CREATE USER dstack SUPERUSER PASSWORD 'dstack'"
-    psql -U postgres -c "CREATE DATABASE dstack"
+    echo Creating cattle database and user
+    psql -U postgres -c "CREATE USER cattle SUPERUSER PASSWORD 'cattle'"
+    psql -U postgres -c "CREATE DATABASE cattle"
 fi

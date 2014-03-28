@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-framework-eventing</artifactId>
+    <artifactId>cattle-framework-eventing</artifactId>
     <parent>
-        <groupId>io.github.ibuildthecloud</groupId>
-        <artifactId>dstack-parent</artifactId>
+        <groupId>io.cattle</groupId>
+        <artifactId>cattle-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
@@ -15,42 +15,42 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-json</artifactId>
+            <artifactId>cattle-framework-json</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-utils</artifactId>
+            <artifactId>cattle-framework-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-archaius</artifactId>
+            <artifactId>cattle-framework-archaius</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-pool</artifactId>
+            <artifactId>cattle-framework-pool</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-async</artifactId>
+            <artifactId>cattle-framework-async</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-lock</artifactId>
+            <artifactId>cattle-framework-lock</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-managed-context</artifactId>
+            <artifactId>cattle-framework-managed-context</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-metrics</artifactId>
+            <artifactId>cattle-framework-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

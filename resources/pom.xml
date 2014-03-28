@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-resources</artifactId>
+    <artifactId>cattle-resources</artifactId>
     <parent>
-        <artifactId>dstack-parent</artifactId>
-        <groupId>io.github.ibuildthecloud</groupId>
+        <artifactId>cattle-parent</artifactId>
+        <groupId>io.cattle</groupId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../code/parent/pom.xml</relativePath>
     </parent>
@@ -13,7 +13,7 @@
             <resource>
                 <directory>content</directory>
                 <excludes>
-                    <exclude>db/mysql/dstack_dump*sql</exclude>
+                    <exclude>db/mysql/cattle_dump*sql</exclude>
                 </excludes>
             </resource>
         </resources>

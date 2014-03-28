@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-bundle</artifactId>
+    <artifactId>cattle-bundle</artifactId>
     <parent>
-        <artifactId>dstack-parent</artifactId>
-        <groupId>io.github.ibuildthecloud</groupId>
+        <artifactId>cattle-parent</artifactId>
+        <groupId>io.cattle</groupId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
@@ -23,7 +23,7 @@
                     <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
                     <archive>
                         <manifest>
-                            <mainClass>io.github.ibuildthecloud.dstack.packaging.Bootstrap</mainClass>
+                            <mainClass>io.cattle.platform.packaging.Bootstrap</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Implementation-Version>${project.version}</Implementation-Version>
@@ -46,12 +46,12 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>${project.groupId}</groupId>
-                                    <artifactId>dstack-app</artifactId>
+                                    <artifactId>cattle-app</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
-                                    <destFileName>dstack.war</destFileName>
+                                    <destFileName>cattle.war</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -72,9 +72,9 @@
                 </executions>
                 <configuration>
                     <includeProjectDependencies>true</includeProjectDependencies>
-                    <mainClass>io.github.ibuildthecloud.dstack.packaging.Compress</mainClass>
+                    <mainClass>io.cattle.platform.packaging.Compress</mainClass>
                     <arguments>
-                        <argument>${project.build.directory}/dstack.war</argument>
+                        <argument>${project.build.directory}/cattle.war</argument>
                         <argument>${project.build.directory}/classes</argument>
                     </arguments>
                 </configuration>

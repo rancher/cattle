@@ -1,33 +1,33 @@
 #!/bin/bash
 set -e
 
-cd /var/lib/dstack
+cd /var/lib/cattle
 
-JAR=dstack.jar
+JAR=cattle.jar
 
 if [ "$URL" != "" ]
 then
     echo Downloading $URL
-    curl -s $URL > dstack-download.jar
-    JAR=dstack-download.jar
+    curl -s $URL > cattle-download.jar
+    JAR=cattle-download.jar
 fi
 
 setup_gelf()
 {
     # Setup GELF
-    export DSTACK_LOGBACK_OUTPUT_GELF_HOST=${DSTACK_LOGBACK_OUTPUT_GELF_HOST:-$GELF_PORT_12201_UDP_ADDR}
-    export DSTACK_LOGBACK_OUTPUT_GELF_PORT=${DSTACK_LOGBACK_OUTPUT_GELF_PORT:-$GELF_PORT_12201_UDP_PORT}
-    if [ -n "$DSTACK_LOGBACK_OUTPUT_GELF_HOST" ]; then
-        export DSTACK_LOGBACK_OUTPUT_GELF=${DSTACK_LOGBACK_OUTPUT_GELF:-true}
+    export CATTLE_LOGBACK_OUTPUT_GELF_HOST=${CATTLE_LOGBACK_OUTPUT_GELF_HOST:-$GELF_PORT_12201_UDP_ADDR}
+    export CATTLE_LOGBACK_OUTPUT_GELF_PORT=${CATTLE_LOGBACK_OUTPUT_GELF_PORT:-$GELF_PORT_12201_UDP_PORT}
+    if [ -n "$CATTLE_LOGBACK_OUTPUT_GELF_HOST" ]; then
+        export CATTLE_LOGBACK_OUTPUT_GELF=${CATTLE_LOGBACK_OUTPUT_GELF:-true}
     fi
 }
 
 setup_mysql()
 {
-    export DSTACK_DB_DSTACK_MYSQL_HOST=${DSTACK_DB_DSTACK_MYSQL_HOST:-$MYSQL_PORT_3306_TCP_ADDR}
-    export DSTACK_DB_DSTACK_MYSQL_PORT=${DSTACK_DB_DSTACK_MYSQL_PORT:-$MYSQL_PORT_3306_TCP_PORT}
-    if [ -n "$DSTACK_DB_DSTACK_MYSQL_HOST" ]; then
-        export DSTACK_DB_DSTACK_DATABASE=${DSTACK_DB_DSTACK_DATABASE:-mysql}
+    export CATTLE_DB_CATTLE_MYSQL_HOST=${CATTLE_DB_CATTLE_MYSQL_HOST:-$MYSQL_PORT_3306_TCP_ADDR}
+    export CATTLE_DB_CATTLE_MYSQL_PORT=${CATTLE_DB_CATTLE_MYSQL_PORT:-$MYSQL_PORT_3306_TCP_PORT}
+    if [ -n "$CATTLE_DB_CATTLE_MYSQL_HOST" ]; then
+        export CATTLE_DB_CATTLE_DATABASE=${CATTLE_DB_CATTLE_DATABASE:-mysql}
     fi
 }
 
@@ -49,11 +49,11 @@ setup_redis()
     done
 
     if [ -n "$hosts" ]; then
-        export DSTACK_REDIS_HOSTS=${DSTACK_REDIS_HOSTS:-$hosts}
+        export CATTLE_REDIS_HOSTS=${CATTLE_REDIS_HOSTS:-$hosts}
     fi
 
-    if [ -n "$DSTACK_REDIS_HOSTS" ]; then
-        export DSTACK_MODULE_PROFILE_REDIS=true
+    if [ -n "$CATTLE_REDIS_HOSTS" ]; then
+        export CATTLE_MODULE_PROFILE_REDIS=true
     fi
 }
 
@@ -75,11 +75,11 @@ setup_zk()
     done
 
     if [ -n "$hosts" ]; then
-        export DSTACK_ZOOKEEPER_CONNECTION_STRING=${DSTACK_ZOOKEEPER_CONNECTION_STRING:-$hosts}
+        export CATTLE_ZOOKEEPER_CONNECTION_STRING=${CATTLE_ZOOKEEPER_CONNECTION_STRING:-$hosts}
     fi
 
-    if [ -n "$DSTACK_ZOOKEEPER_CONNECTION_STRING" ]; then
-        export DSTACK_MODULE_PROFILE_ZOOKEEPER=true
+    if [ -n "$CATTLE_ZOOKEEPER_CONNECTION_STRING" ]; then
+        export CATTLE_MODULE_PROFILE_ZOOKEEPER=true
     fi
 }
 
@@ -88,6 +88,6 @@ setup_mysql
 setup_redis
 setup_zk
 
-env | grep DSTACK | grep -v PASS | sort
+env | grep CATTLE | grep -v PASS | sort
 
 exec java ${JAVA_OPTS:--Xmx256m} -jar $JAR "$@" $ARGS

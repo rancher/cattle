@@ -44,7 +44,7 @@
                         "dockerImage": {
                             "fullName": "ibuildthecloud/helloworld:latest",
                             "id": "0654b1f8af8d7e7c4a6f27b7b0538211cb57a4ec62bfd7e022ec6f21171454c1",
-                            "namespace": "ibuildthecloud",
+                            "namespace": "cattle",
                             "qualifiedName": "ibuildthecloud/helloworld",
                             "repository": "helloworld",
                             "tag": "latest"

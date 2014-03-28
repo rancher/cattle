@@ -1,17 +1,17 @@
 from .common_fixtures import *  # NOQA
-from dstack import CONFIG_OVERRIDE
-from dstack.progress import LogProgress
+from cattle import CONFIG_OVERRIDE
+from cattle.progress import LogProgress
 from .test_libvirt_storage import if_libvirt, fake_image
 from .test_libvirt_storage import fake_pool, fake_volume
 from .test_libvirt_storage import random_qcow2, random_qcow2_bz2  # NOQA
 from .test_libvirt_storage import random_qcow2_gz, pool_dir  # NOQA
-from dstack.plugins.libvirt import enabled
+from cattle.plugins.libvirt import enabled
 
 
 if enabled():
     import libvirt
-    from dstack.plugins.libvirt_directory_pool import DirectoryPoolDriver
-    from dstack.plugins.libvirt.utils import get_preferred_libvirt_type
+    from cattle.plugins.libvirt_directory_pool import DirectoryPoolDriver
+    from cattle.plugins.libvirt.utils import get_preferred_libvirt_type
     CONFIG_OVERRIDE['HOME'] = SCRATCH_DIR
 
 

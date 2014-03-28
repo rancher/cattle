@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from . import common_fixtures  # NOQA
-from dstack.agent.event import EventClient
+from cattle.agent.event import EventClient
 
 
 def run_agent_connect():

@@ -10,9 +10,9 @@ sys.path.insert(0, dirname(dirname(_file)))
 import tests
 import shutil
 from .response_holder import ResponseHolder
-from dstack import type_manager, plugins
-from dstack.agent import Agent
-from dstack.utils import JsonObject
+from cattle import type_manager, plugins
+from cattle.agent import Agent
+from cattle.utils import JsonObject
 
 
 plugins.load()

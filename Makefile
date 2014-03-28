@@ -4,7 +4,7 @@ build: build-env
 
 build-env:
 	cd ./tools/docker && \
-	docker build -t dstack-buildenv .
+	docker build -t cattle-buildenv .
 
 enter: build-env
 	./tools/docker/build.sh bash
@@ -26,4 +26,4 @@ release-docker-clean:
 
 release-docker: bundle
 	cd ./dist && \
-	docker build -t dstack .
+	docker build -t cattle .

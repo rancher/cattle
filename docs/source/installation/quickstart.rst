@@ -23,7 +23,7 @@ Should take about 5-10 seconds to start.  Open your browser to http://localhost:
 Hypervisor
 ^^^^^^^^^^
 
-The default hypervisors supported by dStack are docker and KVM (really libvirt).
+The default hypervisors supported by Cattle are docker and KVM (really libvirt).
 
 Ubuntu 12.04+
 -------------

@@ -46,5 +46,5 @@ export DOCKER_AGENT_UUID=ec2-host1
 export LIBVIRT_AGENT_UUID=ec2-host1
 EOF
 
-rsync -az --delete -e "ssh $SSH_ARGS" ../../../ $DNS:/usr/src/dstack
-ssh $SSH_ARGS $DNS -- /usr/src/dstack/tools/build/runtests-agent.sh
+rsync -az --delete -e "ssh $SSH_ARGS" ../../../ $DNS:/usr/src/cattle
+ssh $SSH_ARGS $DNS -- /usr/src/cattle/tools/build/runtests-agent.sh

@@ -5,11 +5,11 @@ Installation on CoreOS is pretty straight forward.  You will basically will foll
 
 Run in Docker
 *************
-The key things to note is that you must run dStack in Docker, you're not going to install Java is CoreOS.  Specifically, you are going to be starting the dStack management server as follows
+The key things to note is that you must run Cattle in Docker, you're not going to install Java is CoreOS.  Specifically, you are going to be starting the Cattle management server as follows
 
 .. code-block:: bash
 
-    docker run -d -p 8080:8080 ibuildthecloud/dstack
+    docker run -d -p 8080:8080 cattle/cattle
 
 Adding a Server
 ***************
@@ -19,10 +19,10 @@ Don't put the SSH key in /home/core/.ssh/authorized_keys because that file may l
 
 .. code-block:: bash
 
-    curl -s http://<HOST:PORT>/v1/authorized_keys | update-ssh-keys -A dstack
+    curl -s http://<HOST:PORT>/v1/authorized_keys | update-ssh-keys -A cattle
     curl -X POST http://<HOST:PORT>/v1/agents -F user=core
 
 Fleet
 *****
 
-Instructions for running dStack using fleet are on their way...
+Instructions for running Cattle using fleet are on their way...

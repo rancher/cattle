@@ -1,9 +1,9 @@
 <included>
-    <define name="gelfHost" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+    <define name="gelfHost" class="io.cattle.platform.logback.ArchaiusProperty" >
         <name>logback.output.gelf.host</name>
     </define>
 
-    <define name="gelfPort" class="io.github.ibuildthecloud.dstack.logback.ArchaiusProperty" >
+    <define name="gelfPort" class="io.cattle.platform.logback.ArchaiusProperty" >
         <name>logback.output.gelf.port</name>
     </define>
 
@@ -11,7 +11,7 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${aggregationLevel}</level>
         </filter>
-        <facility>dstack</facility>
+        <facility>cattle</facility>
         <graylog2ServerHost>${gelfHost}</graylog2ServerHost>
         <graylog2ServerPort>${gelfPort}</graylog2ServerPort>
         <useLoggerName>true</useLoggerName>

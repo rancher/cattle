@@ -37,19 +37,19 @@ public class CloudStackContextLoaderListener extends ContextLoaderListener {
     
     private static final Logger log = LoggerFactory.getLogger(CloudStackContextLoaderListener.class);
     
-    CloudStackSpringContext cloudStackContext;
+    CloudStackSpringContext clouCattleContext;
     String configuredParentName;
     
     @Override
     protected ApplicationContext loadParentContext(ServletContext servletContext) {
-        return cloudStackContext.getApplicationContextForWeb(configuredParentName);
+        return clouCattleContext.getApplicationContextForWeb(configuredParentName);
     }
 
     @Override
     public void contextInitialized(ServletContextEvent event) {
         try {
-            cloudStackContext = constructCloudStackSpringContext(event);
-            event.getServletContext().setAttribute(CloudStackSpringContext.CLOUDSTACK_CONTEXT_SERVLET_KEY, cloudStackContext);
+            clouCattleContext = constructCloudStackSpringContext(event);
+            event.getServletContext().setAttribute(CloudStackSpringContext.CLOUCATTLE_CONTEXT_SERVLET_KEY, clouCattleContext);
         } catch (IOException e) {
             log.error("Failed to start CloudStack", e);
             throw new RuntimeException("Failed to initialize CloudStack Spring modules", e);
@@ -73,7 +73,7 @@ public class CloudStackContextLoaderListener extends ContextLoaderListener {
 
         if ( applicationContext.getParent() != null ) {
             /* Only set resource locations if a parent exists */
-            String[] newLocations = cloudStackContext.getConfigLocationsForWeb(configuredParentName, 
+            String[] newLocations = clouCattleContext.getConfigLocationsForWeb(configuredParentName, 
                     applicationContext.getConfigLocations());
 
             applicationContext.setConfigLocations(newLocations);

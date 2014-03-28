@@ -1,4 +1,4 @@
-from dstack import type_manager
+from cattle import type_manager
 
 
 class ResponseHolder:

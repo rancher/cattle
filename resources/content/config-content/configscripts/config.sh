@@ -5,11 +5,11 @@ trap cleanup EXIT
 
 source $(dirname $0)/common/scripts.sh
 
-LOCK=$DSTACK_HOME/config.lock
-DOWNLOAD=$DSTACK_HOME/download
+LOCK=$CATTLE_HOME/config.lock
+DOWNLOAD=$CATTLE_HOME/download
 
-URL=$DSTACK_CONFIG_URL
-AUTH=${DSTACK_ACCESS_KEY}:${DSTACK_SECRET_KEY}
+URL=$CATTLE_CONFIG_URL
+AUTH=${CATTLE_ACCESS_KEY}:${CATTLE_SECRET_KEY}
 URL_SUFFIX=/configcontent/
 DOWNLOAD_TEMP=$(mktemp -d ${DOWNLOAD}.XXXXXXX) 
 
@@ -86,7 +86,7 @@ dump()
     find $1
 }
 
-mkdir -p $DSTACK_HOME
+mkdir -p $CATTLE_HOME
 mkdir -p $DOWNLOAD
 
 lock

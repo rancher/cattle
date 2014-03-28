@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-app</artifactId>
+    <artifactId>cattle-app</artifactId>
     <parent>
-        <artifactId>dstack-parent</artifactId>
-        <groupId>io.github.ibuildthecloud</groupId>
+        <artifactId>cattle-parent</artifactId>
+        <groupId>io.cattle</groupId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
@@ -12,54 +12,54 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-jmx</artifactId>
+            <artifactId>cattle-framework-jmx</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-eventing-redis</artifactId>
+            <artifactId>cattle-eventing-redis</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-docker-storage</artifactId>
+            <artifactId>cattle-docker-storage</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-docker-allocator</artifactId>
+            <artifactId>cattle-docker-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-simulator-agent-connection</artifactId>
+            <artifactId>cattle-simulator-agent-connection</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-simulator-storage</artifactId>
+            <artifactId>cattle-simulator-storage</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-simulator-allocator</artifactId>
+            <artifactId>cattle-simulator-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-launcher</artifactId>
+            <artifactId>cattle-framework-launcher</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-db-loader</artifactId>
+            <artifactId>cattle-framework-db-loader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-meta</artifactId>
+            <artifactId>cattle-meta</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -123,7 +123,7 @@
                         </goals>
                         <configuration>
                             <includeGroupIds>${project.groupId}</includeGroupIds>
-                            <includeArtifactIds>dstack-launcher</includeArtifactIds>
+                            <includeArtifactIds>cattle-launcher</includeArtifactIds>
                             <scope>provided</scope>
                             <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/jetty</outputDirectory>
                         </configuration>
@@ -136,7 +136,7 @@
                         </goals>
                         <configuration>
                             <includeGroupIds>${project.groupId}</includeGroupIds>
-                            <includeArtifactIds>dstack-framework-launcher</includeArtifactIds>
+                            <includeArtifactIds>cattle-framework-launcher</includeArtifactIds>
                             <includes>**/*.class</includes>
                             <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
                         </configuration>
@@ -149,7 +149,7 @@
                     <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
                     <archive>
                         <manifest>
-                            <mainClass>io.github.ibuildthecloud.dstack.launcher.Main</mainClass>
+                            <mainClass>io.cattle.platform.launcher.Main</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Implementation-Version>${project.version}</Implementation-Version>
@@ -206,7 +206,7 @@
             <dependencies>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>dstack-dev</artifactId>
+                    <artifactId>cattle-dev</artifactId>
                     <version>${project.version}</version>
                 </dependency>
             </dependencies>

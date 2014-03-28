@@ -26,9 +26,9 @@
     <bean id="ModuleProperties" class="org.apache.cloudstack.spring.module.factory.QuietLoaderFactory" >
         <property name="resources">
             <list>
-                <value>classpath:dstack-global.properties</value>
-                <value>classpath:dstack.properties</value>
-                <value>classpath:dstack-local.properties</value>
+                <value>classpath:cattle-global.properties</value>
+                <value>classpath:cattle.properties</value>
+                <value>classpath:cattle-local.properties</value>
             </list>
         </property>
     </bean>

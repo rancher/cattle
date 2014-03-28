@@ -1,27 +1,27 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-framework-api</artifactId>
+    <artifactId>cattle-framework-api</artifactId>
     <parent>
-        <artifactId>dstack-parent</artifactId>
-        <groupId>io.github.ibuildthecloud</groupId>
+        <artifactId>cattle-parent</artifactId>
+        <groupId>io.cattle</groupId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-object</artifactId>
+            <artifactId>cattle-framework-object</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-metrics</artifactId>
+            <artifactId>cattle-framework-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-events</artifactId>
+            <artifactId>cattle-framework-events</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -34,7 +34,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-spring-module</artifactId>
+            <artifactId>cattle-framework-spring-module</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
@@ -46,7 +46,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-jooq</artifactId>
+            <artifactId>cattle-framework-jooq</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>

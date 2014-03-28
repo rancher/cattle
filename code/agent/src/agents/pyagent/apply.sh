@@ -13,9 +13,9 @@ cleanup()
     fi
 }
 
-source ${DSTACK_HOME:-/var/lib/dstack}/common/scripts.sh
+source ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
-DEST=$DSTACK_HOME/pyagent
+DEST=$CATTLE_HOME/pyagent
 MAIN=$DEST/main.py
 RESTART=$DEST/reboot
 OLD=$(mktemp -d ${DEST}.XXXXXXXX)
@@ -25,7 +25,7 @@ cd $(dirname $0)
 
 stage()
 {
-    cp -rf apply.sh dstack dist main.py $TEMP
+    cp -rf apply.sh cattle dist main.py $TEMP
 
     if [ -e $DEST ]; then
         mv $DEST ${OLD}
@@ -36,8 +36,8 @@ stage()
 
 conf()
 {
-    CONF=(/etc/dstack/agent/agent.conf
-          /var/lib/dstack/etc/dstack/agent/agent.conf)
+    CONF=(/etc/cattle/agent/agent.conf
+          /var/lib/cattle/etc/cattle/agent/agent.conf)
 
     for conf_file in "${CONF[@]}"; do
         if [ -e $conf_file ]
@@ -54,7 +54,7 @@ start()
     fi
     echo $RANDOM > $RESTART
     chmod +x $MAIN
-    if [ "$DSTACK_PYPY" = "true" ] && which pypy >/dev/null; then
+    if [ "$CATTLE_PYPY" = "true" ] && which pypy >/dev/null; then
         MAIN="pypy $MAIN"
     fi
     if [ "$DAEMON" = false ]; then

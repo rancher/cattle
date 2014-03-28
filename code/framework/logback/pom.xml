@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-framework-logback</artifactId>
+    <artifactId>cattle-framework-logback</artifactId>
     <parent>
-        <groupId>io.github.ibuildthecloud</groupId>
-        <artifactId>dstack-meta-parent</artifactId>
+        <groupId>io.cattle</groupId>
+        <artifactId>cattle-meta-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../meta-parent/pom.xml</relativePath>
     </parent>
@@ -15,7 +15,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-server</artifactId>
+            <artifactId>cattle-framework-server</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -23,8 +23,8 @@
             <artifactId>logstash-logback-encoder</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>dstack-framework-archaius</artifactId>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-archaius</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

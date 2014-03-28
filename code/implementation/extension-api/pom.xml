@@ -2,16 +2,16 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>dstack-parent</artifactId>
-        <groupId>io.github.ibuildthecloud</groupId>
+        <artifactId>cattle-parent</artifactId>
+        <groupId>io.cattle</groupId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
-    <artifactId>dstack-extension-api</artifactId>
+    <artifactId>cattle-extension-api</artifactId>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-api</artifactId>
+            <artifactId>cattle-framework-api</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

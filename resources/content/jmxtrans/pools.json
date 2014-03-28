@@ -49,7 +49,7 @@
             ]
         },
         {
-            "objectName" : "org.apache.commons.dbcp:ManagedBasicDataSource=dstack",
+            "objectName" : "org.apache.commons.dbcp:ManagedBasicDataSource=cattle",
             "resultAlias" : "database",
             "attributes" : [
                 {

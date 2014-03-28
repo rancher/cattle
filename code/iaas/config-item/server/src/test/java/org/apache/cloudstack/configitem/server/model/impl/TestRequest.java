@@ -1,7 +1,7 @@
 package org.apache.cloudstack.configitem.server.model.impl;
 
-import io.github.ibuildthecloud.dstack.configitem.model.impl.DefaultClient;
-import io.github.ibuildthecloud.dstack.configitem.server.model.impl.AbstractRequest;
+import io.cattle.platform.configitem.model.impl.DefaultClient;
+import io.cattle.platform.configitem.server.model.impl.AbstractRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

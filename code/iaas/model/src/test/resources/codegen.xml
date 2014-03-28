@@ -3,18 +3,18 @@
     <!-- Configure the database connection here -->
     <jdbc>
         <driver>org.drizzle.jdbc.DrizzleDriver</driver>
-        <url>jdbc:mysql:thin://localhost:3306/dstack</url>
-        <user>dstack</user>
-        <password>dstack</password>
+        <url>jdbc:mysql:thin://localhost:3306/cattle</url>
+        <user>cattle</user>
+        <password>cattle</password>
     </jdbc>
 
     <generator>
         <!-- The default code generator. You can override this one, to generate 
             your own code style Defaults to org.jooq.util.DefaultGenerator -->
-        <name>io.github.ibuildthecloud.dstack.db.jooq.generator.JavaGenerator</name>
+        <name>io.cattle.platform.db.jooq.generator.JavaGenerator</name>
 
         <strategy>
-            <name>io.github.ibuildthecloud.dstack.db.jooq.generator.ModelStrategy</name>
+            <name>io.cattle.platform.db.jooq.generator.ModelStrategy</name>
         </strategy>
 
         <database>
@@ -23,7 +23,7 @@
 
             <!-- The database schema (or in the absence of schema support, 
                 in your RDBMS this can be the owner, user, database name) to be generated -->
-            <inputSchema>dstack</inputSchema>
+            <inputSchema>cattle</inputSchema>
 
             <!-- All elements that are generated from your schema (A Java 
                 regular expression. Use the pipe to separate several expressions) Watch out 
@@ -40,11 +40,11 @@
             <customTypes>
                 <customType>
                     <name>java.util.Date</name>
-                    <converter>io.github.ibuildthecloud.dstack.db.jooq.converter.DateConverter</converter>
+                    <converter>io.cattle.platform.db.jooq.converter.DateConverter</converter>
                 </customType>
                 <customType>
                     <name>java.util.Map&lt;String,Object&gt;</name>
-                    <converter>io.github.ibuildthecloud.dstack.db.jooq.converter.DataConverter</converter>
+                    <converter>io.cattle.platform.db.jooq.converter.DataConverter</converter>
                 </customType>
             </customTypes>
             <forcedTypes>
@@ -62,7 +62,7 @@
         <target>
             <!-- The destination package of your generated classes (within 
                 the destination directory) -->
-            <packageName>io.github.ibuildthecloud.dstack.core.model</packageName>
+            <packageName>io.cattle.platform.core.model</packageName>
 
             <!-- The destination directory of your generated classes -->
             <directory>src/main/java</directory>

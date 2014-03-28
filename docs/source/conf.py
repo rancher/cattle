@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# dStack documentation build configuration file, created by
+# Cattle documentation build configuration file, created by
 # sphinx-quickstart on Tue Dec 10 16:53:05 2013.
 #
 # This file is execfile()d with the current directory set to its
@@ -44,7 +44,7 @@ source_suffix = '.rst'
 master_doc = 'toc'
 
 # General information about the project.
-project = u'dStack'
+project = u'Cattle'
 copyright = u'2013, Darren Shepherd'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -187,7 +187,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'dStackdoc'
+htmlhelp_basename = 'Cattledoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -207,7 +207,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('toc', 'dStack.tex', u'dStack Documentation',
+  ('toc', 'Cattle.tex', u'Cattle Documentation',
    u'Darren Shepherd', 'manual'),
 ]
 
@@ -237,7 +237,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('toc', 'corestack', u'dStack Documentation',
+    ('toc', 'corestack', u'Cattle Documentation',
      [u'Darren Shepherd'], 1)
 ]
 
@@ -251,8 +251,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('toc', 'dStack', u'dStack Documentation',
-   u'Darren Shepherd', 'dStack', 'One line description of project.',
+  ('toc', 'Cattle', u'Cattle Documentation',
+   u'Darren Shepherd', 'Cattle', 'One line description of project.',
    'Miscellaneous'),
 ]
 

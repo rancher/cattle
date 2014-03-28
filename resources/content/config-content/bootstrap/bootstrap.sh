@@ -7,8 +7,8 @@ trap cleanup EXIT
 # make it in common and then copy here
 check_debug()
 {
-    if [ -n "$DSTACK_SCRIPT_DEBUG" ] || echo "${@}" | grep -q -- --debug; then
-        export DSTACK_SCRIPT_DEBUG=true
+    if [ -n "$CATTLE_SCRIPT_DEBUG" ] || echo "${@}" | grep -q -- --debug; then
+        export CATTLE_SCRIPT_DEBUG=true
         export PS4='[${BASH_SOURCE##*/}:${LINENO}] '
         set -x
     fi
@@ -24,16 +24,16 @@ error()
     echo "ERROR:" "${@}" 1>&2
 }
 
-export DSTACK_HOME=${DSTACK_HOME:-/var/lib/dstack}
+export CATTLE_HOME=${CATTLE_HOME:-/var/lib/cattle}
 
 check_debug
 # End copy
 
-CONF=(/etc/dstack/agent/bootstrap.conf
-      /var/lib/dstack/etc/dstack/agent/bootstrap.conf)
+CONF=(/etc/cattle/agent/bootstrap.conf
+      /var/lib/cattle/etc/cattle/agent/bootstrap.conf)
 CONTENT_URL=/configcontent/configscripts
 INSTALL_ITEMS="configscripts pyagent"
-DOCKER_AGENT="ibuildthecloud/agent"
+DOCKER_AGENT="cattle/agent"
 
 cleanup()
 {
@@ -61,15 +61,15 @@ download_agent()
     cleanup
 
     TEMP_DOWNLOAD=$(mktemp -d bootstrap.XXXXXXX)
-    info Downloading agent "${DSTACK_URL}${CONTENT_URL}"
-    curl -s -u $DSTACK_ACCESS_KEY:$DSTACK_SECRET_KEY ${DSTACK_URL}${CONTENT_URL} > $TEMP_DOWNLOAD/content
+    info Downloading agent "${CATTLE_URL}${CONTENT_URL}"
+    curl -s -u $CATTLE_ACCESS_KEY:$CATTLE_SECRET_KEY ${CATTLE_URL}${CONTENT_URL} > $TEMP_DOWNLOAD/content
     tar xzf $TEMP_DOWNLOAD/content -C $TEMP_DOWNLOAD || ( cat $TEMP_DOWNLOAD/content 1>&2 && exit 1 )
     bash $TEMP_DOWNLOAD/*/config.sh --no-start $INSTALL_ITEMS
 }
 
 start_agent()
 {
-    local main=${DSTACK_HOME}/pyagent/apply.sh
+    local main=${CATTLE_HOME}/pyagent/apply.sh
     export AGENT_PARENT_PID=$$
     info Starting agent $main
     $main --no-daemon start &
@@ -86,12 +86,12 @@ get_line()
 
 print_config()
 {
-    info Access Key: $DSTACK_ACCESS_KEY
-    info Config URL: $DSTACK_CONFIG_URL
-    info Storage URL: $DSTACK_STORAGE_URL
-    info API URL: $DSTACK_URL
-    info IP: $DSTACK_AGENT_IP
-    info Port: $DSTACK_AGENT_PORT
+    info Access Key: $CATTLE_ACCESS_KEY
+    info Config URL: $CATTLE_CONFIG_URL
+    info Storage URL: $CATTLE_STORAGE_URL
+    info API URL: $CATTLE_URL
+    info IP: $CATTLE_AGENT_IP
+    info Port: $CATTLE_AGENT_PORT
 }
 
 
@@ -109,7 +109,7 @@ if [ "$INCEPTION" = "true" ] && [ "$INCEPTION_INCEPTION" = "" ] && [ -e /proc-ho
     exec /usr/sbin/nsenter --net=/proc-host/1/ns/net --uts=/proc-host/1/ns/uts -F -- $0 "$@"
 fi
 
-if [ "$DSTACK_AGENT_INCEPTION" = "true" ] || ! python -V >/dev/null 2>&1; then
+if [ "$CATTLE_AGENT_INCEPTION" = "true" ] || ! python -V >/dev/null 2>&1; then
     if [ "$INCEPTION" != "true" ]; then
         cleanup_docker
         exec docker run -rm -privileged -i -w $(pwd) \
@@ -118,9 +118,9 @@ if [ "$DSTACK_AGENT_INCEPTION" = "true" ] || ! python -V >/dev/null 2>&1; then
                     -v /proc:/proc-host \
                     -v $(pwd):$(pwd) \
                     -v $(readlink -f /var/lib/docker):$(readlink -f /var/lib/docker) \
-                    -e DSTACK_SCRIPT_DEBUG=$DSTACK_SCRIPT_DEBUG \
+                    -e CATTLE_SCRIPT_DEBUG=$CATTLE_SCRIPT_DEBUG \
                     -e INCEPTION=true \
-                    $DSTACK_DOCKER_AGENT_ARGS $DOCKER_AGENT $0 "$@"
+                    $CATTLE_DOCKER_AGENT_ARGS $DOCKER_AGENT $0 "$@"
     fi
 fi
 
@@ -159,14 +159,14 @@ while get_line; do
         case $1 in
         --port)
             shift 1
-            if [ -z "$DSTACK_AGENT_PORT" ];then
-                export DSTACK_AGENT_PORT=$1
+            if [ -z "$CATTLE_AGENT_PORT" ];then
+                export CATTLE_AGENT_PORT=$1
             fi
         ;;
         --ip)
             shift 1
-            if [ -z "$DSTACK_AGENT_IP" ];then
-                export DSTACK_AGENT_IP=$1
+            if [ -z "$CATTLE_AGENT_IP" ];then
+                export CATTLE_AGENT_IP=$1
             fi
         ;;
         esac
@@ -176,7 +176,7 @@ while get_line; do
 
     print_config
 
-    mkdir -p $DSTACK_HOME
+    mkdir -p $CATTLE_HOME
     download_agent
     start_agent
 done

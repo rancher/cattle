@@ -1,1 +1,1 @@
-http\://dstack.io/schemas/spring/extension=io.github.ibuildthecloud.dstack.extension.spring.parser.ExtensionNamespaceHandler
+http\://cattle.io/schemas/spring/extension=io.cattle.platform.extension.spring.parser.ExtensionNamespaceHandler

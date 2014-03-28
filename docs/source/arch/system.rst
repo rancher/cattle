@@ -6,29 +6,29 @@ Overview
 .. image:: https://docs.google.com/drawings/d/1c-j3i8WmdjOR4-K7vED7fzTfdkVMVe2RJoYoQDSMgT8/pub?w=800&h=572
    :align: center
 
-dStack system architecture is separated into the following logical servers.
+Cattle system architecture is separated into the following logical servers.
 
 Database
 ********
-dStack is based on a RDBMS.  The currently support databases are MySQL, H2 (Java), and HSQLDB (Java).  Other databases such as PostgreSQL and SQL Server will be supported in the future.  dStack is built upon jOOQ and Liquibase to abstract the database.  Any database that is supported by both of these frameworks should eventually be supported by dStack.  Since the abstraction provided by these libraries is not perfect, the limiting factor in adopting other databases is the required testing.
+Cattle is based on a RDBMS.  The currently support databases are MySQL, H2 (Java), and HSQLDB (Java).  Other databases such as PostgreSQL and SQL Server will be supported in the future.  Cattle is built upon jOOQ and Liquibase to abstract the database.  Any database that is supported by both of these frameworks should eventually be supported by Cattle.  Since the abstraction provided by these libraries is not perfect, the limiting factor in adopting other databases is the required testing.
 
 Lock Manager
 ************
 
-A distributed lock manager (DLM) is used to control concurrent access to resources.  dStack currently supported Hazelcast and Zookeeper as a lock manager.
+A distributed lock manager (DLM) is used to control concurrent access to resources.  Cattle currently supported Hazelcast and Zookeeper as a lock manager.
 
 Event Bus
 *********
 
-Communication between distributed components is done using an event bus.  The messaging style used in dStack can be best compared to UDP multicast.  There is no assumptions of reliability or persistence in the messaging transport.  This means that from an operational standpoint the messaging system is not considered a repository of state.  If you were to do maintenance one could completely shutdown, delete, and reinstall the messaging servers with no impact except that operations will pause until the messaging system is back online.  The currently supported messaging systems are Redis and Hazelcast.
+Communication between distributed components is done using an event bus.  The messaging style used in Cattle can be best compared to UDP multicast.  There is no assumptions of reliability or persistence in the messaging transport.  This means that from an operational standpoint the messaging system is not considered a repository of state.  If you were to do maintenance one could completely shutdown, delete, and reinstall the messaging servers with no impact except that operations will pause until the messaging system is back online.  The currently supported messaging systems are Redis and Hazelcast.
 
 API Server
 **********
 
-The API server accepts the HTTP API requests from the user.  This server is based on a Java Servlet 3.0 container.  By default dStack ships with Jetty 8 embedded, but it is also possible to deploy dStack as a standard war on any Servlet Container such as Tomcat, WebLogic, or WebSphere.
+The API server accepts the HTTP API requests from the user.  This server is based on a Java Servlet 3.0 container.  By default Cattle ships with Jetty 8 embedded, but it is also possible to deploy Cattle as a standard war on any Servlet Container such as Tomcat, WebLogic, or WebSphere.
 
 .. note::
-  The current dashboard UI uses WebSockets and the current dStack WebSocket implementation is Jetty specific.  This is concidered a flaw and should be fixed to work on any servlet container, or the dashboard should support line terminated event polling.
+  The current dashboard UI uses WebSockets and the current Cattle WebSocket implementation is Jetty specific.  This is concidered a flaw and should be fixed to work on any servlet container, or the dashboard should support line terminated event polling.
 
 The API server only needs the database and lock manager to be available to service requests.  This means for maintanence all other back-end services can be completely stopped if necessary.  The API server is stateless and does not do any orchestration logic.  All orchestration logic is deferred to the back-end servers.  Once a user receives a 201 or 202 HTTP response, the remaining logic will be preformed elsewhere.
 

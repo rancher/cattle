@@ -1,138 +1,138 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-meta</artifactId>
+    <artifactId>cattle-meta</artifactId>
     <parent>
-        <artifactId>dstack-parent</artifactId>
-        <groupId>io.github.ibuildthecloud</groupId>
+        <artifactId>cattle-parent</artifactId>
+        <groupId>io.cattle</groupId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-external-handler</artifactId>
+            <artifactId>cattle-iaas-external-handler</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-zookeeper-lock</artifactId>
+            <artifactId>cattle-zookeeper-lock</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-docker-api</artifactId>
+            <artifactId>cattle-docker-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-api-pub-sub-jetty</artifactId>
+            <artifactId>cattle-framework-api-pub-sub-jetty</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-hazelcast-lock</artifactId>
+            <artifactId>cattle-hazelcast-lock</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-hazelcast-eventing</artifactId>
+            <artifactId>cattle-hazelcast-eventing</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-task-jooq</artifactId>
+            <artifactId>cattle-iaas-task-jooq</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-agent-resources</artifactId>
+            <artifactId>cattle-agent-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-metrics</artifactId>
+            <artifactId>cattle-framework-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-config-item-api</artifactId>
+            <artifactId>cattle-config-item-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-accounts</artifactId>
+            <artifactId>cattle-iaas-accounts</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-allocator</artifactId>
+            <artifactId>cattle-iaas-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-settings-api</artifactId>
+            <artifactId>cattle-settings-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-archaius-management</artifactId>
+            <artifactId>cattle-iaas-archaius-management</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-storage-service</artifactId>
+            <artifactId>cattle-iaas-storage-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-spring</artifactId>
+            <artifactId>cattle-framework-spring</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-extension-api</artifactId>
+            <artifactId>cattle-extension-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-system</artifactId>
+            <artifactId>cattle-iaas-system</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-api-pub-sub</artifactId>
+            <artifactId>cattle-framework-api-pub-sub</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-agent-server</artifactId>
+            <artifactId>cattle-iaas-agent-server</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-agent-connection-ssh</artifactId>
+            <artifactId>cattle-agent-connection-ssh</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-schema</artifactId>
+            <artifactId>cattle-framework-schema</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-logic</artifactId>
+            <artifactId>cattle-iaas-logic</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-api-logic</artifactId>
+            <artifactId>cattle-iaas-api-logic</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-resources</artifactId>
+            <artifactId>cattle-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!--

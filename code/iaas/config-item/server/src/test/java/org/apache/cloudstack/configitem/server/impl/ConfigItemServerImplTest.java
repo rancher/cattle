@@ -3,11 +3,11 @@ package org.apache.cloudstack.configitem.server.impl;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import io.github.ibuildthecloud.dstack.configitem.model.DefaultItemVersion;
-import io.github.ibuildthecloud.dstack.configitem.model.ItemVersion;
-import io.github.ibuildthecloud.dstack.configitem.registry.impl.ConfigItemRegistryImpl;
-import io.github.ibuildthecloud.dstack.configitem.server.impl.ConfigItemServerImpl;
-import io.github.ibuildthecloud.dstack.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.configitem.model.DefaultItemVersion;
+import io.cattle.platform.configitem.model.ItemVersion;
+import io.cattle.platform.configitem.registry.impl.ConfigItemRegistryImpl;
+import io.cattle.platform.configitem.server.impl.ConfigItemServerImpl;
+import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 
 import org.apache.cloudstack.configitem.server.model.impl.TestRequest;
 import org.apache.cloudstack.configitem.server.model.impl.WriteStringConfigItem;

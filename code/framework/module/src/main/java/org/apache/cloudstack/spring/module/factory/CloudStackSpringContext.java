@@ -39,9 +39,9 @@ public class CloudStackSpringContext {
 
     private static final Logger log = LoggerFactory.getLogger(CloudStackSpringContext.class);
 
-    public static final String CLOUDSTACK_CONTEXT_SERVLET_KEY = CloudStackSpringContext.class.getSimpleName();
-    public static final String CLOUDSTACK_CONTEXT = "META-INF/cloudstack";
-    public static final String CLOUDSTACK_BASE = "bootstrap";
+    public static final String CLOUCATTLE_CONTEXT_SERVLET_KEY = CloudStackSpringContext.class.getSimpleName();
+    public static final String CLOUCATTLE_CONTEXT = "META-INF/cloudstack";
+    public static final String CLOUCATTLE_BASE = "bootstrap";
 
     ModuleBasedContextFactory factory = new ModuleBasedContextFactory();
     ModuleDefinitionLocator loader = new ClasspathModuleDefinitionLocator();
@@ -57,7 +57,7 @@ public class CloudStackSpringContext {
     }
 
     public CloudStackSpringContext() throws IOException {
-        this(CLOUDSTACK_CONTEXT, CLOUDSTACK_BASE);
+        this(CLOUCATTLE_CONTEXT, CLOUCATTLE_BASE);
     }
 
     public CloudStackSpringContext(boolean init) {
@@ -106,7 +106,7 @@ public class CloudStackSpringContext {
 
     public static ApplicationContext getApplicationContext(ServletContext servletContext, String module) {
         CloudStackSpringContext context =
-                (CloudStackSpringContext) servletContext.getAttribute(CloudStackSpringContext.CLOUDSTACK_CONTEXT_SERVLET_KEY);
+                (CloudStackSpringContext) servletContext.getAttribute(CloudStackSpringContext.CLOUCATTLE_CONTEXT_SERVLET_KEY);
 
         if ( context == null )
             return null;

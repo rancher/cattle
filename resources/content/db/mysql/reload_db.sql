@@ -1,2 +1,2 @@
-DROP DATABASE dstack;
-CREATE DATABASE dstack COLLATE = 'utf8_general_ci' CHARACTER SET = 'utf8';
+DROP DATABASE cattle;
+CREATE DATABASE cattle COLLATE = 'utf8_general_ci' CHARACTER SET = 'utf8';

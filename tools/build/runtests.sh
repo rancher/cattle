@@ -43,8 +43,8 @@ checkPort()
 }
 
 if ! checkPort; then
-    export DSTACK_LOGBACK_ROOT_LEVEL=WARN
-    ./dstack.sh run &
+    export CATTLE_LOGBACK_ROOT_LEVEL=WARN
+    ./cattle.sh run &
     LASTPID=$!
 fi
 

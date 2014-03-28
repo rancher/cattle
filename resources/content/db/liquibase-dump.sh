@@ -2,7 +2,7 @@
 set -x -e
 
 LIQUIBASE_HOME=${LIQUIBASE_HOME:-~/.local/liquibase}
-DB=${DB:-dstack}
+DB=${DB:-cattle}
 DRIVER=${DRIVER:-"$HOME/.m2/repository/mysql/mysql-connector-java/5.1.26/mysql-connector-java-5.1.26.jar"}
 
 if [ -e dump.xml ]; then

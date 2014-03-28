@@ -1,47 +1,47 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dstack-iaas-logic</artifactId>
+    <artifactId>cattle-iaas-logic</artifactId>
     <parent>
-        <groupId>io.github.ibuildthecloud</groupId>
-        <artifactId>dstack-parent</artifactId>
+        <groupId>io.cattle</groupId>
+        <artifactId>cattle-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-engine</artifactId>
+            <artifactId>cattle-framework-engine</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-config-item-common</artifactId>
+            <artifactId>cattle-config-item-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-agent</artifactId>
+            <artifactId>cattle-iaas-agent</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-logic-common</artifactId>
+            <artifactId>cattle-iaas-logic-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-iaas-engine-jooq</artifactId>
+            <artifactId>cattle-iaas-engine-jooq</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-api</artifactId>
+            <artifactId>cattle-framework-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>dstack-framework-jooq</artifactId>
+            <artifactId>cattle-framework-jooq</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

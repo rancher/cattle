@@ -3,9 +3,9 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>WARN</level>
         </filter>
-        <file>${logDir}dstack-error.log</file>
+        <file>${logDir}cattle-error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logDir}dstack-error${fileNamePattern}</fileNamePattern>
+            <fileNamePattern>${logDir}cattle-error${fileNamePattern}</fileNamePattern>
             <maxHistory>${maxHistory}</maxHistory>
         </rollingPolicy>
         <encoder>

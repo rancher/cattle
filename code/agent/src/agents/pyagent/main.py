@@ -11,10 +11,10 @@ if __name__ == '__main__':
     if os.path.exists(dist):
         sys.path.insert(0, dist)
 
-from dstack import plugins
-from dstack import Config
-from dstack.agent.event import EventClient
-from dstack.type_manager import types
+from cattle import plugins
+from cattle import Config
+from cattle.agent.event import EventClient
+from cattle.type_manager import types
 
 
 log = logging.getLogger("agent")
@@ -52,13 +52,13 @@ def _args():
     parser = argparse.ArgumentParser(add_help=True)
 
     parser.add_argument("--access-key", default=Config.access_key(),
-                        help='Default value from DSTACK_ACCESS_KEY')
+                        help='Default value from CATTLE_ACCESS_KEY')
     parser.add_argument("--secret-key", default=Config.secret_key(),
-                        help='Default value from DSTACK_SECRET_KEY')
+                        help='Default value from CATTLE_SECRET_KEY')
     parser.add_argument("--url", default=Config.api_url(),
-                        help='Default value from DSTACK_URL')
+                        help='Default value from CATTLE_URL')
     parser.add_argument("--workers", default=Config.workers(),
-                        help='Default value from DSTACK_WORKERS')
+                        help='Default value from CATTLE_WORKERS')
     parser.add_argument("--agent-id")
 
     return parser.parse_args()

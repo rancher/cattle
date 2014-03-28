@@ -1,18 +1,18 @@
 #!/bin/bash
 set -e
 
-export DSTACK_HOME=${DSTACK_HOME:-/var/lib/dstack}
+export CATTLE_HOME=${CATTLE_HOME:-/var/lib/cattle}
 
 install()
 {
     cd $(dirname $0)
-    if [ -e $DSTACK_HOME/common ]; then
-        rm -rf $DSTACK_HOME/common
+    if [ -e $CATTLE_HOME/common ]; then
+        rm -rf $CATTLE_HOME/common
     fi
 
-    cp -rf common $DSTACK_HOME/common
-    cp config.sh $DSTACK_HOME/config.sh
-    chmod +x $DSTACK_HOME/config.sh
+    cp -rf common $CATTLE_HOME/common
+    cp config.sh $CATTLE_HOME/config.sh
+    chmod +x $CATTLE_HOME/config.sh
 }
 
 install

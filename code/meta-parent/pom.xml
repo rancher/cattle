@@ -8,8 +8,8 @@
   in your IDE, you end up with the resource/file in two places.  So that's why.
 -->
     <modelVersion>4.0.0</modelVersion>
-    <groupId>io.github.ibuildthecloud</groupId>
-    <artifactId>dstack-meta-parent</artifactId>
+    <groupId>io.cattle</groupId>
+    <artifactId>cattle-meta-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
@@ -343,7 +343,7 @@
             <dependency>
                 <groupId>io.github.ibuildthecloud</groupId>
                 <artifactId>gdapi-java-server</artifactId>
-                <version>0.1.1</version>
+                <version>0.1.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>commons-collections</groupId>

@@ -51,8 +51,8 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
     private static final Logger log = LoggerFactory.getLogger(DefaultModuleDefinitionSet.class);
     private static final Logger consoleLog = LoggerFactory.getLogger("ConsoleStatus");
 
-    private static final String CONTAINS = "DSTACK";
-    private static final String PREFIX = "DSTACK_";
+    private static final String CONTAINS = "CATTLE";
+    private static final String PREFIX = "CATTLE_";
 
     public static final String DEFAULT_CONFIG_RESOURCES = "DefaultConfigResources";
     public static final String DEFAULT_CONFIG_PROPERTIES = "DefaultConfigProperties";

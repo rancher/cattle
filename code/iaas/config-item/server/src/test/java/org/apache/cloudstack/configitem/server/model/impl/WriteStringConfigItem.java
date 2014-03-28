@@ -1,8 +1,8 @@
 package org.apache.cloudstack.configitem.server.model.impl;
 
-import io.github.ibuildthecloud.dstack.configitem.server.model.ConfigItem;
-import io.github.ibuildthecloud.dstack.configitem.server.model.ConfigItemFactory;
-import io.github.ibuildthecloud.dstack.configitem.server.model.Request;
+import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.ConfigItemFactory;
+import io.cattle.platform.configitem.server.model.Request;
 
 import java.io.IOException;
 import java.util.Arrays;

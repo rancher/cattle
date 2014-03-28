@@ -8,4 +8,4 @@ Contents:
 
    overview
    docker
-   dstack
+   cattle

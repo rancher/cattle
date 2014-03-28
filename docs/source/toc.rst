@@ -1,4 +1,4 @@
-dStack Documentation
+Cattle Documentation
 ====================
 
 Contents:

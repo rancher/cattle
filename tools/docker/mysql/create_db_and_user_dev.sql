@@ -1,5 +1,5 @@
-CREATE DATABASE dstack COLLATE = 'utf8_general_ci' CHARACTER SET = 'utf8';
-CREATE USER 'dstack'@'%' IDENTIFIED BY 'dstack';
-CREATE USER 'dstack'@'localhost' IDENTIFIED BY 'dstack';
-GRANT ALL ON dstack.* TO 'dstack'@'%';
-GRANT ALL ON dstack.* TO 'dstack'@'localhost';
+CREATE DATABASE cattle COLLATE = 'utf8_general_ci' CHARACTER SET = 'utf8';
+CREATE USER 'cattle'@'%' IDENTIFIED BY 'cattle';
+CREATE USER 'cattle'@'localhost' IDENTIFIED BY 'cattle';
+GRANT ALL ON cattle.* TO 'cattle'@'%';
+GRANT ALL ON cattle.* TO 'cattle'@'localhost';
