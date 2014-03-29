@@ -1,0 +1,504 @@
+<svg width="1871pt" height="944pt" viewBox="0.00 0.00 1871.23 944.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 940)">
+<title>instance</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-940 1867.23,-940 1867.23,4 -4,4"></polygon>
+<!-- allocationState:inactive -->
+<g id="node1" class="node"><title>allocationState:inactive</title>
+<ellipse fill="none" stroke="black" cx="359" cy="-918" rx="101.516" ry="18"></ellipse>
+<text text-anchor="middle" x="359" y="-913.8" font-family="Times,serif" font-size="14.00">allocationState:inactive</text>
+</g>
+<!-- allocationState:activating -->
+<g id="node2" class="node"><title>allocationState:activating</title>
+<ellipse fill="none" stroke="orange" cx="283" cy="-828" rx="109.285" ry="18"></ellipse>
+<text text-anchor="middle" x="283" y="-823.8" font-family="Times,serif" font-size="14.00">allocationState:activating</text>
+</g>
+<!-- allocationState:inactive&#45;&gt;allocationState:activating -->
+<g id="edge1" class="edge"><title>allocationState:inactive-&gt;allocationState:activating</title>
+<g id="a_edge1"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.allocate" xlink:title="instance.allocate">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M333.614,-900.505C326.467,-895.135 319.033,-888.793 313.1,-882 306.177,-874.074 300.091,-864.307 295.235,-855.326"></path>
+<polygon fill="black" stroke="black" points="298.315,-853.662 290.637,-846.362 292.087,-856.857 298.315,-853.662"></polygon>
+</a>
+</g>
+<g id="a_edge1-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.allocate" xlink:title="instance.allocate">
+<text text-anchor="middle" x="360.45" y="-868.8" font-family="Times,serif" font-size="14.00">instance.allocate</text>
+</a>
+</g>
+</g>
+<!-- allocationState:active -->
+<g id="node3" class="node"><title>allocationState:active</title>
+<ellipse fill="none" stroke="black" cx="94" cy="-738" rx="94.2483" ry="18"></ellipse>
+<text text-anchor="middle" x="94" y="-733.8" font-family="Times,serif" font-size="14.00">allocationState:active</text>
+</g>
+<!-- allocationState:activating&#45;&gt;allocationState:active -->
+<g id="edge2" class="edge"><title>allocationState:activating-&gt;allocationState:active</title>
+<g id="a_edge2"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.allocate" xlink:title="instance.allocate[logic=InstanceAllocate] ">
+<path fill="none" stroke="green" stroke-width="2" d="M174.78,-825.56C116.003,-822.231 51.5713,-813.549 32.8268,-792 22.7277,-780.39 32.4624,-769.014 46.9103,-759.797"></path>
+<polygon fill="green" stroke="green" stroke-width="2" points="48.9392,-762.667 55.8474,-754.634 45.4376,-756.606 48.9392,-762.667"></polygon>
+</a>
+</g>
+<g id="a_edge2-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.allocate" xlink:title="instance.allocate[logic=InstanceAllocate] ">
+<text text-anchor="middle" x="152.587" y="-778.8" font-family="Times,serif" font-weight="bold" font-size="14.00">instance.allocate[logic=InstanceAllocate] </text>
+</a>
+</g>
+</g>
+<!-- allocationState:deactivating -->
+<g id="node7" class="node"><title>allocationState:deactivating</title>
+<ellipse fill="none" stroke="orange" cx="286" cy="-648" rx="117.958" ry="18"></ellipse>
+<text text-anchor="middle" x="286" y="-643.8" font-family="Times,serif" font-size="14.00">allocationState:deactivating</text>
+</g>
+<!-- allocationState:activating&#45;&gt;allocationState:deactivating -->
+<g id="edge5" class="edge"><title>allocationState:activating-&gt;allocationState:deactivating</title>
+<g id="a_edge5"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.deallocate" xlink:title="instance.deallocate">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M283.288,-809.933C283.81,-778.966 284.916,-713.299 285.543,-676.129"></path>
+<polygon fill="black" stroke="black" points="289.044,-676.073 285.713,-666.016 282.045,-675.955 289.044,-676.073"></polygon>
+</a>
+</g>
+<g id="a_edge5-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.deallocate" xlink:title="instance.deallocate">
+<text text-anchor="middle" x="338.057" y="-733.8" font-family="Times,serif" font-size="14.00">instance.deallocate</text>
+</a>
+</g>
+</g>
+<!-- allocationState:active&#45;&gt;allocationState:deactivating -->
+<g id="edge6" class="edge"><title>allocationState:active-&gt;allocationState:deactivating</title>
+<g id="a_edge6"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.deallocate" xlink:title="instance.deallocate">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M112.918,-720.145C126.754,-708.574 146.429,-693.626 165.886,-684 180.315,-676.861 196.457,-670.923 212.111,-666.087"></path>
+<polygon fill="black" stroke="black" points="213.185,-669.419 221.775,-663.218 211.193,-662.709 213.185,-669.419"></polygon>
+</a>
+</g>
+<g id="a_edge6-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.deallocate" xlink:title="instance.deallocate">
+<text text-anchor="middle" x="219.057" y="-688.8" font-family="Times,serif" font-size="14.00">instance.deallocate</text>
+</a>
+</g>
+</g>
+<!-- requested -->
+<g id="node4" class="node"><title>requested</title>
+<ellipse fill="none" stroke="black" cx="716" cy="-918" rx="48.0542" ry="18"></ellipse>
+<text text-anchor="middle" x="716" y="-913.8" font-family="Times,serif" font-size="14.00">requested</text>
+</g>
+<!-- creating -->
+<g id="node5" class="node"><title>creating</title>
+<ellipse fill="none" stroke="orange" cx="872" cy="-828" rx="42.2038" ry="18"></ellipse>
+<text text-anchor="middle" x="872" y="-823.8" font-family="Times,serif" font-size="14.00">creating</text>
+</g>
+<!-- requested&#45;&gt;creating -->
+<g id="edge3" class="edge"><title>requested-&gt;creating</title>
+<g id="a_edge3"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.create" xlink:title="instance.create">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M741.411,-902.665C767.899,-887.724 809.532,-864.238 838.649,-847.813"></path>
+<polygon fill="black" stroke="black" points="840.638,-850.71 847.628,-842.748 837.198,-844.613 840.638,-850.71"></polygon>
+</a>
+</g>
+<g id="a_edge3-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.create" xlink:title="instance.create">
+<text text-anchor="middle" x="849.39" y="-868.8" font-family="Times,serif" font-size="14.00">instance.create</text>
+</a>
+</g>
+</g>
+<!-- removing -->
+<g id="node13" class="node"><title>removing</title>
+<ellipse fill="none" stroke="orange" cx="700" cy="-558" rx="48.0716" ry="18"></ellipse>
+<text text-anchor="middle" x="700" y="-553.8" font-family="Times,serif" font-size="14.00">removing</text>
+</g>
+<!-- requested&#45;&gt;removing -->
+<g id="edge12" class="edge"><title>requested-&gt;removing</title>
+<g id="a_edge12"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M711.025,-899.967C706.328,-882.361 700,-854 700,-829 700,-829 700,-829 700,-647 700,-626.63 700,-603.609 700,-586.222"></path>
+<polygon fill="black" stroke="black" points="703.5,-586.199 700,-576.199 696.5,-586.2 703.5,-586.199"></polygon>
+</a>
+</g>
+<g id="a_edge12-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<text text-anchor="middle" x="745.675" y="-733.8" font-family="Times,serif" font-size="14.00">instance.remove</text>
+</a>
+</g>
+</g>
+<!-- stopped -->
+<g id="node6" class="node"><title>stopped</title>
+<ellipse fill="none" stroke="black" cx="1163" cy="-738" rx="41.1146" ry="18"></ellipse>
+<text text-anchor="middle" x="1163" y="-733.8" font-family="Times,serif" font-size="14.00">stopped</text>
+</g>
+<!-- creating&#45;&gt;stopped -->
+<g id="edge4" class="edge"><title>creating-&gt;stopped</title>
+<g id="a_edge4"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.create" xlink:title="instance.create[logic=InstanceCreate,post=ActivateByDefault] ">
+<path fill="none" stroke="green" stroke-width="2" d="M905.381,-816.905C958.445,-800.859 1061.99,-769.547 1120.35,-751.897"></path>
+<polygon fill="green" stroke="green" stroke-width="2" points="1121.45,-755.222 1130.01,-748.977 1119.42,-748.521 1121.45,-755.222"></polygon>
+</a>
+</g>
+<g id="a_edge4-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.create" xlink:title="instance.create[logic=InstanceCreate,post=ActivateByDefault] ">
+<text text-anchor="middle" x="1222.31" y="-778.8" font-family="Times,serif" font-weight="bold" font-size="14.00">instance.create[logic=InstanceCreate,post=ActivateByDefault] </text>
+</a>
+</g>
+</g>
+<!-- creating&#45;&gt;removing -->
+<g id="edge16" class="edge"><title>creating-&gt;removing</title>
+<g id="a_edge16"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M861.241,-810.235C832.041,-764.738 751.169,-638.729 716.322,-584.432"></path>
+<polygon fill="black" stroke="black" points="719.102,-582.284 710.755,-575.758 713.211,-586.065 719.102,-582.284"></polygon>
+</a>
+</g>
+<g id="a_edge16-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<text text-anchor="middle" x="835.675" y="-688.8" font-family="Times,serif" font-size="14.00">instance.remove</text>
+</a>
+</g>
+</g>
+<!-- starting -->
+<g id="node14" class="node"><title>starting</title>
+<ellipse fill="none" stroke="orange" cx="1119" cy="-288" rx="40.0023" ry="18"></ellipse>
+<text text-anchor="middle" x="1119" y="-283.8" font-family="Times,serif" font-size="14.00">starting</text>
+</g>
+<!-- creating&#45;&gt;starting -->
+<g id="edge23" class="edge"><title>creating-&gt;starting</title>
+<g id="a_edge23"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.start" xlink:title="instance.start">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M874.411,-809.943C880.201,-773.809 897.6,-688.108 939,-630 984.395,-566.284 1037.63,-589.012 1078,-522 1088.53,-504.524 1107.41,-373.815 1115.34,-316.172"></path>
+<polygon fill="black" stroke="black" points="1118.84,-316.369 1116.73,-305.987 1111.91,-315.422 1118.84,-316.369"></polygon>
+</a>
+</g>
+<g id="a_edge23-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.start" xlink:title="instance.start">
+<text text-anchor="middle" x="1101.74" y="-553.8" font-family="Times,serif" font-size="14.00">instance.start</text>
+</a>
+</g>
+</g>
+<!-- stopped&#45;&gt;removing -->
+<g id="edge13" class="edge"><title>stopped-&gt;removing</title>
+<g id="a_edge13"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1124.71,-731.447C1093.79,-726.17 1049.56,-716.807 1013,-702 926.528,-666.977 918.972,-630.234 833,-594 807.184,-583.12 777.093,-574.86 752.07,-569.105"></path>
+<polygon fill="black" stroke="black" points="752.561,-565.629 742.039,-566.869 751.038,-572.461 752.561,-565.629"></polygon>
+</a>
+</g>
+<g id="a_edge13-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<text text-anchor="middle" x="991.675" y="-643.8" font-family="Times,serif" font-size="14.00">instance.remove</text>
+</a>
+</g>
+</g>
+<!-- stopped&#45;&gt;starting -->
+<g id="edge22" class="edge"><title>stopped-&gt;starting</title>
+<g id="a_edge22"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.start" xlink:title="instance.start">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1204.31,-736.922C1309.28,-735.615 1578,-724.86 1578,-649 1578,-649 1578,-649 1578,-377 1578,-352.636 1582.7,-339.612 1564,-324 1534.25,-299.165 1279.26,-291.772 1169.22,-289.726"></path>
+<polygon fill="black" stroke="black" points="1169.09,-286.223 1159.03,-289.544 1168.97,-293.222 1169.09,-286.223"></polygon>
+</a>
+</g>
+<g id="a_edge22-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.start" xlink:title="instance.start">
+<text text-anchor="middle" x="1614.74" y="-508.8" font-family="Times,serif" font-size="14.00">instance.start</text>
+</a>
+</g>
+</g>
+<!-- updating&#45;stopped -->
+<g id="node17" class="node"><title>updating-stopped</title>
+<ellipse fill="none" stroke="orange" cx="1159" cy="-648" rx="78.1314" ry="18"></ellipse>
+<text text-anchor="middle" x="1159" y="-643.8" font-family="Times,serif" font-size="14.00">updating-stopped</text>
+</g>
+<!-- stopped&#45;&gt;updating&#45;stopped -->
+<g id="edge31" class="edge"><title>stopped-&gt;updating-stopped</title>
+<g id="a_edge31"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.update" xlink:title="instance.update">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1162.21,-719.614C1161.65,-707.24 1160.88,-690.369 1160.24,-676.22"></path>
+<polygon fill="black" stroke="black" points="1163.73,-675.881 1159.78,-666.05 1156.73,-676.199 1163.73,-675.881"></polygon>
+</a>
+</g>
+<g id="a_edge31-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.update" xlink:title="instance.update">
+<text text-anchor="middle" x="1204.34" y="-688.8" font-family="Times,serif" font-size="14.00">instance.update</text>
+</a>
+</g>
+</g>
+<!-- allocationState:deactivating&#45;&gt;allocationState:inactive -->
+<g id="edge7" class="edge"><title>allocationState:deactivating-&gt;allocationState:inactive</title>
+<g id="a_edge7"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.deallocate" xlink:title="instance.deallocate[logic=InstanceDeallocate] ">
+<path fill="none" stroke="green" stroke-width="2" d="M327.525,-664.915C351.516,-676.414 379.863,-694.449 395,-720 427.42,-774.722 410.517,-873.005 406,-882 403.777,-886.427 400.7,-890.435 397.174,-894.025"></path>
+<polygon fill="green" stroke="green" stroke-width="2" points="394.65,-891.583 389.434,-900.805 399.263,-896.848 394.65,-891.583"></polygon>
+</a>
+</g>
+<g id="a_edge7-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.deallocate" xlink:title="instance.deallocate[logic=InstanceDeallocate] ">
+<text text-anchor="middle" x="546.409" y="-778.8" font-family="Times,serif" font-weight="bold" font-size="14.00">instance.deallocate[logic=InstanceDeallocate] </text>
+</a>
+</g>
+</g>
+<!-- running -->
+<g id="node8" class="node"><title>running</title>
+<ellipse fill="none" stroke="black" cx="1011" cy="-198" rx="41.1161" ry="18"></ellipse>
+<text text-anchor="middle" x="1011" y="-193.8" font-family="Times,serif" font-size="14.00">running</text>
+</g>
+<!-- migrating -->
+<g id="node9" class="node"><title>migrating</title>
+<ellipse fill="none" stroke="orange" cx="1139" cy="-108" rx="48.3795" ry="18"></ellipse>
+<text text-anchor="middle" x="1139" y="-103.8" font-family="Times,serif" font-size="14.00">migrating</text>
+</g>
+<!-- running&#45;&gt;migrating -->
+<g id="edge8" class="edge"><title>running-&gt;migrating</title>
+<g id="a_edge8"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.migrate" xlink:title="instance.migrate">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1012.8,-179.586C1014.87,-168.06 1019.31,-153.392 1028.87,-144 1033.66,-139.288 1063.63,-129.915 1091.09,-122.054"></path>
+<polygon fill="black" stroke="black" points="1092.38,-125.328 1101.05,-119.238 1090.47,-118.592 1092.38,-125.328"></polygon>
+</a>
+</g>
+<g id="a_edge8-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.migrate" xlink:title="instance.migrate">
+<text text-anchor="middle" x="1074.07" y="-148.8" font-family="Times,serif" font-size="14.00">instance.migrate</text>
+</a>
+</g>
+</g>
+<!-- stopping -->
+<g id="node15" class="node"><title>stopping</title>
+<ellipse fill="none" stroke="orange" cx="1151" cy="-18" rx="43.9542" ry="18"></ellipse>
+<text text-anchor="middle" x="1151" y="-13.8" font-family="Times,serif" font-size="14.00">stopping</text>
+</g>
+<!-- running&#45;&gt;stopping -->
+<g id="edge26" class="edge"><title>running-&gt;stopping</title>
+<g id="a_edge26"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1005.22,-179.945C998.723,-157.496 991.172,-117.645 1008.3,-90 1028.63,-57.168 1069.21,-39.0322 1101.91,-29.3267"></path>
+<polygon fill="black" stroke="black" points="1103.08,-32.6336 1111.78,-26.5783 1101.2,-25.8904 1103.08,-32.6336"></polygon>
+</a>
+</g>
+<g id="a_edge26-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop">
+<text text-anchor="middle" x="1045.35" y="-103.8" font-family="Times,serif" font-size="14.00">instance.stop</text>
+</a>
+</g>
+</g>
+<!-- updating&#45;running -->
+<g id="node16" class="node"><title>updating-running</title>
+<ellipse fill="none" stroke="orange" cx="789" cy="-108" rx="78.1329" ry="18"></ellipse>
+<text text-anchor="middle" x="789" y="-103.8" font-family="Times,serif" font-size="14.00">updating-running</text>
+</g>
+<!-- running&#45;&gt;updating&#45;running -->
+<g id="edge32" class="edge"><title>running-&gt;updating-running</title>
+<g id="a_edge32"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.update" xlink:title="instance.update">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M970.51,-194.772C897.657,-190.347 750.6,-179.354 735.311,-162 725.631,-151.013 734.644,-139.515 747.871,-130.047"></path>
+<polygon fill="black" stroke="black" points="750.035,-132.815 756.521,-124.437 746.227,-126.942 750.035,-132.815"></polygon>
+</a>
+</g>
+<g id="a_edge32-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.update" xlink:title="instance.update">
+<text text-anchor="middle" x="779.345" y="-148.8" font-family="Times,serif" font-size="14.00">instance.update</text>
+</a>
+</g>
+</g>
+<!-- migrating&#45;&gt;running -->
+<g id="edge9" class="edge"><title>migrating-&gt;running</title>
+<g id="a_edge9"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.migrate" xlink:title="instance.migrate[no-op] ">
+<path fill="none" stroke="orange" d="M1137.15,-126.416C1135.06,-137.942 1130.57,-152.61 1121,-162 1104.89,-177.798 1081.68,-186.47 1060.73,-191.228"></path>
+<polygon fill="orange" stroke="orange" points="1059.77,-187.851 1050.66,-193.264 1061.16,-194.712 1059.77,-187.851"></polygon>
+</a>
+</g>
+<g id="a_edge9-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.migrate" xlink:title="instance.migrate[no-op] ">
+<text text-anchor="middle" x="1202.56" y="-148.8" font-family="Times,serif" font-size="14.00">instance.migrate[no-op] </text>
+</a>
+</g>
+</g>
+<!-- removed -->
+<g id="node10" class="node"><title>removed</title>
+<ellipse fill="none" stroke="black" cx="814" cy="-468" rx="44.2358" ry="18"></ellipse>
+<text text-anchor="middle" x="814" y="-463.8" font-family="Times,serif" font-size="14.00">removed</text>
+</g>
+<!-- purging -->
+<g id="node11" class="node"><title>purging</title>
+<ellipse fill="none" stroke="orange" cx="814" cy="-378" rx="41.1161" ry="18"></ellipse>
+<text text-anchor="middle" x="814" y="-373.8" font-family="Times,serif" font-size="14.00">purging</text>
+</g>
+<!-- removed&#45;&gt;purging -->
+<g id="edge10" class="edge"><title>removed-&gt;purging</title>
+<g id="a_edge10"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.purge" xlink:title="instance.purge">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M814,-449.614C814,-437.24 814,-420.369 814,-406.22"></path>
+<polygon fill="black" stroke="black" points="817.5,-406.05 814,-396.05 810.5,-406.05 817.5,-406.05"></polygon>
+</a>
+</g>
+<g id="a_edge10-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.purge" xlink:title="instance.purge">
+<text text-anchor="middle" x="854.622" y="-418.8" font-family="Times,serif" font-size="14.00">instance.purge</text>
+</a>
+</g>
+</g>
+<!-- restoring -->
+<g id="node18" class="node"><title>restoring</title>
+<ellipse fill="none" stroke="orange" cx="1165" cy="-378" rx="45.0427" ry="18"></ellipse>
+<text text-anchor="middle" x="1165" y="-373.8" font-family="Times,serif" font-size="14.00">restoring</text>
+</g>
+<!-- removed&#45;&gt;restoring -->
+<g id="edge20" class="edge"><title>removed-&gt;restoring</title>
+<g id="a_edge20"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.restore" xlink:title="instance.restore">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M850.9,-457.749C915.068,-441.661 1047.11,-408.557 1117.83,-390.826"></path>
+<polygon fill="black" stroke="black" points="1118.95,-394.152 1127.8,-388.326 1117.25,-387.363 1118.95,-394.152"></polygon>
+</a>
+</g>
+<g id="a_edge20-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.restore" xlink:title="instance.restore">
+<text text-anchor="middle" x="1064.73" y="-418.8" font-family="Times,serif" font-size="14.00">instance.restore</text>
+</a>
+</g>
+</g>
+<!-- purged -->
+<g id="node12" class="node"><title>purged</title>
+<ellipse fill="none" stroke="black" cx="814" cy="-288" rx="37.2801" ry="18"></ellipse>
+<text text-anchor="middle" x="814" y="-283.8" font-family="Times,serif" font-size="14.00">purged</text>
+</g>
+<!-- purging&#45;&gt;purged -->
+<g id="edge11" class="edge"><title>purging-&gt;purged</title>
+<g id="a_edge11"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.purge" xlink:title="instance.purge[no-op] ">
+<path fill="none" stroke="orange" d="M814,-359.614C814,-347.24 814,-330.369 814,-316.22"></path>
+<polygon fill="orange" stroke="orange" points="817.5,-316.05 814,-306.05 810.5,-316.05 817.5,-316.05"></polygon>
+</a>
+</g>
+<g id="a_edge11-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.purge" xlink:title="instance.purge[no-op] ">
+<text text-anchor="middle" x="879.113" y="-328.8" font-family="Times,serif" font-size="14.00">instance.purge[no-op] </text>
+</a>
+</g>
+</g>
+<!-- removing&#45;&gt;removed -->
+<g id="edge19" class="edge"><title>removing-&gt;removed</title>
+<g id="a_edge19"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove[logic=InstanceRemove,post=SetRemovedFields] ">
+<path fill="none" stroke="green" stroke-width="2" d="M695.354,-539.589C693.44,-528.356 693.154,-514.025 700.645,-504 714.491,-485.472 738.002,-476.464 760.035,-472.189"></path>
+<polygon fill="green" stroke="green" stroke-width="2" points="760.718,-475.624 770.014,-470.541 759.578,-468.718 760.718,-475.624"></polygon>
+</a>
+</g>
+<g id="a_edge19-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove[logic=InstanceRemove,post=SetRemovedFields] ">
+<text text-anchor="middle" x="889.677" y="-508.8" font-family="Times,serif" font-weight="bold" font-size="14.00">instance.remove[logic=InstanceRemove,post=SetRemovedFields] </text>
+</a>
+</g>
+</g>
+<!-- starting&#45;&gt;running -->
+<g id="edge25" class="edge"><title>starting-&gt;running</title>
+<g id="a_edge25"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.start" xlink:title="instance.start[logic=InstanceStart] ">
+<path fill="none" stroke="green" stroke-width="2" d="M1100.19,-271.672C1082.84,-257.539 1056.92,-236.416 1037.48,-220.58"></path>
+<polygon fill="green" stroke="green" stroke-width="2" points="1039.56,-217.756 1029.6,-214.153 1035.14,-223.183 1039.56,-217.756"></polygon>
+</a>
+</g>
+<g id="a_edge25-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.start" xlink:title="instance.start[logic=InstanceStart] ">
+<text text-anchor="middle" x="1173.38" y="-238.8" font-family="Times,serif" font-weight="bold" font-size="14.00">instance.start[logic=InstanceStart] </text>
+</a>
+</g>
+</g>
+<!-- starting&#45;&gt;removing -->
+<g id="edge14" class="edge"><title>starting-&gt;removing</title>
+<g id="a_edge14"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1079.43,-290.803C1007.41,-294.524 857.906,-304.397 810,-324 757.251,-345.585 745.89,-363.937 718.65,-414 694.969,-457.523 684.781,-472.844 691,-522 691.343,-524.708 691.829,-527.506 692.399,-530.285"></path>
+<polygon fill="black" stroke="black" points="689.01,-531.161 694.734,-540.077 695.819,-529.538 689.01,-531.161"></polygon>
+</a>
+</g>
+<g id="a_edge14-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<text text-anchor="middle" x="764.675" y="-418.8" font-family="Times,serif" font-size="14.00">instance.remove</text>
+</a>
+</g>
+</g>
+<!-- starting&#45;&gt;stopping -->
+<g id="edge27" class="edge"><title>starting-&gt;stopping</title>
+<g id="a_edge27"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1158.16,-283.74C1199.72,-279.376 1261.4,-270.004 1276,-252 1306.23,-214.714 1295.46,-188.311 1277,-144 1257.99,-98.3702 1213.33,-60.8431 1182.63,-39.1812"></path>
+<polygon fill="black" stroke="black" points="1184.59,-36.2852 1174.37,-33.4986 1180.63,-42.0514 1184.59,-36.2852"></polygon>
+</a>
+</g>
+<g id="a_edge27-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop">
+<text text-anchor="middle" x="1320.35" y="-148.8" font-family="Times,serif" font-size="14.00">instance.stop</text>
+</a>
+</g>
+</g>
+<!-- stopping&#45;&gt;stopped -->
+<g id="edge30" class="edge"><title>stopping-&gt;stopped</title>
+<g id="a_edge30"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop[logic=InstanceStop] ">
+<path fill="none" stroke="green" stroke-width="2" d="M1194.46,-21.8589C1318.62,-30.6018 1666,-59.3229 1666,-107 1666,-649 1666,-649 1666,-649 1666,-706.897 1603.03,-687.399 1547,-702 1430.69,-732.314 1288.63,-737.322 1214.16,-737.61"></path>
+<polygon fill="green" stroke="green" stroke-width="2" points="1214.11,-734.11 1204.11,-737.622 1214.11,-741.11 1214.11,-734.11"></polygon>
+</a>
+</g>
+<g id="a_edge30-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop[logic=InstanceStop] ">
+<text text-anchor="middle" x="1764.61" y="-373.8" font-family="Times,serif" font-weight="bold" font-size="14.00">instance.stop[logic=InstanceStop] </text>
+</a>
+</g>
+</g>
+<!-- stopping&#45;&gt;removing -->
+<g id="edge15" class="edge"><title>stopping-&gt;removing</title>
+<g id="a_edge15"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1106.84,-20.5336C963.894,-26.0776 523,-47.9626 523,-107 523,-469 523,-469 523,-469 523,-523.533 591.199,-544.272 642.93,-552.16"></path>
+<polygon fill="black" stroke="black" points="642.644,-555.653 653.032,-553.572 643.613,-548.721 642.644,-555.653"></polygon>
+</a>
+</g>
+<g id="a_edge15-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<text text-anchor="middle" x="568.675" y="-283.8" font-family="Times,serif" font-size="14.00">instance.remove</text>
+</a>
+</g>
+</g>
+<!-- updating&#45;running&#45;&gt;running -->
+<g id="edge34" class="edge"><title>updating-running-&gt;running</title>
+<g id="a_edge34"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.update" xlink:title="instance.update[no-op] ">
+<path fill="none" stroke="orange" d="M804.858,-125.794C818.122,-139.475 836.284,-157.273 845.329,-162 881.1,-180.695 926.154,-189.404 960.246,-193.461"></path>
+<polygon fill="orange" stroke="orange" points="960.13,-196.97 970.452,-194.577 960.891,-190.011 960.13,-196.97"></polygon>
+</a>
+</g>
+<g id="a_edge34-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.update" xlink:title="instance.update[no-op] ">
+<text text-anchor="middle" x="913.836" y="-148.8" font-family="Times,serif" font-size="14.00">instance.update[no-op] </text>
+</a>
+</g>
+</g>
+<!-- updating&#45;running&#45;&gt;removing -->
+<g id="edge17" class="edge"><title>updating-running-&gt;removing</title>
+<g id="a_edge17"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M730.056,-119.961C689.16,-131.367 642,-153.871 642,-197 642,-469 642,-469 642,-469 642,-494.002 658.524,-517.385 673.932,-533.754"></path>
+<polygon fill="black" stroke="black" points="671.799,-536.573 681.329,-541.203 676.766,-531.641 671.799,-536.573"></polygon>
+</a>
+</g>
+<g id="a_edge17-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<text text-anchor="middle" x="687.675" y="-328.8" font-family="Times,serif" font-size="14.00">instance.remove</text>
+</a>
+</g>
+</g>
+<!-- updating&#45;running&#45;&gt;stopping -->
+<g id="edge28" class="edge"><title>updating-running-&gt;stopping</title>
+<g id="a_edge28"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M818.538,-91.1293C842.171,-79.1146 876.502,-63.1648 908.295,-54 971.882,-35.6705 1047.73,-26.6962 1097.51,-22.474"></path>
+<polygon fill="black" stroke="black" points="1098.04,-25.9426 1107.72,-21.6435 1097.47,-18.9656 1098.04,-25.9426"></polygon>
+</a>
+</g>
+<g id="a_edge28-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop">
+<text text-anchor="middle" x="945.352" y="-58.8" font-family="Times,serif" font-size="14.00">instance.stop</text>
+</a>
+</g>
+</g>
+<!-- updating&#45;stopped&#45;&gt;stopped -->
+<g id="edge33" class="edge"><title>updating-stopped-&gt;stopped</title>
+<g id="a_edge33"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.update" xlink:title="instance.update[no-op] ">
+<path fill="none" stroke="orange" d="M1101.13,-660.146C1065.48,-667.599 1025.59,-677.242 1020.33,-684 1015.41,-690.311 1015.39,-695.705 1020.33,-702 1031.87,-716.72 1077.04,-726.063 1113.5,-731.358"></path>
+<polygon fill="orange" stroke="orange" points="1113.14,-734.841 1123.52,-732.745 1114.1,-727.907 1113.14,-734.841"></polygon>
+</a>
+</g>
+<g id="a_edge33-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.update" xlink:title="instance.update[no-op] ">
+<text text-anchor="middle" x="1088.84" y="-688.8" font-family="Times,serif" font-size="14.00">instance.update[no-op] </text>
+</a>
+</g>
+</g>
+<!-- updating&#45;stopped&#45;&gt;removing -->
+<g id="edge18" class="edge"><title>updating-stopped-&gt;removing</title>
+<g id="a_edge18"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1118.74,-632.557C1083.8,-620.553 1031.65,-603.89 985,-594 906.792,-577.418 814.726,-567.876 756.856,-563.061"></path>
+<polygon fill="black" stroke="black" points="757.063,-559.567 746.812,-562.245 756.496,-566.544 757.063,-559.567"></polygon>
+</a>
+</g>
+<g id="a_edge18-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.remove" xlink:title="instance.remove">
+<text text-anchor="middle" x="1097.67" y="-598.8" font-family="Times,serif" font-size="14.00">instance.remove</text>
+</a>
+</g>
+</g>
+<!-- updating&#45;stopped&#45;&gt;stopping -->
+<g id="edge29" class="edge"><title>updating-stopped-&gt;stopping</title>
+<g id="a_edge29"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1234.71,-643.356C1331.18,-636.945 1489.81,-619.863 1526,-576 1536.18,-563.659 1527.14,-555.959 1526,-540 1517.98,-427.589 1490,-401.697 1490,-289 1490,-289 1490,-289 1490,-107 1490,-48.7729 1300.26,-28.4152 1204.68,-21.8541"></path>
+<polygon fill="black" stroke="black" points="1204.83,-18.3564 1194.62,-21.1906 1204.37,-25.3412 1204.83,-18.3564"></polygon>
+</a>
+</g>
+<g id="a_edge29-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.stop" xlink:title="instance.stop">
+<text text-anchor="middle" x="1528.35" y="-328.8" font-family="Times,serif" font-size="14.00">instance.stop</text>
+</a>
+</g>
+</g>
+<!-- restoring&#45;&gt;stopped -->
+<g id="edge21" class="edge"><title>restoring-&gt;stopped</title>
+<g id="a_edge21"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.restore" xlink:title="instance.restore[logic=InstanceRestore,post=ClearRemovedFields] ">
+<path fill="none" stroke="green" stroke-width="2" d="M1162.34,-396C1157.6,-431.663 1150.9,-515.953 1182.01,-576 1199.12,-609.044 1228.78,-597.01 1246,-630 1261.95,-660.544 1258.75,-690.577 1251,-702 1241.91,-715.393 1226.8,-723.662 1211.65,-728.766"></path>
+<polygon fill="green" stroke="green" stroke-width="2" points="1210.34,-725.501 1201.74,-731.685 1212.32,-732.215 1210.34,-725.501"></polygon>
+</a>
+</g>
+<g id="a_edge21-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.restore" xlink:title="instance.restore[logic=InstanceRestore,post=ClearRemovedFields] ">
+<text text-anchor="middle" x="1373" y="-553.8" font-family="Times,serif" font-weight="bold" font-size="14.00">instance.restore[logic=InstanceRestore,post=ClearRemovedFields] </text>
+</a>
+</g>
+</g>
+<!-- restoring&#45;&gt;starting -->
+<g id="edge24" class="edge"><title>restoring-&gt;starting</title>
+<g id="a_edge24"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.start" xlink:title="instance.start">
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1156.13,-360.033C1149.41,-347.168 1140.05,-329.27 1132.41,-314.658"></path>
+<polygon fill="black" stroke="black" points="1135.42,-312.858 1127.69,-305.617 1129.22,-316.1 1135.42,-312.858"></polygon>
+</a>
+</g>
+<g id="a_edge24-label"><a xlink:href="http://localhost:8080/v1/processdefinitions/1pd!instance.start" xlink:title="instance.start">
+<text text-anchor="middle" x="1182.74" y="-328.8" font-family="Times,serif" font-size="14.00">instance.start</text>
+</a>
+</g>
+</g>
+</g>
+</svg>

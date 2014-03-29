@@ -6,7 +6,10 @@ URL=http://localhost:8080/v1
 # Register yourself as an event handler
 # We set the uuid so that the registration will only happen once.
 # The second POST with the same UUID will result in a conflict.
-curl -X POST ${URL}/externalhandlers -F uuid=demohandler1 -F name=demo -F processNames=instance.start
+curl -X POST ${URL}/externalhandlers \
+    -F uuid=demohandler1 \
+    -F name=demo \
+    -F processNames=instance.start
 
 # Subscribe to event instance.start;handler=demo
 #

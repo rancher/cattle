@@ -31,7 +31,7 @@ Start Cattle
 
 .. code-block:: bash
 
-    docker run -d -p 8080:8080 cattle/cattle
+    docker run -d -p 8080:8080 cattle/server
 
 Setup SSH Keys
 **************

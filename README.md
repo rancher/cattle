@@ -36,109 +36,173 @@ A lot of networking features
 
 # Getting Started
 
-## Installing
+## Install Server and a Host
 
-Your best bet at the moment is to run on Ubuntu 13.10+.  Anything that runs Docker will eventually be supported, but development is done on Ubuntu 13.10.
+Start with a fresh **Ubuntu 13.10+**.  Anything that runs Docker will eventually be supported, but development is done on Ubuntu 13.10, so that's your best bet.  To make this simple were going to install everything on a single server.
 
-### Management Server
+```bash
+# Install docker if you don't have it
+[ ! -x "$(which docker)" ] && curl -sL https://get.docker.io/ | sh
 
-Install Docker if you don't have it already, you can read the [official instructions][9] or just run
+# Install libvirt too
+sudo apt-get install -y libvirt-bin python-libvirt
 
-    curl -sL https://get.docker.io/ | sh
+# Gonna need a ssh server
+sudo apt-get install -y openssh-server
 
-Start Cattle
+#Start Cattle
+sudo docker run -p 8080:8080 cattle/server
+```
 
-    docker run -p 8080:8080 cattle/server
-
-
-## Specific Installation Instructions
-
-Below are installation instructions for specific environments.
-
-[Boot2Docker][5] - Useful if you want to run docker on Mac OS X.
-
-[CoreOS][6] - Useful if you want to run massively scalable infrastructure :)
-
-## Generic Installation
-
-For a simple installation you have two basic things that need to be setup, the management server and a hypervisor/Docker server.  They can be the same physical/virtual machine if you want.
-
-<p align=center> ![Simple Architecture Picture][1]
-
-### 1. Download
-
-[cattle.jar (Main distribution)][3]
-
-[cattle-scripts.tar.gz (Python API, CLI, and Samples)][4]
-
-### 2. Management Server Installation
-
-You can either run Cattle within docker or manually.  It is really a matter of preference which approach you take.  Running in docker has the advantage of not having to install Java and pretending that it doesn't exist.
-
-#### 2a. The "Docker Way"
-
-    docker run -p 8080:8080 cattle/cattle
-    
-**NOTE: This will use port 8080 on the host.  If port 8080 is not free, you can choose a different port by doing `-p 8081:8080` to use port 8081, for example.  Or if you want to just allocate a random port `-p 8080`.**
-
-#### 2b. Manually
-
-Java 6+ is required, Java 7+ is recommended.
-
-    java -jar cattle.jar
-
-### 3. Make sure it's running
-
-It may take up to 30 seconds to startup the first time.  Once Cattle is running you should see the below message
+After about 30 seconds you should see
 
 > Startup Succeeded, Listening on port 8080
 
-If you see tons of Java stack traces, then something bad happened.  If you can hit http://localhost:8080 and it serves up the UI you should be good to go.
+Now register the current server as a Docker/KVM host
 
-**NOTE: If you are running the management server under Docker the listen port might not be 8080 but instead the random port that was chosen by Docker.  Run ```docker ps``` to see which port is mapped to 8080.**
+```bash
+# Download and authorize SSH key.
+curl -s http://localhost:8080/v1/authorized_keys | sudo tee -a /root/.ssh/authorized_keys
 
-### 4. Registering a Hypervisor/Docker Server
-
-**Docker v0.8.0+ is required to be installed.**
-
-From the hypervisor or Docker server run the following commands to register the node with management server replacing HOST:PORT with the host and port of the mangement server.  This is the same port that you used to access the UI.
-
-```sh
-curl http://<HOST:PORT>/v1/authorized_keys | sudo tee -a /root/.ssh/authorized_keys
-curl -X POST http://<HOST:PORT>:8080/v1/agents
+# Register agent
+curl -X POST http://localhost:8080/v1/agents
 ```
 
-When Cattle first starts it generates a SSH key.  The above commands will download the public key and then register itself with the Cattle management server.  The default communication transport between the management server and the host is SSH.  There are other approaches, but SSH is the simplest and most secure approach for Linux based hosts.
+## Command line client
 
-### 5. Confirm registration worked
+### Install
 
-If you hit http://localhost:8080/v1/agents you should see one agent and the state should be "active."  If the state is not active within five minutes, then it probably didn't work.
+```bash
+# Need pip
+apt-get install -y python-pip
 
-If the agent is active go to http://localhost:8080/v1/hosts and within one minute you should see one host that is active.
+# Install CLI
+pip install cattle
+```
 
-### 6. Run something
+### Run
 
-There are some sample things you can do in Cattle in the [Documentation][7].  There are some samples for Docker too, if you not too familiar with it.
+```bash
+# Get Help!  You can also look at the examples below
+cattle --help
+```
+More [documentation][10] on the command line client.
 
-Or you can just open the UI to http://localhost:8080/v1/containers and click "Create."  Enter a imageUuid in the format "docker:name" for example "docker:cattle/cattle" or "docker:ubuntu" and a command, like "sleep 120."
+### Bash Autocompletion
 
-## More Info
+Add the below to your `.bashrc` or similar profile script:
+```
+eval "$(register-python-argcomplete cattle)"
+```
+## Navigate the API
 
-Documentation: http://cattle.readthedocs.org/en/latest/toc.html
+You can click around and use the API from a web browser at http://localhost:8080/v1
 
-### 7. Learn
+<p align=center>  ![API UI][11]
 
-If you've gotten this far, you have a basic setup of Cattle.  This setup will actually scale to hundreds of host and thousands of VMs just fine.  Basically >90% of existing clouds today will work with this simple setup.  There is the obvious downside that everything is running in a single process and there is no redundancy.  To learn how to do more complex setups with true redundancy and capable of scaling to the millions of things refer to the [Documentation][8].
+## Launch Containers and Virtual Machines
+
+### Containers
+
+```bash
+cattle create-container --imageUuid docker:ibuildthecloud/helloworld
+```
+### Virtual Machines
+
+```bash
+cattle create-virtualMachine --memoryMb 256 --imageUuid cirros
+```
+
+## Integrating
+
+You should really read up on how orchestration works under the hood, but for a quick example.  Here is how you can integrate with Cattle so that right before a virtual machine or container is launched your code is called to do something.  You can write this in any language, but just to demonstrate how easy it is we will use bash and [jq][12].
+
+```bash
+#!/bin/bash
+set -e
+
+URL=http://localhost:8080/v1
+
+# Register yourself as an event handler
+# We set the uuid so that the registration will only happen once.
+# The second POST with the same UUID will result in a conflict.
+curl -X POST ${URL}/externalhandlers \
+    -F uuid=demohandler1 \
+    -F name=demo \
+    -F processNames=instance.start
+
+# Subscribe to event instance.start;handler=demo
+#
+# -N is important, that disables buffering
+curl -s -N -X POST ${URL}/subscribe -F eventNames='instance.start;handler=demo' | while read EVENT; do 
+
+    # Only reply to instance.start;handler=demo event and ignore ping event
+    if [ "$(echo $EVENT | jq -r .name)" != "instance.start;handler=demo" ]; then
+        continue
+    fi
+
+    # Just echo some stuff so we know whats going on
+    echo $EVENT | jq .
+    echo $EVENT | jq '"Starting \(.resourceType):\(.resourceId)"'
+
+    # Example calling back to API to get other stuff...
+    # This just constructs the command 
+    #    curl -s http://localhost:8080/v1/container/42 | jq .
+    #
+    curl -s $(echo $EVENT | jq -r '"'$URL'/\(.resourceType)/\(.resourceId)"') | jq .
+
+    # This would be the point you do something...
+    echo "I am now doing really important other things..."
+
+    # Reply
+    # The required fields are 
+    #    name: Should be equal to the replyTo of the request event
+    #    previousId: Should be equal to the id of the request event
+    #
+    # In the data field you can put any data you want that will be set
+    # on the instance.  The +data syntax means merge the existing value
+    # with the one supplied.  So if {data: {a: 1 }} already exists on the
+    # instance, and you speciy {+data: {b: 2}} then the result is
+    # {data: {a: 1, b: 2}} and not {data: {b: 2}}
+    if true; then
+        echo "And now I'm done, so I'm going to say that"
+        echo $EVENT | jq '{
+            "name" : .replyTo,
+            "previousIds" : [ .id ],
+            "data" : {
+                "+data" : {
+                    "hello" : "world"
+                }
+            },
+        }' | curl -s -X POST -H 'Content-Type: application/json' -d @- $URL/publish
+    else
+        echo "Crap, I failed.  I should tell somebody that"
+        echo $EVENT | jq '{
+            "name" : .replyTo,
+            "previousIds" : [ .id ],
+            "transitioning" : "error",
+            "transitioningInternalMessage" : "Holy crap, stuff is really broken",
+            "data" : {
+                "+data" : {
+                    "hello" : "world"
+                }
+            },
+        }' | curl -s -X POST -H 'Content-Type: application/json' -d @- $URL/publish
+    fi
+done
+
+```
+
+## More Examples
+
+There are other examples of integrating with Cattle.  For example, adding a new hypervisor, or customing libvirt.
 
 # License
 [Apache License, Version 2.0][2]
 
-  [1]: https://docs.google.com/drawings/d/1M04-BY_cgeTEBGpf9uZ4YuOnL9jq438IB9uN0CAynOQ/pub?w=268&h=206
   [2]: http://www.apache.org/licenses/LICENSE-2.0.html
-  [3]: https://github.com/cattleio/cattle/releases/download/v0.1-rc1/cattle.jar
-  [4]: https://github.com/cattleio/cattle/releases/download/v0.1-rc1/cattle-scripts.tar.gz
-  [5]: http://cattle.readthedocs.org/en/latest/installation/boot2docker.html
-  [6]: http://cattle.readthedocs.org/en/latest/installation/coreos.html
-  [7]: http://cattle.readthedocs.org/en/latest/examples/overview.html
   [8]: http://cattle.readthedocs.org/en/latest/toc.html
   [9]: http://docs.docker.io/en/latest/installation/
+  [10]: https://github.com/cattleio/cattle-cli/blob/master/README.md
+  [11]: docs/source/images/apiui.png
+  [12]: http://stedolan.github.io/jq/

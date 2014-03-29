@@ -9,7 +9,7 @@ The key things to note is that you must run Cattle in Docker, you're not going t
 
 .. code-block:: bash
 
-    docker run -d -p 8080:8080 cattle/cattle
+    docker run -d -p 8080:8080 cattle/server
 
 Adding a Server
 ***************
