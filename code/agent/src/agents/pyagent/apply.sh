@@ -36,7 +36,8 @@ stage()
 
 conf()
 {
-    CONF=(/etc/cattle/agent/agent.conf
+    CONF=(/var/lib/cattle/pyagent/agent.conf
+          /etc/cattle/agent/agent.conf
           /var/lib/cattle/etc/cattle/agent/agent.conf)
 
     for conf_file in "${CONF[@]}"; do
