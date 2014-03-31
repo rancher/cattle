@@ -32,4 +32,4 @@ do_install()
     curl -X POST http://localhost:8080/v1/agents
 }
 
-do_install > /var/log/cattle-install.log 2>&
+do_install > /var/log/cattle-install.log 2>&1

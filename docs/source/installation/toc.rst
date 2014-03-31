@@ -10,3 +10,4 @@ Contents:
    generic
    boot2docker
    coreos
+   ec2
