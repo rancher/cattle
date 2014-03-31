@@ -2,7 +2,7 @@
 
 cd $(dirname $0)
 
-if [ -e dist ]; then
+if diff -q dist-requirements.txt dist/dist-requirements.txt >/dev/null 2>&1; then
     exit 0
 fi
 
@@ -17,4 +17,9 @@ then
     exit 1
 fi
 
+if [ -e dist ]; then
+    rm -rf dist
+fi
+
 pip install -t dist -r dist-requirements.txt
+cp dist-requirements.txt dist

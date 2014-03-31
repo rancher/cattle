@@ -17,7 +17,7 @@ clean: build-env
 	./tools/docker/build.sh find -depth -name __pycache__ -type d -exec rm -rf {} \;
 	./tools/docker/build.sh find -depth -name .tox -type d -exec rm -rf {} \;
 	./tools/docker/build.sh mvn clean
-	./tools/docker/build.sh rm -rf dist
+	./tools/docker/build.sh rm -rf dist ./code/agent/src/agents/pyagent/dist ./tests/integration/.tox ./code/agent/src/agents/pyagent/.tox
 
 test: build
 	FORCE_DB=h2 ./tools/docker/build.sh ./tools/build/runtests.sh

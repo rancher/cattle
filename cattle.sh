@@ -56,7 +56,7 @@ build()
             cp code/packaging/bundle/target/cattle-bundle*.jar dist/server/artifacts/cattle.jar
         fi
     fi
-    tar cv -C tools/docker/package . | tar xf - -C dist
+    tar c -C tools/docker/package . | tar xf - -C dist
 }
 
 if [ "$#" = "0" ]; then
