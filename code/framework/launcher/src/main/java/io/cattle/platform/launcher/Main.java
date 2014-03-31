@@ -172,7 +172,10 @@ public class Main {
 	}
 
 	protected List<URL> getPlugins() throws IOException {
-	    String base = System.getProperty("cattle.home", "");
+	    String base = System.getenv("CATTLE_HOME");
+        if ( base == null ) {
+	        base = System.getProperty("cattle.home", ".");
+        }
 	    String pathStrings = System.getenv("CATTLE_EXTENSIONS");
 	    if ( pathStrings == null ) {
 	        pathStrings = System.getProperty("cattle.extensions", "etc/cattle,extensions");
