@@ -72,7 +72,7 @@ try:
     if _ENABLED:
         docker_client().info()
 except Exception, e:
-    log.info('Disabling docker, could not contact docker')
+    log.exception('Disabling docker, could not contact docker')
     _ENABLED = False
 
 if _ENABLED and DockerConfig.docker_enabled():

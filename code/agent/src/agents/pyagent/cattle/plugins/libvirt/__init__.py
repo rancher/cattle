@@ -7,13 +7,14 @@ try:
     import libvirt
 
     try:
-        conn = libvirt.open()
+        conn = libvirt.open('qemu:///system')
         conn.close()
+        _ENABLED = True
     except:
         log.info('Failed to get connection to libvirt')
 
-    _ENABLED = True
 except:
+    log.info('Failed to find libvirt python')
     pass
 
 LIBVIRT_KIND = 'libvirt'
@@ -29,7 +30,7 @@ if _ENABLED:
     register_type(COMPUTE_DRIVER, LibvirtCompute())
     register_type(STORAGE_DRIVER, LibvirtStorage())
 else:
-    log.info('Disabling libvirt, libvirt-python not found')
+    log.info('Disabling libvirt')
 
 from qemu_img import QemuImg  # NOQA
 
