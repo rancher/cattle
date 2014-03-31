@@ -73,7 +73,7 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
     @staticmethod
     def get_instance_by(conn, func):
-        containers = filter(func, conn.listAllDomains())
+        containers = filter(func, conn.listAllDomains(0))
 
         if len(containers) > 0:
             return containers[0]
@@ -196,7 +196,7 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
                 'instance': {
                     '+data': {
                         '+libvirt': {
-                            'xml': existing.XMLDesc()
+                            'xml': existing.XMLDesc(0)
                         }
                     }
                 }
