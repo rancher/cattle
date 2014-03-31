@@ -3,6 +3,7 @@ package io.cattle.platform.api.settings.manager;
 import static io.cattle.platform.core.model.tables.SettingTable.*;
 import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
 import io.cattle.platform.api.settings.model.ActiveSetting;
+import io.cattle.platform.archaius.sources.NamedConfigurationSource;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -153,9 +154,14 @@ public class SettingManager extends AbstractJooqResourceManager {
     }
 
     protected String toString(Configuration config) {
+        if ( config instanceof NamedConfigurationSource ) {
+            return ((NamedConfigurationSource)config).getSourceName();
+        }
+
         if ( config instanceof DynamicConfiguration ) {
             return ((DynamicConfiguration)config).getSource().getClass().getName();
         }
+
         return config == null ? null : config.getClass().getName();
     }
 

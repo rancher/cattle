@@ -5,7 +5,6 @@ import java.util.HashMap;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
 
 public class OptionalPropertiesConfigurationFactory {
 
@@ -13,7 +12,7 @@ public class OptionalPropertiesConfigurationFactory {
 
     public AbstractConfiguration getConfiguration() {
         try {
-            return new PropertiesConfiguration(name);
+            return new NamedPropertiesConfiguration(name);
         } catch ( ConfigurationException e ) {
             return new MapConfiguration(new HashMap<String, Object>());
         }

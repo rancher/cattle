@@ -9,23 +9,23 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <bean id="EnvironmentConfig" class="io.cattle.platform.archaius.sources.TransformedEnvironmentProperties" />
-    <bean id="SystemConfig" class="org.apache.commons.configuration.SystemConfiguration" />
+    <bean id="SystemConfig" class="io.cattle.platform.archaius.sources.NamedSystemConfiguration" />
     <bean id="CattleLocalFileConfig" factory-bean="CattleLocalFileConfigFactory" factory-method="getConfiguration" />
     <bean id="CattleFileConfig" factory-bean="CattleFileConfigFactory" factory-method="getConfiguration" />
-    <bean id="DatabaseConfig" class="com.netflix.config.DynamicConfiguration" >
+    <bean id="DatabaseConfig" class="io.cattle.platform.archaius.sources.NamedDynamicConfiguration" >
         <constructor-arg index="0" >
             <bean class="io.cattle.platform.archaius.sources.LazyJDBCSource" />
         </constructor-arg>
         <constructor-arg index="1" ref="ConfigScheduler" />
+        <property name="sourceName" value="Database" />
     </bean>
     <bean id="CattleGlobalFileConfig" factory-bean="CattleGlobalFileConfigFactory" factory-method="getConfiguration" />
-    <bean id="DefaultsConfig" class="org.apache.commons.configuration.MapConfiguration">
+    <bean id="DefaultsConfig" class="io.cattle.platform.archaius.sources.NamedMapConfiguration" >
         <constructor-arg>
             <bean class="io.cattle.platform.archaius.startup.ArchaiusStartup" factory-method="getGlobalDefaults" />
         </constructor-arg>
+        <property name="sourceName" value="Code Packaged Defaults" />
     </bean>
-
-
 
     <bean id="CattleFileConfigFactory" class="io.cattle.platform.archaius.sources.OptionalPropertiesConfigurationFactory" >
         <property name="name" value="cattle.properties" />

@@ -6,7 +6,7 @@ import java.util.Map;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.lang.StringUtils;
 
-public class TransformedEnvironmentProperties extends MapConfiguration {
+public class TransformedEnvironmentProperties extends MapConfiguration implements NamedConfigurationSource {
 
     private static final String CONTAINS = "CATTLE";
     private static final String PREFIX = "CATTLE_";
@@ -36,5 +36,10 @@ public class TransformedEnvironmentProperties extends MapConfiguration {
         }
 
         return values;
+    }
+
+    @Override
+    public String getSourceName() {
+        return "Environment Variables";
     }
 }
