@@ -198,13 +198,16 @@ done
 
 The full documentation is available at http://docs.cattle.io
 
-There are [other examples] of integrating with Cattle.  For example, adding a [new hypervisor] or [customizing libvirt].
+There are [other examples][1] of integrating with Cattle.  For example, adding a [new hypervisor][3] or [customizing libvirt][4].
 
 
 # License
 [Apache License, Version 2.0][2]
 
+  [1]: http://docs.cattle.io/en/latest/examples/toc.html
   [2]: http://www.apache.org/licenses/LICENSE-2.0.html
+  [3]: http://docs.cattle.io/en/latest/examples/hypervisor.html
+  [4]: http://docs.cattle.io/en/latest/examples/libvirt-template.html
   [8]: http://cattle.readthedocs.org/en/latest/toc.html
   [9]: http://docs.docker.io/en/latest/installation/
   [10]: https://github.com/cattleio/cattle-cli/blob/master/README.md
