@@ -1,10 +1,7 @@
 from .common_fixtures import *  # NOQA
 from cattle import CONFIG_OVERRIDE
 from cattle.progress import LogProgress
-from .test_libvirt_storage import if_libvirt, fake_image
-from .test_libvirt_storage import fake_pool, fake_volume
-from .test_libvirt_storage import random_qcow2, random_qcow2_bz2  # NOQA
-from .test_libvirt_storage import random_qcow2_gz, pool_dir  # NOQA
+from .common_libvirt_fixtures import *  # NOQA
 from cattle.plugins.libvirt import enabled
 
 
