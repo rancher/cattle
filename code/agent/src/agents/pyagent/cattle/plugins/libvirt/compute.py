@@ -15,9 +15,10 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 
 DEFAULT_CONFIG_PATHS = [
-    ['host', 'data', 'libvirt'],
-    ['instance', 'offering', 'data', 'libvirt'],
     ['instance', 'data', 'libvirt'],
+    ['instance', 'template', 'data', 'libvirt'],
+    ['instance', 'offering', 'data', 'libvirt'],
+    ['host', 'data', 'libvirt'],
 ]
 
 log = logging.getLogger('libvirt-compute')
@@ -116,32 +117,26 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         return _is_running(conn, instance)
 
     @staticmethod
-    def _get_template(instance, host):
-        template = LibvirtConfig.default_template_name()
+    def _get_template(config):
+        defaults = LibvirtConfig.default_template_names()
+        for default_template in defaults:
+            template = config.param('template', default_template)
 
-        try:
-            template = host.data.libvirt.template
-        except AttributeError:
-            pass
+            dirs = LibvirtConfig.template_dirs()
+            for template_dir in dirs:
+                if os.path.exists(template):
+                    full_path = template
+                    uri = None
+                else:
+                    full_path = os.path.join(template_dir, template)
+                    uri = '/' + template
 
-        try:
-            template = instance.offering.data.libvirt.template
-        except AttributeError:
-            pass
+                if os.path.exists(full_path):
+                    return Template(filename=full_path,
+                                    uri=uri,
+                                    lookup=TemplateLookup(directories=dirs))
 
-        try:
-            template = instance.data.libvirt.template
-        except AttributeError:
-            pass
-
-        dirs = LibvirtConfig.template_dirs()
-        for template_dir in dirs:
-            full_path = os.path.join(template_dir, template)
-            if os.path.exists(full_path):
-                return Template(filename=full_path,
-                                lookup=TemplateLookup(directories=dirs))
-
-        raise Exception('Failed to find template [{0}]'.format(template))
+        raise Exception('Failed to find template {0}'.format(defaults))
 
     @staticmethod
     def _get_volumes(instance):
@@ -157,8 +152,8 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         return ret
 
     def _do_instance_activate(self, instance, host, progress):
-        template = self._get_template(instance, host)
         config = InstanceConfig(instance, host)
+        template = self._get_template(config)
         default_network = config.param('defaultNetwork', {
             'type': 'network',
             'source': [

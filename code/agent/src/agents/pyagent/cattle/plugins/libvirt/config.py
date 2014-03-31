@@ -1,5 +1,6 @@
 from os import path
 from cattle import default_value, Config
+import re
 
 
 class LibvirtConfig:
@@ -31,6 +32,7 @@ class LibvirtConfig:
         return default_value('LIBVIRT_TEMPLATE_DIR', default).split()
 
     @staticmethod
-    def default_template_name():
-        return default_value('LIBVIRT_DEFAULT_TEMPLATE',
-                             'default_template.tmpl')
+    def default_template_names():
+        value = default_value('LIBVIRT_DEFAULT_TEMPLATE',
+                              'custom_template.tmpl, default_template.tmpl')
+        return re.split(r'\s*,\s*', value)

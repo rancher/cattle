@@ -142,6 +142,34 @@ def test_instance_activate(random_qcow2, pool_dir, agent, responses):
 
 
 @if_libvirt
+def test_instance_activate_template(random_qcow2, pool_dir, agent, responses):
+    _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
+
+    volume = fake_volume(image_file=random_qcow2)
+    image = volume.image
+    pool = fake_pool(pool_dir)
+    volume['storagePools'] = [pool]
+
+    driver = DirectoryPoolDriver()
+    driver.image_activate(image, pool, LogProgress())
+    driver.volume_activate(volume, pool, LogProgress())
+
+    def pre(req):
+        req.data.instanceHostMap.instance.image = image
+        req.data.instanceHostMap.instance.volumes.append(volume)
+
+    def post(_, resp):
+        assert resp['data']['instance']['+data']['+libvirt']['xml'] is not None
+        assert 'spice' in resp['data']['instance']['+data']['+libvirt']['xml']
+        resp['data']['instance']['+data']['+libvirt']['xml'] = '<xml/>'
+
+    event_test(agent, 'libvirt/instance_activate_template', pre_func=pre,
+               post_func=post)
+
+    _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
+
+
+@if_libvirt
 def test_instance_deactivate(random_qcow2, pool_dir, agent, responses):
     CONFIG_OVERRIDE['STOP_TIMEOUT'] = 1
 
