@@ -7,7 +7,8 @@ Contents:
    :maxdepth: 2
 
    installation/toc
-   arch/toc
    design/index
+   arch/toc
    concepts/toc
+   config/toc
    examples/toc

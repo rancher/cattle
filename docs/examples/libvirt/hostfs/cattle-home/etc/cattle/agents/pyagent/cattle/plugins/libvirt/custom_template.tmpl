@@ -1,0 +1,10 @@
+<%inherit file="/default_template.tmpl" />
+
+<%block name="devices_other" >\
+<filesystem type='mount' accessmode='passthrough'>
+    <driver type='path' wrpolicy='immediate'/>
+    <source dir='/var/lib/guest-shared-fs'/>
+    <target dir='shared-fs'/>
+    <readonly/>
+</filesystem>
+</%block>\

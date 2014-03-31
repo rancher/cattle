@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+# Run this script and then launch some instances and see that it is
+# called right before an instance is started
 
 URL=http://localhost:8080/v1
 

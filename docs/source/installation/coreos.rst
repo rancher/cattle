@@ -22,7 +22,3 @@ Don't put the SSH key in /home/core/.ssh/authorized_keys because that file may l
     curl -s http://<HOST:PORT>/v1/authorized_keys | update-ssh-keys -A cattle
     curl -X POST http://<HOST:PORT>/v1/agents -F user=core
 
-Fleet
-*****
-
-Instructions for running Cattle using fleet are on their way...

@@ -80,12 +80,13 @@ apt-get install -y python-pip
 pip install cattle
 ```
 
-### Run
+### Help
 
 ```bash
-# Get Help!  You can also look at the examples below
+# Get Help!  The help dynamically changes as the server API does.
 cattle --help
 ```
+
 More [documentation][10] on the command line client.
 
 ### Bash Autocompletion
@@ -193,9 +194,12 @@ done
 
 ```
 
-## More Examples
+## Documentation and More Examples
 
-There are other examples of integrating with Cattle.  For example, adding a new hypervisor, or customing libvirt.
+The full documentation is available at http://docs.cattle.io
+
+There are [other examples] of integrating with Cattle.  For example, adding a [new hypervisor] or [customizing libvirt].
+
 
 # License
 [Apache License, Version 2.0][2]

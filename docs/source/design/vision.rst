@@ -3,7 +3,7 @@
 
 Using the analogy of a Cloud Operation System, Cattle would be the kernel. Xen, KVM, Docker, Ceph would be the drivers.  EC2, GCE, OpenStack, and CloudStack APIs would be glibc.  User space would be the plethora of tools and applications that consume Cloud APIs.
 
-.. image:: cattle-vision.png
+.. image:: https://docs.google.com/drawings/d/1IepAyBX3nct2hSP-y4ErwrQsVa9pVdviCeuSpc9fdtc/pub?w=604&h=260
    :align: right
 
 Cattle is first and foremost a lightweight, flexible, and reliable orchestration engine.  The umbrella of Cattle is purposely intended to not reach too far.  The goal of the platform is to stay focuses on building the core building blocks needed to assemble a full scale IaaS solution.  As one moves up the stack in functionality, by design, it should be less and less specific to Cattle.  

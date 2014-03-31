@@ -1,5 +1,12 @@
 #!/bin/bash
 set -e
+# This script provides a simple framework for listening to and handling
+# events in Cattle.  Refer to resource_change.sh for a simple example of
+# this script.  Refer to hypervisor.sh for a more complex example.
+#
+# This script requires jq, http://stedolan.github.io/jq/.  If you are not
+# familiar with jq you should read the docs on how it works.  jq is basically
+# like sed and awk for JSON.
 
 declare -A EVENT_HANDLERS
 
@@ -45,6 +52,15 @@ subscriptions()
 {
     local sub
 
+    # This looks for all defined functions that are of the form
+    # event_handler_* and will form the equivalent subscriptions.
+    # For example, event_handler_instance_start will turn into a subscription
+    # for instance.start.
+    #
+    # Additionally this will look for registered event handler functions in the
+    # EVENT_HANDLERS associative array.  This is useful if you want to subscribe
+    # to an event that has a special character in it like ";".  For example,
+    # you can do EVENT_HANDLERS["instance.start;handler=demo"]=my_handler_func
     for sub in $(
         declare -F | awk '{print $3}' | grep '^event_handler_' | sed \
             -e 's/^event_handler_//' \
@@ -66,6 +82,8 @@ subscribe()
     local args
     local sub
 
+    # If AGENT_ID env var is set, then pass it as agentId in the POST
+    # to /v1/subscribe
     if [ -n "$AGENT_ID" ]; then
         args="-F agentId=$AGENT_ID"
     fi
@@ -73,13 +91,13 @@ subscribe()
     for sub in $(subscriptions); do
         args="$args -F eventNames=$sub"
     done
-    # stdbuf is to avoid the standard output buffer that gets applied that will
-    # cause messages to get delayed because they are stuck in the buffer
+
     post -N ${SUB} $args
 }
 
 publish()
 {
+    # POST and echo the response
     post ${PUB} -H 'Content-Type: application/json' -d @- | jq .
     return ${PIPESTATUS[0]}
 }
@@ -146,6 +164,11 @@ dispatch()
 
 event_main()
 {
+    if [ ! -x "$(which jq)" ]; then
+        echo 'Failed to find jq, please download it from http://stedolan.github.io/jq/.'
+        exit 1
+    fi
+
     check_debug
     while [ "$#" -gt 0 ]; do
         case $1 in
@@ -269,5 +292,6 @@ json()
 
 event_handler_ping()
 {
+    # By default just reply to pings
     reply
 }

@@ -1,5 +1,5 @@
 Examples
-====================
+========
 
 Contents:
 
@@ -7,4 +7,6 @@ Contents:
    :maxdepth: 1
 
    simple-handler
+   hypervisor
+   libvirt-template
 

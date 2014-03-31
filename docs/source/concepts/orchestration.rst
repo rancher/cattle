@@ -27,7 +27,7 @@ Process are defined as having a start, transitioning, and done state.  All proce
 
 To make the orchestration system actually perform real operations, you must attach some logic.  In the above diagram you can see that the "InstanceStart" logic has been attached to this process.  One can attached any logic they choose.  This makes the orchestartion system very flexible and extensible.  At any point in the lifecycle of the resources you can plug-in any arbitrary logic.
 
-Once you assign enough states and process to a resource you being to construct a finite state machine for the resource.  You can combine all the processes for a resource into a single view by navigating to the resourceDot link of a resourceDefinition.  For example, the combined process diagram for an instance is available at http://localhost:8080/v1/resourcedefinitions/1rd!instance/resourcedot and looks similar to below.
+Once you assign enough states and process to a resource you begin to construct a finite state machine for the resource.  You can combine all the processes for a resource into a single view by navigating to the resourceDot link of a resourceDefinition.  For example, the combined process diagram for an instance is available at http://localhost:8080/v1/resourcedefinitions/1rd!instance/resourcedot and looks similar to below.
 
 .. image:: instance.svg
    :align: center
@@ -36,4 +36,4 @@ Once you assign enough states and process to a resource you being to construct a
 Process Handler
 ***************
 
-Process handlers are the way in which you attach logic to a process.  At the lowest level they are Java code that implement the :code:`io.cattle.platform.engine.handler.ProcessHandler` interface.  Instead of writing Java code, you can instead have the orchestration system send out an event that you process handler will respond too.  This means you can add logic in any programming or scripting language.  Refer to :ref:`simpler_handler` for an example of registering an external handlers and how to reply to events.
+Process handlers are the way in which you attach logic to a process.  At the lowest level they are Java code that implement the :code:`io.cattle.platform.engine.handler.ProcessHandler` interface.  Instead of writing Java code, you can instead have the orchestration system send out an event that you process handler will respond too.  This means you can add logic in any programming or scripting language.  Refer to :ref:`simple_handler` for an example of registering an external handlers and how to reply to events.
