@@ -38,6 +38,8 @@ A lot of networking features
 
 ## Install Server and a Host
 
+**Note: You can install this quickly with [AWS CloudFormation][5] too.**
+
 Start with a fresh **Ubuntu 13.10+**.  Anything that runs Docker will eventually be supported, but development is done on Ubuntu 13.10, so that's your best bet.  To make this simple were going to install everything on a single server.
 
 ```bash
@@ -208,6 +210,7 @@ There are [other examples][1] of integrating with Cattle.  For example, adding a
   [2]: http://www.apache.org/licenses/LICENSE-2.0.html
   [3]: http://docs.cattle.io/en/latest/examples/hypervisor.html
   [4]: http://docs.cattle.io/en/latest/examples/libvirt-template.html
+  [5]: http://cattle.readthedocs.org/en/latest/installation/ec2.html
   [8]: http://cattle.readthedocs.org/en/latest/toc.html
   [9]: http://docs.docker.io/en/latest/installation/
   [10]: https://github.com/cattleio/cattle-cli/blob/master/README.md
