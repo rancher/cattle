@@ -31,7 +31,7 @@ def test_container_create_only(admin_client, sim_context):
     image = container.image()
     image = wait_success(admin_client, image)
     assert_fields(image, {
-        "state": "inactive"
+        "state": "active"
     })
 
     volumes = container.volumes()
@@ -56,7 +56,7 @@ def test_container_create_only(admin_client, sim_context):
 
     image = wait_success(admin_client, admin_client.list_image(uuid=uuid)[0])
     assert_fields(image, {
-        "state": "inactive",
+        "state": "active",
         "uuid": uuid,
         "isPublic": True,
     })
