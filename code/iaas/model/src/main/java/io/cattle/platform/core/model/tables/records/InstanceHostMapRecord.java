@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "instance_host_map", schema = "cattle")
 public class InstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceHostMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.InstanceHostMap {
 
-	private static final long serialVersionUID = -1884674846;
+	private static final long serialVersionUID = -1752416503;
 
 	/**
 	 * Setter for <code>cattle.instance_host_map.id</code>.

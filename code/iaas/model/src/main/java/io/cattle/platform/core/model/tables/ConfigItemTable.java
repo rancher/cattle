@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ConfigItemRecord> {
 
-	private static final long serialVersionUID = -647195474;
+	private static final long serialVersionUID = -1588202918;
 
 	/**
 	 * The singleton instance of <code>cattle.config_item</code>

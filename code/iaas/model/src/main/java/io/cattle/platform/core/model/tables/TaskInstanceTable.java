@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class TaskInstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.TaskInstanceRecord> {
 
-	private static final long serialVersionUID = -454916978;
+	private static final long serialVersionUID = -1477208842;
 
 	/**
 	 * The singleton instance of <code>cattle.task_instance</code>

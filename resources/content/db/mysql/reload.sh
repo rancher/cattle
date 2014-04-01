@@ -2,5 +2,7 @@
 
 cd $(dirname $0)
 
-mysqldump -u root cattle > cattle_dump_$(date '+%s').sql
+TS=$(date '+%s')
+mysqldump -u root cattle > cattle_dump_${TS}.sql
+mysqldump -u root cattle_base > cattle_dump_base_${TS}.sql
 mysql -u root < reload_db.sql

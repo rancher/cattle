@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.docker.client.DockerClient;
@@ -58,6 +59,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
 
         data.put("dockerImage", dockerImage);
         image.setFormat(DOCKER_FORMAT);
+        image.setInstanceKind(InstanceConstants.KIND_CONTAINER);
 
         return true;
     }

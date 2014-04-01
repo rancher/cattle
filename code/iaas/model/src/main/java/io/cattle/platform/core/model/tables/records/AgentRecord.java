@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "agent", schema = "cattle")
 public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AgentRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.Agent {
 
-	private static final long serialVersionUID = -1309672524;
+	private static final long serialVersionUID = -360581725;
 
 	/**
 	 * Setter for <code>cattle.agent.id</code>.

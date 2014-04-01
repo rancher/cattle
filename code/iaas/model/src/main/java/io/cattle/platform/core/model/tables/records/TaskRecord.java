@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "task", schema = "cattle")
 public class TaskRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.TaskRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record2<java.lang.Long, java.lang.String>, io.cattle.platform.core.model.Task {
 
-	private static final long serialVersionUID = 2052611914;
+	private static final long serialVersionUID = 1655582833;
 
 	/**
 	 * Setter for <code>cattle.task.id</code>.

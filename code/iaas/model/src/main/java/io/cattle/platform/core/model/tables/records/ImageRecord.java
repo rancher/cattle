@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "image", schema = "cattle")
-public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ImageRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Image {
+public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ImageRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Image {
 
-	private static final long serialVersionUID = 2075204653;
+	private static final long serialVersionUID = 1611441462;
 
 	/**
 	 * Setter for <code>cattle.image.id</code>.
@@ -305,6 +305,23 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		return (java.lang.String) getValue(16);
 	}
 
+	/**
+	 * Setter for <code>cattle.image.instance_kind</code>.
+	 */
+	@Override
+	public void setInstanceKind(java.lang.String value) {
+		setValue(17, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.image.instance_kind</code>.
+	 */
+	@javax.persistence.Column(name = "instance_kind", length = 255)
+	@Override
+	public java.lang.String getInstanceKind() {
+		return (java.lang.String) getValue(17);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -318,23 +335,23 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	}
 
 	// -------------------------------------------------------------------------
-	// Record17 type implementation
+	// Record18 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row17) super.fieldsRow();
+	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
+		return (org.jooq.Row18) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row17) super.valuesRow();
+	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
+		return (org.jooq.Row18) super.valuesRow();
 	}
 
 	/**
@@ -477,6 +494,14 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field18() {
+		return io.cattle.platform.core.model.tables.ImageTable.IMAGE.INSTANCE_KIND;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -607,6 +632,14 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	@Override
 	public java.lang.String value17() {
 		return getFormat();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value18() {
+		return getInstanceKind();
 	}
 
 	/**
@@ -766,7 +799,16 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ImageRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Boolean value13, java.lang.Long value14, java.lang.Long value15, java.lang.String value16, java.lang.String value17) {
+	public ImageRecord value18(java.lang.String value) {
+		setInstanceKind(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ImageRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Boolean value13, java.lang.Long value14, java.lang.Long value15, java.lang.String value16, java.lang.String value17, java.lang.String value18) {
 		return this;
 	}
 
@@ -796,6 +838,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setVirtualSizeMb(from.getVirtualSizeMb());
 		setChecksum(from.getChecksum());
 		setFormat(from.getFormat());
+		setInstanceKind(from.getInstanceKind());
 	}
 
 	/**
@@ -821,7 +864,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	/**
 	 * Create a detached, initialised ImageRecord
 	 */
-	public ImageRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String url, java.lang.Boolean isPublic, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.String checksum, java.lang.String format) {
+	public ImageRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String url, java.lang.Boolean isPublic, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.String checksum, java.lang.String format, java.lang.String instanceKind) {
 		super(io.cattle.platform.core.model.tables.ImageTable.IMAGE);
 
 		setValue(0, id);
@@ -841,5 +884,6 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setValue(14, virtualSizeMb);
 		setValue(15, checksum);
 		setValue(16, format);
+		setValue(17, instanceKind);
 	}
 }

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DataTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.DataRecord> {
 
-	private static final long serialVersionUID = 79246419;
+	private static final long serialVersionUID = 1401940162;
 
 	/**
 	 * The singleton instance of <code>cattle.data</code>

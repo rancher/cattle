@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolHostMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.StoragePoolHostMapRecord> {
 
-	private static final long serialVersionUID = -676302010;
+	private static final long serialVersionUID = -2084841645;
 
 	/**
 	 * The singleton instance of <code>cattle.storage_pool_host_map</code>

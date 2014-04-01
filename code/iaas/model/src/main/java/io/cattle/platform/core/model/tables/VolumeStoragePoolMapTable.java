@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord> {
 
-	private static final long serialVersionUID = -1297089274;
+	private static final long serialVersionUID = 905420719;
 
 	/**
 	 * The singleton instance of <code>cattle.volume_storage_pool_map</code>

@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "config_item", schema = "cattle")
 public class ConfigItemRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ConfigItemRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record3<java.lang.Long, java.lang.String, java.lang.String>, io.cattle.platform.core.model.ConfigItem {
 
-	private static final long serialVersionUID = 177915721;
+	private static final long serialVersionUID = 591222678;
 
 	/**
 	 * Setter for <code>cattle.config_item.id</code>.

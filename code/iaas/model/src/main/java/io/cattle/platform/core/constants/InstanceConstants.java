@@ -13,4 +13,6 @@ public class InstanceConstants {
 
     public static final String PROCESS_STOP = "instance.stop";
 
+    public static final String KIND_CONTAINER = "container";
+    public static final String KIND_VIRTUAL_MACHINE = "virtualMachine";
 }

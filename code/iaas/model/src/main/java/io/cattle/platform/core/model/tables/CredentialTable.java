@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CredentialTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.CredentialRecord> {
 
-	private static final long serialVersionUID = -282077164;
+	private static final long serialVersionUID = 1365408096;
 
 	/**
 	 * The singleton instance of <code>cattle.credential</code>

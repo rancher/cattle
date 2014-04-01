@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ImageTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ImageRecord> {
 
-	private static final long serialVersionUID = 1079681832;
+	private static final long serialVersionUID = 1597183362;
 
 	/**
 	 * The singleton instance of <code>cattle.image</code>
@@ -110,6 +110,11 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.
 	 * The column <code>cattle.image.format</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ImageRecord, java.lang.String> FORMAT = createField("format", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>cattle.image.instance_kind</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ImageRecord, java.lang.String> INSTANCE_KIND = createField("instance_kind", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>cattle.image</code> table reference

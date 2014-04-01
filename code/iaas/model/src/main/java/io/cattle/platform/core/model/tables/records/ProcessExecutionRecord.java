@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "process_execution", schema = "cattle")
 public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ProcessExecutionRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>>, io.cattle.platform.core.model.ProcessExecution {
 
-	private static final long serialVersionUID = -663657799;
+	private static final long serialVersionUID = 467030492;
 
 	/**
 	 * Setter for <code>cattle.process_execution.id</code>.

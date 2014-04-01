@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "DATABASECHANGELOG", schema = "cattle")
 public class DatabasechangelogRecord extends org.jooq.impl.TableRecordImpl<io.cattle.platform.core.model.tables.records.DatabasechangelogRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Databasechangelog {
 
-	private static final long serialVersionUID = 631484558;
+	private static final long serialVersionUID = -246389885;
 
 	/**
 	 * Setter for <code>cattle.DATABASECHANGELOG.ID</code>.

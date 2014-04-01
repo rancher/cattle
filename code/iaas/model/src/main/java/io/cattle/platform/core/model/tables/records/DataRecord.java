@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "data", schema = "cattle")
 public class DataRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.DataRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String>, io.cattle.platform.core.model.Data {
 
-	private static final long serialVersionUID = 510169893;
+	private static final long serialVersionUID = -1287211936;
 
 	/**
 	 * Setter for <code>cattle.data.id</code>.

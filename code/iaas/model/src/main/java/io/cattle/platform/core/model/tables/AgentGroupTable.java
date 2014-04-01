@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentGroupTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AgentGroupRecord> {
 
-	private static final long serialVersionUID = -379172941;
+	private static final long serialVersionUID = 889569475;
 
 	/**
 	 * The singleton instance of <code>cattle.agent_group</code>

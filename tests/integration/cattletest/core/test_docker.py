@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from cattle import ApiError
 
 TEST_IMAGE = 'ibuildthecloud/helloworld'
 TEST_IMAGE_LATEST = TEST_IMAGE + ':latest'
@@ -14,6 +15,24 @@ def docker_context(admin_client):
 
 
 @if_docker
+def test_docker_image_create_vm(admin_client, docker_context):
+    uuid = TEST_IMAGE_UUID
+    container = admin_client.create_container(name='test',
+                                              imageUuid=uuid,
+                                              startOnCreate=False)
+    container = wait_success(admin_client, container)
+
+    assert container.state == 'stopped'
+    admin_client.delete(container)
+
+    try:
+        admin_client.create_virtual_machine(name='test',
+                                            imageUuid=uuid)
+    except ApiError, e:
+        assert e.error.code == 'INVALID_IMAGE_INSTANCE_KIND'
+
+
+@if_docker
 def test_docker_create_only(admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
     container = admin_client.create_container(name='test',
@@ -23,6 +42,7 @@ def test_docker_create_only(admin_client, docker_context):
 
     assert container is not None
     assert 'container' == container.type
+    assert container.image().instanceKind == 'container'
 
     image = admin_client.list_image(uuid=uuid)[0]
     image_mapping = filter(

@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "credential", schema = "cattle")
 public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.CredentialRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Credential {
 
-	private static final long serialVersionUID = -589476258;
+	private static final long serialVersionUID = 804548553;
 
 	/**
 	 * Setter for <code>cattle.credential.id</code>.

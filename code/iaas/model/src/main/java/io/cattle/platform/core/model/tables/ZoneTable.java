@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ZoneTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ZoneRecord> {
 
-	private static final long serialVersionUID = -115130198;
+	private static final long serialVersionUID = -723258754;
 
 	/**
 	 * The singleton instance of <code>cattle.zone</code>

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ProcessExecutionTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ProcessExecutionRecord> {
 
-	private static final long serialVersionUID = 1959095553;
+	private static final long serialVersionUID = -1841899956;
 
 	/**
 	 * The singleton instance of <code>cattle.process_execution</code>

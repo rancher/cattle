@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "DATABASECHANGELOGLOCK", schema = "cattle")
 public class DatabasechangeloglockRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.DatabasechangeloglockRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Integer, java.lang.Boolean, java.util.Date, java.lang.String>, io.cattle.platform.core.model.Databasechangeloglock {
 
-	private static final long serialVersionUID = 805128498;
+	private static final long serialVersionUID = -814980567;
 
 	/**
 	 * Setter for <code>cattle.DATABASECHANGELOGLOCK.ID</code>.

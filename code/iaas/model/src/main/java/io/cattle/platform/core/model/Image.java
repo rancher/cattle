@@ -201,6 +201,17 @@ public interface Image extends java.io.Serializable {
 	@javax.persistence.Column(name = "format", length = 255)
 	public java.lang.String getFormat();
 
+	/**
+	 * Setter for <code>cattle.image.instance_kind</code>.
+	 */
+	public void setInstanceKind(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.image.instance_kind</code>.
+	 */
+	@javax.persistence.Column(name = "instance_kind", length = 255)
+	public java.lang.String getInstanceKind();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "image_storage_pool_map", schema = "cattle")
 public class ImageStoragePoolMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ImageStoragePoolMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.ImageStoragePoolMap {
 
-	private static final long serialVersionUID = 1955882556;
+	private static final long serialVersionUID = -904770379;
 
 	/**
 	 * Setter for <code>cattle.image_storage_pool_map.id</code>.

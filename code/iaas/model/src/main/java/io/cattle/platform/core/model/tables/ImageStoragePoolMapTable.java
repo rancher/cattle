@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ImageStoragePoolMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ImageStoragePoolMapRecord> {
 
-	private static final long serialVersionUID = -2109201462;
+	private static final long serialVersionUID = 1242067417;
 
 	/**
 	 * The singleton instance of <code>cattle.image_storage_pool_map</code>

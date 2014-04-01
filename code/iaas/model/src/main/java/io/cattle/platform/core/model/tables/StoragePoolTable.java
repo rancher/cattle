@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.StoragePoolRecord> {
 
-	private static final long serialVersionUID = -1880478647;
+	private static final long serialVersionUID = -727312640;
 
 	/**
 	 * The singleton instance of <code>cattle.storage_pool</code>

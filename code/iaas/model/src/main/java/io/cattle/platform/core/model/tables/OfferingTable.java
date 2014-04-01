@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class OfferingTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.OfferingRecord> {
 
-	private static final long serialVersionUID = 1366811197;
+	private static final long serialVersionUID = -1224411100;
 
 	/**
 	 * The singleton instance of <code>cattle.offering</code>

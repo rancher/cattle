@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DatabasechangeloglockTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.DatabasechangeloglockRecord> {
 
-	private static final long serialVersionUID = -1142142668;
+	private static final long serialVersionUID = 1759341827;
 
 	/**
 	 * The singleton instance of <code>cattle.DATABASECHANGELOGLOCK</code>

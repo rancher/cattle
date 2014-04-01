@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "external_handler", schema = "cattle")
 public class ExternalHandlerRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ExternalHandlerRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer>, io.cattle.platform.core.model.ExternalHandler {
 
-	private static final long serialVersionUID = -1825523014;
+	private static final long serialVersionUID = -1202183713;
 
 	/**
 	 * Setter for <code>cattle.external_handler.id</code>.

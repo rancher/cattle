@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ExternalHandlerProcessTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ExternalHandlerProcessRecord> {
 
-	private static final long serialVersionUID = -2124244018;
+	private static final long serialVersionUID = -477706927;
 
 	/**
 	 * The singleton instance of <code>cattle.external_handler_process</code>

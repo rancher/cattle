@@ -15,7 +15,7 @@ package io.cattle.platform.core.model.tables.records;
 })
 public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record8<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date, java.util.Date, java.lang.Long>, io.cattle.platform.core.model.ConfigItemStatus {
 
-	private static final long serialVersionUID = -1660098306;
+	private static final long serialVersionUID = 88693405;
 
 	/**
 	 * Setter for <code>cattle.config_item_status.id</code>.

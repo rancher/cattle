@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ExternalHandlerTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ExternalHandlerRecord> {
 
-	private static final long serialVersionUID = 1068166318;
+	private static final long serialVersionUID = 61349740;
 
 	/**
 	 * The singleton instance of <code>cattle.external_handler</code>

@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "external_handler_process", schema = "cattle")
 public class ExternalHandlerProcessRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ExternalHandlerProcessRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record10<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>>, io.cattle.platform.core.model.ExternalHandlerProcess {
 
-	private static final long serialVersionUID = -1798892332;
+	private static final long serialVersionUID = 916014967;
 
 	/**
 	 * Setter for <code>cattle.external_handler_process.id</code>.
