@@ -100,3 +100,24 @@ def test_libvirt_stop_start(client, libvirt_context):
         assert vm.state == 'running'
 
     vm.stop(remove=True)
+
+
+@if_libvirt
+def test_libvirt_default_templates(client, admin_client, libvirt_context):
+    images = client.list_image(uuid='cirros')
+
+    assert len(images) == 1
+
+    cirros = images[0]
+    cirros = client.wait_success(cirros)
+
+    assert_fields(cirros, {
+        'state': 'active',
+        'checksum': '64d7c1cd2b6f60c92c14662941cb7913',
+        'url': 'http://download.cirros-cloud.net/0.3.2/'
+               'cirros-0.3.2-x86_64-disk.img',
+        'instanceKind': 'virtualMachine'
+    })
+
+    cirros = admin_client.reload(cirros)
+    assert cirros.account().uuid == 'system'

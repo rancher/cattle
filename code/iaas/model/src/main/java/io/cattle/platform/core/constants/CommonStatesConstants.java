@@ -7,5 +7,6 @@ public class CommonStatesConstants {
     public static final String ACTIVATING = "activating";
     public static final String DEACTIVATING = "deactivating";
     public static final String REMOVING = "removing";
+    public static final String REQUESTED = "requested";
 
 }
