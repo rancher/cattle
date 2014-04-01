@@ -6,6 +6,7 @@ TAG=${TAG:-latest}
 BASE_IMAGE=${BASE}server:${TAG}
 
 if [ "$TAG" != "latest" ]; then
+    export BASE="cattle/"
     TAG= $0 "$@"
 fi
 
