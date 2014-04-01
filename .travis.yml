@@ -6,8 +6,8 @@ jdk:
 env:
   global:
     - AWS_DEFAULT_REGION=us-west-1
-    - secure: "UuPbPTh9rKykXT6QIlvCTn+S5Zq/DfkeA+uf+4Tb0JJXlPivMIMZ1+6PEvVh9JvWDTDqILHVFrstuM4N/SHSwudivIdVNjEfTWAn2YS8gqyKquv76tAeyJJzsPmUL1hF5+cjpPiWxm5NJi3zq66zl/VBpPKaDmkodVhJ7httEXQ="
-    - secure: "oFf0zdd3fGxSO2Z9Z1thETcg4WbGf6ucsEiZTUx2n7f9a49f1GGorJ9YMl1lyQRsXLLXcgtuqxgUzTeLWxWcCHzzmxW4hoAEZfCkYX9OHoRSmNqY/JXv1s11Y9cxnkpZn6mMyhr2KJxRlJrUrKGnIaD9WOkFKxKurWYA3/5zueM="
+    - secure: "IfUxje1QpdmYU2jdjg0lnrrOu2RzOKNGK0m1MLPxngaOLfW169h16ODZuh0pUIokAjpzvcMWHPMosIu1u8mvjoq92YRTtlqgLqckKxUQSVkQT2zyQv2Sbw6539rBDO0gvzknXz+SaVlEydE9Tb3UEPU3wRQtuFfjfaV+eucHR0E="
+    - secure: "Omdfs8vsukqFWj6q0J17lJshVxQM4vQVXg5c3Z9VtfQtKPFdvt3Tek3hKqGSNfMPoUraV0Tu5QqFkqdHweQ2AYSe5Dyww9jjRNs2dLGb6on8k8YXm2YnDvGp1ZQ8miwvUEc+MD+uPfnGJvg6v1QqAhHZQNDwvWs6We6K9QP4Ht4="
   matrix:
     - EXTERNAL_AGENT_TEST=true EC2_TEST=true LIBVIRT_TEST=true DOCKER_TEST=true
     - DSTACK_DB_DSTACK_DATABASE=mysql
