@@ -97,7 +97,7 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
 
     def image_activate(self, image, storage_pool, progress):
         def report(*args):
-            print 'Report', args
+            pass
 
         pool_path = self._get_path(storage_pool)
         downloaded = None
