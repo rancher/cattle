@@ -1,0 +1,9 @@
+{
+    "resourceFields" : {
+        "vcpu" : {
+            "type" : "int",
+            "nullable" : true,
+            "create" : true
+        }
+    }
+}

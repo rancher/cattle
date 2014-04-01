@@ -1,0 +1,8 @@
+{
+    "resourceFields": {
+        "instanceKind": {
+            "type" : "enum",
+            "options" : [ "container", "virtualMachine" ]
+        }
+    }
+}

@@ -7,7 +7,7 @@
 <%def name="memory()" filter="nowhitespace" >\
     <memory>
         % try:
-            ${instance.memory_mb * 1024}
+            ${instance.memoryMb * 1024}
         % except:
             ${64 * 1024}
         % endtry

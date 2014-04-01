@@ -22,6 +22,7 @@ def libvirt_context(admin_client):
                                 url=EMPTY_IMAGE,
                                 checksum=EMPTY_IMAGE_CHECKSUM,
                                 isPublic=True,
+                                instanceKind='virtualMachine',
                                 name='Libvirt Test Image',
                                 kind='libvirt')
 
@@ -47,7 +48,30 @@ def test_libvirt_create(client, admin_client, libvirt_context):
     xml = ElementTree.fromstring(vm.data.libvirt.xml)
 
     assert xml.findall('./memory')[0].text == str(64*1024)
+    assert xml.findall('./vcpu')[0].text == str(1)
     assert len(xml.findall('.//disk')) == 1
+
+    vm = client.reload(vm)
+    vm.stop(remove=True)
+
+
+@if_libvirt
+def test_libvirt_create_memory_vcpu(client, admin_client, libvirt_context):
+    image_id = libvirt_context['imageId']
+    vm = client.create_virtual_machine(imageId=image_id,
+                                       memoryMb=96,
+                                       vcpu=2)
+    vm = client.wait_success(vm)
+    assert vm.state == 'running'
+
+    vm = admin_client.reload(vm)
+
+    print vm.data.libvirt.xml
+
+    xml = ElementTree.fromstring(vm.data.libvirt.xml)
+
+    assert xml.findall('./memory')[0].text == str(96*1024)
+    assert xml.findall('./vcpu')[0].text == str(2)
 
     vm = client.reload(vm)
     vm.stop(remove=True)
