@@ -31,7 +31,10 @@ cd $DIR
 
 while true; do
     start docker || true
-    git pull -r
+    git pull -r || {
+        sleep 60
+        continue
+    }
     rm -rf bundles
     make
     stop docker || true
