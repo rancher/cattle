@@ -108,13 +108,25 @@ You can click around and use the API from a web browser at http://localhost:8080
 ### Containers
 
 ```bash
-cattle create-container --imageUuid docker:ibuildthecloud/helloworld
+cattle create-container --imageUuid docker:ibuildthecloud/ubuntu-demo-insecure
+
+# Check if it's done
+cattle list-container
 ```
+
+Once running refer to `dockerHostIp` and `dockerPorts` fields to get the network information for port 22 to SSH into the container.  The username and password is **user/password**.
+
 ### Virtual Machines
 
 ```bash
 cattle create-virtualMachine --memoryMb 256 --imageUuid cirros
+
+# Check if it's done
+cattle list-virtualMachine
 ```
+
+Once running refer to `libvirtVncAddress` and `libvirtVncPassword` fields to get access to the console.
+
 
 ## Integrating
 
