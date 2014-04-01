@@ -3,6 +3,7 @@ from os import path
 from urllib import urlretrieve
 from hashlib import md5, sha1, sha256, sha512
 
+import binascii
 import bz2
 import calendar
 import gzip
@@ -277,3 +278,7 @@ def _check_output(*popenargs, **kwargs):
             cmd = popenargs[0]
         raise CalledProcessError(retcode, cmd, output=output)
     return output
+
+
+def random_string(length=64):
+    return binascii.hexlify(os.urandom(length/2))

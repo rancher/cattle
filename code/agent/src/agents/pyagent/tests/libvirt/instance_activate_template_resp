@@ -4,6 +4,10 @@
             "+data": {
                 "+libvirt": {
                     "xml": "<xml/>"
+                },
+                "+fields": {
+                    "libvirtVncAddress": "0.0.0.0:5900",
+                    "libvirtVncPassword": "passwd"
                 }
             }
         }

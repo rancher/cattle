@@ -55,6 +55,13 @@ ${nestedattr(k, o)}
     ${memory()}
     ${vcpu()}
 </%block>\
+<%block name="metadata" >\
+    <metadata>
+        <cattle:data xmlns:cattle="http://cattle.io/schemas/cattle-libvirt" cattle:name="vncpasswd" >${randomToken}</cattle:data>
+<%block name="metadata_other" >\
+</%block>\
+    </metadata>
+</%block>\
 <%block name="other" >\
 </%block>\
 
@@ -98,7 +105,7 @@ ${nestedattr(k, o)}
         % endfor
 </%block>\
 <%block name="graphics" >\
-        <graphics type="vnc" autoport="yes" keymap="en-us" listen="0.0.0.0" />
+        <graphics type="vnc" autoport="yes" keymap="en-us" listen="0.0.0.0" passwd="${randomToken}" />
         <video>
             <model type="cirrus"/>
         </video>

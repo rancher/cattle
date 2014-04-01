@@ -4,7 +4,7 @@ import os
 from . import LIBVIRT_KIND
 from .connection import LibvirtConnection
 from .storage import get_pool_driver
-from .utils import pool_drivers, get_preferred_libvirt_type
+from .utils import pool_drivers, get_preferred_libvirt_type, read_vnc_info
 from .config import LibvirtConfig
 from cattle import Config
 from cattle.compute import BaseComputeDriver
@@ -170,7 +170,8 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
                                  volumes=self._get_volumes(instance),
                                  interfaces=interfaces,
                                  host=host,
-                                 config=config)
+                                 config=config,
+                                 randomToken=utils.random_string())
 
         conn = self._get_connection(instance, host)
         log.info('Starting %s : XML %s', instance.uuid, output)
@@ -185,17 +186,36 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         existing = self.get_instance_by_uuid(conn, obj.instance.uuid)
 
         if existing is None:
-            return {}
-        else:
             return {
                 'instance': {
                     '+data': {
-                        '+libvirt': {
-                            'xml': existing.XMLDesc(0)
+                        '+fields': {
+                            'libvirtVncAddress': None,
+                            'libvirtVncPassword': None
                         }
                     }
                 }
             }
+
+        xml = existing.XMLDesc(0)
+        host, port, passwd = read_vnc_info(xml)
+
+        if host == '0.0.0.0':
+            host = LibvirtConfig.host_ip()
+
+        return {
+            'instance': {
+                '+data': {
+                    '+libvirt': {
+                        'xml': existing.XMLDesc(0)
+                    },
+                    '+fields': {
+                        'libvirtVncAddress': '{0}:{1}'.format(host, port),
+                        'libvirtVncPassword': passwd
+                    }
+                }
+            }
+        }
 
     def _is_instance_inactive(self, instance, host):
         conn = self._get_connection(instance, host)

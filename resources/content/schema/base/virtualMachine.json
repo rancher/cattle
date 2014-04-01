@@ -4,6 +4,12 @@
             "type" : "int",
             "nullable" : true,
             "create" : true
+        },
+        "libvirtVncAddress" : {
+            "type" : "string"
+        },
+        "libvirtVncPassword" : {
+            "type" : "string"
         }
     }
 }

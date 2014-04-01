@@ -36,3 +36,7 @@ class LibvirtConfig:
         value = default_value('LIBVIRT_DEFAULT_TEMPLATE',
                               'custom_template.tmpl, default_template.tmpl')
         return re.split(r'\s*,\s*', value)
+
+    @staticmethod
+    def host_ip():
+        return default_value('LIBVIRT_HOST_IP', Config.agent_ip())

@@ -4,11 +4,14 @@ from cattle.progress import LogProgress
 from .common_libvirt_fixtures import *  # NOQA
 from cattle.plugins.libvirt import enabled
 
+DATA_TAG = '{http://cattle.io/schemas/cattle-libvirt}data'
+DATA_NAME = '{http://cattle.io/schemas/cattle-libvirt}name'
 
 if enabled():
     import libvirt
     from cattle.plugins.libvirt_directory_pool import DirectoryPoolDriver
     from cattle.plugins.libvirt.utils import get_preferred_libvirt_type
+    from cattle.plugins.libvirt.utils import read_vnc_info
     CONFIG_OVERRIDE['HOME'] = SCRATCH_DIR
 
 
@@ -129,8 +132,26 @@ def test_instance_activate(random_qcow2, pool_dir, agent, responses):
         req.data.instanceHostMap.instance.volumes.append(volume)
 
     def post(_, resp):
-        assert resp['data']['instance']['+data']['+libvirt']['xml'] is not None
-        resp['data']['instance']['+data']['+libvirt']['xml'] = '<xml/>'
+        data = resp['data']['instance']['+data']
+        vnc_host = data['+fields']['libvirtVncAddress']
+        passwd = data['+fields']['libvirtVncPassword']
+        xml = data['+libvirt']['xml']
+
+        assert xml is not None
+
+        xml_host, xml_port, xml_passwd = read_vnc_info(xml)
+
+        assert vnc_host is not None
+        assert passwd is not None
+        assert len(passwd) == 64
+
+        assert not vnc_host.startswith('0.0.0.0')
+
+        assert passwd == xml_passwd
+
+        data['+libvirt']['xml'] = '<xml/>'
+        data['+fields']['libvirtVncAddress'] = '0.0.0.0:5900'
+        data['+fields']['libvirtVncPassword'] = 'passwd'
 
     event_test(agent, 'libvirt/instance_activate', pre_func=pre,
                post_func=post)
@@ -139,7 +160,7 @@ def test_instance_activate(random_qcow2, pool_dir, agent, responses):
 
 
 @if_libvirt
-def test_instance_activate_template(random_qcow2, pool_dir, agent, responses):
+def test_instance_custom_template(random_qcow2, pool_dir, agent, responses):
     _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
 
     volume = fake_volume(image_file=random_qcow2)

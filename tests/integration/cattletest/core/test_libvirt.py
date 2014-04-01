@@ -41,7 +41,13 @@ def test_libvirt_create(client, admin_client, libvirt_context):
 
     assert vm.state == 'running'
 
+    assert 'libvirtVncAddress' not in vm
+    assert 'libvirtVncPassword' not in vm
+
     vm = admin_client.reload(vm)
+
+    assert vm.libvirtVncAddress is not None
+    assert len(vm.libvirtVncPassword) == 64
 
     print vm.data.libvirt.xml
 
