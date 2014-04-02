@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+clean()
+{
+    git reset --hard HEAD
+    git clean -dxf
+}
+
 cd $(dirname $0)
 
 if test -x $(which flake8); then
@@ -30,10 +36,13 @@ find . -depth -type d -name .tox -exec rm -rf {} \;
 
 pwd
 
-if [ "$1" = "release" ]; then
-    git reset --hard HEAD
-    git clean -dxf
-    make release-docker
-else
-    make clean test "$@"
+if [ "$1" = "images" ]; then
+    clean
 fi
+
+if [ "$1" = "check-dir" ]; then
+    clean
+    exit 0
+fi
+
+make clean test "$@"
