@@ -40,7 +40,7 @@ A lot of networking features
 
 **Note: You can install this quickly with [AWS CloudFormation][5] too.**
 
-Start with a fresh **Ubuntu 13.10+**.  Anything that runs Docker will eventually be supported, but development is done on Ubuntu 13.10, so that's your best bet.  To make this simple were going to install everything on a single server.
+Start with a fresh **Ubuntu 13.10**.  Anything that runs Docker will eventually be supported, but development is done on Ubuntu 13.10, so that's your best bet.  To make this simple were going to install everything on a single server.
 
 ```bash
 # Install docker if you don't have it
