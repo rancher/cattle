@@ -1,5 +1,13 @@
 {
     "data": {
+        "instance": {
+            "+data": {
+                "+fields": {
+                    "libvirtVncAddress": null,
+                    "libvirtVncPassword": null
+                }
+            }
+        }
     },
     "previousIds": ["fe8fe34c-1b13-4287-a094-a2c5f902722b"],
     "previousNames": ["compute.instance.deactivate;agent=91"],

@@ -7,12 +7,14 @@ from cattle.plugins.libvirt import enabled
 DATA_TAG = '{http://cattle.io/schemas/cattle-libvirt}data'
 DATA_NAME = '{http://cattle.io/schemas/cattle-libvirt}name'
 
+
 if enabled():
     import libvirt
     from cattle.plugins.libvirt_directory_pool import DirectoryPoolDriver
     from cattle.plugins.libvirt.utils import get_preferred_libvirt_type
     from cattle.plugins.libvirt.utils import read_vnc_info
     CONFIG_OVERRIDE['HOME'] = SCRATCH_DIR
+    CONFIG_OVERRIDE['LIBVIRT_HOST_IP'] = '1.2.3.4'
 
 
 def _delete_instance(name):

@@ -203,6 +203,13 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         if host == '0.0.0.0':
             host = LibvirtConfig.host_ip()
 
+        if host is None:
+            vnc_address = None
+            vnc_passwd = None
+        else:
+            vnc_address = '{0}:{1}'.format(host, port)
+            vnc_passwd = passwd
+
         return {
             'instance': {
                 '+data': {
@@ -210,8 +217,8 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
                         'xml': existing.XMLDesc(0)
                     },
                     '+fields': {
-                        'libvirtVncAddress': '{0}:{1}'.format(host, port),
-                        'libvirtVncPassword': passwd
+                        'libvirtVncAddress': vnc_address,
+                        'libvirtVncPassword': vnc_passwd
                     }
                 }
             }
