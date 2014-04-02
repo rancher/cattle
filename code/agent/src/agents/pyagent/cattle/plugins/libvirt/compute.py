@@ -59,7 +59,7 @@ class InstanceConfig(object):
                 continue
 
             try:
-                if src is not None:
+                if src[name] is not None:
                     return src[name]
             except KeyError:
                 pass
