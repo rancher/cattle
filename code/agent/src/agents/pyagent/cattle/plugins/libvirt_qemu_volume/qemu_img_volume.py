@@ -54,7 +54,7 @@ class QemuVolume(Volume):
     def clone(self):
         base_path = os.path.dirname(self.file)
 
-        temp_file = utils.temp_file_in_work_dir(base_path)
+        temp_file = utils.temp_file(base_path)
 
         QemuImg.create(temp_file,
                        format=self.get_format(),

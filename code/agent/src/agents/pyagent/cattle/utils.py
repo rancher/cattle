@@ -29,6 +29,7 @@ DECOMPRESS = {
 log = logging.getLogger('cattle')
 
 _TEMP_NAME = 'work'
+_TEMP_PREFIX = 'cattle-temp-'
 
 
 def _to_json_object(v):
@@ -170,15 +171,19 @@ def get_map_value(obj, *args):
     return current
 
 
+def temp_file(destination):
+    temp_dst = NamedTemporaryFile(prefix=_TEMP_PREFIX, dir=destination)
+    temp_dst.close()
+
+    return temp_dst.name
+
+
 def temp_file_in_work_dir(destination):
     dst_path = path.join(destination, _TEMP_NAME)
     if not path.exists(dst_path):
         os.makedirs(dst_path)
 
-    temp_dst = NamedTemporaryFile(dir=dst_path)
-    temp_dst.close()
-
-    return temp_dst.name
+    return temp_file(dst_path)
 
 
 def download_file(url, destination, reporthook=None, decompression=True,
