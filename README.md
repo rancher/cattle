@@ -63,6 +63,9 @@ After about 30 seconds you should see
 Now register the current server as a Docker/KVM host
 
 ```bash
+# Make sure /root/.ssh exists
+sudo mkdir -p /root/.ssh
+
 # Download and authorize SSH key.
 curl -s http://localhost:8080/v1/authorized_keys | sudo tee -a /root/.ssh/authorized_keys
 
@@ -130,7 +133,7 @@ Once running refer to `libvirtVncAddress` and `libvirtVncPassword` fields to get
 
 ## Integrating
 
-You should really read up on how orchestration works under the hood, but for a quick example.  Here is how you can integrate with Cattle so that right before a virtual machine or container is launched your code is called to do something.  You can write this in any language, but just to demonstrate how easy it is we will use bash and [jq][12].
+You should really read up on [how orchestration works][6] under the hood, but for a quick example.  Here is how you can integrate with Cattle so that right before a virtual machine or container is launched your code is called to do something.  You can write this in any language, but just to demonstrate how easy it is we will use bash and [jq][12].
 
 ```bash
 #!/bin/bash
@@ -223,8 +226,10 @@ There are [other examples][1] of integrating with Cattle.  For example, adding a
   [3]: http://docs.cattle.io/en/latest/examples/hypervisor.html
   [4]: http://docs.cattle.io/en/latest/examples/libvirt-template.html
   [5]: http://cattle.readthedocs.org/en/latest/installation/ec2.html
+  [6]: http://docs.cattle.io/en/latest/concepts/orchestration.html
   [8]: http://cattle.readthedocs.org/en/latest/toc.html
   [9]: http://docs.docker.io/en/latest/installation/
   [10]: https://github.com/cattleio/cattle-cli/blob/master/README.md
   [11]: docs/source/images/apiui.png
   [12]: http://stedolan.github.io/jq/
+  
