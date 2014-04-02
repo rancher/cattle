@@ -47,7 +47,7 @@ Start with a fresh **Ubuntu 13.10+**.  Anything that runs Docker will eventually
 [ ! -x "$(which docker)" ] && curl -sL https://get.docker.io/ | sh
 
 # Install libvirt too
-sudo apt-get install -y libvirt-bin python-libvirt
+sudo apt-get install -y libvirt-bin python-libvirt qemu-utils
 
 # Gonna need a ssh server
 sudo apt-get install -y openssh-server
