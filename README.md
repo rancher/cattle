@@ -79,7 +79,7 @@ curl -X POST http://localhost:8080/v1/agents
 
 ```bash
 # Need pip
-apt-get install -y python-pip
+sudo apt-get install -y python-pip
 
 # Install CLI
 pip install cattle
