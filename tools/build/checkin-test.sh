@@ -22,6 +22,10 @@ then
     mkdir -p $CHECK_DIR
 fi
 
+if [ -e ./code/agent/src/agents/pyagent/tests/scratch ]; then
+    rm -rf ./code/agent/src/agents/pyagent/tests/scratch
+fi
+
 rsync -av --exclude '*.log' --exclude '*.gz' --delete . ${CHECK_DIR}/
 
 cd $CHECK_DIR
