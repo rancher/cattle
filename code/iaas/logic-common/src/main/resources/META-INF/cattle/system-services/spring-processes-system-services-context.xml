@@ -16,7 +16,9 @@
 
     <bean class="io.cattle.platform.engine.manager.impl.DefaultProcessManager" >
         <property name="definitionList" value="#{extensionManager.list('process.definition')}" />
-        <property name="listeners" value="#{extensionManager.list('handler.result.listener')}" />
+        <property name="exceptionHandler">
+            <bean class="io.cattle.platform.object.process.impl.ObjectExecutionExceptionHandler" />
+        </property>
     </bean>
 
     <bean id="ProcessInstanceDispatcher" class="io.cattle.platform.engine.server.impl.EventingDispatcher" />
@@ -35,5 +37,4 @@
         <property name="typeClass" value="io.cattle.platform.engine.handler.ProcessPostListener" />
     </bean>
 
-    <extension:discover class="io.cattle.platform.engine.process.HandlerResultListener" />
 </beans>
