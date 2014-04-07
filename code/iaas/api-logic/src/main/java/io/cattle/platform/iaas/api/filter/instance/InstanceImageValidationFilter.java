@@ -56,7 +56,7 @@ public class InstanceImageValidationFilter extends AbstractDefaultResourceManage
 
         if ( image != null && image.getInstanceKind() != null ) {
             if ( ! image.getInstanceKind().equals(type) ) {
-                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "INVALID_IMAGE_INSTANCE_KIND");
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidImageInstanceKind");
             }
         }
 
