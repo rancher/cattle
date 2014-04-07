@@ -39,7 +39,6 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
 
     ProcessRecordDao processRecordDao;
     List<ProcessDefinition> definitionList;
-    List<HandlerResultListener> listeners;
     Map<String, ProcessDefinition> definitions = new HashMap<String, ProcessDefinition>();
     LockManager lockManager;
     DelayQueue<DelayedObject<WeakReference<ProcessInstance>>> toPersist = new DelayQueue<DelayedObject<WeakReference<ProcessInstance>>>();
@@ -237,13 +236,13 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         this.eventService = eventService;
     }
 
-    public List<HandlerResultListener> getListeners() {
-        return listeners;
+    public ExecutionExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
     }
 
     @Inject
-    public void setListeners(List<HandlerResultListener> listeners) {
-        this.listeners = listeners;
+    public void setExceptionHandler(ExecutionExceptionHandler exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
     }
 
 }
