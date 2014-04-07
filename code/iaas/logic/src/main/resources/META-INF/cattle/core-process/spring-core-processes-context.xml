@@ -40,9 +40,14 @@
     <process:defaultProcesses resourceType="image" />
     <process:defaultProcesses resourceType="imageStoragePoolMap" />
     <process:defaultProcesses resourceType="instanceHostMap" />
+    <process:defaultProcesses resourceType="ipAddress" />
+    <process:defaultProcesses resourceType="network" />
     <process:defaultProcesses resourceType="nic" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="storagePoolHostMap" />
+    <process:defaultProcesses resourceType="subnet" />
+    <process:defaultProcesses resourceType="subnetVnetMap" />
+    <process:defaultProcesses resourceType="vnet" />
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
 
     <!-- Agent -->

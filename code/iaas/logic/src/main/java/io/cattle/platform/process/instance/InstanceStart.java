@@ -3,17 +3,19 @@ package io.cattle.platform.process.instance;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     private static final Logger log = LoggerFactory.getLogger(InstanceStart.class);
 
     GenericMapDao mapDao;
+    IpAddressDao ipAddressDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -48,7 +51,15 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
             stage = "create storage";
             storage(instance);
-        } catch ( EventExecutionException e ) {
+        } catch ( ExecutionException e ) {
+            log.error("Failed to {} for instance [{}]", stage, instance.getId());
+            return stopOrRemove(state, instance, e);
+        }
+
+        try {
+            stage = "create network";
+            network(instance);
+        } catch ( ExecutionException e ) {
             log.error("Failed to {} for instance [{}]", stage, instance.getId());
             return stopOrRemove(state, instance, e);
         }
@@ -56,7 +67,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         try {
             stage = "create compute";
             compute(instance);
-        } catch ( EventExecutionException e ) {
+        } catch ( ExecutionException e ) {
             log.error("Failed to {} for instance [{}]", stage, instance.getId());
             if ( incrementComputeTry(state) >= getMaxComputeTries(instance) ) {
                 return stopOrRemove(state, instance, e);
@@ -64,7 +75,25 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             throw e;
         }
 
+        String ipAddress = getPrimaryIpAddress(instance);
+        if ( ipAddress != null ) {
+            resultData.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, ipAddress);
+        }
+
         return result;
+    }
+
+    protected String getPrimaryIpAddress(Instance instance) {
+        int min = Integer.MAX_VALUE;
+        IpAddress ip = null;
+        for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
+            if ( nic.getDeviceNumber().intValue() < min ) {
+                min = nic.getDeviceNumber();
+                ip = ipAddressDao.getPrimaryIpAddress(nic);
+            }
+        }
+
+        return ip == null ? null : ip.getAddress();
     }
 
     protected int getMaxComputeTries(Instance instance) {
@@ -80,14 +109,15 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         return COMPUTE_TRIES.get();
     }
 
-    protected HandlerResult stopOrRemove(ProcessState state, Instance instance, EventExecutionException e) {
+    protected HandlerResult stopOrRemove(ProcessState state, Instance instance, ExecutionException e) {
         if ( InstanceCreate.isCreateStart(state) ) {
             getObjectProcessManager().scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
         } else {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
         }
 
-        return new HandlerResult(TransitioningUtils.getTransitioningData(e));
+        e.setResource(state.getResource());
+        throw e;
     }
 
     protected int incrementComputeTry(ProcessState state) {
@@ -125,6 +155,12 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
     }
 
+    protected void network(Instance instance) {
+        for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
+            activate(nic, null);
+        }
+    }
+
     public GenericMapDao getMapDao() {
         return mapDao;
     }
@@ -132,6 +168,15 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     @Inject
     public void setMapDao(GenericMapDao mapDao) {
         this.mapDao = mapDao;
+    }
+
+    public IpAddressDao getIpAddressDao() {
+        return ipAddressDao;
+    }
+
+    @Inject
+    public void setIpAddressDao(IpAddressDao ipAddressDao) {
+        this.ipAddressDao = ipAddressDao;
     }
 
 }
