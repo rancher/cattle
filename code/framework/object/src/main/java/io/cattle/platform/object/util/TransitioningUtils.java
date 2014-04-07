@@ -1,9 +1,8 @@
 package io.cattle.platform.object.util;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.eventing.exception.EventExecutionException;
-import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,20 +17,12 @@ public class TransitioningUtils {
     public static final DynamicBooleanProperty SHOW_INTERNAL_MESSAGES =
             ArchaiusUtil.getBoolean("api.show.transitioning.internal.message");
 
-    public static Map<String,Object> getTransitioningData(EventExecutionException e) {
+    public static Map<String,Object> getTransitioningData(ExecutionException e) {
         if ( e == null ) {
             return Collections.emptyMap();
         }
 
-        return getTransitioningData(e.getEvent());
-    }
-
-    public static Map<String,Object> getTransitioningData(Event event) {
-        if ( event == null || ! ObjectMetaDataManager.TRANSITIONING_ERROR.equals(event.getTransitioning()) ) {
-            return Collections.emptyMap();
-        }
-
-        return getTransitioningData(event.getTransitioningMessage(), event.getTransitioningInternalMessage());
+        return getTransitioningData(e.getTransitioningMessage(), e.getTransitioningInternalMessage());
     }
 
     public static Map<String,Object> getTransitioningData(String message, String internalMessage) {
