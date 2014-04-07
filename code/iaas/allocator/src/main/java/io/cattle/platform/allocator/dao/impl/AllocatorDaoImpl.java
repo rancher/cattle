@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
@@ -16,6 +17,7 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
@@ -193,6 +195,25 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             if ( ! existingPools.equals(newPools) ) {
                 log.error("Can not move volumes, currently {} new {}", existingPools, newPools);
                 throw new IllegalStateException("Can not move volumes, currently " + existingPools + " new " + newPools);
+            }
+        }
+
+        for ( Nic nic : attempt.getNics() ) {
+            Long subnetId = candidate.getSubnetIds().get(nic.getId());
+
+            if ( subnetId == null || ( nic.getSubnetId() != null && subnetId.longValue() == nic.getSubnetId() ) ) {
+                continue;
+            }
+
+            int i = create()
+                .update(NIC)
+                .set(NIC.SUBNET_ID, subnetId)
+                .where(NIC.ID.eq(nic.getId()))
+                .execute();
+
+            if ( i != 1 ) {
+                throw new IllegalStateException("Expected to update nic id ["
+                            + nic.getId() + "] with subnet [" + subnetId + "] but update [" + i + "] rows");
             }
         }
 
