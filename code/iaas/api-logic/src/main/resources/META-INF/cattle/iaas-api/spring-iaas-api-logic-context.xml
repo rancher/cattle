@@ -15,6 +15,7 @@
     <bean class="io.cattle.platform.iaas.api.manager.DataManager" />
     <bean class="io.cattle.platform.iaas.api.filter.agent.AgentFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter" />
+    <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceNetworkValidationFilter" />
 
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
@@ -37,6 +38,12 @@
     <bean class="io.cattle.platform.iaas.api.request.handler.PostChildLinkHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.ParseCollectionAttributes" />
+    <bean class="io.cattle.platform.iaas.api.request.handler.ConfigurableRequestOptionsParser" />
+    <bean id="IdFormatterRequestHandlerPass2" class="io.cattle.platform.iaas.api.request.handler.IdFormatterRequestHandler" >
+        <property name="plainFormatter">
+            <bean class="io.github.ibuildthecloud.gdapi.id.IdentityFormatter" />
+        </property>
+    </bean>
     <bean class="io.cattle.platform.iaas.api.request.handler.UIRedirect" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionHandler" />
