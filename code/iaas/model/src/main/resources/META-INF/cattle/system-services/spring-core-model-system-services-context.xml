@@ -12,6 +12,8 @@
     <bean class="io.cattle.platform.core.dao.impl.AgentDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.GenericMapDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.GenericResourceDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.VnetDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.IpAddressDaoImpl" />
 
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
@@ -19,9 +21,17 @@
         </tx:attributes>
     </tx:advice>
 
+    <tx:advice id="IpAddressDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="mapNewIpAddress" isolation="READ_COMMITTED" />
+        </tx:attributes>
+    </tx:advice>
+
     <aop:config>
         <aop:advisor advice-ref="GenericResourceDaoImplAdvice"
             pointcut="execution(* io.cattle.platform.core.dao.GenericResourceDao.*(..))" />
+        <aop:advisor advice-ref="IpAddressDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.IpAddressDao.*(..))" />
     </aop:config>
 
 </beans>
