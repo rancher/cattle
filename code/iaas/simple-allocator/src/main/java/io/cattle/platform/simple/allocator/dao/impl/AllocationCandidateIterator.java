@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,13 +34,16 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     Stack<AllocationCandidate> candidates = new Stack<AllocationCandidate>();
     ObjectManager objectManager;
     boolean hosts;
+    AllocationCandidateCallback callback;
 
-    public AllocationCandidateIterator(ObjectManager objectManager, Cursor<Record2<Long,Long>> cursor, List<Long> volumeIds, boolean hosts) {
+    public AllocationCandidateIterator(ObjectManager objectManager, Cursor<Record2<Long,Long>> cursor, List<Long> volumeIds, boolean hosts,
+            AllocationCandidateCallback callback) {
         super();
         this.objectManager = objectManager;
         this.volumeIds = volumeIds;
         this.cursor = cursor;
         this.hosts = hosts;
+        this.callback = callback;
     }
 
     @Override
@@ -92,7 +96,7 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
         Map<Pair<Class<?>, Long>, Object> cache = new HashMap<Pair<Class<?>,Long>, Object>();
 
         if ( volumeIds.size() == 0 ) {
-            candidates.push(new AllocationCandidate(objectManager, cache, candidateHostId,
+            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId,
                     Collections.<Long, Long>emptyMap()));
         }
 
@@ -102,7 +106,17 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
                 volumeToPool.put(pair.getLeft(), pair.getRight());
             }
 
-            candidates.push(new AllocationCandidate(objectManager, cache, candidateHostId, volumeToPool));
+            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, volumeToPool));
+        }
+    }
+
+    protected void pushCandidate(AllocationCandidate candidate) {
+        if ( callback == null ) {
+            candidates.push(candidate);
+        } else {
+            for ( AllocationCandidate c : callback.withCandidate(candidate) ) {
+                candidates.push(c);
+            }
         }
     }
 
