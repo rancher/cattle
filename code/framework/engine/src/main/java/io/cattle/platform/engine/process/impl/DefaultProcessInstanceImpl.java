@@ -16,6 +16,7 @@ import io.cattle.platform.engine.idempotent.IdempotentExecution;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
+import io.cattle.platform.engine.process.ExecutionExceptionHandler;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -39,6 +40,7 @@ import io.cattle.platform.lock.definition.Namespace;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.lock.util.LockUtils;
 import io.cattle.platform.util.exception.ExceptionUtils;
+import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.Date;
 import java.util.List;
@@ -407,6 +409,13 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             processExecution.setResourceValueAfter(state.convertData(state.getResource()));
 
             return handlerResult;
+        } catch ( ExecutionException e ) {
+            ExecutionExceptionHandler exceptionHandler = this.context.getExceptionHandler();
+            if ( exceptionHandler != null ) {
+                exceptionHandler.handleException(e, state, this.context);
+            }
+            processExecution.setException(new ExceptionLog(e));
+            throw e;
         } catch ( ProcessCancelException e ) {
             throw e;
         } catch ( RuntimeException e ) {
