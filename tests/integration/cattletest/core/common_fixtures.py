@@ -51,9 +51,14 @@ def accounts():
         if active_cred.state != 'active':
             wait_success(admin_client, active_cred.activate())
 
-        result[user_name] = [user_name, password]
+        result[user_name] = [user_name, password, account]
 
     return result
+
+
+@pytest.fixture(scope='module')
+def admin_account(accounts):
+    return accounts['admin'][2]
 
 
 @pytest.fixture(scope='module')
@@ -219,3 +224,25 @@ def kind_context(admin_client, kind, external_pool=False,
         context['external_pool'] = activate_resource(admin_client, pools[0])
 
     return context
+
+
+def assert_required_fields(method, **kw):
+    method(**kw)
+
+    for k in kw.keys():
+        args = dict(kw)
+        del args[k]
+
+        try:
+            method(**args)
+            # This is supposed to fail
+            assert k == ''
+        except cattle.ApiError as e:
+            assert e.error.code == 'MissingRequired'
+            assert e.error.fieldName == k
+
+
+def get_plain_id(admin_client, obj):
+    ret = admin_client.list(obj.type, uuid=obj.uuid, _plainId=True)
+    assert len(ret) == 1
+    return ret[0].id
