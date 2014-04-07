@@ -79,6 +79,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.HostTable HOST = io.cattle.platform.core.model.tables.HostTable.HOST;
 
 	/**
+	 * The table cattle.host_vnet_map
+	 */
+	public static final io.cattle.platform.core.model.tables.HostVnetMapTable HOST_VNET_MAP = io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP;
+
+	/**
 	 * The table cattle.image
 	 */
 	public static final io.cattle.platform.core.model.tables.ImageTable IMAGE = io.cattle.platform.core.model.tables.ImageTable.IMAGE;
@@ -99,6 +104,26 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.InstanceHostMapTable INSTANCE_HOST_MAP = io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 
 	/**
+	 * The table cattle.ip_address
+	 */
+	public static final io.cattle.platform.core.model.tables.IpAddressTable IP_ADDRESS = io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
+
+	/**
+	 * The table cattle.ip_address_nic_map
+	 */
+	public static final io.cattle.platform.core.model.tables.IpAddressNicMapTable IP_ADDRESS_NIC_MAP = io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
+
+	/**
+	 * The table cattle.network
+	 */
+	public static final io.cattle.platform.core.model.tables.NetworkTable NETWORK = io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
+
+	/**
+	 * The table cattle.nic
+	 */
+	public static final io.cattle.platform.core.model.tables.NicTable NIC = io.cattle.platform.core.model.tables.NicTable.NIC;
+
+	/**
 	 * The table cattle.offering
 	 */
 	public static final io.cattle.platform.core.model.tables.OfferingTable OFFERING = io.cattle.platform.core.model.tables.OfferingTable.OFFERING;
@@ -112,6 +137,11 @@ public class Tables {
 	 * The table cattle.process_instance
 	 */
 	public static final io.cattle.platform.core.model.tables.ProcessInstanceTable PROCESS_INSTANCE = io.cattle.platform.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE;
+
+	/**
+	 * The table cattle.resource_pool
+	 */
+	public static final io.cattle.platform.core.model.tables.ResourcePoolTable RESOURCE_POOL = io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL;
 
 	/**
 	 * The table cattle.setting
@@ -129,6 +159,16 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.StoragePoolHostMapTable STORAGE_POOL_HOST_MAP = io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP;
 
 	/**
+	 * The table cattle.subnet
+	 */
+	public static final io.cattle.platform.core.model.tables.SubnetTable SUBNET = io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
+
+	/**
+	 * The table cattle.subnet_vnet_map
+	 */
+	public static final io.cattle.platform.core.model.tables.SubnetVnetMapTable SUBNET_VNET_MAP = io.cattle.platform.core.model.tables.SubnetVnetMapTable.SUBNET_VNET_MAP;
+
+	/**
 	 * The table cattle.task
 	 */
 	public static final io.cattle.platform.core.model.tables.TaskTable TASK = io.cattle.platform.core.model.tables.TaskTable.TASK;
@@ -137,6 +177,11 @@ public class Tables {
 	 * The table cattle.task_instance
 	 */
 	public static final io.cattle.platform.core.model.tables.TaskInstanceTable TASK_INSTANCE = io.cattle.platform.core.model.tables.TaskInstanceTable.TASK_INSTANCE;
+
+	/**
+	 * The table cattle.vnet
+	 */
+	public static final io.cattle.platform.core.model.tables.VnetTable VNET = io.cattle.platform.core.model.tables.VnetTable.VNET;
 
 	/**
 	 * The table cattle.volume

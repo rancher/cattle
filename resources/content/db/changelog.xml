@@ -9,5 +9,6 @@
     <include file="db/core-002.xml"/>
     <include file="db/core-003.sql"/>
     <include file="db/core-004.xml"/>
+    <include file="db/core-005.xml"/>
 
 </databaseChangeLog> 

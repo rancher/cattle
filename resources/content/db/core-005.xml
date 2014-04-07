@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <changeSet author="darren (generated)" id="dump1">
+        <createTable tableName="host_vnet_map">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="host_id" type="BIGINT"/>
+            <column name="vnet_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump2">
+        <createTable tableName="ip_address">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="address" type="VARCHAR(255)"/>
+            <column name="subnet_id" type="BIGINT"/>
+            <column name="network_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump3">
+        <createTable tableName="ip_address_nic_map">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="ip_address_id" type="BIGINT"/>
+            <column name="nic_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump4">
+        <createTable tableName="network">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column defaultValueNumeric="0" name="is_public" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump5">
+        <createTable tableName="nic">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="instance_id" type="BIGINT"/>
+            <column name="network_id" type="BIGINT"/>
+            <column name="subnet_id" type="BIGINT"/>
+            <column name="vnet_id" type="BIGINT"/>
+            <column name="device_number" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump6">
+        <createTable tableName="resource_pool">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="pool_type" type="VARCHAR(255)"/>
+            <column name="pool_id" type="BIGINT"/>
+            <column name="item" type="VARCHAR(255)"/>
+            <column name="owner_type" type="VARCHAR(255)"/>
+            <column name="owner_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump7">
+        <createTable tableName="subnet">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="network_address" type="VARCHAR(255)"/>
+            <column name="cidr_size" type="INT"/>
+            <column name="start_address" type="VARCHAR(255)"/>
+            <column name="end_address" type="VARCHAR(255)"/>
+            <column name="gateway" type="VARCHAR(255)"/>
+            <column name="network_id" type="BIGINT"/>
+            <column defaultValueNumeric="0" name="is_public" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump8">
+        <createTable tableName="subnet_vnet_map">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="subnet_id" type="BIGINT"/>
+            <column name="vnet_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump9">
+        <createTable tableName="vnet">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="uri" type="VARCHAR(255)"/>
+            <column name="network_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump10">
+        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="host_vnet_map" constraintName="fk_host_vnet_map__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump11">
+        <addForeignKeyConstraint baseColumnNames="vnet_id" baseTableName="host_vnet_map" constraintName="fk_host_vnet_map__vnet_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="vnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump12">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="ip_address" constraintName="fk_ip_address__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump13">
+        <addForeignKeyConstraint baseColumnNames="network_id" baseTableName="ip_address" constraintName="fk_ip_address__network_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump14">
+        <addForeignKeyConstraint baseColumnNames="subnet_id" baseTableName="ip_address" constraintName="fk_ip_address__subnet_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="subnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump15">
+        <addForeignKeyConstraint baseColumnNames="ip_address_id" baseTableName="ip_address_nic_map" constraintName="fk_ip_address_nic_map__ip_address_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="ip_address"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump16">
+        <addForeignKeyConstraint baseColumnNames="nic_id" baseTableName="ip_address_nic_map" constraintName="fk_ip_address_nic_map__nic_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="nic"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump17">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="network" constraintName="fk_network__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump18">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="nic" constraintName="fk_nic__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump19">
+        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="nic" constraintName="fk_nic__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump20">
+        <addForeignKeyConstraint baseColumnNames="network_id" baseTableName="nic" constraintName="fk_nic__network_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump21">
+        <addForeignKeyConstraint baseColumnNames="subnet_id" baseTableName="nic" constraintName="fk_nic__subnet_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="subnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump22">
+        <addForeignKeyConstraint baseColumnNames="vnet_id" baseTableName="nic" constraintName="fk_nic__vnet_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="vnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump23">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="resource_pool" constraintName="fk_resource_pool__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump24">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="subnet" constraintName="fk_subnet__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump25">
+        <addForeignKeyConstraint baseColumnNames="network_id" baseTableName="subnet" constraintName="fk_subnet__network_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump26">
+        <addForeignKeyConstraint baseColumnNames="subnet_id" baseTableName="subnet_vnet_map" constraintName="fk_subnet_vnet_map__subnet_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="subnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump27">
+        <addForeignKeyConstraint baseColumnNames="vnet_id" baseTableName="subnet_vnet_map" constraintName="fk_subnet_vnet_map__vnet_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="vnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump28">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="vnet" constraintName="fk_vnet__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump29">
+        <addForeignKeyConstraint baseColumnNames="network_id" baseTableName="vnet" constraintName="fk_vnet__network_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump30">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_host_vnet_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="host_vnet_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump31">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_ip_address_nic_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="ip_address_nic_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump32">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_ip_address_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="ip_address"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump33">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_network_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="network"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump34">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_nic_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="nic"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump35">
+        <addUniqueConstraint columnNames="pool_type, pool_id, item" constraintName="idx_pool_item" deferrable="false" disabled="false" initiallyDeferred="false" tableName="resource_pool"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump36">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_resource_pool_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="resource_pool"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump37">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_subnet_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="subnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump38">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_subnet_vnet_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="subnet_vnet_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump39">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_vnet_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="vnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump40">
+        <createIndex indexName="idx_host_vnet_map_name" tableName="host_vnet_map" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump41">
+        <createIndex indexName="idx_host_vnet_map_remove_time" tableName="host_vnet_map" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump42">
+        <createIndex indexName="idx_host_vnet_map_removed" tableName="host_vnet_map" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump43">
+        <createIndex indexName="idx_host_vnet_map_state" tableName="host_vnet_map" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump44">
+        <createIndex indexName="idx_ip_address_name" tableName="ip_address" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump45">
+        <createIndex indexName="idx_ip_address_nic_map_name" tableName="ip_address_nic_map" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump46">
+        <createIndex indexName="idx_ip_address_nic_map_remove_time" tableName="ip_address_nic_map" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump47">
+        <createIndex indexName="idx_ip_address_nic_map_removed" tableName="ip_address_nic_map" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump48">
+        <createIndex indexName="idx_ip_address_nic_map_state" tableName="ip_address_nic_map" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump49">
+        <createIndex indexName="idx_ip_address_remove_time" tableName="ip_address" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump50">
+        <createIndex indexName="idx_ip_address_removed" tableName="ip_address" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump51">
+        <createIndex indexName="idx_ip_address_state" tableName="ip_address" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump52">
+        <createIndex indexName="idx_network_name" tableName="network" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump53">
+        <createIndex indexName="idx_network_remove_time" tableName="network" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump54">
+        <createIndex indexName="idx_network_removed" tableName="network" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump55">
+        <createIndex indexName="idx_network_state" tableName="network" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump56">
+        <createIndex indexName="idx_nic_name" tableName="nic" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump57">
+        <createIndex indexName="idx_nic_remove_time" tableName="nic" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump58">
+        <createIndex indexName="idx_nic_removed" tableName="nic" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump59">
+        <createIndex indexName="idx_nic_state" tableName="nic" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump60">
+        <createIndex indexName="idx_pool_owner" tableName="resource_pool" unique="false">
+            <column name="pool_type"/>
+            <column name="pool_id"/>
+            <column name="owner_type"/>
+            <column name="owner_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump61">
+        <createIndex indexName="idx_resource_pool_name" tableName="resource_pool" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump62">
+        <createIndex indexName="idx_resource_pool_remove_time" tableName="resource_pool" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump63">
+        <createIndex indexName="idx_resource_pool_removed" tableName="resource_pool" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump64">
+        <createIndex indexName="idx_resource_pool_state" tableName="resource_pool" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump65">
+        <createIndex indexName="idx_subnet_name" tableName="subnet" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump66">
+        <createIndex indexName="idx_subnet_remove_time" tableName="subnet" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump67">
+        <createIndex indexName="idx_subnet_removed" tableName="subnet" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump68">
+        <createIndex indexName="idx_subnet_state" tableName="subnet" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump69">
+        <createIndex indexName="idx_subnet_vnet_map_name" tableName="subnet_vnet_map" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump70">
+        <createIndex indexName="idx_subnet_vnet_map_remove_time" tableName="subnet_vnet_map" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump71">
+        <createIndex indexName="idx_subnet_vnet_map_removed" tableName="subnet_vnet_map" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump72">
+        <createIndex indexName="idx_subnet_vnet_map_state" tableName="subnet_vnet_map" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump73">
+        <createIndex indexName="idx_vnet_name" tableName="vnet" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump74">
+        <createIndex indexName="idx_vnet_remove_time" tableName="vnet" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump75">
+        <createIndex indexName="idx_vnet_removed" tableName="vnet" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump76">
+        <createIndex indexName="idx_vnet_state" tableName="vnet" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
