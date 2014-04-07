@@ -146,7 +146,7 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @SuppressWarnings("unchecked")
     protected void setFields(Object obj, Map<Object,Object> toWrite, List<UpdatableRecord<?>> result) {
-        String type = getType(obj);
+        String type = getPossibleSubType(obj);
         Schema schema = schemaFactory.getSchema(type);
 
         UpdatableRecord<?> record = JooqUtils.getRecordObject(obj);

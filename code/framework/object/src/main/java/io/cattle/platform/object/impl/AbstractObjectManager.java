@@ -114,6 +114,22 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return schema.getParent() == null ? schema.getId () : schemaFactory.getBaseType(schema.getId());
     }
 
+    protected String getPossibleSubType(Object obj) {
+        Object kind = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.KIND_FIELD);
+
+        if ( kind != null ) {
+            String kindString = kind.toString();
+            String baseType = schemaFactory.getBaseType(kindString);
+            Class<?> clz = schemaFactory.getSchemaClass(baseType);
+
+            if ( kind != null && clz != null && clz.isAssignableFrom(obj.getClass()) ) {
+                return kindString;
+            }
+        }
+
+        return getType(obj);
+    }
+
     @Override
     public <T> T setFields(Object obj, Object key, Object... valueKeyValue) {
         Map<Object,Object> values = CollectionUtils.asMap(key, valueKeyValue);
