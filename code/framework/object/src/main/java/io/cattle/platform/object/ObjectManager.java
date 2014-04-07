@@ -1,6 +1,7 @@
 package io.cattle.platform.object;
 
 import io.cattle.platform.object.meta.Relationship;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -52,5 +53,7 @@ public interface ObjectManager {
     <T> T getObjectByRelationship(Object obj, Relationship relationship);
 
     String getType(Object obj);
+
+    SchemaFactory getSchemaFactory();
 
 }

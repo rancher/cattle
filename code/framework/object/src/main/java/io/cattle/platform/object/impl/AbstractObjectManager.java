@@ -192,6 +192,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return id == null ? null : (T)loadResource(rel.getObjectType(), id.toString());
     }
 
+    @Override
     public SchemaFactory getSchemaFactory() {
         return schemaFactory;
     }
