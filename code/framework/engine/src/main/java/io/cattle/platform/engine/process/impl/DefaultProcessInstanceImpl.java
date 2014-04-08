@@ -293,7 +293,16 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             success = true;
         } finally {
-            if ( ! success ) {
+            if ( ! success && ! EngineContext.isNestedExecution() ) {
+                /* This is not so obvious why we do this.  If a process fails it may have done scheduled
+                 * a compensating process.  That means the state changed under the hood and we should look
+                 * for that an possibly cancel this process.
+                 *
+                 * If the process is nested, we don't want to cancel because it will mask the exception
+                 * being thrown and additionally there is no process to cancel because the process is really
+                 * owned by the parent.  If we were to cancel a nested process, it will just look like a
+                 * RuntimeException to the parent
+                 */
                 assertState();
             }
         }
@@ -370,7 +379,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected HandlerResult runHandler(ProcessDefinition processDefinition, ProcessState state,
             EngineContext context, ProcessLogic handler) {
-        ProcessLogicExecutionLog processExecution = execution.newProcessLogicExecution(handler);
+        final ProcessLogicExecutionLog processExecution = execution.newProcessLogicExecution(handler);
         context.pushLog(processExecution);
         try {
             processExecution.setResourceValueBefore(state.convertData(state.getResource()));
@@ -410,6 +419,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             return handlerResult;
         } catch ( ExecutionException e ) {
+            Idempotent.tempDisable();
             ExecutionExceptionHandler exceptionHandler = this.context.getExceptionHandler();
             if ( exceptionHandler != null ) {
                 exceptionHandler.handleException(e, state, this.context);
