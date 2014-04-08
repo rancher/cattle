@@ -29,11 +29,16 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
 
     @Override
     public PooledResource allocateResource(Object pool, Object owner) {
+        String poolType = getResourceType(pool);
+        long poolId = getResourceId(pool);
+        String ownerType = getResourceType(owner);
+        long ownerId = getResourceId(owner);
+
         Map<Object,Object> keys = CollectionUtils.asMap(
-                (Object)RESOURCE_POOL.POOL_TYPE, getResourceType(pool),
-                (Object)RESOURCE_POOL.POOL_ID, getResourceId(pool),
-                RESOURCE_POOL.OWNER_TYPE, getResourceType(owner),
-                RESOURCE_POOL.OWNER_ID, getResourceId(owner));
+                (Object)RESOURCE_POOL.POOL_TYPE, poolType,
+                (Object)RESOURCE_POOL.POOL_ID, poolId,
+                RESOURCE_POOL.OWNER_TYPE, ownerType,
+                RESOURCE_POOL.OWNER_ID, ownerId);
 
         List<ResourcePool> resourcePool = objectManager.find(ResourcePool.class, keys);
 
@@ -42,7 +47,33 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         }
 
         String item = getItem(keys, pool);
+
+        if ( item != null ) {
+        log.info("Assigning [{}] from pool [{}:{}] to owner [{}:{}]", item,
+                poolType, poolId, ownerType, ownerId);
+        }
+
         return item == null ? null : new DefaultPooledResource(item);
+    }
+
+    @Override
+    public void releaseResource(Object pool, Object owner) {
+        String poolType = getResourceType(pool);
+        long poolId = getResourceId(pool);
+        String ownerType = getResourceType(owner);
+        long ownerId = getResourceId(owner);
+
+        Map<Object,Object> keys = CollectionUtils.asMap(
+                (Object)RESOURCE_POOL.POOL_TYPE, poolType,
+                (Object)RESOURCE_POOL.POOL_ID, poolId,
+                RESOURCE_POOL.OWNER_TYPE, ownerType,
+                RESOURCE_POOL.OWNER_ID, ownerId);
+
+        for ( ResourcePool resource : objectManager.find(ResourcePool.class, keys) ) {
+            log.info("Releasing [{}] id [{}] to pool [{}:{}] from owner [{}:{}]", resource.getItem(),
+                    resource.getId(), poolType, poolId, ownerType, ownerId);
+            objectManager.delete(resource);
+        }
     }
 
     protected String getItem(Map<Object,Object> keys, Object pool) {
@@ -114,4 +145,5 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     public void setFactories(List<PooledResourceItemGeneratorFactory> factories) {
         this.factories = factories;
     }
+
 }
