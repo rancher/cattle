@@ -37,10 +37,12 @@
     <process:defaultProcesses resourceType="account" />
     <process:defaultProcesses resourceType="credential" />
     <process:defaultProcesses resourceType="host" />
+    <process:defaultProcesses resourceType="hostVnetMap" />
     <process:defaultProcesses resourceType="image" />
     <process:defaultProcesses resourceType="imageStoragePoolMap" />
     <process:defaultProcesses resourceType="instanceHostMap" />
     <process:defaultProcesses resourceType="ipAddress" />
+    <process:defaultProcesses resourceType="ipAddressNicMap" />
     <process:defaultProcesses resourceType="network" />
     <process:defaultProcesses resourceType="nic" />
     <process:defaultProcesses resourceType="storagePool" />

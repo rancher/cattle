@@ -5,6 +5,7 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.VnetDao;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.IpAddressNicMap;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
@@ -59,6 +60,10 @@ public class NicActivate extends AbstractDefaultProcessHandler {
 
         if ( ipAddress == null && nic.getSubnetId() != null ) {
             ipAddress = ipAddressDao.mapNewIpAddress(nic);
+        }
+
+        for ( IpAddressNicMap map : mapDao.findNonRemoved(IpAddressNicMap.class, Nic.class, nic.getId()) ) {
+            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, null);
         }
 
         if ( ipAddress != null ) {
