@@ -13,6 +13,7 @@ public class CommonsConverterStartup {
     public void init() {
         ConvertUtilsBean service = BeanUtilsBean.getInstance().getConvertUtils();
         service.register(new LongConverter(null), Long.class);
-        service.register(new IntegerConverter(null), Long.class);
+        service.register(new IntegerConverter(null), Integer.class);
     }
+
 }
