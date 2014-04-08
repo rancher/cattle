@@ -10,16 +10,16 @@ env:
     - secure: "Omdfs8vsukqFWj6q0J17lJshVxQM4vQVXg5c3Z9VtfQtKPFdvt3Tek3hKqGSNfMPoUraV0Tu5QqFkqdHweQ2AYSe5Dyww9jjRNs2dLGb6on8k8YXm2YnDvGp1ZQ8miwvUEc+MD+uPfnGJvg6v1QqAhHZQNDwvWs6We6K9QP4Ht4="
   matrix:
     - EXTERNAL_AGENT_TEST=true EC2_TEST=true LIBVIRT_TEST=true DOCKER_TEST=true
-    - DSTACK_DB_DSTACK_DATABASE=mysql
-    - DSTACK_DB_DSTACK_DATABASE=h2
-    - DSTACK_DB_DSTACK_DATABASE=hsqldb
-    - DSTACK_DB_DSTACK_DATABASE=postgres MAVEN_ARGS=-Dpostgres
+    - CATTLE_DB_CATTLE_DATABASE=mysql
+    - CATTLE_DB_CATTLE_DATABASE=h2
+    - CATTLE_DB_CATTLE_DATABASE=hsqldb
+    - CATTLE_DB_CATTLE_DATABASE=postgres MAVEN_ARGS=-Dpostgres
 matrix:
   exclude:
     - jdk: openjdk6
       env: EXTERNAL_AGENT_TEST=true EC2_TEST=true LIBVIRT_TEST=true DOCKER_TEST=true
     - jdk: openjdk6
-      env: DSTACK_DB_DSTACK_DATABASE=postgres MAVEN_ARGS=-Dpostgres
+      env: CATTLE_DB_CATTLE_DATABASE=postgres MAVEN_ARGS=-Dpostgres
     - jdk: openjdk7
       env: EXTERNAL_AGENT_TEST=true EC2_TEST=true LIBVIRT_TEST=true DOCKER_TEST=true
 services:
