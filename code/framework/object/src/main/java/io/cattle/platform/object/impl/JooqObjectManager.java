@@ -367,6 +367,27 @@ public class JooqObjectManager extends AbstractObjectManager {
         }
     }
 
+    @Override
+    public void delete(Object obj) {
+        if ( obj == null ) {
+            return;
+        }
+
+        Object id = ObjectUtils.getId(obj);
+        String type = getType(obj);
+        Table<?> table = JooqUtils.getTableFromRecordClass(JooqUtils.getRecordClass(getSchemaFactory(), obj.getClass()));
+        TableField<?, Object> idField = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
+
+        int result = create()
+                .delete(table)
+                .where(idField.eq(id))
+                .execute();
+
+        if ( result != 1 ) {
+            throw new IllegalStateException("Failed to delete [" + type + "] id [" + id + "]");
+        }
+    }
+
 
     @Override
     public <T> T loadResource(String resourceType, String resourceId) {
@@ -431,6 +452,5 @@ public class JooqObjectManager extends AbstractObjectManager {
     public void setTransactionDelegate(TransactionDelegate transactionDelegate) {
         this.transactionDelegate = transactionDelegate;
     }
-
 
 }

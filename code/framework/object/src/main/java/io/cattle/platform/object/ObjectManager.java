@@ -24,6 +24,8 @@ public interface ObjectManager {
 
     <T> T persist(T obj);
 
+    void delete(Object obj);
+
     <T> T loadResource(Class<T> type, String resourceId);
 
     <T> T loadResource(Class<T> type, Long resourceId);
