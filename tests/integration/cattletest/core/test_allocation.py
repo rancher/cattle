@@ -173,3 +173,77 @@ def test_allocation_failed_on_start(admin_client, sim_context):
     assert c1.state == 'running'
     assert c1.transitioning == 'no'
     assert c1.transitioningMessage is None
+
+
+def test_host_vnet_association(admin_client, sim_context,
+                               sim_context2, sim_context3):
+    image_uuid = sim_context['imageUuid']
+    host1 = sim_context['host']
+    host2 = sim_context2['host']
+    host3 = sim_context3['host']
+
+    host1 = admin_client.update(host1, computeFree=100000)
+    host2 = admin_client.update(host2, computeFree=100000)
+    host3 = admin_client.update(host3, computeFree=100000)
+    for i in [host1, host2, host3]:
+        assert i.computeFree == 100000
+
+    network = admin_client.create_network()
+    vnet = admin_client.create_vnet(networkId=network.id,
+                                    uri='sim://')
+    vnet = admin_client.wait_success(vnet)
+
+    assert vnet.state == 'active'
+
+    subnet1 = admin_client.create_subnet(networkAddress='192.168.0.0',
+                                         cidrSize='16',
+                                         networkId=network.id,
+                                         startAddress='192.168.0.3',
+                                         endAddress='192.168.0.5')
+    subnet1 = admin_client.wait_success(subnet1)
+
+    subnet2 = admin_client.create_subnet(networkAddress='192.168.2.0',
+                                         cidrSize='16',
+                                         networkId=network.id,
+                                         startAddress='192.168.2.3',
+                                         endAddress='192.168.3.5')
+    subnet2 = admin_client.wait_success(subnet2)
+
+    subnet_map1 = admin_client.create_subnet_vnet_map(subnetId=subnet1.id,
+                                                      vnetId=vnet.id)
+    subnet_map1 = admin_client.wait_success(subnet_map1)
+    assert subnet_map1.state == 'active'
+
+    subnet_map2 = admin_client.create_subnet_vnet_map(subnetId=subnet2.id,
+                                                      vnetId=vnet.id)
+    subnet_map2 = admin_client.wait_success(subnet_map2)
+    assert subnet_map2.state == 'active'
+
+    vnet_map1 = admin_client.create_host_vnet_map(hostId=host1.id,
+                                                  vnetId=vnet.id)
+    vnet_map1 = admin_client.wait_success(vnet_map1)
+    assert vnet_map1.state == 'active'
+
+    vnet_map2 = admin_client.create_host_vnet_map(hostId=host2.id,
+                                                  vnetId=vnet.id)
+    vnet_map2 = admin_client.wait_success(vnet_map2)
+    assert vnet_map2.state == 'active'
+
+    hosts = set()
+    for _ in range(3):
+        vm = admin_client.create_virtual_machine(subnetIds=[subnet1.id],
+                                                 imageUuid=image_uuid)
+        vm = admin_client.wait_success(vm)
+        assert vm.state == 'running'
+        hosts.add(vm.hosts()[0].id)
+
+    for _ in range(3):
+        vm = admin_client.create_virtual_machine(subnetIds=[subnet2.id],
+                                                 imageUuid=image_uuid)
+        vm = admin_client.wait_success(vm)
+        assert vm.state == 'running'
+        hosts.add(vm.hosts()[0].id)
+
+    assert len(hosts) == 2
+    assert host1.id in hosts
+    assert host2.id in hosts

@@ -80,6 +80,24 @@ def sim_context(admin_client):
     return context
 
 
+@pytest.fixture(scope='module')
+def sim_context2(admin_client):
+    context = kind_context(admin_client, 'sim', external_pool=True,
+                           uri='sim://2', uuid='simagent2')
+    context['imageUuid'] = 'sim:{}'.format(random_num())
+
+    return context
+
+
+@pytest.fixture(scope='module')
+def sim_context3(admin_client):
+    context = kind_context(admin_client, 'sim', external_pool=True,
+                           uri='sim://3', uuid='simagent3')
+    context['imageUuid'] = 'sim:{}'.format(random_num())
+
+    return context
+
+
 def activate_resource(admin_client, obj):
     if obj.state == 'inactive':
         obj = wait_success(admin_client, obj.activate())
@@ -243,6 +261,6 @@ def assert_required_fields(method, **kw):
 
 
 def get_plain_id(admin_client, obj):
-    ret = admin_client.list(obj.type, uuid=obj.uuid, _plainId=True)
+    ret = admin_client.list(obj.type, uuid=obj.uuid, _plainId='true')
     assert len(ret) == 1
     return ret[0].id
