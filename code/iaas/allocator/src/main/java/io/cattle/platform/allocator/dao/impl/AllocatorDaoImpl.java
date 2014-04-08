@@ -1,6 +1,7 @@
 package io.cattle.platform.allocator.dao.impl;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.HostVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
@@ -8,11 +9,14 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
+import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
+import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.util.AllocatorUtils;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -250,6 +254,20 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     @Override
     public void releaseAllocation(Volume volume) {
         // Nothing to do?
+    }
+
+    @Override
+    public List<Long> getHostsForSubnet(long subnetId) {
+        return create()
+            .select(HOST_VNET_MAP.HOST_ID)
+            .from(SUBNET_VNET_MAP)
+            .join(VNET)
+                .on(VNET.ID.eq(SUBNET_VNET_MAP.VNET_ID))
+            .join(HOST_VNET_MAP)
+                .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
+            .where(SUBNET_VNET_MAP.SUBNET_ID.eq(subnetId)
+                    .and(HOST_VNET_MAP.STATE.eq(CommonStatesConstants.ACTIVE)))
+            .fetchInto(Long.class);
     }
 
     public ObjectManager getObjectManager() {

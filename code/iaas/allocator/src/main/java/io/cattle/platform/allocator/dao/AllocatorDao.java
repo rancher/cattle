@@ -29,4 +29,6 @@ public interface AllocatorDao {
 
     boolean isVolumeInstanceImageKind(long volumeId, String kind);
 
+    List<Long> getHostsForSubnet(long subnetId);
+
 }

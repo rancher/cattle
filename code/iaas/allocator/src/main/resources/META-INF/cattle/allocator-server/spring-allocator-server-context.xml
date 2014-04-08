@@ -23,6 +23,7 @@
 
     <bean class="io.cattle.platform.allocator.constraint.ComputeConstraintProvider" />
     <bean class="io.cattle.platform.allocator.constraint.BaseConstraintsProvider" />
+    <bean class="io.cattle.platform.allocator.constraint.HostVnetMatchConstraintProvider" />
 
     <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
