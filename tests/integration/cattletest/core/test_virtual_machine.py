@@ -297,7 +297,8 @@ def test_virtual_machine_purge_subnet(admin_client, sim_context, subnet, vnet):
     addresses_len = len(addresses)
 
 
-def test_virtual_machine_restore_subnet(admin_client, sim_context, subnet, vnet):
+def test_virtual_machine_restore_subnet(admin_client, sim_context, subnet,
+                                        vnet):
     image_uuid = sim_context['imageUuid']
     subnet_plain_id = get_plain_id(admin_client, subnet)
     addresses = admin_client.list_resource_pool(poolType='subnet',
