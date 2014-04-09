@@ -5,19 +5,6 @@
             "nullable" : true,
             "create" : true
         },
-        "networkIds" : {
-            "type" : "array[reference[network]]",
-            "nullable" : true,
-            "includeInList" : false
-        },
-        "subnetIds" : {
-            "type" : "array[reference[subnet]]",
-            "nullable" : true,
-            "includeInList" : false
-        },
-        "primaryIpAddress" : {
-            "type" : "string"
-        },
         "libvirtVncAddress" : {
             "type" : "string"
         },

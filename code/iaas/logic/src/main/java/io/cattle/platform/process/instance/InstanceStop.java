@@ -5,6 +5,7 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -62,6 +63,10 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
 
         for ( Nic nic : nics ) {
             deactivate(nic, null);
+        }
+
+        for ( Port port : getObjectManager().children(instance, Port.class) ) {
+            deactivate(port, null);
         }
     }
 
