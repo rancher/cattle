@@ -4,6 +4,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.model.Field;
+import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
@@ -58,10 +59,9 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
 
         while ( iter.hasNext() ) {
             Map.Entry<String,Field> entry = iter.next();
-            String name = String.format("%s.%s", schema.getId(), entry.getKey());
             Field field = entry.getValue();
 
-            perm = getPerm(name);
+            perm = getPerm(factory, schema, entry.getKey());
 
             if ( perm == null ) {
                 continue;
@@ -83,12 +83,45 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
         return schema;
     }
 
+    protected Perm getPerm(SchemaFactory factory, Schema schema, String field) {
+        Schema start = schema;
+
+        while ( schema != null ) {
+            String name = String.format("%s.%s", schema.getId(), field);
+            Perm perm = getPerm(name, false);
+
+            if ( perm != null )
+                return perm;
+
+            schema = factory.getSchema(schema.getParent());
+        }
+
+        schema = start;
+        while ( schema != null ) {
+            String name = String.format("%s.%s", schema.getId(), field);
+            Perm perm = getPerm(name, true);
+
+            if ( perm != null )
+                return perm;
+
+            schema = factory.getSchema(schema.getParent());
+        }
+
+        return null;
+    }
+
     protected Perm getPerm(String name) {
+        return getPerm(name, true);
+    }
+
+    protected Perm getPerm(String name, boolean wildcard) {
         List<Perm> result = new ArrayList<Perm>();
 
-        for ( Pair<Pattern, Perm> entry : wildcards ) {
-            if ( entry.getLeft().matcher(name).matches() ) {
-                result.add(entry.getValue());
+        if ( wildcard ) {
+            for ( Pair<Pattern, Perm> entry : wildcards ) {
+                if ( entry.getLeft().matcher(name).matches() ) {
+                    result.add(entry.getValue());
+                }
             }
         }
 
