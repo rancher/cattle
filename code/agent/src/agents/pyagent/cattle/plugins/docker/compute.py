@@ -97,14 +97,8 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
     def _setup_ports(config, instance):
         ports = []
         try:
-            for port in instance.data.fields.tcpPorts:
-                ports.append((port, 'tcp'))
-        except (AttributeError, KeyError):
-            pass
-
-        try:
-            for port in instance.data.fields.udpPorts:
-                ports.append((port, 'udp'))
+            for port in instance.ports:
+                ports.append((port.privatePort, port.protocol))
         except (AttributeError, KeyError):
             pass
 

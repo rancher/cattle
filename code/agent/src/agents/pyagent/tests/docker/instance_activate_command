@@ -28,11 +28,21 @@
                     "fields": {
                         "imageUuid": "docker:ibuildthecloud/helloworld",
                         "command": "sleep 5",
-                        "startOnCreate": "true",
-                        "tcpPorts": [8080],
-                        "udpPorts": [12201]
+                        "startOnCreate": "true"
                     }
                 },
+                "ports" : [
+                    {
+                        "protocol": "tcp",
+                        "privatePort": 8080,
+                        "publicPort": null
+                    },
+                    {
+                        "protocol": "udp",
+                        "privatePort": 12201,
+                        "publicPort": null
+                    }
+                ],
                 "description": null,
                 "hostname": null,
                 "id": 211,
