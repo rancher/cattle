@@ -36,6 +36,18 @@ public class DataAccessor {
         return accessor;
     }
 
+    public static <T> T field(Object obj, String name, JsonMapper mapper, Class<T> type) {
+        return fields(obj)
+                .withKey(name)
+                .as(mapper, type);
+    }
+
+    public static <T> T field(Object obj, String name, Class<T> type) {
+        return fields(obj)
+                .withKey(name)
+                .as(type);
+    }
+
     public DataAccessor withScope(Class<?> scope) {
         this.scope = scope;
         return this;
