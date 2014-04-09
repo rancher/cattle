@@ -98,6 +98,7 @@
                 <module>code/implementation/hazelcast/common</module>
                 <module>code/implementation/hazelcast/eventing</module>
                 <module>code/implementation/hazelcast/lock</module>
+                <module>code/implementation/host-only-network</module>
                 <module>code/implementation/libvirt/allocator</module>
                 <module>code/implementation/libvirt/default-images</module>
                 <module>code/implementation/settings-api</module>

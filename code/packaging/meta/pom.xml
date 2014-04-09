@@ -11,6 +11,11 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>cattle-host-only-network</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>cattle-docker-compute</artifactId>
             <version>${project.version}</version>
         </dependency>
