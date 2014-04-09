@@ -187,3 +187,19 @@ def test_ip_address_create_no_address_available(admin_client, admin_account):
     assert ip_address.transitioning == 'error'
     assert ip_address.transitioningMessage == \
         'Failed to allocate IP from subnet : IP allocation error'
+
+
+def test_ip_address_defined(admin_client):
+    ip = admin_client.create_ip_address(address='192.168.192.168')
+    ip = admin_client.wait_success(ip)
+
+    assert ip.address == '192.168.192.168'
+    assert ip.state == 'inactive'
+
+    ip = admin_client.wait_success(ip.activate())
+    assert ip.address == '192.168.192.168'
+    assert ip.state == 'active'
+
+    ip = admin_client.wait_success(ip.deactivate())
+    assert ip.address == '192.168.192.168'
+    assert ip.state == 'inactive'

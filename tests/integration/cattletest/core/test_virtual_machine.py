@@ -1,5 +1,6 @@
-from common_fixtures import *  # NOQA
 from cattle import ApiError
+
+from common_fixtures import *  # NOQA
 
 
 @pytest.fixture(scope='module')

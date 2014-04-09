@@ -173,3 +173,110 @@ def test_docker_image_format(admin_client, docker_context):
     assert container.image().format == 'docker'
     assert container.volumes()[0].image().format == 'docker'
     assert container.volumes()[0].format == 'docker'
+
+
+@if_docker
+def test_docker_ports_from_container(client, admin_client, docker_context):
+    network = admin_client.create_network(isPublic=True)
+    network = admin_client.wait_success(network)
+
+    uuid = TEST_IMAGE_UUID
+    c = client.create_container(name='test',
+                                startOnCreate=False,
+                                networkIds=[network.id],
+                                imageUuid=uuid,
+                                ports=[
+                                    '8081',
+                                    '8082/tcp',
+                                    '8083/udp'])
+
+    c = client.wait_success(c)
+    assert c.state == 'stopped'
+
+    count = 0
+    for port in c.ports():
+        count += 1
+        assert port.kind == 'userPort'
+        assert port.publicPort is None
+        assert port.privateIpAddressId is None
+        assert port.publicIpAddressId is None
+
+        if port.privatePort == 8081:
+            assert port.protocol == 'tcp'
+        elif port.privatePort == 8082:
+            assert port.protocol == 'tcp'
+        elif port.privatePort == 8083:
+            assert port.protocol == 'udp'
+        else:
+            assert False
+
+    assert count == 3
+
+    c = client.wait_success(c.start())
+    assert c.state == 'running'
+
+    count = 0
+    ip = None
+    privateIp = None
+    for port in c.ports():
+        count += 1
+        assert port.privateIpAddressId is not None
+        privateIp = port.privateIpAddress()
+
+        assert privateIp.kind == 'docker'
+        assert privateIp.networkId == network.id
+        assert privateIp.network() is not None
+        assert privateIp.subnetId is None
+
+        assert port.publicPort is not None
+        assert port.publicIpAddressId is not None
+
+        if ip is None:
+            ip = port.publicIpAddressId
+        assert port.publicIpAddressId == ip
+
+        if port.privatePort == 8081:
+            assert port.kind == 'userPort'
+            assert port.protocol == 'tcp'
+        elif port.privatePort == 8082:
+            assert port.kind == 'userPort'
+            assert port.protocol == 'tcp'
+        elif port.privatePort == 8083:
+            assert port.kind == 'userPort'
+            assert port.protocol == 'udp'
+        elif port.privatePort == 8080:
+            assert port.kind == 'imagePort'
+        else:
+            assert False
+
+    assert count == 4
+
+    assert c.primaryIpAddress == privateIp.address
+
+    c = client.wait_success(c.stop())
+    assert c.state == 'stopped'
+
+    count = 0
+    for nic in c.nics():
+        for ip in nic.ipAddresses():
+            count += 1
+            assert ip.kind == 'docker'
+            assert ip.state == 'inactive'
+            assert ip.address is None
+
+    assert count == 1
+
+    c = client.wait_success(c.start())
+    assert c.state == 'running'
+
+    count = 0
+    for nic in c.nics():
+        for ip in nic.ipAddresses():
+            count += 1
+            assert ip.kind == 'docker'
+            assert ip.state == 'active'
+            assert ip.address is not None
+
+    assert count == 1
+
+    c.stop(remove=True)

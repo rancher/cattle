@@ -111,8 +111,9 @@ def _get_test_allocation_host(admin_client):
     hosts = admin_client.list_host(name=name)
 
     if len(hosts) == 0:
-        agent = wait_success(admin_client,
-                             admin_client.create_agent(uri='sim://' + name))
+        agent = create_type_by_uuid(admin_client, 'agent',
+                                    'allocation_test_agent',
+                                    uri='sim://' + name)
         hosts = agent.hosts()
 
     host = wait_success(admin_client, hosts[0])

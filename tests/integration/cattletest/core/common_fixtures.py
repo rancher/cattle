@@ -77,6 +77,19 @@ def sim_context(admin_client):
                            uri='sim://', uuid='simagent1')
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
+    host = context['host']
+
+    if len(host.ipAddresses()) == 0:
+        ip = admin_client.create_ip_address(address='192.168.10.10',
+                                            isPublic=True)
+        ip = admin_client.wait_success(ip)
+        ip = admin_client.wait_success(ip.activate())
+        map = admin_client.create_host_ip_address_map(hostId=host.id,
+                                                      ipAddressId=ip.id)
+        map = admin_client.wait_success(map)
+        assert map.state == 'active'
+
+    context['hostIp'] = host.ipAddresses()[0]
     return context
 
 
@@ -226,9 +239,13 @@ def kind_context(admin_client, kind, external_pool=False,
     assert len(hosts) == 1
     kind_host = activate_resource(admin_client, hosts[0])
 
+    assert kind_host.accountId == kind_agent.accountId
+
     pools = kind_host.storagePools()
     assert len(pools) == 1
     kind_pool = activate_resource(admin_client, pools[0])
+
+    assert kind_pool.accountId == kind_agent.accountId
 
     context = {
         'host': kind_host,
@@ -240,6 +257,8 @@ def kind_context(admin_client, kind, external_pool=False,
         pools = admin_client.list_storagePool(kind=kind, external=True)
         assert len(pools) == 1
         context['external_pool'] = activate_resource(admin_client, pools[0])
+
+        assert pools[0].accountId is not None
 
     return context
 
