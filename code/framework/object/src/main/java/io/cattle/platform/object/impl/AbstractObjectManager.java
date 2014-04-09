@@ -209,6 +209,17 @@ public abstract class AbstractObjectManager implements ObjectManager {
     }
 
     @Override
+    public boolean isKind(Object obj, String kind) {
+        if ( obj == null ) {
+            return false;
+        }
+
+        Object kindField = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.KIND_FIELD);
+        /* At some point should check hierarchies... */
+        return kindField != null && kindField.equals(kind);
+    }
+
+    @Override
     public SchemaFactory getSchemaFactory() {
         return schemaFactory;
     }

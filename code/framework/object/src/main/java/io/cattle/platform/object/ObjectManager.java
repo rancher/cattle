@@ -60,4 +60,5 @@ public interface ObjectManager {
 
     SchemaFactory getSchemaFactory();
 
+    boolean isKind(Object obj, String kind);
 }
