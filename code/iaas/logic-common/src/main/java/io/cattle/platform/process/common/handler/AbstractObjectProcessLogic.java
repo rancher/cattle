@@ -11,15 +11,16 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.ObjectUtils;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
 public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
 
-    ObjectManager objectManager;
-    ObjectProcessManager objectProcessManager;
-    ObjectMetaDataManager objectMetaDataManager;
+    protected ObjectManager objectManager;
+    protected ObjectProcessManager objectProcessManager;
+    protected ObjectMetaDataManager objectMetaDataManager;
 
     public ObjectManager getObjectManager() {
         return objectManager;
@@ -49,12 +50,16 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
     }
 
     protected ExitReason createThenActivate(Object obj, Map<String,Object> data) {
-        try {
-            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, obj, data);
-        } catch ( ProcessCancelException e ) {
-        }
-
+        createIgnoreCancel(obj, data);
         return getObjectProcessManager().executeStandardProcess(StandardProcess.ACTIVATE, obj, data);
+    }
+
+    protected ExitReason createIgnoreCancel(Object obj, Map<String,Object> data) {
+        try {
+            return getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, obj, data);
+        } catch ( ProcessCancelException e ) {
+            return null;
+        }
     }
 
     protected ExitReason create(Object obj, Map<String,Object> data) {
@@ -82,6 +87,7 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
         return pi.execute();
     }
 
+
     @Inject
     public void setObjectManager(ObjectManager objectManager) {
         this.objectManager = objectManager;
@@ -103,6 +109,31 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
     @Inject
     public void setObjectMetaDataManager(ObjectMetaDataManager objectMetaDataManager) {
         this.objectMetaDataManager = objectMetaDataManager;
+    }
+
+    /* Delegate Methods */
+    public <T> T loadResource(Class<T> type, String resourceId) {
+        return objectManager.loadResource(type, resourceId);
+    }
+
+    public <T> T loadResource(Class<T> type, Long resourceId) {
+        return objectManager.loadResource(type, resourceId);
+    }
+
+    public <T> T loadResource(String resourceType, String resourceId) {
+        return objectManager.loadResource(resourceType, resourceId);
+    }
+
+    public <T> T loadResource(String resourceType, Long resourceId) {
+        return objectManager.loadResource(resourceType, resourceId);
+    }
+
+    public <T> List<T> children(Object obj, Class<T> type) {
+        return objectManager.children(obj, type);
+    }
+
+    public <T> List<T> mappedChildren(Object obj, Class<T> type) {
+        return objectManager.mappedChildren(obj, type);
     }
 
 }
