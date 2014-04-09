@@ -61,7 +61,6 @@ def test_subnet_create_off_network_address(admin_client, network):
 def test_subnet_create(admin_client, network):
     assert_required_fields(admin_client.create_subnet,
                            networkAddress='192.168.0.0',
-                           cidrSize='24',
                            networkId=network.id)
 
     subnet = admin_client.create_subnet(networkAddress='192.168.0.0',

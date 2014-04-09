@@ -9,7 +9,8 @@
         "cidrSize": {
             "required" : true,
             "min" : 8,
-            "max" : 28
+            "max" : 28,
+            "default" : 24
         }
     }
 }
