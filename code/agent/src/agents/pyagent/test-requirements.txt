@@ -4,5 +4,5 @@ pytest==2.3.5
 datadiff==1.1.5
 
 mako
-docker-py==0.3.0
+docker-py==0.3.1
 portalocker

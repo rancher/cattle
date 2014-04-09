@@ -1,4 +1,4 @@
 mako
-docker-py==0.3.0
+docker-py==0.3.1
 portalocker
 libvirt-python
