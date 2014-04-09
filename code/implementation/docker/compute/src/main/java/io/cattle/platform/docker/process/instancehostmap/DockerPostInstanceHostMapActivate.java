@@ -3,7 +3,6 @@ package io.cattle.platform.docker.process.instancehostmap;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.NicDao;
@@ -24,7 +23,6 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
@@ -155,9 +153,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         }
 
         for ( Port port : getObjectManager().children(instance, Port.class) ) {
-            if ( CommonStatesConstants.REQUESTED.equals(port.getState()) ) {
-                getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, port, null);
-            }
+            createIgnoreCancel(port, null);
         }
     }
 
