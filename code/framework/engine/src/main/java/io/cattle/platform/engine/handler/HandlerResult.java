@@ -52,6 +52,11 @@ public class HandlerResult {
         this.shouldDelegate = shouldDelegate;
     }
 
+    public HandlerResult withShouldContinue(boolean shouldContinue) {
+        this.shouldContinue = shouldContinue;
+        return this;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
