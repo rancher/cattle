@@ -59,7 +59,7 @@
     </changeSet>
     <changeSet author="darren (generated)" id="dump3">
         <addColumn tableName="ip_address">
-            <column defaultValueNumeric="0" name="is_public" type="BIT">
+            <column defaultValueBoolean="false" name="is_public" type="BIT">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
