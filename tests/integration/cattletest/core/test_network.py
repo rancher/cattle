@@ -170,6 +170,7 @@ def test_ip_address_create_no_address_available(admin_client, admin_account):
     ip_address_addresses = []
     for _ in range(3):
         ip_address = admin_client.create_ip_address(subnetId=subnet.id)
+        ip_address = admin_client.wait_success(ip_address)
         ip_address = admin_client.wait_success(ip_address.activate())
         ip_addresses.append(ip_address)
         assert ip_address.address is not None
