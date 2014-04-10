@@ -1,0 +1,10 @@
+{
+    "resourceFields": {
+        "networkId": {
+            "required" : true
+        },
+        "uri": {
+            "required" : true
+        }
+    }
+}

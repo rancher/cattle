@@ -29,7 +29,7 @@ def test_docker_image_create_vm(admin_client, docker_context):
         admin_client.create_virtual_machine(name='test',
                                             imageUuid=uuid)
     except ApiError, e:
-        assert e.error.code == 'INVALID_IMAGE_INSTANCE_KIND'
+        assert e.error.code == 'InvalidImageInstanceKind'
 
 
 @if_docker

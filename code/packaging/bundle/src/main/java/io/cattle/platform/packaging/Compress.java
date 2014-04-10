@@ -23,7 +23,8 @@ public class Compress {
 
     private static String UUID = System.getProperty("uuid", java.util.UUID.randomUUID().toString());
     private static String[] EXCLUDES = new String[] {
-        "mysql-connector-java"
+        "mysql-connector-java",
+        "mariadb-java-client"
     };
 
     private static class NoCloseInputStream extends FilterInputStream {

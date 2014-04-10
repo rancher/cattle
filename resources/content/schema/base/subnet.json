@@ -1,0 +1,15 @@
+{
+    "resourceFields": {
+        "networkId": {
+            "required" : true
+        },
+        "networkAddress": {
+            "required" : true
+        },
+        "cidrSize": {
+            "required" : true,
+            "min" : 8,
+            "max" : 28
+        }
+    }
+}

@@ -123,6 +123,11 @@ public class EngineContext {
         return EngineContext.getEngineContext().peekLog() != null;
     }
 
+    public static boolean isNestedExecution() {
+        EngineContext context = EngineContext.getEngineContext();
+        return context != null && context.currentLog.size() > 1;
+    }
+
     public static EngineContext getEngineContext() {
         return TL.get();
     }

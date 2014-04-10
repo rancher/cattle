@@ -4,6 +4,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -31,6 +32,8 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
 
         compute(instance);
 
+        network(instance);
+
         storage(instance);
 
         deallocate(instance);
@@ -51,6 +54,14 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
 
         for ( Volume volume : volumes ) {
             deactivate(volume, null);
+        }
+    }
+
+    protected void network(Instance instance) {
+        List<Nic> nics = getObjectManager().children(instance, Nic.class);
+
+        for ( Nic nic : nics ) {
+            deactivate(nic, null);
         }
     }
 

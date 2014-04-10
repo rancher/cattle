@@ -262,7 +262,10 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     @Override
     protected Object getMapLink(String fromType, String id, MapRelationship rel, ApiRequest request) {
         SchemaFactory schemaFactory = request.getSchemaFactory();
-        String mappingType = schemaFactory.getSchemaName(rel.getMappingType());
+        /* We don't required the mapping type to be visible external, that's why we use the schemaFactory
+         * from the objectManager, because it is the superset schemaFactory.
+         */
+        String mappingType = getObjectManager().getSchemaFactory().getSchemaName(rel.getMappingType());
         String type = schemaFactory.getSchemaName(rel.getObjectType());
         Map<Table<?>,Condition> joins = new LinkedHashMap<Table<?>, Condition>();
         Map<Object, Object> criteria = new LinkedHashMap<Object, Object>();

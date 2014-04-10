@@ -1,6 +1,7 @@
 package io.cattle.platform.object;
 
 import io.cattle.platform.object.meta.Relationship;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,8 @@ public interface ObjectManager {
     <T> T reload(T obj);
 
     <T> T persist(T obj);
+
+    void delete(Object obj);
 
     <T> T loadResource(Class<T> type, String resourceId);
 
@@ -52,5 +55,7 @@ public interface ObjectManager {
     <T> T getObjectByRelationship(Object obj, Relationship relationship);
 
     String getType(Object obj);
+
+    SchemaFactory getSchemaFactory();
 
 }

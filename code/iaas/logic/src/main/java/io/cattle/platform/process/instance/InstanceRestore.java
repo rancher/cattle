@@ -1,6 +1,7 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -22,6 +23,8 @@ public class InstanceRestore extends AbstractDefaultProcessHandler {
 
         Map<String,Object> result = new ConcurrentHashMap<String,Object>();
 
+        network(instance, state.getData());
+
         storage(instance, state.getData());
 
         return new HandlerResult(result);
@@ -32,6 +35,14 @@ public class InstanceRestore extends AbstractDefaultProcessHandler {
 
         for ( Volume volume : volumes ) {
             restore(volume, data);
+        }
+    }
+
+    protected void network(Instance instance, Map<String,Object> data) {
+        List<Nic> nics = getObjectManager().children(instance, Nic.class);
+
+        for ( Nic nic : nics ) {
+            restore(nic, data);
         }
     }
 

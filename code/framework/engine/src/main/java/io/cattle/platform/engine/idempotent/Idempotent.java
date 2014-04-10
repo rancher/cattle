@@ -14,6 +14,7 @@ import com.netflix.config.DynamicBooleanProperty;
 public class Idempotent {
 
     private static final String DISABLE = "_disable";
+    private static final String IN_EXCEPTION = "_inexception";
     private static final int LOOP_MAX = 1000;
 
     private static final DynamicBooleanProperty runMultipleTimes = ArchaiusUtil.getBoolean("idempotent.reexecute");
@@ -53,6 +54,7 @@ public class Idempotent {
                     } catch ( IdempotentRetryException e ) {
                         if ( IDEMPOTENT.get() != traces )
                             throw e;
+                        IDEMPOTENT.get().remove(IN_EXCEPTION);
                         if ( j == LOOP_MAX - 1 ) {
                             throw new IllegalStateException("Executed [" + execution + "] " + LOOP_MAX + " times and never completed traces [" + traces + "]");
                         }
@@ -79,7 +81,10 @@ public class Idempotent {
             String trace = ExceptionUtils.toString(e);
             if ( ! traces.contains(trace) ) {
                 traces.add(trace);
-                throw e;
+                if ( ! IDEMPOTENT.get().contains(IN_EXCEPTION) ) {
+                    IDEMPOTENT.get().add(IN_EXCEPTION);
+                    throw e;
+                }
             }
         }
 
@@ -88,6 +93,23 @@ public class Idempotent {
 
     protected static boolean isDisabled(Set<String> traces) {
         return traces == null || traces.contains(DISABLE);
+    }
+
+    public static void disable(Runnable runnable) {
+        Set<String> traces = IDEMPOTENT.get();
+        boolean alreadyDisabled = traces != null && traces.contains(DISABLE);
+
+        if ( ! alreadyDisabled && traces != null ) {
+            traces.add(DISABLE);
+        }
+
+        try {
+            runnable.run();
+        } finally {
+            if ( ! alreadyDisabled && traces != null ) {
+                traces.remove(DISABLE);
+            }
+        }
     }
 
     public static void tempDisable() {

@@ -138,7 +138,7 @@
             <dependency>
                 <groupId>org.mariadb.jdbc</groupId>
                 <artifactId>mariadb-java-client</artifactId>
-                <version>1.1.15</version>
+                <version>1.1.7</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
@@ -343,7 +343,7 @@
             <dependency>
                 <groupId>io.github.ibuildthecloud</groupId>
                 <artifactId>gdapi-java-server</artifactId>
-                <version>0.1.1</version>
+                <version>0.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>commons-collections</groupId>

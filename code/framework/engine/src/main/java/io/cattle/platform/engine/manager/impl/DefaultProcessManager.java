@@ -5,7 +5,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.context.EngineContext;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
-import io.cattle.platform.engine.process.HandlerResultListener;
+import io.cattle.platform.engine.process.ExecutionExceptionHandler;
 import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -39,12 +39,12 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
 
     ProcessRecordDao processRecordDao;
     List<ProcessDefinition> definitionList;
-    List<HandlerResultListener> listeners;
     Map<String, ProcessDefinition> definitions = new HashMap<String, ProcessDefinition>();
     LockManager lockManager;
     DelayQueue<DelayedObject<WeakReference<ProcessInstance>>> toPersist = new DelayQueue<DelayedObject<WeakReference<ProcessInstance>>>();
     ScheduledExecutorService executor;
     EventService eventService;
+    ExecutionExceptionHandler exceptionHandler;
 
     @Override
     public ProcessInstance createProcessInstance(LaunchConfiguration config) {
@@ -81,7 +81,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         if ( record.getId() == null && (schedule || ! EngineContext.hasParentProcess()) )
             record = processRecordDao.insert(record);
 
-        ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, listeners);
+        ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, exceptionHandler);
         DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(context, record, processDef, state, schedule);
 
         if ( record.getId() != null )
@@ -237,13 +237,13 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         this.eventService = eventService;
     }
 
-    public List<HandlerResultListener> getListeners() {
-        return listeners;
+    public ExecutionExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
     }
 
     @Inject
-    public void setListeners(List<HandlerResultListener> listeners) {
-        this.listeners = listeners;
+    public void setExceptionHandler(ExecutionExceptionHandler exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
     }
 
 }

@@ -71,6 +71,7 @@
                 <module>code/iaas/logic</module>
                 <module>code/iaas/logic-common</module>
                 <module>code/iaas/model</module>
+                <module>code/iaas/resource-pool</module>
                 <module>code/iaas/simple-allocator</module>
                 <module>code/iaas/storage-service</module>
                 <module>code/iaas/system</module>

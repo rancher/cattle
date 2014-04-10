@@ -11,6 +11,11 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>cattle-iaas-resource-pool</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>cattle-framework-engine</artifactId>
             <version>${project.version}</version>
         </dependency>

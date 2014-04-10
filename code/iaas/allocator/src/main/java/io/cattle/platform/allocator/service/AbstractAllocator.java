@@ -10,7 +10,9 @@ import io.cattle.platform.allocator.service.AllocationRequest.Type;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
+import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
@@ -144,6 +146,14 @@ public abstract class AbstractAllocator implements Allocator {
         }
 
         final Set<Host> hosts = new HashSet<Host>(allocatorDao.getHosts(instance));
+
+        if ( hosts.size() > 0 && ! runAllocationForAllocated() ) {
+            //TODO: Need to create a candidate for where it already is and validate it against constraints
+            //TODO: Need to add constraints for host is active and agent is active, currently that is embedded
+            //      in SQL logic
+            return true;
+        }
+
         final Set<Volume> volumes = new HashSet<Volume>(objectManager.children(instance, Volume.class));
         final Map<Volume,Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
 
@@ -151,15 +161,27 @@ public abstract class AbstractAllocator implements Allocator {
             pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
         }
 
+        final Set<Nic> nics = new HashSet<Nic>(objectManager.children(instance, Nic.class));
+        final Map<Nic,Subnet> subnets = new HashMap<Nic, Subnet>();
+
+        for ( Nic n : nics ) {
+            Subnet subnet = objectManager.loadResource(Subnet.class, n.getSubnetId());
+            if ( subnet != null ) {
+                subnets.put(n, subnet);
+            }
+        }
+
         return lockManager.lock(new AllocateVolumesResourceLock(volumes), new LockCallback<Boolean>() {
             @Override
             public Boolean doWithLock() {
-                AllocationAttempt attempt = new AllocationAttempt(instance, hosts, volumes, pools);
+                AllocationAttempt attempt = new AllocationAttempt(instance, hosts, volumes, pools, nics, subnets);
 
                 return doAllocate(request, attempt, instance);
             }
         });
     }
+
+    protected abstract boolean runAllocationForAllocated();
 
     protected boolean deallocateVolume(AllocationRequest request) {
         final Volume volume = objectManager.loadResource(Volume.class, request.getResourceId());
@@ -184,9 +206,15 @@ public abstract class AbstractAllocator implements Allocator {
         volumes.add(volume);
 
         Map<Volume,Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
-        pools.put(volume, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(volume)));
+        Set<StoragePool> associatedPools = new HashSet<StoragePool>(allocatorDao.getAssociatedPools(volume));
+        pools.put(volume, associatedPools);
 
-        AllocationAttempt attempt = new AllocationAttempt(null, new HashSet<Host>(), volumes, pools);
+        if ( associatedPools.size() > 0 && ! runAllocationForAllocated() ) {
+            //TODO: Need to create a candidate for where it already is and validate it against constraints
+            return true;
+        }
+
+        AllocationAttempt attempt = new AllocationAttempt(null, new HashSet<Host>(), volumes, pools, null, null);
 
         return doAllocate(request, attempt, volume);
     }

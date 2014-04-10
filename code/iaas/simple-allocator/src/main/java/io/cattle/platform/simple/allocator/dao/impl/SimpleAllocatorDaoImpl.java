@@ -9,6 +9,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
 
@@ -32,15 +33,16 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
 
     @Override
     public Iterator<AllocationCandidate> iteratorPools(List<Long> volumes, QueryOptions options) {
-        return iteratorHosts(volumes, options, false);
+        return iteratorHosts(volumes, options, false, null);
     }
 
     @Override
-    public Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options) {
-        return iteratorHosts(volumes, options, true);
+    public Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options, AllocationCandidateCallback callback) {
+        return iteratorHosts(volumes, options, true, callback);
     }
 
-    protected Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options, boolean hosts) {
+    protected Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options, boolean hosts,
+            AllocationCandidateCallback callback) {
         final Cursor<Record2<Long,Long>> cursor = create()
                 .select(HOST.ID, STORAGE_POOL.ID)
                 .from(HOST)
@@ -59,7 +61,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                 .orderBy(SPREAD.get() ? HOST.COMPUTE_FREE.asc() : HOST.COMPUTE_FREE.desc())
                 .fetchLazy();
 
-        return new AllocationCandidateIterator(objectManager, cursor, volumes, hosts);
+        return new AllocationCandidateIterator(objectManager, cursor, volumes, hosts, callback);
     }
 
     protected Condition getQueryOptionCondition(QueryOptions options) {

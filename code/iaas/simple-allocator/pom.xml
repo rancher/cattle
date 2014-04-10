@@ -15,6 +15,10 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-model</artifactId>
             <version>${project.version}</version>
