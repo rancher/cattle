@@ -314,7 +314,11 @@ def test_virtual_machine_restore_subnet(admin_client, sim_context, subnet,
     addresses = admin_client.list_resource_pool(poolType='subnet',
                                                 poolId=subnet_plain_id)
     assert addresses_len + 1 == len(addresses)
-    vm = admin_client.wait_success(vm.stop(remove=True))
+    vm = admin_client.wait_success(vm.stop())
+    assert vm.state == 'stopped'
+
+    vm = admin_client.wait_success(admin_client.delete(vm))
+    assert vm.state == 'removed'
 
     assert vm.state == 'removed'
     nic = vm.nics()[0]

@@ -7,7 +7,7 @@
                     "dockerPorts": {}
                 },
                 "dockerContainer": {
-                    "Command": "/sleep.sh ",
+                    "Command": "/sleep.sh",
                     "Image": "ibuildthecloud/helloworld:latest",
                     "Names": [
                         "/c861f990-4472-4fa1-960f-65171b544c28"
