@@ -8,6 +8,8 @@ public interface ProcessInstance {
 
     String getName();
 
+    String getResourceId();
+
     ExitReason execute();
 
     boolean isRunningLogic();

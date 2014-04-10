@@ -5,6 +5,7 @@ import io.cattle.platform.engine.eventing.ProcessEventListener;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.engine.process.ExitReason;
+import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.eventing.model.Event;
@@ -44,8 +45,10 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
 
         long processId = new Long(event.getResourceId());
         boolean runRemaining = false;
+        ProcessInstance instance = null;
         try {
-            processManager.loadProcess(processId).execute();
+            instance = processManager.loadProcess(processId);
+            instance.execute();
             runRemaining = true;
             DONE.inc();
         } catch ( ProcessNotFoundException e ) {
@@ -58,14 +61,17 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
             case RESOURCE_BUSY:
                 break;
             default:
-                log.error("Process [{}] failed, exit [{}] : {}", event.getResourceId(), e.getExitReason(), e.getMessage());
+                log.error("Process [{}:{}] on [{}] failed, exit [{}] : {}", instance.getName(), event.getResourceId(),
+                        instance.getResourceId(), e.getExitReason(), e.getMessage());
             }
         } catch ( TimeoutException e ) {
             TIMEOUT.inc();
-            log.info("Communication timeout on process [{}] : {}", event.getResourceId(), e.getMessage());
+            log.info("Communication timeout on process [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(),
+                    instance.getResourceId(), e.getMessage());
         } catch ( RuntimeException e ) {
             EXCEPTION.inc();
-            log.error("Unknown exception running process [{}]", event.getResourceId(), e);
+            log.error("Unknown exception running process [{}:{}] on [{}]", instance == null ? null : instance.getName(),
+                    event.getResourceId(), instance == null ? null : instance.getResourceId(), e);
         }
 
         if ( runRemaining ) {

@@ -173,9 +173,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             }
 
             if ( e.getExitReason() == SCHEDULED ) {
-                log.info("Exiting with code [{}]", e.getExitReason(), e.getCause());
+                log.info("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
             } else {
-                log.error("Exiting with code [{}]", e.getExitReason(), e.getCause());
+                log.error("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
             }
             throw new ProcessInstanceException(this, e);
         } finally {
@@ -597,4 +597,10 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             return super.toString();
         }
     }
+
+    @Override
+    public String getResourceId() {
+        return instanceContext.getState().getResourceId();
+    }
+
 }
