@@ -14,15 +14,12 @@
     <bean class="io.cattle.platform.process.common.spring.GenericResourceProcessDefinitionCollector" />
     <bean id="processFactory" abstract="true" class="io.cattle.platform.process.common.spring.GenericProcessFactory" />
 
-<!--     <process:process name="instance.create"   resourceType="instance"   start="requested" transitioning="creating"    done="running"  /> -->
-<!--     <process:process name="instance.start"    resourceType="instance"   start="stopped"   transitioning="starting"    done="running"  /> -->
-
     <!-- 
         <process:defaultProcesses resourceType="agent" />
 
         The above XML is the equivalent as doing the below, 
         refer to cattle-process-common/src/main/resources/META-INF/cattle/process/defaults.properties for the definitive list
-        
+
         TODO: This is out of date
 
         <process:process name="agent.create" resourceType="agent" start="requested" transitioning="registering" done="inactive" />
@@ -37,6 +34,7 @@
     <process:defaultProcesses resourceType="account" />
     <process:defaultProcesses resourceType="credential" />
     <process:defaultProcesses resourceType="host" />
+    <process:defaultProcesses resourceType="hostIpAddressMap" />
     <process:defaultProcesses resourceType="hostVnetMap" />
     <process:defaultProcesses resourceType="image" />
     <process:defaultProcesses resourceType="imageStoragePoolMap" />
@@ -45,6 +43,7 @@
     <process:defaultProcesses resourceType="ipAddressNicMap" />
     <process:defaultProcesses resourceType="network" />
     <process:defaultProcesses resourceType="nic" />
+    <process:defaultProcesses resourceType="port" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="storagePoolHostMap" />
     <process:defaultProcesses resourceType="subnet" />

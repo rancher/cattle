@@ -251,6 +251,24 @@ public class JooqObjectManager extends AbstractObjectManager {
         return recordObject.fetchChildren((ForeignKey)foreignKey);
     }
 
+    @Override
+    public <T> List<T> mappedChildren(Object obj, Class<T> type) {
+        if ( obj == null ) {
+            return Collections.emptyList();
+        }
+
+        Schema schema = schemaFactory.getSchema(type);
+        if ( schema != null ) {
+            String typeName = schemaFactory.getSchemaName(obj.getClass());
+            String linkName = schema.getPluralName();
+            Relationship rel = getMetaDataManager().getRelationship(typeName, linkName);
+
+            if ( rel != null ) {
+                return getListByRelationship(obj, rel);
+            }
+        }
+        throw new IllegalStateException("Failed to find a path from [" + obj.getClass() + "] to [" + type + "]");
+    }
 
     @SuppressWarnings("unchecked")
     @Override

@@ -28,7 +28,7 @@ public class SimulatorPoolCreate extends AbstractObjectProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        StoragePool pool = (StoragePool)state.getResource();
+        final StoragePool pool = (StoragePool)state.getResource();
 
         if ( ! KIND.equals(pool.getKind()) || EXT_UUID.equals(pool.getUuid()) ) {
             return null;
@@ -46,6 +46,7 @@ public class SimulatorPoolCreate extends AbstractObjectProcessHandler {
                         extPool = getObjectManager().create(StoragePool.class,
                                 ObjectMetaDataManager.UUID_FIELD, EXT_UUID,
                                 ObjectMetaDataManager.KIND_FIELD, KIND,
+                                STORAGE_POOL.ACCOUNT_ID, pool.getAccountId(),
                                 STORAGE_POOL.EXTERNAL, true);
                         getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, extPool, null);
                     }

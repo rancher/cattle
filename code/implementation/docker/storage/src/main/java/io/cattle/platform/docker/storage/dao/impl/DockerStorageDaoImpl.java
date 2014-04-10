@@ -17,16 +17,17 @@ public class DockerStorageDaoImpl implements DockerStorageDao {
     ObjectProcessManager processManager;
 
     @Override
-    public StoragePool getExternalStoragePool() {
+    public StoragePool getExternalStoragePool(StoragePool parentPool) {
         return objectManager.findOne(StoragePool.class,
                 STORAGE_POOL.KIND, DockerStoragePoolDriver.DOCKER_KIND,
                 STORAGE_POOL.EXTERNAL, true);
     }
 
     @Override
-    public StoragePool createExternalStoragePool() {
+    public StoragePool createExternalStoragePool(StoragePool parentPool) {
         StoragePool externalPool = objectManager.create(StoragePool.class,
                 STORAGE_POOL.NAME, "Docker Index",
+                STORAGE_POOL.ACCOUNT_ID, parentPool.getAccountId(),
                 STORAGE_POOL.EXTERNAL, true,
                 STORAGE_POOL.KIND, DockerStoragePoolDriver.DOCKER_KIND);
 

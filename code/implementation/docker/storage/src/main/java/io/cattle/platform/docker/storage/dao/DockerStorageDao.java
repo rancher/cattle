@@ -4,8 +4,8 @@ import io.cattle.platform.core.model.StoragePool;
 
 public interface DockerStorageDao {
 
-    StoragePool getExternalStoragePool();
+    StoragePool getExternalStoragePool(StoragePool parentPool);
 
-    StoragePool createExternalStoragePool();
+    StoragePool createExternalStoragePool(StoragePool parentPool);
 
 }

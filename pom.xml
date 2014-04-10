@@ -91,6 +91,7 @@
                 <module>code/implementation/agent-connection-ssh</module>
                 <module>code/implementation/docker/allocator</module>
                 <module>code/implementation/docker/api</module>
+                <module>code/implementation/docker/compute</module>
                 <module>code/implementation/docker/storage</module>
                 <module>code/implementation/eventing-redis</module>
                 <module>code/implementation/extension-api</module>

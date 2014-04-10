@@ -33,7 +33,7 @@ public class DockerStoragePoolCreate extends AbstractObjectProcessLogic implemen
         StoragePool storagePool = (StoragePool)state.getResource();
 
         if ( poolDriver.isDockerPool(storagePool) ) {
-            poolDriver.createDockerExternalPool();
+            poolDriver.createDockerExternalPool(storagePool);
         }
 
         return null;

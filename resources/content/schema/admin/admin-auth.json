@@ -29,6 +29,9 @@
 
         "configItem.sourceVersion" : "cru",
 
+        "container.dockerHostIp" : "",
+        "container.dockerIp" : "",
+        "container.dockerPorts" : "",
         "container.imageId" : "cr",
         "container.imageUuid" : "cr",
         "container.environment" : "cr",
@@ -38,9 +41,10 @@
         "container.directory" : "cr",
         "container.kind" : "r",
         "container.offeringId" : "",
-        "container.tcpPorts" : "cr",
+        "container.networkIds" : "cr",
+        "container.ports" : "cr",
         "container.startOnCreate" : "cr",
-        "container.udpPorts" : "cr",
+        "container.subnetIds" : "cr",
         "container.user" : "cr",
         "container.uuid" : "r",
 
@@ -76,6 +80,8 @@
 
         "instanceStop.remove" : "cr",
 
+        "ipAddress.address" : "cr",
+        "ipAddress.isPublic" : "cru",
         "ipAddress.networkId" : "r",
 
         "network.isPublic" : "cru",

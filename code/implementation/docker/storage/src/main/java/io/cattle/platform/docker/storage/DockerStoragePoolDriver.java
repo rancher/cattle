@@ -64,25 +64,25 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
         return true;
     }
 
-    public void createDockerExternalPool() {
-        StoragePool storagePool = storageDao.getExternalStoragePool();
+    public void createDockerExternalPool(final StoragePool parentPool) {
+        StoragePool storagePool = storageDao.getExternalStoragePool(parentPool);
         if ( storagePool == null ) {
             lockManager.lock(new DockerExternalPoolCreateLock(), new LockCallbackNoReturn() {
                 @Override
                 public void doWithLockNoResult() {
-                    createDockerExternalPoolInternal();
+                    createDockerExternalPoolInternal(parentPool);
                 }
             });
         }
     }
 
-    protected void createDockerExternalPoolInternal() {
-        StoragePool storagePool = storageDao.getExternalStoragePool();
+    protected void createDockerExternalPoolInternal(StoragePool parentPool) {
+        StoragePool storagePool = storageDao.getExternalStoragePool(parentPool);
         if ( storagePool != null ) {
             return;
         }
 
-        storagePool = storageDao.createExternalStoragePool();
+        storagePool = storageDao.createExternalStoragePool(parentPool);
         log.info("Created Docker external pool [{}]", storagePool.getId());
     }
 

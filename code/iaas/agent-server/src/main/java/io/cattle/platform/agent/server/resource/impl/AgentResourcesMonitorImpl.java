@@ -4,11 +4,13 @@ import io.cattle.platform.agent.server.resource.AgentResourceChangeHandler;
 import io.cattle.platform.agent.server.resource.AgentResourcesEventListener;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.lock.LockCallbackWithException;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.InitializationTask;
 
@@ -35,6 +37,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener, I
     private static final Logger log = LoggerFactory.getLogger(AgentResourcesMonitorImpl.class);
     private static final DynamicLongProperty CACHE_RESOURCE = ArchaiusUtil.getLong("agent.resource.monitor.cache.resource.seconds");
 
+    ObjectManager objectManager;
     LockDelegator lockDelegator;
     LockManager lockManager;
     Map<String,AgentResourceChangeHandler> handlers;
@@ -112,6 +115,9 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener, I
                         return cachedResource;
                     }
 
+                    Agent agent = objectManager.loadResource(Agent.class, agentId);
+                    agentResource.put(ObjectMetaDataManager.ACCOUNT_FIELD, agent.getAccountId());
+
                     handler.newResource(agentId, agentResource);
                     return null;
                 }
@@ -163,6 +169,15 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener, I
     @Inject
     public void setLockManager(LockManager lockManager) {
         this.lockManager = lockManager;
+    }
+
+    public ObjectManager getObjectManager() {
+        return objectManager;
+    }
+
+    @Inject
+    public void setObjectManager(ObjectManager objectManager) {
+        this.objectManager = objectManager;
     }
 
 }

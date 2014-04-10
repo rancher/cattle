@@ -4,6 +4,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.engine.handler.AbstractProcessLogic;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstance;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -45,6 +46,15 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
         }
 
         return getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, obj, data);
+    }
+
+    protected ExitReason createThenActivate(Object obj, Map<String,Object> data) {
+        try {
+            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, obj, data);
+        } catch ( ProcessCancelException e ) {
+        }
+
+        return getObjectProcessManager().executeStandardProcess(StandardProcess.ACTIVATE, obj, data);
     }
 
     protected ExitReason create(Object obj, Map<String,Object> data) {

@@ -42,6 +42,8 @@ public interface ObjectManager {
 
     <T> List<T> children(Object obj, Class<T> type);
 
+    <T> List<T> mappedChildren(Object obj, Class<T> type);
+
     <T> T findOne(Class<T> clz, Map<Object,Object> values);
 
     <T> T findOne(Class<T> clz, Object key, Object... valueKeyValue);

@@ -309,6 +309,9 @@ public abstract class AbstractAllocator implements Allocator {
                 log.info("{}     pool [{}]", prefix, poolId);
             }
         }
+        for ( Map.Entry<Long, Long> entry : candidate.getSubnetIds().entrySet() ) {
+            log.info("{}   nic [{}] subnet [{}]", prefix, entry.getKey(), entry.getValue());
+        }
     }
 
     protected void logStart(AllocationAttempt request) {

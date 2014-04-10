@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -75,6 +76,14 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             throw e;
         }
 
+        try {
+            stage = "post network";
+            postNetwork(instance);
+        } catch ( ExecutionException e ) {
+            log.error("Failed to {} for instance [{}]", stage, instance.getId());
+            return stopOrRemove(state, instance, e);
+        }
+
         String ipAddress = getPrimaryIpAddress(instance);
         if ( ipAddress != null ) {
             resultData.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, ipAddress);
@@ -86,14 +95,25 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     protected String getPrimaryIpAddress(Instance instance) {
         int min = Integer.MAX_VALUE;
         IpAddress ip = null;
+        IpAddress fallBackIp = null;
         for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
             if ( nic.getDeviceNumber().intValue() < min ) {
                 min = nic.getDeviceNumber();
                 ip = ipAddressDao.getPrimaryIpAddress(nic);
+                if ( ip == null ) {
+                    List<IpAddress> ips = getObjectManager().mappedChildren(nic, IpAddress.class);
+                    if ( ips.size() > 0 ) {
+                        fallBackIp = ips.get(0);
+                    }
+                }
             }
         }
 
-        return ip == null ? null : ip.getAddress();
+        if ( ip == null ) {
+            return fallBackIp == null ? null : fallBackIp.getAddress();
+        } else {
+            return ip.getAddress();
+        }
     }
 
     protected int getMaxComputeTries(Instance instance) {
@@ -158,6 +178,12 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     protected void network(Instance instance) {
         for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
             activate(nic, null);
+        }
+    }
+
+    protected void postNetwork(Instance instance) {
+        for ( Port port : getObjectManager().children(instance, Port.class) ) {
+            activate(port, null);
         }
     }
 

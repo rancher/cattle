@@ -79,6 +79,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.HostTable HOST = io.cattle.platform.core.model.tables.HostTable.HOST;
 
 	/**
+	 * The table cattle.host_ip_address_map
+	 */
+	public static final io.cattle.platform.core.model.tables.HostIpAddressMapTable HOST_IP_ADDRESS_MAP = io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP;
+
+	/**
 	 * The table cattle.host_vnet_map
 	 */
 	public static final io.cattle.platform.core.model.tables.HostVnetMapTable HOST_VNET_MAP = io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP;
@@ -127,6 +132,11 @@ public class Tables {
 	 * The table cattle.offering
 	 */
 	public static final io.cattle.platform.core.model.tables.OfferingTable OFFERING = io.cattle.platform.core.model.tables.OfferingTable.OFFERING;
+
+	/**
+	 * The table cattle.port
+	 */
+	public static final io.cattle.platform.core.model.tables.PortTable PORT = io.cattle.platform.core.model.tables.PortTable.PORT;
 
 	/**
 	 * The table cattle.process_execution
