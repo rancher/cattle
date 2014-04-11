@@ -97,7 +97,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         try {
-            log.info("Attempting to run process [{}] id [{}] on resource [{}]", getName(),  getId(), instanceContext.state.getResourceId());
+            log.info("Attempting to run process [{}:{}] on resource [{}]", getName(),  getId(), instanceContext.state.getResourceId());
             return context.getLockManager().lock(new ProcessLock(this), new LockCallback<ExitReason>() {
                 @Override
                 public ExitReason doWithLock() {
@@ -108,7 +108,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             exit(PROCESS_ALREADY_IN_PROGRESS);
             throw new ProcessInstanceException(this, new ProcessExecutionExitException(PROCESS_ALREADY_IN_PROGRESS));
         } finally {
-            log.info("Exiting [{}] process [{}] id [{}] on resource [{}]", finalReason, getName(),  getId(), instanceContext.state.getResourceId());
+            log.info("Exiting [{}] process [{}:{}] on resource [{}]", finalReason, getName(),  getId(), instanceContext.state.getResourceId());
             if ( finalReason == null ) {
                 log.error("final ExitReason is null, should not be");
             }
