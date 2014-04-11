@@ -8,6 +8,7 @@
                 "type" : "host",
                 "uuid" : "testuuid",
                 "name" : "localhost/docker",
+                "physicalHostUuid" : "hostuuid",
                 "kind" : "docker"
             },
             {

@@ -155,6 +155,7 @@ def test_instance_deactivate(agent, responses):
 @if_docker
 def test_ping(agent, responses):
     CONFIG_OVERRIDE['DOCKER_UUID'] = 'testuuid'
+    CONFIG_OVERRIDE['PHYSICAL_HOST_UUID'] = 'hostuuid'
 
     def post(req, resp):
         hostname = Config.hostname() + '/docker'

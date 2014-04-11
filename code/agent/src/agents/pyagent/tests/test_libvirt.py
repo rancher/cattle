@@ -206,6 +206,7 @@ def test_ping(agent, responses):
     CONFIG_OVERRIDE['DOCKER_ENABLED'] = 'false'
     CONFIG_OVERRIDE['HOSTNAME'] = 'localhost'
     CONFIG_OVERRIDE['LIBVIRT_UUID'] = 'testuuid'
+    CONFIG_OVERRIDE['PHYSICAL_HOST_UUID'] = 'hostuuid'
 
     def post(req, resp):
         resp['data']['resources'] = filter(lambda x: x['kind'] == 'libvirt',

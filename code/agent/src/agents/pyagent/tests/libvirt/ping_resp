@@ -9,6 +9,7 @@
                 "uuid" : "testuuid",
                 "name" : "localhost/libvirt",
                 "kind" : "libvirt",
+                "physicalHostUuid" : "hostuuid",
                 "data" : {
                     "libvirt" : {
                         "type" : "qemu"
