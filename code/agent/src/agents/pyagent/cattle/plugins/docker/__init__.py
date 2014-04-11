@@ -1,7 +1,6 @@
 import logging
 
 from cattle import default_value, Config
-from cattle.utils import memoize
 
 log = logging.getLogger('docker')
 
@@ -30,7 +29,6 @@ class DockerConfig:
         return default_value('DOCKER_UUID_FILE', def_value)
 
     @staticmethod
-    @memoize
     def docker_uuid():
         return Config.get_uuid_from_file('DOCKER_UUID',
                                          DockerConfig.docker_uuid_file())

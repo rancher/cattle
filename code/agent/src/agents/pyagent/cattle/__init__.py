@@ -44,6 +44,16 @@ class Config:
         return uuid
 
     @staticmethod
+    def physical_host_uuid_file():
+        def_value = '{0}/.physical_host_uuid'.format(Config.home())
+        return default_value('PHYSICAL_HOST_UUID_FILE', def_value)
+
+    @staticmethod
+    def physical_host_uuid():
+        return Config.get_uuid_from_file('PHYSICAL_HOST_UUID',
+                                         Config.physical_host_uuid_file())
+
+    @staticmethod
     def setup_logger():
         return default_value('LOGGER', 'true') == 'true'
 
@@ -158,3 +168,12 @@ class Config:
     def config_sh():
         return default_value('CONFIG_SCRIPT',
                              '{0}/config.sh'.format(Config.home()))
+
+    @staticmethod
+    def physical_host():
+        return {
+            'uuid': Config.physical_host_uuid(),
+            'type': 'physicalHost',
+            'kind': 'physicalHost',
+            'name': Config.hostname()
+        }

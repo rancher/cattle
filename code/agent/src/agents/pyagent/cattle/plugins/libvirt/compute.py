@@ -85,11 +85,14 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         if not utils.ping_include_resources(ping):
             return
 
+        physical_host = Config.physical_host()
+
         compute = {
             'type': 'host',
             'kind': LIBVIRT_KIND,
             'name': Config.hostname() + '/libvirt',
             'uuid': LibvirtConfig.libvirt_uuid(),
+            'physicalHostUuid': physical_host['uuid'],
             'data': {
                 'libvirt': {
                     'type': get_preferred_libvirt_type()
@@ -97,7 +100,7 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
             }
         }
 
-        resources = [compute]
+        resources = [physical_host, compute]
 
         for driver in pool_drivers():
             for pool in driver.discover(compute):

@@ -44,10 +44,13 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         if not DockerConfig.docker_enabled():
             return
 
+        physical_host = Config.physical_host()
+
         compute = {
             'type': 'host',
             'kind': 'docker',
             'name': Config.hostname() + '/docker',
+            'physicalHostUuid': physical_host['uuid'],
             'uuid': DockerConfig.docker_uuid()
         }
 
@@ -59,7 +62,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             'uuid': compute['uuid'] + '-pool'
         }
 
-        utils.ping_add_resources(pong, compute, pool)
+        utils.ping_add_resources(pong, physical_host, compute, pool)
 
     def get_container_by_name(self, name):
         name = '/{0}'.format(name)
