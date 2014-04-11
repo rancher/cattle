@@ -43,6 +43,7 @@
     <process:defaultProcesses resourceType="ipAddressNicMap" />
     <process:defaultProcesses resourceType="network" />
     <process:defaultProcesses resourceType="nic" />
+    <process:defaultProcesses resourceType="physicalHost" />
     <process:defaultProcesses resourceType="port" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="storagePoolHostMap" />

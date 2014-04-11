@@ -12,6 +12,7 @@ import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,6 +27,7 @@ public class GenericTypeAgentResourceChangeHandler implements AgentResourceChang
     int priority = Priority.SPECIFIC;
     String type;
     Class<?> typeClass;
+    Set<String> keys = null;
     SchemaFactory schemaFactory;
     ObjectManager objectManager;
     ObjectProcessManager processManager;
@@ -40,14 +42,48 @@ public class GenericTypeAgentResourceChangeHandler implements AgentResourceChang
 
         Map<String,Object> data = new HashMap<String, Object>();
         for ( String key : getKeys() ) {
-            data.put(key, ObjectUtils.getPropertyIgnoreErrors(resource, key));
+            Object value = ObjectUtils.getPropertyIgnoreErrors(resource, key);
+            try {
+                Field field = translateField(null, key, value);
+                if ( field != null ) {
+                    data.put(field.getName(), field.getValue());
+                }
+            } catch (MissingDependencyException e) {
+            }
         }
 
         return data;
     }
 
-    protected Set<String> getKeys() {
-        return FIELDS;
+    protected Object loadResource(Map<String, Object> resource) {
+        Object uuid = resource.get(ObjectMetaDataManager.UUID_FIELD);
+        return objectManager.findOne(getTypeClass(), ObjectMetaDataManager.UUID_FIELD, uuid);
+    }
+
+    protected Map<String, Object> reload(Map<String, Object> resource) {
+        Object uuid = resource.get(ObjectMetaDataManager.UUID_FIELD);
+        if ( uuid == null ) {
+            throw new IllegalStateException("Can not reload a resource with out a UUID");
+        }
+
+        return load(uuid.toString());
+    }
+
+    protected synchronized Set<String> getKeys() {
+        if ( keys == null ) {
+            keys = new HashSet<String>(FIELDS);
+            keys.addAll(getAdditionalKeys());
+        }
+
+        return keys;
+    }
+
+    protected Set<String> getAdditionalKeys() {
+        return new HashSet<String>();
+    }
+
+    protected Set<String> getChangableKeys() {
+        return new HashSet<String>();
     }
 
     protected Class<?> getTypeClass() {
@@ -61,7 +97,22 @@ public class GenericTypeAgentResourceChangeHandler implements AgentResourceChang
     @Override
     public void newResource(long agentId, Map<String, Object> resource) throws MissingDependencyException {
         resource.put(AgentConstants.ID_REF, agentId);
+
+        resource = checkFields(resource);
+
         resourceDao.createAndSchedule(getTypeClass(), resource);
+    }
+
+    protected Map<String,Object> checkFields(Map<String,Object> resource) throws MissingDependencyException {
+        Map<String,Object> result = new HashMap<String, Object>();
+        for ( Map.Entry<String, Object> entry : resource.entrySet() ) {
+            Field field = translateField(resource, entry.getKey(), entry.getValue());
+            if ( field != null ) {
+                result.put(field.getName(), field.getValue());
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -75,9 +126,35 @@ public class GenericTypeAgentResourceChangeHandler implements AgentResourceChang
     }
 
     @Override
-    public void changed(Map<String, Object> agentResource, Map<String, Object> loadedResource) {
-        throw new UnsupportedOperationException("Agent resource change from "  + loadedResource + " to " +
-                agentResource);
+    public void changed(Map<String, Object> agentResource, Map<String, Object> loadedResource) throws MissingDependencyException {
+        Map<String,Object> changes = new HashMap<String, Object>();
+
+        for ( String changableKey : getChangableKeys() ) {
+            Object agentObj = agentResource.get(changableKey);
+            Object loadedObj = loadedResource.get(changableKey);
+
+            if ( ! org.apache.commons.lang3.ObjectUtils.equals(agentObj, loadedObj) ) {
+                Field field = translateField(loadedResource, changableKey, agentObj);
+                if ( field != null ) {
+                    changes.put(field.getName(), field.getValue());
+                }
+            }
+        }
+
+        if ( changes.size() > 0 ) {
+            Object resource = loadResource(loadedResource);
+            objectManager.setFields(resource, changes);
+            loadedResource = reload(loadedResource);
+        }
+
+        if ( areDifferent(agentResource, loadedResource) ) {
+            throw new UnsupportedOperationException("Agent resource change from "  + loadedResource + " to " +
+                    agentResource);
+        }
+    }
+
+    protected Field translateField(Map<String, Object> resource, String field, Object value) throws MissingDependencyException {
+        return new Field(field, value);
     }
 
     @Override

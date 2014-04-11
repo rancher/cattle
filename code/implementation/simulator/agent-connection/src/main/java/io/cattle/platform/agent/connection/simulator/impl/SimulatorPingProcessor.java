@@ -43,6 +43,20 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
     protected void addResource(Ping pong, Agent agent) {
         List<Map<String,Object>> resources = pong.getData().getResources();
 
+        String physicalHostUuid = agent.getUuid() + "-physical-host";
+
+        Map<String,Object> physicalHost = new HashMap<String, Object>();
+        physicalHost.put(ObjectMetaDataManager.UUID_FIELD, physicalHostUuid);
+        physicalHost.put(ObjectMetaDataManager.KIND_FIELD, "sim");
+        physicalHost.put(ObjectMetaDataManager.TYPE_FIELD, "physicalHost");
+
+        Boolean addPhysicalHost = DataAccessor
+                .fromDataFieldOf(agent)
+                .withScope(AgentConnectionSimulator.class)
+                .withKey("addPhysicalHost")
+                .withDefault(true)
+                .as(jsonMapper, Boolean.class);
+
         long hosts = DataAccessor
             .fromDataFieldOf(agent)
             .withScope(AgentConnectionSimulator.class)
@@ -65,6 +79,10 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
             host.put(ObjectMetaDataManager.KIND_FIELD, "sim");
             host.put(ObjectMetaDataManager.TYPE_FIELD, "host");
 
+            if ( addPhysicalHost ) {
+                host.put("physicalHostUuid", physicalHostUuid);
+            }
+
             for ( long j = 0 ; j < poolsPerHost ; j++ ) {
                 String poolUuid = hostUuid + "-" + j;
 
@@ -81,6 +99,13 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
              * will have to reorder then on insert
              */
             resources.add(host);
+        }
+
+        if ( addPhysicalHost ) {
+            /* Purposely put physical host after host so that AgentResourceManager
+             * will have to reorder then on insert
+             */
+            resources.add(physicalHost);
         }
     }
 

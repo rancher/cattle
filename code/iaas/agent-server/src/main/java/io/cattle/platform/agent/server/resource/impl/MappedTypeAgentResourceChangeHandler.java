@@ -18,7 +18,6 @@ public class MappedTypeAgentResourceChangeHandler extends GenericTypeAgentResour
     Class<?> mappingType;
     Class<?> otherType;
     String resourceUuidKey;
-    Set<String> keys;
 
     @Override
     public Map<String, Object> load(String uuid) {
@@ -34,11 +33,9 @@ public class MappedTypeAgentResourceChangeHandler extends GenericTypeAgentResour
     }
 
     @Override
-    protected synchronized Set<String> getKeys() {
-        if ( keys == null ) {
-            keys = new HashSet<String>(super.getKeys());
-            keys.add(MAPPED_UUID);
-        }
+    protected Set<String> getAdditionalKeys() {
+        Set<String> keys = new HashSet<String>();
+        keys.add(MAPPED_UUID);
 
         return keys;
     }

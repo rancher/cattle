@@ -14,6 +14,6 @@ public interface AgentResourceChangeHandler {
 
     boolean areDifferent(Map<String,Object> agentResource, Map<String,Object> loadedResource);
 
-    void changed(Map<String,Object> agentResource, Map<String,Object> loadedResource);
+    void changed(Map<String,Object> agentResource, Map<String,Object> loadedResource) throws MissingDependencyException;
 
 }

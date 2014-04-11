@@ -134,6 +134,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.OfferingTable OFFERING = io.cattle.platform.core.model.tables.OfferingTable.OFFERING;
 
 	/**
+	 * The table cattle.physical_host
+	 */
+	public static final io.cattle.platform.core.model.tables.PhysicalHostTable PHYSICAL_HOST = io.cattle.platform.core.model.tables.PhysicalHostTable.PHYSICAL_HOST;
+
+	/**
 	 * The table cattle.port
 	 */
 	public static final io.cattle.platform.core.model.tables.PortTable PORT = io.cattle.platform.core.model.tables.PortTable.PORT;

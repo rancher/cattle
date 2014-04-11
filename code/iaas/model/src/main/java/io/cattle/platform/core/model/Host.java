@@ -190,6 +190,17 @@ public interface Host extends java.io.Serializable {
 	@javax.persistence.Column(name = "zone_id", precision = 19)
 	public java.lang.Long getZoneId();
 
+	/**
+	 * Setter for <code>cattle.host.physical_host_id</code>.
+	 */
+	public void setPhysicalHostId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.host.physical_host_id</code>.
+	 */
+	@javax.persistence.Column(name = "physical_host_id", precision = 19)
+	public java.lang.Long getPhysicalHostId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

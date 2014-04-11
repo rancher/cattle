@@ -30,11 +30,17 @@
         <property name="changeHandlers" value="#{extensionManager.list('agent.resource.change.handler')}" />
     </bean>
 
-    <bean id="HostChangeHandler" class="io.cattle.platform.agent.server.resource.impl.GenericTypeAgentResourceChangeHandler" >
+    <bean id="HostChangeHandler" class="io.cattle.platform.agent.server.resource.impl.HostAgentResourceChangeHandler" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
         <property name="type" value="host" />
+    </bean>
+    <bean id="PhysicalHostChangeHandler" class="io.cattle.platform.agent.server.resource.impl.GenericTypeAgentResourceChangeHandler" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+        <property name="type" value="physicalHost" />
     </bean>
     <bean id="StoragePoolChangeHandler" class="io.cattle.platform.agent.server.resource.impl.MappedTypeAgentResourceChangeHandler" >
         <property name="priority">
