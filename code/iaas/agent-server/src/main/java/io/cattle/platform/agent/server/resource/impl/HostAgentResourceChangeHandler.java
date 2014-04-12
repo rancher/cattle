@@ -1,6 +1,7 @@
 package io.cattle.platform.agent.server.resource.impl;
 
 import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 
@@ -12,6 +13,18 @@ import java.util.Set;
 public class HostAgentResourceChangeHandler extends GenericTypeAgentResourceChangeHandler {
 
     private static final String FIELD_PHYSICAL_HOST_UUID = "physicalHostUuid";
+
+    @Override
+    protected Field loadField(Object resource, String field) {
+        if ( field.equals(FIELD_PHYSICAL_HOST_UUID) && resource instanceof Host ) {
+            Long physicalHostId = ((Host)resource).getPhysicalHostId();
+            PhysicalHost host = getObjectManager().loadResource(PhysicalHost.class, physicalHostId);
+
+            return new Field(FIELD_PHYSICAL_HOST_UUID, host == null ? null : host.getUuid());
+        }
+
+        return super.loadField(resource, field);
+    }
 
     @Override
     protected Field translateField(Map<String, Object> resource, String field, Object value)

@@ -42,17 +42,18 @@ public class GenericTypeAgentResourceChangeHandler implements AgentResourceChang
 
         Map<String,Object> data = new HashMap<String, Object>();
         for ( String key : getKeys() ) {
-            Object value = ObjectUtils.getPropertyIgnoreErrors(resource, key);
-            try {
-                Field field = translateField(null, key, value);
-                if ( field != null ) {
-                    data.put(field.getName(), field.getValue());
-                }
-            } catch (MissingDependencyException e) {
+            Field field = loadField(resource, key);
+            if ( field != null ) {
+                data.put(field.getName(), field.getValue());
             }
         }
 
         return data;
+    }
+
+    protected Field loadField(Object resource, String key) {
+        Object value = ObjectUtils.getPropertyIgnoreErrors(resource, key);
+        return new Field(key, value);
     }
 
     protected Object loadResource(Map<String, Object> resource) {
