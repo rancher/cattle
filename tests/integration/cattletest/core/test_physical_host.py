@@ -24,7 +24,7 @@ def test_register_physical_host(admin_client):
     assert hosts[0].physicalHost() is not None
 
 
-def test_register_multiply_physical_host(admin_client):
+def test_register_multiple_physical_host(admin_client):
     scope = 'io.cattle.platform.agent.connection.simulator' \
             '.AgentConnectionSimulator'
     uri = 'sim://{}'.format(random_str())
