@@ -149,7 +149,6 @@ def test_host_only_3_hosts_same_phy(admin_client, sim_context):
         assert c.state == 'running'
         assert len(c.nics()) == 1
 
-
     vnets = network.vnets()
     assert len(vnets) == 1
     assert len(vnets[0].hostVnetMaps()) == 3

@@ -56,7 +56,6 @@ def test_inactive_agent(admin_client, sim_context):
 
 def test_spread(admin_client, sim_context, sim_context2, sim_context3):
     count = 3
-    num = random_num()
 
     hosts = [sim_context['host'], sim_context2['host'], sim_context3['host']]
     hosts = wait_all_success(admin_client, hosts)
