@@ -283,3 +283,14 @@ def get_plain_id(admin_client, obj):
     ret = admin_client.list(obj.type, uuid=obj.uuid, _plainId='true')
     assert len(ret) == 1
     return ret[0].id
+
+
+def create_and_activate(client, type, **kw):
+    obj = client.create(type, **kw)
+    obj = client.wait_success(obj)
+
+    if obj.state == 'inactive':
+        obj = client.wait_success(obj.activate())
+
+    assert obj.state == 'active'
+    return obj

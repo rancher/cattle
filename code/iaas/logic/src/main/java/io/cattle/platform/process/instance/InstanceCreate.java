@@ -7,6 +7,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
+import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -135,8 +136,11 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     protected Set<Long> createNics(Instance instance, List<Nic> nics, Map<String,Object> data) {
         List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_NETWORK_IDS, Long.class);
         List<Long> subnetIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_SUBNET_IDS, Long.class);
+        List<Long> vnetIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_VNET_IDS, Long.class);
 
         Set<Long> nicIds = new TreeSet<Long>();
+
+        int deviceId = 0;
 
         if ( networkIds != null ) {
             for ( int i = 0 ; i < networkIds.size() ; i++ ) {
@@ -154,9 +158,10 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
                             NIC.ACCOUNT_ID, instance.getAccountId(),
                             NIC.NETWORK_ID, createId,
                             NIC.INSTANCE_ID, instance.getId(),
-                            NIC.DEVICE_NUMBER, i);
-
+                            NIC.DEVICE_NUMBER, deviceId);
                 }
+
+                deviceId++;
 
                 processManager.executeStandardProcess(StandardProcess.CREATE, newNic, data);
                 nicIds.add(newNic.getId());
@@ -186,9 +191,45 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
                             NIC.NETWORK_ID, subnet.getNetworkId(),
                             NIC.SUBNET_ID, createId,
                             NIC.INSTANCE_ID, instance.getId(),
-                            NIC.DEVICE_NUMBER, i);
+                            NIC.DEVICE_NUMBER, deviceId);
 
                 }
+
+                deviceId++;
+
+                processManager.executeStandardProcess(StandardProcess.CREATE, newNic, data);
+                nicIds.add(newNic.getId());
+            }
+        }
+
+        if ( vnetIds != null ) {
+            for ( int i = 0 ; i < vnetIds.size() ; i++ ) {
+                Number createId = vnetIds.get(i);
+                Vnet vnet = objectManager.loadResource(Vnet.class, createId.toString());
+
+                if ( vnet == null ) {
+                    return null;
+                }
+
+                Nic newNic = null;
+                for ( Nic nic : nics ) {
+                    if ( nic.getVnetId() == createId.longValue() ) {
+                        newNic = nic;
+                        break;
+                    }
+                }
+
+                if ( newNic == null ) {
+                    newNic = objectManager.create(Nic.class,
+                            NIC.ACCOUNT_ID, instance.getAccountId(),
+                            NIC.NETWORK_ID, vnet.getNetworkId(),
+                            NIC.VNET_ID, createId,
+                            NIC.INSTANCE_ID, instance.getId(),
+                            NIC.DEVICE_NUMBER, deviceId);
+
+                }
+
+                deviceId++;
 
                 processManager.executeStandardProcess(StandardProcess.CREATE, newNic, data);
                 nicIds.add(newNic.getId());

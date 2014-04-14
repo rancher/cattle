@@ -362,3 +362,37 @@ def test_container_storage_fail(admin_client, sim_context):
         'Failing [storage.volume.activate]'
 
     _assert_removed(container)
+
+
+def test_create_with_vnet(admin_client, sim_context):
+    network = create_and_activate(admin_client, 'network')
+
+    create_and_activate(admin_client, 'subnet',
+                        networkId=network.id,
+                        networkAddress='192.168.0.0')
+    subnet2 = create_and_activate(admin_client, 'subnet',
+                                  networkId=network.id,
+                                  networkAddress='192.168.1.0')
+
+    vnet = create_and_activate(admin_client, 'vnet',
+                               networkId=network.id,
+                               uri='dummy:///')
+
+    create_and_activate(admin_client, 'subnetVnetMap',
+                        vnetId=vnet.id,
+                        subnetId=subnet2.id)
+
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      vnetIds=[vnet.id])
+    c = admin_client.wait_success(c)
+    assert c.state == 'running'
+    assert 'vnetIds' not in c
+
+    nics = c.nics()
+    assert len(nics) == 1
+
+    nic = nics[0]
+
+    assert nic.deviceNumber == 0
+    assert nic.vnetId == vnet.id
+    assert nic.subnetId == subnet2.id

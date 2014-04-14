@@ -21,6 +21,11 @@
             "nullable" : true,
             "includeInList" : false
         },
+        "vnetIds" : {
+            "type" : "array[reference[vnet]]",
+            "nullable" : true,
+            "includeInList" : false
+        },
         "primaryIpAddress" : {
             "type" : "string"
         },
