@@ -29,15 +29,6 @@ def test_compute_free(admin_client, sim_context):
     assert host.computeFree == start_free
 
 
-def _get_sim_hosts(admin_client):
-    ret = []
-    for h in admin_client.list_host(removed_null=True, kind='sim'):
-        if h.agent().state == 'active':
-            ret.append(h)
-
-    return ret
-
-
 def test_inactive_agent(admin_client, sim_context):
     agent = create_type_by_uuid(admin_client, 'agent', 'inactive_test',
                                 uri='sim://inactive_test')
@@ -63,24 +54,12 @@ def test_inactive_agent(admin_client, sim_context):
     assert c.state == 'removed'
 
 
-def test_spread(admin_client, sim_context):
+def test_spread(admin_client, sim_context, sim_context2, sim_context3):
     count = 3
     num = random_num()
 
-    hosts = _get_sim_hosts(admin_client)
-    if len(hosts) < 3:
-        host_count = 3
-        agents = []
-        for i in range(host_count):
-            uri = 'sim://{}?{}'.format(num, i)
-            agents.append(admin_client.create_agent(uri=uri))
-
-        agents = wait_all_success(admin_client, agents)
-        for agent in agents:
-            while len(agent.hosts()) == 0 or len(agent.storagePools()) == 0:
-                time.sleep(1)
-
-    hosts = wait_all_success(admin_client, _get_sim_hosts(admin_client))
+    hosts = [sim_context['host'], sim_context2['host'], sim_context3['host']]
+    hosts = wait_all_success(admin_client, hosts)
     for h in hosts:
         assert h.state == 'active'
         assert h.agent().state == 'active'
