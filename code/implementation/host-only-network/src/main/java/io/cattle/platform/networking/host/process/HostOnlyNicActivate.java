@@ -19,6 +19,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.networking.host.contants.HostOnlyConstants;
 import io.cattle.platform.networking.host.dao.HostOnlyDao;
 import io.cattle.platform.networking.host.lock.VnetHostCreateLock;
+import io.cattle.platform.networking.host.lock.VnetHostMapLock;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
@@ -57,10 +58,17 @@ public class HostOnlyNicActivate extends AbstractObjectProcessLogic implements P
 
             createIgnoreCancel(vnet, null);
 
+            boolean mapped = false;
             for ( HostVnetMap map : mapDao.findNonRemoved(HostVnetMap.class, Vnet.class, vnet.getId()) ) {
                 if ( map.getHostId().equals(host.getId()) ) {
-                    createThenActivate(vnet, state.getData());
+                    createThenActivate(map, state.getData());
+                    mapped = true;
                 }
+            }
+
+            if ( ! mapped ) {
+                HostVnetMap map = mapVnetToHost(vnet, network, host);
+                createThenActivate(map, state.getData());
             }
 
             if ( subnet != null ) {
@@ -77,13 +85,21 @@ public class HostOnlyNicActivate extends AbstractObjectProcessLogic implements P
         } else {
             return new HandlerResult(NIC.VNET_ID, vnet.getId()).withShouldContinue(true);
         }
+    }
 
+    protected HostVnetMap mapVnetToHost(final Vnet vnet, Network network, final Host host) {
+        return lockManager.lock(new VnetHostCreateLock(network, host), new LockCallback<HostVnetMap>() {
+            @Override
+            public HostVnetMap doWithLock() {
+                return hostOnlyDao.mapVnetToHost(vnet, host);
+            }
+        });
     }
 
     protected Vnet createVnetForHost(final Subnet subnet, final Network network, final Host host) {
         final String uri = DataAccessor.field(network, HostOnlyConstants.FIELD_HOST_VNET_URI, String.class);
 
-        return lockManager.lock(new VnetHostCreateLock(network, host), new LockCallback<Vnet>() {
+        return lockManager.lock(new VnetHostMapLock(network, host), new LockCallback<Vnet>() {
             @Override
             public Vnet doWithLock() {
                 Vnet vnet = hostOnlyDao.getVnetForHost(network, host);

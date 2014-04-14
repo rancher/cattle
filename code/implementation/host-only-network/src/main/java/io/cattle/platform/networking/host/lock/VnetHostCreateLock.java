@@ -7,7 +7,8 @@ import io.cattle.platform.lock.definition.AbstractBlockingLockDefintion;
 public class VnetHostCreateLock extends AbstractBlockingLockDefintion {
 
     public VnetHostCreateLock(Network network, Host host) {
-        super("HOST.ONLY.SUBNET.CREATE." + network.getId() + "." + host.getId());
+        super("HOST.ONLY.VNET.CREATE." + network.getId() + "." +
+                (host.getPhysicalHostId() == null ? host.getId() : host.getPhysicalHostId()));
     }
 
 }

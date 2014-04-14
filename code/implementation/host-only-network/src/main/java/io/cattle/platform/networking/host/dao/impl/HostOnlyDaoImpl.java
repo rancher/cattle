@@ -1,8 +1,12 @@
 package io.cattle.platform.networking.host.dao.impl;
 
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.HostVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
+
+import java.util.List;
+
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostVnetMap;
 import io.cattle.platform.core.model.Network;
@@ -25,15 +29,32 @@ public class HostOnlyDaoImpl extends AbstractJooqDao implements HostOnlyDao {
 
     @Override
     public Vnet getVnetForHost(Network network, Host host) {
-        Record record = create()
-                .select(VNET.fields())
-                    .from(VNET)
-                    .join(HOST_VNET_MAP)
-                        .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
-                .where(VNET.NETWORK_ID.eq(network.getId())
-                        .and(HOST_VNET_MAP.HOST_ID.eq(host.getId()))
-                        .and(HOST_VNET_MAP.REMOVED.isNull()))
-                .fetchAny();
+        Long physicalHostId = host.getPhysicalHostId();
+        Record record = null;
+
+        if ( physicalHostId == null ) {
+            record = create()
+                    .select(VNET.fields())
+                        .from(VNET)
+                        .join(HOST_VNET_MAP)
+                            .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
+                    .where(VNET.NETWORK_ID.eq(network.getId())
+                            .and(HOST_VNET_MAP.HOST_ID.eq(host.getId()))
+                            .and(HOST_VNET_MAP.REMOVED.isNull()))
+                    .fetchAny();
+        } else {
+            record = create()
+                    .select(VNET.fields())
+                        .from(VNET)
+                        .join(HOST_VNET_MAP)
+                            .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
+                        .join(HOST)
+                            .on(HOST_VNET_MAP.HOST_ID.eq(HOST.ID))
+                    .where(VNET.NETWORK_ID.eq(network.getId())
+                            .and(HOST.PHYSICAL_HOST_ID.eq(physicalHostId))
+                            .and(HOST_VNET_MAP.REMOVED.isNull()))
+                    .fetchAny();
+        }
         return record == null ? null : record.into(VnetRecord.class);
     }
 
@@ -59,6 +80,22 @@ public class HostOnlyDaoImpl extends AbstractJooqDao implements HostOnlyDao {
         }
 
         return vnet;
+    }
+
+
+    @Override
+    public HostVnetMap mapVnetToHost(Vnet vnet, Host host) {
+        List<HostVnetMap> maps = objectManager.find(HostVnetMap.class,
+                HOST_VNET_MAP.VNET_ID, vnet.getId(),
+                HOST_VNET_MAP.HOST_ID, host.getId());
+
+        if ( maps.size() > 0 ) {
+            return maps.get(0);
+        }
+
+        return objectManager.create(HostVnetMap.class,
+                HOST_VNET_MAP.VNET_ID, vnet.getId(),
+                HOST_VNET_MAP.HOST_ID, host.getId());
     }
 
     public ObjectManager getObjectManager() {

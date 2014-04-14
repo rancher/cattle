@@ -2,6 +2,10 @@
     "resourceFields" : {
         "hostVnetUri" : {
             "type" : "string"
+        },
+        "dynamicCreateVnet" : {
+            "type" : "boolean",
+            "default" : "false"
         }
     }
 }
