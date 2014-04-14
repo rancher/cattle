@@ -53,7 +53,9 @@ public class NetworkAllocationCandidates implements AllocationCandidateCallback 
         }
 
         if ( nicToSubnets.size() == 1 ) {
-            subnetIds.add(new ArrayList<Pair<Long,Long>>(nicToSubnets.get(0)));
+            for ( Pair<Long, Long> pair : nicToSubnets.get(0) ) {
+                subnetIds.add(Arrays.asList(pair));
+            }
         } else if ( nicToSubnets.size() > 1 ) {
             subnetIds = Sets.cartesianProduct(nicToSubnets.toArray(new Set[nicToSubnets.size()]));
         }
