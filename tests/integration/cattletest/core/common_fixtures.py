@@ -74,7 +74,7 @@ def admin_client(accounts):
 @pytest.fixture(scope='module')
 def sim_context(admin_client):
     context = kind_context(admin_client, 'sim', external_pool=True,
-                           uri='sim://', uuid='simagent1')
+                           uri='sim://', uuid='simagent1', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
     host = context['host']
@@ -96,7 +96,7 @@ def sim_context(admin_client):
 @pytest.fixture(scope='module')
 def sim_context2(admin_client):
     context = kind_context(admin_client, 'sim', external_pool=True,
-                           uri='sim://2', uuid='simagent2')
+                           uri='sim://2', uuid='simagent2', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
     return context
@@ -105,7 +105,7 @@ def sim_context2(admin_client):
 @pytest.fixture(scope='module')
 def sim_context3(admin_client):
     context = kind_context(admin_client, 'sim', external_pool=True,
-                           uri='sim://3', uuid='simagent3')
+                           uri='sim://3', uuid='simagent3', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
     return context
@@ -231,7 +231,8 @@ def get_agent(admin_client, name, default_uri=DEFAULT_AGENT_URI,
 
 def kind_context(admin_client, kind, external_pool=False,
                  uri=DEFAULT_AGENT_URI,
-                 uuid=DEFAULT_AGENT_UUID):
+                 uuid=DEFAULT_AGENT_UUID,
+                 host_public=False):
     kind_agent = get_agent(admin_client, kind, default_agent_uuid=uuid,
                            default_uri=uri)
 
@@ -239,6 +240,10 @@ def kind_context(admin_client, kind, external_pool=False,
     assert len(hosts) == 1
     kind_host = activate_resource(admin_client, hosts[0])
 
+    if kind_host.isPublic != host_public:
+        kind_host = admin_client.update(kind_host, isPublic=host_public)
+
+    assert kind_host.isPublic == host_public
     assert kind_host.accountId == kind_agent.accountId
 
     pools = kind_host.storagePools()

@@ -201,6 +201,17 @@ public interface Host extends java.io.Serializable {
 	@javax.persistence.Column(name = "physical_host_id", precision = 19)
 	public java.lang.Long getPhysicalHostId();
 
+	/**
+	 * Setter for <code>cattle.host.is_public</code>.
+	 */
+	public void setIsPublic(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.host.is_public</code>.
+	 */
+	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
+	public java.lang.Boolean getIsPublic();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

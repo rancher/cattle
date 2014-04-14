@@ -6,6 +6,7 @@
         ".*\\..*Id" : "cru",
         ".*\\.data" : "cru",
         ".*\\.description" : "cru",
+        ".*\\.isPublic" : "cru",
         ".*\\.kind" : "cr",
         ".*\\.name" : "cru",
         ".*\\.removeTime" : "ru",
@@ -71,7 +72,6 @@
         "image.checksum" : "cr",
         "image.format" : "r",
         "image.instanceKind" : "cru",
-        "image.isPublic" : "cru",
         "image.physicalSizeMb" : "r",
         "image.virtualSizeMb" : "r",
         "image.url" : "cr",
@@ -82,10 +82,7 @@
         "instanceStop.remove" : "cr",
 
         "ipAddress.address" : "cr",
-        "ipAddress.isPublic" : "cru",
         "ipAddress.networkId" : "r",
-
-        "network.isPublic" : "cru",
 
         "offering" : "",
 
@@ -120,7 +117,6 @@
         "subnet.cidrSize" : "cr",
         "subnet.endAddress" : "cr",
         "subnet.gateway" : "cr",
-        "subnet.isPublic" : "cru",
         "subnet.networkAddress" : "cr",
         "subnet.startAddress" : "cr",
 

@@ -367,6 +367,40 @@ def test_container_storage_fail(admin_client, sim_context):
 def test_create_with_vnet(admin_client, sim_context):
     network = create_and_activate(admin_client, 'network')
 
+    subnet1 = create_and_activate(admin_client, 'subnet',
+                                  networkId=network.id,
+                                  networkAddress='192.168.0.0')
+    create_and_activate(admin_client, 'subnet',
+                        networkId=network.id,
+                        networkAddress='192.168.1.0')
+
+    vnet = create_and_activate(admin_client, 'vnet',
+                               networkId=network.id,
+                               uri='dummy:///')
+
+    create_and_activate(admin_client, 'subnetVnetMap',
+                        vnetId=vnet.id,
+                        subnetId=subnet1.id)
+
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      vnetIds=[vnet.id])
+    c = admin_client.wait_success(c)
+    assert c.state == 'running'
+    assert 'vnetIds' not in c
+
+    nics = c.nics()
+    assert len(nics) == 1
+
+    nic = nics[0]
+
+    assert nic.deviceNumber == 0
+    assert nic.vnetId == vnet.id
+    assert nic.subnetId == subnet1.id
+
+
+def test_create_with_vnet2(admin_client, sim_context):
+    network = create_and_activate(admin_client, 'network')
+
     create_and_activate(admin_client, 'subnet',
                         networkId=network.id,
                         networkAddress='192.168.0.0')
@@ -396,3 +430,54 @@ def test_create_with_vnet(admin_client, sim_context):
     assert nic.deviceNumber == 0
     assert nic.vnetId == vnet.id
     assert nic.subnetId == subnet2.id
+
+
+def test_create_with_vnet_multiple_nics(admin_client, sim_context):
+    network = create_and_activate(admin_client, 'network')
+
+    subnet1 = create_and_activate(admin_client, 'subnet',
+                                  networkId=network.id,
+                                  networkAddress='192.168.0.0')
+    subnet2 = create_and_activate(admin_client, 'subnet',
+                                  networkId=network.id,
+                                  networkAddress='192.168.1.0')
+
+    vnet = create_and_activate(admin_client, 'vnet',
+                               networkId=network.id,
+                               uri='dummy:///')
+
+    vnet2 = create_and_activate(admin_client, 'vnet',
+                                networkId=network.id,
+                                uri='dummy:///')
+
+    create_and_activate(admin_client, 'subnetVnetMap',
+                        vnetId=vnet.id,
+                        subnetId=subnet2.id)
+
+    create_and_activate(admin_client, 'subnetVnetMap',
+                        vnetId=vnet2.id,
+                        subnetId=subnet1.id)
+
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      vnetIds=[vnet.id, vnet2.id])
+    c = admin_client.wait_success(c)
+    assert c.state == 'running'
+    assert 'vnetIds' not in c
+
+    nics = c.nics()
+    assert len(nics) == 2
+
+    device_numbers = set([n.deviceNumber for n in nics])
+    assert len(device_numbers) == 2
+    assert 0 in device_numbers
+    assert 1 in device_numbers
+
+    for nic in nics:
+        assert nic.state == 'active'
+
+        if nic.deviceNumber == 0:
+            nic.subnetId == subnet2.id
+            nic.vnetId == vnet.id
+        elif nic.deviceNumber == 1:
+            nic.subnetId == subnet1.id
+            nic.vnetId == vnet2.id
