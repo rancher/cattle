@@ -20,7 +20,7 @@ public class ValidHostsConstraint implements Constraint {
 
     @Override
     public String toString() {
-        return String.format("must be host(s) %s", hosts);
+        return String.format("valid host(s) %s", hosts);
     }
 
     @Override
