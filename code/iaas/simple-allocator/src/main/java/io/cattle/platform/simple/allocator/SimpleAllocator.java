@@ -9,7 +9,6 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.AllocationRequest;
 import io.cattle.platform.allocator.service.Allocator;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
@@ -25,11 +24,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.netflix.config.DynamicBooleanProperty;
-
 public class SimpleAllocator extends AbstractAllocator implements Allocator, Named {
-
-    private static final DynamicBooleanProperty RERUN = ArchaiusUtil.getBoolean("simple.allocator.allocate.allocated");
 
     String name = getClass().getSimpleName();
     SimpleAllocatorDao simpleAllocatorDao;
@@ -102,11 +97,6 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     @Override
     protected boolean supports(AllocationRequest request) {
         return true;
-    }
-
-    @Override
-    protected boolean runAllocationForAllocated() {
-        return RERUN.get();
     }
 
     public SimpleAllocatorDao getSimulatorAllocatorDao() {

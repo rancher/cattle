@@ -146,14 +146,6 @@ public abstract class AbstractAllocator implements Allocator {
         }
 
         final Set<Host> hosts = new HashSet<Host>(allocatorDao.getHosts(instance));
-
-        if ( hosts.size() > 0 && ! runAllocationForAllocated() ) {
-            //TODO: Need to create a candidate for where it already is and validate it against constraints
-            //TODO: Need to add constraints for host is active and agent is active, currently that is embedded
-            //      in SQL logic
-            return true;
-        }
-
         final Set<Volume> volumes = new HashSet<Volume>(objectManager.children(instance, Volume.class));
         final Map<Volume,Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
 
@@ -181,8 +173,6 @@ public abstract class AbstractAllocator implements Allocator {
         });
     }
 
-    protected abstract boolean runAllocationForAllocated();
-
     protected boolean deallocateVolume(AllocationRequest request) {
         final Volume volume = objectManager.loadResource(Volume.class, request.getResourceId());
         Boolean stateCheck = AllocatorUtils.checkDeallocateState(request.getResourceId(), volume.getAllocationState(), "Volume");
@@ -208,11 +198,6 @@ public abstract class AbstractAllocator implements Allocator {
         Map<Volume,Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
         Set<StoragePool> associatedPools = new HashSet<StoragePool>(allocatorDao.getAssociatedPools(volume));
         pools.put(volume, associatedPools);
-
-        if ( associatedPools.size() > 0 && ! runAllocationForAllocated() ) {
-            //TODO: Need to create a candidate for where it already is and validate it against constraints
-            return true;
-        }
 
         AllocationAttempt attempt = new AllocationAttempt(null, new HashSet<Host>(), volumes, pools, null, null);
 
