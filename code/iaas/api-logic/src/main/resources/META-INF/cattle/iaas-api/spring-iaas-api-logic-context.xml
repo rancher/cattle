@@ -112,8 +112,8 @@
             <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
                 <property name="resources">
                     <list>
-                        <value>schema/base/documentation.json</value>
-                        <value>schema/base/documentation.json.d/**/*.json</value>
+                        <value>classpath:schema/base/documentation.json</value>
+                        <value>classpath*:schema/base/documentation.json.d/**/*.json</value>
                     </list>
                 </property>
             </bean>
