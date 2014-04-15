@@ -7,6 +7,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 public interface RemoteAgent {
 
+    long getAgentId();
+
     void publish(Event event);
 
 

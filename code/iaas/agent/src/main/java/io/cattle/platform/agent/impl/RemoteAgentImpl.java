@@ -35,6 +35,11 @@ public class RemoteAgentImpl implements RemoteAgent {
         this.groupId = groupId;
     }
 
+    @Override
+    public long getAgentId() {
+        return agentId;
+    }
+
     protected Event createRequest(Event event) {
         return new AgentRequest(agentId, groupId, event);
     }
