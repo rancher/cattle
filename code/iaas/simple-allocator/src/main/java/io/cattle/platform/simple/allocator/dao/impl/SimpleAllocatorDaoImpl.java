@@ -58,7 +58,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                     .and(HOST.STATE.eq(CommonStatesConstants.ACTIVE))
                     .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
                     .and(getQueryOptionCondition(options)))
-                .orderBy(SPREAD.get() ? HOST.COMPUTE_FREE.asc() : HOST.COMPUTE_FREE.desc())
+                .orderBy(SPREAD.get() ? HOST.COMPUTE_FREE.desc() : HOST.COMPUTE_FREE.asc())
                 .fetchLazy();
 
         return new AllocationCandidateIterator(objectManager, cursor, volumes, hosts, callback);
