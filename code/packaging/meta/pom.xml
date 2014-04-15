@@ -16,6 +16,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>cattle-agent-connection-delegate</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>cattle-host-only-network</artifactId>
             <version>${project.version}</version>
         </dependency>

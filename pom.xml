@@ -90,6 +90,7 @@
             </activation>
             <modules>
                 <module>code/agent</module>
+                <module>code/implementation/agent-connection-delegate</module>
                 <module>code/implementation/agent-connection-event</module>
                 <module>code/implementation/agent-connection-ssh</module>
                 <module>code/implementation/docker/allocator</module>
@@ -102,6 +103,7 @@
                 <module>code/implementation/hazelcast/eventing</module>
                 <module>code/implementation/hazelcast/lock</module>
                 <module>code/implementation/host-only-network</module>
+                <module>code/implementation/ipsec-host-nat</module>
                 <module>code/implementation/libvirt/allocator</module>
                 <module>code/implementation/libvirt/default-images</module>
                 <module>code/implementation/settings-api</module>
