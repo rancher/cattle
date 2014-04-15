@@ -53,6 +53,11 @@ public class DataAccessor {
         return this;
     }
 
+    public DataAccessor withScopeKey(String scopeKey) {
+        this.scopeKey = scopeKey;
+        return this;
+    }
+
     public DataAccessor withKey(String key) {
         this.key = key;
         return this;

@@ -5,6 +5,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.serialization.ObjectSerializer;
+import io.cattle.platform.object.serialization.ObjectTypeSerializerPostProcessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,15 +19,18 @@ public class DefaultObjectSerializerImpl implements ObjectSerializer {
     ObjectMetaDataManager metaDataManager;
     Action action;
     String expression;
+    Map<String,ObjectTypeSerializerPostProcessor> postProcessors;
 
     public DefaultObjectSerializerImpl(JsonMapper jsonMapper, ObjectManager objectManager,
-            ObjectMetaDataManager metaDataManager, Action action, String expression) {
+            ObjectMetaDataManager metaDataManager, Map<String,ObjectTypeSerializerPostProcessor> postProcessors,
+            Action action, String expression) {
         super();
         this.jsonMapper = jsonMapper;
         this.objectManager = objectManager;
         this.metaDataManager = metaDataManager;
         this.action = action;
         this.expression = expression;
+        this.postProcessors = postProcessors;
     }
 
     @Override
@@ -70,6 +74,11 @@ public class DefaultObjectSerializerImpl implements ObjectSerializer {
                     data.put(rel.getName(), childData);
                 }
             }
+        }
+
+        ObjectTypeSerializerPostProcessor postProcessor = postProcessors.get(type);
+        if ( postProcessor != null ) {
+            postProcessor.process(obj, type, data);
         }
 
         return data;

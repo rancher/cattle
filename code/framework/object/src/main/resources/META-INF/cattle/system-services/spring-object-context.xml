@@ -35,7 +35,9 @@
     <bean class="io.cattle.platform.object.postinit.ObjectDataPostInstantiationHandler" />
     <bean class="io.cattle.platform.object.postinit.SetPropertiesPostInstantiationHandler" />
 
-    <bean class="io.cattle.platform.object.serialization.impl.DefaultObjectSerializerFactoryImpl" />
+    <bean class="io.cattle.platform.object.serialization.impl.DefaultObjectSerializerFactoryImpl" >
+        <property name="postProcessors" value="#{extensionManager.list('object.type.serializer.post.processor')}" />
+    </bean>
 
     <bean class="io.cattle.platform.object.util.CommonsConverterStartup" />
 
@@ -44,6 +46,7 @@
     <extension:discover class="io.cattle.platform.object.meta.TypeSet" />
     <extension:discover class="io.cattle.platform.object.postinit.ObjectPostInstantiationHandler" />
     <extension:discover class="io.cattle.platform.object.lifecycle.ObjectLifeCycleHandler" />
+    <extension:discover class="io.cattle.platform.object.serialization.ObjectTypeSerializerPostProcessor" />
 
     <tx:advice id="TransactionDelegateAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>

@@ -5,28 +5,48 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.serialization.ObjectSerializerFactory;
+import io.cattle.platform.object.serialization.ObjectTypeSerializerPostProcessor;
+import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
-public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFactory {
+public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFactory, InitializationTask {
 
     private static final Pattern GOOD_CHARS = Pattern.compile("[a-z0-9]", Pattern.CASE_INSENSITIVE);
 
     JsonMapper jsonMapper;
     ObjectManager objectManager;
     ObjectMetaDataManager metaDataManager;
+    Map<String,ObjectTypeSerializerPostProcessor> postProcessorsMap = new HashMap<String, ObjectTypeSerializerPostProcessor>();
+    List<ObjectTypeSerializerPostProcessor> postProcessors;
 
     @Override
     public ObjectSerializer compile(String type, String expression) {
         Action action = parseAction(type, expression);
-        DefaultObjectSerializerImpl result = new DefaultObjectSerializerImpl(jsonMapper, objectManager, metaDataManager, action, expression);
+        DefaultObjectSerializerImpl result =
+                new DefaultObjectSerializerImpl(jsonMapper, objectManager, metaDataManager, postProcessorsMap, action, expression);
         result.serialize(null);
 
         return result;
+    }
+
+    @Override
+    public void start() {
+        for ( ObjectTypeSerializerPostProcessor postProcessor : postProcessors ) {
+            for ( String type : postProcessor.getTypes() ) {
+                postProcessorsMap.put(type, postProcessor);
+            }
+        }
+    }
+
+    @Override
+    public void stop() {
     }
 
     protected Action parseAction(String type, String expression) {
@@ -156,6 +176,15 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
     @Inject
     public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
         this.metaDataManager = metaDataManager;
+    }
+
+    public List<ObjectTypeSerializerPostProcessor> getPostProcessors() {
+        return postProcessors;
+    }
+
+    @Inject
+    public void setPostProcessors(List<ObjectTypeSerializerPostProcessor> postProcessors) {
+        this.postProcessors = postProcessors;
     }
 
 }
