@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +50,7 @@ public class AllocationAttempt {
         this.volumes = volumes;
         this.pools = pools;
         this.nics = nics;
-        this.subnets = subnets;
+        this.subnets = subnets == null ? Collections.<Nic, Subnet>emptyMap() : subnets;
 
         this.hostIds = new HashSet<Long>(hosts.size());
         for ( Host h : hosts ) {
@@ -71,7 +72,11 @@ public class AllocationAttempt {
             }
         }
 
-        if ( nics != null ) {
+        if ( nics == null ) {
+            this.nics = Collections.emptySet();
+            this.nicIds = Collections.emptySet();
+            this.subnetIds = Collections.emptyMap();
+        } else {
             this.nicIds = new HashSet<Long>(subnets.size());
             this.subnetIds = new HashMap<Long, Long>();
             for ( Nic n : nics ) {
