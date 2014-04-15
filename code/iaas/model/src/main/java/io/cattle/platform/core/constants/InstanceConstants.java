@@ -4,16 +4,18 @@ public class InstanceConstants {
 
     public static final String TYPE = "instance";
 
-    public static final String FIELD_VOLUME_OFFERING_IDS = "volumeOfferingIds";
-    public static final String FIELD_START_ON_CREATE = "startOnCreate";
+    public static final String FIELD_AGENT_INSTANCE = "agentInstance";
+    public static final String FIELD_ENVIRONMENT = "environment";
     public static final String FIELD_IMAGE_UUID = "imageUuid";
     public static final String FIELD_IMAGE_ID = "imageId";
     public static final String FIELD_NETWORK_IDS = "networkIds";
-    public static final String FIELD_VNET_IDS = "vnetIds";
     public static final String FIELD_PORTS = "ports";
     public static final String FIELD_PRIMARY_IP_ADDRESS = "primaryIpAddress";
     public static final String FIELD_REQUESTED_HOST_ID = "requestedHostId";
     public static final String FIELD_SUBNET_IDS = "subnetIds";
+    public static final String FIELD_START_ON_CREATE = "startOnCreate";
+    public static final String FIELD_VNET_IDS = "vnetIds";
+    public static final String FIELD_VOLUME_OFFERING_IDS = "volumeOfferingIds";
 
     public static final String REMOVE_OPTION = "remove";
     public static final String DEALLOCATE_OPTION = "deallocateFromHost";
@@ -30,4 +32,5 @@ public class InstanceConstants {
     public static final String ON_STOP_STOP = "stop";
     public static final String ON_STOP_RESTART = "restart";
     public static final String ON_STOP_REMOVE = "remove";
+
 }
