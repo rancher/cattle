@@ -56,6 +56,7 @@
             <modules>
                 <module>code/iaas/accounts</module>
                 <module>code/iaas/agent</module>
+                <module>code/iaas/agent-instance</module>
                 <module>code/iaas/agent-server</module>
                 <module>code/iaas/allocator</module>
                 <module>code/iaas/api-logic</module>
