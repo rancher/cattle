@@ -8,6 +8,7 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.util.type.CollectionUtils;
 
 public class GenericResourceDaoImpl implements GenericResourceDao {
 
@@ -20,6 +21,12 @@ public class GenericResourceDaoImpl implements GenericResourceDao {
         processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, properties);
 
         return obj;
+    }
+
+    @Override
+    public <T> T createAndSchedule(Class<T> clz, Object key, Object... values) {
+        Map<Object,Object> properties = CollectionUtils.asMap(key, values);
+        return createAndSchedule(clz, objectManager.convertToPropertiesFor(clz, properties));
     }
 
     public ObjectProcessManager getProcessManager() {
