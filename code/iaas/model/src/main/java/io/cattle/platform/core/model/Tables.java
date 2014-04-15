@@ -124,6 +124,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.NetworkTable NETWORK = io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
 
 	/**
+	 * The table cattle.network_service
+	 */
+	public static final io.cattle.platform.core.model.tables.NetworkServiceTable NETWORK_SERVICE = io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
+
+	/**
 	 * The table cattle.nic
 	 */
 	public static final io.cattle.platform.core.model.tables.NicTable NIC = io.cattle.platform.core.model.tables.NicTable.NIC;

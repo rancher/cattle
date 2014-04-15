@@ -11,9 +11,15 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "instance", schema = "cattle")
+<<<<<<< HEAD
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.Instance {
 
 	private static final long serialVersionUID = -1642611336;
+=======
+public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.Instance {
+
+	private static final long serialVersionUID = 747335642;
+>>>>>>> Add network service
 
 	/**
 	 * Setter for <code>cattle.instance.id</code>.
@@ -323,20 +329,36 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Setter for <code>cattle.instance.instance_triggered_stop</code>.
 	 */
 	@Override
 	public void setInstanceTriggeredStop(java.lang.String value) {
+=======
+	 * Setter for <code>cattle.instance.agent_id</code>.
+	 */
+	@Override
+	public void setAgentId(java.lang.Long value) {
+>>>>>>> Add network service
 		setValue(18, value);
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Getter for <code>cattle.instance.instance_triggered_stop</code>.
 	 */
 	@javax.persistence.Column(name = "instance_triggered_stop", length = 128)
 	@Override
 	public java.lang.String getInstanceTriggeredStop() {
 		return (java.lang.String) getValue(18);
+=======
+	 * Getter for <code>cattle.instance.agent_id</code>.
+	 */
+	@javax.persistence.Column(name = "agent_id", precision = 19)
+	@Override
+	public java.lang.Long getAgentId() {
+		return (java.lang.Long) getValue(18);
+>>>>>>> Add network service
 	}
 
 	// -------------------------------------------------------------------------
@@ -359,7 +381,11 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
+<<<<<<< HEAD
 	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String> fieldsRow() {
+=======
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long> fieldsRow() {
+>>>>>>> Add network service
 		return (org.jooq.Row19) super.fieldsRow();
 	}
 
@@ -367,7 +393,11 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
+<<<<<<< HEAD
 	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String> valuesRow() {
+=======
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long> valuesRow() {
+>>>>>>> Add network service
 		return (org.jooq.Row19) super.valuesRow();
 	}
 
@@ -519,8 +549,13 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
+<<<<<<< HEAD
 	public org.jooq.Field<java.lang.String> field19() {
 		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.INSTANCE_TRIGGERED_STOP;
+=======
+	public org.jooq.Field<java.lang.Long> field19() {
+		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.AGENT_ID;
+>>>>>>> Add network service
 	}
 
 	/**
@@ -671,8 +706,13 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
+<<<<<<< HEAD
 	public java.lang.String value19() {
 		return getInstanceTriggeredStop();
+=======
+	public java.lang.Long value19() {
+		return getAgentId();
+>>>>>>> Add network service
 	}
 
 	/**
@@ -841,8 +881,13 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
+<<<<<<< HEAD
 	public InstanceRecord value19(java.lang.String value) {
 		setInstanceTriggeredStop(value);
+=======
+	public InstanceRecord value19(java.lang.Long value) {
+		setAgentId(value);
+>>>>>>> Add network service
 		return this;
 	}
 
@@ -850,7 +895,11 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
+<<<<<<< HEAD
 	public InstanceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.Long value15, java.lang.Long value16, java.lang.String value17, java.lang.Long value18, java.lang.String value19) {
+=======
+	public InstanceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.Long value15, java.lang.Long value16, java.lang.String value17, java.lang.Long value18, java.lang.Long value19) {
+>>>>>>> Add network service
 		return this;
 	}
 
@@ -881,7 +930,11 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setOfferingId(from.getOfferingId());
 		setHostname(from.getHostname());
 		setZoneId(from.getZoneId());
+<<<<<<< HEAD
 		setInstanceTriggeredStop(from.getInstanceTriggeredStop());
+=======
+		setAgentId(from.getAgentId());
+>>>>>>> Add network service
 	}
 
 	/**
@@ -907,7 +960,11 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Create a detached, initialised InstanceRecord
 	 */
+<<<<<<< HEAD
 	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop) {
+=======
+	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId, java.lang.Long agentId) {
+>>>>>>> Add network service
 		super(io.cattle.platform.core.model.tables.InstanceTable.INSTANCE);
 
 		setValue(0, id);
@@ -928,6 +985,10 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setValue(15, offeringId);
 		setValue(16, hostname);
 		setValue(17, zoneId);
+<<<<<<< HEAD
 		setValue(18, instanceTriggeredStop);
+=======
+		setValue(18, agentId);
+>>>>>>> Add network service
 	}
 }

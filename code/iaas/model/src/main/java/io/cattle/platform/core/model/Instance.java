@@ -213,6 +213,7 @@ public interface Instance extends java.io.Serializable {
 	public java.lang.Long getZoneId();
 
 	/**
+<<<<<<< HEAD
 	 * Setter for <code>cattle.instance.instance_triggered_stop</code>.
 	 */
 	public void setInstanceTriggeredStop(java.lang.String value);
@@ -222,6 +223,17 @@ public interface Instance extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "instance_triggered_stop", length = 128)
 	public java.lang.String getInstanceTriggeredStop();
+=======
+	 * Setter for <code>cattle.instance.agent_id</code>.
+	 */
+	public void setAgentId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.agent_id</code>.
+	 */
+	@javax.persistence.Column(name = "agent_id", precision = 19)
+	public java.lang.Long getAgentId();
+>>>>>>> Add network service
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO
