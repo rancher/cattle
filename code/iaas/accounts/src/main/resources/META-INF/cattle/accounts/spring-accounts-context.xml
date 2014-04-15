@@ -30,8 +30,8 @@
                         <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
                             <property name="resources">
                                 <list>
-                                    <value>schema/admin/admin-auth.json</value>
-                                    <value>schema/admin/admin-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/admin/admin-auth.json</value>
+                                    <value>classpath*:schema/admin/admin-auth.json.d/**/*.json</value>
                                 </list>
                             </property>
                         </bean>
@@ -69,8 +69,8 @@
                         <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
                             <property name="resources">
                                 <list>
-                                    <value>schema/user/user-auth.json</value>
-                                    <value>schema/user/user-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
                                 </list>
                             </property>
                         </bean>
