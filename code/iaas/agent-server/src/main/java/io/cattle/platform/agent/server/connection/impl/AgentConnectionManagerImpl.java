@@ -134,7 +134,7 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
         }
 
         if ( connection == null ) {
-            log.error("No connection factory created a connection for agent [{}] [{}]", agent.getId(), agent.getUri());
+            log.info("No connection factory created a connection for agent [{}] [{}]", agent.getId(), agent.getUri());
         } else {
             connections.put(agent.getId(), connection);
         }
