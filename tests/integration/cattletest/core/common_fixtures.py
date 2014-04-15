@@ -53,7 +53,15 @@ def accounts():
 
         result[user_name] = [user_name, password, account]
 
+    system_account = admin_client.list_account(kind='system', uuid='system')[0]
+    result['system'] = [None, None, system_account]
+
     return result
+
+
+@pytest.fixture(scope='module')
+def system_account(accounts):
+    return accounts['system'][2]
 
 
 @pytest.fixture(scope='module')
