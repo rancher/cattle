@@ -2,12 +2,9 @@ package io.cattle.platform.agent.connection.simulator.impl;
 
 import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
+import io.cattle.platform.agent.util.AgentUtils;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.request.ConfigUpdateItem;
-import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -16,7 +13,6 @@ import io.cattle.platform.object.ObjectManager;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -24,7 +20,6 @@ import java.util.zip.GZIPInputStream;
 
 import javax.inject.Inject;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.IOUtils;
@@ -45,7 +40,11 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
         }
 
         ConfigUpdate update = jsonMapper.convertValue(event, ConfigUpdate.class);
-        String auth = getAuth(simulator.getAgent());
+        String auth = AgentUtils.getAgentAuth(simulator.getAgent(), objectManager);
+
+        if ( auth == null ) {
+            throw new IllegalStateException("Failed to get auth for agent [" + simulator.getAgentId() + "]");
+        }
 
         for ( ConfigUpdateItem item : update.getData().getItems() ) {
             try {
@@ -56,26 +55,6 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
         }
 
         return EventVO.reply(event);
-    }
-
-    protected String getAuth(Agent agent) {
-        Account account = objectManager.loadResource(Account.class, agent.getAccountId());
-        if ( account == null ) {
-            throw new IllegalStateException("No account assigned to agent [" + agent.getId() + "]");
-        }
-
-        for ( Credential cred : objectManager.children(account, Credential.class) ) {
-            if ( "apiKey".equals(cred.getKind()) && CommonStatesConstants.ACTIVE.equals(cred.getState()) ) {
-                try {
-                    return "Basic " + Base64.encodeBase64String((cred.getPublicValue() + ":" + cred.getSecretValue()).getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-        }
-
-        throw new IllegalStateException("Failed to find credentials for account [" + account.getId() +
-                "] for agent [" + agent.getId() + "]");
     }
 
     protected URLConnection getConnection(String url, String auth) throws IOException {

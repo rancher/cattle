@@ -69,4 +69,8 @@ public class AgentConnectionSimulator implements AgentConnection {
         return instances;
     }
 
+    public List<AgentSimulatorEventProcessor> getProcessors() {
+        return processors;
+    }
+
 }
