@@ -26,6 +26,10 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public Image registerRemoteImage(final String uuid) throws IOException {
+        if ( uuid == null ) {
+            return null;
+        }
+
         Image existing = imageDao.findImageByUuid(uuid);
         if ( existing != null ) {
             return existing;
