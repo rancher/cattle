@@ -14,14 +14,14 @@
             <artifactId>gdapi-java-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-json</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-utils</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>

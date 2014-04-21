@@ -14,9 +14,9 @@
             <artifactId>commons-dbcp-jmx-jdbc4</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-pool</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
@@ -43,15 +43,15 @@
             <artifactId>h2</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-spring</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-jooq</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>

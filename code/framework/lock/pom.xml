@@ -10,23 +10,23 @@
     </parent>
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-utils</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-async</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-archaius</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
     </dependencies>
 </project>

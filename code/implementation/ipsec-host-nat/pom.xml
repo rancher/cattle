@@ -10,19 +10,19 @@
     <artifactId>cattle-ipsec-host-nat</artifactId>
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-logic-common</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-network-service</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-agent-instance</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
     </dependencies>
 </project>

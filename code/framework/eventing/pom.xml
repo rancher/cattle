@@ -14,44 +14,44 @@
             <artifactId>guava</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-json</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-utils</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-archaius</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-pool</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-async</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-lock</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-managed-context</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-metrics</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
     </dependencies>
 </project>

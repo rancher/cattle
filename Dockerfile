@@ -1,8 +1,10 @@
-FROM ibuildthecloud/ubuntu-core-base:13.10
+FROM ibuildthecloud/ubuntu-core-base:14.04
+RUN rm /etc/apt/apt.conf.d/no-cache
 RUN apt-get update && apt-get install -y --no-install-recommends openjdk-7-jre-headless
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip \
-        git
+        git net-tools curl
+RUN apt-get update && apt-get build-dep -y util-linux socat
 RUN pip install --upgrade pip tox
 RUN git clone --recursive https://github.com/cattleio/cattle.git /opt/cattle-git && \
     cd /opt/cattle-git && \

@@ -10,9 +10,9 @@
     <artifactId>cattle-extension-api</artifactId>
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-api</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -17,7 +17,7 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-jooq</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-object</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
     </dependencies>
 </project>

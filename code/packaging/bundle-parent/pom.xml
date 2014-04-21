@@ -1,13 +1,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>cattle-bundle</artifactId>
+    <artifactId>cattle-bundle-parent</artifactId>
     <parent>
         <artifactId>cattle-parent</artifactId>
         <groupId>io.cattle</groupId>
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
+    <properties>
+        <implementation.version>${cattle.version}</implementation.version>
+        <war.groupId>io.cattle</war.groupId>
+        <war.artifactId>cattle-app</war.artifactId>
+        <war.version>${cattle.version}</war.version>
+        <war.name>cattle.war</war.name>
+    </properties>
+    <packaging>pom</packaging>
     <dependencies>
         <dependency>
             <groupId>commons-io</groupId>
@@ -26,7 +34,7 @@
                             <mainClass>io.cattle.platform.packaging.Bootstrap</mainClass>
                         </manifest>
                         <manifestEntries>
-                            <Implementation-Version>${cattle.version}</Implementation-Version>
+                            <Implementation-Version>${implementation.version}</Implementation-Version>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -45,13 +53,13 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>io.cattle</groupId>
-                                    <artifactId>cattle-app</artifactId>
-                                    <version>${cattle.version}</version>
+                                    <groupId>${war.groupId}</groupId>
+                                    <artifactId>${war.artifactId}</artifactId>
+                                    <version>${war.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
-                                    <destFileName>cattle.war</destFileName>
+                                    <destFileName>${war.name}</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -74,7 +82,7 @@
                     <includeProjectDependencies>true</includeProjectDependencies>
                     <mainClass>io.cattle.platform.packaging.Compress</mainClass>
                     <arguments>
-                        <argument>${project.build.directory}/cattle.war</argument>
+                        <argument>${project.build.directory}/${war.name}</argument>
                         <argument>${project.build.directory}/classes</argument>
                     </arguments>
                 </configuration>

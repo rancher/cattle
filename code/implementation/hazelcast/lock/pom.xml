@@ -12,12 +12,12 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-hazelcast-common</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-lock</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
     </dependencies>
 </project>

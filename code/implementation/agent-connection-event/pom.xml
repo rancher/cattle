@@ -12,7 +12,7 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-agent-server</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
     </dependencies>
 </project>

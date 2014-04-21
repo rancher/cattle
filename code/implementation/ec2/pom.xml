@@ -14,9 +14,9 @@
             <artifactId>gdapi-java-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-object</artifactId>
-            <version>${project.version}</version>
+            <version>${cattle.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
@@ -53,7 +53,7 @@
                                         <extraarg>-frontend</extraarg>
                                         <extraarg>jaxws21</extraarg>
                                         <extraarg>-p</extraarg>
-                                        <extraarg>${project.groupId}.com.amazon.ec2</extraarg>
+                                        <extraarg>io.cattle.com.amazon.ec2</extraarg>
                                     </extraargs>
                                 </wsdlOption>
                             </wsdlOptions>
