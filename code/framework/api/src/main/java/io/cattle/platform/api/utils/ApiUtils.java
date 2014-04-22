@@ -12,6 +12,7 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,8 +134,8 @@ public class ApiUtils {
         return result;
     }
 
-    public static Resource createResourceWithAttachments(final SchemaFactory schemaFactory, final IdFormatter idFormatter,
-            final Schema schema, Object obj, Map<String,Object> inputAdditionalFields) {
+    public static Resource createResourceWithAttachments(final ResourceManager resourceManager, final ApiRequest request,
+            final IdFormatter idFormatter, final Schema schema, Object obj, Map<String,Object> inputAdditionalFields) {
         Map<String,Object> additionalFields = new LinkedHashMap<String, Object>();
         additionalFields.putAll(DataUtils.getFields(obj));
 
@@ -149,12 +150,8 @@ public class ApiUtils {
                 if ( input == null )
                     return null;
 
-                Schema schema = getSchemaForDisplay(schemaFactory, input);
-                if ( schema == null ) {
-                    return null;
-                }
 
-                return new WrappedResource(idFormatter, schema, input, DataUtils.getFields(input));
+                return resourceManager.convertResponse(input, request);
             }
         });
 

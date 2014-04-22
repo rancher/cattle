@@ -44,4 +44,6 @@ public interface ObjectMetaDataManager {
     Relationship getRelationship(String type, String linkName);
 
     Map<String,Object> getTransitionFields(Schema schema, Object obj);
+
+    Map<String,ActionDefinition> getActionDefinitions(Object obj);
 }

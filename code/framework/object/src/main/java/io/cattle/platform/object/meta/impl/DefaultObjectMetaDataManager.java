@@ -4,6 +4,7 @@ import static io.cattle.platform.object.meta.Relationship.RelationshipType.*;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.StateTransition;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
+import io.cattle.platform.object.meta.ActionDefinition;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.meta.TypeSet;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 
 import javax.inject.Inject;
@@ -58,17 +60,20 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     Map<Class<?>,Map<String,Relationship>> relationshipsBothCase = new HashMap<Class<?>, Map<String,Relationship>>();
     List<ProcessDefinition> processDefinitions;
 
+    Map<String,Set<String>> validStates = new HashMap<String, Set<String>>();
     Map<String,Set<String>> transitioningStates = new HashMap<String, Set<String>>();
     Map<String,Set<String>> actions = new HashMap<String, Set<String>>();
     Map<String,Map<String,String>> linksCache = Collections.synchronizedMap(new WeakHashMap<String,Map<String,String>>());
     Map<FieldCacheKey, String> propertyCache = Collections.synchronizedMap(new WeakHashMap<FieldCacheKey, String>());
+    Map<String,Map<String,ActionDefinition>> actionDefinitions = new HashMap<String,Map<String,ActionDefinition>>();
     Map<FieldCacheKey, TableField<?, ?>> tableFields = new HashMap<FieldCacheKey, TableField<?,?>>();
 
     @Override
     public void start() {
         List<Schema> schemas = registerTypes();
         registerActions();
-        registerTransitionStates();
+        registerActionDefinitions();
+        registerStates();
         registerRelationships();
         parseSchemas(schemas);
     }
@@ -99,16 +104,22 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         }
     }
 
-    protected void registerTransitionStates() {
+    protected void registerStates() {
         transitioningStates.clear();
 
         for ( ProcessDefinition def : processDefinitions ) {
+            Set<String> validStates = this.validStates.get(def.getResourceType());
             Set<String> states = transitioningStates.get(def.getResourceType());
 
             for ( StateTransition transition : def.getStateTransitions() ) {
                 if ( states == null ) {
                     states = new HashSet<String>();
                     transitioningStates.put(def.getResourceType(), states);
+                }
+
+                if ( validStates == null ) {
+                    validStates = new TreeSet<String>();
+                    this.validStates.put(def.getResourceType(), validStates);
                 }
 
                 switch (transition.getType()) {
@@ -120,6 +131,41 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
                     break;
                 default:
                 }
+
+                if ( ObjectMetaDataManager.STATE_FIELD.equals(transition.getField()) ) {
+                    validStates.add(transition.getToState());
+                    validStates.add(transition.getFromState());
+                }
+            }
+        }
+    }
+
+    protected void registerActionDefinitions() {
+        actionDefinitions.clear();
+
+        for ( ProcessDefinition processDef : processDefinitions ) {
+            String type = processDef.getResourceType();
+            String processName = processDef.getName();
+
+            if ( processName.startsWith(type.toLowerCase()) ) {
+                processName = processName.substring(type.length() + 1, processName.length());
+            }
+
+            Map<String,ActionDefinition> actionDefs = actionDefinitions.get(type);
+
+            if ( actionDefs == null ) {
+                actionDefs = new HashMap<String, ActionDefinition>();
+                actionDefinitions.put(type, actionDefs);
+            }
+
+            ActionDefinition def = actionDefs.get(processName);
+            if ( def == null ) {
+                def = new ActionDefinition();
+                actionDefs.put(processName, def);
+            }
+
+            for ( StateTransition transition : processDef.getStateTransitions() ) {
+                def.getValidStates().add(transition.getFromState());
             }
         }
     }
@@ -346,6 +392,18 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         return schema;
     }
 
+    protected void addStates(SchemaImpl schema, SchemaFactory factory) {
+        String type = factory.getBaseType(schema.getId());
+        Set<String> validStates = this.validStates.get(type);
+        Field stateField = schema.getResourceFields().get(ObjectMetaDataManager.STATE_FIELD);
+
+        if ( validStates != null && stateField instanceof FieldImpl ) {
+            FieldImpl field = (FieldImpl)stateField;
+            field.setOptions(new ArrayList<String>(validStates));
+            field.setTypeEnum(FieldType.ENUM);
+        }
+    }
+
     protected void addActions(SchemaImpl schema, SchemaFactory factory) {
         Set<String> actions = this.actions.get(schema.getId());
         if ( actions == null || actions.size() == 0 ) {
@@ -397,6 +455,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
     @Override
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
+        addStates(schema, factory);
         addActions(schema, factory);
         addTransitioningFields(schema, factory);
 
@@ -562,6 +621,22 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         }
 
         return result;
+    }
+
+    @Override
+    public Map<String, ActionDefinition> getActionDefinitions(Object obj) {
+        if ( obj == null ) {
+            return null;
+        }
+
+        Schema schema = schemaFactory.getSchema(obj.getClass());
+        if ( schema == null ) {
+            return null;
+        }
+
+        String type = schemaFactory.getBaseType(schema.getId());
+
+        return actionDefinitions.get(type);
     }
 
     public SchemaFactory getSchemaFactory() {

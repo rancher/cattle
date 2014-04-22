@@ -8,6 +8,7 @@ import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ActionDefinition;
 import io.cattle.platform.object.meta.MapRelationship;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
@@ -22,6 +23,7 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.model.Action;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Include;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -31,6 +33,7 @@ import io.github.ibuildthecloud.gdapi.model.Schema.Method;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractBaseResourceManager;
+import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Collections;
@@ -270,9 +273,10 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     @Override
-    protected Resource constructResource(final IdFormatter idFormatter, SchemaFactory schemaFactory, final Schema schema, Object obj) {
+    protected Resource constructResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj,
+            ApiRequest apiRequest) {
         Map<String,Object> transitioningFields = metaDataManager.getTransitionFields(schema, obj);
-        return ApiUtils.createResourceWithAttachments(schemaFactory, idFormatter, schema, obj, transitioningFields);
+        return ApiUtils.createResourceWithAttachments(this, apiRequest, idFormatter, schema, obj, transitioningFields);
     }
 
     @Override
@@ -326,6 +330,32 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
                 throw new ClientVisibleException(ResponseCodes.CONFLICT);
             } else {
                 throw e;
+            }
+        }
+    }
+
+    @Override
+    protected void addActions(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
+        Object state = resource.getFields().get(ObjectMetaDataManager.STATE_FIELD);
+        Map<String,ActionDefinition> defs = metaDataManager.getActionDefinitions(obj);
+
+        if ( state == null || defs == null ) {
+            super.addActions(obj, schemaFactory, schema, resource);
+            return;
+        }
+
+        Map<String,Action> actions = schema.getResourceActions();
+
+        if ( actions == null || actions.size() == 0 ) {
+            return;
+        }
+
+        UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
+
+        for ( String name : actions.keySet() ) {
+            ActionDefinition def = defs.get(name);
+            if ( def == null || def.getValidStates().contains(state) ) {
+                resource.getActions().put(name, urlBuilder.actionLink(resource, name));
             }
         }
     }

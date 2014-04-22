@@ -7,6 +7,8 @@ def test_agent_unique(admin_client):
 
     if len(agents) == 0:
         agent = admin_client.create_agent(uri='sim://unique')
+        agent = admin_client.wait_success(agent)
+        assert agent.state == 'active'
         agent.deactivate()
 
     try:
@@ -231,3 +233,58 @@ def test_child_map(admin_client, sim_context):
     hosts = container.hosts()
     assert len(hosts) == 1
     assert hosts[0].type == 'host'
+
+
+def test_fields_on_include(admin_client, sim_context):
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      requestedHostId=sim_context['host'].id)
+    c = admin_client.wait_success(c)
+    assert c.state == 'running'
+
+    host = admin_client.by_id_host(sim_context['host'].id,
+                                   include='instances')
+
+    assert host is not None
+
+    found = False
+    for instance in host.instances:
+        if instance.id == c.id:
+            assert instance.transitioning == 'no'
+            assert 'stop' in instance
+            assert callable(instance.stop)
+            assert len(instance.links) > 1
+            found = True
+            break
+
+    assert found
+
+
+def test_state_enum(admin_client):
+    container_schema = admin_client.schema.types['container']
+    states = set([
+        'starting',
+        'running',
+        'stopping',
+        'stopped',
+        'purged',
+        'purging',
+        'creating',
+        'removed',
+        'removing',
+        'requested',
+        'restoring',
+        'migrating',
+        'updating-running',
+        'updating-stopped'
+    ])
+
+    assert container_schema.resourceFields['state'].type == 'enum'
+    assert states == set(container_schema.resourceFields['state'].options)
+
+
+def test_actions_based_on_state(admin_client, sim_context):
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      requestedHostId=sim_context['host'].id)
+    c = admin_client.wait_success(c)
+    assert c.state == 'running'
+    assert set(c.actions.keys()) == set(['stop', 'update', 'migrate'])
