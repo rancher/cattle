@@ -7,6 +7,6 @@ public interface AccountLookup {
 
     Account getAccount(ApiRequest request);
 
-    void challenge(ApiRequest request);
+    boolean challenge(ApiRequest request);
 
 }

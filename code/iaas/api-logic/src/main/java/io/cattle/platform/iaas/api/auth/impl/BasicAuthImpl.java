@@ -4,6 +4,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.UnsupportedEncodingException;
@@ -16,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicStringProperty;
 
-public class BasicAuthImpl implements AccountLookup {
+public class BasicAuthImpl implements AccountLookup, Priority {
 
     public static final String AUTH_HEADER = "Authorization";
     public static final String CHALLENGE_HEADER = "WWW-Authenticate";
@@ -35,7 +36,7 @@ public class BasicAuthImpl implements AccountLookup {
     }
 
     @Override
-    public void challenge(ApiRequest request) {
+    public boolean challenge(ApiRequest request) {
         HttpServletResponse response = request.getServletContext().getResponse();
         String realm = REALM.get();
 
@@ -44,6 +45,8 @@ public class BasicAuthImpl implements AccountLookup {
         } else {
             response.setHeader(CHALLENGE_HEADER, String.format(BASIC_REALM,realm));
         }
+
+        return true;
     }
 
     protected String getRealm(ApiRequest request) {
@@ -74,6 +77,11 @@ public class BasicAuthImpl implements AccountLookup {
         } catch (UnsupportedEncodingException e) {
             return null;
         }
+    }
+
+    @Override
+    public int getPriority() {
+        return Priority.DEFAULT;
     }
 
     public AuthDao getAuthDao() {

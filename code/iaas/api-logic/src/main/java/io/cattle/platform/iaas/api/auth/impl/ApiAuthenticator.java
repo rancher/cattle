@@ -29,7 +29,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ApiAuthenticator.class);
 
     AuthDao authDao;
-    AccountLookup accountLookup;
+    List<AccountLookup > accountLookups;
     boolean failOnNotFound = true;
     List<AuthorizationProvider> authorizationProviders;
 
@@ -104,7 +104,14 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     }
 
     protected Account getAccount(ApiRequest request) {
-        Account account = accountLookup.getAccount(request);
+        Account account = null;
+
+        for ( AccountLookup lookup : accountLookups ) {
+            account = lookup.getAccount(request);
+            if ( account != null ) {
+                break;
+            }
+        }
 
         if ( account != null ) {
             return account;
@@ -112,7 +119,11 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
         if ( SECURITY.get() ) {
             if ( failOnNotFound ) {
-                accountLookup.challenge(request);
+                for ( AccountLookup lookup : accountLookups ) {
+                    if ( lookup.challenge(request) ) {
+                        break;
+                    }
+                }
             }
         } else {
             account = authDao.getAdminAccount();
@@ -130,15 +141,6 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         this.authDao = authDao;
     }
 
-    public AccountLookup getAccountLookup() {
-        return accountLookup;
-    }
-
-    @Inject
-    public void setAccountLookup(AccountLookup accountLookup) {
-        this.accountLookup = accountLookup;
-    }
-
     public boolean isFailOnNotFound() {
         return failOnNotFound;
     }
@@ -154,6 +156,15 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     @Inject
     public void setAuthorizationProviders(List<AuthorizationProvider> authorizationProviders) {
         this.authorizationProviders = authorizationProviders;
+    }
+
+    public List<AccountLookup> getAccountLookups() {
+        return accountLookups;
+    }
+
+    @Inject
+    public void setAccountLookups(List<AccountLookup> accountLookups) {
+        this.accountLookups = accountLookups;
     }
 
 }

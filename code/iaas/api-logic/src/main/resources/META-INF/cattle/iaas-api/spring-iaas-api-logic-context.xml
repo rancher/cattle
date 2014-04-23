@@ -22,11 +22,12 @@
 
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
 
+    <bean class="io.cattle.platform.iaas.api.auth.impl.BasicAuthImpl" />
+    <bean class="io.cattle.platform.iaas.api.auth.impl.HeaderAuthLookup" />
+
     <!-- Start Handlers -->
     <bean class="io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator" >
-        <property name="accountLookup">
-            <bean class="io.cattle.platform.iaas.api.auth.impl.BasicAuthImpl" />
-        </property>
+        <property name="accountLookups" value="#{extensionManager.list('account.lookup')}" />
         <property name="authorizationProviders" value="#{extensionManager.list('authorization.provider')}" />
     </bean>
     <bean class="io.cattle.platform.api.handler.AddClientIpHeader" />
@@ -130,6 +131,7 @@
         <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
     </aop:config>
 
+    <extension:discover class="io.cattle.platform.iaas.api.auth.AccountLookup"/>
     <extension:discover class="io.github.ibuildthecloud.gdapi.factory.SchemaFactory"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.api.pubsub.subscribe.ApiPubSubEventPostProcessor"/>
