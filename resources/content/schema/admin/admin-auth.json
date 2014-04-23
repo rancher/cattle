@@ -13,6 +13,9 @@
         ".*\\.uuid" : "cr",
         ".*\\.zoneId" : "",
 
+        "account.externalId" : "cru",
+        "account.externalIdType" : "cru",
+
         "activeSetting" : "rud",
         "activeSetting.name" : "cr",
         "activeSetting.value" : "ru",

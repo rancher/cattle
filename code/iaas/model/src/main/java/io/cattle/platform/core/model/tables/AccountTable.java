@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AccountRecord> {
 
-	private static final long serialVersionUID = 225197893;
+	private static final long serialVersionUID = 667295245;
 
 	/**
 	 * The singleton instance of <code>cattle.account</code>
@@ -75,6 +75,16 @@ public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 * The column <code>cattle.account.data</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AccountRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+
+	/**
+	 * The column <code>cattle.account.external_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>cattle.account.external_id_type</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.String> EXTERNAL_ID_TYPE = createField("external_id_type", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
 	 * Create a <code>cattle.account</code> table reference

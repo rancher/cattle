@@ -30,3 +30,14 @@ def test_account_create(admin_client):
     assert len(creds[0].publicValue) == 20
     assert re.match("[a-zA-Z0-9]*", creds[0].secretValue)
     assert len(creds[0].secretValue) == 40
+
+
+def test_account_external(admin_client):
+    account = admin_client.create_account(externalId='extid',
+                                          externalIdType='extType')
+    account = admin_client.wait_success(account)
+
+    assert account.state == 'active'
+    assert account.externalId == 'extid'
+    assert account.externalIdType == 'extType'
+

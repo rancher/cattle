@@ -124,6 +124,28 @@ public interface Account extends java.io.Serializable {
 	@javax.persistence.Column(name = "data", length = 65535)
 	public java.util.Map<String,Object> getData();
 
+	/**
+	 * Setter for <code>cattle.account.external_id</code>.
+	 */
+	public void setExternalId(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.account.external_id</code>.
+	 */
+	@javax.persistence.Column(name = "external_id", length = 255)
+	public java.lang.String getExternalId();
+
+	/**
+	 * Setter for <code>cattle.account.external_id_type</code>.
+	 */
+	public void setExternalIdType(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.account.external_id_type</code>.
+	 */
+	@javax.persistence.Column(name = "external_id_type", length = 128)
+	public java.lang.String getExternalIdType();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
