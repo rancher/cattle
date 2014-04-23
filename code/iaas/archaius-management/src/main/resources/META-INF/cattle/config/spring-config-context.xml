@@ -19,6 +19,7 @@
         <constructor-arg index="1" ref="ConfigScheduler" />
         <property name="sourceName" value="Database" />
     </bean>
+    <bean id="CattleOverrideFileConfig" factory-bean="CattleOverrideFileConfigFactory" factory-method="getConfiguration" />
     <bean id="CattleGlobalFileConfig" factory-bean="CattleGlobalFileConfigFactory" factory-method="getConfiguration" />
     <bean id="DefaultsConfig" class="io.cattle.platform.archaius.sources.NamedMapConfiguration" >
         <constructor-arg>
@@ -32,6 +33,9 @@
     </bean>
     <bean id="CattleGlobalFileConfigFactory" class="io.cattle.platform.archaius.sources.OptionalPropertiesConfigurationFactory" >
         <property name="name" value="cattle-global.properties" />
+    </bean>
+    <bean id="CattleOverrideFileConfigFactory" class="io.cattle.platform.archaius.sources.OptionalPropertiesConfigurationFactory" >
+        <property name="name" value="cattle-override.properties" />
     </bean>
     <bean id="CattleLocalFileConfigFactory" class="io.cattle.platform.archaius.sources.OptionalPropertiesConfigurationFactory" >
         <property name="name" value="cattle-local.properties" />

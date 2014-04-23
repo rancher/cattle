@@ -27,6 +27,7 @@
         <property name="resources">
             <list>
                 <value>classpath:cattle-global.properties</value>
+                <value>classpath:cattle-override.properties</value>
                 <value>classpath:cattle.properties</value>
                 <value>classpath:cattle-local.properties</value>
             </list>
