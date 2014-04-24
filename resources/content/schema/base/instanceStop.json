@@ -4,6 +4,10 @@
         "remove" : {
             "type" : "boolean",
             "create" : true
+        },
+        "deallocateFromHost" : {
+            "type" : "boolean",
+            "create" : true
         }
     }
 }

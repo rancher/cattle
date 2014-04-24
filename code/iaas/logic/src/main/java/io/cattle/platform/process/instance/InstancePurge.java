@@ -16,10 +16,11 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance)state.getResource();
 
-
         for ( Port port : getObjectManager().children(instance, Port.class) ) {
             deactivateThenRemove(port, state.getData());
         }
+
+        deallocate(instance, null);
 
         return null;
     }
