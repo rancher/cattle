@@ -2,6 +2,7 @@ package io.cattle.platform.schema.processor;
 
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.resource.ResourceLoader;
+import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.AbstractSchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
@@ -29,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor implements SchemaPostProcessor {
+public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor implements SchemaPostProcessor, Priority {
 
     private static final Logger log = LoggerFactory.getLogger(JsonFileOverlayPostProcessor.class);
 
@@ -200,6 +201,11 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
 
             BeanUtils.copyProperties(oldValue, mapProperty.get(key));
         }
+    }
+
+    @Override
+    public int getPriority() {
+        return Priority.DEFAULT;
     }
 
     public JsonMapper getJsonMapper() {
