@@ -62,7 +62,8 @@ public class AgentServiceImpl implements AgentService {
             handleResponse(event, EventVO.reply(agentEvent));
         } else {
             if ( ! GOOD_AGENT_STATES.contains(agent.getState()) ) {
-                log.info("Dropping event [{}] for agent [{}] in state [{}]", event, agent.getId(), agent.getState());
+                log.info("Dropping event [{}] [{}] for agent [{}] in state [{}]", event.getName(), event.getId(),
+                        agent.getId(), agent.getState());
                 return;
             }
 
