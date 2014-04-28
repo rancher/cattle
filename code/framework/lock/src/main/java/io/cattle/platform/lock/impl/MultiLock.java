@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 public class MultiLock implements Lock {
 
     private static final Logger log = LoggerFactory.getLogger(MultiLock.class);
-    
+
     Lock[] locks;
     MultiLockDefinition definition;
 

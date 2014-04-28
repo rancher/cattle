@@ -41,14 +41,5 @@ public abstract class AbstractMultiLockDefinition implements MultiLockDefinition
 
         return result;
     }
-    
-    protected static class DefaultMultiLockDefinition extends AbstractMultiLockDefinition {
-        public DefaultMultiLockDefinition(LockDefinition... lockDefinitions) {
-            super(lockDefinitions);
-        }
 
-        public DefaultMultiLockDefinition(String... ids) {
-            super(ids);
-        }
-    }
 }
