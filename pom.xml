@@ -68,6 +68,7 @@
                 <module>code/iaas/engine-jooq</module>
                 <module>code/iaas/events</module>
                 <module>code/iaas/external-handler</module>
+                <module>code/iaas/ha</module>
                 <module>code/iaas/logic</module>
                 <module>code/iaas/logic-common</module>
                 <module>code/iaas/model</module>

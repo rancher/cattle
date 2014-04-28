@@ -80,6 +80,7 @@
         "image.url" : "cr",
 
         "instance" : "r",
+        "instance.instanceTriggeredStop" : "cru",
         "instance.vnetIds" : "cr",
 
         "instanceStop.remove" : "cr",

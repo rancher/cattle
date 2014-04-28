@@ -42,6 +42,7 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     private static final DynamicLongProperty PING_UNMANAGED_EVERY = ArchaiusUtil.getLong("agent.ping.unmanaged.every");
     private static final DynamicLongProperty PING_STATS_EVERY = ArchaiusUtil.getLong("agent.ping.stats.every");
     private static final DynamicLongProperty PING_RESOURCES_EVERY = ArchaiusUtil.getLong("agent.ping.resources.every");
+    private static final DynamicLongProperty PING_INSTANCES_EVERY = ArchaiusUtil.getLong("agent.ping.instances.every");
     private static final DynamicLongProperty PING_SCHEDULE = ArchaiusUtil.getLong("task.agent.ping.schedule");
 
     private static final Logger log = LoggerFactory.getLogger(PingMonitorImpl.class);
@@ -80,6 +81,10 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
         if ( isInterval(PING_RESOURCES_EVERY.get()) ) {
             ping.setOption(Ping.RESOURCES, true);
+        }
+
+        if ( isInterval(PING_INSTANCES_EVERY.get()) ) {
+            ping.setOption(Ping.INSTANCES, true);
         }
 
         doPing(agent, ping);

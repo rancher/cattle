@@ -16,6 +16,15 @@
             "nullable" : true,
             "includeInList" : false
         },
+        "instanceTriggeredStop" : {
+            "type" : "enum",
+            "default" : "stop",
+            "options" : [
+                "stop",
+                "remove",
+                "restart"
+            ]
+        },
         "subnetIds" : {
             "type" : "array[reference[subnet]]",
             "nullable" : true,

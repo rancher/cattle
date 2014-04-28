@@ -212,6 +212,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "zone_id", precision = 19)
 	public java.lang.Long getZoneId();
 
+	/**
+	 * Setter for <code>cattle.instance.instance_triggered_stop</code>.
+	 */
+	public void setInstanceTriggeredStop(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.instance.instance_triggered_stop</code>.
+	 */
+	@javax.persistence.Column(name = "instance_triggered_stop", length = 128)
+	public java.lang.String getInstanceTriggeredStop();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

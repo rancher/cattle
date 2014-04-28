@@ -59,7 +59,7 @@
     <process:process name="agent.reconnect" resourceType="agent" start="active,activating" transitioning="reconnecting" done="active" />
 
     <!-- Instance -->
-    <process:defaultProcesses resourceType="instance" 
+    <process:defaultProcesses resourceType="instance"
         renames="
             registering=creating,
             inactive=stopped,
@@ -75,6 +75,7 @@
     <process:process name="instance.migrate" resourceType="instance" start="running" transitioning="migrating" done="running" />
     <process:process name="instance.allocate" resourceType="instance" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="instance.deallocate" resourceType="instance" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
+    <process:process name="instance.restart" resourceType="instance" start="running" transitioning="restarting" done="running" />
 
     <!-- Volume -->
     <process:defaultProcesses resourceType="volume" />
