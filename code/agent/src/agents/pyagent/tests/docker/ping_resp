@@ -17,8 +17,16 @@
                 "hostUuid" : "testuuid",
                 "name" : "localhost/docker Storage Pool",
                 "kind" : "docker"
+            },
+            {
+                "type" : "instance",
+                "uuid" : "c861f990-4472-4fa1-960f-65171b544c28",
+                "state" : "running"
             }
-        ]
+        ],
+        "options" : {
+            "instances" : true
+        }
     },
     "previousIds" : [ "bfc8ada5-e5c3-4ee0-aa0a-c3001ae96c83" ],
     "resourceId" : "2"

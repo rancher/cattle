@@ -36,6 +36,7 @@ def test_image_activate(random_qcow2, pool_dir, agent, responses):
 
         assert int(resp['data']['+data']['libvirt']['actual-size']) > 200000
         del resp['data']['+data']['libvirt']['actual-size']
+        del resp['data']['+data']['libvirt']['format-specific']
 
     event_test(agent, 'libvirt/image_activate', pre_func=pre, post_func=post)
 
@@ -53,6 +54,7 @@ def test_image_activate_gz(random_qcow2_gz, pool_dir, agent, responses):
 
         assert int(resp['data']['+data']['libvirt']['actual-size']) > 200000
         del resp['data']['+data']['libvirt']['actual-size']
+        del resp['data']['+data']['libvirt']['format-specific']
 
     event_test(agent, 'libvirt/image_activate', pre_func=pre, post_func=post)
 
@@ -70,6 +72,7 @@ def test_image_activate_bz2(random_qcow2_bz2, pool_dir, agent, responses):
 
         assert int(resp['data']['+data']['libvirt']['actual-size']) > 200000
         del resp['data']['+data']['libvirt']['actual-size']
+        del resp['data']['+data']['libvirt']['format-specific']
 
     event_test(agent, 'libvirt/image_activate', pre_func=pre, post_func=post)
 
@@ -96,6 +99,7 @@ def test_volume_activate(random_qcow2, pool_dir, agent, responses):
 
         assert int(resp['data']['+data']['libvirt']['actual-size']) > 200000
         del resp['data']['+data']['libvirt']['actual-size']
+        del resp['data']['+data']['libvirt']['format-specific']
 
         del resp['data']['+data']['libvirt']['filename']
         del resp['data']['+data']['libvirt']['backing-filename']
@@ -118,6 +122,11 @@ def test_volume_deactivate(random_qcow2, pool_dir, agent, responses):
 
 @if_libvirt
 def test_instance_activate(random_qcow2, pool_dir, agent, responses):
+    _test_instance_activate(random_qcow2, pool_dir, agent, responses)
+    _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
+
+
+def _test_instance_activate(random_qcow2, pool_dir, agent, responses):
     _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
 
     volume = fake_volume(image_file=random_qcow2)
@@ -157,8 +166,6 @@ def test_instance_activate(random_qcow2, pool_dir, agent, responses):
 
     event_test(agent, 'libvirt/instance_activate', pre_func=pre,
                post_func=post)
-
-    _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
 
 
 @if_libvirt
@@ -202,15 +209,25 @@ def test_instance_deactivate(random_qcow2, pool_dir, agent, responses):
 
 
 @if_libvirt
-def test_ping(agent, responses):
+def test_ping(random_qcow2, pool_dir, agent, responses):
+    _test_instance_activate(random_qcow2, pool_dir, agent, responses)
+
     CONFIG_OVERRIDE['DOCKER_ENABLED'] = 'false'
     CONFIG_OVERRIDE['HOSTNAME'] = 'localhost'
     CONFIG_OVERRIDE['LIBVIRT_UUID'] = 'testuuid'
     CONFIG_OVERRIDE['PHYSICAL_HOST_UUID'] = 'hostuuid'
 
     def post(req, resp):
-        resp['data']['resources'] = filter(lambda x: x['kind'] == 'libvirt',
-                                           resp['data']['resources'])
+        resources = resp['data']['resources']
+
+        instances = filter(lambda x: x['type'] == 'instance', resources)
+        resources = filter(lambda x: x.get('kind') == 'libvirt', resources)
+
+        assert len(instances) == 1
+
+        resources.append(instances[0])
+        resp['data']['resources'] = resources
+
         assert resp['data']['resources'][1]['name'] == \
             resp['data']['resources'][0]['name'] + ' Storage Pool ' + \
             resp['data']['resources'][1]['data']['libvirt']['poolPath']
@@ -232,6 +249,7 @@ def test_ping(agent, responses):
         resp['data']['resources'][0]['data']['libvirt']['type'] = 'qemu'
 
     event_test(agent, 'libvirt/ping', post_func=post)
+    _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
 
 
 @if_libvirt

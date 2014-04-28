@@ -6,7 +6,8 @@
     "data" : {
         "resources" : [],
         "options" : {
-            "resources" : true
+            "resources" : true,
+            "instances" : true
         }
     },
     "transitioningMessage" : null,

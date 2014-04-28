@@ -154,6 +154,8 @@ def test_instance_deactivate(agent, responses):
 
 @if_docker
 def test_ping(agent, responses):
+    test_instance_activate(agent, responses)
+
     CONFIG_OVERRIDE['DOCKER_UUID'] = 'testuuid'
     CONFIG_OVERRIDE['PHYSICAL_HOST_UUID'] = 'hostuuid'
 
@@ -161,7 +163,15 @@ def test_ping(agent, responses):
         hostname = Config.hostname() + '/docker'
         pool_name = hostname + ' Storage Pool'
         resources = resp['data']['resources']
-        resources = filter(lambda x: x['kind'] == 'docker', resources)
+
+        uuid = 'c861f990-4472-4fa1-960f-65171b544c28'
+        instances = filter(lambda x: x['type'] == 'instance' and
+                           x['uuid'] == uuid, resources)
+        assert len(instances) == 1
+
+        resources = filter(lambda x: x.get('kind') == 'docker', resources)
+        resources.append(instances[0])
+
         resp['data']['resources'] = resources
 
         assert resp['data']['resources'][0]['name'] == hostname
