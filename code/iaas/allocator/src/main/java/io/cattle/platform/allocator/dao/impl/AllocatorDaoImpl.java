@@ -267,7 +267,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
             .where(SUBNET_VNET_MAP.SUBNET_ID.eq(subnetId)
                     .and(HOST_VNET_MAP.STATE.eq(CommonStatesConstants.ACTIVE)))
-            .fetchInto(Long.class);
+            .fetch(HOST_VNET_MAP.HOST_ID);
     }
 
     public ObjectManager getObjectManager() {
