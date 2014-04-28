@@ -18,10 +18,13 @@ import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.process.ExecutionExceptionHandler;
 import io.cattle.platform.engine.process.ExitReason;
+import io.cattle.platform.engine.process.LaunchConfiguration;
+import io.cattle.platform.engine.process.Predicate;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.ProcessPhase;
+import io.cattle.platform.engine.process.ProcessResult;
 import io.cattle.platform.engine.process.ProcessServiceContext;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.ProcessStateTransition;
@@ -35,6 +38,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
+import io.cattle.platform.lock.definition.DefaultMultiLockDefinition;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.lock.definition.Namespace;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
@@ -64,6 +68,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     ProcessLog processLog;
     ProcessExecutionLog execution;
     ExitReason finalReason;
+    String chainProcess;
 
     volatile boolean inLogic = false;
     boolean executed = false;
@@ -157,7 +162,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             return exit(ExitReason.DONE);
         } catch ( ProcessExecutionExitException e ) {
             exit(e.getExitReason());
-            if ( e.getExitReason() == ALREADY_DONE ) {
+            if ( e.getExitReason() != null && e.getExitReason().getResult() == ProcessResult.SUCCESS ) {
                 return e.getExitReason();
             }
 
@@ -195,7 +200,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 break;
             } catch ( ProcessCancelException e ) {
                 if ( shouldAbort(e) ) {
-                    if ( ! instanceContext.getState().shouldCancel() && instanceContext.getState().isTransitioning() )
+                    if ( ! instanceContext.getState().shouldCancel(record) && instanceContext.getState().isTransitioning() )
                         throw new IllegalStateException("Attempt to cancel when process is still transitioning");
                     throw e;
                 } else {
@@ -224,7 +229,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         ProcessState state = def.constructProcessState(record);
-        if ( state.shouldCancel() ) {
+        if ( state.shouldCancel(record) ) {
             return true;
         }
 
@@ -260,7 +265,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             throw new ProcessExecutionExitException(ALREADY_DONE);
         }
 
-        if ( instanceContext.getState().shouldCancel() ) {
+        if ( instanceContext.getState().shouldCancel(record) ) {
             throw new ProcessCancelException("State [" + instanceContext.getState().getState() + "] is not valid");
         }
     }
@@ -274,12 +279,16 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             preRunStateCheck();
 
-            if ( instanceContext.getPhase() == ProcessPhase.REQUESTED ) {
-                instanceContext.setPhase(ProcessPhase.STARTED);
-                getProcessManager().persistState(this, schedule);
+            if ( schedule ) {
+                Predicate predicate = record.getPredicate();
+                if ( predicate != null ) {
+                    if ( ! predicate.evaluate(this.instanceContext.getState(), this, this.instanceContext.getProcessDefinition()) ) {
+                        throw new ProcessCancelException("Predicate is not valid");
+                    }
+                }
             }
 
-            if ( instanceContext.getState().isStart() ) {
+            if ( instanceContext.getState().isStart(record) ) {
                 setTransitioning();
             }
 
@@ -287,11 +296,20 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 runScheduled();
             }
 
+            if ( instanceContext.getPhase() == ProcessPhase.REQUESTED ) {
+                instanceContext.setPhase(ProcessPhase.STARTED);
+                getProcessManager().persistState(this, schedule);
+            }
+
             runLogic();
 
-            setDone();
+            boolean chain = setDone();
 
             success = true;
+
+            if ( chain ) {
+                throw new ProcessExecutionExitException(ExitReason.CHAIN);
+            }
         } finally {
             if ( ! success && ! EngineContext.isNestedExecution() ) {
                 /* This is not so obvious why we do this.  If a process fails it may have done scheduled
@@ -343,6 +361,15 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 });
 
                 if ( result != null ) {
+                    String chainResult = result.getChainProcessName();
+
+                    if ( chainResult != null ) {
+                        if ( chainProcess != null && ! chainResult.equals(chainProcess) ) {
+                            log.error("Not chaining process to [{}] because [{}] already set", chainResult, chainProcess);
+                        }
+                        chainProcess = chainResult;
+                    }
+
                     shouldDelegate |= result.shouldDelegate();
                     if ( ! result.shouldContinue(instanceContext.getPhase()) ) {
                         break;
@@ -399,6 +426,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             processExecution.setShouldDelegate(handlerResult.shouldDelegate());
             processExecution.setShouldContinue(shouldContinue);
             processExecution.setResultData(resultData);
+            processExecution.setChainProcessName(handlerResult.getChainProcessName());
 
             Set<String> missingFields = new TreeSet<String>();
             processExecution.setMissingRequiredFields(missingFields);
@@ -503,15 +531,30 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         publishChanged(schedule);
     }
 
-    protected void setDone() {
+    protected boolean setDone() {
+        boolean chained = false;
         ProcessState state = instanceContext.getState();
-
         String previousState = state.getState();
-        String newState = state.setDone();
+
+        if ( chainProcess != null ) {
+            LaunchConfiguration config = new LaunchConfiguration(chainProcess, record.getResourceType(),
+                    record.getResourceId(), state.getData());
+            config.setParentProcessState(state);
+
+            this.context.getProcessManager().scheduleProcessInstance(config);
+            log.info("Chained [{}] to [{}]", record.getProcessName(), chainProcess);
+
+            state.reload();
+            chained = true;
+        }
+
+        String newState = chained ? state.getState() : state.setDone();
         log.info("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(),
                 record.getResourceId());
-        execution.getTransitions().add(new ProcessStateTransition(previousState, newState, "done", now()));
+        execution.getTransitions().add(new ProcessStateTransition(previousState, newState, chained ? "chain" : "done", now()));
         publishChanged(schedule);
+
+        return chained;
     }
 
     protected void publishChanged(boolean defer) {
@@ -532,7 +575,12 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
         LockDefinition lockDef = state.getProcessLock();
         if ( schedule ) {
-            lockDef = new Namespace("schedule").getLockDefinition(lockDef);
+            LockDefinition scheduleLock = new Namespace("schedule").getLockDefinition(lockDef);
+            if ( record.getPredicate() == null ) {
+                lockDef = scheduleLock;
+            } else {
+                lockDef = new DefaultMultiLockDefinition(lockDef, scheduleLock);
+            }
         }
 
         instanceContext.setProcessLock(lockDef);

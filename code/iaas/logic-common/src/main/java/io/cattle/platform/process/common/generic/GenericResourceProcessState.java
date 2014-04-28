@@ -1,5 +1,6 @@
 package io.cattle.platform.process.common.generic;
 
+import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.engine.process.impl.AbstractStatesBasedProcessState;
 import io.cattle.platform.engine.process.impl.ResourceStatesDefinition;
@@ -106,12 +107,12 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     }
 
     @Override
-    public boolean shouldCancel() {
+    public boolean shouldCancel(ProcessRecord record) {
         if ( resource == null ) {
             log.error("Resource is null, can't find resource id [{}]", resourceId);
             return true;
         }
-        return super.shouldCancel();
+        return super.shouldCancel(record);
     }
 
     @Override

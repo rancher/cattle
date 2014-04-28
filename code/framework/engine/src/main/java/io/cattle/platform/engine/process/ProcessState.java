@@ -1,5 +1,6 @@
 package io.cattle.platform.engine.process;
 
+import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.lock.definition.LockDefinition;
 
 import java.util.Map;
@@ -20,11 +21,11 @@ public interface ProcessState {
 
     Map<String,Object> getData();
 
-    boolean shouldCancel();
+    boolean shouldCancel(ProcessRecord record);
 
     boolean isDone(boolean schedule);
 
-    boolean isStart();
+    boolean isStart(ProcessRecord record);
 
     boolean isTransitioning();
 

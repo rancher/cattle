@@ -15,7 +15,8 @@ public enum ExitReason {
     RETRY_EXCEPTION(true),
     UNKNOWN_EXCEPTION(true),
     TIMEOUT(true),
-    MISSING_HANDLER_RESULT_FIELDS;
+    MISSING_HANDLER_RESULT_FIELDS,
+    CHAIN(SUCCESS);
 
     boolean terminating;
     boolean rethrow;
@@ -36,6 +37,7 @@ public enum ExitReason {
 
     private ExitReason(boolean terminating, ProcessResult result) {
         this.terminating = terminating;
+        this.result = result;
 
         if ( terminating && result == null ) {
             throw new IllegalStateException("All terminating ExitReasons must"

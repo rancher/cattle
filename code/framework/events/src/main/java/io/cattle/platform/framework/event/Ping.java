@@ -9,6 +9,7 @@ public class Ping extends EventVO<PingData> {
 
     public static final String STATS = "stats";
     public static final String RESOURCES = "resources";
+    public static final String INSTANCES = "instances";
 
     public Ping() {
         setName(FrameworkEvents.PING);
@@ -25,7 +26,12 @@ public class Ping extends EventVO<PingData> {
     }
 
     public boolean getOption(String name) {
-        Map<String,Boolean> options = getData().getOptions();
+        PingData data = getData();
+        if ( data == null ) {
+            return false;
+        }
+
+        Map<String,Boolean> options = data.getOptions();
         Boolean value = options.get(name);
         return value == null ? false : value;
     }

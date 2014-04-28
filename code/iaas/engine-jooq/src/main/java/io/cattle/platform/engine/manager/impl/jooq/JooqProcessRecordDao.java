@@ -138,7 +138,11 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         merge(pi, record);
         pi.insert();
 
-        return getRecord(pi.getId());
+        ProcessRecord newRecord = getRecord(pi.getId());
+        newRecord.setPredicate(record.getPredicate());
+        newRecord.setParentProcessState(record.getParentProcessState());
+
+        return newRecord;
     }
 
     @Override

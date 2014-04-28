@@ -11,6 +11,7 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
     ExceptionLog exception;
     boolean shouldContinue;
     boolean shouldDelegate;
+    String chainProcessName;
     Map<String,Object> resultData;
     Map<String,Object> resourceValueBefore;
     Map<String,Object> resourceValueAfter;
@@ -40,6 +41,7 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
         this.exception = exception;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -94,6 +96,14 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
 
     public void setShouldDelegate(boolean shouldDelegate) {
         this.shouldDelegate = shouldDelegate;
+    }
+
+    public String getChainProcessName() {
+        return chainProcessName;
+    }
+
+    public void setChainProcessName(String chainProcessName) {
+        this.chainProcessName = chainProcessName;
     }
 
 }

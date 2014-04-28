@@ -105,4 +105,5 @@ public class ProcessRecord extends LaunchConfiguration {
     public void setResult(ProcessResult result) {
         this.result = result;
     }
+
 }

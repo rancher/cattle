@@ -11,6 +11,7 @@ public class HandlerResult {
 
     Boolean shouldContinue;
     boolean shouldDelegate = false;
+    String chainProcessName;
     Map<Object, Object> data;
 
     public HandlerResult() {
@@ -57,6 +58,11 @@ public class HandlerResult {
         return this;
     }
 
+    public HandlerResult withChainProcessName(String processName) {
+        this.chainProcessName = processName;
+        return this;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -95,6 +101,14 @@ public class HandlerResult {
     public String toString() {
         return "HandlerResult [shouldContinue=" + shouldContinue + ", shouldDelegate=" + shouldDelegate + ", data="
                 + data + "]";
+    }
+
+    public String getChainProcessName() {
+        return chainProcessName;
+    }
+
+    public void setChainProcessName(String chainProcessName) {
+        this.chainProcessName = chainProcessName;
     }
 
 }

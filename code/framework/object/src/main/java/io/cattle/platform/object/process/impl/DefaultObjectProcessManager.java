@@ -3,6 +3,7 @@ package io.cattle.platform.object.process.impl;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.LaunchConfiguration;
+import io.cattle.platform.engine.process.Predicate;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -29,14 +30,25 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
 
     @Override
     public void scheduleStandardProcess(StandardProcess process, Object resource, Map<String, Object> data) {
+        scheduleStandardProcess(process, resource, data, null);
+    }
+
+    @Override
+    public void scheduleStandardProcess(StandardProcess process, Object resource, Map<String, Object> data, Predicate predicate) {
         String processName = getProcessName(resource, process);
-        scheduleProcessInstance(processName, resource, data);
+        scheduleProcessInstance(processName, resource, data, predicate);
+    }
+
+    @Override
+    public void scheduleProcessInstance(String processName, Object resource, Map<String, Object> data, Predicate predicate) {
+        LaunchConfiguration config = ObjectLaunchConfigurationUtils.createConfig(schemaFactory, processName, resource, data);
+        config.setPredicate(predicate);
+        processManager.scheduleProcessInstance(config);
     }
 
     @Override
     public void scheduleProcessInstance(String processName, Object resource, Map<String, Object> data) {
-        LaunchConfiguration config = ObjectLaunchConfigurationUtils.createConfig(schemaFactory, processName, resource, data);
-        processManager.scheduleProcessInstance(config);
+        scheduleProcessInstance(processName, resource, data, null);
     }
 
     protected String getProcessName(Object resource, StandardProcess process) {
@@ -47,6 +59,11 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
     @Override
     public String getStandardProcessName(StandardProcess process, String type) {
         return type.toLowerCase() + "." + process.toString().toLowerCase();
+    }
+
+    @Override
+    public String getStandardProcessName(StandardProcess process, Object obj) {
+        return getProcessName(obj, process);
     }
 
     @Override

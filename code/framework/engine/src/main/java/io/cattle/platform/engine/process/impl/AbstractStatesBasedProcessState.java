@@ -1,5 +1,6 @@
 package io.cattle.platform.engine.process.impl;
 
+import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessPhase;
 import io.cattle.platform.engine.process.ProcessState;
@@ -45,7 +46,10 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
     }
 
     @Override
-    public boolean shouldCancel() {
+    public boolean shouldCancel(ProcessRecord record) {
+        if ( isStart(record) ) {
+            return false;
+        }
         return ! statesDefinition.isValidState(getState());
     }
 
@@ -64,7 +68,23 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
     }
 
     @Override
-    public boolean isStart() {
+    public boolean isStart(ProcessRecord record) {
+        ProcessState parent = record == null ? null : record.getParentProcessState();
+
+        if ( parent != null ) {
+            if ( parent instanceof AbstractStatesBasedProcessState ) {
+                String doneState = ((AbstractStatesBasedProcessState)parent).getStatesDefinition().getDoneState(getState());
+                if ( statesDefinition.isStart(doneState) ) {
+                    return true;
+                }
+            } else if ( parent.isTransitioning() ){
+                /* We just trust that the transition is valid, since we don't know what
+                 * type of state it is
+                 */
+                return true;
+            }
+        }
+
         return statesDefinition.isStart(getState());
     }
 

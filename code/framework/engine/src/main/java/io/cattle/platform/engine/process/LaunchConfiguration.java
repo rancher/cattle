@@ -9,6 +9,8 @@ public class LaunchConfiguration {
     String resourceType;
     String resourceId;
     Map<String, Object> data;
+    Predicate predicate;
+    ProcessState parentProcessState;
 
     public LaunchConfiguration() {
     }
@@ -29,6 +31,8 @@ public class LaunchConfiguration {
         this.resourceType = config.getResourceType();
         this.resourceId = config.getResourceId();
         this.data = config.getData();
+        this.predicate = config.getPredicate();
+        this.parentProcessState = config.getParentProcessState();
     }
 
     public String getResourceType() {
@@ -67,6 +71,22 @@ public class LaunchConfiguration {
     public String toString() {
         return "LaunchConfiguration [processName=" + processName + ", resourceType=" + resourceType + ", resourceId="
                 + resourceId + ", data=" + data + "]";
+    }
+
+    public Predicate getPredicate() {
+        return predicate;
+    }
+
+    public void setPredicate(Predicate predicate) {
+        this.predicate = predicate;
+    }
+
+    public ProcessState getParentProcessState() {
+        return parentProcessState;
+    }
+
+    public void setParentProcessState(ProcessState parentProcessState) {
+        this.parentProcessState = parentProcessState;
     }
 
 }
