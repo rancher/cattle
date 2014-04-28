@@ -9,6 +9,7 @@ import calendar
 import gzip
 import logging
 import os
+import re
 import subprocess
 import time
 import uuid
@@ -88,12 +89,26 @@ def ping_include_resources(ping):
         return False
 
 
+def ping_include_instances(ping):
+    try:
+        return ping.data.options['instances']
+    except (KeyError, AttributeError):
+        return False
+
+
 def ping_add_resources(pong, *args):
     if 'resources' not in pong.data:
         pong.data.resources = []
 
     for resource in args:
         pong.data.resources.append(resource)
+
+
+def ping_set_option(pong, key, value):
+    if 'options' not in pong.data:
+        pong.data.options = {}
+
+    pong.data.options[key] = value
 
 
 def events_from_methods(obj):
@@ -287,3 +302,10 @@ def _check_output(*popenargs, **kwargs):
 
 def random_string(length=64):
     return binascii.hexlify(os.urandom(length/2))
+
+
+def is_uuid(str):
+    if str is None:
+        return False
+    return re.match(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}'
+                    r'-[0-9a-f]{4}-[0-9a-f]{12}', str) is not None

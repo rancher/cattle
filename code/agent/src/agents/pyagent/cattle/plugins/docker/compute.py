@@ -36,12 +36,35 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
 
         return None
 
-    @staticmethod
-    def on_ping(ping, pong):
-        if not utils.ping_include_resources(ping):
+    def on_ping(self, ping, pong):
+        if not DockerConfig.docker_enabled():
             return
 
-        if not DockerConfig.docker_enabled():
+        self._add_resources(ping, pong)
+        self._add_instances(ping, pong)
+
+    def _add_instances(self, ping, pong):
+        if not utils.ping_include_instances(ping):
+            return
+
+        containers = []
+        for c in docker_client().containers(all=True):
+            names = c.get('Names')
+            for name in names:
+                if name.startswith('/'):
+                    name = name[1:]
+                    if utils.is_uuid(name):
+                        containers.append({
+                            'type': 'instance',
+                            'uuid': name,
+                            'state': 'running'
+                        })
+
+        utils.ping_add_resources(pong, *containers)
+        utils.ping_set_option(pong, 'instances', True)
+
+    def _add_resources(self, ping, pong):
+        if not utils.ping_include_resources(ping):
             return
 
         physical_host = Config.physical_host()

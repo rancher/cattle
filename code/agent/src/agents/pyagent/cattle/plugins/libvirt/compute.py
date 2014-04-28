@@ -1,5 +1,6 @@
 import logging
 import os
+import libvirt
 
 from . import LIBVIRT_KIND
 from .connection import LibvirtConnection
@@ -27,7 +28,7 @@ log = logging.getLogger('libvirt-compute')
 def _is_running(conn, instance):
     if instance is None:
         return False
-    return True
+    return instance.info()[0] == libvirt.VIR_DOMAIN_RUNNING
 
 
 class InstanceConfig(object):
@@ -81,7 +82,27 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
         return None
 
-    def on_ping(self, ping, pong):
+    def _add_instances(self, ping, pong):
+        if not utils.ping_include_instances(ping):
+            return
+
+        conn = LibvirtConnection.open(get_preferred_libvirt_type())
+        vms = []
+
+        for vm in conn.listAllDomains(0):
+            name = vm.name()
+
+            if utils.is_uuid(name) and _is_running(conn, vm):
+                vms.append({
+                    'type': 'instance',
+                    'uuid': name,
+                    'state': 'running'
+                })
+
+        utils.ping_add_resources(pong, *vms)
+        utils.ping_set_option(pong, 'instances', True)
+
+    def _add_resources(self, ping, pong):
         if not utils.ping_include_resources(ping):
             return
 
@@ -110,6 +131,10 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
                 resources.append(pool)
 
         utils.ping_add_resources(pong, *resources)
+
+    def on_ping(self, ping, pong):
+        self._add_resources(ping, pong)
+        self._add_instances(ping, pong)
 
     def get_instance_by_uuid(self, conn, uuid):
         return self.get_instance_by(conn, lambda x: x.name() == uuid)
@@ -177,6 +202,11 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
                                  randomToken=utils.random_string())
 
         conn = self._get_connection(instance, host)
+
+        existing = self.get_instance_by_uuid(conn, instance.uuid)
+        if _is_running(conn, existing):
+            self._destroy_domain(existing)
+
         log.info('Starting %s : XML %s', instance.uuid, output)
         conn.createXML(output, 0)
 
@@ -237,15 +267,18 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         conn = self._get_connection(instance, host)
         vm = self.get_instance_by_uuid(conn, instance.uuid)
 
+        self._destroy_domain(vm)
+
+    def _destroy_domain(self, vm):
         if vm is None:
             return
 
         try:
-            log.info('Stopping %s', instance.uuid)
+            log.info('Stopping %s', vm.name())
             vm.shutdown()
         except:
             pass
         finally:
             # TODO Wait for shutdown a bit before destroying
-            log.info('Destroy %s', instance.uuid)
+            log.info('Destroy %s', vm.name())
             vm.destroy()
