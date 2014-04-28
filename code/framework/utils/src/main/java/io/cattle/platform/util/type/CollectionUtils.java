@@ -21,6 +21,16 @@ public class CollectionUtils {
         return set;
     }
 
+    public static Object get(Object map, String... keys) {
+        Object value = map;
+        for ( String key : keys ) {
+            Map<String,Object> mapObject = CollectionUtils.toMap(value);
+            value = mapObject.get(key);
+        }
+
+        return value;
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <K,V extends Collection<T>,T> void addToMap(Map<K,V> data, K key, T value, Class<? extends Collection> clz) {
         V values = data.get(key);
