@@ -22,8 +22,11 @@
 
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
 
-    <bean class="io.cattle.platform.iaas.api.auth.impl.BasicAuthImpl" />
-    <bean class="io.cattle.platform.iaas.api.auth.impl.HeaderAuthLookup" />
+    <bean id="BasicAuth" class="io.cattle.platform.iaas.api.auth.impl.BasicAuthImpl" />
+    <bean class="io.cattle.platform.iaas.api.auth.impl.HeaderAuthLookup" >
+        <property name="adminLookup" ref="BasicAuth" />
+        <property name="adminAuthProvider" ref="DefaultAuthorizationProvider" />
+    </bean>
 
     <!-- Start Handlers -->
     <bean class="io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator" >
@@ -86,7 +89,7 @@
     <bean class="io.cattle.platform.api.handler.DeferredActionsHandler" />
     <!-- End Handlers -->
 
-    <bean class="io.cattle.platform.iaas.api.auth.impl.DefaultAuthorizationProvider" >
+    <bean id="DefaultAuthorizationProvider" class="io.cattle.platform.iaas.api.auth.impl.DefaultAuthorizationProvider" >
         <property name="schemaFactoryList" value="#{extensionManager.list('schema.factory')}" />
     </bean>
     <bean class="io.cattle.platform.iaas.api.auth.impl.AgentQualifierAuthorizationProvider" />
