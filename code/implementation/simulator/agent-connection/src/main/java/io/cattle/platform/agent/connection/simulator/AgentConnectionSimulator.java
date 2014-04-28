@@ -6,7 +6,9 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -15,6 +17,7 @@ public class AgentConnectionSimulator implements AgentConnection {
     Agent agent;
     boolean open = true;
     List<AgentSimulatorEventProcessor> processors;
+    Set<String> instances = new HashSet<String>();
 
     public AgentConnectionSimulator(Agent agent, List<AgentSimulatorEventProcessor> processors) {
         super();
@@ -60,6 +63,10 @@ public class AgentConnectionSimulator implements AgentConnection {
 
     public Agent getAgent() {
         return agent;
+    }
+
+    public Set<String> getInstances() {
+        return instances;
     }
 
 }

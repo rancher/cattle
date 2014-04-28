@@ -2,6 +2,7 @@ package io.cattle.platform.agent.connection.simulator.impl;
 
 import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -11,6 +12,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,13 +36,31 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
                 Ping.class);
 
         if ( ping.getOption(Ping.RESOURCES) ) {
-            addResource(pong, agent);
+            addResources(pong, agent);
+        }
+
+        if ( ping.getOption(Ping.INSTANCES) ) {
+            addInstances(simulator, pong, agent);
         }
 
         return pong;
     }
 
-    protected void addResource(Ping pong, Agent agent) {
+    protected void addInstances(AgentConnectionSimulator simulator, Ping pong, Agent agent) {
+        List<Map<String,Object>> resources = pong.getData().getResources();
+
+        for ( String instance : simulator.getInstances() ) {
+            Map<String,Object> instanceMap = CollectionUtils.asMap(
+                    ObjectMetaDataManager.TYPE_FIELD, InstanceConstants.TYPE,
+                    ObjectMetaDataManager.UUID_FIELD, instance,
+                    ObjectMetaDataManager.STATE_FIELD, InstanceConstants.STATE_RUNNING);
+            resources.add(instanceMap);
+        }
+
+        pong.setOption(Ping.INSTANCES, true);
+    }
+
+    protected void addResources(Ping pong, Agent agent) {
         List<Map<String,Object>> resources = pong.getData().getResources();
 
         String physicalHostUuid = agent.getUuid() + "-physical-host";
