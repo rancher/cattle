@@ -40,4 +40,3 @@ def test_account_external(admin_client):
     assert account.state == 'active'
     assert account.externalId == 'extid'
     assert account.externalIdType == 'extType'
-

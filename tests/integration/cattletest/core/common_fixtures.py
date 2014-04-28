@@ -72,7 +72,7 @@ def admin_client(accounts):
 
 
 @pytest.fixture(scope='module')
-def sim_context(admin_client):
+def sim_context(request, admin_client):
     context = kind_context(admin_client, 'sim', external_pool=True,
                            uri='sim://', uuid='simagent1', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
@@ -90,6 +90,9 @@ def sim_context(admin_client):
         assert map.state == 'active'
 
     context['hostIp'] = host.ipAddresses()[0]
+
+    request.addfinalizer(
+        lambda: delete_running_sim_instances(admin_client))
     return context
 
 
@@ -299,3 +302,38 @@ def create_and_activate(client, type, **kw):
 
     assert obj.state == 'active'
     return obj
+
+
+def delete_running_sim_instances(admin_client):
+    for c in admin_client.list_instance(state='running'):
+        if c.hosts()[0].kind == 'sim':
+            c.stop(remove=True)
+
+
+def one(method, *args, **kw):
+    ret = method(*args, **kw)
+    assert len(ret) == 1
+    return ret[0]
+
+
+def process_instances(admin_client, obj, id=None, type=None):
+    if id is None:
+        id = get_plain_id(admin_client, obj)
+
+    if type is None:
+        type = obj.type
+
+    return admin_client.list_process_instance(resourceType=type, resourceId=id,
+                                              sort='startTime')
+
+
+def wait_for(callback, timeout=DEFAULT_TIMEOUT):
+    start = time.time()
+    ret = callback()
+    while ret is None:
+        time.sleep(.5)
+        if time.time() - start > timeout:
+            raise Exception('Timeout waiting for condition')
+        ret = callback()
+
+    return ret

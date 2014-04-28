@@ -262,18 +262,19 @@ def test_fields_on_include(admin_client, sim_context):
 def test_state_enum(admin_client):
     container_schema = admin_client.schema.types['container']
     states = set([
-        'starting',
-        'running',
-        'stopping',
-        'stopped',
+        'creating',
+        'migrating',
         'purged',
         'purging',
-        'creating',
         'removed',
         'removing',
         'requested',
+        'restarting',
         'restoring',
-        'migrating',
+        'running',
+        'starting',
+        'stopped',
+        'stopping',
         'updating-running',
         'updating-stopped'
     ])
@@ -287,4 +288,5 @@ def test_actions_based_on_state(admin_client, sim_context):
                                       requestedHostId=sim_context['host'].id)
     c = admin_client.wait_success(c)
     assert c.state == 'running'
-    assert set(c.actions.keys()) == set(['stop', 'update', 'migrate'])
+    assert set(c.actions.keys()) == set(['migrate', 'restart', 'stop',
+                                         'update'])

@@ -21,7 +21,7 @@ def test_compute_free(admin_client, sim_context):
     assert host.computeFree == start_free - count
 
     for c in containers:
-        c.stop()
+        c.stop(deallocateFromHost=True)
 
     containers = wait_all_success(admin_client, containers)
 
@@ -132,7 +132,7 @@ def test_allocation_failed_on_start(admin_client, sim_context):
     c = wait_success(admin_client, c)
     assert c.state == 'running'
 
-    c = wait_success(admin_client, c.stop())
+    c = wait_success(admin_client, c.stop(deallocateFromHost=True))
     assert c.state == 'stopped'
 
     c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
@@ -145,7 +145,7 @@ def test_allocation_failed_on_start(admin_client, sim_context):
     assert c1.transitioning == 'error'
     assert c1.transitioningMessage == 'Failed to find a placement'
 
-    c = wait_success(admin_client, c.stop())
+    c = wait_success(admin_client, c.stop(deallocateFromHost=True))
     assert c.state == 'stopped'
 
     c1 = wait_success(admin_client, c1.start())
@@ -226,3 +226,15 @@ def test_host_vnet_association(admin_client, sim_context,
     assert len(hosts) == 2
     assert host1.id in hosts
     assert host2.id in hosts
+
+
+def test_allocation_stay_associated_to_host(admin_client, sim_context):
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'])
+    c = admin_client.wait_success(c)
+
+    assert c.state == 'running'
+
+    c = admin_client.wait_success(c.stop())
+    assert c.state == 'stopped'
+
+    assert len(c.hosts()) == 1
