@@ -1,0 +1,37 @@
+package io.cattle.platform.iaas.api.manager;
+
+import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
+import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+
+public class InstanceManager extends AbstractJooqResourceManager {
+
+    @Override
+    public String[] getTypes() {
+        return new String[] { "instance", "container", "virtualMachine" };
+    }
+
+    @Override
+    public Class<?>[] getTypeClasses() {
+        return new Class<?>[] { Instance.class };
+    }
+
+    @Override
+    protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
+        if ( ! ( obj instanceof Instance ) ) {
+            return super.deleteInternal(type, id, obj, request);
+        }
+
+        Instance instance = (Instance)obj;
+
+        if ( InstanceConstants.STATE_RUNNING.equals(instance.getState()) ) {
+            scheduleProcess(InstanceConstants.PROCESS_STOP, obj, CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
+            return getObjectManager().reload(obj);
+        } else {
+            return super.deleteInternal(type, id, obj, request);
+        }
+    }
+
+}
