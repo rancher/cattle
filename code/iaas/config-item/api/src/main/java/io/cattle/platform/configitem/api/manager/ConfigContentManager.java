@@ -44,10 +44,10 @@ public class ConfigContentManager extends AbstractNoOpResourceManager {
     @Override
     protected Object getByIdInternal(String type, String id, ListOptions options) {
         ApiRequest request = ApiContext.getContext().getApiRequest();
-        if ( Method.POST.isMethod(request.getMethod()) ) {
-            return new Object();
-        } else {
+        if ( Method.GET.isMethod(request.getMethod()) ) {
             return handle(id, request, false);
+        } else {
+            return new Object();
         }
     }
 
