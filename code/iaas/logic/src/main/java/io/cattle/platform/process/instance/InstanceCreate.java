@@ -54,7 +54,10 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     }
 
     protected boolean shouldStart(Instance instance) {
-        Boolean doneStart = DataUtils.getField(instance.getData(), InstanceConstants.FIELD_START_ON_CREATE, Boolean.class);
+        Boolean doneStart = DataAccessor.fields(instance)
+                                .withKey(InstanceConstants.FIELD_START_ON_CREATE)
+                                .withDefault(true)
+                                .as(Boolean.class);
 
         if ( doneStart != null && ! doneStart.booleanValue() ) {
             return false;

@@ -9,7 +9,7 @@ import io.cattle.platform.extension.dynamic.dao.ExternalHandlerDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.EventBasedProcessHandler;
 import io.cattle.platform.util.type.PriorityUtils;
 
@@ -69,9 +69,9 @@ public class ExternalDynamicExtensionHandlerImpl implements DynamicExtensionHand
     }
 
     protected Object toEventHandler(String eventName, ExternalHandler handler) {
-        Integer retries = DataUtils.getField(DataUtils.getData(handler), ExternalHandlerConstants.FIELD_RETRIES, Integer.class);
-        Long timeout = DataUtils.getField(DataUtils.getData(handler), ExternalHandlerConstants.FIELD_TIMEOUT, Long.class);
-        String priorityName = DataUtils.getField(DataUtils.getData(handler), ExternalHandlerConstants.FIELD_PRIORITY_NAME, String.class);
+        Integer retries = DataAccessor.fieldInteger(handler, ExternalHandlerConstants.FIELD_RETRIES);
+        Long timeout = DataAccessor.fieldLong(handler, ExternalHandlerConstants.FIELD_TIMEOUT);
+        String priorityName = DataAccessor.fieldString(handler, ExternalHandlerConstants.FIELD_PRIORITY_NAME);
         Integer priority = handler.getPriority();
 
         if ( priority == null ) {

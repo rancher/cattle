@@ -10,6 +10,7 @@ import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.cattle.platform.util.type.UnmodifiableMap;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.lang.reflect.InvocationTargetException;
@@ -160,7 +161,7 @@ public class JooqObjectManager extends AbstractObjectManager {
                     name = name.substring(PLUS.length());
                     Object mapObj = ObjectUtils.getPropertyIgnoreErrors(obj, name);
                     if ( mapObj instanceof Map<?, ?> ) {
-                        mergeMap((Map<Object,Object>)value, (Map<Object,Object>)mapObj);
+                        mapObj = mergeMap((Map<Object,Object>)value, (Map<Object,Object>)mapObj);
                     }
                     setField(schema, record, name, mapObj);
                 } else {
@@ -183,7 +184,11 @@ public class JooqObjectManager extends AbstractObjectManager {
     }
 
     @SuppressWarnings("unchecked")
-    protected void mergeMap(Map<Object,Object> src, Map<Object,Object> dest) {
+    protected Map<Object,Object> mergeMap(Map<Object,Object> src, Map<Object,Object> dest) {
+        if ( dest instanceof UnmodifiableMap<?, ?> ) {
+            dest = ((UnmodifiableMap<Object,Object>)dest).getModifiableCopy();
+        }
+
         for ( Map.Entry<Object, Object> entry : src.entrySet() ) {
             Object key = entry.getKey();
             Object value = entry.getValue();
@@ -204,10 +209,16 @@ public class JooqObjectManager extends AbstractObjectManager {
                 }
             }
         }
+
+        return dest;
     }
 
     protected void persistRecord(final UpdatableRecord<?> record) {
-        record.attach(getLockingConfiguration());
+        if ( record.changed(ObjectMetaDataManager.DATA_FIELD) ) {
+            record.attach(getLockingConfiguration());
+        } else {
+            record.attach(getConfiguration());
+        }
 
         if ( record.changed() ) {
             if ( record.update() == 0 ) {

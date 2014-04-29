@@ -2,7 +2,9 @@ package io.cattle.platform.object.util;
 
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.cattle.platform.util.type.UnmodifiableMap;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +36,22 @@ public class DataAccessor {
         accessor.scopeKey = DataUtils.FIELDS;
 
         return accessor;
+    }
+
+    public static String fieldString(Object obj, String key) {
+        return fields(obj).withKey(key).as(String.class);
+    }
+
+    public static Long fieldLong(Object obj, String key) {
+        return fields(obj).withKey(key).as(Long.class);
+    }
+
+    public static Integer fieldInteger(Object obj, String key) {
+        return fields(obj).withKey(key).as(Integer.class);
+    }
+
+    public static Boolean fieldBoolean(Object obj, String key) {
+        return fields(obj).withKey(key).as(Boolean.class);
     }
 
     public static <T> T field(Object obj, String name, JsonMapper mapper, Class<T> type) {
@@ -78,38 +96,30 @@ public class DataAccessor {
     }
 
     public Object get() {
-        Map<String,Object> map = getTargetMap(false);
+        Map<String,Object> map = getTargetMap(false, true);
         Object result = key == null ? null : map.get(key);
         return result == null ? defaultValue : result;
     }
 
     public void set(Object value) {
-        Map<String,Object> map = getTargetMap(true);
+        Map<String,Object> map = getTargetMap(true, false);
         if ( key != null ) {
             map.put(key, value);
-        }
-
-        if ( source != null ) {
-            Map<String,Object> data = DataUtils.getData(source);
-            DataUtils.setData(source, data);
         }
     }
 
     public void remove() {
-        Map<String,Object> map = getTargetMap(true);
+        Map<String,Object> map = getTargetMap(true, false);
         if ( key != null ) {
             map.remove(key);
         }
-
-        if ( source != null ) {
-            Map<String,Object> data = DataUtils.getData(source);
-            DataUtils.setData(source, data);
-        }
     }
 
-    protected Map<String,Object> getTargetMap(boolean addContainer) {
+    protected Map<String,Object> getTargetMap(boolean addContainer, boolean read) {
+        Map<String,Object> sourceMap = this.sourceMap;
+
         if ( sourceMap == null && source != null ) {
-            sourceMap = DataUtils.getData(source);
+            sourceMap = getData(source, read);
         }
 
         if ( sourceMap == null ) {
@@ -130,6 +140,22 @@ public class DataAccessor {
             map = CollectionUtils.castMap(scopedMap);
         }
 
+        return map;
+    }
+
+    protected static Map<String,Object> getData(Object obj, boolean read) {
+        @SuppressWarnings("unchecked")
+        Map<String,Object> map = (Map<String, Object>)ObjectUtils.getPropertyIgnoreErrors(obj, DataUtils.DATA);
+
+        if ( read ) {
+            return map == null ? Collections.<String,Object>emptyMap() : Collections.unmodifiableMap(map);
+        } else if ( map instanceof UnmodifiableMap<?,?> ) {
+            map = ((UnmodifiableMap<String,Object>)map).getModifiableCopy();
+        } else if ( map == null ) {
+            map = new HashMap<String, Object>();
+        }
+
+        ObjectUtils.setProperty(obj, DataUtils.DATA, map);
         return map;
     }
 

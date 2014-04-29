@@ -6,13 +6,13 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.beanutils.PropertyUtils;
 
 public class DataUtils {
 
@@ -32,22 +32,26 @@ public class DataUtils {
     }
 
     public static Map<String,Object> getFields(Object obj) {
-        return CollectionUtils.toMap(getData(obj).get(FIELDS));
+        Map<String,Object> data = DataAccessor.getData(obj, true);
+        Map<String,Object> fields = CollectionUtils.toMap(data.get(FIELDS));
+        return Collections.unmodifiableMap(fields);
     }
 
-    public static void setData(Object obj, Map<String,Object> data) {
-        ObjectUtils.setPropertyIgnoreErrors(obj, DATA, data);
-    }
+    @SuppressWarnings("unchecked")
+    public static Map<String,Object> getWritableFields(Object obj) {
+        Map<String,Object> data = DataAccessor.getData(obj, false);
+        Map<String,Object> fields = (Map<String, Object>)data.get(FIELDS);
 
-    public static Map<String,Object> getData(Object obj) {
-        try {
-            return CollectionUtils.toMap(PropertyUtils.getProperty(obj, DATA));
-        } catch (IllegalAccessException e) {
-        } catch (InvocationTargetException e) {
-        } catch (NoSuchMethodException e) {
+        if ( fields == null ) {
+            fields = new HashMap<String, Object>();
+            data.put(FIELDS, fields);
         }
 
-        return new HashMap<String, Object>();
+        return fields;
+    }
+
+    protected static void setData(Object obj, Map<String,Object> data) {
+        ObjectUtils.setPropertyIgnoreErrors(obj, DATA, data);
     }
 
     @SuppressWarnings("unchecked")
@@ -75,21 +79,17 @@ public class DataUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T getField(Map<String,Object> data, String name, Class<T> type) {
-        if ( data == null ) {
-            return null;
-        }
-
-        Map<String,Object> fields = CollectionUtils.castMap(data.get(FIELDS));
-        Object value = fields.get(name);
-
-        if ( value == null ) {
-            return null;
-        }
-
-        return (T)ConvertUtils.convert(value, type);
-    }
+    //@SuppressWarnings("unchecked")
+    //public static <T> T getField(Map<String,Object> data, String name, Class<T> type) {
+        //Map<String,Object> fields = CollectionUtils.castMap(data.get(FIELDS));
+        //Object value = fields.get(name);
+//
+        //if ( value == null ) {
+            //return null;
+        //}
+//
+        //return (T)ConvertUtils.convert(value, type);
+    //}
 
     @SuppressWarnings("unchecked")
     public static <T> T getFieldFromRequest(ApiRequest request, String name, Class<T> type) {

@@ -27,6 +27,11 @@ public class ObjectUtils {
         return getPropertyIgnoreErrors(obj, ObjectMetaDataManager.ID_FIELD);
     }
 
+    public static String getState(Object obj) {
+        Object result = getPropertyIgnoreErrors(obj, ObjectMetaDataManager.STATE_FIELD);
+        return result == null ? null : result.toString();
+    }
+
     public static Date getRemoved(Object obj) {
         Object result = getPropertyIgnoreErrors(obj, ObjectMetaDataManager.REMOVED_FIELD);
         return result instanceof Date ? (Date)result : null;

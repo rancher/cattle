@@ -19,6 +19,7 @@
     <bean class="io.cattle.platform.object.impl.DefaultObjectManager" >
         <property name="postInitHandlers" value="#{extensionManager.list('object.post.instantiation.handler')}" />
         <property name="lifeCycleHandlers" value="#{extensionManager.list('object.life.cycle.handler')}" />
+        <property name="lockingConfiguration" ref="LockingJooqConfiguration" />
     </bean>
 
     <bean class="io.cattle.platform.object.postinit.SpecialFieldsPostInstantiationHandler" />

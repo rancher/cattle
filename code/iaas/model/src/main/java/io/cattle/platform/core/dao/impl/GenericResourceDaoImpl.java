@@ -20,7 +20,7 @@ public class GenericResourceDaoImpl implements GenericResourceDao {
         T obj = objectManager.create(clz, properties);
         processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, properties);
 
-        return obj;
+        return objectManager.reload(obj);
     }
 
     @Override

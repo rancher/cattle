@@ -93,6 +93,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
 
     @Override
     public void applyData(Map<String, Object> data) {
+        reload();
         resource = objectManager.setFields(resource, data);
     }
 

@@ -21,6 +21,7 @@ public interface ObjectMetaDataManager {
     public static final String STATE_FIELD = "state";
 
     public static final String ACCOUNT_FIELD = "accountId";
+    public static final String DATA_FIELD = "data";
     public static final String KIND_FIELD = "kind";
     public static final String ID_FIELD = TypeUtils.ID_FIELD;
     public static final String PUBLIC_FIELD = "isPublic";

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +128,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         result.setResourceType(record.getResourceType());
         result.setResourceId(record.getResourceId());
         result.setProcessName(record.getProcessName());
-        result.setData(record.getData());
+        result.setData(new HashMap<String, Object>(record.getData()));
 
         return result;
     }

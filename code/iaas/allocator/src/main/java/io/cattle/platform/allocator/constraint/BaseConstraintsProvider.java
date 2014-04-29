@@ -12,7 +12,7 @@ import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.List;
@@ -75,7 +75,7 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
 
         Instance instance = attempt.getInstance();
         if ( instance != null ) {
-            Long requestedHostId = DataUtils.getField(instance.getData(), InstanceConstants.FIELD_REQUESTED_HOST_ID, Long.class);
+            Long requestedHostId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_REQUESTED_HOST_ID);
             if ( requestedHostId != null ) {
                 hostSet.addHost(requestedHostId);
             }
