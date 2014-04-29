@@ -24,6 +24,7 @@ public class Configuration extends DefaultConfiguration {
     DataSource dataSource;
     ConnectionProvider connectionProvider;
     List<ExecuteListener> listeners;
+    Settings settings = new Settings();
 
     @PostConstruct
     public void init() {
@@ -46,7 +47,6 @@ public class Configuration extends DefaultConfiguration {
             set(connectionProvider);
         }
 
-        Settings settings = new Settings();
         settings.setRenderSchema(false);
 
         String renderNameStyle = ArchaiusUtil.getString("db." + name + "." + database + ".render.name.style").get();
@@ -94,4 +94,13 @@ public class Configuration extends DefaultConfiguration {
     public void setListeners(List<ExecuteListener> listeners) {
         this.listeners = listeners;
     }
+
+    public Settings getSettings() {
+        return settings;
+    }
+
+    public void setSettings(Settings settings) {
+        this.settings = settings;
+    }
+
 }
