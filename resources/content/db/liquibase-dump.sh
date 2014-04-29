@@ -27,3 +27,5 @@ sed -i -E \
     -e 's/BIT\(1\)/BIT/g' \
     -e 's/INT\(10\)/INT/g' \
     dump.xml
+
+cat dump.xml
