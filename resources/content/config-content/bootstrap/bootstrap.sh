@@ -62,7 +62,7 @@ download_agent()
 
     TEMP_DOWNLOAD=$(mktemp -d bootstrap.XXXXXXX)
     info Downloading agent "${CATTLE_URL}${CONTENT_URL}"
-    curl -s -u $CATTLE_ACCESS_KEY:$CATTLE_SECRET_KEY ${CATTLE_URL}${CONTENT_URL} > $TEMP_DOWNLOAD/content
+    curl --retry 5 -s -u $CATTLE_ACCESS_KEY:$CATTLE_SECRET_KEY ${CATTLE_CONFIG_URL}${CONTENT_URL} > $TEMP_DOWNLOAD/content
     tar xzf $TEMP_DOWNLOAD/content -C $TEMP_DOWNLOAD || ( cat $TEMP_DOWNLOAD/content 1>&2 && exit 1 )
     bash $TEMP_DOWNLOAD/*/config.sh --no-start $INSTALL_ITEMS
 }

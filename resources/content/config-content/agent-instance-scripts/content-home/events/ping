@@ -1,0 +1,13 @@
+#!/bin/bash
+jq -c '
+    {
+        "id" : "'$(uuidgen)'",
+        "time" : '$(($(date '+%s') * 1000))',
+        "name" : .replyTo,
+        "data" : {},
+        "previousNames" : [ .name ],
+        "previousIds" : [ .id ],
+        "resourceId" : .resourceId,
+        "resourcetype" : .resourceType
+    }
+'
