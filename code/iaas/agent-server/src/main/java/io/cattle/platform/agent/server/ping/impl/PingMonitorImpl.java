@@ -13,6 +13,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstanceException;
+import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -106,7 +107,8 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     protected void doPing(final Agent agent, Ping ping) {
         RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
 
-        addCallback(remoteAgent.call(ping, Ping.class, PING_TIMEOUT.get() * 1000), new FutureCallback<Ping>() {
+        EventCallOptions options = new EventCallOptions(0, PING_TIMEOUT.get() * 1000);
+        addCallback(remoteAgent.call(ping, Ping.class, options), new FutureCallback<Ping>() {
             @Override
             public void onSuccess(Ping pong) {
                 pingSuccess(agent, pong);
