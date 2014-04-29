@@ -103,9 +103,9 @@
                 <module>code/implementation/hazelcast/eventing</module>
                 <module>code/implementation/hazelcast/lock</module>
                 <module>code/implementation/host-only-network</module>
-                <module>code/implementation/ipsec-host-nat</module>
                 <module>code/implementation/libvirt/allocator</module>
                 <module>code/implementation/libvirt/default-images</module>
+                <module>code/implementation/sample-setup</module>
                 <module>code/implementation/settings-api</module>
                 <module>code/implementation/simulator/agent-connection</module>
                 <module>code/implementation/simulator/allocator</module>
