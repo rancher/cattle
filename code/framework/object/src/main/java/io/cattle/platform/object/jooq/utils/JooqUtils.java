@@ -136,6 +136,8 @@ public class JooqUtils {
                 newCondition = toCondition(field, (Condition)value);
             } else if ( value instanceof List ) {
                 newCondition = listToCondition(field, (List<?>)value);
+            } else if ( value == null ) {
+                newCondition = field.isNull();
             } else {
                 newCondition = field.eq(value);
             }
