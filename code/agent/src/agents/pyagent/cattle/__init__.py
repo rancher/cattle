@@ -21,6 +21,19 @@ def default_value(name, default):
     return os.environ.get('CATTLE_%s' % name, default)
 
 
+_SCHEMAS = '/schemas'
+
+
+def _strip_schemas(url):
+    if url is None:
+        return None
+
+    if url.endswith(_SCHEMAS):
+        return url[0:len(url)-len(_SCHEMAS)]
+
+    return url
+
+
 class Config:
     def __init__(self):
         pass
@@ -99,7 +112,7 @@ class Config:
 
     @staticmethod
     def api_url(default=None):
-        return default_value('URL', default)
+        return _strip_schemas(default_value('URL', default))
 
     @staticmethod
     def api_auth():
@@ -107,10 +120,14 @@ class Config:
 
     @staticmethod
     def storage_url(default=None):
+        if default is None:
+            default = Config.api_url()
         return default_value('STORAGE_URL', default)
 
     @staticmethod
     def config_url(default=None):
+        if default is None:
+            default = Config.api_url()
         return default_value('CONFIG_URL', default)
 
     @staticmethod
@@ -177,3 +194,15 @@ class Config:
             'kind': 'physicalHost',
             'name': Config.hostname()
         }
+
+    @staticmethod
+    def api_proxy_listen_port():
+        return default_value('API_PROXY_LISTEN_PORT', 9342)
+
+    @staticmethod
+    def api_proxy_listen_host():
+        return default_value('API_PROXY_LISTEN_HOST', '0.0.0.0')
+
+    @staticmethod
+    def agent_instance_cattle_home():
+        return default_value('AGENT_INSTANCE_CATTLE_HOME', '/var/lib/cattle')

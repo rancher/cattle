@@ -27,15 +27,22 @@ class BaseHandler(object):
 
     def execute(self, req):
         method = self._get_method_for(req)
-        return method(req=req, **req.data.__dict__)
+        if method is None:
+            return None
+        else:
+            return method(req=req, **req.data.__dict__)
 
     def _get_method_for(self, req):
-        prefix = self._get_handler_category(req) + "."
+        prefix = ''
+        category = self._get_handler_category(req)
+        if len(category) > 0:
+            prefix = category + '.'
+
         if len(req.name) <= len(prefix):
             return None
 
-        name = req.name[len(prefix):].replace(".", "_")
-        idx = name.find(";")
+        name = req.name[len(prefix):].replace('.', '_')
+        idx = name.find(';')
         if idx != -1:
             name = name[0:idx]
 
@@ -90,7 +97,7 @@ class BaseHandler(object):
         raise Exception("Not implemented")
 
     def _get_handler_category(self, req):
-        raise Exception("Not implemented")
+        return ''
 
 
 class KindBasedMixin(object):

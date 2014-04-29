@@ -3,10 +3,11 @@ import requests.exceptions
 import time
 
 from . import docker_client, pull_image
-from . import DockerConfig
+from . import DockerConfig, DOCKER_COMPUTE_LISTENER
 from cattle import Config
 from cattle.compute import BaseComputeDriver
 from cattle.agent.handler import KindBasedMixin
+from cattle.type_manager import get_type_list
 from cattle import utils
 
 log = logging.getLogger('docker')
@@ -86,6 +87,9 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         }
 
         utils.ping_add_resources(pong, physical_host, compute, pool)
+
+    def inspect(self, container):
+        return docker_client().inspect_container(container)
 
     def get_container_by_name(self, name):
         name = '/{0}'.format(name)
@@ -168,11 +172,18 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         if container is None:
             log.info('Creating docker container [%s] from config %s', name,
                      config)
+
+            for listener in get_type_list(DOCKER_COMPUTE_LISTENER):
+                listener.before_start(instance, host, config)
+
             container = c.create_container(image_tag, **config)
 
         log.info('Starting docker container [%s] docker id [%s]', name,
                  container['Id'])
         c.start(container['Id'], publish_all_ports=True)
+
+        for listener in get_type_list(DOCKER_COMPUTE_LISTENER):
+            listener.after_start(instance, host, container['Id'])
 
     def _get_instance_host_map_data(self, obj):
         existing = self.get_container_by_name(obj.instance.uuid)

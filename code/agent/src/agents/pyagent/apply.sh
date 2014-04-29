@@ -27,6 +27,9 @@ stage()
 {
     cp -rf apply.sh cattle dist main.py $TEMP
 
+    find $TEMP -name "*.sh" -exec chmod +x {} \;
+    find $TEMP \( -name nsenter -o -name socat \) -exec chmod +x {} \;
+
     if [ -e $DEST ]; then
         mv $DEST ${OLD}
     fi

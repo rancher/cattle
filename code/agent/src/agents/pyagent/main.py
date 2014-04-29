@@ -14,20 +14,22 @@ if __name__ == '__main__':
 from cattle import plugins
 from cattle import Config
 from cattle.agent.event import EventClient
-from cattle.type_manager import types
+from cattle.type_manager import types, get_type_list, LIFECYCLE
 
 
 log = logging.getLogger("agent")
 
 
 def _setup_logger():
-    format = '%(asctime)s %(levelname)s %(name)s [%(filename)s:%(lineno)s] %(message)s '
+    format = '%(asctime)s %(levelname)s %(name)s [%(filename)s:%(lineno)s]' \
+             ' %(message)s '
     level = logging.INFO
     if Config.debug():
         level = logging.DEBUG
     logging.root.setLevel(level)
 
-    file_handler = RotatingFileHandler(Config.log(), maxBytes=2*1024*1024, backupCount=10)
+    file_handler = RotatingFileHandler(Config.log(), maxBytes=2*1024*1024,
+                                       backupCount=10)
     file_handler.setFormatter(logging.Formatter(format))
 
     std_err_handler = logging.StreamHandler(sys.stderr)
@@ -80,11 +82,15 @@ def main():
 
     log.info('API URL %s', Config.api_url())
 
-    client = EventClient(Config.api_url(), auth=Config.api_auth(), workers=args.workers,
-                         agent_id=args.agent_id)
+    client = EventClient(Config.api_url(), auth=Config.api_auth(),
+                         workers=args.workers, agent_id=args.agent_id)
     events = _gather_events()
 
     log.info("Subscribing to %s", events)
+
+    for startup in get_type_list(LIFECYCLE):
+        startup.on_startup()
+
     client.run(events)
     sys.exit(0)
 

@@ -5,13 +5,14 @@ PRIORITY_SPECIFIC = 1000
 PRIORITY_DEFAULT_OVERRIDE = 1500
 PRIORITY_DEFAULT = 2000
 
-PUBLISHER = "publisher"
-MARSHALLER = "marshaller"
-ROUTER = "router"
-STORAGE_DRIVER = "storage_driver"
-COMPUTE_DRIVER = "compute_driver"
-PRE_REQUEST_HANDLER = "pre_request_handler"
-POST_REQUEST_HANDLER = "post_request_handler"
+PUBLISHER = 'publisher'
+MARSHALLER = 'marshaller'
+ROUTER = 'router'
+STORAGE_DRIVER = 'storage_driver'
+COMPUTE_DRIVER = 'compute_driver'
+PRE_REQUEST_HANDLER = 'pre_request_handler'
+POST_REQUEST_HANDLER = 'post_request_handler'
+LIFECYCLE = 'lifecycle'
 
 
 def types():

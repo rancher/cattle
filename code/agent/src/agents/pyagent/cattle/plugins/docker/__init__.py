@@ -6,6 +6,8 @@ log = logging.getLogger('docker')
 
 _ENABLED = True
 
+DOCKER_COMPUTE_LISTENER = 'docker-compute-listener'
+
 
 class DockerConfig:
     def __init__(self):
@@ -58,6 +60,7 @@ def get_compute():
 
 from .storage import DockerPool
 from .compute import DockerCompute
+from .delegate import DockerDelegate
 from cattle import type_manager
 
 try:
@@ -76,5 +79,9 @@ except Exception, e:
 if _ENABLED and DockerConfig.docker_enabled():
     _DOCKER_POOL = DockerPool()
     _DOCKER_COMPUTE = DockerCompute()
+    _DOCKER_DELEGATE = DockerDelegate()
     type_manager.register_type(type_manager.STORAGE_DRIVER, _DOCKER_POOL)
     type_manager.register_type(type_manager.COMPUTE_DRIVER, _DOCKER_COMPUTE)
+    type_manager.register_type(DOCKER_COMPUTE_LISTENER, _DOCKER_DELEGATE)
+    type_manager.register_type(type_manager.PRE_REQUEST_HANDLER,
+                               _DOCKER_DELEGATE)

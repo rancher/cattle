@@ -13,7 +13,7 @@ from cattle import utils
 from cattle.agent import Agent
 from cattle.lock import FailedToLock
 from cattle.plugins.core.publisher import Publisher
-from cattle.concurrency import Queue, Full, Empty, Worker, run
+from cattle.concurrency import Queue, Full, Empty, run, spawn
 
 
 PS_UTIL = False
@@ -113,14 +113,10 @@ class EventClient:
     def _start_children(self):
         pid = os.getpid()
         for i in range(self._workers):
-            p = Worker(target=_worker, args=(self._queue, pid))
-            p.daemon = True
-            p.start()
+            p = spawn(target=_worker, args=(self._queue, pid))
             self._children.append(p)
 
-        p = Worker(target=_worker, args=(self._ping_queue, pid))
-        p.daemon = True
-        p.start()
+        p = spawn(target=_worker, args=(self._ping_queue, pid))
         self._children.append(p)
 
     def run(self, events):

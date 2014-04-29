@@ -11,4 +11,5 @@ class Marshaller:
         return JsonObject(obj)
 
     def to_string(self, obj):
-        return json.dumps(dict(obj))
+        obj = JsonObject.unwrap(obj)
+        return json.dumps(obj)

@@ -2,6 +2,7 @@ from tempfile import NamedTemporaryFile
 from os import path
 from urllib import urlretrieve
 from hashlib import md5, sha1, sha256, sha512
+from urlparse import urlparse
 
 import binascii
 import bz2
@@ -119,14 +120,17 @@ def events_from_methods(obj):
     return ret
 
 
-def reply(event):
+def reply(event, data=None):
+    if data is None:
+        data = JsonObject({})
+
     if event is None or event.replyTo is None:
         return None
     else:
         return JsonObject({
             'id': str(uuid.uuid4()),
             'name': event.replyTo,
-            'data': JsonObject({}),
+            'data': data,
             'resourceType': event.resourceType,
             'resourceId': event.resourceId,
             'previousIds': [event.id],
@@ -290,13 +294,15 @@ def _check_output(*popenargs, **kwargs):
     if 'stdout' in kwargs:
         raise ValueError('stdout argument not allowed, it will be overridden.')
     process = Popen(stdout=PIPE, *popenargs, **kwargs)
-    output, unused_err = process.communicate()
+    output, _ = process.communicate()
     retcode = process.poll()
     if retcode:
         cmd = kwargs.get("args")
         if cmd is None:
             cmd = popenargs[0]
-        raise CalledProcessError(retcode, cmd, output=output)
+        e = CalledProcessError(retcode, cmd)
+        e.output = output
+        raise e
     return output
 
 
@@ -309,3 +315,20 @@ def is_uuid(str):
         return False
     return re.match(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}'
                     r'-[0-9a-f]{4}-[0-9a-f]{12}', str) is not None
+
+
+def get_url_port(url):
+    parsed = urlparse(url)
+
+    port = parsed.port
+
+    if port is None:
+        if parsed.scheme == 'http':
+            port = 80
+        elif parsed.scheme == 'https':
+            port = 443
+
+    if port is None:
+        raise Exception('Failed to find port for {0}'.format(url))
+
+    return port

@@ -3,7 +3,7 @@ from cattle import Config
 
 log = logging.getLogger('concurrency')
 
-__all__ = ['Queue', 'Empty', 'Full', 'Worker', 'run']
+__all__ = ['Queue', 'Empty', 'Full', 'Worker', 'run', 'spawn']
 
 if Config.is_eventlet():
     import eventlet
@@ -37,6 +37,13 @@ else:
     raise Exception('Could not determine concurrency style set '
                     'CATTLE_AGENT_MULTI to eventlet, thread, or '
                     'proc')
+
+
+def spawn(**kw):
+    p = Worker(**kw)
+    p.daemon = True
+    p.start()
+    return p
 
 
 def run(method, *args):

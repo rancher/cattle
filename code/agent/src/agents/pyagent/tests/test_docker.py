@@ -96,6 +96,76 @@ def test_instance_activate(agent, responses):
 
 
 @if_docker
+def test_instance_activate_agent_instance_localhost(agent, responses):
+    CONFIG_OVERRIDE['CONFIG_URL'] = 'https://localhost:1234/a/path'
+    _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
+
+    def post(req, resp):
+
+        docker_container = resp['data']['instance']['+data']['dockerContainer']
+        fields = resp['data']['instance']['+data']['+fields']
+        id = docker_container['Id']
+
+        del docker_container['Created']
+        del docker_container['Id']
+        del docker_container['Status']
+        del docker_container['Ports'][0]['PublicPort']
+        del docker_container['Ports'][1]['PublicPort']
+        del fields['dockerIp']
+        assert fields['dockerPorts']['8080/tcp'] is not None
+        assert fields['dockerPorts']['12201/udp'] is not None
+        fields['dockerPorts']['8080/tcp'] = '1234'
+        fields['dockerPorts']['12201/udp'] = '5678'
+
+        inspect = Client().inspect_container(id)
+
+        port = Config.api_proxy_listen_port()
+        assert 'CATTLE_CONFIG_URL_SCHEME=https' in inspect['Config']['Env']
+        assert 'CATTLE_CONFIG_URL_PATH=/a/path' in inspect['Config']['Env']
+        assert 'CATTLE_CONFIG_URL_PORT={0}'.format(port) in \
+            inspect['Config']['Env']
+
+    event_test(agent, 'docker/instance_activate_agent_instance',
+               post_func=post)
+
+
+@if_docker
+def test_instance_activate_agent_instance(agent, responses):
+    CONFIG_OVERRIDE['CONFIG_URL'] = 'https://something.fake:1234/a/path'
+    _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
+
+    def post(req, resp):
+
+        docker_container = resp['data']['instance']['+data']['dockerContainer']
+        fields = resp['data']['instance']['+data']['+fields']
+        id = docker_container['Id']
+
+        del docker_container['Created']
+        del docker_container['Id']
+        del docker_container['Status']
+        del docker_container['Ports'][0]['PublicPort']
+        del docker_container['Ports'][1]['PublicPort']
+        del fields['dockerIp']
+        assert fields['dockerPorts']['8080/tcp'] is not None
+        assert fields['dockerPorts']['12201/udp'] is not None
+        fields['dockerPorts']['8080/tcp'] = '1234'
+        fields['dockerPorts']['12201/udp'] = '5678'
+
+        inspect = Client().inspect_container(id)
+
+        port = Config.api_proxy_listen_port()
+        assert 'CATTLE_CONFIG_URL={0}'.format(Config.config_url()) in \
+               inspect['Config']['Env']
+        assert 'CATTLE_CONFIG_URL_SCHEME=https' not in inspect['Config']['Env']
+        assert 'CATTLE_CONFIG_URL_PATH=/a/path' not in inspect['Config']['Env']
+        assert 'CATTLE_CONFIG_URL_PORT={0}'.format(port) not in \
+               inspect['Config']['Env']
+
+    event_test(agent, 'docker/instance_activate_agent_instance',
+               post_func=post)
+
+
+@if_docker
 def test_instance_activate_command(agent, responses):
     _delete_container('/c-c861f990-4472-4fa1-960f-65171b544c28')
 
