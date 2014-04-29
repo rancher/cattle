@@ -19,6 +19,8 @@ import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.storage.service.StorageService;
 
 import java.io.IOException;
@@ -37,6 +39,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     GenericResourceDao resourceDao;
     StorageService storageService;
     AgentLocator agentLocator;
+    ResourceMonitor resourceMonitor;
 
     @Override
     public AgentInstanceBuilder newBuilder() {
@@ -83,6 +86,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(INSTANCE.KIND, builder.getInstanceKind());
 
         properties.put(InstanceConstants.FIELD_VNET_IDS, getVnetIds(agent, builder));
+        properties.put(InstanceConstants.FIELD_PRIVILEGED, builder.isPrivileged());
 
         addAdditionalProperties(properties, agent, builder);
 
@@ -116,6 +120,13 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             agent = createAgent(uri, builder);
         }
 
+        agent = resourceMonitor.waitFor(agent, new ResourcePredicate<Agent>() {
+            @Override
+            public boolean evaluate(Agent obj) {
+                return factoryDao.getActivateCredentials(obj).size() > 0;
+            }
+        });
+
         return agent;
     }
 
@@ -146,11 +157,16 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 Agent agent = factoryDao.getAgentByUri(uri);
 
                 if ( agent == null ) {
-                    agent = resourceDao.createAndSchedule(Agent.class,
-                            AGENT.URI, uri,
-                            AGENT.MANAGED_CONFIG, builder.isManagedConfig(),
-                            AGENT.AGENT_GROUP_ID, builder.getAgentGroupId(),
-                            AGENT.ZONE_ID, builder.getZoneId());
+                    agent = DeferredUtils.nest(new Callable<Agent>() {
+                        @Override
+                        public Agent call() throws Exception {
+                            return resourceDao.createAndSchedule(Agent.class,
+                                    AGENT.URI, uri,
+                                    AGENT.MANAGED_CONFIG, builder.isManagedConfig(),
+                                    AGENT.AGENT_GROUP_ID, builder.getAgentGroupId(),
+                                    AGENT.ZONE_ID, builder.getZoneId());
+                        }
+                    });
                 }
 
                 return agent;
@@ -235,6 +251,15 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     @Inject
     public void setAccountDao(AccountDao accountDao) {
         this.accountDao = accountDao;
+    }
+
+    public ResourceMonitor getResourceMonitor() {
+        return resourceMonitor;
+    }
+
+    @Inject
+    public void setResourceMonitor(ResourceMonitor resourceMonitor) {
+        this.resourceMonitor = resourceMonitor;
     }
 
 }

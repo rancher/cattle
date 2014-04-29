@@ -62,14 +62,14 @@ public class AgentInstanceInstanceStart extends AbstractObjectProcessLogic imple
                 request.addItem(item)
                     .withApply(true)
                     .withIncrement(false)
-                    .withCheckInSync(true);
+                    .withCheckInSyncOnly(true);
             }
 
             for ( String item : INCREMENT.get() ) {
                 request.addItem(item)
                     .withApply(true)
                     .withIncrement(true)
-                    .withCheckInSync(false);
+                    .withCheckInSyncOnly(false);
             }
         }
 

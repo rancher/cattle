@@ -1,15 +1,18 @@
 package io.cattle.platform.agent.instance.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.core.model.NetworkServiceProviderInstanceMap;
@@ -109,6 +112,19 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                 .where(INSTANCE.REMOVED.isNull()
                         .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId())))
                 .fetchInto(AgentRecord.class);
+    }
+
+    @Override
+    public List<? extends Credential> getActivateCredentials(Agent agent) {
+        if ( agent.getAccountId() == null ) {
+            return Collections.emptyList();
+        }
+
+        return create()
+                .selectFrom(CREDENTIAL)
+                .where(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)
+                        .and(CREDENTIAL.ACCOUNT_ID.eq(agent.getAccountId())))
+                .fetch();
     }
 
     public GenericResourceDao getResourceDao() {

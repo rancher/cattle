@@ -25,6 +25,8 @@ public interface AgentInstanceBuilder {
 
     AgentInstanceBuilder withManagedConfig(boolean managedConfig);
 
+    AgentInstanceBuilder withPrivileged(boolean privileged);
+
     public Instance build();
 
 }

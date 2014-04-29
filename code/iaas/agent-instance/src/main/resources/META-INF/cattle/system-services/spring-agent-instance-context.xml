@@ -17,7 +17,11 @@
 
     <bean id="AgentInstanceTypes" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeNames">
-            <value>agentInstanceProvider,parent=networkServiceProvider</value>
+            <list>
+                <value>agentInstanceProvider,parent=networkServiceProvider</value>
+                <value>dnsService,parent=networkService</value>
+                <value>dhcpService,parent=networkService</value>
+            </list>
         </property>
     </bean>
 

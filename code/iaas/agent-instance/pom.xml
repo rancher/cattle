@@ -11,6 +11,11 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-resource-monitor</artifactId>
+            <version>${cattle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-config-item-common</artifactId>
             <version>${cattle.version}</version>
         </dependency>

@@ -3,23 +3,28 @@ package io.cattle.platform.agent.instance.service.impl;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.service.AgentInstanceManager;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Vnet;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
 public class AgentInstanceManagerImpl implements AgentInstanceManager {
 
     ObjectManager objectManager;
+    ObjectProcessManager processManager;
     AgentInstanceFactory agentInstanceFactory;
     AgentInstanceDao agentInstanceDao;
     GenericResourceDao genericResourceDao;
@@ -47,8 +52,18 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
                         .newBuilder()
                         .withNetworkServiceProvider(provider)
                         .withInstance(instance)
+                        .withPrivileged(true)
                         .forVnetId(nic.getVnetId())
                         .build();
+            } else if ( InstanceConstants.STATE_STOPPED.equals(agentInstance.getState()) ) {
+                final Instance finalInstance = agentInstance;
+                DeferredUtils.nest(new Callable<Object>() {
+                    @Override
+                    public Object call() throws Exception {
+                        processManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, finalInstance, null);
+                        return null;
+                    }
+                });
             }
 
             if ( agentInstance != null ) {
@@ -99,6 +114,15 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
     @Inject
     public void setGenericResourceDao(GenericResourceDao genericResourceDao) {
         this.genericResourceDao = genericResourceDao;
+    }
+
+    public ObjectProcessManager getProcessManager() {
+        return processManager;
+    }
+
+    @Inject
+    public void setProcessManager(ObjectProcessManager processManager) {
+        this.processManager = processManager;
     }
 
 }

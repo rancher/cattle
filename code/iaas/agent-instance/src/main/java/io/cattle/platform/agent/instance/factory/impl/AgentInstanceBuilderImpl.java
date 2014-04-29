@@ -23,6 +23,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     String imageUuid;
     boolean accountOwned = false;
     boolean managedConfig = false;
+    boolean privileged = false;
     AgentInstanceFactoryImpl factory;
 
     public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory) {
@@ -118,6 +119,12 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         return this;
     }
 
+    @Override
+    public AgentInstanceBuilder withPrivileged(boolean privileged) {
+        this.privileged = privileged;
+        return this;
+    }
+
     public Long getAccountId() {
         return accountId;
     }
@@ -148,5 +155,13 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     public NetworkServiceProvider getNetworkServiceProvider() {
         return networkServiceProvider;
+    }
+
+    public boolean isPrivileged() {
+        return privileged;
+    }
+
+    public void setPrivileged(boolean privileged) {
+        this.privileged = privileged;
     }
 }

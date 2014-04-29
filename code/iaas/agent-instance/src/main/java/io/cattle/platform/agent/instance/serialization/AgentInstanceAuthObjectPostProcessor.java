@@ -9,7 +9,6 @@ import io.cattle.platform.object.serialization.ObjectTypeSerializerPostProcessor
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -42,12 +41,7 @@ public class AgentInstanceAuthObjectPostProcessor implements ObjectTypeSerialize
                 .withKey("agentInstanceAuth")
                 .set(auth);
 
-            Map<String,Object> fields = DataUtils.getFields(data);
-            if ( fields == null ) {
-                fields = new HashMap<String, Object>();
-                data.put(DataUtils.FIELDS, fields);
-            }
-
+            Map<String,Object> fields = DataUtils.getWritableFields(data);
             DataAccessor.fromMap(fields)
                 .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
                 .withKey("CATTLE_AGENT_INSTANCE_AUTH")
