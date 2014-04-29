@@ -1,6 +1,7 @@
 package io.cattle.platform.configitem.server.model.impl;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.configitem.context.ConfigItemContextFactory;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.ConfigItemFactory;
 import io.cattle.platform.configitem.server.resource.AbstractCachingResourceRoot;
@@ -37,6 +38,7 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
 
     ConfigItemStatusManager versionManager;
     List<ConfigItem> items = new ArrayList<ConfigItem>();
+    List<ConfigItemContextFactory> factories;
     TemplateFactory templateFactory;
     String root;
     String devRelativePath;
@@ -71,7 +73,7 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
                 processUrlRoot();
             } else {
                 log.info("Using filesytem for location [{}] at [{}]", name, devRoot);
-                processFileRoot(devRoot, false);
+                processFileRoot(devRoot);
             }
     }
 
@@ -134,11 +136,27 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
         }
 
         for ( Map.Entry<String, Map<String,URL>> entry : config.entrySet() ) {
+            String item = entry.getKey();
+
             URLBaseResourceRoot resourceRoot = new URLBaseResourceRoot(entry.getValue());
             resourceRoot.scan();
-            log.info("Adding item [{}] resources [{}]", entry.getKey(), entry.getValue().size());
-            items.add(new TemplatesBasedArchiveItem(entry.getKey(), versionManager, resourceRoot, templateFactory));
+            log.info("Adding item [{}] resources [{}]", item, entry.getValue().size());
+            items.add(new TemplatesBasedArchiveItem(item, versionManager, resourceRoot, templateFactory, getFactories(item)));
         }
+    }
+
+    protected List<ConfigItemContextFactory> getFactories(String item) {
+        List<ConfigItemContextFactory> result = new ArrayList<ConfigItemContextFactory>();
+
+        for ( ConfigItemContextFactory factory : factories ) {
+            for ( String check : factory.getItems() ) {
+                if ( item.equals(check) ) {
+                    result.add(factory);
+                }
+            }
+        }
+
+        return result;
     }
 
     protected String trimLeading(String text) {
@@ -149,7 +167,7 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
         }
     }
 
-    protected void processFileRoot(File root, boolean useCache) throws IOException {
+    protected void processFileRoot(File root) throws IOException {
         String[] children = root.list();
 
         if ( children == null )
@@ -158,9 +176,9 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
         for ( String child : children ) {
             File childFile = new File(root, child);
             if ( ! child.startsWith(".") && childFile.isDirectory() ) {
-                FileBasedResourceRoot itemResource = new FileBasedResourceRoot(childFile, useCache);
+                FileBasedResourceRoot itemResource = new FileBasedResourceRoot(childFile);
                 itemResource.scan();
-                items.add(new TemplatesBasedArchiveItem(child, versionManager, itemResource, templateFactory));
+                items.add(new TemplatesBasedArchiveItem(child, versionManager, itemResource, templateFactory, getFactories(child)));
             }
         }
     }
@@ -228,6 +246,15 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
 
     public void setIgnoreNotFound(boolean ignoreNotFound) {
         this.ignoreNotFound = ignoreNotFound;
+    }
+
+    public List<ConfigItemContextFactory> getFactories() {
+        return factories;
+    }
+
+    @Inject
+    public void setFactories(List<ConfigItemContextFactory> factories) {
+        this.factories = factories;
     }
 
 }

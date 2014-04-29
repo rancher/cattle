@@ -1,7 +1,9 @@
 package io.cattle.platform.configitem.version.dao.impl;
 
+import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemTable.*;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.DefaultItemVersion;
 import io.cattle.platform.configitem.model.ItemVersion;
@@ -11,12 +13,17 @@ import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItem;
 import io.cattle.platform.core.model.ConfigItemStatus;
+import io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -27,12 +34,14 @@ import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicIntProperty;
+
 public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigItemStatusDao {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigItemStatusDaoImpl.class);
+    private static final DynamicIntProperty BATCH_SIZE = ArchaiusUtil.getInt("item.sync.batch.size");
 
     ObjectManager objectManager;
-
 
     @Override
     public long incrementOrApply(Client client, String itemName) {
@@ -212,4 +221,41 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
         this.objectManager = objectManager;
     }
 
+    @Override
+    public Map<Long, List<String>> findOutOfSync(boolean migration) {
+        Map<Long,List<String>> result = new HashMap<Long, List<String>>();
+
+        for ( ConfigItemStatus status : (migration ? migrationItems() : outOfSyncItems()) ) {
+            CollectionUtils.addToMap(result, status.getAgentId(), status.getName(), ArrayList.class);
+        }
+
+        return result;
+    }
+
+    protected List<? extends ConfigItemStatus> outOfSyncItems() {
+        return create()
+                .select(CONFIG_ITEM_STATUS.fields())
+                .from(CONFIG_ITEM_STATUS)
+                .join(AGENT)
+                    .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID))
+                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION))
+                .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
+                .limit(BATCH_SIZE.get())
+                .fetchInto(ConfigItemStatusRecord.class);
+    }
+
+    protected List<? extends ConfigItemStatus> migrationItems() {
+        return create()
+                .select(CONFIG_ITEM_STATUS.fields())
+                .from(CONFIG_ITEM_STATUS)
+                .join(AGENT)
+                    .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID))
+                .join(CONFIG_ITEM)
+                    .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
+                .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
+                        .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION)))
+                .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
+                .limit(BATCH_SIZE.get())
+                .fetchInto(ConfigItemStatusRecord.class);
+    }
 }

@@ -25,4 +25,9 @@ public class URLBaseResourceRoot extends AbstractCachingResourceRoot {
         return resources;
     }
 
+    @Override
+    protected boolean isDynamic() {
+        return false;
+    }
+
 }

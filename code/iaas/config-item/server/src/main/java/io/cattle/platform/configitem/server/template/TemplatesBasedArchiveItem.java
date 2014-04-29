@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.server.template;
 
+import io.cattle.platform.configitem.context.ConfigItemContextFactory;
 import io.cattle.platform.configitem.server.model.impl.AbstractArchiveBasedConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.configitem.server.resource.Resource;
@@ -8,6 +9,7 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 public class TemplatesBasedArchiveItem extends AbstractArchiveBasedConfigItem {
 
@@ -16,16 +18,14 @@ public class TemplatesBasedArchiveItem extends AbstractArchiveBasedConfigItem {
     TemplateFactory templateFactory;
 
     public TemplatesBasedArchiveItem(String name, ConfigItemStatusManager versionManager, ResourceRoot resourceRoot,
-            TemplateFactory templateFactory) {
-        super(name, versionManager, resourceRoot);
+            TemplateFactory templateFactory, List<ConfigItemContextFactory> contextFactories) {
+        super(name, versionManager, resourceRoot, contextFactories);
         this.templateFactory = templateFactory;
     }
 
     @Override
     protected void writeContent(final ArchiveContext context) throws IOException {
         super.writeContent(context);
-
-        populateContext(context);
 
         for ( Resource resource : getResourceRoot().getResources() ) {
             Template template = null;
@@ -49,9 +49,6 @@ public class TemplatesBasedArchiveItem extends AbstractArchiveBasedConfigItem {
                 }
             });
         }
-    }
-
-    private void populateContext(ArchiveContext context) {
     }
 
 }

@@ -1,9 +1,12 @@
 package io.cattle.platform.configitem.server.model.impl;
 
+import java.io.IOException;
+
+import io.cattle.platform.configitem.server.model.RefreshableConfigItem;
 import io.cattle.platform.configitem.server.resource.ResourceRoot;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 
-public abstract class AbstractResourceRootConfigItem extends AbstractConfigItem {
+public abstract class AbstractResourceRootConfigItem extends AbstractConfigItem implements RefreshableConfigItem {
 
     ResourceRoot resourceRoot;
 
@@ -17,7 +20,13 @@ public abstract class AbstractResourceRootConfigItem extends AbstractConfigItem 
         return resourceRoot.getSourceRevision();
     }
 
+    @Override
+    public boolean refresh() throws IOException {
+        return resourceRoot.scan();
+    }
+
     public ResourceRoot getResourceRoot() {
         return resourceRoot;
     }
+
 }

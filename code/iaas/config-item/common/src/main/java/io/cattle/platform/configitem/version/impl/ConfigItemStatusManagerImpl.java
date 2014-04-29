@@ -2,6 +2,7 @@ package io.cattle.platform.configitem.version.impl;
 
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.exception.ConfigTimeoutException;
@@ -15,6 +16,7 @@ import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItemStatus;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.iaas.config.ScopedConfig;
 import io.cattle.platform.object.ObjectManager;
@@ -33,8 +35,15 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicLongProperty;
 
 public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
+
+    private static final DynamicBooleanProperty BLOCK = ArchaiusUtil.getBoolean("item.migration.block.on.failure");
+    private static final DynamicIntProperty RETRY = ArchaiusUtil.getInt("item.wait.for.event.tries");
+    private static final DynamicLongProperty TIMEOUT = ArchaiusUtil.getLong("item.wait.for.event.timeout.millis");
 
     private static final Logger log = LoggerFactory.getLogger(ConfigItemStatusManagerImpl.class);
 
@@ -55,6 +64,10 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
     @Override
     public void updateConfig(ConfigUpdateRequest request) {
+        if ( request.getClient() == null ) {
+            throw new IllegalArgumentException("Client is null on request [" + request + "]");
+        }
+
         Client client = new DefaultClient(Agent.class, request.getAgentId());
         Map<String,ConfigItemStatus> statuses = getStatus(request);
         List<ConfigUpdateItem> toTrigger = new ArrayList<ConfigUpdateItem>();
@@ -126,10 +139,14 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         return event;
     }
 
+    protected Event getEvent(ConfigUpdateRequest request) {
+        List<ConfigUpdateItem> toTrigger = getNeedsUpdating(request);
+        return getEvent(request, toTrigger);
+    }
+
     @Override
     public ListenableFuture<?> whenReady(final ConfigUpdateRequest request) {
-        List<ConfigUpdateItem> toTrigger = getNeedsUpdating(request);
-        Event event = getEvent(request, toTrigger);
+        Event event = getEvent(request);
 
         if ( event == null ) {
             return AsyncUtils.done();
@@ -137,7 +154,8 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
         RemoteAgent agent = agentLocator.lookupAgent(request.getAgentId());
 
-        return Futures.transform(agent.call(event), new Function<Object, Object>() {
+        EventCallOptions options = new EventCallOptions(RETRY.get(), TIMEOUT.get());
+        return Futures.transform(agent.call(event, options), new Function<Object, Object>() {
             @Override
             public Object apply(Object input) {
                 List<ConfigUpdateItem> toTrigger = getNeedsUpdating(request);
@@ -186,6 +204,35 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     @Override
     public void waitFor(ConfigUpdateRequest request) {
         AsyncUtils.get(whenReady(request));
+    }
+
+    @Override
+    public void sync(boolean migration) {
+        Map<Long,List<String>> items = configItemStatusDao.findOutOfSync(migration);
+
+        boolean first = true;
+        for ( Map.Entry<Long, List<String>> entry : items.entrySet() ) {
+            Long agentId = entry.getKey();
+
+            ConfigUpdateRequest request = new ConfigUpdateRequest(agentId);
+            for ( String item : entry.getValue() ) {
+                request.addItem(item)
+                    .withApply(false)
+                    .withIncrement(false)
+                    .withCheckInSync(true);
+            }
+
+            Event event = getEvent(request);
+            RemoteAgent agent = agentLocator.lookupAgent(agentId);
+
+            if ( first && migration && BLOCK.get() ) {
+                waitFor(request);
+            } else {
+                agent.publish(event);
+            }
+
+            first = false;
+        }
     }
 
     @Override

@@ -2,6 +2,7 @@ package io.cattle.platform.process.agent;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
+import io.cattle.platform.configitem.request.util.ConfigUpdateRequestUtils;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
@@ -12,7 +13,6 @@ import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.util.DataAccessor;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -40,12 +40,7 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
             return null;
         }
 
-        DataAccessor data = DataAccessor
-                .fromMap(state.getData())
-                .withScope(ConfigUpdateRequest.class)
-                .withKey(REQUEST_KEY);
-
-        ConfigUpdateRequest request = data.as(jsonMapper, ConfigUpdateRequest.class);
+        ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, this);
 
         switch (state.getPhase()) {
         case PRE_LISTENERS:
@@ -57,7 +52,7 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
         default:
         }
 
-        data.set(request);
+        ConfigUpdateRequestUtils.setRequest(request, state, this);
 
         return null;
     }

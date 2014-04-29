@@ -6,6 +6,7 @@ import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.core.model.ConfigItemStatus;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ConfigItemStatusDao {
 
@@ -24,5 +25,7 @@ public interface ConfigItemStatusDao {
     List<? extends ConfigItemStatus> listItems(ConfigUpdateRequest request);
 
     ItemVersion getRequestedItemVersion(Client client, String itemName);
+
+    Map<Long,List<String>> findOutOfSync(boolean migration);
 
 }

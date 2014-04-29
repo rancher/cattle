@@ -20,6 +20,7 @@
     </bean>
 
     <extension:discover class="io.cattle.platform.configitem.server.model.ConfigItemFactory" />
+    <extension:discover class="io.cattle.platform.configitem.context.ConfigItemContextFactory" />
 
     <bean class="io.cattle.platform.configitem.server.model.impl.GenericConfigItemFactory" >
         <property name="root" value="config-content" />
@@ -30,6 +31,7 @@
                 <property name="locations" value="classpath*:/config-content/**/*" />
             </bean>
         </property>
+        <property name="factories" value="#{extensionManager.list('config.item.context.factory')}" />
     </bean>
 
     <bean class="io.cattle.platform.configitem.server.template.impl.DefaultTemplateLoader" />
@@ -44,5 +46,11 @@
         <property name="localizedLookup" value="false" />
         <property name="numberFormat" value="computer" />
     </bean>
+
+    <bean class="io.cattle.platform.configitem.server.task.ItemSyncTask" />
+    <bean class="io.cattle.platform.configitem.server.task.ItemMigrationTask" />
+    <bean class="io.cattle.platform.configitem.server.task.ItemSourceVersionSyncTask" />
+
+    <context:component-scan base-package="io.cattle.platform.configitem.context.impl" />
 
 </beans>

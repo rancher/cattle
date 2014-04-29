@@ -16,17 +16,14 @@ public class FileBasedResourceRoot extends AbstractCachingResourceRoot implement
     File base;
     boolean useCache;
 
-    public FileBasedResourceRoot(File base, boolean useCache) {
+    public FileBasedResourceRoot(File base) {
         super();
         this.base = base;
-        this.useCache = useCache;
     }
 
     @Override
     public synchronized Collection<Resource> getResources() throws IOException {
-        if ( ! useCache ) {
-            scan();
-        }
+        scan();
         return super.getResources();
     }
 

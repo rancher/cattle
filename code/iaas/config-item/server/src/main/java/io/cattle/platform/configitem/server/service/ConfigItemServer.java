@@ -8,4 +8,6 @@ public interface ConfigItemServer {
 
     void handleRequest(Request req) throws IOException;
 
+    void syncSourceVersion();
+
 }

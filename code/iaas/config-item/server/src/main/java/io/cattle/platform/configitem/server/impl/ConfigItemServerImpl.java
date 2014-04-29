@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.server.impl;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.registry.ConfigItemRegistry;
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.RefreshableConfigItem;
 import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.service.ConfigItemServer;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
@@ -88,18 +89,37 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
 
     @Override
     public void start() {
-        syncSourceVersion();
+        syncSourceVersion(true);
     }
 
     @Override
     public void stop() {
     }
 
-    protected void syncSourceVersion() {
+    @Override
+    public void syncSourceVersion() {
+        syncSourceVersion(false);
+    }
+
+    protected void syncSourceVersion(final boolean initial) {
         lockManager.lock(new SyncSourceVersionLock(), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
                 for ( ConfigItem item : itemRegistry.getConfigItems() ) {
+                    if ( ! initial ) {
+                        if ( item instanceof RefreshableConfigItem ) {
+                            try {
+                                if ( ! ((RefreshableConfigItem)item).refresh() ) {
+                                    continue;
+                                }
+                            } catch (IOException e) {
+                                log.error("Failed to refresh item [{}]", item.getName(), e);
+                                continue;
+                            }
+                        } else {
+                            continue;
+                        }
+                    }
                     versionManager.setItemSourceVersion(item.getName(), item.getSourceRevision());
                 }
             }

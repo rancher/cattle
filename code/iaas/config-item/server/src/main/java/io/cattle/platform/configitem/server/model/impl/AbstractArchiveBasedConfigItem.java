@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.server.model.impl;
 
+import io.cattle.platform.configitem.context.ConfigItemContextFactory;
 import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.resource.ResourceRoot;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
@@ -8,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -16,8 +18,13 @@ import org.apache.commons.io.IOUtils;
 
 public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRootConfigItem {
 
-    public AbstractArchiveBasedConfigItem(String name, ConfigItemStatusManager versionManager, ResourceRoot resourceRoot) {
+    List<ConfigItemContextFactory> contextFactories;
+
+    public AbstractArchiveBasedConfigItem(String name, ConfigItemStatusManager versionManager, ResourceRoot resourceRoot,
+            List<ConfigItemContextFactory> contextFactories) {
         super(name, versionManager, resourceRoot);
+
+        this.contextFactories = contextFactories;
     }
 
     @Override
@@ -32,7 +39,13 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
             taos = new TarArchiveOutputStream(gzos);
             taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 
-            writeContent(new ArchiveContext(req, taos, getVersion(req)));
+            ArchiveContext context = new ArchiveContext(req, taos, getVersion(req));
+
+            for ( ConfigItemContextFactory factory : contextFactories ) {
+                factory.populateContext(req, this, context);
+            }
+
+            writeContent(context);
         } finally {
             IOUtils.closeQuietly(taos);
         }

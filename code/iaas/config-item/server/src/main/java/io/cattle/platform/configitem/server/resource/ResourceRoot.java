@@ -7,7 +7,7 @@ public interface ResourceRoot {
 
     Collection<Resource> getResources() throws IOException;
 
-    void scan() throws IOException;
+    boolean scan() throws IOException;
 
     String getSourceRevision();
 }

@@ -24,4 +24,6 @@ public interface ConfigItemStatusManager {
 
     void waitFor(ConfigUpdateRequest request);
 
+    void sync(boolean migration);
+
 }
