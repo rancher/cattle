@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <changeSet author="darren (generated)" id="dump1">
+        <createTable tableName="network_service_provider">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="network_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump2">
+        <createTable tableName="network_service_provider_instance_map">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="network_service_provider_id" type="BIGINT"/>
+            <column name="instance_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump3">
+        <addColumn tableName="network_service">
+            <column name="network_service_provider_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump4">
+        <addForeignKeyConstraint baseColumnNames="network_service_provider_id" baseTableName="network_service" constraintName="fk_network_service__network_service_provider_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network_service_provider"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump5">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="network_service_provider" constraintName="fk_network_service_provider__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump6">
+        <addForeignKeyConstraint baseColumnNames="network_id" baseTableName="network_service_provider" constraintName="fk_network_service_provider__network_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump7">
+        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="network_service_provider_instance_map" constraintName="fk_network_service_provider_instance_map__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump8">
+        <addForeignKeyConstraint baseColumnNames="network_service_provider_id" baseTableName="network_service_provider_instance_map" constraintName="fk_nspim_network_service_provider_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network_service_provider"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump9">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_network_service_provider_instance_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="network_service_provider_instance_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump10">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_network_service_provider_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="network_service_provider"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump11">
+        <createIndex indexName="idx_network_service_provider_instance_map_name" tableName="network_service_provider_instance_map" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump12">
+        <createIndex indexName="idx_network_service_provider_instance_map_remove_time" tableName="network_service_provider_instance_map" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump13">
+        <createIndex indexName="idx_network_service_provider_instance_map_removed" tableName="network_service_provider_instance_map" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump14">
+        <createIndex indexName="idx_network_service_provider_instance_map_state" tableName="network_service_provider_instance_map" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump15">
+        <createIndex indexName="idx_network_service_provider_name" tableName="network_service_provider" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump16">
+        <createIndex indexName="idx_network_service_provider_remove_time" tableName="network_service_provider" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump17">
+        <createIndex indexName="idx_network_service_provider_removed" tableName="network_service_provider" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump18">
+        <createIndex indexName="idx_network_service_provider_state" tableName="network_service_provider" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
