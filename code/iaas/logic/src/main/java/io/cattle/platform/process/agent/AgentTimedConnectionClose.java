@@ -36,10 +36,10 @@ public class AgentTimedConnectionClose extends AgentBasedProcessHandler {
 
         if ( lastDisconnect == null || System.currentTimeMillis() - lastDisconnect > (TIMEOUT.get() * 1000) ) {
             prop.set(System.currentTimeMillis());
-            return super.handle(state, process);
-        } else {
-            return null;
+            super.handle(state, process);
         }
+
+        return null;
    }
 
 }

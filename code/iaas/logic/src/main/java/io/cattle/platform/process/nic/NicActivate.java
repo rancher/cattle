@@ -1,6 +1,8 @@
 package io.cattle.platform.process.nic;
 
+import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
+import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.VnetDao;
@@ -16,6 +18,10 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.resource.pool.PooledResource;
+import io.cattle.platform.resource.pool.ResourcePoolManager;
+import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
+import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.List;
 
@@ -28,6 +34,7 @@ public class NicActivate extends AbstractDefaultProcessHandler {
     GenericMapDao mapDao;
     VnetDao vnetDao;
     IpAddressDao ipAddressDao;
+    ResourcePoolManager poolManager;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -52,14 +59,32 @@ public class NicActivate extends AbstractDefaultProcessHandler {
             activate(ipAddress, state.getData());
         }
 
-        return new HandlerResult(NIC.VNET_ID, nic.getVnetId());
+        String mac = assignMacAddress(network, nic);
+
+        return new HandlerResult(NIC.VNET_ID, nic.getVnetId(),
+                NIC.MAC_ADDRESS, mac);
+    }
+
+    protected String assignMacAddress(Network network, Nic nic) {
+        String mac = nic.getMacAddress();
+
+        if ( mac != null ) {
+            return mac;
+        }
+
+        PooledResource resource = poolManager.allocateResource(network, ResourcePoolConstants.MAC, nic);
+        if ( resource == null ) {
+            throw new ExecutionException("MAC allocation error", "Failed to allocate MAC from network", nic);
+        }
+
+        return resource.getName();
     }
 
     protected IpAddress getIpAddress(Nic nic, Subnet subnet) {
         IpAddress ipAddress = ipAddressDao.getPrimaryIpAddress(nic);
 
         if ( ipAddress == null && nic.getSubnetId() != null ) {
-            ipAddress = ipAddressDao.mapNewIpAddress(nic);
+            ipAddress = ipAddressDao.mapNewIpAddress(nic, IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PRIMARY);
         }
 
         for ( IpAddressNicMap map : mapDao.findNonRemoved(IpAddressNicMap.class, Nic.class, nic.getId()) ) {
@@ -132,6 +157,15 @@ public class NicActivate extends AbstractDefaultProcessHandler {
     @Inject
     public void setIpAddressDao(IpAddressDao ipAddressDao) {
         this.ipAddressDao = ipAddressDao;
+    }
+
+    public ResourcePoolManager getPoolManager() {
+        return poolManager;
+    }
+
+    @Inject
+    public void setPoolManager(ResourcePoolManager poolManager) {
+        this.poolManager = poolManager;
     }
 
 }

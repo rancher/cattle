@@ -63,7 +63,7 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
             for ( String item : ITEMS.get() ) {
                 request.addItem(item)
                     .withIncrement(false)
-                    .setCheckInSync(true);
+                    .setCheckInSyncOnly(true);
             }
         }
 
