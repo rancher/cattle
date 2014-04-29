@@ -50,16 +50,11 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         try {
             allocate(instance);
 
-            stage = "create storage";
-            storage(instance);
-        } catch ( ExecutionException e ) {
-            log.error("Failed to {} for instance [{}]", stage, instance.getId());
-            return stopOrRemove(state, instance, e);
-        }
-
-        try {
             stage = "create network";
-            network(instance);
+            network(instance, state);
+
+            stage = "create storage";
+            storage(instance, state);
         } catch ( ExecutionException e ) {
             log.error("Failed to {} for instance [{}]", stage, instance.getId());
             return stopOrRemove(state, instance, e);
@@ -67,7 +62,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
         try {
             stage = "create compute";
-            compute(instance);
+            compute(instance, state);
         } catch ( ExecutionException e ) {
             log.error("Failed to {} for instance [{}]", stage, instance.getId());
             if ( incrementComputeTry(state) >= getMaxComputeTries(instance) ) {
@@ -78,7 +73,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
         try {
             stage = "post network";
-            postNetwork(instance);
+            postNetwork(instance, state);
         } catch ( ExecutionException e ) {
             log.error("Failed to {} for instance [{}]", stage, instance.getId());
             return stopOrRemove(state, instance, e);
@@ -161,29 +156,29 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         execute("instance.allocate", instance, null);
     }
 
-    protected void storage(Instance instance) {
+    protected void storage(Instance instance, ProcessState state) {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
 
         for ( Volume volume : volumes ) {
-            activate(volume, null);
+            activate(volume, state.getData());
         }
     }
 
-    protected void compute(Instance instance) {
+    protected void compute(Instance instance, ProcessState state) {
         for ( InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()) ) {
-            activate(map, null);
+            activate(map, state.getData());
         }
     }
 
-    protected void network(Instance instance) {
+    protected void network(Instance instance, ProcessState state) {
         for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
-            activate(nic, null);
+            activate(nic, state.getData());
         }
     }
 
-    protected void postNetwork(Instance instance) {
+    protected void postNetwork(Instance instance, ProcessState state) {
         for ( Port port : getObjectManager().children(instance, Port.class) ) {
-            activate(port, null);
+            activate(port, state.getData());
         }
     }
 
