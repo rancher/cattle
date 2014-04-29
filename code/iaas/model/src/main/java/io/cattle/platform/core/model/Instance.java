@@ -235,6 +235,17 @@ public interface Instance extends java.io.Serializable {
 	public java.lang.Long getAgentId();
 >>>>>>> Add network service
 
+	/**
+	 * Setter for <code>cattle.instance.domain</code>.
+	 */
+	public void setDomain(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.instance.domain</code>.
+	 */
+	@javax.persistence.Column(name = "domain", length = 128)
+	public java.lang.String getDomain();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

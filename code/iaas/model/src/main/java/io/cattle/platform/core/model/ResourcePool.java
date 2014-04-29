@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "resource_pool", schema = "cattle", uniqueConstraints = {
-	@javax.persistence.UniqueConstraint(columnNames = {"pool_type", "pool_id", "item"})
+	@javax.persistence.UniqueConstraint(columnNames = {"pool_type", "pool_id", "qualifier", "item"})
 })
 public interface ResourcePool extends java.io.Serializable {
 
@@ -191,6 +191,17 @@ public interface ResourcePool extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "owner_id", precision = 19)
 	public java.lang.Long getOwnerId();
+
+	/**
+	 * Setter for <code>cattle.resource_pool.qualifier</code>.
+	 */
+	public void setQualifier(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.resource_pool.qualifier</code>.
+	 */
+	@javax.persistence.Column(name = "qualifier", nullable = false, length = 128)
+	public java.lang.String getQualifier();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

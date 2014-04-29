@@ -146,6 +146,17 @@ public interface Network extends java.io.Serializable {
 	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
 	public java.lang.Boolean getIsPublic();
 
+	/**
+	 * Setter for <code>cattle.network.domain</code>.
+	 */
+	public void setDomain(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.network.domain</code>.
+	 */
+	@javax.persistence.Column(name = "domain", length = 128)
+	public java.lang.String getDomain();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

@@ -190,6 +190,17 @@ public interface Nic extends java.io.Serializable {
 	@javax.persistence.Column(name = "device_number", precision = 10)
 	public java.lang.Integer getDeviceNumber();
 
+	/**
+	 * Setter for <code>cattle.nic.mac_address</code>.
+	 */
+	public void setMacAddress(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.nic.mac_address</code>.
+	 */
+	@javax.persistence.Column(name = "mac_address", length = 128)
+	public java.lang.String getMacAddress();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

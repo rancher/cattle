@@ -179,6 +179,17 @@ public interface IpAddress extends java.io.Serializable {
 	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
 	public java.lang.Boolean getIsPublic();
 
+	/**
+	 * Setter for <code>cattle.ip_address.role</code>.
+	 */
+	public void setRole(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.ip_address.role</code>.
+	 */
+	@javax.persistence.Column(name = "role", length = 128)
+	public java.lang.String getRole();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

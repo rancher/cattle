@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "ip_address", schema = "cattle")
-public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.IpAddressRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Boolean>, io.cattle.platform.core.model.IpAddress {
+public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.IpAddressRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.String>, io.cattle.platform.core.model.IpAddress {
 
-	private static final long serialVersionUID = -121406967;
+	private static final long serialVersionUID = -1334326757;
 
 	/**
 	 * Setter for <code>cattle.ip_address.id</code>.
@@ -271,6 +271,23 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 		return (java.lang.Boolean) getValue(14);
 	}
 
+	/**
+	 * Setter for <code>cattle.ip_address.role</code>.
+	 */
+	@Override
+	public void setRole(java.lang.String value) {
+		setValue(15, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.ip_address.role</code>.
+	 */
+	@javax.persistence.Column(name = "role", length = 128)
+	@Override
+	public java.lang.String getRole() {
+		return (java.lang.String) getValue(15);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -284,23 +301,23 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	}
 
 	// -------------------------------------------------------------------------
-	// Record15 type implementation
+	// Record16 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Boolean> fieldsRow() {
-		return (org.jooq.Row15) super.fieldsRow();
+	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.String> fieldsRow() {
+		return (org.jooq.Row16) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Boolean> valuesRow() {
-		return (org.jooq.Row15) super.valuesRow();
+	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.String> valuesRow() {
+		return (org.jooq.Row16) super.valuesRow();
 	}
 
 	/**
@@ -427,6 +444,14 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field16() {
+		return io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS.ROLE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -541,6 +566,14 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	@Override
 	public java.lang.Boolean value15() {
 		return getIsPublic();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value16() {
+		return getRole();
 	}
 
 	/**
@@ -682,7 +715,16 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IpAddressRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.Boolean value15) {
+	public IpAddressRecord value16(java.lang.String value) {
+		setRole(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public IpAddressRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.Boolean value15, java.lang.String value16) {
 		return this;
 	}
 
@@ -710,6 +752,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 		setSubnetId(from.getSubnetId());
 		setNetworkId(from.getNetworkId());
 		setIsPublic(from.getIsPublic());
+		setRole(from.getRole());
 	}
 
 	/**
@@ -735,7 +778,7 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	/**
 	 * Create a detached, initialised IpAddressRecord
 	 */
-	public IpAddressRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String address, java.lang.Long subnetId, java.lang.Long networkId, java.lang.Boolean isPublic) {
+	public IpAddressRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String address, java.lang.Long subnetId, java.lang.Long networkId, java.lang.Boolean isPublic, java.lang.String role) {
 		super(io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS);
 
 		setValue(0, id);
@@ -753,5 +796,6 @@ public class IpAddressRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 		setValue(12, subnetId);
 		setValue(13, networkId);
 		setValue(14, isPublic);
+		setValue(15, role);
 	}
 }

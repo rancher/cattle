@@ -47,11 +47,6 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
     }
 
     @Override
-    public IpAddress mapNewIpAddress(Nic nic) {
-        return mapNewIpAddress(nic, null);
-    }
-
-    @Override
     public IpAddress mapNewIpAddress(Nic nic, Object key, Object... values) {
         if ( nic.getNetworkId() == null ) {
             throw new IllegalStateException("Can not map new IP to nic with no network assigned to nic");

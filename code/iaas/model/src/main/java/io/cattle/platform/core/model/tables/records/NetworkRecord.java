@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "network", schema = "cattle")
-public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.NetworkRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean>, io.cattle.platform.core.model.Network {
+public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.NetworkRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean, java.lang.String>, io.cattle.platform.core.model.Network {
 
-	private static final long serialVersionUID = 142107300;
+	private static final long serialVersionUID = -52692309;
 
 	/**
 	 * Setter for <code>cattle.network.id</code>.
@@ -220,6 +220,23 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		return (java.lang.Boolean) getValue(11);
 	}
 
+	/**
+	 * Setter for <code>cattle.network.domain</code>.
+	 */
+	@Override
+	public void setDomain(java.lang.String value) {
+		setValue(12, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.network.domain</code>.
+	 */
+	@javax.persistence.Column(name = "domain", length = 128)
+	@Override
+	public java.lang.String getDomain() {
+		return (java.lang.String) getValue(12);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -233,23 +250,23 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	}
 
 	// -------------------------------------------------------------------------
-	// Record12 type implementation
+	// Record13 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean> fieldsRow() {
-		return (org.jooq.Row12) super.fieldsRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean, java.lang.String> fieldsRow() {
+		return (org.jooq.Row13) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean> valuesRow() {
-		return (org.jooq.Row12) super.valuesRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean, java.lang.String> valuesRow() {
+		return (org.jooq.Row13) super.valuesRow();
 	}
 
 	/**
@@ -352,6 +369,14 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field13() {
+		return io.cattle.platform.core.model.tables.NetworkTable.NETWORK.DOMAIN;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -442,6 +467,14 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	@Override
 	public java.lang.Boolean value12() {
 		return getIsPublic();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value13() {
+		return getDomain();
 	}
 
 	/**
@@ -556,7 +589,16 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
-	public NetworkRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Boolean value12) {
+	public NetworkRecord value13(java.lang.String value) {
+		setDomain(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public NetworkRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Boolean value12, java.lang.String value13) {
 		return this;
 	}
 
@@ -581,6 +623,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
 		setIsPublic(from.getIsPublic());
+		setDomain(from.getDomain());
 	}
 
 	/**
@@ -606,7 +649,7 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	/**
 	 * Create a detached, initialised NetworkRecord
 	 */
-	public NetworkRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Boolean isPublic) {
+	public NetworkRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Boolean isPublic, java.lang.String domain) {
 		super(io.cattle.platform.core.model.tables.NetworkTable.NETWORK);
 
 		setValue(0, id);
@@ -621,5 +664,6 @@ public class NetworkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setValue(9, removeTime);
 		setValue(10, data);
 		setValue(11, isPublic);
+		setValue(12, domain);
 	}
 }
