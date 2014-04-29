@@ -1,19 +1,19 @@
 from common_fixtures import *  # NOQA
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def network(admin_client):
     return admin_client.wait_success(admin_client.create_network())
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def vnet(admin_client, network):
     vnet = admin_client.create_vnet(networkId=network.id,
                                     uri='bridge:///42')
     return admin_client.wait_success(vnet)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def subnet(admin_client, network):
     subnet = admin_client.create_subnet(networkAddress='192.168.0.0',
                                         cidrSize='16',

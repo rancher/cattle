@@ -1,6 +1,3 @@
-[submodule "deps/gdapi-java-server"]
-	path = deps/gdapi-java-server
-	url = https://github.com/ibuildthecloud/gdapi-java-server.git
 [submodule "deps/jedis"]
 	path = deps/jedis
 	url = https://github.com/ibuildthecloud/jedis.git

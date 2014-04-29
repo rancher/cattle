@@ -3,7 +3,7 @@ from cattle import ApiError
 from common_fixtures import *  # NOQA
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def network(admin_client):
     network = create_type_by_uuid(admin_client, 'network', 'test_vm_network',
                                   isPublic=True)
@@ -25,14 +25,14 @@ def network(admin_client):
     return network
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def subnet(admin_client, network):
     subnets = network.subnets()
     assert len(subnets) == 1
     return subnets[0]
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def vnet(admin_client, subnet):
     vnets = subnet.vnets()
     assert len(vnets) == 1

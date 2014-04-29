@@ -9,7 +9,7 @@ if_docker = pytest.mark.skipif("os.environ.get('DOCKER_TEST') != 'true'",
                                reason='DOCKER_TEST is not set')
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def docker_context(admin_client):
     return kind_context(admin_client, 'docker', external_pool=True)
 

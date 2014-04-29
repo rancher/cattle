@@ -23,7 +23,7 @@ def _client_for_user(name, accounts):
                            secret_key=accounts[name][1])
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def accounts():
     result = {}
     admin_client = _admin_client()
@@ -60,27 +60,27 @@ def accounts():
     return result
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def system_account(accounts):
     return accounts['system'][2]
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def admin_account(accounts):
     return accounts['admin'][2]
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def client(accounts):
     return _client_for_user('user', accounts)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def admin_client(accounts):
     return _client_for_user('admin', accounts)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def sim_context(request, admin_client):
     context = kind_context(admin_client, 'sim', external_pool=True,
                            uri='sim://', uuid='simagent1', host_public=True)
@@ -101,11 +101,11 @@ def sim_context(request, admin_client):
     context['hostIp'] = host.ipAddresses()[0]
 
     request.addfinalizer(
-        lambda: delete_running_sim_instances(admin_client))
+        lambda: stop_running_sim_instances(admin_client))
     return context
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def sim_context2(admin_client):
     context = kind_context(admin_client, 'sim', external_pool=True,
                            uri='sim://2', uuid='simagent2', host_public=True)
@@ -114,7 +114,7 @@ def sim_context2(admin_client):
     return context
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def sim_context3(admin_client):
     context = kind_context(admin_client, 'sim', external_pool=True,
                            uri='sim://3', uuid='simagent3', host_public=True)
@@ -313,10 +313,10 @@ def create_and_activate(client, type, **kw):
     return obj
 
 
-def delete_running_sim_instances(admin_client):
+def stop_running_sim_instances(admin_client):
     for c in admin_client.list_instance(state='running'):
         if c.hosts()[0].kind == 'sim':
-            c.stop(remove=True)
+            c.stop()
 
 
 def one(method, *args, **kw):

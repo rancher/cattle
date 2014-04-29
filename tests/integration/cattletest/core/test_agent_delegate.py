@@ -3,7 +3,7 @@ from common_fixtures import *  # NOQA
 _IMAGE_UUID = 'sim:ai'
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def ihn_network(admin_client):
     network = create_type_by_uuid(admin_client, 'hostOnlyNetwork',
                                   'test-ipsec-host-nat',

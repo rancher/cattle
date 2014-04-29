@@ -14,7 +14,7 @@ if_libvirt = pytest.mark.skipif('os.environ.get("LIBVIRT_TEST") != "true"',
                                 reason='LIBVIRT_TEST is not set')
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def libvirt_context(admin_client):
     context = kind_context(admin_client, 'libvirt')
 
