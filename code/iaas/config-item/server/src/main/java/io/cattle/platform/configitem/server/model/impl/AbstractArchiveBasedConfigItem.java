@@ -9,9 +9,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
@@ -46,9 +51,40 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
             }
 
             writeContent(context);
+            writeHashes(context);
         } finally {
             IOUtils.closeQuietly(taos);
         }
+    }
+
+    protected void writeHashes(final ArchiveContext context) throws IOException {
+        StringBuilder stringContent = new StringBuilder();
+        Map<String,String> hashes = context.getHashes();
+        for ( Map.Entry<String,String> entry : hashes.entrySet() ) {
+            stringContent.append(entry.getValue());
+            stringContent.append(" *");
+            stringContent.append(entry.getKey());
+            stringContent.append("\n");
+        }
+
+        hashes.clear();
+
+        final byte[] content = stringContent.toString().getBytes("UTF-8");
+        withEntry(context, "SHA1SUMS", content.length, new WithEntry() {
+            @Override
+            public void with(OutputStream os) throws IOException {
+                os.write(content);
+            }
+        });
+
+        Map.Entry<String, String> entry = hashes.entrySet().iterator().next();
+        final byte[] sumSum = String.format("%s *%s\n", entry.getValue(), entry.getKey()).getBytes("UTF-8");
+        withEntry(context, "SHA1SUMSSUM", sumSum.length, new WithEntry() {
+            @Override
+            public void with(OutputStream os) throws IOException {
+                os.write(sumSum);
+            }
+        });
     }
 
     protected void writeContent(final ArchiveContext context) throws IOException {
@@ -78,10 +114,19 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
     };
 
     protected void withEntry(ArchiveContext context, TarArchiveEntry entry, WithEntry with) throws IOException {
-        TarArchiveOutputStream taos = context.getOutputStream();
-        taos.putArchiveEntry(entry);
-        with.with(taos);
-        taos.closeArchiveEntry();
+        try {
+            TarArchiveOutputStream taos = context.getOutputStream();
+            DigestOutputStream dos = new DigestOutputStream(taos, MessageDigest.getInstance("SHA1"));
+
+            taos.putArchiveEntry(entry);
+            with.with(dos);
+            taos.closeArchiveEntry();
+
+            String hash = Hex.encodeHexString(dos.getMessageDigest().digest());
+            context.getHashes().put(entry.getName(), hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Missing SHA1 digest", e);
+        }
     };
 
     protected TarArchiveEntry getDefaultEntry(ArchiveContext context, String name, long size) {

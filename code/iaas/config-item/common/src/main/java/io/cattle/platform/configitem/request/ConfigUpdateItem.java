@@ -6,7 +6,7 @@ public class ConfigUpdateItem {
     Long requestedVersion;
     boolean apply = true;
     boolean increment = true;
-    boolean checkInSync = false;
+    boolean checkInSyncOnly = false;
 
     public ConfigUpdateItem() {
     }
@@ -67,16 +67,16 @@ public class ConfigUpdateItem {
         return this;
     }
 
-    public boolean isCheckInSync() {
-        return checkInSync;
+    public boolean isCheckInSyncOnly() {
+        return checkInSyncOnly;
     }
 
-    public void setCheckInSync(boolean checkInSync) {
-        this.checkInSync = checkInSync;
+    public void setCheckInSyncOnly(boolean checkInSync) {
+        this.checkInSyncOnly = checkInSync;
     }
 
-    public ConfigUpdateItem withCheckInSync(boolean checkInSync) {
-        this.checkInSync = checkInSync;
+    public ConfigUpdateItem withCheckInSyncOnly(boolean checkInSync) {
+        this.checkInSyncOnly = checkInSync;
         return this;
     }
 

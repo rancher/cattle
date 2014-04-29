@@ -140,7 +140,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     }
 
     protected Event getEvent(ConfigUpdateRequest request) {
-        List<ConfigUpdateItem> toTrigger = getNeedsUpdating(request);
+        List<ConfigUpdateItem> toTrigger = getNeedsUpdating(request, !request.isMigration());
         return getEvent(request, toTrigger);
     }
 
@@ -158,7 +158,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         return Futures.transform(agent.call(event, options), new Function<Object, Object>() {
             @Override
             public Object apply(Object input) {
-                List<ConfigUpdateItem> toTrigger = getNeedsUpdating(request);
+                List<ConfigUpdateItem> toTrigger = getNeedsUpdating(request, true);
                 if ( toTrigger.size() > 0 ) {
                     throw new ConfigTimeoutException(request, toTrigger);
                 }
@@ -168,7 +168,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         });
     }
 
-    protected List<ConfigUpdateItem> getNeedsUpdating(ConfigUpdateRequest request) {
+    protected List<ConfigUpdateItem> getNeedsUpdating(ConfigUpdateRequest request, boolean checkVersions) {
         Client client = new DefaultClient(Agent.class, request.getAgentId());
         Map<String,ConfigItemStatus> statuses = getStatus(request);
         List<ConfigUpdateItem> toTrigger = new ArrayList<ConfigUpdateItem>();
@@ -182,16 +182,20 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
                 continue;
             }
 
-            if ( item.isCheckInSync() ) {
-                if ( ! ObjectUtils.equals(status.getRequestedVersion(), status.getAppliedVersion()) ) {
-                    log.info("Waiting on [{}] on [{}], not in sync requested [{}] != applied [{}]",
-                            client, name, status.getRequestedVersion(), status.getAppliedVersion());
+            if ( item.isCheckInSyncOnly() ) {
+                if ( ! checkVersions || ! ObjectUtils.equals(status.getRequestedVersion(), status.getAppliedVersion()) ) {
+                    if ( request.isMigration() ) {
+                        log.info("Waiting on [{}] on [{}], for migration", client, name);
+                    } else {
+                        log.info("Waiting on [{}] on [{}], not in sync requested [{}] != applied [{}]",
+                                client, name, status.getRequestedVersion(), status.getAppliedVersion());
+                    }
                     toTrigger.add(item);
                 }
             } else if ( item.getRequestedVersion() != null ) {
                 Long applied = status.getAppliedVersion();
-                if ( applied == null || item.getRequestedVersion() < applied ) {
-                    log.info("Waiting on [{}] on [{}], not applied requested [{}] < applied [{}]",
+                if ( applied == null || item.getRequestedVersion() > applied ) {
+                    log.info("Waiting on [{}] on [{}], not applied requested [{}] > applied [{}]",
                             client, name, item.getRequestedVersion(), applied);
                     toTrigger.add(item);
                 }
@@ -214,20 +218,23 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         for ( Map.Entry<Long, List<String>> entry : items.entrySet() ) {
             Long agentId = entry.getKey();
 
-            ConfigUpdateRequest request = new ConfigUpdateRequest(agentId);
+            ConfigUpdateRequest request = new ConfigUpdateRequest(agentId)
+                                                .withMigration(migration);
             for ( String item : entry.getValue() ) {
                 request.addItem(item)
                     .withApply(false)
                     .withIncrement(false)
-                    .withCheckInSync(true);
+                    .withCheckInSyncOnly(true);
             }
 
-            Event event = getEvent(request);
             RemoteAgent agent = agentLocator.lookupAgent(agentId);
+
+            log.info("Requesting {} of item(s) {} on agent [{}]", migration ? "migration" : "update", entry.getValue(), agentId);
 
             if ( first && migration && BLOCK.get() ) {
                 waitFor(request);
             } else {
+                Event event = getEvent(request);
                 agent.publish(event);
             }
 

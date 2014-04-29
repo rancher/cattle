@@ -21,8 +21,8 @@ public abstract class AbstractResourceRootConfigItem extends AbstractConfigItem 
     }
 
     @Override
-    public boolean refresh() throws IOException {
-        return resourceRoot.scan();
+    public void refresh() throws IOException {
+        resourceRoot.scan();
     }
 
     public ResourceRoot getResourceRoot() {

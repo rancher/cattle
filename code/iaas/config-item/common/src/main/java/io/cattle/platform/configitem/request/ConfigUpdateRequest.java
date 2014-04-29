@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 public class ConfigUpdateRequest {
 
+    boolean migration = false;
     boolean deferredTrigger = false;
     long agentId;
     Client client;
@@ -65,4 +66,16 @@ public class ConfigUpdateRequest {
         return client;
     }
 
+    public boolean isMigration() {
+        return migration;
+    }
+
+    public void setMigration(boolean migration) {
+        this.migration = migration;
+    }
+
+    public ConfigUpdateRequest withMigration(boolean migration) {
+        this.migration = migration;
+        return this;
+    }
 }

@@ -43,9 +43,9 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
     }
 
     @Override
-    public synchronized final boolean scan() throws IOException {
+    public synchronized final void scan() throws IOException {
         if ( ! isDynamic() && sourceRevision != null && resources != null ) {
-            return false;
+            return;
         }
 
         Collection<Resource> resources = scanResources();
@@ -76,11 +76,8 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
             IOUtils.closeQuietly(outputStream);
         }
 
-        boolean changed = ! revision.equals(this.sourceRevision);
         this.resources = resources;
         this.sourceRevision = revision;
-
-        return changed;
     }
 
     protected abstract Collection<Resource> scanResources() throws IOException;

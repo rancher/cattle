@@ -14,6 +14,7 @@ public class ArchiveContext {
     Request request;
     TarArchiveOutputStream taos;
     Map<String, Object> data = new HashMap<String, Object>();
+    Map<String, String> hashes = new HashMap<String, String>();
 
     public ArchiveContext(Request request, TarArchiveOutputStream taos, String version) {
         super();
@@ -38,6 +39,10 @@ public class ArchiveContext {
 
     public String getVersion() {
         return version;
+    }
+
+    public Map<String, String> getHashes() {
+        return hashes;
     }
 
 }

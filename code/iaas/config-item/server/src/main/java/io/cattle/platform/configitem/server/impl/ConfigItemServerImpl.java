@@ -109,9 +109,7 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
                     if ( ! initial ) {
                         if ( item instanceof RefreshableConfigItem ) {
                             try {
-                                if ( ! ((RefreshableConfigItem)item).refresh() ) {
-                                    continue;
-                                }
+                                ((RefreshableConfigItem)item).refresh();
                             } catch (IOException e) {
                                 log.error("Failed to refresh item [{}]", item.getName(), e);
                                 continue;

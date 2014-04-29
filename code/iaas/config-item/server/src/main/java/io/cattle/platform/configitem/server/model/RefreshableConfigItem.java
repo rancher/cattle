@@ -4,6 +4,6 @@ import java.io.IOException;
 
 public interface RefreshableConfigItem {
 
-    boolean refresh() throws IOException;
+    void refresh() throws IOException;
 
 }
