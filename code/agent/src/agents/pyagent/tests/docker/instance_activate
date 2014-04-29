@@ -117,7 +117,7 @@
                 ],
                 "nics": [
                     {
-                        "macAddress": "01:02:03:04:05:06",
+                        "macAddress": "02:03:04:05:06:07",
                         "deviceNumber": 0,
                         "ipAddresses": [
                             {
