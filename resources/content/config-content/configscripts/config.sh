@@ -2,11 +2,23 @@
 
 set -e
 
-trap cleanup EXIT
-
 source $(dirname $0)/common/scripts.sh
 
-LOCK=$CATTLE_HOME/config.lock
+cleanup()
+{
+    EXIT=$?
+
+    if [ -e "$DOWNLOAD_TEMP" ]; then
+        rm -rf $DOWNLOAD_TEMP
+    fi
+
+    return $EXIT
+}
+
+trap cleanup EXIT
+
+LOCK_DIR=${CATTLE_HOME}/locks
+LOCK=${LOCK_DIR}/config.lock
 DOWNLOAD=$CATTLE_HOME/download
 
 URL=$CATTLE_CONFIG_URL
@@ -18,14 +30,26 @@ if [ ! -x $0 ]; then
     chmod +x $0
 fi
 
-[ "${FLOCKER}" != "$LOCK" ] && exec env FLOCKER="$LOCK" flock -oen "$LOCK" "$0" "$@" || :
+if [ ! -d ${LOCK_DIR} ]; then
+    mkdir -p ${LOCK_DIR}
+fi
 
-cleanup()
-{
-    if [ -e "$DOWNLOAD_TEMP" ]; then
-        rm -rf $DOWNLOAD_TEMP
+if [ "$CATTLE_AGENT_STARTUP" != "true" ] && [ -e /etc/agent-instance ]; then
+    for i in {1..3}; do
+        if [ ! -e /dev/shm/agent-instance-started ]; then
+            sleep 2
+        else
+            break
+        fi
+    done
+
+    if [ ! -e /dev/shm/agent-instance-started ]; then
+        error "Agent instance has not started"
+        exit 1
     fi
-}
+fi
+
+[ "${FLOCKER}" != "$LOCK" ] && exec env FLOCKER="$LOCK" flock -oe -w 5 "$LOCK" "$0" "$@" || :
 
 download()
 {
@@ -50,6 +74,18 @@ download()
         exit 1
     fi
 
+    (
+        cd $DOWNLOAD_TEMP
+
+        if [ ! -e $dir/SHA1SUMSSUM ] || [ ! -e $dir/SHA1SUMS ]; then
+            error "Missing SHA1SUMS files, invalid download"
+            exit 1
+        fi
+
+        sha1sum -c $dir/SHA1SUMSSUM
+        sha1sum -c $dir/SHA1SUMS
+    ) >/dev/null
+
     content_root=${DOWNLOAD}/$name/${dir}
 
     if [ -e ${content_root} ]; then
@@ -60,12 +96,33 @@ download()
     mv ${DOWNLOAD_TEMP}/$dir ${content_root}
 }
 
+check_applied()
+{
+    local current=${content_root}/../current
+    if [ -e $current ] && [ "$(<$current)" = "$(basename $content_root)" ]; then
+        return 0
+    fi
+
+    return 1
+}
+
 apply()
 {
+    if check_applied && [ -e ${content_root}/check.sh ]; then
+        if [ ! -x ${content_root}/check.sh ]; then
+            chmod +x ${content_root}/check.sh
+        fi
+
+        info "Running ${content_root}/check.sh [$version]"
+        cd ${content_root}
+        if ./check.sh; then
+            return
+        fi
+    fi
+
     if [ ! -e ${content_root}/apply.sh ]; then
-        error Missing ${content_root}/apply.sh
-        dump ${content_root}
-        exit 1
+        info Using default apply.sh
+        cp ${CATTLE_HOME}/common/apply.sh ${content_root}
     fi
 
     if [ ! -x ${content_root}/apply.sh ]; then
@@ -81,7 +138,7 @@ apply()
 
 applied()
 {
-    info Sending applied ${dir} ${version}
+    info Sending $1 applied ${dir} ${version}
     put "${DOWNLOAD_URL}?version=${version}" > /dev/null
 }
 
@@ -110,7 +167,7 @@ while [ "$#" -gt 0 ]; do
     *)
         download $1
         apply
-        applied
+        applied $1
         ;;
     esac
     shift 1

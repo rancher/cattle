@@ -37,6 +37,8 @@ DOCKER_AGENT="cattle/agent"
 
 cleanup()
 {
+    local exit=$?
+
     if [ -e "$TEMP_DOWNLOAD" ]; then
         rm -rf $TEMP_DOWNLOAD
     fi
@@ -45,6 +47,8 @@ cleanup()
     then
         rm $0 2>/null || true
     fi
+
+    return $exit
 }
 
 cleanup_docker()

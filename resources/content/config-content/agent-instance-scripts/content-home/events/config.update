@@ -1,0 +1,13 @@
+#!/bin/bash
+
+. ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
+
+
+INPUT="$(cat)"
+ITEMS=$(echo $INPUT | jq -r .data.items[].name)
+
+if [ -n "$ITEMS" ]; then
+    get_config $ITEMS
+fi
+
+echo $INPUT | reply

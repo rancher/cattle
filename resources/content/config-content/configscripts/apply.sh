@@ -15,4 +15,10 @@ install()
     chmod +x $CATTLE_HOME/config.sh
 }
 
+# Sanity check that config.sh runs
+bash $(dirname $0)/config.sh || {
+    echo "config.sh is invalid" 1>&2
+    exit 1
+}
+
 install

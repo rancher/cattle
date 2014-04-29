@@ -75,16 +75,50 @@ get_config()
 stage_files()
 {
     if [ -d content-home ]; then
-        tar cf - -C content-home . | tar xvf - -C $CATTLE_HOME
+        find content-home -name "*.sh" -exec chmod +x {} \;
+        tar cf - -C content-home . | tar xvf - --no-overwrite-dir -C $CATTLE_HOME
     fi
 
     if [ -d content ]; then
-        tar cf - -C content . | tar xvf - -C /
+        find content -name "*.sh" -exec chmod +x {} \;
+        tar cf - -C content . | tar xvf - --no-overwrite-dir -C /
     fi
+}
+
+script_env()
+{
+    if [ -n "$CATTLE_CONFIG_URL" ]; then
+        return
+    fi
+
+    local host=$(ip route show dev eth0 | grep ^default | awk '{print $3}')
+    CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL_SCHEME:-http}"
+    CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL}://${CATTLE_CONFIG_URL_HOST:-$host}"
+    CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL}:${CATTLE_CONFIG_URL_PORT:-9342}"
+    CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL}${CATTLE_CONFIG_URL_PATH:-/v1}"
+
+    export CATTLE_CONFIG_URL
+}
+
+reply()
+{
+    jq -c '
+        {
+            "id" : "'$(uuidgen)'",
+            "time" : '$(($(date '+%s') * 1000))',
+            "name" : .replyTo,
+            "data" : {},
+            "previousNames" : [ .name ],
+            "previousIds" : [ .id ],
+            "resourceId" : .resourceId,
+            "resourcetype" : .resourceType
+        }
+    '
 }
 
 check_debug
 docker_env
+script_env
 
 export CATTLE_HOME=${CATTLE_HOME:-/var/lib/cattle}
 export CATTLE_AGENT_LOG_FILE=${CATTLE_AGENT_LOG_FILE:-${CATTLE_HOME}/agent.log}
