@@ -2,6 +2,7 @@ package io.cattle.platform.object.postinit;
 
 import io.cattle.platform.object.ObjectDefaultsProvider;
 import io.cattle.platform.util.type.InitializationTask;
+import io.cattle.platform.util.type.Priority;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstantiationHandler, InitializationTask {
+public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstantiationHandler, InitializationTask, Priority {
 
     private static final Logger log = LoggerFactory.getLogger(ObjectDefaultsPostInstantiationHandler.class);
 
@@ -44,6 +45,10 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
         BeanUtils.copyProperties(instance, defaultValues);
     }
 
+    @Override
+    public int getPriority() {
+        return Priority.PRE;
+    }
 
     @Override
     public void start() {
@@ -64,5 +69,6 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
     public void setDefaultProviders(List<ObjectDefaultsProvider> defaultProviders) {
         this.defaultProviders = defaultProviders;
     }
+
 
 }

@@ -1,13 +1,11 @@
 package io.cattle.platform.object.postinit;
 
-import io.cattle.platform.util.type.Priority;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
 
-public class SetPropertiesPostInstantiationHandler implements ObjectPostInstantiationHandler, Priority {
+public class SetPropertiesPostInstantiationHandler implements ObjectPostInstantiationHandler {
 
     @Override
     public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
@@ -20,11 +18,6 @@ public class SetPropertiesPostInstantiationHandler implements ObjectPostInstanti
         }
 
         return obj;
-    }
-
-    @Override
-    public int getPriority() {
-        return Priority.DEFAULT;
     }
 
 }

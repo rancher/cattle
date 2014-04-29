@@ -1,5 +1,6 @@
 package io.cattle.platform.object.postinit;
 
+import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
@@ -11,7 +12,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.beanutils.BeanUtils;
 
-public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstantiationHandler {
+public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstantiationHandler, Priority {
 
     public static final String UUID = "uuid";
     public static final String ZONE_ID = "zoneId";
@@ -46,6 +47,11 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
         } catch (InvocationTargetException e) {
         } catch (NoSuchMethodException e) {
         }
+    }
+
+    @Override
+    public int getPriority() {
+        return Priority.PRE;
     }
 
     public SchemaFactory getSchemaFactory() {

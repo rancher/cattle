@@ -2,6 +2,7 @@ package io.cattle.platform.object.postinit;
 
 import static io.cattle.platform.object.util.DataUtils.*;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.util.type.Priority;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import javax.inject.Inject;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
-public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiationHandler {
+public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiationHandler, Priority {
 
     JsonMapper jsonMapper;
 
@@ -133,6 +134,11 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
     @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
+    }
+
+    @Override
+    public int getPriority() {
+        return Priority.DEFAULT;
     }
 
 }
