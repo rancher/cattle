@@ -1,25 +1,28 @@
 package io.cattle.platform.agent.instance.factory.impl;
 
-import com.netflix.config.DynamicStringProperty;
-
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
-import io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.NetworkServiceConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.NetworkService;
+import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.object.util.DataAccessor;
+
+import com.netflix.config.DynamicStringProperty;
 
 public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     private static final DynamicStringProperty DEFAULT_IMAGE_UUID = ArchaiusUtil.getString("agent.instance.image.uuid");
 
+    String instanceKind = InstanceConstants.KIND_CONTAINER;
     Long vnetId;
     Long accountId;
     Long zoneId;
     Long agentGroupId;
+    NetworkServiceProvider networkServiceProvider;
     String imageUuid;
     boolean accountOwned = false;
+    boolean managedConfig = false;
     AgentInstanceFactoryImpl factory;
 
     public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory) {
@@ -40,6 +43,18 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     }
 
     @Override
+    public AgentInstanceBuilder withInstanceKind(String kind) {
+        this.instanceKind = kind;
+        return this;
+    }
+
+    @Override
+    public AgentInstanceBuilder withManagedConfig(boolean managedConfig) {
+        this.managedConfig = managedConfig;
+        return this;
+    }
+
+    @Override
     public Instance build() {
         return factory.build(this);
     }
@@ -53,16 +68,17 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     }
 
     @Override
-    public AgentInstanceBuilder withNetworkService(NetworkService networkService) {
+    public AgentInstanceBuilder withNetworkServiceProvider(NetworkServiceProvider networkServiceProvider) {
+        this.networkServiceProvider = networkServiceProvider;
         withImageUuid(DataAccessor
-                .fields(networkService)
-                .withKey(NetworkServiceConstants.FIELD_AGENT_INSTANCE_IMAGE_UUID)
+                .fields(networkServiceProvider)
+                .withKey(NetworkServiceProviderConstants.FIELD_AGENT_INSTANCE_IMAGE_UUID)
                 .withDefault(getImageUuid())
                 .as(String.class));
 
         withAccountOwned(DataAccessor
-                .fields(networkService)
-                .withKey(NetworkServiceConstants.FIELD_AGENT_ACCOUNT_OWNED)
+                .fields(networkServiceProvider)
+                .withKey(NetworkServiceProviderConstants.FIELD_AGENT_ACCOUNT_OWNED)
                 .withDefault(isAccountOwned())
                 .as(Boolean.class));
 
@@ -120,5 +136,17 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     public AgentInstanceFactoryImpl getFactory() {
         return factory;
+    }
+
+    public String getInstanceKind() {
+        return instanceKind;
+    }
+
+    public boolean isManagedConfig() {
+        return managedConfig;
+    }
+
+    public NetworkServiceProvider getNetworkServiceProvider() {
+        return networkServiceProvider;
     }
 }

@@ -4,9 +4,9 @@ import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
+import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
-import io.cattle.platform.agent.instance.factory.dao.AgentInstanceFactoryDao;
 import io.cattle.platform.agent.instance.factory.lock.AgentInstanceAgentCreateLock;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AccountDao;
@@ -15,6 +15,7 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
@@ -23,6 +24,7 @@ import io.cattle.platform.storage.service.StorageService;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
@@ -30,7 +32,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
 
     AccountDao accountDao;
     ObjectManager objectManager;
-    AgentInstanceFactoryDao factoryDao;
+    AgentInstanceDao factoryDao;
     LockManager lockManager;
     GenericResourceDao resourceDao;
     StorageService storageService;
@@ -78,6 +80,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(INSTANCE.AGENT_ID, agent.getId());
         properties.put(INSTANCE.IMAGE_ID, getImage(agent, builder));
         properties.put(INSTANCE.ZONE_ID, agent.getZoneId());
+        properties.put(INSTANCE.KIND, builder.getInstanceKind());
 
         properties.put(InstanceConstants.FIELD_VNET_IDS, getVnetIds(agent, builder));
 
@@ -116,14 +119,19 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         return agent;
     }
 
-    protected Instance createInstance(final Agent agent, final Map<String,Object> properties, AgentInstanceBuilderImpl builder) {
+    protected Instance createInstance(final Agent agent, final Map<String,Object> properties, final AgentInstanceBuilderImpl builder) {
         return lockManager.lock(new AgentInstanceAgentCreateLock(agent.getUri()), new LockCallback<Instance>() {
             @Override
             public Instance doWithLock() {
                 Instance instance = factoryDao.getInstanceByAgent(agent);
 
                 if ( instance == null ) {
-                    instance = resourceDao.createAndSchedule(Instance.class, properties);
+                    instance = DeferredUtils.nest(new Callable<Instance>() {
+                        @Override
+                        public Instance call() throws Exception {
+                            return factoryDao.createInstanceForProvider(builder.getNetworkServiceProvider(), properties);
+                        }
+                    });
                 }
 
                 return instance;
@@ -140,6 +148,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 if ( agent == null ) {
                     agent = resourceDao.createAndSchedule(Agent.class,
                             AGENT.URI, uri,
+                            AGENT.MANAGED_CONFIG, builder.isManagedConfig(),
                             AGENT.AGENT_GROUP_ID, builder.getAgentGroupId(),
                             AGENT.ZONE_ID, builder.getZoneId());
                 }
@@ -158,15 +167,19 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     protected String getUri(AgentInstanceBuilderImpl builder) {
-        return String.format("delegate:///?vnetId=%d", builder.getVnetId());
+        Long networkServiceProviderId = builder.getNetworkServiceProvider() == null ? null :
+            builder.getNetworkServiceProvider().getId();
+
+        return String.format("delegate:///?vnetId=%d&networkServiceProviderId=%d", builder.getVnetId(),
+                networkServiceProviderId);
     }
 
-    public AgentInstanceFactoryDao getFactoryDao() {
+    public AgentInstanceDao getFactoryDao() {
         return factoryDao;
     }
 
     @Inject
-    public void setFactoryDao(AgentInstanceFactoryDao factoryDao) {
+    public void setFactoryDao(AgentInstanceDao factoryDao) {
         this.factoryDao = factoryDao;
     }
 

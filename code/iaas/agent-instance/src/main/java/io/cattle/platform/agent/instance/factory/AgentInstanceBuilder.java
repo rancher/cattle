@@ -1,7 +1,7 @@
 package io.cattle.platform.agent.instance.factory;
 
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.NetworkService;
+import io.cattle.platform.core.model.NetworkServiceProvider;
 
 public interface AgentInstanceBuilder {
 
@@ -17,9 +17,13 @@ public interface AgentInstanceBuilder {
 
     AgentInstanceBuilder withAccountOwned(boolean accountOwned);
 
-    AgentInstanceBuilder withNetworkService(NetworkService networkService);
+    AgentInstanceBuilder withNetworkServiceProvider(NetworkServiceProvider networkServiceProvider);
 
     AgentInstanceBuilder withInstance(Instance instance);
+
+    AgentInstanceBuilder withInstanceKind(String kind);
+
+    AgentInstanceBuilder withManagedConfig(boolean managedConfig);
 
     public Instance build();
 
