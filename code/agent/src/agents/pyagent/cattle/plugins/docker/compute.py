@@ -50,7 +50,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             return
 
         containers = []
-        for c in docker_client().containers(all=True):
+        for c in docker_client().containers():
             names = c.get('Names')
             for name in names:
                 if name.startswith('/'):
