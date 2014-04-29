@@ -40,7 +40,7 @@ public class AgentDelegateConnectionFactory implements AgentConnectionFactory {
         Instance instance = delegateDao.getInstance(agent);
 
         if ( instance == null ) {
-            log.error("Failed to find instance to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
+            log.info("Failed to find instance to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
             return null;
         }
 
