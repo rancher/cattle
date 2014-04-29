@@ -71,6 +71,10 @@ public class ArchaiusStartup implements InitializationTask {
     protected void load(boolean refresh) {
         List<AbstractConfiguration> configs = extensionManager.getExtensionList(CONFIG_KEY, AbstractConfiguration.class);
 
+        for ( AbstractConfiguration config : configs ) {
+            config.setDelimiterParsingDisabled(true);
+        }
+
         if ( refresh ) {
             for ( AbstractConfiguration config : configs ) {
                 refresh(config);
