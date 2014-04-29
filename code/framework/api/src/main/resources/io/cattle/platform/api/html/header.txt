@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<!-- If you are reading this, there is a good chance you would prefer sending an
+"Accept: application/json" header and receiving actual JSON responses. -->
+<link rel="stylesheet" type="text/css" href="%CSS%" />
+<script src="%JS%"></script>
+<script>
+var user = "%USER%";
+var curlUser='${CATTLE_ACCESS_KEY}:${CATTLE_SECRET_KEY}';
+var schemas="%SCHEMAS%";
+//var docs = "http://url-to-your-docs/site";
+//BEFORE DATA
+var data = 
