@@ -28,6 +28,7 @@ import io.cattle.platform.engine.process.ProcessResult;
 import io.cattle.platform.engine.process.ProcessServiceContext;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.ProcessStateTransition;
+import io.cattle.platform.engine.process.StateChangeMonitor;
 import io.cattle.platform.engine.process.log.ExceptionLog;
 import io.cattle.platform.engine.process.log.ParentLog;
 import io.cattle.platform.engine.process.log.ProcessExecutionLog;
@@ -35,7 +36,6 @@ import io.cattle.platform.engine.process.log.ProcessLog;
 import io.cattle.platform.engine.process.log.ProcessLogicExecutionLog;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
-import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.definition.DefaultMultiLockDefinition;
@@ -542,7 +542,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         log.info("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(),
                 record.getResourceId());
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, "transitioning", now()));
-        publishChanged(schedule);
+        publishChanged(previousState, newState, schedule);
 
         return newState;
     }
@@ -568,21 +568,14 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         log.info("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(),
                 record.getResourceId());
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, chained ? "chain" : "done", now()));
-        publishChanged(schedule);
+        publishChanged(previousState, newState, schedule);
 
         return chained;
     }
 
-    protected void publishChanged(boolean defer) {
-        Event event = EventVO
-                .newEvent(FrameworkEvents.STATE_CHANGE)
-                .withResourceType(record.getResourceType())
-                .withResourceId(record.getResourceId());
-
-        if ( defer ) {
-            DeferredUtils.deferPublish(context.getEventService(), event);
-        } else {
-            context.getEventService().publish(event);
+    protected void publishChanged(String previousState, String newState, boolean defer) {
+        for ( StateChangeMonitor monitor : context.getChangeMonitors() ) {
+            monitor.onChange(defer, previousState, newState, record, instanceContext.getState(), context);
         }
     }
 

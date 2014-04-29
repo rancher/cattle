@@ -12,6 +12,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.ProcessServiceContext;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.engine.process.StateChangeMonitor;
 import io.cattle.platform.engine.process.impl.DefaultProcessInstanceImpl;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
@@ -45,6 +46,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     ScheduledExecutorService executor;
     EventService eventService;
     ExecutionExceptionHandler exceptionHandler;
+    List<StateChangeMonitor> changeMonitors;
 
     @Override
     public ProcessInstance createProcessInstance(LaunchConfiguration config) {
@@ -81,7 +83,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         if ( record.getId() == null && (schedule || ! EngineContext.hasParentProcess()) )
             record = processRecordDao.insert(record);
 
-        ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, exceptionHandler);
+        ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, exceptionHandler, changeMonitors);
         DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(context, record, processDef, state, schedule);
 
         if ( record.getId() != null )
@@ -244,6 +246,15 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     @Inject
     public void setExceptionHandler(ExecutionExceptionHandler exceptionHandler) {
         this.exceptionHandler = exceptionHandler;
+    }
+
+    public List<StateChangeMonitor> getChangeMonitors() {
+        return changeMonitors;
+    }
+
+    @Inject
+    public void setChangeMonitors(List<StateChangeMonitor> changeMonitors) {
+        this.changeMonitors = changeMonitors;
     }
 
 }

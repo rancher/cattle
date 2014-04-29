@@ -1,5 +1,6 @@
 package io.cattle.platform.api.handler;
 
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventService;
@@ -45,6 +46,7 @@ public class EventNotificationHandler implements ApiRequestHandler {
         data.put("type", request.getType());
         data.put("action", request.getAction());
         data.put("responseCode", request.getResponseCode());
+        data.put("accountId", ApiUtils.getPolicy().getAccountId());
 
         DeferredUtils.deferPublish(eventService, EventVO.newEvent(FrameworkEvents.API_CHANGE)
                 .withResourceId(request.getId())

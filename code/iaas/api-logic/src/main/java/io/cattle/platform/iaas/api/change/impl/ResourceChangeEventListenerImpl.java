@@ -6,6 +6,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.api.change.ResourceChangeEventListener;
 import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.lock.LockDelegator;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
 
@@ -36,9 +37,15 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
     protected void add(Event event) {
         String id = event.getResourceId();
         String type = event.getResourceType();
+        @SuppressWarnings("unchecked")
+        Map<String,Object> data = (Map<String, Object>)event.getData();
+        Object accountId = data == null ? null : data.get(ObjectMetaDataManager.ACCOUNT_FIELD);
+        if ( accountId == null ) {
+            accountId = Boolean.TRUE;
+        }
 
         if ( type != null && id != null ) {
-            changed.put(new ImmutablePair<String, String>(type, id), Boolean.TRUE);
+            changed.put(new ImmutablePair<String, String>(type, id), accountId);
         }
     }
 
@@ -52,10 +59,20 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
         Map<Pair<String, String>,Object> changed = this.changed;
         this.changed = new ConcurrentHashMap<Pair<String,String>, Object>();
 
-        for ( Pair<String, String> pair: changed.keySet() ) {
+        for ( Map.Entry<Pair<String, String>,Object> entry : changed.entrySet() ) {
+            Pair<String,String> pair = entry.getKey();
+            Object accountId = entry.getValue();
+
             eventService.publish(EventVO.newEvent(IaasEvents.RESOURCE_CHANGE)
                     .withResourceType(pair.getLeft())
                     .withResourceId(pair.getRight()));
+
+            if ( accountId instanceof Number ) {
+                String event = IaasEvents.appendAccount(IaasEvents.RESOURCE_CHANGE, ((Number)accountId).longValue());
+                eventService.publish(EventVO.newEvent(event)
+                        .withResourceType(pair.getLeft())
+                        .withResourceId(pair.getRight()));
+            }
         }
     }
 

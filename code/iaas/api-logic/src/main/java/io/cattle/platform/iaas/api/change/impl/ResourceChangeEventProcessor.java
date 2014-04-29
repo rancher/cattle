@@ -24,7 +24,7 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
 
     @Override
     public void processEvent(EventVO<Object> event) {
-        if ( ! IaasEvents.RESOURCE_CHANGE.equals(event.getName()) ) {
+        if ( event.getName() == null || ! event.getName().startsWith(IaasEvents.RESOURCE_CHANGE) ) {
             return;
         }
 

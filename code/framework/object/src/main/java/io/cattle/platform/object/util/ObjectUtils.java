@@ -23,6 +23,10 @@ public class ObjectUtils {
         }
     }
 
+    public static Object getAccountId(Object obj) {
+        return getPropertyIgnoreErrors(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
+    }
+
     public static Object getId(Object obj) {
         return getPropertyIgnoreErrors(obj, ObjectMetaDataManager.ID_FIELD);
     }
