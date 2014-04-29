@@ -167,21 +167,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             }
 
             if ( e.getExitReason().isRethrow() ) {
-                if ( e.getExitReason() == RETRY_EXCEPTION ) {
-                    log.info("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
-                            e.getCause().getMessage());
-                } else {
-                    log.error("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
-                            e.getCause().getMessage());
-                }
                 ExceptionUtils.rethrowRuntime(e.getCause());
             }
 
-            if ( e.getExitReason() == SCHEDULED ) {
-                log.info("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
-            } else {
-                log.error("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
-            }
             throw new ProcessInstanceException(this, e);
         } finally {
             context.getProcessManager().persistState(this, schedule);
@@ -207,6 +195,20 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                     execution.exit(DELEGATE);
                 }
             } catch ( ProcessExecutionExitException e ) {
+                if ( e.getExitReason().isRethrow() ) {
+                    if ( e.getExitReason() == RETRY_EXCEPTION ) {
+                        log.info("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
+                                e.getCause().getMessage());
+                    } else {
+                        log.error("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
+                                e.getCause().getMessage());
+                    }
+                } else if ( e.getExitReason() == SCHEDULED ) {
+                    log.info("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
+                } else {
+                    log.error("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
+                }
+
                 throw e;
             } catch ( IdempotentRetryException e ) {
                 execution.setException(new ExceptionLog(e));
@@ -215,6 +217,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 throw new ProcessExecutionExitException(TIMEOUT, t);
             } catch ( Throwable t) {
                 execution.setException(new ExceptionLog(t));
+                log.error("Unknown exception", t);
                 throw new ProcessExecutionExitException(UNKNOWN_EXCEPTION, t);
             } finally {
                 closeLog(engineContext);
