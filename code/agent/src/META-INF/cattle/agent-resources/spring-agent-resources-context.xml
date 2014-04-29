@@ -22,6 +22,7 @@
                 <property name="locations" value="classpath*:agents/**/*" />
             </bean>
         </property>
+        <property name="factories" value="#{extensionManager.list('config.item.context.factory')}" />
     </bean>
 
 </beans>
