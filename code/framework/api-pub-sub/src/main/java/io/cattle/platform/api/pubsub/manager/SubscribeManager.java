@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.inject.Inject;
 
@@ -36,7 +38,7 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
     @Override
     protected Object createInternal(String type, ApiRequest request) {
         List<String> eventNames = getEventNames(request);
-        List<String> filteredEventNames = new ArrayList<String>(eventNames.size());
+        Set<String> filteredEventNames = new TreeSet<String>();
 
         Policy policy = ApiUtils.getPolicy();
 

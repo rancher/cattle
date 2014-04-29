@@ -6,6 +6,7 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -24,7 +25,7 @@ public class BlockingSubscriptionHandler extends NonBlockingSubscriptionHandler 
     }
 
     @Override
-    protected Future<?> subscribe(List<String> eventNames, EventListener listener, MessageWriter writer, AtomicBoolean disconnect,
+    protected Future<?> subscribe(Collection<String> eventNames, EventListener listener, MessageWriter writer, AtomicBoolean disconnect,
             Object writeLock, boolean strip) {
 
         Future<?> future = super.subscribe(eventNames, listener, writer, disconnect, writeLock, strip);

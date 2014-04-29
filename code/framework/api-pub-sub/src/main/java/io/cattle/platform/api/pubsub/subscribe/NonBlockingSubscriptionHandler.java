@@ -17,6 +17,7 @@ import io.github.ibuildthecloud.gdapi.model.Schema.Method;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -63,7 +64,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
     }
 
     @Override
-    public boolean subscribe(List<String> eventNames, ApiRequest apiRequest, final boolean strip) throws IOException {
+    public boolean subscribe(Collection<String> eventNames, ApiRequest apiRequest, final boolean strip) throws IOException {
         if ( Method.GET.isMethod(apiRequest.getMethod()) && ! supportGet ) {
             return false;
         }
@@ -147,7 +148,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         writer.write(content, writeLock);
     }
 
-    protected Future<?> subscribe(List<String> eventNames, EventListener listener, MessageWriter writer, AtomicBoolean disconnect,
+    protected Future<?> subscribe(Collection<String> eventNames, EventListener listener, MessageWriter writer, AtomicBoolean disconnect,
             Object writeLock, boolean strip) {
         boolean unsubscribe = false;
         try {

@@ -10,6 +10,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -31,7 +32,7 @@ public class ClassAvailableSubscriptionHandler implements SubscriptionHandler, P
     List<ApiPubSubEventPostProcessor> eventProcessors;
 
     @Override
-    public boolean subscribe(List<String> eventNames, ApiRequest apiRequest, boolean strip) throws IOException {
+    public boolean subscribe(Collection<String> eventNames, ApiRequest apiRequest, boolean strip) throws IOException {
         if ( enabled ) {
             return handler.subscribe(eventNames, apiRequest, strip);
         } else {
