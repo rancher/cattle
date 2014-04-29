@@ -292,6 +292,10 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         }
         TableField<?, ?> field = fields[0];
 
+        if ( ! field.getDataType().isNumeric() ) {
+            return;
+        }
+
         String propertyName = getNameFromField(field.getTable().getRecordType(), field.getName());
         String referenceName = propertyName;
         if ( field.getName().endsWith(ID_FIELD) ) {
