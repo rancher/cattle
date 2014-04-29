@@ -239,21 +239,29 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         ConnectFuture connect = client.connect(opts.getHost(), opts.getPort());
         connect.await(SSH_TIMEOUT.get());
         ClientSession session = connect.getSession();
-        if ( session == null ) {
-            throw new IOException("Failed to create session to [" + opts + "]");
-        }
+        boolean success = false;
+        try {
+                if ( session == null ) {
+                    throw new IOException("Failed to create session to [" + opts + "]");
+                }
 
-        KeyPair kp = keyPairProvider.loadKey(KeyPairProvider.SSH_RSA);
-        session.authPublicKey(opts.getUsername(), kp);
-        if ( ! authSuccess(session) ) {
-            session.authPassword(opts.getUsername(), opts.getPassword());
-        }
+                KeyPair kp = keyPairProvider.loadKey(KeyPairProvider.SSH_RSA);
+                session.authPublicKey(opts.getUsername(), kp);
+                if ( ! authSuccess(session) ) {
+                    session.authPassword(opts.getUsername(), opts.getPassword());
+                }
 
-        if ( ! authSuccess(session) ) {
-            throw new IOException("Failed to authenticate with [" + opts + "]");
-        }
+                if ( ! authSuccess(session) ) {
+                    throw new IOException("Failed to authenticate with [" + opts + "]");
+                }
 
-        return session;
+                success = true;
+                return session;
+        } finally {
+            if ( ! success && session != null ) {
+                session.close(true);
+            }
+        }
     }
 
     protected boolean authSuccess(ClientSession session) {
