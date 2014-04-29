@@ -8,7 +8,7 @@ def test_sample_data(admin_client, system_account):
     assert network.isPublic
     assert network.kind == 'hostOnlyNetwork'
     assert network.removed is None
-    assert network.state == 'active'
+    assert network.state == 'active' or network.state == 'inactive'
     assert network.hostVnetUri == 'bridge://docker0'
     assert network.dynamicCreateVnet
 

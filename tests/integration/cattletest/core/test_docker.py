@@ -288,8 +288,12 @@ def test_agent_instance(admin_client, docker_context):
                                   hostVnetUri='bridge://docker0',
                                   dynamicCreateVnet=True)
 
-    create_and_activate(admin_client, 'ipsecHostNatService',
-                        networkId=network.id)
+    ni = create_and_activate(admin_client, 'agentInstanceProvider',
+                             networkId=network.id)
+
+    create_and_activate(admin_client, 'dnsService',
+                        networkId=network.id,
+                        networkServiceProviderId=ni.id)
 
     c = admin_client.create_container(imageUuid=TEST_IMAGE_UUID,
                                       networkIds=[network.id])

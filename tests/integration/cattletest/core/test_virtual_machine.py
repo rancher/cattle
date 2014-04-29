@@ -95,6 +95,8 @@ def test_virtual_machine_network(admin_client, client, sim_context, network,
 
     assert nic.network().id == network.id
     assert nic.state == 'active'
+    assert nic.macAddress is not None
+    assert nic.macAddress.startswith(network.macPrefix)
 
     nic_admin = admin_client.reload(nic)
     vm_admin = admin_client.reload(vm)
@@ -111,6 +113,7 @@ def test_virtual_machine_network(admin_client, client, sim_context, network,
 
     assert ip_admin.account().id == vm_admin.accountId
     assert ip_admin.subnet().id == nic_admin.subnet().id
+    assert ip_admin.role == 'primary'
 
     assert ip.address is not None
     assert ip.address.startswith('192.168.0')
@@ -282,9 +285,11 @@ def test_virtual_machine_purge_subnet(admin_client, sim_context, subnet, vnet):
 
     nic = nics[0]
     assert nic.state == 'removed'
+    assert nic.macAddress is not None
 
     nic = admin_client.wait_success(nic.purge())
     assert nic.state == 'purged'
+    assert nic.macAddress is None
 
     assert len(nic.ipAddressNicMaps()) == 1
     assert nic.ipAddressNicMaps()[0].state == 'removed'
