@@ -91,7 +91,7 @@ public abstract class AbstractEventService implements EventService {
         }
 
         try {
-            getEventLogOut().debug("{} : {}", event.getName(), eventString);
+            getEventLogOut().debug(eventString);
             increment(event, request);
             return doPublish(event.getName(), event, eventString);
         } catch ( Throwable e ) {
