@@ -1,5 +1,6 @@
 package io.cattle.platform.db.jooq.converter;
 
+import io.cattle.platform.db.jooq.converter.impl.JsonUnmodifiableMap;
 import io.cattle.platform.json.JacksonJsonMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.exception.ExceptionUtils;
@@ -27,7 +28,7 @@ public class DataConverter implements Converter<String, Map<String,Object>> {
         }
 
         try {
-            return mapper.readValue(databaseObject);
+            return new JsonUnmodifiableMap<String, Object>(mapper, databaseObject);
         } catch (IOException e) {
             log.error("Failed to unmarshall [{}]", databaseObject, e);
             Map<String,Object> result = new HashMap<String, Object>();
