@@ -58,10 +58,6 @@ def pull_image(image, progress):
 def get_compute():
     return _DOCKER_COMPUTE
 
-from .storage import DockerPool
-from .compute import DockerCompute
-from .delegate import DockerDelegate
-from cattle import type_manager
 
 try:
     from docker import Client
@@ -77,11 +73,18 @@ except Exception, e:
     _ENABLED = False
 
 if _ENABLED and DockerConfig.docker_enabled():
+    from .storage import DockerPool
+    from .compute import DockerCompute
+    from .network import NetworkSetup
+    from .delegate import DockerDelegate
+    from cattle import type_manager
+
     _DOCKER_POOL = DockerPool()
     _DOCKER_COMPUTE = DockerCompute()
     _DOCKER_DELEGATE = DockerDelegate()
     type_manager.register_type(type_manager.STORAGE_DRIVER, _DOCKER_POOL)
     type_manager.register_type(type_manager.COMPUTE_DRIVER, _DOCKER_COMPUTE)
     type_manager.register_type(DOCKER_COMPUTE_LISTENER, _DOCKER_DELEGATE)
+    type_manager.register_type(DOCKER_COMPUTE_LISTENER, NetworkSetup())
     type_manager.register_type(type_manager.PRE_REQUEST_HANDLER,
                                _DOCKER_DELEGATE)

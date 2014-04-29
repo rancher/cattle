@@ -1,10 +1,6 @@
 import portalocker
 import os
-
-LOCK_DIR = "locks"
-
-if not os.path.exists(LOCK_DIR):
-    os.mkdir(LOCK_DIR)
+from cattle import Config
 
 
 class FailedToLock(Exception):
@@ -35,5 +31,8 @@ def lock(obj):
     else:
         lock_name = "{0}-{1}".format(obj["type"], obj["id"])
 
+    lock_dir = Config.lock_dir()
+    if not os.path.exists(lock_dir):
+        os.mkdir(lock_dir)
     return LockWrapper(lock_name,
-                       portalocker.Lock(os.path.join(LOCK_DIR, lock_name)))
+                       portalocker.Lock(os.path.join(lock_dir, lock_name)))

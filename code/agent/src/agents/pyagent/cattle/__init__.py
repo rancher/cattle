@@ -206,3 +206,16 @@ class Config:
     @staticmethod
     def agent_instance_cattle_home():
         return default_value('AGENT_INSTANCE_CATTLE_HOME', '/var/lib/cattle')
+
+    @staticmethod
+    def lock_dir():
+        return default_value('LOCK_DIR', os.path.join(Config.home(), 'locks'))
+
+    @staticmethod
+    def stamp():
+        return default_value('STAMP_FILE', os.path.join(Config.home(),
+                                                        '.pyagent-stamp'))
+
+    @staticmethod
+    def config_update():
+        return default_value('CONFIG_UPDATE', 'true') == 'true'

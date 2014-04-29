@@ -28,7 +28,10 @@
                 "data": {
                     "fields": {
                         "imageUuid": "docker:ibuildthecloud/helloworld",
-                        "startOnCreate": "true"
+                        "startOnCreate": "true",
+                        "environment": {
+                            "ENV1": "value1"
+                        }
                     }
                 },
                 "ports" : [

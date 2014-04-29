@@ -115,6 +115,21 @@
                         "virtualSizeBytes": null
                     }
                 ],
+                "nics": [
+                    {
+                        "macAddress": "01:02:03:04:05:06",
+                        "deviceNumber": 0,
+                        "ipAddresses": [
+                            {
+                                "address": "10.10.10.10",
+                                "role": "primary",
+                                "subnet" : {
+                                    "cidrSize": 24
+                                }
+                            }
+                        ]
+                    }
+                ],
                 "zoneId": 1
             },
             "instanceId": 211,

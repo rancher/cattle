@@ -43,7 +43,10 @@ class DockerDelegate(BaseHandler):
 
         resp = container_exec(pid, event)
 
-        return reply(req, resp)
+        if resp is None:
+            return None
+        else:
+            return reply(req, resp)
 
     def before_start(self, instance, host, config):
         if instance.get('agentId') is None:

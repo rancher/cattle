@@ -23,7 +23,7 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
 
     @staticmethod
     def _get_image_by_label(tag):
-        templates = docker_client().images(all=True)
+        templates = docker_client().images(all=True, name=tag.split(':', 1)[0])
         templates = filter(lambda x: tag in x['RepoTags'], templates)
 
         if len(templates) > 0:

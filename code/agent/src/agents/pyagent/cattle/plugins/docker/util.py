@@ -5,8 +5,9 @@ from threading import Thread
 from subprocess import Popen, PIPE
 from cattle.type_manager import get_type, MARSHALLER
 from cattle import Config
+from cattle.utils import get_command_output
 
-log = logging.getLogger('nsexec')
+log = logging.getLogger('docker')
 
 
 _local_bin = os.path.join(os.path.dirname(__file__), 'nsenter')
@@ -14,6 +15,8 @@ if os.path.exists(_local_bin):
     _NSENTER = _local_bin
 else:
     _NSENTER = 'nsenter'
+
+_NET_UTIL = os.path.join(os.path.dirname(__file__), 'net-util.sh')
 
 
 def pipe_error(ctx, stderr):
@@ -30,11 +33,33 @@ def container_exec(pid, event):
                                   event.name)
     output = ns_exec(event.name, pid, input, cmd)
 
-    return marshaller.from_string(output)
+    if output is None:
+        return None
+    else:
+        return marshaller.from_string(output)
+
+
+def net_util(pid, ip=None, mac=None, device=None):
+    args = [_NET_UTIL, '-p', str(pid)]
+
+    if ip is not None:
+        args.append('-i')
+        args.append(ip)
+
+    if mac is not None:
+        args.append('-m')
+        args.append(mac)
+
+    if device is not None:
+        args.append('-d')
+        args.append(device)
+
+    output = get_command_output(args)
+    log.info(output)
 
 
 def ns_exec(ctx, pid, input, *args, **kw):
-    cmd = [_NSENTER, '-F', '-m', '-u', '-i', '-p', '-t', str(pid),
+    cmd = [_NSENTER, '-m', '-u', '-i', '-n', '-p', '-t', str(pid),
            '--']
     cmd.extend(args)
     p = Popen(cmd, stdin=PIPE, stderr=PIPE, stdout=PIPE)

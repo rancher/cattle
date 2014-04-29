@@ -22,6 +22,7 @@ if not sys.platform.startswith("linux"):
     PS_UTIL = True
 
 log = logging.getLogger("agent")
+_STAMP_TS = None
 
 
 def _get_event_suffix(agent_id):
@@ -43,7 +44,24 @@ def _data(events, agent_id):
     return json.dumps(event)
 
 
-def _pid_exists(pid):
+def _check_ts():
+    stamp_file = Config.stamp()
+    if not os.path.exists(stamp_file):
+        return True
+
+    ts = os.path.getmtime(stamp_file)
+    global _STAMP_TS
+
+    if _STAMP_TS is None:
+        _STAMP_TS = ts
+
+    return _STAMP_TS == ts
+
+
+def _should_run(pid):
+    if not _check_ts():
+        return False
+
     if PS_UTIL:
         return psutil.pid_exists(pid)
     else:
@@ -74,14 +92,14 @@ def _worker(queue, ppid):
                 log.info("Done request %s for %s [%s] seconds", id, req.name,
                          duration)
         except Empty:
-            if not _pid_exists(ppid):
+            if not _should_run(ppid):
                 break
         except FailedToLock as e:
             log.info("%s for %s", e, req.name)
         except Exception as e:
             error_id = str(uuid.uuid4())
             log.exception("%s : Unknown error", error_id)
-            if not _pid_exists(ppid):
+            if not _should_run(ppid):
                 break
 
             if req is not None:
@@ -120,6 +138,7 @@ class EventClient:
         self._children.append(p)
 
     def run(self, events):
+        _check_ts()
         run(self._run, events)
 
     def _run(self, events):
@@ -154,8 +173,9 @@ class EventClient:
                             self._queue.put(line, block=False)
                 except Full:
                     log.info("Dropping request %s" % line)
-                if ppid is not None and not _pid_exists(ppid):
-                    log.info("Parent process has died, exiting")
+                if ppid is not None and not _should_run(ppid):
+                    log.info("Parent process has died or stamp changed,"
+                             " exiting")
                     break
         finally:
             for child in self._children:

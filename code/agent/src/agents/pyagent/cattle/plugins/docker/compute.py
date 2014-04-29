@@ -9,6 +9,7 @@ from cattle.compute import BaseComputeDriver
 from cattle.agent.handler import KindBasedMixin
 from cattle.type_manager import get_type_list
 from cattle import utils
+from docker import APIError
 
 log = logging.getLogger('docker')
 
@@ -142,10 +143,6 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         except KeyError:
             raise Exception('Can not start container with no image')
 
-        # Ensure image is pulled, somebody could have deleted it behind the
-        # scenes
-        pull_image(instance.image, progress)
-
         c = docker_client()
 
         config = {
@@ -173,17 +170,40 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             log.info('Creating docker container [%s] from config %s', name,
                      config)
 
-            for listener in get_type_list(DOCKER_COMPUTE_LISTENER):
-                listener.before_start(instance, host, config)
-
-            container = c.create_container(image_tag, **config)
+            self._call_listeners(True, instance, host, config)
+            try:
+                container = c.create_container(image_tag, **config)
+            except APIError as e:
+                try:
+                    if e.message.response.status_code == 404:
+                        # Ensure image is pulled, somebody could have deleted
+                        # it behind the scenes
+                        pull_image(instance.image, progress)
+                        container = c.create_container(image_tag, **config)
+                    else:
+                        raise(e)
+                except:
+                    raise(e)
 
         log.info('Starting docker container [%s] docker id [%s]', name,
                  container['Id'])
-        c.start(container['Id'], publish_all_ports=True)
+        c.start(container['Id'], publish_all_ports=True,
+                privileged=self._is_privileged(instance))
 
+        self._call_listeners(False, instance, host, container['Id'])
+
+    def _call_listeners(self, before, *args):
         for listener in get_type_list(DOCKER_COMPUTE_LISTENER):
-            listener.after_start(instance, host, container['Id'])
+            if before:
+                listener.before_start(*args)
+            else:
+                listener.after_start(*args)
+
+    def _is_privileged(self, instance):
+        try:
+            return instance.data.fields['privileged']
+        except (KeyError, AttributeError):
+            return False
 
     def _get_instance_host_map_data(self, obj):
         existing = self.get_container_by_name(obj.instance.uuid)

@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 from cattle import utils
 from cattle import Config
@@ -18,7 +17,7 @@ class PingHandler:
         pass
 
     def events(self):
-        return ["ping"]
+        return ['ping']
 
     def execute(self, event):
         if not _should_handle(self, event):
@@ -38,7 +37,7 @@ class ConfigUpdateHandler:
         pass
 
     def events(self):
-        return []
+        return ['config.update']
 
     def execute(self, event):
         if not _should_handle(self, event):
@@ -47,15 +46,22 @@ class ConfigUpdateHandler:
         if len(event.data.items) == 0:
             return utils.reply(event)
 
-        env = dict(os.environ)
-        env["CATTLE_ACCESS_KEY"] = Config.access_key()
-        env["CATTLE_SECRET_KEY"] = Config.secret_key()
+        item_names = []
 
-        args = [Config.config_sh(), "--url",
-                Config.config_url(event.data.configUrl)]
         for item in event.data.items:
-            args.append(item)
+            item_names.append(item.name)
 
-        subprocess.check_call(*args, env=env)
+        home = Config.home()
 
-        return utils.reply(event)
+        env = dict(os.environ)
+        env['CATTLE_ACCESS_KEY'] = Config.access_key()
+        env['CATTLE_SECRET_KEY'] = Config.secret_key()
+        env['CATTLE_CONFIG_URL'] = Config.config_url()
+        env['CATTLE_HOME'] = home
+
+        args = [Config.config_sh()] + item_names
+        output = utils.get_command_output(args, cwd=home)
+
+        return utils.reply(event, {
+            'output': output
+        })

@@ -5,19 +5,23 @@ trap cleanup EXIT
 
 cleanup()
 {
+    local exit=$?
+
     if [ -e $TEMP ]; then
         rm -rf $TEMP
     fi
     if [ -e $OLD ]; then
         rm -rf $OLD
     fi
+
+    return $exit
 }
 
 source ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
 DEST=$CATTLE_HOME/pyagent
 MAIN=$DEST/main.py
-RESTART=$DEST/reboot
+STAMP=$CATTLE_HOME/.pyagent-stamp
 OLD=$(mktemp -d ${DEST}.XXXXXXXX)
 TEMP=$(mktemp -d ${DEST}.XXXXXXXX)
 
@@ -35,6 +39,8 @@ stage()
     fi
     mv $TEMP ${DEST}
     rm -rf ${OLD}
+
+    echo $RANDOM > $STAMP
 }
 
 conf()
@@ -56,7 +62,6 @@ start()
     if [ -n "$NO_START" ]; then
         return 0
     fi
-    echo $RANDOM > $RESTART
     chmod +x $MAIN
     if [ "$CATTLE_PYPY" = "true" ] && which pypy >/dev/null; then
         MAIN="pypy $MAIN"
@@ -89,4 +94,3 @@ done
 
 conf
 stage
-start

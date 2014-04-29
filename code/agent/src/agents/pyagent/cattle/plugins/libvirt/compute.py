@@ -179,20 +179,45 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
         return ret
 
-    def _do_instance_activate(self, instance, host, progress):
-        config = InstanceConfig(instance, host)
-        template = self._get_template(config)
+    def _get_interfaces(self, config, instance, host):
         default_network = config.param('defaultNetwork', {
             'type': 'network',
             'source': [
                 {'network': 'default'}
             ]
         })
+        interfaces = []
 
-        if not isinstance(default_network, dict):
-            interfaces = []
-        else:
-            interfaces = [default_network]
+        for nic in sorted(instance.nics, key=lambda x: x.deviceNumber):
+            network = default_network
+
+            try:
+                network = nic.data.libvirt.network
+            except (KeyError, AttributeError):
+                pass
+
+            try:
+                network = nic.network.data.libvirt.network
+            except (KeyError, AttributeError):
+                pass
+
+            if nic.macAddress is not None and 'mac' not in network:
+                network['mac'] = [{'address': nic.macAddress}]
+
+            interfaces.append(network)
+
+        if len(instance) == 0:
+            if isinstance(default_network, dict):
+                interfaces = [default_network]
+
+        print interfaces
+
+        return interfaces
+
+    def _do_instance_activate(self, instance, host, progress):
+        config = InstanceConfig(instance, host)
+        template = self._get_template(config)
+        interfaces = self._get_interfaces(config, instance, host)
 
         output = template.render(instance=instance,
                                  volumes=self._get_volumes(instance),

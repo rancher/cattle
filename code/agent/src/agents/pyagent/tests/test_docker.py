@@ -28,6 +28,15 @@ def _delete_container(name):
                 client.remove_container(c)
 
 
+def _get_container(name):
+    client = Client()
+    for c in client.containers(all=True):
+        for container_name in c['Names']:
+            if name == container_name:
+                return c
+    return None
+
+
 @if_docker
 def test_image_list():
     c = Client()
@@ -71,11 +80,11 @@ def test_instance_activate_need_pull_image(agent, responses):
     except APIError:
         pass
 
-    test_instance_activate(agent, responses)
+    test_instance_only_activate(agent, responses)
 
 
 @if_docker
-def test_instance_activate(agent, responses):
+def test_instance_only_activate(agent, responses):
     _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
 
     def post(req, resp):
@@ -160,6 +169,7 @@ def test_instance_activate_agent_instance(agent, responses):
         assert 'CATTLE_CONFIG_URL_PATH=/a/path' not in inspect['Config']['Env']
         assert 'CATTLE_CONFIG_URL_PORT={0}'.format(port) not in \
                inspect['Config']['Env']
+        assert 'ENV1=value1' in inspect['Config']['Env']
 
     event_test(agent, 'docker/instance_activate_agent_instance',
                post_func=post)
@@ -211,7 +221,7 @@ def test_instance_activate_command_args(agent, responses):
 def test_instance_deactivate(agent, responses):
     CONFIG_OVERRIDE['STOP_TIMEOUT'] = 1
 
-    test_instance_activate(agent, responses)
+    test_instance_only_activate(agent, responses)
 
     def post(req, resp):
         del resp['data']['instance']['+data']['dockerContainer']['Created']
