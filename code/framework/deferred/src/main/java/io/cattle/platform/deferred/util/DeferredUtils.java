@@ -2,6 +2,7 @@ package io.cattle.platform.deferred.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.util.exception.ExceptionUtils;
 
 public class DeferredUtils {
 
@@ -32,6 +34,23 @@ public class DeferredUtils {
 
     public static void defer(Runnable runnable) {
         TL.get().add(runnable);
+    }
+
+    public static <T> T nest(Callable<T> callable) {
+        List<Runnable> old = TL.get();
+        TL.set(new ArrayList<Runnable>());
+        try {
+            T result = callable.call();
+            runDeferred();
+            return result;
+        } catch (Exception e) {
+            ExceptionUtils.rethrowExpectedRuntime(e);
+        } finally {
+            TL.set(old);
+        }
+
+        /* This really isn't possible to get to due to rethrowExpectedRuntime() above */
+        return null;
     }
 
     public static void resetDeferred() {
