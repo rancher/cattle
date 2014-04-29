@@ -40,6 +40,24 @@
         </property>
     </bean>
 
+    <bean id="LockingJooqConfiguration" class="io.cattle.platform.db.jooq.config.Configuration" autowire-candidate="false" >
+        <property name="name" value="cattle" />
+        <property name="connectionProvider" ref="JooqConnectionProvider" />
+        <property name="listeners">
+            <list>
+                <bean class="io.cattle.platform.db.jooq.logging.LoggerListener" >
+                    <property name="maxLength" value="1000" />
+                </bean>
+                <bean class="org.jooq.tools.StopWatchListener" />
+           </list>
+        </property>
+        <property name="settings">
+            <bean class="org.jooq.conf.Settings" >
+                <property name="executeWithOptimisticLocking" value="true" />
+            </bean>
+        </property>
+    </bean>
+
     <bean id="CoreTransactionManager"
         class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="DataSource" />
