@@ -66,7 +66,7 @@ public class SampleDataStartupV1 implements InitializationTask {
                 NETWORK.IS_PUBLIC, true,
                 NETWORK.KIND, NetworkConstants.KIND_HOSTONLY,
                 NETWORK.NAME, "Managed Network on docker0",
-                NETWORK.STATE, CommonStatesConstants.ACTIVE);
+                NETWORK.STATE, CommonStatesConstants.INACTIVE);
 
         createByUuid(Subnet.class, "docker0-subnet",
                 SUBNET.ACCOUNT_ID, system.getId(),
