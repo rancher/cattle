@@ -21,25 +21,18 @@ public class InstanceConstants {
     public static final String REMOVE_OPTION = "remove";
     public static final String DEALLOCATE_OPTION = "deallocateFromHost";
 
-<<<<<<< HEAD
-    public static final String PROCESS_RESTART = "instance.restart";
-=======
->>>>>>> [model] various changes
     public static final String PROCESS_START = "instance.start";
     public static final String PROCESS_STOP = "instance.stop";
+    public static final String PROCESS_RESTART = "instance.restart";
 
     public static final String KIND_CONTAINER = "container";
     public static final String KIND_VIRTUAL_MACHINE = "virtualMachine";
 
     public static final String STATE_RUNNING = "running";
-<<<<<<< HEAD
+    public static final String STATE_STOPPED = "stopped";
 
     public static final String ON_STOP_STOP = "stop";
     public static final String ON_STOP_RESTART = "restart";
     public static final String ON_STOP_REMOVE = "remove";
 
 }
-=======
-    public static final String STATE_STOPPED = "stopped";
-}
->>>>>>> [model] various changes

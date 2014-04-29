@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ResourcePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ResourcePoolRecord> {
 
-	private static final long serialVersionUID = 339155183;
+	private static final long serialVersionUID = 1238986221;
 
 	/**
 	 * The singleton instance of <code>cattle.resource_pool</code>
@@ -154,7 +154,7 @@ public class ResourcePoolTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.ResourcePoolRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.ResourcePoolRecord>>asList(io.cattle.platform.core.model.Keys.KEY_RESOURCE_POOL_PRIMARY, io.cattle.platform.core.model.Keys.KEY_RESOURCE_POOL_IDX_RESOURCE_POOL_UUID, io.cattle.platform.core.model.Keys.KEY_RESOURCE_POOL_IDX_POOL_ITEM);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.ResourcePoolRecord>>asList(io.cattle.platform.core.model.Keys.KEY_RESOURCE_POOL_PRIMARY, io.cattle.platform.core.model.Keys.KEY_RESOURCE_POOL_IDX_RESOURCE_POOL_UUID, io.cattle.platform.core.model.Keys.KEY_RESOURCE_POOL_IDX_POOL_ITEM2);
 	}
 
 	/**

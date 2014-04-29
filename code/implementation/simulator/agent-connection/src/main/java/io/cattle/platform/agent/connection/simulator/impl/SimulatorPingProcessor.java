@@ -36,7 +36,7 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
                 Ping.class);
 
         if ( ping.getOption(Ping.RESOURCES) && ! agent.getUri().startsWith("delegate://") ) {
-            addResource(pong, agent);
+            addResources(pong, agent);
         }
 
         if ( ping.getOption(Ping.INSTANCES) && ! agent.getUri().startsWith("delegate://") ) {

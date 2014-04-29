@@ -313,7 +313,6 @@ def create_and_activate(client, type, **kw):
     return obj
 
 
-<<<<<<< HEAD
 def delete_running_sim_instances(admin_client):
     for c in admin_client.list_instance(state='running'):
         if c.hosts()[0].kind == 'sim':
@@ -345,6 +344,7 @@ def wait_for(callback, timeout=DEFAULT_TIMEOUT):
         if time.time() - start > timeout:
             raise Exception('Timeout waiting for condition')
         ret = callback()
+    return ret
 
 
 def find_one(method, *args, **kw):
