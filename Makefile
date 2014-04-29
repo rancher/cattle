@@ -20,7 +20,7 @@ clean: build-env
 	./tools/docker/build.sh rm -rf dist ./code/agent/src/agents/pyagent/dist ./tests/integration/.tox ./code/agent/src/agents/pyagent/.tox
 
 test: build
-	FORCE_DB=h2 ./tools/docker/build.sh ./tools/build/runtests.sh
+	FORCE_DB=hsqldb ./tools/docker/build.sh ./tools/build/runtests.sh
 
 bundle:
 	./tools/docker/build.sh mvn -Drelease clean package
