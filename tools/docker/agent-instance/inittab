@@ -1,0 +1,3 @@
+::sysinit:bash /etc/init.d/agent-instance-startup
+::respawn:/usr/bin/monit -Ic /etc/monitrc
+#::askfirst:-/bin/sh

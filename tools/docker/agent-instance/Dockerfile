@@ -9,5 +9,10 @@ RUN apt-get update && apt-get install -y \
     busybox \
     psmisc \
     uuid-runtime
-ADD startup.sh /startup.sh
-CMD ["/startup.sh"]
+RUN ln -s /bin/busybox /init
+ADD inittab /etc/inittab
+ADD monitrc /etc/monitrc
+RUN chmod 600 /etc/monitrc
+ADD startup.sh /etc/init.d/agent-instance-startup
+RUN touch /etc/agent-instance
+CMD ["/init"]
