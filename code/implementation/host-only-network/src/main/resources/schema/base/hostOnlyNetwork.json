@@ -1,7 +1,8 @@
 {
     "resourceFields" : {
         "hostVnetUri" : {
-            "type" : "string"
+            "type" : "string",
+            "nullable" : true
         },
         "dynamicCreateVnet" : {
             "type" : "boolean",
