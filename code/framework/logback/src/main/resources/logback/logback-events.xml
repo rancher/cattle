@@ -6,7 +6,7 @@
     <appender name="FILE_EVENT_IN" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${logDir}cattle-event-in.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logDir}event-in${fileNamePattern}</fileNamePattern>
+            <fileNamePattern>${logDir}cattle-event-in${fileNamePattern}</fileNamePattern>
             <maxHistory>${maxHistory}</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -17,7 +17,7 @@
     <appender name="FILE_EVENT_OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${logDir}cattle-event-out.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logDir}event-out${fileNamePattern}</fileNamePattern>
+            <fileNamePattern>${logDir}cattle-event-out${fileNamePattern}</fileNamePattern>
             <maxHistory>${maxHistory}</maxHistory>
         </rollingPolicy>
         <encoder>
