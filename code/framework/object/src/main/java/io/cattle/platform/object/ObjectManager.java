@@ -48,6 +48,10 @@ public interface ObjectManager {
 
     <T> T findOne(Class<T> clz, Object key, Object... valueKeyValue);
 
+    <T> T findAny(Class<T> clz, Map<Object,Object> values);
+
+    <T> T findAny(Class<T> clz, Object key, Object... valueKeyValue);
+
     <T> List<T> find(Class<T> clz, Map<Object,Object> values);
 
     <T> List<T> find(Class<T> clz, Object key, Object... valueKeyValue);

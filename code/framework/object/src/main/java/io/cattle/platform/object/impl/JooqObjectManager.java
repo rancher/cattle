@@ -333,6 +333,18 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @SuppressWarnings("unchecked")
     @Override
+    public <T> T findAny(Class<T> clz, Map<Object, Object> values) {
+        return (T)toQuery(clz, values).fetchAny();
+    }
+
+    @Override
+    public <T> T findAny(Class<T> clz, Object key, Object... valueKeyValue) {
+        Map<Object,Object> map = CollectionUtils.asMap(key, valueKeyValue);
+        return findAny(clz, map);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
     public <T> List<T> find(Class<T> clz, Map<Object, Object> values) {
         return (List<T>)toQuery(clz, values).fetch();
     }
