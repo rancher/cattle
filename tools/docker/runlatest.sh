@@ -38,7 +38,7 @@ while true; do
     rm -rf bundles
     make
     stop docker || true
-    ./bundles/*/binary/*-dev -d -D &
+    ./bundles/*/binary/*-dev -d -D 2>&1 | tee dockerd.log &
     PID=$!
     sleep 3600
     cleanup
