@@ -29,9 +29,12 @@ def test_delegate_agent_create(client, admin_client, sim_context,
     create_and_activate(admin_client, 'subnet',
                         networkId=network.id,
                         networkAddress='192.168.1.0')
-    create_and_activate(admin_client, 'ipsecHostNatService',
-                        networkId=network.id,
-                        agentInstanceImageUuid=_IMAGE_UUID)
+    ni = create_and_activate(admin_client, 'agentInstanceProvider',
+                             networkId=network.id,
+                             agentInstanceImageUuid=_IMAGE_UUID)
+    create_and_activate(admin_client, 'networkService',
+                        networkServiceProviderId=ni.id,
+                        networkId=network.id)
 
     c = client.create_container(imageUuid=sim_context['imageUuid'],
                                 networkIds=[network.id])
@@ -43,7 +46,9 @@ def test_delegate_agent_create(client, admin_client, sim_context,
     vnets = network.vnets()
     assert len(vnets) == 1
 
-    uri = 'delegate:///?vnetId=' + get_plain_id(admin_client, vnets[0])
+    uri = 'delegate:///?vnetId={}&networkServiceProviderId={}'.format(
+        get_plain_id(admin_client, vnets[0]),
+        get_plain_id(admin_client, ni))
     agents = admin_client.list_agent(uri=uri)
 
     assert len(agents) == 1
@@ -60,6 +65,7 @@ def test_delegate_agent_create(client, admin_client, sim_context,
     instance = admin_client.wait_success(instance)
 
     assert instance.state == 'running'
+    assert instance.kind == 'container'
     assert instance.accountId == system_account.id
     assert instance.image().uuid == _IMAGE_UUID
     assert len(instance.nics()) == 1

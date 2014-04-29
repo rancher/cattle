@@ -280,3 +280,33 @@ def test_docker_ports_from_container(client, admin_client, docker_context):
     assert count == 1
 
     c.stop(remove=True)
+
+
+@if_docker
+def test_agent_instance(admin_client, docker_context):
+    network = create_and_activate(admin_client, 'hostOnlyNetwork',
+                                  hostVnetUri='bridge://docker0',
+                                  dynamicCreateVnet=True)
+
+    create_and_activate(admin_client, 'ipsecHostNatService',
+                        networkId=network.id)
+
+    c = admin_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                      networkIds=[network.id])
+    c = admin_client.wait_success(c)
+    assert c.state == 'running'
+
+    agent_instance = None
+    for nic in network.nics():
+        instance = nic.instance()
+        if instance.agentId is not None:
+            agent_instance = instance
+            break
+
+    assert agent_instance is not None
+
+    agent_instance = admin_client.wait_success(agent_instance)
+    assert agent_instance.state == 'running'
+
+    agent = admin_client.wait_success(agent_instance.agent())
+    assert agent.state == 'active'

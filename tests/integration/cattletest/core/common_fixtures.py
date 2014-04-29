@@ -10,6 +10,7 @@ NOT_NONE = object()
 DEFAULT_TIMEOUT = 45
 DEFAULT_AGENT_URI = 'ssh://root@localhost:22'
 DEFAULT_AGENT_UUID = 'test-agent'
+SLEEP_DELAY = 0.5
 
 
 def _admin_client():
@@ -235,7 +236,7 @@ def get_agent(admin_client, name, default_uri=DEFAULT_AGENT_URI,
                                 uri=uri)
 
     while len(agent.hosts()) == 0:
-        time.sleep(0.5)
+        time.sleep(SLEEP_DELAY)
 
     return agent
 
@@ -312,6 +313,7 @@ def create_and_activate(client, type, **kw):
     return obj
 
 
+<<<<<<< HEAD
 def delete_running_sim_instances(admin_client):
     for c in admin_client.list_instance(state='running'):
         if c.hosts()[0].kind == 'sim':
@@ -344,4 +346,12 @@ def wait_for(callback, timeout=DEFAULT_TIMEOUT):
             raise Exception('Timeout waiting for condition')
         ret = callback()
 
+
+def find_one(method, *args, **kw):
+    return find_count(1, method, *args, **kw)[0]
+
+
+def find_count(count, method, *args, **kw):
+    ret = method(*args, **kw)
+    assert len(ret) == count
     return ret
