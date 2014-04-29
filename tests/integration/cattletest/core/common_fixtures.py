@@ -316,7 +316,10 @@ def create_and_activate(client, type, **kw):
 def stop_running_sim_instances(admin_client):
     for c in admin_client.list_instance(state='running'):
         if c.hosts()[0].kind == 'sim':
-            c.stop()
+            try:
+                c.stop()
+            except:
+                pass
 
 
 def one(method, *args, **kw):

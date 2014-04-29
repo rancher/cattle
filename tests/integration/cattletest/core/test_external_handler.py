@@ -3,7 +3,7 @@ from common_fixtures import *  # NOQA
 TEST_HANDLER_PREFIX = 'test-handler-'
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='module', autouse=True)
 def tear_down(request, admin_client):
     request.addfinalizer(lambda: _disable_test_handlers(admin_client))
 

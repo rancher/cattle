@@ -234,7 +234,7 @@ def test_instance_deactivate(agent, responses):
 
 @if_docker
 def test_ping(agent, responses):
-    test_instance_activate(agent, responses)
+    test_instance_only_activate(agent, responses)
 
     CONFIG_OVERRIDE['DOCKER_UUID'] = 'testuuid'
     CONFIG_OVERRIDE['PHYSICAL_HOST_UUID'] = 'hostuuid'
