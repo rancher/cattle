@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NetworkServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.NetworkServiceRecord> {
 
-	private static final long serialVersionUID = -1138721175;
+	private static final long serialVersionUID = -191196892;
 
 	/**
 	 * The singleton instance of <code>cattle.network_service</code>
@@ -87,6 +87,11 @@ public class NetworkServiceTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NetworkServiceRecord, java.lang.Long> NETWORK_ID = createField("network_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.network_service.network_service_provider_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NetworkServiceRecord, java.lang.Long> NETWORK_SERVICE_PROVIDER_ID = createField("network_service_provider_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.network_service</code> table reference
 	 */
 	public NetworkServiceTable() {
@@ -137,7 +142,7 @@ public class NetworkServiceTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.NetworkServiceRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.NetworkServiceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_NETWORK_SERVICE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_NETWORK_SERVICE__NETWORK_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.NetworkServiceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_NETWORK_SERVICE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_NETWORK_SERVICE__NETWORK_ID, io.cattle.platform.core.model.Keys.FK_NETWORK_SERVICE__NETWORK_SERVICE_PROVIDER_ID);
 	}
 
 	/**

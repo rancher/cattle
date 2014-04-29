@@ -129,6 +129,16 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.NetworkServiceTable NETWORK_SERVICE = io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
 
 	/**
+	 * The table cattle.network_service_provider
+	 */
+	public static final io.cattle.platform.core.model.tables.NetworkServiceProviderTable NETWORK_SERVICE_PROVIDER = io.cattle.platform.core.model.tables.NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER;
+
+	/**
+	 * The table cattle.network_service_provider_instance_map
+	 */
+	public static final io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable NETWORK_SERVICE_PROVIDER_INSTANCE_MAP = io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.NETWORK_SERVICE_PROVIDER_INSTANCE_MAP;
+
+	/**
 	 * The table cattle.nic
 	 */
 	public static final io.cattle.platform.core.model.tables.NicTable NIC = io.cattle.platform.core.model.tables.NicTable.NIC;
