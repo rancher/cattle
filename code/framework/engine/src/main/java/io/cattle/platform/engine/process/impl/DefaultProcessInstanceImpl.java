@@ -195,7 +195,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                     execution.exit(DELEGATE);
                 }
             } catch ( ProcessExecutionExitException e ) {
-                if ( e.getExitReason().isRethrow() ) {
+                if ( e.getExitReason() != null && e.getExitReason().getResult() == ProcessResult.SUCCESS ) {
+                    throw e;
+                } else if ( e.getExitReason().isRethrow() ) {
                     if ( e.getExitReason() == RETRY_EXCEPTION ) {
                         log.info("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
                                 e.getCause().getMessage());
