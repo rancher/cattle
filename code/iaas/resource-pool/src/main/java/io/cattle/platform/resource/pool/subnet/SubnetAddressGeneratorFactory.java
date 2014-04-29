@@ -2,17 +2,19 @@ package io.cattle.platform.resource.pool.subnet;
 
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.resource.pool.PooledResourceItemGenerator;
-import io.cattle.platform.resource.pool.PooledResourceItemGeneratorFactory;
+import io.cattle.platform.resource.pool.ResourcePoolManager;
+import io.cattle.platform.resource.pool.impl.AbstractTypeAndQualifierPooledItemGeneratorFactory;
 
-public class SubnetAddressGeneratorFactory implements PooledResourceItemGeneratorFactory {
+public class SubnetAddressGeneratorFactory extends AbstractTypeAndQualifierPooledItemGeneratorFactory {
+
+    public SubnetAddressGeneratorFactory() {
+        super(Subnet.class, ResourcePoolManager.DEFAULT_QUALIFIER);
+    }
 
     @Override
-    public PooledResourceItemGenerator getGenerator(Object pool) {
-        if ( pool instanceof Subnet ) {
-            return new SubnetAddressGenerator((Subnet)pool);
-        }
-
-        return null;
+    protected PooledResourceItemGenerator createGenerator(Object pool, String qualifier) {
+        Subnet subnet = (Subnet)pool;
+        return new SubnetAddressGenerator(subnet.getStartAddress(), subnet.getEndAddress());
     }
 
 }

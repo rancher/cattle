@@ -29,6 +29,11 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
 
     @Override
     public PooledResource allocateResource(Object pool, Object owner) {
+        return allocateResource(pool, DEFAULT_QUALIFIER, owner);
+    }
+
+    @Override
+    public PooledResource allocateResource(Object pool, String qualifier, Object owner) {
         String poolType = getResourceType(pool);
         long poolId = getResourceId(pool);
         String ownerType = getResourceType(owner);
@@ -37,6 +42,7 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         Map<Object,Object> keys = CollectionUtils.asMap(
                 (Object)RESOURCE_POOL.POOL_TYPE, poolType,
                 (Object)RESOURCE_POOL.POOL_ID, poolId,
+                RESOURCE_POOL.QUALIFIER, qualifier,
                 RESOURCE_POOL.OWNER_TYPE, ownerType,
                 RESOURCE_POOL.OWNER_ID, ownerId);
 
@@ -46,11 +52,11 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
             return new DefaultPooledResource(resourcePool.get(0).getItem());
         }
 
-        String item = getItem(keys, pool);
+        String item = getItem(keys, pool, qualifier);
 
         if ( item != null ) {
-        log.info("Assigning [{}] from pool [{}:{}] to owner [{}:{}]", item,
-                poolType, poolId, ownerType, ownerId);
+                log.info("Assigning [{}] from pool [{}:{}] to owner [{}:{}]", item,
+                        poolType, poolId, ownerType, ownerId);
         }
 
         return item == null ? null : new DefaultPooledResource(item);
@@ -58,6 +64,11 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
 
     @Override
     public void releaseResource(Object pool, Object owner) {
+        releaseResource(pool, DEFAULT_QUALIFIER, owner);
+    }
+
+    @Override
+    public void releaseResource(Object pool, String qualifier, Object owner) {
         String poolType = getResourceType(pool);
         long poolId = getResourceId(pool);
         String ownerType = getResourceType(owner);
@@ -66,6 +77,7 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         Map<Object,Object> keys = CollectionUtils.asMap(
                 (Object)RESOURCE_POOL.POOL_TYPE, poolType,
                 (Object)RESOURCE_POOL.POOL_ID, poolId,
+                RESOURCE_POOL.QUALIFIER, qualifier,
                 RESOURCE_POOL.OWNER_TYPE, ownerType,
                 RESOURCE_POOL.OWNER_ID, ownerId);
 
@@ -76,11 +88,11 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         }
     }
 
-    protected String getItem(Map<Object,Object> keys, Object pool) {
+    protected String getItem(Map<Object,Object> keys, Object pool, String qualifier) {
         PooledResourceItemGenerator generator = null;
 
         for ( PooledResourceItemGeneratorFactory factory : factories ) {
-            generator = factory.getGenerator(pool);
+            generator = factory.getGenerator(pool, qualifier);
 
             if ( generator != null ) {
                 break;
@@ -109,6 +121,10 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     }
 
     protected String getResourceType(Object obj) {
+        if ( GLOBAL.equals(obj) ) {
+            return GLOBAL;
+        }
+
         String type = objectManager.getType(obj);
 
         if ( type == null ) {
@@ -119,6 +135,10 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     }
 
     protected long getResourceId(Object obj) {
+        if ( GLOBAL.equals(obj) ) {
+            return 1;
+        }
+
         Object id = ObjectUtils.getId(obj);
 
         if ( id instanceof Number ) {

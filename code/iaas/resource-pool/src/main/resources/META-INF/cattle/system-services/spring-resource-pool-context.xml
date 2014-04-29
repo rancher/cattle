@@ -20,5 +20,7 @@
     <extension:discover class="io.cattle.platform.resource.pool.PooledResourceItemGeneratorFactory" />
 
     <bean class="io.cattle.platform.resource.pool.subnet.SubnetAddressGeneratorFactory" />
+    <bean class="io.cattle.platform.resource.pool.mac.MacAddressPrefixGeneratorFactory" />
+    <bean class="io.cattle.platform.resource.pool.mac.MacAddressGeneratorFactory" />
 
 </beans>
