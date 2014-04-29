@@ -142,7 +142,9 @@ class Config:
     def is_eventlet():
         if 'eventlet' not in globals():
             return False
-        setting = default_value('AGENT_MULTI', None)
+        # Disable eventlets for now
+        # setting = default_value('AGENT_MULTI', None)
+        setting = default_value('AGENT_MULTI', 'proc')
 
         if setting is None or setting == 'eventlet':
             return True
