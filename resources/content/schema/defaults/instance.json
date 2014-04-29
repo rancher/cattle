@@ -1,6 +1,4 @@
 {
     "allocationState" : "inactive",
-    "instanceTriggeredStop" : "stop",
-    "postComputeState" : "inactive",
-    "onCrash" : "stop"
+    "instanceTriggeredStop" : "stop"
 }

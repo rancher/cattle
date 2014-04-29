@@ -1,0 +1,7 @@
+{
+    "resourceFields": {
+        "dns": {
+            "type" : "array[string]"
+        }
+    }
+}

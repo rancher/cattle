@@ -38,6 +38,10 @@
             "create": true,
             "nullable": true,
             "includeInList": false
+        },
+        "privileged": {
+            "type": "boolean",
+            "default": "false"
         }
     }
 }

@@ -47,6 +47,7 @@
         "container.offeringId" : "",
         "container.networkIds" : "cr",
         "container.ports" : "cr",
+        "container.privileged" : "cr",
         "container.startOnCreate" : "cr",
         "container.subnetIds" : "cr",
         "container.user" : "cr",
@@ -56,6 +57,8 @@
         "credential.secretValue" : "cru",
 
         "data.value" : "cru",
+
+        "dnsService.dns" : "cru",
 
         "extensionPoint" : "r",
 

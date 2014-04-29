@@ -1,0 +1,7 @@
+{
+    "resourceFields": {
+        "macPrefix": {
+            "type" : "string"
+        }
+    }
+}
