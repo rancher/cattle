@@ -270,6 +270,23 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             .fetch(HOST_VNET_MAP.HOST_ID);
     }
 
+    @Override
+    public List<Long> getPhysicalHostsForSubnet(long subnetId) {
+        return create()
+            .select(HOST.PHYSICAL_HOST_ID)
+            .from(SUBNET_VNET_MAP)
+            .join(VNET)
+                .on(VNET.ID.eq(SUBNET_VNET_MAP.VNET_ID))
+            .join(HOST_VNET_MAP)
+                .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
+            .join(HOST)
+                .on(HOST.ID.eq(HOST_VNET_MAP.HOST_ID))
+            .where(SUBNET_VNET_MAP.SUBNET_ID.eq(subnetId)
+                    .and(HOST_VNET_MAP.STATE.eq(CommonStatesConstants.ACTIVE))
+                    .and(HOST.PHYSICAL_HOST_ID.isNotNull()))
+            .fetchInto(Long.class);
+    }
+
     public ObjectManager getObjectManager() {
         return objectManager;
     }

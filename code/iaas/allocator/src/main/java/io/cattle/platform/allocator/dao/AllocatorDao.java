@@ -31,4 +31,6 @@ public interface AllocatorDao {
 
     List<Long> getHostsForSubnet(long subnetId);
 
+    List<Long> getPhysicalHostsForSubnet(long subnetId);
+
 }

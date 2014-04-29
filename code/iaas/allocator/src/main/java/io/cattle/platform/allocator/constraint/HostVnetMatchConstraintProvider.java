@@ -39,7 +39,7 @@ public class HostVnetMatchConstraintProvider implements AllocationConstraintsPro
             }
 
             if ( add ) {
-                constraints.add(new HostVnetMatchConstraint(nic.getId(), allocatorDao));
+                constraints.add(new HostVnetMatchConstraint(nic.getId(), objectManager, allocatorDao));
             }
         }
     }
