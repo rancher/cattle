@@ -290,3 +290,14 @@ def test_actions_based_on_state(admin_client, sim_context):
     assert c.state == 'running'
     assert set(c.actions.keys()) == set(['migrate', 'restart', 'stop',
                                          'update'])
+
+
+def test_include_user_not_auth_map(client, sim_context):
+    client.list_host(include='instances')
+
+
+def test_map_user_not_auth_map(client, sim_context):
+    c = client.create_container(imageUuid=sim_context['imageUuid'])
+    c = client.wait_success(c)
+
+    assert len(c.hosts()) == 1
