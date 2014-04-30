@@ -343,6 +343,83 @@ def process_instances(admin_client, obj, id=None, type=None):
                                               sort='startTime')
 
 
+def auth_check(schema, id, access, props=None):
+    type = schema.types[id]
+    access_actual = set()
+
+    try:
+        if 'GET' in type.collectionMethods:
+            access_actual.add('r')
+    except AttributeError:
+        pass
+
+    try:
+        if 'GET' in type.resourceMethods:
+            access_actual.add('r')
+    except AttributeError:
+        pass
+
+    try:
+        if 'POST' in type.collectionMethods:
+            access_actual.add('c')
+    except AttributeError:
+        pass
+
+    try:
+        if 'DELETE' in type.resourceMethods:
+            access_actual.add('d')
+    except AttributeError:
+        pass
+
+    try:
+        if 'PUT' in type.resourceMethods:
+            access_actual.add('u')
+    except AttributeError:
+        pass
+
+    assert access_actual == set(access)
+
+    if props is None:
+        return 1
+
+    for i in ['name', 'description']:
+        if i not in props and i in type.resourceFields:
+            acl = set('r')
+            if 'c' in access_actual:
+                acl.add('c')
+            if 'u' in access_actual:
+                acl.add('u')
+            props[i] = ''.join(acl)
+
+    for i in ['created', 'removed', 'transitioning', 'transitioningProgress',
+              'transitioningMessage', 'id', 'uuid', 'kind', 'state']:
+        if i not in props and i in type.resourceFields:
+            props[i] = 'r'
+
+    prop = set(props.keys())
+    prop_actual = set(type.resourceFields.keys())
+
+    assert prop_actual == prop
+
+    for name, field in type.resourceFields.items():
+        assert name in props
+
+        prop = set(props[name])
+        prop_actual = set('r')
+
+        prop.add(name)
+        prop_actual.add(name)
+
+        if field.create and 'c' in access_actual:
+            prop_actual.add('c')
+        if field.update and 'u' in access_actual:
+            prop_actual.add('u')
+
+        assert prop_actual == prop
+
+    return 1
+
+
 def wait_for(callback, timeout=DEFAULT_TIMEOUT):
     start = time.time()
     ret = callback()
