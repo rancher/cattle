@@ -23,36 +23,40 @@ def _client_for_user(name, accounts):
                            secret_key=accounts[name][1])
 
 
+def create_user(admin_client, user_name):
+    password = user_name + 'pass'
+    account = create_type_by_uuid(admin_client, 'account', user_name,
+                                  kind=user_name,
+                                  name=user_name)
+
+    active_cred = None
+    for cred in account.credentials():
+        if cred.publicValue == user_name and cred.secretValue == password:
+            active_cred = cred
+            break
+
+    if active_cred is None:
+        active_cred = admin_client.create_credential({
+            'accountId': account.id,
+            'kind': 'apiKey',
+            'publicValue': user_name,
+            'secretValue': password
+        })
+
+    active_cred = wait_success(admin_client, active_cred)
+    if active_cred.state != 'active':
+        wait_success(admin_client, active_cred.activate())
+
+    return [user_name, password, account]
+
+
 @pytest.fixture(scope='session')
 def accounts():
     result = {}
     admin_client = _admin_client()
     for user_name in ['admin', 'agent', 'user', 'agentRegister', 'test',
                       'readAdmin']:
-        password = user_name + 'pass'
-        account = create_type_by_uuid(admin_client, 'account', user_name,
-                                      kind=user_name,
-                                      name=user_name)
-
-        active_cred = None
-        for cred in account.credentials():
-            if cred.publicValue == user_name and cred.secretValue == password:
-                active_cred = cred
-                break
-
-        if active_cred is None:
-            active_cred = admin_client.create_credential({
-                'accountId': account.id,
-                'kind': 'apiKey',
-                'publicValue': user_name,
-                'secretValue': password
-            })
-
-        active_cred = wait_success(admin_client, active_cred)
-        if active_cred.state != 'active':
-            wait_success(admin_client, active_cred.activate())
-
-        result[user_name] = [user_name, password, account]
+        result[user_name] = create_user(admin_client, user_name)
 
     system_account = admin_client.list_account(kind='system', uuid='system')[0]
     result['system'] = [None, None, system_account]
