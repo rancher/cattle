@@ -136,10 +136,6 @@
         <level value="${otherLevel}" />
     </logger>
 
-    <logger name="org.eclipse.jetty.server" >
-        <level value="${rootLevel}" />
-    </logger>
-
     <logger name="com.hazelcast">
         <level value="DEBUG" />
     </logger>
@@ -150,6 +146,10 @@
 
     <logger name="org.apache.cloudstack">
         <level value="${rootLevel}" />
+    </logger>
+
+    <logger name="io.cattle.platform.agent.connection.ssh.EofAwareChannelExec" >
+        <level value="${otherLevel}" />
     </logger>
 
     <logger name="io.cattle.platform.agent.connection.ssh.connection.EofClosingTcpipServerChannel" >
