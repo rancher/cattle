@@ -24,6 +24,8 @@
         "agent.uri" : "cru",
         "agent.user" : "cr",
 
+        "agentInstanceProvider.agentInstanceImageUuid" : "cru",
+
         "configItemStatus.appliedUpdated" : "cru",
         "configItemStatus.appliedVersion" : "cru",
         "configItemStatus.name" : "cru",
@@ -91,8 +93,6 @@
 
         "ipAddress.address" : "cr",
         "ipAddress.networkId" : "r",
-
-        "agentInstanceProvider.agentInstanceImageUuid" : "cru",
 
         "offering" : "",
 
