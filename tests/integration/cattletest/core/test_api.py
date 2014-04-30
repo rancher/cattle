@@ -300,4 +300,5 @@ def test_map_user_not_auth_map(client, sim_context):
     c = client.create_container(imageUuid=sim_context['imageUuid'])
     c = client.wait_success(c)
 
+    assert c.state == 'running'
     assert len(c.hosts()) == 1

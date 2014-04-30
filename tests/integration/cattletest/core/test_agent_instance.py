@@ -45,7 +45,9 @@ def test_agent_instance_create(admin_client, sim_context):
 
     assert agent_instance.agentId is not None
     assert agent_instance.privileged
+    assert agent_instance.instanceTriggeredStop == 'restart'
     assert agent_instance2.agentId is not None
+    assert agent_instance.instanceTriggeredStop == 'restart'
     assert agent_instance2.privileged
 
     items = set([x.name for x in agent_instance.agent().configItemStatuses()])
