@@ -42,6 +42,12 @@ build()
     if [ ! -e $HOME/.m2 ] && [ -e /opt/m2-base ]; then
         cp -rf /opt/m2-base $HOME/.m2
     fi
+    if [ ! -e $HOME/.m2/repository/io/github/cattle ] && [ -e deps/cattle ]; then
+        (
+            cd deps/cattle
+            mvn -DskipTests=true install
+        )
+    fi
     if [ "$#" = "0" ]; then
         mvn $MAVEN_ARGS ${MAVEN_TARGET:-install}
     else
