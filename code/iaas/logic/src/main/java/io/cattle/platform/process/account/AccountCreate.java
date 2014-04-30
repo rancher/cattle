@@ -2,12 +2,14 @@ package io.cattle.platform.process.account;
 
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.util.ProcessHelpers;
 
@@ -36,8 +38,13 @@ public class AccountCreate extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Account account = (Account) state.getResource();
         Map<Object,Object> result = new HashMap<Object, Object>();
+        boolean createApiKey = DataAccessor.fromMap(state.getData())
+                                        .withScope(AccountConstants.class)
+                                        .withKey(AccountConstants.OPTION_CREATE_APIKEY)
+                                        .withDefault(false)
+                                        .as(Boolean.class);
 
-        if (CREATE_CREDENTIAL.get()) {
+        if ( createApiKey || CREATE_CREDENTIAL.get() ) {
             List<Credential> creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class,
                     CREDENTIAL.ACCOUNT_ID, account.getId(),
                     CREDENTIAL.KIND, CREDENTIAL_TYPE.get());

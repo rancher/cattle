@@ -3,11 +3,13 @@ package io.cattle.platform.process.agent;
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.dao.AccountDao;
 
@@ -31,6 +33,11 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
         if ( accountId != null || ! CREATE_ACCOUNT.get() ) {
             return new HandlerResult(AGENT.ACCOUNT_ID, accountId);
         }
+
+        DataAccessor.fromMap(state.getData())
+                .withScope(AccountConstants.class)
+                .withKey(AccountConstants.OPTION_CREATE_APIKEY)
+                .set(true);
 
         Account account = createAccountObj(agent);
         create(account, state.getData());
