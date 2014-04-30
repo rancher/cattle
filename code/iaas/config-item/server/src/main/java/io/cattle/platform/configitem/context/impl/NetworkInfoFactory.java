@@ -5,8 +5,10 @@ import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
 import io.cattle.platform.configitem.context.impl.data.NetworkServiceInfo;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
+import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.Nic;
@@ -28,6 +30,7 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
     public static final DynamicStringListProperty ITEMS = ArchaiusUtil.getList("item.context.network.info.items");
 
     NetworkInfoDao networkInfo;
+    IpAddressDao ipAddressDao;
 
     @Override
     public String[] getItems() {
@@ -48,6 +51,7 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
         List<Nic> nics = objectManager.children(instance, Nic.class);
         Network primaryNetwork = null;
         Map<Long,Network> networks = networkInfo.networks(instance);
+        Map<String,IpAddress> ipAddresses = new HashMap<String, IpAddress>();
 
         for ( NetworkService service : services ) {
             serviceSet.add(service.getKind());
@@ -59,6 +63,10 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
             }
 
             for ( Nic nic : nics ) {
+                if ( ! ipAddresses.containsKey(nic.getUuid()) ) {
+                    ipAddresses.put(nic.getUuid(), ipAddressDao.getPrimaryIpAddress(nic));
+                }
+
                 if ( primaryNetwork == null && nic.getDeviceNumber() != null && nic.getDeviceNumber() == 0 ) {
                     primaryNetwork = networks.get(nic.getNetworkId());
                 }
@@ -78,6 +86,7 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
         }
 
         context.getData().put("nics", nics);
+        context.getData().put("primaryIpAddresses", ipAddresses);
         context.getData().put("services", servicesMap);
         context.getData().put("serviceSet", serviceSet);
         context.getData().put("primaryNetwork", primaryNetwork);
@@ -91,6 +100,15 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
     @Inject
     public void setNetworkInfo(NetworkInfoDao networkInfo) {
         this.networkInfo = networkInfo;
+    }
+
+    public IpAddressDao getIpAddressDao() {
+        return ipAddressDao;
+    }
+
+    @Inject
+    public void setIpAddressDao(IpAddressDao ipAddressDao) {
+        this.ipAddressDao = ipAddressDao;
     }
 
 }

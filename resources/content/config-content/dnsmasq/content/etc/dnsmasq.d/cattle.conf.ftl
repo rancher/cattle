@@ -173,6 +173,13 @@ domain=${domain}
 # repeat this for each network on which you want to supply DHCP
 # service.
 #dhcp-range=192.168.0.50,192.168.0.150,12h
+<#list nics as nic>
+    <#list services?values as service >
+        <#if service.kind == "dhcpService" && service.nicIds?seq_contains(nic.id) && (primaryIpAddresses[nic.uuid].address)?? >
+dhcp-range=${primaryIpAddresses[nic.uuid].address},static
+        </#if>
+    </#list>
+</#list>
 
 # This is an example of a DHCP range where the netmask is given. This
 # is needed for networks we reach the dnsmasq DHCP server via a relay
