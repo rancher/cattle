@@ -92,7 +92,6 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener, I
 
         final AgentResourceChangeHandler handler = handlers.get(type);
         if ( handler == null ) {
-            log.debug("Unknown resource type [{}] for pong", type);
             return;
         }
 
