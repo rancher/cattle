@@ -1,6 +1,7 @@
 package io.cattle.platform.object.meta.impl;
 
 import static io.cattle.platform.object.meta.Relationship.RelationshipType.*;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.StateTransition;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
@@ -51,8 +52,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.ForeignKey;
 import org.jooq.Table;
 import org.jooq.TableField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, SchemaPostProcessor, InitializationTask, Priority {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultObjectMetaDataManager.class);
 
     SchemaFactory schemaFactory;
     List<TypeSet> typeSets;
@@ -243,7 +248,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     }
 
     protected List<Schema> registerTypes() {
-//        schemaFactory.addPostProcessor(this);
         List<Schema> schemas = new ArrayList<Schema>();
 
         for ( TypeSet typeSet : typeSets ) {
@@ -308,6 +312,13 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         Schema localSchema = schemaFactory.getSchema(localType);
         String childName = localSchema.getPluralName();
 
+        String childNameOverride = ArchaiusUtil.getString(String.format("object.link.name.%s.%s.override",
+                localType.getSimpleName(), propertyName).toLowerCase()).get();
+
+        if ( childNameOverride != null ) {
+            childName = childNameOverride;
+        }
+
         register(localType, new ForeignKeyRelationship(REFERENCE, referenceName, propertyName, foreignType, foreignKey));
         register(foreignType, new ForeignKeyRelationship(CHILD, childName, propertyName, localType, foreignKey));
     }
@@ -323,6 +334,20 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         if ( relationships == null ) {
             relationships = new HashMap<String, Relationship>();
             relationshipsMap.put(type, relationships);
+        }
+
+        String name = relationship.getName().toLowerCase();
+        Relationship existing = relationships.get(name);
+
+        if ( existing != null ) {
+            if ( existing.getPropertyName().length() <= relationship.getPropertyName().length() ) {
+                log.warn("Not registering link [{}] on class [{}] for property [{}], [{}] already exists", name, type.getSimpleName(),
+                        relationship.getPropertyName(), existing.getPropertyName());
+                return;
+            } else {
+                log.warn("Overriding link [{}] on class [{}] for property [{}] with [{}]", name, type.getSimpleName(),
+                        existing.getPropertyName(), relationship.getPropertyName());
+            }
         }
 
         relationships.put(relationship.getName().toLowerCase(), relationship);

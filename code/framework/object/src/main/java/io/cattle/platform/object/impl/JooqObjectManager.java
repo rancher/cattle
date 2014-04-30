@@ -227,9 +227,14 @@ public class JooqObjectManager extends AbstractObjectManager {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public <T> List<T> children(Object obj, Class<T> type) {
+        return children(obj, type, null);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public <T> List<T> children(Object obj, Class<T> type, String propertyName) {
         if ( obj == null ) {
             return Collections.emptyList();
         }
@@ -237,13 +242,21 @@ public class JooqObjectManager extends AbstractObjectManager {
         Class<UpdatableRecord<?>> parent = JooqUtils.getRecordClass(schemaFactory, obj.getClass());
         Class<UpdatableRecord<?>> child = JooqUtils.getRecordClass(schemaFactory, type);
         ChildReferenceCacheKey key = new ChildReferenceCacheKey(parent, child);
+        TableField<?, ?> propertyField = (TableField<?, ?>)(propertyName == null ? null : metaDataManager.convertFieldNameFor(getType(type), propertyName));
 
         ForeignKey<?, ?> foreignKey = childReferenceCache.get(key);
         if ( foreignKey == null ) {
             Table<?> childTable = JooqUtils.getTableFromRecordClass(child);
             for ( ForeignKey<?, ?> foreignKeyTest : childTable.getReferences() ) {
                 if ( foreignKeyTest.getKey().getTable().getRecordType() == parent ) {
-                    if ( foreignKey == null ) {
+                    if ( propertyField != null ) {
+                        if ( foreignKeyTest.getFields().get(0).getName().equals(propertyField.getName()) ) {
+                            if ( foreignKey != null ) {
+                                throw new IllegalStateException("Found more that one foreign key from [" + child + "] to [" + parent + "]");
+                            }
+                            foreignKey = foreignKeyTest;
+                        }
+                    } else if ( foreignKey == null ) {
                         foreignKey = foreignKeyTest;
                     } else {
                         throw new IllegalStateException("Found more that one foreign key from [" + child + "] to [" + parent + "]");
