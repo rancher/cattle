@@ -62,7 +62,7 @@ def ns_exec(ctx, pid, input, *args, **kw):
     cmd = [_NSENTER, '-m', '-u', '-i', '-n', '-p', '-t', str(pid),
            '--']
     cmd.extend(args)
-    p = Popen(cmd, stdin=PIPE, stderr=PIPE, stdout=PIPE)
+    p = Popen(cmd, stdin=PIPE, stderr=PIPE, stdout=PIPE, env={})
 
     Thread(target=pipe_error, args=(ctx, p.stderr)).start()
 
