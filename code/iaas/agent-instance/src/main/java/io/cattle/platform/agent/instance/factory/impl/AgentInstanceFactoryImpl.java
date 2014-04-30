@@ -84,9 +84,9 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(INSTANCE.IMAGE_ID, getImage(agent, builder));
         properties.put(INSTANCE.ZONE_ID, agent.getZoneId());
         properties.put(INSTANCE.KIND, builder.getInstanceKind());
-
-        properties.put(InstanceConstants.FIELD_VNET_IDS, getVnetIds(agent, builder));
+        properties.put(InstanceConstants.FIELD_INSTANCE_TRIGGERED_STOP, builder.getInstanceTriggeredStop());
         properties.put(InstanceConstants.FIELD_PRIVILEGED, builder.isPrivileged());
+        properties.put(InstanceConstants.FIELD_VNET_IDS, getVnetIds(agent, builder));
 
         addAdditionalProperties(properties, agent, builder);
 

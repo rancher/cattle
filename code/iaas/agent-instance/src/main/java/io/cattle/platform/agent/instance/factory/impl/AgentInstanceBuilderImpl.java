@@ -21,6 +21,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     Long agentGroupId;
     NetworkServiceProvider networkServiceProvider;
     String imageUuid;
+    String instanceTriggeredStop = InstanceConstants.ON_STOP_RESTART;
     boolean accountOwned = false;
     boolean managedConfig = false;
     boolean privileged = false;
@@ -52,6 +53,12 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     @Override
     public AgentInstanceBuilder withManagedConfig(boolean managedConfig) {
         this.managedConfig = managedConfig;
+        return this;
+    }
+
+    @Override
+    public AgentInstanceBuilder withInstanceTriggeredStop(String instanceTriggeredStop) {
+        this.instanceTriggeredStop = instanceTriggeredStop;
         return this;
     }
 
@@ -163,5 +170,13 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     public void setPrivileged(boolean privileged) {
         this.privileged = privileged;
+    }
+
+    public String getInstanceTriggeredStop() {
+        return instanceTriggeredStop;
+    }
+
+    public void setInstanceTriggeredStop(String instanceTriggeredStop) {
+        this.instanceTriggeredStop = instanceTriggeredStop;
     }
 }

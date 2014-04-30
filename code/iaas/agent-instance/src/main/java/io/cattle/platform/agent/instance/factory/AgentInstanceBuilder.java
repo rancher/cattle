@@ -27,6 +27,8 @@ public interface AgentInstanceBuilder {
 
     AgentInstanceBuilder withPrivileged(boolean privileged);
 
+    AgentInstanceBuilder withInstanceTriggeredStop(String instanceTriggeredStop);
+
     public Instance build();
 
 }
