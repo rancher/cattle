@@ -1,4 +1,4 @@
-package io.cattle.platform.process.container;
+package io.cattle.platform.process.port;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +23,7 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
 @Named
-public class ContainersPortCreate extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
+public class InstancePortCreate extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
 
     @Override
     public String[] getProcessNames() {
@@ -34,10 +34,6 @@ public class ContainersPortCreate extends AbstractObjectProcessLogic implements 
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance)state.getResource();
         ObjectManager objectManager = getObjectManager();
-
-        if ( ! InstanceConstants.KIND_CONTAINER.equals(instance.getKind()) ) {
-            return null;
-        }
 
         List<String> portDefs = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_PORTS, String.class);
         if ( portDefs == null ) {

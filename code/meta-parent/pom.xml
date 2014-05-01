@@ -344,7 +344,7 @@
             <dependency>
                 <groupId>io.github.ibuildthecloud</groupId>
                 <artifactId>gdapi-java-server</artifactId>
-                <version>0.1.4</version>
+                <version>0.1.5-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>commons-collections</groupId>

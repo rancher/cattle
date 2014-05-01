@@ -42,6 +42,12 @@
         "privileged": {
             "type": "boolean",
             "default": "false"
+        },
+        "instanceLinks": {
+            "type": "map[reference[instance]]",
+            "create": true,
+            "nullable": true,
+            "includeInList": false
         }
     }
 }

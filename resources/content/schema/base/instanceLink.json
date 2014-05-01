@@ -1,0 +1,9 @@
+{
+    "resourceFields" : {
+        "targetInstanceId" : {
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        }
+    }
+}

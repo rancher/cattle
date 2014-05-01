@@ -439,3 +439,13 @@ def find_count(count, method, *args, **kw):
     ret = method(*args, **kw)
     assert len(ret) == count
     return ret
+
+
+def create_sim_container(admin_client, sim_context, *args, **kw):
+    c = admin_client.create_container(*args,
+                                      imageUuid=sim_context['imageUuid'],
+                                      **kw)
+    c = admin_client.wait_success(c)
+    assert c.state == 'running'
+
+    return c

@@ -2,10 +2,12 @@ package io.cattle.platform.process.instance;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
@@ -171,6 +173,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     }
 
     protected void network(Instance instance, ProcessState state) {
+        for ( InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID) ) {
+            activate(link, state.getData());
+        }
+
         for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
             activate(nic, state.getData());
         }

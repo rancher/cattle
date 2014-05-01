@@ -23,6 +23,7 @@
         "container.hostname" : "cr",
         "container.imageId" : "cr",
         "container.imageUuid" : "cr",
+        "container.instanceLinks" : "cr",
         "container.networkIds" : "cr",
         "container.ports" : "cr",
         "container.primaryIpAddress" : "r",
@@ -46,6 +47,10 @@
         "instance" : "r",
         "instance.instanceTriggeredStop" : "cru",
         "instance.requestedHostId" : "cr",
+
+        "instanceLink" : "ru",
+        "instanceLink.linkName" : "r",
+        "instanceLink.targetInstanceId" : "ru",
 
         "instanceStop" : "cr",
         "instanceStop.remove" : "cr",

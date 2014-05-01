@@ -1,10 +1,12 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Volume;
@@ -71,6 +73,10 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
 
         for ( Port port : getObjectManager().children(instance, Port.class) ) {
             deactivate(port, null);
+        }
+
+        for ( InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID) ) {
+            deactivate(link, null);
         }
     }
 

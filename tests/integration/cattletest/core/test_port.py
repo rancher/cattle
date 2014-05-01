@@ -58,8 +58,14 @@ def test_container_port_create_start(client, admin_client,
 
     for port in c.ports():
         assert port.state == 'active'
-        assert port.privateIpAddress().address == c.primaryIpAddress
-        assert port.publicIpAddress().address == host_ip
+        private_ip = port.privateIpAddress()
+        public_ip = port.publicIpAddress()
+        assert private_ip.address == c.primaryIpAddress
+        assert public_ip.address == host_ip
+        assert port.id in [x.id for x in private_ip.privatePorts()]
+        assert port.id in [x.id for x in public_ip.publicPorts()]
+        assert port.id not in [x.id for x in public_ip.privatePorts()]
+        assert port.id not in [x.id for x in private_ip.publicPorts()]
 
 
 def test_container_port_start(client, sim_context, network):

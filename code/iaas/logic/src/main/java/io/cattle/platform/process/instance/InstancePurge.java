@@ -2,7 +2,9 @@ package io.cattle.platform.process.instance;
 
 import javax.inject.Named;
 
+import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -18,6 +20,10 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
 
         for ( Port port : getObjectManager().children(instance, Port.class) ) {
             deactivateThenRemove(port, state.getData());
+        }
+
+        for ( InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID) ) {
+            deactivateThenRemove(link, state.getData());
         }
 
         deallocate(instance, null);
