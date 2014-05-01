@@ -23,6 +23,7 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.id.IdentityFormatter;
 import io.github.ibuildthecloud.gdapi.model.Action;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Include;
@@ -44,13 +45,18 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import com.netflix.config.DynamicIntProperty;
 
 public abstract class AbstractObjectResourceManager extends AbstractBaseResourceManager implements InitializationTask {
 
 //    private static final Logger log = LoggerFactory.getLogger(AbstractObjectResourceManager.class);
 
+    public static final String SCHEDULE_UPDATE = "scheduleUpdate";
+
     private static final DynamicIntProperty REMOVE_DELAY = ArchaiusUtil.getInt("api.show.removed.for.seconds");
+    private static final IdFormatter IDENTITY_FORMATTER = new IdentityFormatter();
 
     ObjectManager objectManager;
     ObjectProcessManager objectProcessManager;
@@ -117,7 +123,33 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     protected Object updateInternal(String type, String id, Object obj, ApiRequest request) {
         Map<String,Object> updates = CollectionUtils.toMap(request.getRequestObject());
-        return objectManager.setFields(obj, updates);
+        Map<String,Object> filteredUpdates = new HashMap<String, Object>();
+        Map<String,Object> existing = createResource(obj, IDENTITY_FORMATTER, request).getFields();
+        Schema schema = request.getSchemaFactory().getSchema(type);
+        Map<String,Field> fields = schema.getResourceFields();
+
+        boolean schedule = false;
+        for ( Map.Entry<String, Object> entry : updates.entrySet() ) {
+            String key = entry.getKey();
+            Object existingValue = existing.get(key);
+            if ( ! ObjectUtils.equals(existingValue, entry.getValue()) ) {
+                filteredUpdates.put(key, entry.getValue());
+
+                Field field = fields.get(key);
+                if ( field != null ) {
+                    schedule |= Boolean.TRUE.equals(field.getAttributes().get(SCHEDULE_UPDATE));
+                }
+            }
+
+        }
+
+        Object result = objectManager.setFields(obj, filteredUpdates);
+        if ( schedule ) {
+            objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, filteredUpdates);
+            result = objectManager.reload(result);
+        }
+
+        return result;
     }
 
     @Override

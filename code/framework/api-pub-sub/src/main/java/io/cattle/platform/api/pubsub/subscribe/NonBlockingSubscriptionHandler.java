@@ -122,8 +122,8 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         if ( event.getResourceType() == null ) {
             event.setResourceId(null);
         } else {
-            String id = idFormatter.formatId(event.getResourceType(), event.getResourceId());
-            event.setResourceId(id);
+            Object id = idFormatter.formatId(event.getResourceType(), event.getResourceId());
+            event.setResourceId(id == null ? null : id.toString());
         }
     }
 
