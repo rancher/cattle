@@ -109,6 +109,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.InstanceHostMapTable INSTANCE_HOST_MAP = io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 
 	/**
+	 * The table cattle.instance_link
+	 */
+	public static final io.cattle.platform.core.model.tables.InstanceLinkTable INSTANCE_LINK = io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
+
+	/**
 	 * The table cattle.ip_address
 	 */
 	public static final io.cattle.platform.core.model.tables.IpAddressTable IP_ADDRESS = io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;

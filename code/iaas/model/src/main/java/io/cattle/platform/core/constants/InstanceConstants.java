@@ -8,6 +8,7 @@ public class InstanceConstants {
     public static final String FIELD_ENVIRONMENT = "environment";
     public static final String FIELD_IMAGE_UUID = "imageUuid";
     public static final String FIELD_IMAGE_ID = "imageId";
+    public static final String FIELD_INSTANCE_LINKS = "instanceLinks";
     public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
     public static final String FIELD_NETWORK_IDS = "networkIds";
     public static final String FIELD_PORTS = "ports";
