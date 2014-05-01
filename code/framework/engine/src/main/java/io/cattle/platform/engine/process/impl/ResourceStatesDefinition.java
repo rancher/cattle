@@ -67,7 +67,7 @@ public class ResourceStatesDefinition {
             throw new IllegalStateException("Failed to find state to transition from [" + currentState +
                     "] to \"transitioning\"");
 
-        return null;
+        return newState;
     }
 
     public String getDoneState(String currentState) {
@@ -80,7 +80,7 @@ public class ResourceStatesDefinition {
             throw new IllegalStateException("Failed to find state to transition from [" + currentState +
                     "] to \"done\"");
 
-        return null;
+        return newState;
     }
 
     public boolean isDone(String currentState) {
