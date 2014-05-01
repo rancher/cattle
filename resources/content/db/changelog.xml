@@ -18,5 +18,6 @@
     <include file="db/core-011.xml"/>
     <include file="db/core-012.xml"/>
     <include file="db/core-013.xml"/>
+    <include file="db/core-014.xml"/>
 
 </databaseChangeLog> 
