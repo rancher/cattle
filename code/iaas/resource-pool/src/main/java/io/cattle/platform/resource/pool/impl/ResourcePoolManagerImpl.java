@@ -32,7 +32,10 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     @Override
     public PooledResource allocateResource(Object pool, Object owner) {
         List<PooledResource> result = allocateResource(pool, owner, new PooledResourceOptions());
-        return result.size() == 0 ? null : result.get(0);
+        if ( result == null || result.size() == 0 ) {
+            return null;
+        }
+        return result.get(0);
     }
 
     @Override
