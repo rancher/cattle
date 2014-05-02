@@ -4,8 +4,10 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.UnmodifiableMap;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.ConvertUtils;
@@ -88,6 +90,15 @@ public class DataAccessor {
 
     public <T> T as(JsonMapper mapper, Class<T> clz) {
         return mapper.convertValue(get(), clz);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <T> T asCollection(JsonMapper mapper, Class<? extends Collection> collectionClass, Class<?> elementsClass) {
+        return mapper.convertCollectionValue(get(), collectionClass, elementsClass);
+    }
+
+    public <T> List<? extends T> asList(JsonMapper mapper, Class<T> elementsClass) {
+        return asCollection(mapper, List.class, elementsClass);
     }
 
     @SuppressWarnings("unchecked")
