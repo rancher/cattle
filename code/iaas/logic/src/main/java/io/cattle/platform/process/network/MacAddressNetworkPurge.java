@@ -7,6 +7,7 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
+import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.util.type.Priority;
@@ -23,7 +24,9 @@ public class MacAddressNetworkPurge extends AbstractObjectProcessLogic implement
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Network network = (Network)state.getResource();
 
-        resourcePoolManager.releaseResource(ResourcePoolManager.GLOBAL, ResourcePoolConstants.MAC_PREFIX, network);
+        resourcePoolManager.releaseResource(ResourcePoolManager.GLOBAL, network,
+                new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC_PREFIX));
+
         return new HandlerResult(NetworkConstants.FIELD_MAC_PREFIX, new Object[] { null }).withShouldContinue(true);
     }
 

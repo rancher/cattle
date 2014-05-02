@@ -15,40 +15,59 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.netflix.config.DynamicStringListProperty;
 
-public class AgentInstanceServicesNicActivate extends AbstractObjectProcessLogic implements ProcessPostListener {
+public class AgentInstanceApplyItems extends AbstractObjectProcessLogic implements ProcessPostListener {
+
+    private static final Logger log = LoggerFactory.getLogger(AgentInstanceApplyItems.class);
 
     private static final DynamicStringListProperty BASE = ArchaiusUtil.getList("agent.instance.services.base.items");
-
-    public static final String ITEMS_CONTEXT = "agentInstanceServices";
+    private static final DynamicStringListProperty PROCESS_NAMES = ArchaiusUtil.getList("agent.instance.services.processes");
 
     AgentInstanceManager agentInstanceManager;
     JsonMapper jsonMapper;
     ConfigItemStatusManager statusManager;
+    boolean assignBase = false;
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "nic.activate" };
+        List<String> result = PROCESS_NAMES.get();
+        return result.toArray(new String[result.size()]);
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = (Nic)state.getResource();
+        Nic nic = getNic(state, process);
+
+        if ( nic == null ) {
+            log.error("Failed to find nic for [{}:{}]", objectManager.getType(state.getResource()), state.getResourceId());
+            return null;
+        }
+
         Map<NetworkServiceProvider, Instance> agentInstances = agentInstanceManager.getAgentInstances(nic);
         for ( Map.Entry<NetworkServiceProvider, Instance> entry : agentInstances.entrySet() ) {
             assignItems(entry.getKey(), entry.getValue(), nic, state, process);
         }
 
         return null;
+    }
+
+    protected Nic getNic(ProcessState state, ProcessInstance process) {
+        Object resource = state.getResource();
+        return agentInstanceManager.getNicFromResource(resource);
     }
 
     protected void assignItems(NetworkServiceProvider provider, Instance agentInstance, Nic nic,
@@ -58,16 +77,19 @@ public class AgentInstanceServicesNicActivate extends AbstractObjectProcessLogic
             return;
         }
 
-        ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, getContext(nic));
+        String contextId = getContext(processInstance, nic);
+
+        ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, contextId);
         if ( request == null ) {
             request = new ConfigUpdateRequest(agent.getId());
-            assignBaseItems(request, agent);
+            ConfigUpdateRequestUtils.setWaitFor(request);
+            assignBaseItems(provider, request, agent, processInstance);
             assignServiceItems(provider, agentInstance, nic, request, agent, state, processInstance);
         }
 
         if ( request != null ) {
             statusManager.updateConfig(request);
-            ConfigUpdateRequestUtils.setRequest(request, state, getContext(nic));
+            ConfigUpdateRequestUtils.setRequest(request, state, contextId);
         }
     }
 
@@ -89,7 +111,7 @@ public class AgentInstanceServicesNicActivate extends AbstractObjectProcessLogic
                 continue;
             }
 
-            String context = getContext(nic) + "." + otherAgent.getId();
+            String context = getContext(processInstance, nic) + "." + otherAgent.getId();
             ConfigUpdateRequest otherRequest = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, context);
             if ( otherRequest == null ) {
                 otherRequest = new ConfigUpdateRequest(otherAgent.getId());
@@ -117,16 +139,21 @@ public class AgentInstanceServicesNicActivate extends AbstractObjectProcessLogic
         }
     }
 
-    public static String getContext(Nic nic) {
-        return String.format("%s:nic:%s", ITEMS_CONTEXT, nic.getId());
+    public String getContext(ProcessInstance instance, Object obj) {
+        return String.format("%s:%s:%s", instance.getName(), objectManager.getType(obj), ObjectUtils.getId(obj));
     }
 
-    protected void assignBaseItems(ConfigUpdateRequest request, Agent agent) {
-        for ( String item : BASE.get() ) {
-            request.addItem(item)
-                .withApply(true)
-                .withIncrement(false)
-                .withCheckInSyncOnly(true);
+    protected void assignBaseItems(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent,
+            ProcessInstance processInstance) {
+        String key = String.format("%s.%s.base.items", processInstance.getName(), provider.getKind());
+
+        if ( ArchaiusUtil.getBoolean(key).get() ) {
+            for ( String item : BASE.get() ) {
+                request.addItem(item)
+                    .withApply(true)
+                    .withIncrement(false)
+                    .withCheckInSyncOnly(true);
+            }
         }
     }
 
@@ -155,6 +182,14 @@ public class AgentInstanceServicesNicActivate extends AbstractObjectProcessLogic
     @Inject
     public void setStatusManager(ConfigItemStatusManager statusManager) {
         this.statusManager = statusManager;
+    }
+
+    public boolean isAssignBase() {
+        return assignBase;
+    }
+
+    public void setAssignBase(boolean assignBase) {
+        this.assignBase = assignBase;
     }
 
 }

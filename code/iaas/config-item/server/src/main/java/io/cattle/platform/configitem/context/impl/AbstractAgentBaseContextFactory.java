@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.context.ConfigItemContextFactory;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.server.model.ConfigItem;
@@ -23,6 +24,19 @@ public abstract class AbstractAgentBaseContextFactory implements ConfigItemConte
     private static final Logger log = LoggerFactory.getLogger(AbstractAgentBaseContextFactory.class);
 
     protected ObjectManager objectManager;
+
+    String[] items;
+
+    public AbstractAgentBaseContextFactory() {
+        String name = getClass().getSimpleName().replaceAll("Factory", "").replaceAll("([a-z])([A-Z])", "$1.$2").toLowerCase();
+        List<String> items = ArchaiusUtil.getList(String.format("item.context.%s.items", name)).get();
+        this.items = items.toArray(new String[items.size()]);
+    }
+
+    @Override
+    public String[] getItems() {
+        return items;
+    }
 
     @Override
     public final void populateContext(Request req, ConfigItem item, ArchiveContext context) {

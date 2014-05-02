@@ -24,7 +24,6 @@ DOWNLOAD=$CATTLE_HOME/download
 URL=$CATTLE_CONFIG_URL
 AUTH=${CATTLE_ACCESS_KEY}:${CATTLE_SECRET_KEY}
 URL_SUFFIX=/configcontent/
-DOWNLOAD_TEMP=$(mktemp -d ${DOWNLOAD}.XXXXXXX) 
 
 if [ ! -x $0 ]; then
     chmod +x $0
@@ -50,6 +49,8 @@ if [ "$CATTLE_AGENT_STARTUP" != "true" ] && [ -e /etc/agent-instance ]; then
 fi
 
 [ "${FLOCKER}" != "$LOCK" ] && exec env FLOCKER="$LOCK" flock -oe -w 5 "$LOCK" "$0" "$@" || :
+
+DOWNLOAD_TEMP=$(mktemp -d ${DOWNLOAD}.XXXXXXX)
 
 download()
 {

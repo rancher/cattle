@@ -10,6 +10,8 @@ import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateItem;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
+import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItem;
 import io.cattle.platform.core.model.ConfigItemStatus;
@@ -238,7 +240,8 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .from(CONFIG_ITEM_STATUS)
                 .join(AGENT)
                     .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID))
-                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION))
+                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION)
+                        .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING)))
                 .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
@@ -253,7 +256,8 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .join(CONFIG_ITEM)
                     .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
                 .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
-                        .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION)))
+                        .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
+                        .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING)))
                 .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);

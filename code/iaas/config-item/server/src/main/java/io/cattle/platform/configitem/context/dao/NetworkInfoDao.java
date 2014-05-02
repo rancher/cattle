@@ -1,6 +1,7 @@
 package io.cattle.platform.configitem.context.dao;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.configitem.context.data.InstanceLinkData;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
@@ -19,5 +20,7 @@ public interface NetworkInfoDao {
     List<? extends NetworkService> networkServices(Instance instance);
 
     Map<Long,Network> networks(Instance instance);
+
+    List<InstanceLinkData> getLinks(Instance instance);
 
 }

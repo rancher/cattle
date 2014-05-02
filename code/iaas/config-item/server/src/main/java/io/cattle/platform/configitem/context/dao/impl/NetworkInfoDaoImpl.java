@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
+import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
@@ -9,15 +10,21 @@ import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
+import io.cattle.platform.configitem.context.data.InstanceLinkData;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceLink;
+import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
+import io.cattle.platform.core.model.tables.InstanceLinkTable;
+import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
 import io.cattle.platform.core.model.tables.records.NetworkServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -100,6 +107,45 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
         }
 
         return result;
+    }
+
+    @Override
+    public List<InstanceLinkData> getLinks(Instance instance) {
+        MultiRecordMapper<InstanceLinkData> mapper = new MultiRecordMapper<InstanceLinkData>() {
+            @Override
+            protected InstanceLinkData map(List<Object> input) {
+                return new InstanceLinkData((InstanceLink)input.get(0), (IpAddress)input.get(1));
+            }
+        };
+
+        InstanceLinkTable instanceLink = mapper.add(INSTANCE_LINK);
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
+        NicTable clientNic = NIC.as("client_nic");
+        NicTable targetNic = NIC.as("target_nic");
+
+        return create()
+                .select(mapper.fields())
+                .from(NIC)
+                .join(clientNic)
+                    .on(NIC.VNET_ID.eq(clientNic.VNET_ID))
+                .join(instanceLink)
+                    .on(instanceLink.INSTANCE_ID.eq(clientNic.INSTANCE_ID))
+                .join(targetNic)
+                    .on(targetNic.INSTANCE_ID.eq(instanceLink.TARGET_INSTANCE_ID))
+                .join(IP_ADDRESS_NIC_MAP)
+                    .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(targetNic.ID))
+                .join(ipAddress)
+                    .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(ipAddress.ID))
+                .where(NIC.INSTANCE_ID.eq(instance.getId())
+                        .and(NIC.VNET_ID.isNotNull())
+                        .and(NIC.REMOVED.isNull())
+                        .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                        .and(ipAddress.REMOVED.isNull())
+                        .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
+                        .and(clientNic.REMOVED.isNull())
+                        .and(targetNic.REMOVED.isNull())
+                        .and(instanceLink.REMOVED.isNull()))
+                .fetch().map(mapper);
     }
 
 }

@@ -16,11 +16,13 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.core.model.Subnet;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -40,6 +42,7 @@ public class SampleDataStartupV1 implements InitializationTask {
 
     ObjectManager objectManager;
     AccountDao accountDao;
+    JsonMapper jsonMapper;
 
     @Override
     public void start() {
@@ -59,6 +62,13 @@ public class SampleDataStartupV1 implements InitializationTask {
             return;
         }
 
+        Map<String, Object> networkData;
+        try {
+            networkData = jsonMapper.readValue("{\"libvirt\":{\"network\":{\"source\":[{\"bridge\":\"docker0\"}],\"type\":\"bridge\"}}}");
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+
         Network network = createByUuid(Network.class, "managed-docker0",
                 NetworkConstants.FIELD_HOST_VNET_URI, "bridge://docker0",
                 NetworkConstants.FIELD_DYNAMIC_CREATE_VNET, true,
@@ -66,7 +76,8 @@ public class SampleDataStartupV1 implements InitializationTask {
                 NETWORK.IS_PUBLIC, true,
                 NETWORK.KIND, NetworkConstants.KIND_HOSTONLY,
                 NETWORK.NAME, "Managed Network on docker0",
-                NETWORK.STATE, CommonStatesConstants.INACTIVE);
+                NETWORK.STATE, CommonStatesConstants.INACTIVE,
+                NETWORK.DATA, networkData);
 
         createByUuid(Subnet.class, "docker0-subnet",
                 SUBNET.ACCOUNT_ID, system.getId(),
@@ -100,6 +111,14 @@ public class SampleDataStartupV1 implements InitializationTask {
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
                 NETWORK_SERVICE.KIND, "dhcpService",
                 NETWORK_SERVICE.NAME, "DHCP for managed docker0",
+                NETWORK_SERVICE.NETWORK_ID, network.getId(),
+                NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
+                NETWORK_SERVICE.STATE, CommonStatesConstants.ACTIVE);
+
+        createByUuid(NetworkService.class, "docker0-link-service",
+                NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
+                NETWORK_SERVICE.KIND, "linkService",
+                NETWORK_SERVICE.NAME, "Instance links for managed docker0",
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
                 NETWORK_SERVICE.STATE, CommonStatesConstants.ACTIVE);
@@ -143,6 +162,15 @@ public class SampleDataStartupV1 implements InitializationTask {
     @Inject
     public void setAccountDao(AccountDao accountDao) {
         this.accountDao = accountDao;
+    }
+
+    public JsonMapper getJsonMapper() {
+        return jsonMapper;
+    }
+
+    @Inject
+    public void setJsonMapper(JsonMapper jsonMapper) {
+        this.jsonMapper = jsonMapper;
     }
 
 }

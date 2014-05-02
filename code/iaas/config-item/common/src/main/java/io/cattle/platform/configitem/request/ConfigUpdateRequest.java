@@ -5,7 +5,9 @@ import io.cattle.platform.configitem.model.impl.DefaultClient;
 import io.cattle.platform.core.model.Agent;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -16,6 +18,7 @@ public class ConfigUpdateRequest {
     long agentId;
     Client client;
     List<ConfigUpdateItem> items = new ArrayList<ConfigUpdateItem>();
+    Map<String,Object> attributes = new HashMap<String, Object>();
 
     public ConfigUpdateRequest() {
     }
@@ -78,4 +81,13 @@ public class ConfigUpdateRequest {
         this.migration = migration;
         return this;
     }
+
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, Object> attributes) {
+        this.attributes = attributes;
+    }
+
 }

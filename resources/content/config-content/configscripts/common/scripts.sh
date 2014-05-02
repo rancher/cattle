@@ -42,7 +42,7 @@ error()
 
 call_curl()
 {
-    local curl="curl -s" 
+    local curl="curl -s -m 15 --retry 2"
     if [ -n "$CATTLE_AGENT_INSTANCE_AUTH" ]; then
         $curl -H "Authorization: $CATTLE_AGENT_INSTANCE_AUTH" "$@"
     elif [ -n "$CATTLE_ACCESS_KEY" ]; then

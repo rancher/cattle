@@ -3,24 +3,36 @@ package io.cattle.platform.agent.instance.dao.impl;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
+import io.cattle.platform.agent.instance.service.NetworkServiceInfo;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.core.model.NetworkServiceProviderInstanceMap;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.tables.IpAddressTable;
+import io.cattle.platform.core.model.tables.NetworkServiceProviderTable;
+import io.cattle.platform.core.model.tables.NetworkServiceTable;
+import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.records.AgentRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.NetworkServiceProviderRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.object.ObjectManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +43,7 @@ import javax.inject.Inject;
 public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstanceDao {
 
     GenericResourceDao resourceDao;
+    ObjectManager objectManager;
 
     @Override
     public Agent getAgentByUri(String uri) {
@@ -127,6 +140,74 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                 .fetch();
     }
 
+    @Override
+    public NetworkServiceInfo getNetworkServiceInfo(long instance, String serviceKind) {
+        MultiRecordMapper<NetworkServiceInfo> mapper = new MultiRecordMapper<NetworkServiceInfo>() {
+            @Override
+            protected NetworkServiceInfo map(List<Object> input) {
+                return new NetworkServiceInfo((NetworkServiceProvider)input.get(0),
+                        (NetworkService)input.get(1),
+                        (Nic)input.get(2),
+                        null,
+                        null,
+                        null);
+            }
+        };
+
+        NetworkServiceProviderTable provider = mapper.add(NETWORK_SERVICE_PROVIDER);
+        NetworkServiceTable networkService = mapper.add(NETWORK_SERVICE);
+        NicTable nic = mapper.add(NIC);
+
+        List<NetworkServiceInfo> infos = create()
+                .select(mapper.fields())
+                .from(provider)
+                .join(networkService)
+                    .on(provider.NETWORK_ID.eq(networkService.NETWORK_ID))
+                .join(nic)
+                    .on(nic.NETWORK_ID.eq(networkService.NETWORK_ID))
+                .where(nic.INSTANCE_ID.eq(instance)
+                        .and(networkService.KIND.eq(serviceKind))
+                        .and(provider.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE))
+                        .and(networkService.REMOVED.isNull()))
+                .fetch().map(mapper);
+
+        return infos.size() == 0 ? null : infos.get(0);
+    }
+
+    @Override
+    public void populateNicAndIp(final NetworkServiceInfo service) {
+        if ( service.getAgentInstance() == null ) {
+            return;
+        }
+
+        MultiRecordMapper<Object> mapper = new MultiRecordMapper<Object>() {
+            @Override
+            protected Object map(List<Object> input) {
+                service.setAgentNic((Nic)input.get(0));
+                service.setIpAddress((IpAddress)input.get(1));
+                return new Object();
+            }
+        };
+
+        NicTable nic = mapper.add(NIC);
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
+
+        create()
+            .select(mapper.fields())
+            .from(nic)
+            .join(IP_ADDRESS_NIC_MAP)
+                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
+            .join(ipAddress)
+                .on(ipAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
+            .where(nic.INSTANCE_ID.eq(service.getAgentInstance().getId())
+                    .and(nic.NETWORK_ID.eq(service.getNetworkServiceProvider().getNetworkId()))
+                    .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                    .and(nic.REMOVED.isNull())
+                    .and(ipAddress.REMOVED.isNull())
+                    .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull()))
+            .fetch().map(mapper);
+    }
+
     public GenericResourceDao getResourceDao() {
         return resourceDao;
     }
@@ -134,6 +215,15 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
     @Inject
     public void setResourceDao(GenericResourceDao resourceDao) {
         this.resourceDao = resourceDao;
+    }
+
+    public ObjectManager getObjectManager() {
+        return objectManager;
+    }
+
+    @Inject
+    public void setObjectManager(ObjectManager objectManager) {
+        this.objectManager = objectManager;
     }
 
 }

@@ -1,4 +1,4 @@
-package io.cattle.platform.configitem.context.impl.data;
+package io.cattle.platform.configitem.context.data;
 
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;

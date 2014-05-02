@@ -4,12 +4,14 @@ import static io.cattle.platform.core.model.tables.ResourcePoolTable.*;
 import io.cattle.platform.core.model.ResourcePool;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.ObjectUtils;
+import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceItemGenerator;
 import io.cattle.platform.resource.pool.PooledResourceItemGeneratorFactory;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +31,15 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
 
     @Override
     public PooledResource allocateResource(Object pool, Object owner) {
-        return allocateResource(pool, DEFAULT_QUALIFIER, owner);
+        List<PooledResource> result = allocateResource(pool, owner, new PooledResourceOptions());
+        return result.size() == 0 ? null : result.get(0);
     }
 
     @Override
-    public PooledResource allocateResource(Object pool, String qualifier, Object owner) {
+    public List<PooledResource> allocateResource(Object pool, Object owner, PooledResourceOptions options) {
+        String qualifier = options.getQualifier();
+        int count = options.getCount();
+
         String poolType = getResourceType(pool);
         long poolId = getResourceId(pool);
         String ownerType = getResourceType(owner);
@@ -46,29 +52,44 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
                 RESOURCE_POOL.OWNER_TYPE, ownerType,
                 RESOURCE_POOL.OWNER_ID, ownerId);
 
-        List<ResourcePool> resourcePool = objectManager.find(ResourcePool.class, keys);
+        List<ResourcePool> resourcePools = new ArrayList<ResourcePool>(objectManager.find(ResourcePool.class, keys));
+        List<PooledResource> result = new ArrayList<PooledResource>();
 
-        if ( resourcePool.size() > 0 ) {
-            return new DefaultPooledResource(resourcePool.get(0).getItem());
+        for ( ResourcePool resourcePool : resourcePools ) {
+            result.add(new DefaultPooledResource(resourcePool.getItem()));
         }
 
-        String item = getItem(keys, pool, qualifier);
+        while ( result.size() < count ) {
+            String item = getItem(keys, pool, qualifier);
 
-        if ( item != null ) {
+            if ( item == null ) {
+                break;
+            } else {
                 log.info("Assigning [{}] from pool [{}:{}] to owner [{}:{}]", item,
                         poolType, poolId, ownerType, ownerId);
+            }
+
+            result.add(new DefaultPooledResource(item));
         }
 
-        return item == null ? null : new DefaultPooledResource(item);
+        if ( result.size() != count ) {
+            log.info("Failed to find [{}] items for pool [{}:{}] and owner [{}:{}]", count,
+                    poolType, poolId, ownerType, ownerId);
+
+            releaseResource(pool, owner, options);
+            return null;
+        }
+
+        return result;
     }
 
     @Override
     public void releaseResource(Object pool, Object owner) {
-        releaseResource(pool, DEFAULT_QUALIFIER, owner);
+        releaseResource(pool, owner, new PooledResourceOptions());
     }
 
     @Override
-    public void releaseResource(Object pool, String qualifier, Object owner) {
+    public void releaseResource(Object pool, Object owner, PooledResourceOptions options) {
         String poolType = getResourceType(pool);
         long poolId = getResourceId(pool);
         String ownerType = getResourceType(owner);
@@ -77,7 +98,7 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         Map<Object,Object> keys = CollectionUtils.asMap(
                 (Object)RESOURCE_POOL.POOL_TYPE, poolType,
                 (Object)RESOURCE_POOL.POOL_ID, poolId,
-                RESOURCE_POOL.QUALIFIER, qualifier,
+                RESOURCE_POOL.QUALIFIER, options.getQualifier(),
                 RESOURCE_POOL.OWNER_TYPE, ownerType,
                 RESOURCE_POOL.OWNER_ID, ownerId);
 
@@ -86,6 +107,12 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
                     resource.getId(), poolType, poolId, ownerType, ownerId);
             objectManager.delete(resource);
         }
+    }
+
+    @Override
+    public PooledResource allocateOneResource(Object pool, Object owner, PooledResourceOptions options) {
+        List<PooledResource> resources = allocateResource(pool, owner, options);
+        return resources.size() == 0 ? null : resources.get(0);
     }
 
     protected String getItem(Map<Object,Object> keys, Object pool, String qualifier) {

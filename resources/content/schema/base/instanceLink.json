@@ -1,5 +1,8 @@
 {
     "resourceFields" : {
+        "ports" : {
+            "type" : "array[json]"
+        },
         "targetInstanceId" : {
             "attributes" : {
                 "scheduleUpdate" : true

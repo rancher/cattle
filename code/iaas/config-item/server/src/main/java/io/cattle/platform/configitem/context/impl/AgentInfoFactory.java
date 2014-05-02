@@ -14,23 +14,16 @@ import io.cattle.platform.util.type.InitializationTask;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.netflix.config.DynamicStringListProperty;
 import com.netflix.config.DynamicStringProperty;
 
 @Named
 public class AgentInfoFactory extends AbstractAgentBaseContextFactory implements InitializationTask {
 
-    public static final DynamicStringListProperty ITEMS = ArchaiusUtil.getList("item.context.network.info.items");
     public static final DynamicStringProperty EXPR = ArchaiusUtil.getString("event.data.instance");
 
     NetworkInfoDao networkInfo;
     ObjectSerializerFactory objectSerializerFactory;
     ObjectSerializer serializer;
-
-    @Override
-    public String[] getItems() {
-        return new String[] { "agent-instance-startup" };
-    }
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {

@@ -9,6 +9,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.resource.pool.PooledResource;
+import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.util.exception.ExecutionException;
@@ -29,8 +30,8 @@ public class MacAddressNetworkActivate extends AbstractObjectProcessLogic implem
         String field = DataAccessor.field(network, NetworkConstants.FIELD_MAC_PREFIX, String.class);
 
         if ( field == null ) {
-            PooledResource mac = resourcePoolManager.allocateResource(ResourcePoolManager.GLOBAL, ResourcePoolConstants.MAC_PREFIX,
-                network);
+            PooledResource mac = resourcePoolManager.allocateOneResource(ResourcePoolManager.GLOBAL,
+                network, new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC_PREFIX));
             if ( mac == null ) {
                 throw new ExecutionException("Mac prefix allocation error", "Failed to get mac prefix", network);
             }

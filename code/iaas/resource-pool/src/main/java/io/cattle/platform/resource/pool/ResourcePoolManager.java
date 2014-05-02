@@ -1,5 +1,7 @@
 package io.cattle.platform.resource.pool;
 
+import java.util.List;
+
 public interface ResourcePoolManager {
 
     static final String DEFAULT_QUALIFIER = "default";
@@ -7,10 +9,12 @@ public interface ResourcePoolManager {
 
     PooledResource allocateResource(Object pool, Object owner);
 
-    PooledResource allocateResource(Object pool, String qualifier, Object owner);
+    PooledResource allocateOneResource(Object pool, Object owner, PooledResourceOptions options);
+
+    List<PooledResource> allocateResource(Object pool, Object owner, PooledResourceOptions options);
 
     void releaseResource(Object pool, Object owner);
 
-    void releaseResource(Object pool, String qualifier, Object owner);
+    void releaseResource(Object pool, Object owner, PooledResourceOptions options);
 
 }

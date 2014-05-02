@@ -3,6 +3,8 @@ package io.cattle.platform.agent.instance.service.impl;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.service.AgentInstanceManager;
+import io.cattle.platform.agent.instance.service.AgentInstanceNicLookup;
+import io.cattle.platform.agent.instance.service.NetworkServiceInfo;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Agent;
@@ -13,6 +15,8 @@ import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +32,8 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
     AgentInstanceFactory agentInstanceFactory;
     AgentInstanceDao agentInstanceDao;
     GenericResourceDao genericResourceDao;
+    ResourceMonitor resourceMonitor;
+    List<AgentInstanceNicLookup> nicLookups;
 
     @Override
     public Map<NetworkServiceProvider,Instance> getAgentInstances(Nic nic) {
@@ -55,15 +61,8 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
                         .withPrivileged(true)
                         .forVnetId(nic.getVnetId())
                         .build();
-            } else if ( InstanceConstants.STATE_STOPPED.equals(agentInstance.getState()) ) {
-                final Instance finalInstance = agentInstance;
-                DeferredUtils.nest(new Callable<Object>() {
-                    @Override
-                    public Object call() throws Exception {
-                        processManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, finalInstance, null);
-                        return null;
-                    }
-                });
+            } else {
+                start(agentInstance);
             }
 
             if ( agentInstance != null ) {
@@ -74,11 +73,78 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
         return result;
     }
 
+    protected void start(final Instance agentInstance) {
+        if ( InstanceConstants.STATE_STOPPED.equals(agentInstance.getState()) ) {
+            DeferredUtils.nest(new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    processManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, agentInstance, null);
+                    return null;
+                }
+            });
+        }
+    }
+
+    @Override
+    public NetworkServiceInfo getNetworkService(Instance instance, String kind, boolean waitForStart) {
+        if ( instance == null || kind == null ) {
+            return null;
+        }
+
+        NetworkServiceInfo info = agentInstanceDao.getNetworkServiceInfo(instance.getId(), kind);
+
+        if ( info == null ) {
+            return null;
+        }
+
+        Map<NetworkServiceProvider,Instance> instances = getAgentInstances(info.getClientNic());
+
+        for ( Map.Entry<NetworkServiceProvider, Instance> entry : instances.entrySet() ) {
+            if ( entry.getKey().getId().equals(info.getNetworkServiceProvider().getId()) ) {
+                info.setAgentInstance(entry.getValue());
+                break;
+            }
+        }
+
+        if ( waitForStart ) {
+            start(info.getAgentInstance());
+            instance = resourceMonitor.waitFor(info.getAgentInstance(), new ResourcePredicate<Instance>() {
+                @Override
+                public boolean evaluate(Instance obj) {
+                    return InstanceConstants.STATE_RUNNING.equals(obj.getState());
+                }
+            });
+
+            info.setAgentInstance(instance);
+        }
+
+        agentInstanceDao.populateNicAndIp(info);
+
+        return info;
+    }
+
     @Override
     public List<? extends Agent> getAgents(NetworkServiceProvider provider) {
         return agentInstanceDao.getAgents(provider);
     }
 
+    @Override
+    public Nic getNicFromResource(Object resource) {
+        if ( resource instanceof Nic ) {
+            return (Nic)resource;
+        }
+
+        Nic nic = null;
+
+        for ( AgentInstanceNicLookup lookup : nicLookups ) {
+            nic = lookup.getNic(resource);
+            if ( nic != null ) {
+                break;
+            }
+        }
+
+        return nic;
+    }
 
     public ObjectManager getObjectManager() {
         return objectManager;
@@ -124,5 +190,23 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
     public void setProcessManager(ObjectProcessManager processManager) {
         this.processManager = processManager;
     }
+
+    public ResourceMonitor getResourceMonitor() {
+        return resourceMonitor;
+    }
+
+    @Inject
+    public void setResourceMonitor(ResourceMonitor resourceMonitor) {
+        this.resourceMonitor = resourceMonitor;
+    }
+
+    public List<AgentInstanceNicLookup> getNicLookups() {
+        return nicLookups;
+    }
+
+    public void setNicLookups(List<AgentInstanceNicLookup> nicLookups) {
+        this.nicLookups = nicLookups;
+    }
+
 
 }

@@ -4,16 +4,21 @@
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:tx="http://www.springframework.org/schema/tx"
     xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:extension="http://cattle.io/schemas/spring/extension"
     xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <bean class="io.cattle.platform.agent.instance.dao.impl.AgentInstanceDaoImpl" />
     <bean id="AgentInstanceFactory" class="io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl" />
     <bean class="io.cattle.platform.agent.instance.serialization.AgentInstanceAuthObjectPostProcessor" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.AgentInstanceManagerImpl" />
+    <bean class="io.cattle.platform.agent.instance.service.impl.AgentInstanceManagerImpl" >
+        <property name="nicLookups" value="#{extensionManager.list('agent.instance.nic.lookup')}" />
+    </bean>
+    <bean class="io.cattle.platform.agent.instance.service.impl.InstanceLinkNicLookup" />
 
     <bean id="AgentInstanceTypes" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeNames">
@@ -21,6 +26,7 @@
                 <value>agentInstanceProvider,parent=networkServiceProvider</value>
                 <value>dnsService,parent=networkService</value>
                 <value>dhcpService,parent=networkService</value>
+                <value>linkService,parent=networkService</value>
             </list>
         </property>
     </bean>
@@ -28,7 +34,7 @@
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceStart" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceNicActivate" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceServicesInstanceHostMapActivate" />
-    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceServicesNicActivate" />
+    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceApplyItems" />
 
     <tx:advice id="AgentInstanceDaoAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
@@ -39,4 +45,7 @@
     <aop:config>
         <aop:advisor advice-ref="AgentInstanceDaoAdvice" pointcut="execution(* io.cattle.platform.agent.instance.dao.AgentInstanceDao.*(..))" />
     </aop:config>
+
+    <extension:discover class="io.cattle.platform.agent.instance.service.AgentInstanceNicLookup" />
+
 </beans>

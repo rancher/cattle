@@ -19,6 +19,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.resource.pool.PooledResource;
+import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.util.exception.ExecutionException;
@@ -72,7 +73,8 @@ public class NicActivate extends AbstractDefaultProcessHandler {
             return mac;
         }
 
-        PooledResource resource = poolManager.allocateResource(network, ResourcePoolConstants.MAC, nic);
+        PooledResource resource = poolManager.allocateOneResource(network, nic,
+                new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC));
         if ( resource == null ) {
             throw new ExecutionException("MAC allocation error", "Failed to allocate MAC from network", nic);
         }

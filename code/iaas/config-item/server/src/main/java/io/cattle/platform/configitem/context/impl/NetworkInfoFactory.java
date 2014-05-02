@@ -2,7 +2,7 @@ package io.cattle.platform.configitem.context.impl;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
-import io.cattle.platform.configitem.context.impl.data.NetworkServiceInfo;
+import io.cattle.platform.configitem.context.data.NetworkServiceInfo;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.dao.IpAddressDao;
@@ -31,12 +31,6 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
 
     NetworkInfoDao networkInfo;
     IpAddressDao ipAddressDao;
-
-    @Override
-    public String[] getItems() {
-        List<String> items = ITEMS.get();
-        return items.toArray(new String[items.size()]);
-    }
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {

@@ -133,7 +133,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
         }
 
-        e.setResource(state.getResource());
+        e.setResources(state.getResource());
         throw e;
     }
 
@@ -173,12 +173,12 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     }
 
     protected void network(Instance instance, ProcessState state) {
-        for ( InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID) ) {
-            activate(link, state.getData());
-        }
-
         for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
             activate(nic, state.getData());
+        }
+
+        for ( InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID) ) {
+            activate(link, state.getData());
         }
     }
 

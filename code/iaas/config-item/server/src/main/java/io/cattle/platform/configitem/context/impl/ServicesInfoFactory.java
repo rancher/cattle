@@ -9,12 +9,7 @@ import io.cattle.platform.core.model.ConfigItemStatus;
 import io.cattle.platform.core.model.Instance;
 
 @Named
-public class ServicesContextFactory extends AbstractAgentBaseContextFactory {
-
-    @Override
-    public String[] getItems() {
-        return new String[] { "services" };
-    }
+public class ServicesInfoFactory extends AbstractAgentBaseContextFactory {
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {

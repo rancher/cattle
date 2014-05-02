@@ -91,7 +91,6 @@
 
         "instanceLink" : "ru",
         "instanceLink.instanceId" : "r",
-        "instanceLink.linkName" : "r",
 
         "instanceStop.remove" : "cr",
         "instanceStop.deallocateFromHost" : "cr",
