@@ -12,9 +12,11 @@ public class ObjectExecutionExceptionHandler implements ExecutionExceptionHandle
 
     @Override
     public void handleException(ExecutionException e, ProcessState state, ProcessServiceContext context) {
-        if ( state.getResource() == e.getResource() ) {
-            Map<String,Object> data = TransitioningUtils.getTransitioningData(e);
-            state.applyData(data);
+        for ( Object resource : e.getResources() ) {
+            if ( state.getResource() == resource ) {
+                Map<String,Object> data = TransitioningUtils.getTransitioningData(e);
+                state.applyData(data);
+            }
         }
     }
 

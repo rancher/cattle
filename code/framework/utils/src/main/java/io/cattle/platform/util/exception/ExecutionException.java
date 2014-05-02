@@ -5,7 +5,7 @@ public class ExecutionException extends RuntimeException {
     private static final long serialVersionUID = -6264703257346922100L;
 
     String transitioningMessage;
-    Object resource;
+    Object[] resources;
 
     public ExecutionException() {
         super();
@@ -15,20 +15,20 @@ public class ExecutionException extends RuntimeException {
         super(message, cause);
     }
 
-    public ExecutionException(String message, Throwable cause, String transitioningMessage, Object resource) {
+    public ExecutionException(String message, Throwable cause, String transitioningMessage, Object... resources) {
         super(message, cause);
         this.transitioningMessage = transitioningMessage;
-        this.resource = resource;
+        this.resources = resources;
     }
 
     public ExecutionException(String message) {
         super(message);
     }
 
-    public ExecutionException(String message, String transitioningMessage, Object resource) {
+    public ExecutionException(String message, String transitioningMessage, Object... resources) {
         super(message);
         this.transitioningMessage = transitioningMessage;
-        this.resource = resource;
+        this.resources = resources;
     }
 
     public ExecutionException(String message, Object resource) {
@@ -47,12 +47,12 @@ public class ExecutionException extends RuntimeException {
         return getMessage();
     }
 
-    public Object getResource() {
-        return resource;
+    public Object[] getResources() {
+        return resources;
     }
 
-    public void setResource(Object resource) {
-        this.resource = resource;
+    public void setResources(Object... resources) {
+        this.resources = resources;
     }
 
 }
