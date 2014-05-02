@@ -111,6 +111,14 @@ public class JacksonJsonMapper implements JsonMapper {
 
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public <T> T convertCollectionValue(Object fromValue, Class<? extends Collection> collectionClass,
+            Class<?> elementsClass) {
+        CollectionType type = mapper.getTypeFactory().constructCollectionType(collectionClass, elementsClass);
+        return (T) mapper.convertValue(fromValue, type);
+    }
+
     public void setPrettyPrinting() {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
@@ -122,33 +130,6 @@ public class JacksonJsonMapper implements JsonMapper {
     public void setObjectMapper(ObjectMapper objectMapper) {
         this.mapper = objectMapper;
     }
-
-//    @Override
-//    public <T> T fromJson(String text, Class<T> type) {
-//        try {
-//            return readValue(text, type);
-//        } catch (IOException e) {
-//            throw new JsonProcessingException(e);
-//        }
-//    }
-//
-//    @Override
-//    public void toJson(Object object, Writer os) {
-//        try {
-//            mapper.writeValue(os, object);
-//        } catch (IOException e) {
-//            throw new JsonProcessingException(e);
-//        }
-//    }
-//
-//    @Override
-//    public String toJson(Object object) {
-//        try {
-//            return writeValueAsString(object);
-//        } catch (IOException e) {
-//            throw new JsonProcessingException(e);
-//        }
-//    }
 
     @SuppressWarnings("unchecked")
     @Override
