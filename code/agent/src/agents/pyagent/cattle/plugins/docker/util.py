@@ -84,3 +84,19 @@ def ns_exec(ctx, pid, input, *args, **kw):
         raise Exception('Exit code [{0}]'.format(p.returncode))
 
     return data
+
+
+def add_to_env(config, *args, **kw):
+    try:
+        env = config['environment']
+    except KeyError:
+        env = {}
+        config['environment'] = env
+
+    for i in range(0, len(args), 2):
+        if args[i] not in env:
+            env[args[i]] = args[i+1]
+
+    for k, v in kw.items():
+        if k not in env:
+            env[k] = v

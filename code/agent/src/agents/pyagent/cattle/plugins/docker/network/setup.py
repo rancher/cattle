@@ -1,7 +1,7 @@
 import logging
 
-from .util import net_util
-from .compute import DockerCompute
+from ..util import net_util
+from ..compute import DockerCompute
 from cattle.agent.handler import BaseHandler
 
 log = logging.getLogger('docker')
@@ -12,7 +12,7 @@ class NetworkSetup(BaseHandler):
         self.compute = DockerCompute()
         pass
 
-    def before_start(self, instance, host, config):
+    def before_start(self, instance, host, config, start_config):
         pass
 
     def after_start(self, instance, host, id):

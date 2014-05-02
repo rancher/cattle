@@ -125,6 +125,19 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             config['command'] = command
 
     @staticmethod
+    def _setup_links(start_config, instance):
+        links = {}
+
+        if 'instanceLinks' not in instance:
+            return
+
+        for link in instance.instanceLinks:
+            if link.targetInstanceId is not None:
+                links[link.linkName] = link.targetInstance.uuid
+
+        start_config['links'] = links
+
+    @staticmethod
     def _setup_ports(config, instance):
         ports = []
         try:
@@ -165,12 +178,19 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         self._setup_command(config, instance)
         self._setup_ports(config, instance)
 
+        start_config = {
+            'publish_all_ports': True,
+            'privileged': self._is_privileged(instance)
+        }
+
+        self._setup_links(start_config, instance)
+
         container = self.get_container_by_name(name)
         if container is None:
             log.info('Creating docker container [%s] from config %s', name,
                      config)
 
-            self._call_listeners(True, instance, host, config)
+            self._call_listeners(True, instance, host, config, start_config)
             try:
                 container = c.create_container(image_tag, **config)
             except APIError as e:
@@ -185,10 +205,9 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
                 except:
                     raise(e)
 
-        log.info('Starting docker container [%s] docker id [%s]', name,
-                 container['Id'])
-        c.start(container['Id'], publish_all_ports=True,
-                privileged=self._is_privileged(instance))
+        log.info('Starting docker container [%s] docker id [%s] %s', name,
+                 container['Id'], start_config)
+        c.start(container['Id'], **start_config)
 
         self._call_listeners(False, instance, host, container['Id'])
 

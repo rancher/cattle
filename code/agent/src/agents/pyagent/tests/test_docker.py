@@ -105,6 +105,51 @@ def test_instance_only_activate(agent, responses):
 
 
 @if_docker
+def test_instance_activate_links(agent, responses):
+    _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
+
+    def post(req, resp):
+        docker_container = resp['data']['instance']['+data']['dockerContainer']
+        id = docker_container['Id']
+        fields = resp['data']['instance']['+data']['+fields']
+        del docker_container['Created']
+        del docker_container['Id']
+        del docker_container['Status']
+        del docker_container['Ports'][0]['PublicPort']
+        del docker_container['Ports'][1]['PublicPort']
+        del fields['dockerIp']
+        assert fields['dockerPorts']['8080/tcp'] is not None
+        assert fields['dockerPorts']['12201/udp'] is not None
+        fields['dockerPorts']['8080/tcp'] = '1234'
+        fields['dockerPorts']['12201/udp'] = '5678'
+
+        inspect = Client().inspect_container(id)
+
+        env = inspect['Config']['Env']
+
+        assert 'MYSQL_NAME=/cattle/mysql' in env
+        assert 'MYSQL_PORT=udp://127.0.0.2:12346' in env
+        assert 'MYSQL_PORT_3307_UDP=udp://127.0.0.2:12346' in env
+        assert 'MYSQL_PORT_3307_UDP_ADDR=127.0.0.2' in env
+        assert 'MYSQL_PORT_3307_UDP_PORT=12346' in env
+        assert 'MYSQL_PORT_3307_UDP_PROTO=udp' in env
+
+        assert 'MYSQL_PORT_3306_TCP=tcp://127.0.0.1:12345' in env
+        assert 'MYSQL_PORT_3306_TCP_ADDR=127.0.0.1' in env
+        assert 'MYSQL_PORT_3306_TCP_PORT=12345' in env
+        assert 'MYSQL_PORT_3306_TCP_PROTO=tcp' in env
+
+        assert 'REDIS_NAME=/cattle/redis' in env
+        assert 'REDIS_PORT=udp://127.0.0.1:23456' in env
+        assert 'REDIS_PORT_26_UDP=udp://127.0.0.1:23456' in env
+        assert 'REDIS_PORT_26_UDP_ADDR=127.0.0.1' in env
+        assert 'REDIS_PORT_26_UDP_PORT=23456' in env
+        assert 'REDIS_PORT_26_UDP_PROTO=udp' in env
+
+    event_test(agent, 'docker/instance_activate_links', post_func=post)
+
+
+@if_docker
 def test_instance_activate_agent_instance_localhost(agent, responses):
     CONFIG_OVERRIDE['CONFIG_URL'] = 'https://localhost:1234/a/path'
     _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')

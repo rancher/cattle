@@ -5,7 +5,7 @@ from urlparse import urlparse
 
 from cattle import Config
 from cattle.utils import reply
-from .util import container_exec
+from .util import container_exec, add_to_env
 from .compute import DockerCompute
 from cattle.agent.handler import BaseHandler
 
@@ -48,25 +48,20 @@ class DockerDelegate(BaseHandler):
         else:
             return reply(req, resp)
 
-    def before_start(self, instance, host, config):
+    def before_start(self, instance, host, config, start_config):
         if instance.get('agentId') is None:
             return
-
-        try:
-            env = config['environment']
-        except KeyError:
-            env = {}
-            config['environment'] = env
 
         url = Config.config_url()
         parsed = urlparse(url)
 
         if 'localhost' == parsed.hostname:
-            env['CATTLE_CONFIG_URL_SCHEME'] = parsed.scheme
-            env['CATTLE_CONFIG_URL_PATH'] = parsed.path
-            env['CATTLE_CONFIG_URL_PORT'] = Config.api_proxy_listen_port()
+            add_to_env(config,
+                       CATTLE_CONFIG_URL_SCHEME=parsed.scheme,
+                       CATTLE_CONFIG_URL_PATH=parsed.path,
+                       CATTLE_CONFIG_URL_PORT=Config.api_proxy_listen_port())
         else:
-            env['CATTLE_CONFIG_URL'] = url
+            add_to_env(config, CATTLE_CONFIG_URL=url)
 
     def after_start(self, instance, host, id):
         pass
