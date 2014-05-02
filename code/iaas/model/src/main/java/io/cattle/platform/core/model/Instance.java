@@ -245,6 +245,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "domain", length = 128)
 	public java.lang.String getDomain();
 
+	/**
+	 * Setter for <code>cattle.instance.first_running</code>.
+	 */
+	public void setFirstRunning(java.util.Date value);
+
+	/**
+	 * Getter for <code>cattle.instance.first_running</code>.
+	 */
+	@javax.persistence.Column(name = "first_running")
+	public java.util.Date getFirstRunning();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

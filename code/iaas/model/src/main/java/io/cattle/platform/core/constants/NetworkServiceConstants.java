@@ -4,5 +4,8 @@ public class NetworkServiceConstants {
 
     public static final String KIND_DNS = "dnsService";
     public static final String KIND_DHCP = "dhcpService";
+    public static final String KIND_LINK = "linkService";
+
+    public static final String FIELD_PRIVATE_LINK = "privateLinks";
 
 }

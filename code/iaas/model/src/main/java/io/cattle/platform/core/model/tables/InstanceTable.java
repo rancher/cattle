@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = -1329902518;
+	private static final long serialVersionUID = 1119573438;
 
 	/**
 	 * The singleton instance of <code>cattle.instance</code>
@@ -130,6 +130,11 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 * The column <code>cattle.instance.domain</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> DOMAIN = createField("domain", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+
+	/**
+	 * The column <code>cattle.instance.first_running</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.util.Date> FIRST_RUNNING = createField("first_running", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**
 	 * Create a <code>cattle.instance</code> table reference

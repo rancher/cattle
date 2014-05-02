@@ -1,5 +1,6 @@
 package io.cattle.platform.core.util;
 
+import io.cattle.platform.core.model.Port;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
@@ -19,8 +20,16 @@ public class PortSpec {
     private static final List<String> PROTOCOLS = Arrays.asList("tcp", "udp");
 
     int privatePort;
+    String ipAddress;
     Integer publicPort;
     String protocol;
+
+    public PortSpec(String ipAddress, int publicPort, Port port) {
+        this.ipAddress = ipAddress;
+        this.publicPort = publicPort;
+        this.privatePort = port.getPrivatePort();
+        this.protocol = port.getProtocol();
+    }
 
     public PortSpec(String spec) {
         Matcher m = PATTERN.matcher(spec);
@@ -64,6 +73,14 @@ public class PortSpec {
 
     public String getProtocol() {
         return protocol;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
     }
 
 }
