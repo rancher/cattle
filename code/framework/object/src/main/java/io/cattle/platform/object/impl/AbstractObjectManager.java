@@ -182,7 +182,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
         }
 
         if (  rel.getRelationshipType() == RelationshipType.CHILD ) {
-            return (List<T>)children(obj, rel.getObjectType());
+            return (List<T>)children(obj, rel.getObjectType(), rel.getPropertyName());
         } else if ( rel.getRelationshipType() == RelationshipType.MAP ) {
             return getListByRelationshipMap(obj, (MapRelationship)rel);
         }
