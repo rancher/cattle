@@ -119,6 +119,7 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
                 futures.put(name, future);
             }
         } catch ( NumberFormatException nfe ) {
+            log.error("Failed to parse [{}] for task [{}]", prop.get(), name, nfe);
         }
     }
 
