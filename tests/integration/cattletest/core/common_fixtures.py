@@ -318,12 +318,20 @@ def create_and_activate(client, type, **kw):
 
 
 def stop_running_sim_instances(admin_client):
-    for c in admin_client.list_instance(state='running'):
+    for c in admin_client.list_instance(state='running', limit=1000):
         if c.hosts()[0].kind == 'sim':
             try:
                 c.stop()
             except:
                 pass
+
+    for state in ['active', 'reconnecting']:
+        for a in admin_client.list_agent(state=state, include='instances',
+                                         uri_like='delegate%'):
+            if not callable(a.instances):
+                for i in a.instances:
+                    if i.state != 'running':
+                        a.deactivate()
 
 
 def one(method, *args, **kw):
@@ -449,3 +457,23 @@ def create_sim_container(admin_client, sim_context, *args, **kw):
     assert c.state == 'running'
 
     return c
+
+
+def create_agent_instance_nsp(admin_client, sim_context):
+    network = create_and_activate(admin_client, 'hostOnlyNetwork',
+                                  hostVnetUri='test:///',
+                                  dynamicCreateVnet=True)
+
+    create_and_activate(admin_client, 'subnet',
+                        networkAddress='192.168.0.0',
+                        networkId=network.id)
+
+    return create_and_activate(admin_client, 'agentInstanceProvider',
+                               networkId=network.id,
+                               agentInstanceImageUuid=sim_context['imageUuid'])
+
+
+def resource_pool_items(admin_client, obj):
+    id = get_plain_id(admin_client, obj)
+    return admin_client.list_resource_pool(ownerType=obj.type,
+                                           ownerId=id)

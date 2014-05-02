@@ -11,6 +11,16 @@ def test_sample_data(admin_client, system_account):
     assert network.state == 'active' or network.state == 'inactive'
     assert network.hostVnetUri == 'bridge://docker0'
     assert network.dynamicCreateVnet
+    assert network.data.libvirt == {
+        'network': {
+            'source': [
+                {
+                    'bridge': 'docker0'
+                }
+            ],
+            'type': 'bridge'
+        }
+    }
 
     subnet = find_one(network.subnets)
 
@@ -34,7 +44,7 @@ def test_sample_data(admin_client, system_account):
     assert network_service_provider.state == 'active'
     assert network_service_provider.agentInstanceImageUuid is None
 
-    network_services = find_count(2, network.networkServices)
+    network_services = find_count(3, network.networkServices)
     network_service_kinds = set()
 
     for service in network_services:
@@ -49,5 +59,9 @@ def test_sample_data(admin_client, system_account):
             service.uuid = 'docker0-dhcp-service'
         if service.kind == 'dnsService':
             service.uuid = 'docker0-dns-service'
+        if service.kind == 'linkService':
+            service.uuid = 'docker0-link-service'
 
-    assert network_service_kinds == set(['dnsService', 'dhcpService'])
+    assert network_service_kinds == set(['dnsService',
+                                         'dhcpService',
+                                         'linkService'])

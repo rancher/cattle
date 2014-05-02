@@ -17,6 +17,7 @@ def test_container_create_only(admin_client, sim_context):
         "state": "creating",
         "imageUuid": uuid,
         "imageId": NOT_NONE,
+        "firstRunning": None,
     })
 
     container = wait_success(admin_client, container)
@@ -78,7 +79,8 @@ def test_container_create_only(admin_client, sim_context):
 def _assert_running(container, sim_context):
     assert_fields(container, {
         "allocationState": "active",
-        "state": "running"
+        "state": "running",
+        "firstRunning": NOT_NONE
     })
 
     root_volume = container.volumes()[0]
@@ -133,6 +135,25 @@ def test_container_create_then_start(admin_client, sim_context):
     container = wait_success(admin_client, container)
 
     _assert_running(container, sim_context)
+
+
+def test_container_first_running(admin_client, sim_context):
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      startOnCreate=False)
+    c = admin_client.wait_success(c)
+
+    assert c.state == 'stopped'
+    assert c.firstRunning is None
+
+    c = admin_client.wait_success(c.start())
+    assert c.state == 'running'
+    assert c.firstRunning is not None
+
+    first = c.firstRunning
+
+    c = admin_client.wait_success(c.restart())
+    assert c.state == 'running'
+    assert c.firstRunning == first
 
 
 def test_container_restart(admin_client, sim_context):

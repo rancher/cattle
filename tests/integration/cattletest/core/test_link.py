@@ -1,14 +1,35 @@
 from common_fixtures import *  # NOQA
 
 
-def test_link_create(admin_client, sim_context):
-    target1 = create_sim_container(admin_client, sim_context)
-    target2 = create_sim_container(admin_client, sim_context)
+@pytest.fixture(scope='module')
+def link_network(admin_client, sim_context):
+    nsp = create_agent_instance_nsp(admin_client, sim_context)
+    create_and_activate(admin_client, 'linkService',
+                        networkServiceProviderId=nsp.id,
+                        networkId=nsp.networkId)
 
-    c = create_sim_container(admin_client, sim_context, instanceLinks={
-        'target1_link': target1.id,
-        'target2_link': target2.id,
-    })
+    return admin_client.by_id_network(nsp.networkId)
+
+
+def test_link_create(admin_client, sim_context, link_network):
+    target1 = create_sim_container(admin_client, sim_context,
+                                   ports=['180', '122/udp'],
+                                   networkIds=[link_network.id])
+    target2 = create_sim_container(admin_client, sim_context,
+                                   ports=['280', '222/udp'])
+
+    c = create_sim_container(admin_client, sim_context,
+                             networkIds=[link_network.id],
+                             instanceLinks={
+                                 'target1_link': target1.id,
+                                 'target2_link': target2.id})
+
+    agent_instance = None
+    for nsp in link_network.networkServiceProviders():
+        if nsp.kind == 'agentInstanceProvider':
+            agent_instance = nsp.instances()[0]
+
+    ip_address = agent_instance.primaryIpAddress
 
     assert len(c.instanceLinks()) == 2
     assert len(target1.targetInstanceLinks()) == 1
@@ -20,13 +41,38 @@ def test_link_create(admin_client, sim_context):
 
     for link in links:
         assert link.state == 'active'
+        assert len(resource_pool_items(admin_client, link)) == 2
+        assert link.instanceId == c.id
 
         if link.linkName == 'target1_link':
-            assert link.instanceId == c.id
             assert link.targetInstanceId == target1.id
+            assert len(link.data.fields.ports) == 2
+            for port in link.data.fields.ports:
+                assert port.ipAddress == ip_address
+                assert port.publicPort is not None
+                if port.privatePort == 180:
+                    assert port.protocol == 'tcp'
+                elif port.privatePort == 122:
+                    assert port.protocol == 'udp'
+                else:
+                    assert False
+
         if link.linkName == 'target2_link':
-            assert link.instanceId == c.id
             assert link.targetInstanceId == target2.id
+            assert len(link.data.fields.ports) == 2
+            for port in link.data.fields.ports:
+                assert port.ipAddress == ip_address
+                assert port.publicPort is not None
+                if port.privatePort == 280:
+                    assert port.protocol == 'tcp'
+                elif port.privatePort == 222:
+                    assert port.protocol == 'udp'
+                else:
+                    assert False
+
+    c = admin_client.wait_success(c.stop())
+    for link in c.instanceLinks():
+        assert len(resource_pool_items(admin_client, link)) == 0
 
 
 def test_link_update(admin_client, sim_context):
@@ -106,3 +152,20 @@ def test_null_links(admin_client, sim_context):
     assert links[0].state == 'active'
     assert links[0].linkName == 'null_link'
     assert links[0].targetInstanceId is None
+
+
+def test_link_timeout(admin_client, sim_context, link_network):
+    t = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      startOnCreate=False)
+
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      networkIds=[link_network.id],
+                                      instanceLinks={'t': t.id},
+                                      data={'linkWaitTime': 100})
+
+    c = admin_client.wait_transitioning(c)
+
+    msg = 'Timeout waiting for instance link t'
+    assert c.state == 'removed'
+    assert c.transitioning == 'error'
+    assert c.transitioningMessage == '{} : {}'.format(msg, msg)
