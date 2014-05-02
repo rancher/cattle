@@ -198,17 +198,17 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 if ( e.getExitReason() != null && e.getExitReason().getResult() == ProcessResult.SUCCESS ) {
                     throw e;
                 } else if ( e.getExitReason().isRethrow() ) {
-                    if ( e.getExitReason() == RETRY_EXCEPTION ) {
-                        log.info("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
-                                e.getCause().getMessage());
-                    } else {
+                    if ( e.getExitReason().isError() ) {
                         log.error("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
                                 e.getCause().getMessage());
+                    } else {
+                        log.info("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(),
+                                e.getCause().getMessage());
                     }
-                } else if ( e.getExitReason() == SCHEDULED ) {
-                    log.info("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
-                } else {
+                } else if ( e.getExitReason().isError() ) {
                     log.error("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
+                } else {
+                    log.info("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
                 }
 
                 throw e;

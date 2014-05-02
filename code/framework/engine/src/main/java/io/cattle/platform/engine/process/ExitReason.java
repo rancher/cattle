@@ -7,11 +7,11 @@ public enum ExitReason {
     CANCELED(ProcessResult.CANCELED),
     STATE_CHANGED,
     DONE(SUCCESS),
-    DELEGATE,
+    DELEGATE(false, false, false, null),
     SERVER_TERMINATED,
-    SCHEDULED,
-    PROCESS_ALREADY_IN_PROGRESS,
-    RESOURCE_BUSY,
+    SCHEDULED(false, false, false, null),
+    PROCESS_ALREADY_IN_PROGRESS(false, false, false, null),
+    RESOURCE_BUSY(false, false, false, null),
     RETRY_EXCEPTION(true),
     UNKNOWN_EXCEPTION(true),
     TIMEOUT(true),
@@ -20,24 +20,26 @@ public enum ExitReason {
 
     boolean terminating;
     boolean rethrow;
+    boolean error;
     ProcessResult result;
 
     private ExitReason() {
-        this(false, null);
+        this(false, false, true, null);
     }
 
     private ExitReason(boolean rethrow) {
-        this(false, null);
-        this.rethrow = rethrow;
+        this(rethrow, false, true, null);
     }
 
     private ExitReason(ProcessResult result) {
-        this(true, result);
+        this(false, true, false, result);
     }
 
-    private ExitReason(boolean terminating, ProcessResult result) {
+    private ExitReason(boolean rethrow, boolean terminating, boolean error, ProcessResult result) {
+        this.rethrow = rethrow;
         this.terminating = terminating;
         this.result = result;
+        this.error = error;
 
         if ( terminating && result == null ) {
             throw new IllegalStateException("All terminating ExitReasons must"
@@ -55,5 +57,9 @@ public enum ExitReason {
 
     public boolean isRethrow() {
         return rethrow;
+    }
+
+    public boolean isError() {
+        return error;
     }
 }

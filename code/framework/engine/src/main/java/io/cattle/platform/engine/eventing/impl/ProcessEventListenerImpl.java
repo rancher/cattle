@@ -56,11 +56,7 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
             log.debug("Failed to find process for id [{}]", event.getResourceId());
         } catch ( ProcessInstanceException e ) {
             counters.get(e.getExitReason()).inc();
-            switch (e.getExitReason()) {
-            case PROCESS_ALREADY_IN_PROGRESS:
-            case RESOURCE_BUSY:
-                break;
-            default:
+            if ( e.getExitReason().isError() ) {
                 log.error("Process [{}:{}] on [{}] failed, exit [{}] : {}", instance.getName(), event.getResourceId(),
                         instance.getResourceId(), e.getExitReason(), e.getMessage());
             }
@@ -68,7 +64,7 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
             TIMEOUT.inc();
             log.info("Communication timeout on process [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(),
                     instance.getResourceId(), e.getMessage());
-        } catch ( RuntimeException e ) {
+        } catch ( Throwable e ) {
             EXCEPTION.inc();
             log.error("Unknown exception running process [{}:{}] on [{}]", instance == null ? null : instance.getName(),
                     event.getResourceId(), instance == null ? null : instance.getResourceId(), e);
