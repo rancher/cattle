@@ -5,7 +5,7 @@ public class ExecutionException extends RuntimeException {
     private static final long serialVersionUID = -6264703257346922100L;
 
     String transitioningMessage;
-    Object[] resources;
+    Object[] resources = new Object[0];
 
     public ExecutionException() {
         super();
