@@ -100,7 +100,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         Class<?> clz = schemaFactory.getSchemaClass(type);
         if ( clz == null ) {
             Schema schema = schemaFactory.getSchema(type);
-            if ( schema.getParent() != null ) {
+            if ( schema != null && schema.getParent() != null ) {
                 return getClassForType(schemaFactory, schema.getParent());
             }
         }
