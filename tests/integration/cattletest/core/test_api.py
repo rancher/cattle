@@ -297,7 +297,8 @@ def test_include_user_not_auth_map(client, sim_context):
 
 
 def test_map_user_not_auth_map(client, sim_context):
-    c = client.create_container(imageUuid=sim_context['imageUuid'])
+    c = client.create_container(imageUuid=sim_context['imageUuid'],
+                                requestedHostId=sim_context['host'].id)
     c = client.wait_success(c)
 
     assert c.state == 'running'

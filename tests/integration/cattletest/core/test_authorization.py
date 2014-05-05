@@ -7,6 +7,7 @@ def test_instance_link_auth(admin_client, client):
         'data': 'ru',
         'instanceId': 'r',
         'linkName': 'r',
+        'ports': 'r',
         'removeTime': 'ru',
         'targetInstanceId': 'ru',
     })
