@@ -15,7 +15,7 @@
         ".*\\.transitioningMessage": "r",
         ".*\\.transitioningProgress": "r",
 
-        "apiKey" : "crd",
+        "apiKey" : "crud",
         "apiKey.publicValue" : "r",
         "apiKey.secretValue" : "r",
 
