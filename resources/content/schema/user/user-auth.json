@@ -15,6 +15,10 @@
         ".*\\.transitioningMessage": "r",
         ".*\\.transitioningProgress": "r",
 
+        "apiKey" : "crd",
+        "apiKey.publicValue" : "r",
+        "apiKey.secretValue" : "r",
+
         "container" : "crud",
         "container.environment" : "cr",
         "container.command" : "cr",
@@ -32,9 +36,7 @@
         "container.system" : "cr",
         "container.user" : "cr",
 
-        "credential" : "crud",
-        "credential.publicValue" : "cru",
-        "credential.secretValue" : "cru",
+        "credential" : "r",
 
         "host" : "r",
 

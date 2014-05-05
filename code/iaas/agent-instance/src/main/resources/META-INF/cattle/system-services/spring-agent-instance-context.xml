@@ -27,6 +27,7 @@
                 <value>dnsService,parent=networkService</value>
                 <value>dhcpService,parent=networkService</value>
                 <value>linkService,parent=networkService</value>
+                <value>apiKey,parent=credential</value>
             </list>
         </property>
     </bean>
