@@ -1,18 +1,15 @@
-FROM cattle/agent:latest
+FROM ibuildthecloud/ubuntu-core-base:14.04
 ADD http://stedolan.github.io/jq/download/linux64/jq /usr/bin/
 RUN chmod +x /usr/bin/jq
 RUN apt-get update && apt-get install -y \
-    curl \
-    vim \
-    monit \
-    dnsmasq \
     busybox \
+    curl \
+    dnsmasq \
+    iptables \
+    monit \
     psmisc \
-    uuid-runtime
-RUN ln -s /bin/busybox /init
-ADD inittab /etc/inittab
-ADD monitrc /etc/monitrc
-RUN chmod 600 /etc/monitrc
+    uuid-runtime \
+    vim-tiny && \
+    rm -rf /var/lib/apt/lists
 ADD startup.sh /etc/init.d/agent-instance-startup
-RUN touch /etc/agent-instance
-CMD ["/init"]
+CMD ["/etc/init.d/agent-instance-startup", "init"]

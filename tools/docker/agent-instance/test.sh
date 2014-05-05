@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 TAG=${TAG:-cattle/agent-instance:dev}
 docker build -t $TAG .

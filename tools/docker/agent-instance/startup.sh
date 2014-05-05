@@ -84,11 +84,26 @@ setup_config_url()
     export CATTLE_CONFIG_URL
 }
 
-mkdir -p $CATTLE_HOME
-cd $CATTLE_HOME
+start()
+{
+    mkdir -p $CATTLE_HOME
+    cd $CATTLE_HOME
 
-# Let scripts know its being ran during startup
-export CATTLE_AGENT_STARTUP=true
+    # Let scripts know its being ran during startup
+    export CATTLE_AGENT_STARTUP=true
 
-setup_config_url
-download_agent
+    setup_config_url
+    download_agent
+}
+
+if [ "$1" = "start" ]; then
+    start
+elif [ "$1" = "init" ]; then
+    touch /etc/agent-instance
+    echo '::sysinit:bash /etc/init.d/agent-instance-startup start' > /etc/inittab
+    if [ ! -e /init ]; then
+        ln -s /bin/busybox /init
+    fi
+    cd /
+    exec ./init
+fi

@@ -1,6 +1,0 @@
-set daemon 5
-set httpd port 2812 and
-use address localhost
-allow localhost
-
-include /etc/monitrc.d/*.conf
