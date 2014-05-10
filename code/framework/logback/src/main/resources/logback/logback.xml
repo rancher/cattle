@@ -136,6 +136,10 @@
         <level value="${otherLevel}" />
     </logger>
 
+    <logger name="freemarker">
+        <level value="${otherLevel}" />
+    </logger>
+
     <logger name="com.hazelcast">
         <level value="DEBUG" />
     </logger>
