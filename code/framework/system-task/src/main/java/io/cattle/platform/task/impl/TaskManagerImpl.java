@@ -113,6 +113,11 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
 
             if ( ! StringUtils.isBlank(prop.get()) ) {
                 long delay = (long)(Float.parseFloat(prop.get()) * 1000);
+                if ( delay == 0 ) {
+                    log.info("Disabling task [{}]", name);
+                    return;
+                }
+
                 log.info("Scheduling task [{}] for every [{}] seconds", name, delay);
                 future = executorService.scheduleWithFixedDelay(runnable,
                         Math.min(DELAY_SECONDS.get() * 1000, delay), delay, TimeUnit.MILLISECONDS);
