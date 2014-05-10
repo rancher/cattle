@@ -1,6 +1,7 @@
 package io.cattle.platform.configitem.server.model.impl;
 
 import io.cattle.platform.configitem.context.ConfigItemContextFactory;
+import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.resource.ResourceRoot;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
@@ -12,6 +13,7 @@ import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -46,11 +48,17 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
 
             ArchiveContext context = new ArchiveContext(req, taos, getVersion(req));
 
-            for ( ConfigItemContextFactory factory : contextFactories ) {
-                factory.populateContext(req, this, context);
+            ItemVersion current = req.getCurrentVersion();
+            if ( current != null && current.toExternalForm().equals(context.getVersion()) ) {
+                writeUpToDate(context);
+            } else {
+                for ( ConfigItemContextFactory factory : contextFactories ) {
+                    factory.populateContext(req, this, context);
+                }
+
+                writeContent(context);
             }
 
-            writeContent(context);
             writeHashes(context);
         } finally {
             IOUtils.closeQuietly(taos);
@@ -90,6 +98,16 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
     protected void writeContent(final ArchiveContext context) throws IOException {
         final byte[] content = (context.getVersion() + "\n").getBytes("UTF-8");
         withEntry(context, "version", content.length, new WithEntry() {
+            @Override
+            public void with(OutputStream os) throws IOException {
+                os.write(content);
+            }
+        });
+    }
+
+    protected void writeUpToDate(final ArchiveContext context) throws IOException {
+        final byte[] content = (context.getVersion() + "\n").getBytes("UTF-8");
+        withEntry(context, "uptodate", content.length, new WithEntry() {
             @Override
             public void with(OutputStream os) throws IOException {
                 os.write(content);
@@ -142,6 +160,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         entry.setGroupName("root");
         entry.setMode(0644);
         entry.setSize(size);
+        entry.setModTime(new Date(System.currentTimeMillis()-(60*60*24*1000)));
         return entry;
     }
 

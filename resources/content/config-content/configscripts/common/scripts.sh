@@ -14,19 +14,10 @@ debug_on()
     CATTLE_SCRIPT_DEBUG=true check_debug
 }
 
-has_jq()
-{
-    if [ -x "$(which jq)" ]; then
-        return 0
-    fi
-
-    return 1
-}
-
 docker_env()
 {
-    if [[ -e /.dockerenv && has_jq ]]; then
-        eval $(cat /.dockerenv | jq -r '@sh "export \(.[])"')
+    if [ -e /.dockerenv ]; then
+        eval $(cat /proc/1/environ | xargs -0 -I{} echo export '"{}"')
     fi
 }
 
@@ -114,6 +105,19 @@ reply()
             "resourcetype" : .resourceType
         }
     '
+}
+
+apply_config()
+{
+    local file=${@:${#}:1}
+    local cmd=${@:1:$(($#-1))}
+
+    if ! ${cmd[@]} content-home/${file}; then
+        if [ -e ${CATTLE_HOME}/${file} ]; then
+           ${cmd[@]} ${CATTLE_HOME}/${file}
+        fi
+        return 1
+    fi
 }
 
 check_debug

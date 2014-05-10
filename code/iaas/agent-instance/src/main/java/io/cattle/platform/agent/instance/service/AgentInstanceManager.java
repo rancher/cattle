@@ -16,6 +16,6 @@ public interface AgentInstanceManager {
 
     NetworkServiceInfo getNetworkService(Instance instance, String kind, boolean waitForStart);
 
-    Nic getNicFromResource(Object resource);
+    List<? extends Nic> getNicsFromResource(Object resource);
 
 }

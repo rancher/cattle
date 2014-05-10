@@ -58,6 +58,10 @@ public class DefaultItemVersion implements ItemVersion {
 
         String[] parts = str.split("-");
 
+        if ( parts.length == 3 ) {
+            parts = new String[] { parts[1], parts[2] };
+        }
+
         if ( parts.length != 2 )
             return null;
 

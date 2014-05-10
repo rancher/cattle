@@ -7,7 +7,7 @@
         <version>0.1-SNAPSHOT</version>
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
-    <artifactId>cattle-agent-instance-links</artifactId>
+    <artifactId>cattle-agent-instance-impl</artifactId>
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>

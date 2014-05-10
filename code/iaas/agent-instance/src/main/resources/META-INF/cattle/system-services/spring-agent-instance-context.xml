@@ -18,7 +18,9 @@
     <bean class="io.cattle.platform.agent.instance.service.impl.AgentInstanceManagerImpl" >
         <property name="nicLookups" value="#{extensionManager.list('agent.instance.nic.lookup')}" />
     </bean>
+
     <bean class="io.cattle.platform.agent.instance.service.impl.InstanceLinkNicLookup" />
+    <bean class="io.cattle.platform.agent.instance.service.impl.HostIpAddressMapNicLookup" />
 
     <bean id="AgentInstanceTypes" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeNames">
@@ -26,8 +28,8 @@
                 <value>agentInstanceProvider,parent=networkServiceProvider</value>
                 <value>dnsService,parent=networkService</value>
                 <value>dhcpService,parent=networkService</value>
+                <value>ipsecTunnelService,parent=networkService</value>
                 <value>linkService,parent=networkService</value>
-                <value>apiKey,parent=credential</value>
             </list>
         </property>
     </bean>

@@ -1,6 +1,7 @@
 package io.cattle.platform.configitem.context.dao;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
 import io.cattle.platform.configitem.context.data.InstanceLinkData;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
@@ -22,5 +23,7 @@ public interface NetworkInfoDao {
     Map<Long,Network> networks(Instance instance);
 
     List<InstanceLinkData> getLinks(Instance instance);
+
+    List<ClientIpsecTunnelInfo> getIpsecTunnelClient(Instance instance);
 
 }

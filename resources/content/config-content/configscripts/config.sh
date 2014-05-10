@@ -20,6 +20,7 @@ trap cleanup EXIT
 LOCK_DIR=${CATTLE_HOME}/locks
 LOCK=${LOCK_DIR}/config.lock
 DOWNLOAD=$CATTLE_HOME/download
+UPTODATE=false
 
 URL=$CATTLE_CONFIG_URL
 AUTH=${CATTLE_ACCESS_KEY}:${CATTLE_SECRET_KEY}
@@ -48,7 +49,9 @@ if [ "$CATTLE_AGENT_STARTUP" != "true" ] && [ -e /etc/agent-instance ]; then
     fi
 fi
 
-[ "${FLOCKER}" != "$LOCK" ] && exec env FLOCKER="$LOCK" flock -oe -w 5 "$LOCK" "$0" "$@" || :
+[ "${FLOCKER}" != "$LOCK" ] && exec env FLOCKER="$LOCK" flock -oe -n "$LOCK" "$0" "$@" || :
+
+info "Updating" "$@"
 
 DOWNLOAD_TEMP=$(mktemp -d ${DOWNLOAD}.XXXXXXX)
 
@@ -61,10 +64,17 @@ download()
     fi
 
     local name=$1
+    local current
+
+    if [ -e "${DOWNLOAD}/$name/current" ]; then
+        current=$(<${DOWNLOAD}/$name/current)
+    fi
+
     DOWNLOAD_URL=${URL}/${URL_SUFFIX}/$name
 
-    info Downloading $DOWNLOAD_URL
-    get $DOWNLOAD_URL > $DOWNLOAD_TEMP/download
+    info Downloading $DOWNLOAD_URL "current=$current"
+
+    get "$DOWNLOAD_URL?current=$current" > $DOWNLOAD_TEMP/download
     tar xzf $DOWNLOAD_TEMP/download -C $DOWNLOAD_TEMP
     rm $DOWNLOAD_TEMP/download
 
@@ -86,6 +96,12 @@ download()
         sha1sum -c $dir/SHA1SUMSSUM
         sha1sum -c $dir/SHA1SUMS
     ) >/dev/null
+
+    if [ -e ${DOWNLOAD_TEMP}/${dir}/uptodate ]; then
+        UPTODATE=true
+        info "Already up to date"
+        return 0
+    fi
 
     content_root=${DOWNLOAD}/$name/${dir}
 
@@ -166,9 +182,12 @@ while [ "$#" -gt 0 ]; do
         opts+=($1)
         ;;
     *)
+        UPTODATE=false
         download $1
-        apply
-        applied $1
+        if [ "$UPTODATE" != "true" ]; then
+            apply
+            applied $1
+        fi
         ;;
     esac
     shift 1

@@ -50,24 +50,26 @@ public class AgentInstanceApplyItems extends AbstractObjectProcessLogic implemen
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = getNic(state, process);
+        List<? extends Nic> nics = getNics(state, process);
 
-        if ( nic == null ) {
+        if ( nics == null ) {
             log.error("Failed to find nic for [{}:{}]", objectManager.getType(state.getResource()), state.getResourceId());
             return null;
         }
 
-        Map<NetworkServiceProvider, Instance> agentInstances = agentInstanceManager.getAgentInstances(nic);
-        for ( Map.Entry<NetworkServiceProvider, Instance> entry : agentInstances.entrySet() ) {
-            assignItems(entry.getKey(), entry.getValue(), nic, state, process);
+        for ( Nic nic : nics ) {
+            Map<NetworkServiceProvider, Instance> agentInstances = agentInstanceManager.getAgentInstances(nic);
+            for ( Map.Entry<NetworkServiceProvider, Instance> entry : agentInstances.entrySet() ) {
+                assignItems(entry.getKey(), entry.getValue(), nic, state, process);
+            }
         }
 
         return null;
     }
 
-    protected Nic getNic(ProcessState state, ProcessInstance process) {
+    protected List<? extends Nic> getNics(ProcessState state, ProcessInstance process) {
         Object resource = state.getResource();
-        return agentInstanceManager.getNicFromResource(resource);
+        return agentInstanceManager.getNicsFromResource(resource);
     }
 
     protected void assignItems(NetworkServiceProvider provider, Instance agentInstance, Nic nic,

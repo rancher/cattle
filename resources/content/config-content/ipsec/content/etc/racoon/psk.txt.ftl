@@ -1,0 +1,1 @@
+${ipsecNetwork.uuid} ${ipsecKey}

@@ -216,7 +216,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
                 Nic newNic = null;
                 for ( Nic nic : nics ) {
-                    if ( nic.getVnetId() == createId.longValue() ) {
+                    if ( nic.getVnetId() != null && nic.getVnetId() == createId.longValue() ) {
                         newNic = nic;
                         break;
                     }

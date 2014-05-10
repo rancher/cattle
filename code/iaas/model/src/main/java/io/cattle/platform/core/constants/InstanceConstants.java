@@ -15,6 +15,7 @@ public class InstanceConstants {
     public static final String FIELD_PRIMARY_IP_ADDRESS = "primaryIpAddress";
     public static final String FIELD_PRIVILEGED = "privileged";
     public static final String FIELD_REQUESTED_HOST_ID = "requestedHostId";
+    public static final String FIELD_VALID_HOST_IDS = "validHostIds";
     public static final String FIELD_SUBNET_IDS = "subnetIds";
     public static final String FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_VNET_IDS = "vnetIds";

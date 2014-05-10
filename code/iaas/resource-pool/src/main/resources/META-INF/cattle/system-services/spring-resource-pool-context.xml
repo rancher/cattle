@@ -22,6 +22,7 @@
     <bean class="io.cattle.platform.resource.pool.subnet.SubnetAddressGeneratorFactory" />
     <bean class="io.cattle.platform.resource.pool.mac.MacAddressPrefixGeneratorFactory" />
     <bean class="io.cattle.platform.resource.pool.mac.MacAddressGeneratorFactory" />
-    <bean class="io.cattle.platform.resource.pool.link.LinkPortGeneratorFactory" />
+    <bean class="io.cattle.platform.resource.pool.port.LinkPortGeneratorFactory" />
+    <bean class="io.cattle.platform.resource.pool.port.HostPortGeneratorFactory" />
 
 </beans>

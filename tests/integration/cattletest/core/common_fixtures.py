@@ -473,7 +473,16 @@ def create_agent_instance_nsp(admin_client, sim_context):
                                agentInstanceImageUuid=sim_context['imageUuid'])
 
 
-def resource_pool_items(admin_client, obj):
+def resource_pool_items(admin_client, obj, type=None, qualifier=None):
     id = get_plain_id(admin_client, obj)
-    return admin_client.list_resource_pool(ownerType=obj.type,
-                                           ownerId=id)
+
+    if type is None:
+        type = obj.type
+
+    if qualifier is None:
+        return admin_client.list_resource_pool(ownerType=type,
+                                               ownerId=id)
+    else:
+        return admin_client.list_resource_pool(ownerType=type,
+                                               ownerId=id,
+                                               qualifier=qualifier)

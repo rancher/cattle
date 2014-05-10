@@ -15,6 +15,7 @@ import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Schema.Method;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
+import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
@@ -54,6 +55,15 @@ public class ConfigContentManager extends AbstractNoOpResourceManager {
     protected Object handle(String id, ApiRequest request, boolean apply) {
         ConfigContent content = request.proxyRequestObject(ConfigContent.class);
         ItemVersion version = apply ? DefaultItemVersion.fromString(content.getVersion()) : null;
+        ItemVersion current = null;
+
+        if ( ! apply ) {
+            Object currentValue = RequestUtils.makeSingular(request.getRequestParams().get("current"));
+            if ( currentValue != null ) {
+                current = DefaultItemVersion.fromString(currentValue.toString());
+            }
+        }
+
         Long agentId = request.proxyRequestObject(ConfigContent.class).getAgentId();
 
         if ( agentId == null ) {
@@ -66,7 +76,7 @@ public class ConfigContentManager extends AbstractNoOpResourceManager {
         }
 
         try {
-            ApiConfigItemRequest configRequest = new ApiConfigItemRequest(id, agentId, version, request);
+            ApiConfigItemRequest configRequest = new ApiConfigItemRequest(id, agentId, version, current, request);
             configItemServer.handleRequest(configRequest);
             if ( configRequest.getResponseCode() == Request.NOT_FOUND ) {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);

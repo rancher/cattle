@@ -13,5 +13,8 @@
 
     <bean class="io.cattle.platform.agent.instance.link.process.AgentInstanceLinkActivate" />
     <bean class="io.cattle.platform.agent.instance.link.process.AgentInstanceLinkDeactivate" />
+    <bean class="io.cattle.platform.agent.instance.ipsec.process.AgentInstanceIpsecNetworkServiceCreate" />
+    <bean class="io.cattle.platform.agent.instance.ipsec.process.AgentInstanceIpsecNicActivate" />
+    <bean class="io.cattle.platform.agent.instance.ipsec.process.AgentInstanceIpsecNicDeactivate" />
 
 </beans>

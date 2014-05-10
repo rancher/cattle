@@ -13,6 +13,13 @@
 -A INPUT -i ${primaryNic} -p udp --dport 53 -j ACCEPT
 -A INPUT -i ${primaryNic} -p tcp --dport 53 -j ACCEPT
 
+# IPsec
+-A INPUT -i ${primaryNic} -p udp --dport 500 -j ACCEPT
+-A INPUT -i ${primaryNic} -p udp --dport 4500 -j ACCEPT
+
+# ICMP
+-A INPUT -i ${primaryNic} -p icmp -j ACCEPT
+
 COMMIT
 
 *nat

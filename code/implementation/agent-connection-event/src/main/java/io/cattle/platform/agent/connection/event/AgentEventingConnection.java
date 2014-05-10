@@ -2,10 +2,11 @@ package io.cattle.platform.agent.connection.event;
 
 import io.cattle.platform.agent.server.connection.AgentConnection;
 import io.cattle.platform.async.utils.AsyncUtils;
-import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.eventing.util.EventUtils;
 import io.cattle.platform.iaas.event.IaasEvents;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class AgentEventingConnection implements AgentConnection {
     }
 
     @Override
-    public ListenableFuture<Event> execute(Event event) {
+    public ListenableFuture<Event> execute(Event event, EventProgress progress) {
         if ( ! open ) {
             return AsyncUtils.error(new IOException("Agent connection is closed"));
         }
@@ -40,7 +41,7 @@ public class AgentEventingConnection implements AgentConnection {
         EventVO<Object> withAgentEvent = new EventVO<Object>(event);
         withAgentEvent.setName(IaasEvents.appendAgent(event.getName(), getAgentId()));
 
-        return eventService.call(withAgentEvent, new EventCallOptions(0, event.getTimeoutMillis()));
+        return eventService.call(withAgentEvent, EventUtils.chainOptions(event).withProgress(progress));
     }
 
     @Override

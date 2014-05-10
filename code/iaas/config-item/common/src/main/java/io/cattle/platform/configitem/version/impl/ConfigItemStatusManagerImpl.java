@@ -4,6 +4,7 @@ import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
+import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.exception.ConfigTimeoutException;
 import io.cattle.platform.configitem.model.Client;
@@ -17,9 +18,11 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItemStatus;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.iaas.config.ScopedConfig;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
+import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.config.DynamicBooleanProperty;
@@ -104,7 +108,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         triggerUpdate(request, toTrigger);
     }
 
-    protected void triggerUpdate(ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
+    protected void triggerUpdate(final ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
         final Event event = getEvent(request, items);
         if ( event == null ) {
             return;
@@ -114,7 +118,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                agent.publish(event);
+                request.setUpdateFuture(agent.call(event, defaultOptions(request)));
             }
         };
 
@@ -124,6 +128,16 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             run.run();
         }
     }
+
+    protected EventCallOptions defaultOptions(final ConfigUpdateRequest request) {
+        return new EventCallOptions(RETRY.get(), TIMEOUT.get()).withProgress(new EventProgress() {
+            @Override
+            public void progress(Event event) {
+                logResponse(request, event);
+            }
+        });
+    }
+
 
     protected Event getEvent(ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
         if ( items.size() == 0 ) {
@@ -154,10 +168,15 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
         RemoteAgent agent = agentLocator.lookupAgent(request.getAgentId());
 
-        EventCallOptions options = new EventCallOptions(RETRY.get(), TIMEOUT.get());
-        return Futures.transform(agent.call(event, options), new Function<Object, Object>() {
+        ListenableFuture<? extends Event> future = request.getUpdateFuture();
+        if ( future == null ) {
+            future = agent.call(event, defaultOptions(request));
+        }
+
+        return Futures.transform(future, new Function<Event, Object>() {
             @Override
-            public Object apply(Object input) {
+            public Object apply(Event input) {
+                logResponse(request, input);
                 List<ConfigUpdateItem> toTrigger = getNeedsUpdating(request, true);
                 if ( toTrigger.size() > 0 ) {
                     throw new ConfigTimeoutException(request, toTrigger);
@@ -211,15 +230,16 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     }
 
     @Override
-    public void sync(boolean migration) {
+    public void sync(final boolean migration) {
         Map<Long,List<String>> items = configItemStatusDao.findOutOfSync(migration);
 
         boolean first = true;
-        for ( Map.Entry<Long, List<String>> entry : items.entrySet() ) {
-            Long agentId = entry.getKey();
+        for ( final Map.Entry<Long, List<String>> entry : items.entrySet() ) {
+            final Long agentId = entry.getKey();
 
-            ConfigUpdateRequest request = new ConfigUpdateRequest(agentId)
+            final ConfigUpdateRequest request = new ConfigUpdateRequest(agentId)
                                                 .withMigration(migration);
+
             for ( String item : entry.getValue() ) {
                 request.addItem(item)
                     .withApply(false)
@@ -235,10 +255,48 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
                 waitFor(request);
             } else {
                 Event event = getEvent(request);
+                ListenableFuture<? extends Event> future = agent.call(event, defaultOptions(request).withRetry(0));
+                Futures.addCallback(future, new FutureCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        logResponse(request, result);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        if ( t instanceof TimeoutException ) {
+                            log.info("Timeout {} item(s) {} on agent [{}]", migration ? "migrating" : "updating", entry.getValue(), agentId);
+                        } else {
+                            log.error("Error {} item(s) {} on agent [{}]", migration ? "migrating" : "updating", entry.getValue(), agentId, t);
+                        }
+                    }
+                });
                 agent.publish(event);
             }
 
             first = false;
+        }
+    }
+
+    protected void logResponse(ConfigUpdateRequest request, Event event) {
+        Map<String,Object> data = CollectionUtils.toMap(event.getData());
+
+        Object exitCode = data.get("exitCode");
+        Object output = data.get("output");
+
+        if ( exitCode != null ) {
+            long exit = Long.parseLong(exitCode.toString());
+
+            if ( exit == 0 ) {
+                log.debug("Success {}", request);
+            } else if ( exit == 1 && ObjectUtils.toString(output, "").length() == 0 ) {
+                /* This happens when the lock fails to apply.  Really we should upgrade to newer util-linux
+                 * that supports -E and then set a special exit code.  That will be slightly better
+                 */
+                log.info("Failed {}, exit code [{}] output [{}]", request, exitCode, output);
+            } else {
+                log.error("Failed {}, exit code [{}] output [{}]", request, exitCode, output);
+            }
         }
     }
 

@@ -42,6 +42,12 @@
             "type" : "boolean",
             "create" : true,
             "default" : true
+        },
+        "validHostIds" : {
+            "type" : "array[reference[host]",
+            "create" : true,
+            "update" : true,
+            "nullable" : true
         }
     },
     "resourceActions" : {

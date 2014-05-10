@@ -238,3 +238,71 @@ def test_allocation_stay_associated_to_host(admin_client, sim_context):
     assert c.state == 'stopped'
 
     assert len(c.hosts()) == 1
+
+
+def test_vnet_stickiness(admin_client, sim_context, sim_context2,
+                         sim_context3):
+    image_uuid = sim_context['imageUuid']
+    host1 = sim_context['host']
+    host2 = sim_context2['host']
+    host3 = sim_context3['host']
+    valid_hosts = [host1.id, host2.id, host3.id]
+
+    host1 = admin_client.update(host1, computeFree=100000)
+    host2 = admin_client.update(host2, computeFree=100000)
+    host3 = admin_client.update(host3, computeFree=100000)
+    for i in [host1, host2, host3]:
+        assert i.computeFree == 100000
+
+    network = create_and_activate(admin_client, 'hostOnlyNetwork',
+                                  hostVnetUri='test:///',
+                                  dynamicCreateVnet=True)
+
+    subnet = create_and_activate(admin_client, 'subnet',
+                                 networkAddress='192.168.0.0',
+                                 networkId=network.id)
+
+    containers = []
+    for _ in range(3):
+        c = admin_client.create_container(imageUuid=image_uuid,
+                                          networkIds=[network.id],
+                                          validHostIds=valid_hosts)
+        c = admin_client.wait_success(c)
+        containers.append(c)
+
+    actual_hosts = set()
+    for i in containers:
+        assert i.state == 'running'
+        actual_hosts.add(i.hosts()[0].id)
+
+    assert actual_hosts == set(valid_hosts)
+    assert len(network.vnets()) == 3
+    assert len(subnet.vnets()) == 3
+
+    c1_host_id = c.hosts()[0].id
+    c1_nic = c.nics()[0]
+
+    for _ in range(3):
+        c = admin_client.create_container(imageUuid=image_uuid,
+                                          vnetIds=[c1_nic.vnetId])
+        c = admin_client.wait_success(c)
+
+        assert c.hosts()[0].id == c1_host_id
+        nic = c.nics()[0]
+
+        assert nic.subnetId == c1_nic.subnetId
+        assert nic.vnetId == c1_nic.vnetId
+        assert nic.networkId == c1_nic.networkId
+
+    for _ in range(3):
+        c = admin_client.create_container(imageUuid=image_uuid,
+                                          networkIds=[network.id],
+                                          vnetIds=[c1_nic.vnetId])
+        c = admin_client.wait_success(c)
+
+        assert c.hosts()[0].id == c1_host_id
+        nic = c.nics()[0]
+
+        assert nic.subnetId == c1_nic.subnetId
+        assert nic.vnetId == c1_nic.vnetId
+        assert nic.networkId == c1_nic.networkId

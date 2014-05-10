@@ -4,6 +4,7 @@ import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -50,7 +51,11 @@ public class SimulatorDelegateProcessor implements AgentSimulatorEventProcessor,
 
         AgentConnectionSimulator delegateSimulator = new AgentConnectionSimulator(agent, simulator.getProcessors());
 
-        return Futures.transform(delegateSimulator.execute(delegate.getData().getEvent()), new AsyncFunction<Event, Event>() {
+        return Futures.transform(delegateSimulator.execute(delegate.getData().getEvent(), new EventProgress() {
+            @Override
+            public void progress(Event event) {
+            }
+        }), new AsyncFunction<Event, Event>() {
             @Override
             public ListenableFuture<Event> apply(Event input) throws Exception {
                 return AsyncUtils.done((Event)EventVO.reply(event).withData(input));

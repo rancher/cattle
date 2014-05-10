@@ -9,10 +9,12 @@ import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.eventing.util.EventUtils;
 import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -70,7 +72,13 @@ public class AgentServiceImpl implements AgentService {
             AgentConnection connection = connectionManager.getConnection(agent);
             if ( connection != null ) {
                 eventService.publish(agentEvent);
-                final ListenableFuture<Event> future = connection.execute(agentEvent);
+                final ListenableFuture<Event> future = connection.execute(agentEvent, new EventProgress() {
+                    @Override
+                    public void progress(Event agentResponse) {
+                        handleResponse(event, agentResponse);
+                    }
+                });
+
                 future.addListener(new NoExceptionRunnable() {
                     @Override
                     protected void doRun() throws Exception {
@@ -96,12 +104,18 @@ public class AgentServiceImpl implements AgentService {
         if ( request.getReplyTo() != null ) {
             EventVO<Object> response = EventVO.reply(request);
             response.setData(agentResponse);
+            EventUtils.copyTransitioning(agentResponse, response);
+
             eventService.publish(response);
         }
     }
 
     protected void handleError(Event request, Event agentResponse) {
         EventVO<Object> response = EventVO.reply(request);
+        if ( response.getName() == null ) {
+            return;
+        }
+
         response.setData(agentResponse);
         response.setTransitioning(agentResponse.getTransitioning());
         response.setTransitioningInternalMessage(agentResponse.getTransitioningInternalMessage());

@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.request;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.impl.DefaultClient;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.eventing.model.Event;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlTransient;
+
+import com.google.common.util.concurrent.ListenableFuture;
 
 public class ConfigUpdateRequest {
 
@@ -19,6 +22,7 @@ public class ConfigUpdateRequest {
     Client client;
     List<ConfigUpdateItem> items = new ArrayList<ConfigUpdateItem>();
     Map<String,Object> attributes = new HashMap<String, Object>();
+    ListenableFuture<? extends Event> updateFuture;
 
     public ConfigUpdateRequest() {
     }
@@ -88,6 +92,34 @@ public class ConfigUpdateRequest {
 
     public void setAttributes(Map<String, Object> attributes) {
         this.attributes = attributes;
+    }
+
+    @XmlTransient
+    public ListenableFuture<? extends Event> getUpdateFuture() {
+        return updateFuture;
+    }
+
+    public void setUpdateFuture(ListenableFuture<? extends Event> updateFuture) {
+        this.updateFuture = updateFuture;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder message = new StringBuilder("update [");
+
+        boolean first = true;
+        for ( ConfigUpdateItem item : items ) {
+            if ( ! first ) {
+                message.append(", ");
+            }
+
+            first = false;
+            message.append(item.getName());
+        }
+
+        message.append("] on agent [").append(agentId).append("]");
+
+        return message.toString();
     }
 
 }

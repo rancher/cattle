@@ -3,6 +3,7 @@ package io.cattle.platform.agent.connection.simulator;
 import io.cattle.platform.agent.server.connection.AgentConnection;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 
@@ -36,7 +37,7 @@ public class AgentConnectionSimulator implements AgentConnection {
     }
 
     @Override
-    public ListenableFuture<Event> execute(Event event) {
+    public ListenableFuture<Event> execute(Event event, EventProgress process) {
         for ( AgentSimulatorEventProcessor processor : processors ) {
             Event response;
             try {

@@ -5,6 +5,7 @@ import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
@@ -76,29 +77,50 @@ public class RemoteAgentImpl implements RemoteAgent {
     @Override
     public <T extends Event> ListenableFuture<T> call(final Event event, final Class<T> reply, EventCallOptions options) {
         Event request = createRequest(event);
+        final EventProgress progress = options.getProgress();
+
+        if ( progress != null ) {
+            EventProgress newProgress = new EventProgress() {
+                @Override
+                public void progress(Event progressEvent) {
+                    T result = getReply(event, progressEvent, reply);
+
+                    if ( result instanceof Event ) {
+                        progress.progress(result);
+                    }
+                }
+            };
+
+            options.setProgress(newProgress);
+        }
+
 
         ListenableFuture<Event> future = eventService.call(request, options);
         return Futures.transform(future, new Function<Event, T>() {
             @Override
             public T apply(Event input) {
-                if ( input.getData() == null ) {
-                    return null;
-                }
-
-                T commandReply = jsonMapper.convertValue(input.getData(), reply);
-                EventVO<?> publishEvent = null;
-                if ( commandReply instanceof EventVO ) {
-                    publishEvent = (EventVO<?>)commandReply;
-                } else {
-                    publishEvent = jsonMapper.convertValue(input.getData(), EventVO.class);
-                }
-
-                publishEvent.setName(event.getName() + Event.REPLY_SUFFIX);
-                eventService.publish(publishEvent);
-
-                return commandReply;
+                return getReply(event, input, reply);
             }
         });
+    }
+
+    protected <T> T getReply(Event inputEvent, Event resultEvent, Class<T> reply) {
+        if ( resultEvent.getData() == null ) {
+            return null;
+        }
+
+        T commandReply = jsonMapper.convertValue(resultEvent.getData(), reply);
+        EventVO<?> publishEvent = null;
+        if ( commandReply instanceof EventVO ) {
+            publishEvent = (EventVO<?>)commandReply;
+        } else {
+            publishEvent = jsonMapper.convertValue(resultEvent.getData(), EventVO.class);
+        }
+
+        publishEvent.setName(inputEvent.getName() + Event.REPLY_SUFFIX);
+        eventService.publish(publishEvent);
+
+        return commandReply;
     }
 
     @Override

@@ -15,6 +15,7 @@
     <bean class="io.cattle.platform.core.dao.impl.InstanceDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.IpAddressDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.NicDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.NetworkDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.VnetDaoImpl" />
 
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">

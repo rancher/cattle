@@ -18,6 +18,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,21 +130,21 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
     }
 
     @Override
-    public Nic getNicFromResource(Object resource) {
+    public List<? extends Nic> getNicsFromResource(Object resource) {
         if ( resource instanceof Nic ) {
-            return (Nic)resource;
+            return Arrays.asList((Nic)resource);
         }
 
-        Nic nic = null;
+        List<? extends Nic> nics = null;
 
         for ( AgentInstanceNicLookup lookup : nicLookups ) {
-            nic = lookup.getNic(resource);
-            if ( nic != null ) {
+            nics = lookup.getNics(resource);
+            if ( nics != null ) {
                 break;
             }
         }
 
-        return nic;
+        return nics;
     }
 
     public ObjectManager getObjectManager() {

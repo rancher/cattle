@@ -16,13 +16,18 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.core.model.Subnet;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -41,6 +46,7 @@ public class SampleDataStartupV1 implements InitializationTask {
     private static final String NAME = "sampleDataVersion1";
 
     ObjectManager objectManager;
+    ObjectProcessManager processManager;
     AccountDao accountDao;
     JsonMapper jsonMapper;
 
@@ -69,6 +75,8 @@ public class SampleDataStartupV1 implements InitializationTask {
             throw new IllegalStateException(e);
         }
 
+        List<Object> toCreate = new ArrayList<Object>();
+
         Network network = createByUuid(Network.class, "managed-docker0",
                 NetworkConstants.FIELD_HOST_VNET_URI, "bridge://docker0",
                 NetworkConstants.FIELD_DYNAMIC_CREATE_VNET, true,
@@ -76,10 +84,12 @@ public class SampleDataStartupV1 implements InitializationTask {
                 NETWORK.IS_PUBLIC, true,
                 NETWORK.KIND, NetworkConstants.KIND_HOSTONLY,
                 NETWORK.NAME, "Managed Network on docker0",
-                NETWORK.STATE, CommonStatesConstants.INACTIVE,
+                NETWORK.STATE, CommonStatesConstants.REQUESTED,
                 NETWORK.DATA, networkData);
 
-        createByUuid(Subnet.class, "docker0-subnet",
+        toCreate.add(network);
+
+        toCreate.add(createByUuid(Subnet.class, "docker0-subnet",
                 SUBNET.ACCOUNT_ID, system.getId(),
                 SUBNET.CIDR_SIZE, 24,
                 SUBNET.END_ADDRESS, "10.42.0.250",
@@ -90,38 +100,55 @@ public class SampleDataStartupV1 implements InitializationTask {
                 SUBNET.NETWORK_ADDRESS, "10.42.0.0",
                 SUBNET.NETWORK_ID, network.getId(),
                 SUBNET.START_ADDRESS, "10.42.0.2",
-                SUBNET.STATE, CommonStatesConstants.ACTIVE);
+                SUBNET.STATE, CommonStatesConstants.REQUESTED));
 
         NetworkServiceProvider networkServiceProvider = createByUuid(NetworkServiceProvider.class, "docker0-agent-instance-provider",
                 NETWORK_SERVICE_PROVIDER.ACCOUNT_ID, system.getId(),
                 NETWORK_SERVICE_PROVIDER.KIND, NetworkServiceProviderConstants.KIND_AGENT_INSTANCE,
                 NETWORK_SERVICE_PROVIDER.NAME, "Agent instance provider for managed docker0",
                 NETWORK_SERVICE_PROVIDER.NETWORK_ID, network.getId(),
-                NETWORK_SERVICE_PROVIDER.STATE, CommonStatesConstants.ACTIVE);
+                NETWORK_SERVICE_PROVIDER.STATE, CommonStatesConstants.REQUESTED);
 
-        createByUuid(NetworkService.class, "docker0-dns-service",
+        toCreate.add(networkServiceProvider);
+
+        toCreate.add(createByUuid(NetworkService.class, "docker0-dns-service",
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
                 NETWORK_SERVICE.KIND, "dnsService",
                 NETWORK_SERVICE.NAME, "DNS for managed docker0",
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
-                NETWORK_SERVICE.STATE, CommonStatesConstants.ACTIVE);
+                NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
 
-        createByUuid(NetworkService.class, "docker0-dhcp-service",
+        toCreate.add(createByUuid(NetworkService.class, "docker0-dhcp-service",
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
                 NETWORK_SERVICE.KIND, "dhcpService",
                 NETWORK_SERVICE.NAME, "DHCP for managed docker0",
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
-                NETWORK_SERVICE.STATE, CommonStatesConstants.ACTIVE);
+                NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
 
-        createByUuid(NetworkService.class, "docker0-link-service",
+        toCreate.add(createByUuid(NetworkService.class, "docker0-link-service",
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
                 NETWORK_SERVICE.KIND, "linkService",
                 NETWORK_SERVICE.NAME, "Instance links for managed docker0",
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
-                NETWORK_SERVICE.STATE, CommonStatesConstants.ACTIVE);
+                NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
+
+        toCreate.add(createByUuid(NetworkService.class, "docker0-ipsecTunnel-service",
+                NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
+                NETWORK_SERVICE.KIND, "ipsecTunnelService",
+                NETWORK_SERVICE.NAME, "IPsec tunnels for managed docker0",
+                NETWORK_SERVICE.NETWORK_ID, network.getId(),
+                NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
+                NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
+
+        for ( Object object : toCreate ) {
+            try {
+                processManager.executeStandardProcess(StandardProcess.CREATE, object, null);
+            } catch ( ProcessCancelException e ) {
+            }
+        }
 
         objectManager.create(Data.class,
                 DATA.NAME, NAME,
@@ -171,6 +198,15 @@ public class SampleDataStartupV1 implements InitializationTask {
     @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
+    }
+
+    public ObjectProcessManager getProcessManager() {
+        return processManager;
+    }
+
+    @Inject
+    public void setProcessManager(ObjectProcessManager processManager) {
+        this.processManager = processManager;
     }
 
 }

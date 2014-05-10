@@ -88,6 +88,7 @@
         "instance" : "r",
         "instance.instanceTriggeredStop" : "cru",
         "instance.vnetIds" : "cr",
+        "instance.validHostIds" : "cru",
 
         "instanceLink" : "ru",
         "instanceLink.instanceId" : "r",

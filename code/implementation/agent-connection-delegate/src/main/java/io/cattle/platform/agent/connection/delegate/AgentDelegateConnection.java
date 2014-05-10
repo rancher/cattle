@@ -4,8 +4,11 @@ import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.server.connection.AgentConnection;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.EventProgress;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.eventing.util.EventUtils;
 import io.cattle.platform.iaas.event.delegate.DelegateEvent;
 import io.cattle.platform.json.JsonMapper;
 
@@ -29,15 +32,17 @@ public class AgentDelegateConnection implements AgentConnection {
     RemoteAgent remoteAgent;
     Map<String,Object> instanceData;
     JsonMapper jsonMapper;
+    EventService eventService;
 
     public AgentDelegateConnection(RemoteAgent remoteAgent, long agentId, String uri, Map<String,Object> instanceData,
-            JsonMapper jsonMapper) {
+            JsonMapper jsonMapper, EventService eventService) {
         super();
         this.remoteAgent = remoteAgent;
         this.agentId = agentId;
         this.uri = uri;
         this.jsonMapper = jsonMapper;
         this.instanceData = instanceData;
+        this.eventService = eventService;
     }
 
     @Override
@@ -46,33 +51,53 @@ public class AgentDelegateConnection implements AgentConnection {
     }
 
     @Override
-    public ListenableFuture<Event> execute(final Event event) {
+    public ListenableFuture<Event> execute(final Event event, final EventProgress progress) {
         if ( ! open ) {
             return AsyncUtils.error(new IOException("Agent connection is closed"));
         }
 
-        DelegateEvent delegateEvent = new DelegateEvent(instanceData, event);
+        final DelegateEvent delegateEvent = new DelegateEvent(instanceData, event);
 
-        log.debug("Delegating [{}] [{}] inner [{}] [{}]", event.getName(), event.getId(), delegateEvent.getName(),
+        log.trace("Delegating [{}] [{}] inner [{}] [{}]", event.getName(), event.getId(), delegateEvent.getName(),
                 delegateEvent.getId());
 
-        EventCallOptions options = new EventCallOptions(0, event.getTimeoutMillis());
-        return Futures.transform(remoteAgent.call(delegateEvent, options), new AsyncFunction<Event, Event>() {
+        EventCallOptions options = EventUtils.chainOptions(event).withProgress(new EventProgress() {
             @Override
-            public ListenableFuture<Event> apply(Event input) throws Exception {
-                if ( input == null ) {
-                    return AsyncUtils.done(null);
+            public void progress(Event delegateResponse) {
+                Event reply = createResponse(delegateEvent, delegateResponse);
+                if ( EventUtils.isTransitioningEvent(reply) ) {
+                    progress.progress(reply);
                 }
-
-                Object data = input.getData();
-
-                if ( data == null ) {
-                    throw new IllegalStateException("No response for delegated input event [" + event.getName() + "] [" + event.getId() + "]");
-                }
-
-                return AsyncUtils.done((Event)jsonMapper.convertValue(data, EventVO.class));
             }
         });
+
+        return Futures.transform(remoteAgent.call(delegateEvent, options), new AsyncFunction<Event, Event>() {
+            @Override
+            public ListenableFuture<Event> apply(final Event delegateResponse) throws Exception {
+                return AsyncUtils.done((Event)createResponse(delegateEvent, delegateResponse));
+            }
+        });
+    }
+
+    protected EventVO<Object> createResponse(Event delegateRequest, Event delegateResponse) {
+        if ( delegateResponse == null ) {
+            return null;
+        }
+
+        Object data = delegateResponse.getData();
+
+        if ( data == null ) {
+            return null;
+        }
+
+        EventVO<?> insideEvent = jsonMapper.convertValue(data, EventVO.class);
+
+        EventVO<Object> response = EventVO.reply(delegateRequest);
+        response.setData(insideEvent.getData());
+
+        EventUtils.copyTransitioning(insideEvent, response);
+
+        return response;
     }
 
     @Override

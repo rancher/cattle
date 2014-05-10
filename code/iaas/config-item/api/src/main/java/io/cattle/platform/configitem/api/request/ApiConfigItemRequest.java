@@ -13,9 +13,10 @@ public class ApiConfigItemRequest extends AbstractRequest {
 
     ApiRequest request;
 
-    public ApiConfigItemRequest(String id, long agentId, ItemVersion itemVersion, ApiRequest request) {
+    public ApiConfigItemRequest(String id, long agentId, ItemVersion itemVersion, ItemVersion current, ApiRequest request) {
         super(id, new DefaultClient(Agent.class, agentId), itemVersion, request.getRequestParams());
         this.request = request;
+        setCurrentVersion(current);
     }
 
     @Override

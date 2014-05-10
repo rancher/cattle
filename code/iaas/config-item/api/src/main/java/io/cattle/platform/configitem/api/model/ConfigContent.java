@@ -9,6 +9,8 @@ public interface ConfigContent {
 
     String getVersion();
 
+    String getCurrent();
+
     Long getAgentId();
 
 }

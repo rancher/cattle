@@ -1,5 +1,6 @@
 package io.cattle.platform.agent.server.connection;
 
+import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.model.Event;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -19,7 +20,7 @@ public interface AgentConnection {
      * @param event
      * @return
      */
-    ListenableFuture<Event> execute(Event event);
+    ListenableFuture<Event> execute(Event event, EventProgress progress);
 
     void close();
 

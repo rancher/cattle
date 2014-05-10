@@ -66,7 +66,7 @@ public class AgentDelegateConnectionFactory implements AgentConnectionFactory {
         @SuppressWarnings("unchecked")
         Map<String,Object> instanceData = jsonMapper.convertValue(instance, Map.class);
 
-        return new AgentDelegateConnection(remoteAgent, agent.getId(), agent.getUri(), instanceData, jsonMapper);
+        return new AgentDelegateConnection(remoteAgent, agent.getId(), agent.getUri(), instanceData, jsonMapper, eventService);
     }
 
     public EventService getEventService() {

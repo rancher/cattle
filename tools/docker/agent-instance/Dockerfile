@@ -13,3 +13,4 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists
 ADD startup.sh /etc/init.d/agent-instance-startup
 CMD ["/etc/init.d/agent-instance-startup", "init"]
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y racoon

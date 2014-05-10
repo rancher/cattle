@@ -66,14 +66,14 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
             });
 
 
-    protected void handleUnownwed(Agent agent) {
+    protected void handleUnowned(Agent agent) {
         if ( isInterval(PING_UNMANAGED_EVERY.get()) ) {
             RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
             remoteAgent.publish(AgentUtils.newPing(agent));
         }
     }
 
-    protected void handleOwnwed(Agent agent) {
+    protected void handleOwned(Agent agent) {
         Ping ping = AgentUtils.newPing(agent);
 
         if ( isInterval(PING_STATS_EVERY.get()) ) {
@@ -98,9 +98,9 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     protected void ping(Agent agent) {
         LockDefinition lockDef = AgentConnectionUtils.getConnectionLock(agent);
         if ( lockDelegator.isLocked(lockDef) ) {
-            handleOwnwed(agent);
+            handleOwned(agent);
         } else {
-            handleUnownwed(agent);
+            handleUnowned(agent);
         }
     }
 

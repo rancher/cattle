@@ -13,7 +13,7 @@ public abstract class AbstractRequest implements Request {
     String itemName;
     int responseCode = Request.OK;
     Client client;
-    ItemVersion appliedVersion;
+    ItemVersion appliedVersion, currentVersion;
     Map<String, Object> params;
 
     public AbstractRequest() {
@@ -70,6 +70,15 @@ public abstract class AbstractRequest implements Request {
     @Inject
     public void setParams(Map<String, Object> params) {
         this.params = params;
+    }
+
+    @Override
+    public ItemVersion getCurrentVersion() {
+        return currentVersion;
+    }
+
+    public void setCurrentVersion(ItemVersion currentVersion) {
+        this.currentVersion = currentVersion;
     }
 
     @Override

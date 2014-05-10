@@ -2,11 +2,17 @@
 
 import cattle
 
+def find_instance(instance):
+    hosts = instance.hosts()
+    if len(hosts) > 0:
+        return hosts[0].agent().uuid == 'test-agent'
+    return False
+
 client = cattle.from_env()
 
 UUID = 'docker0-agent-instance-provider'
 nsp = client.list_network_service_provider(uuid=UUID)[0]
-instances = nsp.instances()
+instances = filter(find_instance, nsp.instances())
 
 if len(instances) != 1:
     raise Exception('Found {} instances, expect 1.  Try running a container'

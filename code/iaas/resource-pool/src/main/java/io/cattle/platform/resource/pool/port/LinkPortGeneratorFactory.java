@@ -1,4 +1,4 @@
-package io.cattle.platform.resource.pool.link;
+package io.cattle.platform.resource.pool.port;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.NetworkService;

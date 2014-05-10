@@ -14,6 +14,8 @@ public interface Request {
 
     ItemVersion getAppliedVersion();
 
+    ItemVersion getCurrentVersion();
+
     String getItemName();
 
     Client getClient();
