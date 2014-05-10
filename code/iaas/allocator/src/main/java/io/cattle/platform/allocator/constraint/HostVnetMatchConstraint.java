@@ -16,13 +16,15 @@ public class HostVnetMatchConstraint implements Constraint {
     ObjectManager objectManager;
     AllocatorDao allocatorDao;
     long nicId;
+    Long vnetId;
 
     Map<Long,Set<Long>> subnetIdHostIds = new HashMap<Long, Set<Long>>();
     Map<Long,Set<Long>> subnetIdPhysicalHostIds = new HashMap<Long, Set<Long>>();
 
-    public HostVnetMatchConstraint(long nicId, ObjectManager objectManager, AllocatorDao allocatorDao) {
+    public HostVnetMatchConstraint(long nicId, Long vnetId, ObjectManager objectManager, AllocatorDao allocatorDao) {
         super();
         this.nicId = nicId;
+        this.vnetId = vnetId;
         this.allocatorDao = allocatorDao;
         this.objectManager = objectManager;
     }
@@ -37,7 +39,7 @@ public class HostVnetMatchConstraint implements Constraint {
                 Set<Long> validHostIds = subnetIdHostIds.get(subnetId);
                 if ( validHostIds == null ) {
                     validHostIds = new HashSet<Long>();
-                    validHostIds.addAll(allocatorDao.getHostsForSubnet(subnetId));
+                    validHostIds.addAll(allocatorDao.getHostsForSubnet(subnetId, vnetId));
 
                     subnetIdHostIds.put(subnetId, validHostIds);
                 }
@@ -56,7 +58,7 @@ public class HostVnetMatchConstraint implements Constraint {
                     Set<Long> validPhysicalHosts = subnetIdPhysicalHostIds.get(subnetId);
                     if ( validPhysicalHosts == null ) {
                         validPhysicalHosts = new HashSet<Long>();
-                        validPhysicalHosts.addAll(allocatorDao.getPhysicalHostsForSubnet(subnetId));
+                        validPhysicalHosts.addAll(allocatorDao.getPhysicalHostsForSubnet(subnetId, vnetId));
 
                         subnetIdPhysicalHostIds.put(subnetId, validPhysicalHosts);
                     }
@@ -73,7 +75,7 @@ public class HostVnetMatchConstraint implements Constraint {
 
     @Override
     public String toString() {
-        return String.format("nic [%s] subnet's vnet matches host", nicId);
+        return String.format("nic [%s] subnet's matches host and vnet [%s]", nicId, vnetId);
     }
 
 }

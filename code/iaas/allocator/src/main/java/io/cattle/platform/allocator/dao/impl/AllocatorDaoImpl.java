@@ -37,6 +37,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.jooq.Condition;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,7 +259,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public List<Long> getHostsForSubnet(long subnetId) {
+    public List<Long> getHostsForSubnet(long subnetId, Long vnetId) {
         return create()
             .select(HOST_VNET_MAP.HOST_ID)
             .from(SUBNET_VNET_MAP)
@@ -266,12 +268,13 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             .join(HOST_VNET_MAP)
                 .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
             .where(SUBNET_VNET_MAP.SUBNET_ID.eq(subnetId)
+                    .and(vnetCondition(vnetId))
                     .and(HOST_VNET_MAP.STATE.eq(CommonStatesConstants.ACTIVE)))
             .fetch(HOST_VNET_MAP.HOST_ID);
     }
 
     @Override
-    public List<Long> getPhysicalHostsForSubnet(long subnetId) {
+    public List<Long> getPhysicalHostsForSubnet(long subnetId, Long vnetId) {
         return create()
             .select(HOST.PHYSICAL_HOST_ID)
             .from(SUBNET_VNET_MAP)
@@ -283,8 +286,17 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .on(HOST.ID.eq(HOST_VNET_MAP.HOST_ID))
             .where(SUBNET_VNET_MAP.SUBNET_ID.eq(subnetId)
                     .and(HOST_VNET_MAP.STATE.eq(CommonStatesConstants.ACTIVE))
+                    .and(vnetCondition(vnetId))
                     .and(HOST.PHYSICAL_HOST_ID.isNotNull()))
             .fetchInto(Long.class);
+    }
+
+    protected Condition vnetCondition(Long vnetId) {
+        if ( vnetId == null ) {
+            return DSL.trueCondition();
+        }
+
+        return VNET.ID.eq(vnetId);
     }
 
     public ObjectManager getObjectManager() {
