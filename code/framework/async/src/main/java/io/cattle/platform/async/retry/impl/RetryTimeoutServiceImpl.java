@@ -3,12 +3,12 @@ package io.cattle.platform.async.retry.impl;
 import io.cattle.platform.async.retry.CancelRetryException;
 import io.cattle.platform.async.retry.Retry;
 import io.cattle.platform.async.retry.RetryTimeoutService;
+import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.util.concurrent.DelayedObject;
 
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 
