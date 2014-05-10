@@ -6,10 +6,6 @@ trap cleanup EXIT
 
 cleanup()
 {
-    if [ -n "$PID" ]; then
-        kill $PID
-    fi
-
     chown -R darren .
 }
 
@@ -38,8 +34,12 @@ while true; do
     rm -rf bundles
     make
     stop docker || true
-    ./bundles/*/binary/*-dev -d -D 2>&1 | tee dockerd.log &
-    PID=$!
-    sleep 3600
+    (
+        ./bundles/*/binary/*-dev -d -D &
+        PID=$!
+        echo Pid: $PID
+        sleep 3600
+        kill $PID
+    ) 2>&1 | tee dockerd.log
     cleanup
 done
