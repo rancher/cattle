@@ -1,7 +1,12 @@
 package io.cattle.platform.eventing.util;
 
+import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.EventProgress;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.util.type.NamedUtils;
 
 import java.lang.reflect.Method;
@@ -20,4 +25,40 @@ public class EventUtils {
         }
     }
 
+    public static EventProgress chainProgress(final Event previousEvent, final EventService eventService) {
+        return new EventProgress() {
+            @Override
+            public void progress(Event event) {
+                if ( event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event.getTransitioning()) ) {
+                    return;
+                }
+
+                EventVO<Object> reply = EventVO.reply(previousEvent);
+                copyTransitioning(event, reply);
+
+                eventService.publish(event);
+            }
+        };
+    }
+
+    public static EventCallOptions chainOptions(Event event) {
+        return new EventCallOptions()
+            .withRetry(0)
+            .withTimeoutMillis(event.getTimeoutMillis());
+    }
+
+    public static boolean isTransitioningEvent(Event event) {
+        if ( event == null || event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event) ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static void copyTransitioning(Event from, EventVO<?> to) {
+        to.setTransitioning(from.getTransitioning());
+        to.setTransitioningInternalMessage(to.getTransitioningInternalMessage());
+        to.setTransitioningMessage(to.getTransitioningMessage());
+        to.setTransitioningProgress(to.getTransitioningProgress());
+    }
 }
