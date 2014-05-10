@@ -32,6 +32,8 @@ public interface ObjectMetaDataManager {
 
     public static final String MAP_SUFFIX = "Map";
 
+    public static final String APPEND = "+";
+
     String convertToPropertyNameString(Class<?> recordClass, Object key);
 
     String lookupPropertyNameFromFieldName(Class<?> recordClass, String fieldName);

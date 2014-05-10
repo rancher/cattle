@@ -1,6 +1,7 @@
 package io.cattle.platform.object.postinit;
 
 import io.cattle.platform.object.ObjectDefaultsProvider;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.Priority;
 
@@ -41,7 +42,7 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
             return;
         }
 
-        log.debug("Applying defaults [{}] to [{}]", defaultValues, instance);
+        log.debug("Applying defaults [{}] to [{}]", defaultValues, ObjectUtils.toStringWrapper(instance));
         BeanUtils.copyProperties(instance, defaultValues);
     }
 

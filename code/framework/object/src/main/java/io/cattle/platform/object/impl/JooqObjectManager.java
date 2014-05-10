@@ -40,8 +40,6 @@ public class JooqObjectManager extends AbstractObjectManager {
 
 //    private static final Logger log = LoggerFactory.getLogger(JooqObjectManager.class);
 
-    private static final String PLUS = "+";
-
     Map<ChildReferenceCacheKey, ForeignKey<?, ?>> childReferenceCache = Collections.synchronizedMap(new WeakHashMap<ChildReferenceCacheKey, ForeignKey<?, ?>>());
     Configuration configuration;
     Configuration lockingConfiguration;
@@ -105,9 +103,7 @@ public class JooqObjectManager extends AbstractObjectManager {
         Idempotent.change(new IdempotentExecutionNoReturn() {
             @Override
             protected void executeNoResult() {
-                if ( record.changed() ) {
-                    record.update();
-                }
+                persistRecord(record);
             }
         });
         return obj;
@@ -157,8 +153,8 @@ public class JooqObjectManager extends AbstractObjectManager {
             Object value = entry.getValue();
             if ( key instanceof String ) {
                 String name = (String)key;
-                if ( name.startsWith(PLUS) && value instanceof Map<?, ?> ) {
-                    name = name.substring(PLUS.length());
+                if ( name.startsWith(ObjectMetaDataManager.APPEND) && value instanceof Map<?, ?> ) {
+                    name = name.substring(ObjectMetaDataManager.APPEND.length());
                     Object mapObj = ObjectUtils.getPropertyIgnoreErrors(obj, name);
                     if ( mapObj instanceof Map<?, ?> ) {
                         mapObj = mergeMap((Map<Object,Object>)value, (Map<Object,Object>)mapObj);
@@ -195,8 +191,8 @@ public class JooqObjectManager extends AbstractObjectManager {
 
             if ( key instanceof String ) {
                 String name = (String)key;
-                if ( name.startsWith(PLUS) && value instanceof Map<?,?> ) {
-                    name = name.substring(PLUS.length());
+                if ( name.startsWith(ObjectMetaDataManager.APPEND) && value instanceof Map<?,?> ) {
+                    name = name.substring(ObjectMetaDataManager.APPEND.length());
                     Object mapObj = dest.get(name);
 
                     if ( mapObj instanceof Map<?,?> ) {

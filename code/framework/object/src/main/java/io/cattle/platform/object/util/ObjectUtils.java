@@ -124,4 +124,25 @@ public class ObjectUtils {
         }
     }
 
+    public static ObjectToStringWrapper toStringWrapper(Object obj) {
+        return new ObjectToStringWrapper(obj);
+    }
+
+    private static final class ObjectToStringWrapper {
+        Object obj;
+
+        public ObjectToStringWrapper(Object obj) {
+            super();
+            this.obj = obj;
+        }
+
+        @Override
+        public String toString() {
+            if ( obj == null ) {
+                return "null";
+            }
+            return String.format("%s:%s", obj.getClass().getSimpleName(), ObjectUtils.getId(obj));
+        }
+    }
+
 }
