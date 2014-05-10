@@ -77,6 +77,7 @@ if _ENABLED and DockerConfig.docker_enabled():
     from .compute import DockerCompute
     from .network.setup import NetworkSetup
     from .network.links import LinkSetup
+    from .network.ipsec_tunnel import IpsecTunnelSetup
     from .delegate import DockerDelegate
     from cattle import type_manager
 
@@ -88,5 +89,6 @@ if _ENABLED and DockerConfig.docker_enabled():
     type_manager.register_type(DOCKER_COMPUTE_LISTENER, _DOCKER_DELEGATE)
     type_manager.register_type(DOCKER_COMPUTE_LISTENER, NetworkSetup())
     type_manager.register_type(DOCKER_COMPUTE_LISTENER, LinkSetup())
+    type_manager.register_type(DOCKER_COMPUTE_LISTENER, IpsecTunnelSetup())
     type_manager.register_type(type_manager.PRE_REQUEST_HANDLER,
                                _DOCKER_DELEGATE)

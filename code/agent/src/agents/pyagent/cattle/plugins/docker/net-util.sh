@@ -49,11 +49,6 @@ while [ "$#" -gt 0 ]; do
     shift 1
 done
 
-if [ "$(id -u)" != 0 ]; then
-    echo "Not root, not executing $ARGS"
-    exit 0
-fi
-
 if [[ "$PID" = "" || ! -e /proc/$PID/ns/net ]]; then
     echo "Invalid PID $PID"
     exit 1

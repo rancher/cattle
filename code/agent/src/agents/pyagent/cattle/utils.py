@@ -120,23 +120,34 @@ def events_from_methods(obj):
     return ret
 
 
-def reply(event, data=None):
+def reply(event, data=None, parent=None):
     if data is None:
         data = JsonObject({})
 
-    if event is None or event.replyTo is None:
-        return None
-    else:
-        return JsonObject({
-            'id': str(uuid.uuid4()),
-            'name': event.replyTo,
-            'data': data,
-            'resourceType': event.resourceType,
-            'resourceId': event.resourceId,
-            'previousIds': [event.id],
-            'previousNames': [event.name],
-            'time': calendar.timegm(time.gmtime()) * 1000,
-        })
+    result = None
+    if event is not None and event.replyTo is not None:
+        result = _reply_obj(event, data)
+
+    if parent is not None:
+        if parent.replyTo is None:
+            return None
+        else:
+            return _reply_obj(parent, result)
+
+    return result
+
+
+def _reply_obj(event, data):
+    return JsonObject({
+        'id': str(uuid.uuid4()),
+        'name': event.replyTo,
+        'data': data,
+        'resourceType': event.resourceType,
+        'resourceId': event.resourceId,
+        'previousIds': [event.id],
+        'previousNames': [event.name],
+        'time': calendar.timegm(time.gmtime()) * 1000,
+    })
 
 
 def get_data(obj, prefix=None, strip_prefix=True):
@@ -332,3 +343,41 @@ def get_url_port(url):
         raise Exception('Failed to find port for {0}'.format(url))
 
     return port
+
+
+def get_or_create_map(container, key):
+    map = container.get(key)
+    if map is None:
+        map = {}
+        container[key] = map
+
+    return map
+
+
+def get_or_create_list(container, key):
+    value = container.get(key)
+    if value is None:
+        value = []
+        container[key] = value
+
+    return value
+
+
+def log_request(req, log, *args):
+    debug = False
+    try:
+        if 'ping' in req.name:
+            debug = True
+        if 'ping' in req.data.event.name:
+            debug = True
+        if 'ping' in req.previousNames[0]:
+            debug = True
+        if 'ping' in req.data.previousNames[0]:
+            debug = True
+    except:
+        pass
+
+    if debug:
+        log.debug(*args)
+    else:
+        log.info(*args)

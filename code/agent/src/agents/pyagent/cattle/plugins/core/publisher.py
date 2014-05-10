@@ -2,6 +2,7 @@ import logging
 import requests
 import time
 from cattle import type_manager
+from cattle.utils import log_request
 
 
 log = logging.getLogger("agent")
@@ -24,7 +25,8 @@ class Publisher:
             if r.status_code != 201:
                 log.error("Error [%s], Request [%s]", r.text, line)
         finally:
-            log.info("Response: %s [%s] seconds", line, time.time() - start)
+            log_request(resp, log, 'Response: %s [%s] seconds', line,
+                        time.time() - start)
 
     @property
     def url(self):

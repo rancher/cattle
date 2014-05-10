@@ -8,6 +8,7 @@ from cattle.utils import reply
 from .util import container_exec, add_to_env
 from .compute import DockerCompute
 from cattle.agent.handler import BaseHandler
+from cattle.progress import Progress
 
 log = logging.getLogger('docker')
 
@@ -22,7 +23,7 @@ class DockerDelegate(BaseHandler):
 
     def delegate_request(self, req=None, event=None, instanceData=None, **kw):
         if instanceData.kind != 'container':
-            return None
+            return
 
         container = self.compute.get_container_by_name(instanceData.uuid)
         if container is None:
@@ -41,12 +42,16 @@ class DockerDelegate(BaseHandler):
                       instanceData.uuid)
             return
 
-        resp = container_exec(pid, event)
+        progress = Progress(event, parent=req)
+        exit_code, output, data = container_exec(pid, event)
 
-        if resp is None:
-            return None
+        if exit_code == 0:
+            return reply(event, data, parent=req)
         else:
-            return reply(req, resp)
+            progress.update('Update failed', data={
+                'exitCode': exit_code,
+                'output': output
+            })
 
     def before_start(self, instance, host, config, start_config):
         if instance.get('agentId') is None:

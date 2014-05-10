@@ -150,6 +150,27 @@ def test_instance_activate_links(agent, responses):
 
 
 @if_docker
+def test_instance_activate_ipsec(agent, responses):
+    _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
+
+    def post(req, resp):
+        docker_container = resp['data']['instance']['+data']['dockerContainer']
+        fields = resp['data']['instance']['+data']['+fields']
+        del docker_container['Created']
+        del docker_container['Id']
+        del docker_container['Status']
+        del docker_container['Ports'][2]['PublicPort']
+        del docker_container['Ports'][3]['PublicPort']
+        del fields['dockerIp']
+        assert fields['dockerPorts']['8080/tcp'] is not None
+        assert fields['dockerPorts']['12201/udp'] is not None
+        fields['dockerPorts']['8080/tcp'] = '1234'
+        fields['dockerPorts']['12201/udp'] = '5678'
+
+    event_test(agent, 'docker/instance_activate_ipsec', post_func=post)
+
+
+@if_docker
 def test_instance_activate_agent_instance_localhost(agent, responses):
     CONFIG_OVERRIDE['CONFIG_URL'] = 'https://localhost:1234/a/path'
     _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')

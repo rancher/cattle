@@ -1,25 +1,11 @@
 import logging
 
 from ..util import add_to_env
+from .util import has_service
 from ..compute import DockerCompute
 from cattle.agent.handler import BaseHandler
 
 log = logging.getLogger('docker')
-
-
-def _has_link_service(instance):
-    try:
-        for nic in instance.nics:
-            if nic.deviceNumber != 0:
-                continue
-
-            for service in nic.network.networkServices:
-                if service.kind == 'linkService':
-                    return True
-    except (KeyError, AttributeError):
-        pass
-
-    return False
 
 
 class LinkSetup(BaseHandler):
@@ -28,7 +14,7 @@ class LinkSetup(BaseHandler):
         pass
 
     def before_start(self, instance, host, config, start_config):
-        if not _has_link_service(instance):
+        if not has_service(instance, 'linkService'):
             return
 
         if 'links' in start_config:

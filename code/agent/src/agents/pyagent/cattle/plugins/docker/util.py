@@ -19,9 +19,10 @@ else:
 _NET_UTIL = os.path.join(os.path.dirname(__file__), 'net-util.sh')
 
 
-def pipe_error(ctx, stderr):
+def pipe_error(ctx, stderr, buffer):
     for line in stderr:
         if len(line) > 0:
+            buffer.append(line)
             log.error('[%s] %s', ctx, line[:-1])
 
 
@@ -31,12 +32,12 @@ def container_exec(pid, event):
 
     cmd = '{0}/events/{1}'.format(Config.agent_instance_cattle_home(),
                                   event.name)
-    output = ns_exec(event.name, pid, input, cmd)
+    exit_code, output, data = ns_exec(event.name, pid, input, cmd)
 
-    if output is None:
-        return None
-    else:
-        return marshaller.from_string(output)
+    if data is not None:
+        data = marshaller.from_string(data)
+
+    return exit_code, output, data
 
 
 def net_util(pid, ip=None, mac=None, device=None):
@@ -54,22 +55,32 @@ def net_util(pid, ip=None, mac=None, device=None):
         args.append('-d')
         args.append(device)
 
-    output = get_command_output(args)
+    output = get_command_output(sudo(args))
     log.info(output)
+
+
+def sudo(args):
+    if os.getuid() == 0:
+        return args
+    return ['sudo'] + args
 
 
 def ns_exec(ctx, pid, input, *args, **kw):
     cmd = [_NSENTER, '-m', '-u', '-i', '-n', '-p', '-t', str(pid),
            '--']
     cmd.extend(args)
-    p = Popen(cmd, stdin=PIPE, stderr=PIPE, stdout=PIPE, env={})
+    p = Popen(sudo(cmd), stdin=PIPE, stderr=PIPE, stdout=PIPE, env={})
 
-    Thread(target=pipe_error, args=(ctx, p.stderr)).start()
-
-    p.stdin.write(input)
-    p.stdin.close()
-
+    output = []
     data = None
+
+    Thread(target=pipe_error, args=(ctx, p.stderr, output)).start()
+    try:
+        p.stdin.write(input)
+        p.stdin.close()
+    except Exception:
+        log.exception('Error calling %s', cmd)
+
     # TODO Timeouts on read and wait
     for line in p.stdout:
         if len(line) > 0:
@@ -77,13 +88,11 @@ def ns_exec(ctx, pid, input, *args, **kw):
                 data = line
             else:
                 log.info('[%s] %s', ctx, line[:-1])
+                output.append(line)
 
     p.wait()
 
-    if p.returncode != 0:
-        raise Exception('Exit code [{0}]'.format(p.returncode))
-
-    return data
+    return p.returncode, ''.join(output), data
 
 
 def add_to_env(config, *args, **kw):

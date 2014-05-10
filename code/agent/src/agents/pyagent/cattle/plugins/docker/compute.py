@@ -185,12 +185,13 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
 
         self._setup_links(start_config, instance)
 
+        self._call_listeners(True, instance, host, config, start_config)
+
         container = self.get_container_by_name(name)
         if container is None:
             log.info('Creating docker container [%s] from config %s', name,
                      config)
 
-            self._call_listeners(True, instance, host, config, start_config)
             try:
                 container = c.create_container(image_tag, **config)
             except APIError as e:

@@ -76,21 +76,24 @@ def _worker(queue, ppid):
         try:
             req = None
             line = queue.get(True, 5)
-            log.info("Request: %s" % line)
 
             req = marshaller.from_string(line)
+
+            utils.log_request(req, log, 'Request: %s' % line)
 
             id = req.id
             start = time.time()
             try:
-                log.info("Starting request %s for %s", id, req.name)
+                utils.log_request(req, log, 'Starting request %s for %s', id,
+                                  req.name)
                 resp = agent.execute(req)
                 if resp is not None:
                     publisher.publish(resp)
             finally:
                 duration = time.time() - start
-                log.info("Done request %s for %s [%s] seconds", id, req.name,
-                         duration)
+                utils.log_request(req, log,
+                                  'Done request %s for %s [%s] seconds', id,
+                                  req.name, duration)
         except Empty:
             if not _should_run(ppid):
                 break
