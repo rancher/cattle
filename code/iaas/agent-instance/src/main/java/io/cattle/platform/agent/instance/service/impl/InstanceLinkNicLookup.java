@@ -2,7 +2,7 @@ package io.cattle.platform.agent.instance.service.impl;
 
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
-import io.cattle.platform.agent.instance.service.AgentInstanceNicLookup;
+import io.cattle.platform.agent.instance.service.InstanceNicLookup;
 import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.tables.records.NicRecord;
@@ -11,7 +11,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import java.util.Arrays;
 import java.util.List;
 
-public class InstanceLinkNicLookup extends AbstractJooqDao implements AgentInstanceNicLookup {
+public class InstanceLinkNicLookup extends AbstractJooqDao implements InstanceNicLookup {
 
     @Override
     public List<Nic> getNics(Object obj) {

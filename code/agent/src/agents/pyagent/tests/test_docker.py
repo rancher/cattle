@@ -105,6 +105,25 @@ def test_instance_only_activate(agent, responses):
 
 
 @if_docker
+def test_instance_activate_ports(agent, responses):
+    _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
+
+    def post(req, resp):
+        docker_container = resp['data']['instance']['+data']['dockerContainer']
+        fields = resp['data']['instance']['+data']['+fields']
+        del docker_container['Created']
+        del docker_container['Id']
+        del docker_container['Status']
+        del fields['dockerIp']
+
+        assert len(docker_container['Ports']) == 1
+        assert docker_container['Ports'][0]['PublicPort'] == 8080
+        assert docker_container['Ports'][0]['Type'] == 'tcp'
+
+    event_test(agent, 'docker/instance_activate_ports', post_func=post)
+
+
+@if_docker
 def test_instance_activate_links(agent, responses):
     _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
 
@@ -147,6 +166,50 @@ def test_instance_activate_links(agent, responses):
         assert 'REDIS_PORT_26_UDP_PROTO=udp' in env
 
     event_test(agent, 'docker/instance_activate_links', post_func=post)
+
+
+@if_docker
+def test_instance_activate_links_no_service(agent, responses):
+    _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
+    _delete_container('/target_redis')
+    _delete_container('/target_mysql')
+
+    client = Client()
+    c = client.create_container('ibuildthecloud/helloworld',
+                                ports=['3307/udp', '3306/tcp'],
+                                name='target_mysql')
+    client.start(c, port_bindings={
+        '3307/udp': ('127.0.0.2', 12346),
+        '3306/tcp': ('127.0.0.2', 12345)
+    })
+
+    c = client.create_container('ibuildthecloud/helloworld',
+                                name='target_redis')
+    client.start(c)
+
+    def post(req, resp):
+        docker_container = resp['data']['instance']['+data']['dockerContainer']
+        id = docker_container['Id']
+        fields = resp['data']['instance']['+data']['+fields']
+        del docker_container['Created']
+        del docker_container['Id']
+        del docker_container['Status']
+        del docker_container['Ports'][0]['PublicPort']
+        del docker_container['Ports'][1]['PublicPort']
+        del fields['dockerIp']
+        assert fields['dockerPorts']['8080/tcp'] is not None
+        assert fields['dockerPorts']['12201/udp'] is not None
+        fields['dockerPorts']['8080/tcp'] = '1234'
+        fields['dockerPorts']['12201/udp'] = '5678'
+
+        inspect = Client().inspect_container(id)
+
+        # TODO: This seems like a bug in docker, but 'HostConfig.Links' is
+        # never set
+        assert inspect['HostConfig']['Links'] is None
+
+    event_test(agent, 'docker/instance_activate_links_no_service',
+               post_func=post)
 
 
 @if_docker

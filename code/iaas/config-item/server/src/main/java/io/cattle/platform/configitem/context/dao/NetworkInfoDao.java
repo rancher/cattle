@@ -2,7 +2,10 @@ package io.cattle.platform.configitem.context.dao;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
+import io.cattle.platform.configitem.context.data.HostPortForwardData;
+import io.cattle.platform.configitem.context.data.HostRouteData;
 import io.cattle.platform.configitem.context.data.InstanceLinkData;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
@@ -25,5 +28,9 @@ public interface NetworkInfoDao {
     List<InstanceLinkData> getLinks(Instance instance);
 
     List<ClientIpsecTunnelInfo> getIpsecTunnelClient(Instance instance);
+
+    List<HostPortForwardData> getHostPorts(Agent agent);
+
+    List<HostRouteData> getHostRoutes(Agent agent);
 
 }

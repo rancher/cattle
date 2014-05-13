@@ -4,7 +4,7 @@ import io.cattle.platform.core.model.Nic;
 
 import java.util.List;
 
-public interface AgentInstanceNicLookup {
+public interface InstanceNicLookup {
 
     List<? extends Nic> getNics(Object obj);
 

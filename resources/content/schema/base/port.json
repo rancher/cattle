@@ -1,0 +1,9 @@
+{
+    "resourceFields" : {
+        "publicPort" : {
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        }
+    }
+}

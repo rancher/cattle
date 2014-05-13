@@ -1,7 +1,7 @@
 import logging
 
 from cattle import utils
-from cattle.plugins.core.publisher import publish
+from cattle.type_manager import get_type, PUBLISHER
 
 log = logging.getLogger('progress')
 
@@ -23,7 +23,9 @@ class EventProgress(object):
             resp["transitionMessage"] = msg
             resp["transitionProgress"] = progress
 
-        publish(resp)
+        publisher = get_type(PUBLISHER)
+        publisher.publish(resp)
+
 
 Progress = EventProgress
 

@@ -105,6 +105,14 @@
         "processExecution" : "r",
         "processInstance" : "r",
 
+        "port" : "ru",
+        "port.instanceId" : "r",
+        "port.publicIpAddressId" : "r",
+        "port.publicPort" : "ru",
+        "port.privateIpAddressId" : "r",
+        "port.privatePort" : "r",
+        "port.protocol" : "r",
+
         "publish.id": "cr",
         "publish.name": "cr",
         "publish.previousIds": "cr",

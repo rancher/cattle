@@ -11,13 +11,17 @@ import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
 import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
+import io.cattle.platform.configitem.context.data.HostPortForwardData;
+import io.cattle.platform.configitem.context.data.HostRouteData;
 import io.cattle.platform.configitem.context.data.InstanceLinkData;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -25,12 +29,14 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NicTable;
+import io.cattle.platform.core.model.tables.PortTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
 import io.cattle.platform.core.model.tables.records.NetworkServiceRecord;
@@ -267,6 +273,86 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
 
         return result;
     }
+
+    @Override
+    public List<HostPortForwardData> getHostPorts(Agent agent) {
+        MultiRecordMapper<HostPortForwardData> mapper = new MultiRecordMapper<HostPortForwardData>() {
+            @Override
+            protected HostPortForwardData map(List<Object> input) {
+                HostPortForwardData data = new HostPortForwardData();
+                data.setPrivateIpAddress((IpAddress)input.get(0));
+                data.setPublicIpAddress((IpAddress)input.get(1));
+                data.setPort((Port)input.get(2));
+
+                return data;
+            }
+        };
+
+        IpAddressTable privateIpAddress = mapper.add(IP_ADDRESS);
+        IpAddressTable publicIpAddress = mapper.add(IP_ADDRESS);
+        PortTable port = mapper.add(PORT);
+
+        return create()
+            .select(mapper.fields())
+            .from(INSTANCE_HOST_MAP)
+            .join(HOST)
+                .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+            .join(port)
+                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(port.INSTANCE_ID))
+            .join(privateIpAddress)
+                .on(port.PRIVATE_IP_ADDRESS_ID.eq(privateIpAddress.ID))
+            .join(publicIpAddress)
+                .on(port.PUBLIC_IP_ADDRESS_ID.eq(publicIpAddress.ID))
+            .where(HOST.AGENT_ID.eq(agent.getId())
+                    .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                    .and(port.REMOVED.isNull())
+                    .and(port.PUBLIC_PORT.isNotNull())
+                    .and(HOST.REMOVED.isNull()))
+            .fetch().map(mapper);
+    }
+
+    @Override
+    public List<HostRouteData> getHostRoutes(Agent agent) {
+        MultiRecordMapper<HostRouteData> mapper = new MultiRecordMapper<HostRouteData>() {
+            @Override
+            protected HostRouteData map(List<Object> input) {
+                HostRouteData data = new HostRouteData();
+                data.setInstance((Instance)input.get(0));
+                data.setSubnet((Subnet)input.get(1));
+
+                return data;
+            }
+        };
+
+        InstanceTable instance = mapper.add(INSTANCE);
+        SubnetTable subnet = mapper.add(SUBNET);
+
+        return create()
+                .select(mapper.fields())
+                .from(HOST)
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                .join(instance)
+                    .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(NIC)
+                    .on(NIC.INSTANCE_ID.eq(instance.ID))
+                .join(IP_ADDRESS_NIC_MAP)
+                    .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
+                .join(IP_ADDRESS)
+                    .on(IP_ADDRESS.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
+                .join(subnet)
+                    .on(subnet.ID.eq(IP_ADDRESS.SUBNET_ID))
+                .where(HOST.AGENT_ID.eq(agent.getId())
+                        .and(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                        .and(HOST.REMOVED.isNull())
+                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                        .and(NIC.REMOVED.isNull())
+                        .and(instance.REMOVED.isNull())
+                        .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
+                        .and(subnet.REMOVED.isNull()))
+                .fetch().map(mapper);
+    }
+
 
     public NetworkDao getNetworkDao() {
         return networkDao;

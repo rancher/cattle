@@ -320,6 +320,10 @@ def create_and_activate(client, type, **kw):
 def stop_running_sim_instances(admin_client):
     for c in admin_client.list_instance(state='running', limit=1000):
         if c.hosts()[0].kind == 'sim':
+            nsps = c.networkServiceProviders()
+            if len(nsps) > 0 and nsps[0].uuid == 'nsp-test-nsp':
+                continue
+
             try:
                 c.stop()
             except:
@@ -471,6 +475,40 @@ def create_agent_instance_nsp(admin_client, sim_context):
     return create_and_activate(admin_client, 'agentInstanceProvider',
                                networkId=network.id,
                                agentInstanceImageUuid=sim_context['imageUuid'])
+
+
+@pytest.fixture(scope='session')
+def test_network(admin_client, sim_context):
+    network = create_type_by_uuid(admin_client, 'hostOnlyNetwork',
+                                  'nsp-test-network',
+                                  hostVnetUri='test:///',
+                                  dynamicCreateVnet=True)
+
+    create_type_by_uuid(admin_client, 'subnet',
+                        'nsp-test-subnet',
+                        networkAddress='192.168.0.0',
+                        networkId=network.id)
+
+    nsp = create_type_by_uuid(admin_client, 'agentInstanceProvider',
+                              'nsp-test-nsp',
+                              networkId=network.id,
+                              agentInstanceImageUuid='sim:test-nsp')
+
+    create_type_by_uuid(admin_client, 'portService',
+                        'nsp-test-port-service',
+                        networkId=network.id,
+                        networkServiceProviderId=nsp.id)
+
+    for i in nsp.instances():
+        i = admin_client.wait_success(i)
+        if i.state != 'running':
+            admin_client.wait_success(i.start())
+
+        agent = admin_client.wait_success(i.agent())
+        if agent.state != 'active':
+            admin_client.wait_success(agent.activate())
+
+    return network
 
 
 def resource_pool_items(admin_client, obj, type=None, qualifier=None):

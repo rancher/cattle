@@ -49,14 +49,22 @@ if [ "$CATTLE_AGENT_STARTUP" != "true" ] && [ -e /etc/agent-instance ]; then
     fi
 fi
 
-[ "${FLOCKER}" != "$LOCK" ] && exec env FLOCKER="$LOCK" flock -oe -n "$LOCK" "$0" "$@" || :
+if [ "${FLOCKER}" != "$LOCK" ]; then
+    if ! FLOCKER="$LOCK" flock -oe -n "$LOCK" true; then
+        echo -n Lock failed
+        exit 122
+    fi
+    FLOCKER="$LOCK" flock -oe -n "$LOCK" "$0" "$@"
+    exit $?
+fi
 
-info "Updating" "$@"
-
-DOWNLOAD_TEMP=$(mktemp -d ${DOWNLOAD}.XXXXXXX)
 
 download()
 {
+    cleanup
+
+    DOWNLOAD_TEMP=$(mktemp -d ${DOWNLOAD}.XXXXXXX)
+
     if [ -z "$URL" ] || [ -z "$AUTH" ]
     then
         error "Both --url and --auth must be supplied"
@@ -66,7 +74,7 @@ download()
     local name=$1
     local current
 
-    if [ -e "${DOWNLOAD}/$name/current" ]; then
+    if [ "$FORCE" != "true" ] && [ -e "${DOWNLOAD}/$name/current" ]; then
         current=$(<${DOWNLOAD}/$name/current)
     fi
 
@@ -97,13 +105,15 @@ download()
         sha1sum -c $dir/SHA1SUMS
     ) >/dev/null
 
-    if [ -e ${DOWNLOAD_TEMP}/${dir}/uptodate ]; then
+    content_root=${DOWNLOAD}/$name/${dir}
+
+    if [ -e ${DOWNLOAD_TEMP}/${dir}/uptodate ] && [ -e ${content_root}/version ]; then
         UPTODATE=true
+        VERSION=$(<${content_root}/version)
         info "Already up to date"
         return 0
     fi
 
-    content_root=${DOWNLOAD}/$name/${dir}
 
     if [ -e ${content_root} ]; then
         rm -rf ${content_root}
@@ -130,7 +140,7 @@ apply()
             chmod +x ${content_root}/check.sh
         fi
 
-        info "Running ${content_root}/check.sh [$version]"
+        info "Running ${content_root}/check.sh"
         cd ${content_root}
         if ./check.sh; then
             return
@@ -146,17 +156,18 @@ apply()
         chmod +x ${content_root}/apply.sh
     fi
 
-    version=$(<${content_root}/version)
-    info "Running ${content_root}/apply.sh [$version]"
-    cd ${content_root}
+    VERSION=$(<${content_root}/version)
+    info "Running ${content_root}/apply.sh"
+    pushd ${content_root} >/dev/null
     ./apply.sh "${opts[@]}"
     echo $(basename $(pwd)) > ../current
+    popd >/dev/null
 }
 
 applied()
 {
-    info Sending $1 applied ${dir} ${version}
-    put "${DOWNLOAD_URL}?version=${version}" > /dev/null
+    info Sending $1 applied ${dir} ${VERSION}
+    put "${DOWNLOAD_URL}?version=${VERSION}" > /dev/null
 }
 
 dump()
@@ -171,6 +182,13 @@ mkdir -p $DOWNLOAD
 opts=()
 while [ "$#" -gt 0 ]; do
     case $1 in
+    --force)
+        FORCE=true
+        ;;
+    --env)
+        docker_env_vars
+        exit 0
+        ;;
     --url)
         shift 1
         URL=$1
@@ -182,12 +200,13 @@ while [ "$#" -gt 0 ]; do
         opts+=($1)
         ;;
     *)
+        info "Updating" "$1"
         UPTODATE=false
         download $1
         if [ "$UPTODATE" != "true" ]; then
             apply
-            applied $1
         fi
+        applied $1
         ;;
     esac
     shift 1

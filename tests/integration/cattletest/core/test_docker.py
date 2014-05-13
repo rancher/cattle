@@ -314,3 +314,22 @@ def test_agent_instance(admin_client, docker_context):
 
     agent = admin_client.wait_success(agent_instance.agent())
     assert agent.state == 'active'
+
+
+@if_docker
+def test_no_port_override(admin_client, docker_context):
+    network = find_one(admin_client.list_network, uuid='managed-docker0')
+
+    c = admin_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                      networkIds=[network.id],
+                                      ports=['8081:8080'])
+
+    c = admin_client.wait_success(c)
+
+    assert c.state == 'running'
+    ports = c.ports()
+
+    assert len(ports) == 1
+    assert ports[0].kind == 'userPort'
+    assert ports[0].publicPort == 8081
+    assert ports[0].privatePort == 8080

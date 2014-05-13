@@ -75,7 +75,7 @@
         "port" : "ru",
         "port.publicPort" : "ru",
         "port.privatePort" : "r",
-        "port.publicIpAddressId" : "ru",
+        "port.publicIpAddressId" : "r",
         "port.protocol" : "r",
 
         "publish.id": "cr",

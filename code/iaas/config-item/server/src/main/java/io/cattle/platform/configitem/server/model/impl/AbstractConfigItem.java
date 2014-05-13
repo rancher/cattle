@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.server.model.impl;
 
+import io.cattle.platform.configitem.model.DefaultItemVersion;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.Request;
@@ -18,7 +19,13 @@ public abstract class AbstractConfigItem implements ConfigItem {
 
     protected String getVersion(Request req) {
         ItemVersion version = versionManager.getRequestedVersion(req.getClient(), req.getItemName());
-        return version == null ? null : version.toExternalForm();
+        if ( version == null ) {
+            return null;
+        }
+
+        version = new DefaultItemVersion(version.getRevision(), getSourceRevision());
+
+        return version.toExternalForm();
     }
 
     @Override

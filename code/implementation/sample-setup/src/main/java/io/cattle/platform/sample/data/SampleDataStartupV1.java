@@ -143,6 +143,14 @@ public class SampleDataStartupV1 implements InitializationTask {
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
                 NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
 
+        toCreate.add(createByUuid(NetworkService.class, "docker0-port-service",
+                NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
+                NETWORK_SERVICE.KIND, "portService",
+                NETWORK_SERVICE.NAME, "Ports service for managed docker0",
+                NETWORK_SERVICE.NETWORK_ID, network.getId(),
+                NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
+                NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
+
         for ( Object object : toCreate ) {
             try {
                 processManager.executeStandardProcess(StandardProcess.CREATE, object, null);

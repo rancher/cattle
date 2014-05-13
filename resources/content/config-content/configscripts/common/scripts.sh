@@ -14,10 +14,17 @@ debug_on()
     CATTLE_SCRIPT_DEBUG=true check_debug
 }
 
+docker_env_vars()
+{
+    if [ -e /.dockerenv ]; then
+        cat /proc/1/environ | xargs -0 -I{} echo export '"{}"' | grep CATTLE_
+    fi
+}
+
 docker_env()
 {
     if [ -e /.dockerenv ]; then
-        eval $(cat /proc/1/environ | xargs -0 -I{} echo export '"{}"')
+        eval $(docker_env_vars)
     fi
 }
 
@@ -67,12 +74,12 @@ stage_files()
 {
     if [ -d content-home ]; then
         find content-home -name "*.sh" -exec chmod +x {} \;
-        tar cf - -C content-home . | tar xvf - --no-overwrite-dir -C $CATTLE_HOME
+        tar cf - -C content-home . | tar xvf - --no-overwrite-dir -C $CATTLE_HOME | xargs -I{} echo 'INFO: HOME ->' {}
     fi
 
     if [ -d content ]; then
         find content -name "*.sh" -exec chmod +x {} \;
-        tar cf - -C content . | tar xvf - --no-overwrite-dir -C /
+        tar cf - -C content . | tar xvf - --no-overwrite-dir -C / | xargs -I{} echo 'INFO: ROOT ->' {}
     fi
 }
 
@@ -117,6 +124,15 @@ apply_config()
            ${cmd[@]} ${CATTLE_HOME}/${file}
         fi
         return 1
+    fi
+}
+
+add_route_table()
+{
+    local id=$1
+    local opts=$2
+    if ! ip rule show | cut -f1 -d: | grep -q '^'$id'$'; then
+        ip rule add $2 table $id pref $id
     fi
 }
 

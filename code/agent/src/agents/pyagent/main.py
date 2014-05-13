@@ -6,6 +6,9 @@ import logging
 from logging.handlers import RotatingFileHandler
 import argparse
 
+_LOG_SIZE = 2097152
+_LOG_COUNT = 2
+
 if __name__ == '__main__':
     dist = os.path.join(os.path.dirname(__file__), "dist")
     if os.path.exists(dist):
@@ -21,15 +24,15 @@ log = logging.getLogger("agent")
 
 
 def _setup_logger():
-    format = '%(asctime)s %(levelname)s %(name)s [%(filename)s:%(lineno)s]' \
-             ' %(message)s '
+    format = '%(asctime)s %(levelname)s %(name)s [%(thread)s] ' \
+             '[%(filename)s:%(lineno)s] %(message)s '
     level = logging.INFO
     if Config.debug():
         level = logging.DEBUG
     logging.root.setLevel(level)
 
-    file_handler = RotatingFileHandler(Config.log(), maxBytes=2*1024*1024,
-                                       backupCount=10)
+    file_handler = RotatingFileHandler(Config.log(), maxBytes=_LOG_SIZE,
+                                       backupCount=_LOG_COUNT)
     file_handler.setFormatter(logging.Formatter(format))
 
     std_err_handler = logging.StreamHandler(sys.stderr)

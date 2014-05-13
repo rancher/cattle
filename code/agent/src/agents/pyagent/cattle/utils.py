@@ -287,10 +287,12 @@ def validate_checksum(file_name, checksum_value, buffer_size=2**20):
 
 def get_command_output(*args, **kw):
     try:
+        kw['stderr'] = subprocess.STDOUT
         return _check_output(*args, **kw)
     except subprocess.CalledProcessError as e:
-        log.exception('Failed to call %s %s, exit [%s], output :\n%s', args,
-                      kw, e.returncode, e.output)
+        if not (e.output == 'Lock failed' and e.returncode == 122):
+            log.exception('Failed to call %s %s, exit [%s], output :\n%s',
+                          args, kw, e.returncode, e.output)
         raise e
 
 

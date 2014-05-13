@@ -3,7 +3,7 @@ package io.cattle.platform.agent.instance.service.impl;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.service.AgentInstanceManager;
-import io.cattle.platform.agent.instance.service.AgentInstanceNicLookup;
+import io.cattle.platform.agent.instance.service.InstanceNicLookup;
 import io.cattle.platform.agent.instance.service.NetworkServiceInfo;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -34,7 +34,7 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
     AgentInstanceDao agentInstanceDao;
     GenericResourceDao genericResourceDao;
     ResourceMonitor resourceMonitor;
-    List<AgentInstanceNicLookup> nicLookups;
+    List<InstanceNicLookup> nicLookups;
 
     @Override
     public Map<NetworkServiceProvider,Instance> getAgentInstances(Nic nic) {
@@ -137,7 +137,7 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
 
         List<? extends Nic> nics = null;
 
-        for ( AgentInstanceNicLookup lookup : nicLookups ) {
+        for ( InstanceNicLookup lookup : nicLookups ) {
             nics = lookup.getNics(resource);
             if ( nics != null ) {
                 break;
@@ -201,11 +201,11 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
         this.resourceMonitor = resourceMonitor;
     }
 
-    public List<AgentInstanceNicLookup> getNicLookups() {
+    public List<InstanceNicLookup> getNicLookups() {
         return nicLookups;
     }
 
-    public void setNicLookups(List<AgentInstanceNicLookup> nicLookups) {
+    public void setNicLookups(List<InstanceNicLookup> nicLookups) {
         this.nicLookups = nicLookups;
     }
 

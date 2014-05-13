@@ -35,8 +35,3 @@ class Publisher:
     @property
     def auth(self):
         return self._auth
-
-
-def publish(event):
-    publisher = type_manager.get_type(type_manager.PUBLISHER)
-    publisher.publish(event)

@@ -43,7 +43,7 @@ public class AccountPolicy extends DefaultPolicy {
                     if ( isPublic instanceof Boolean && ((Boolean)isPublic).booleanValue() ) {
                         return obj;
                     }
-                    log.error("Dropping unauthorized object [{}] for acccount [{}]", obj, getAccountId());
+                    log.error("Dropping unauthorized object [{}] for acccount [{}]", ObjectUtils.toStringWrapper(obj), getAccountId());
                 }
             } catch (IllegalAccessException e) {
                 log.error("Failed to access [{}] field for authorization", ObjectMetaDataManager.ACCOUNT_FIELD, e);

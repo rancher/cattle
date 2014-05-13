@@ -1,8 +1,10 @@
 import os
+import subprocess
 
 from cattle import utils
 from cattle import Config
 from cattle.type_manager import types
+from cattle.progress import Progress
 
 
 def _should_handle(handler, event):
@@ -60,8 +62,15 @@ class ConfigUpdateHandler:
         env['CATTLE_HOME'] = home
 
         args = [Config.config_sh()] + item_names
-        output = utils.get_command_output(args, cwd=home)
 
-        return utils.reply(event, {
-            'output': output
-        })
+        try:
+            output = utils.get_command_output(args, cwd=home)
+            return utils.reply(event, {
+                'exitCode': 0,
+                'output': output
+            })
+        except subprocess.CalledProcessError as e:
+            Progress(event).update('Update Failed', data={
+                'exitCode': e.returncode,
+                'output': e.output
+            })

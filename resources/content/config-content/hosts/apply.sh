@@ -8,7 +8,7 @@ fi
 
 stage_files
 
-DNSMASQ_PID=$(pidof dnsmasq)
+DNSMASQ_PID=$(pidof dnsmasq || true)
 
 if [ -n "$DNSMASQ_PID" ]; then
     info Reloading dnsmasq

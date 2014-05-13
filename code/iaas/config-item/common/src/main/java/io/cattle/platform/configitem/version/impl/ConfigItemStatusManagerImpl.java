@@ -271,7 +271,6 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
                         }
                     }
                 });
-                agent.publish(event);
             }
 
             first = false;
@@ -289,7 +288,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
             if ( exit == 0 ) {
                 log.debug("Success {}", request);
-            } else if ( exit == 1 && ObjectUtils.toString(output, "").length() == 0 ) {
+            } else if ( exit == 122 && "Lock failed".equals(output) ) {
                 /* This happens when the lock fails to apply.  Really we should upgrade to newer util-linux
                  * that supports -E and then set a special exit code.  That will be slightly better
                  */

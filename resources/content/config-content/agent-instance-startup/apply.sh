@@ -17,7 +17,7 @@ done < interfaces
 get_config services
 
 for i in $(cat ${CATTLE_HOME}/services | grep -vE '^(services|agent-instance-startup|configscripts)$'); do
-    echo Getting $i
+    info Getting $i
     get_config $i
 done
 

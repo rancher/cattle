@@ -192,3 +192,62 @@ def test_port_validation(client, sim_context, network):
         assert False
     except cattle.ApiError as e:
         assert e.error.code == 'PortWrongFormat'
+
+
+def test_ports_service(admin_client, sim_context, test_network):
+    c = create_sim_container(admin_client, sim_context,
+                             ports=['80'],
+                             networkIds=[test_network.id])
+
+    agent = c.hosts()[0].agent()
+    assert agent is not None
+
+    items = [x.name for x in agent.configItemStatuses()]
+
+    assert 'host-iptables' in items
+    assert 'host-routes' in items
+
+    item = None
+    for x in agent.configItemStatuses():
+        if x.name == 'host-iptables':
+            item = x
+            break
+
+    assert item is not None
+
+    port = c.ports()[0]
+
+    assert port.publicPort is None
+
+    port = admin_client.update(port, publicPort=12345)
+    assert port.state == 'updating-active'
+    assert port.publicPort == 12345
+
+    port = admin_client.wait_success(port)
+    assert port.state == 'active'
+
+    new_item = admin_client.reload(item)
+    assert new_item.requestedVersion > item.requestedVersion
+
+
+def test_port_auth(admin_client, client):
+    auth_check(admin_client.schema, 'port', 'ru', {
+        'accountId': 'ru',
+        'data': 'ru',
+        'instanceId': 'r',
+        'privateIpAddressId': 'r',
+        'privatePort': 'r',
+        'protocol': 'r',
+        'publicIpAddressId': 'r',
+        'publicPort': 'ru',
+        'removeTime': 'ru',
+    })
+
+    auth_check(client.schema, 'port', 'ru', {
+        'instanceId': 'r',
+        'privateIpAddressId': 'r',
+        'privatePort': 'r',
+        'protocol': 'r',
+        'publicIpAddressId': 'r',
+        'publicPort': 'ru',
+    })

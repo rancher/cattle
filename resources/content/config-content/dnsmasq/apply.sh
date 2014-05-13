@@ -2,6 +2,8 @@
 
 . ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
+mkdir -p /run/resolvconf/interface
+
 stage_files
 
 service dnsmasq restart

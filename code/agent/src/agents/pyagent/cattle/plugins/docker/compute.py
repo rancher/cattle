@@ -133,7 +133,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
 
         for link in instance.instanceLinks:
             if link.targetInstanceId is not None:
-                links[link.linkName] = link.targetInstance.uuid
+                links[link.targetInstance.uuid] = link.linkName
 
         start_config['links'] = links
 
@@ -235,9 +235,14 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             docker_ip = inspect['NetworkSettings']['IPAddress']
             if existing.get('Ports') is not None:
                 for port in existing['Ports']:
-                    private_port = '{0}/{1}'.format(port['PrivatePort'],
-                                                    port['Type'])
-                    docker_ports[private_port] = str(port['PublicPort'])
+                    if 'PrivatePort' in port:
+                        private_port = '{0}/{1}'.format(port['PrivatePort'],
+                                                        port['Type'])
+                        docker_ports[private_port] = str(port['PublicPort'])
+                    else:
+                        private_port = '{0}/{1}'.format(port['PublicPort'],
+                                                        port['Type'])
+                        docker_ports[private_port] = None
 
         return {
             'instance': {
