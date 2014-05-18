@@ -2,6 +2,7 @@ package io.cattle.platform.process.credential;
 
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
@@ -22,7 +23,6 @@ import com.netflix.config.DynamicStringProperty;
 public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessPreListener {
 
     public static final DynamicStringProperty BAD_CHARACTERS = ArchaiusUtil.getString("process.credential.create.bad.characters");
-    public static final String API_KEY = "apiKey";
 
     final SecureRandom random = new SecureRandom();
 
@@ -30,7 +30,7 @@ public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessP
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Credential credential = (Credential)state.getResource();
 
-        if ( ! API_KEY.equals(credential.getKind()) ) {
+        if ( ! getCredentialType().equals(credential.getKind()) ) {
             return null;
         }
 
@@ -50,6 +50,10 @@ public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessP
                 CREDENTIAL.PUBLIC_VALUE, publicValue,
                 "_secretHash", secretValue.hashCode()
             );
+    }
+
+    protected String getCredentialType() {
+        return CredentialConstants.KIND_API_KEY;
     }
 
     protected String[] generateKeys() {
