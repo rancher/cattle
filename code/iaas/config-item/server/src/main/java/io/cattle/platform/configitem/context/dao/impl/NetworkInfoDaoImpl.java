@@ -18,6 +18,7 @@ import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
 import io.cattle.platform.configitem.context.data.HostPortForwardData;
 import io.cattle.platform.configitem.context.data.HostRouteData;
 import io.cattle.platform.configitem.context.data.InstanceLinkData;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -307,7 +308,9 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                     .and(INSTANCE_HOST_MAP.REMOVED.isNull())
                     .and(port.REMOVED.isNull())
                     .and(port.PUBLIC_PORT.isNotNull())
+                    .and(port.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
                     .and(HOST.REMOVED.isNull()))
+            .orderBy(port.CREATED.asc())
             .fetch().map(mapper);
     }
 
