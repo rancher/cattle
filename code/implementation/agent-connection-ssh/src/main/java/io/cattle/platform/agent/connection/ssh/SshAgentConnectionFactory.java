@@ -6,6 +6,7 @@ import io.cattle.platform.agent.connection.ssh.dao.SshAgentDao;
 import io.cattle.platform.agent.server.connection.AgentConnection;
 import io.cattle.platform.agent.server.connection.AgentConnectionFactory;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.bootstrap.script.BootstrapScript;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.iaas.config.ScopedConfig;
@@ -13,9 +14,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -33,7 +32,6 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.mina.util.ConcurrentHashSet;
 import org.apache.sshd.ClientSession;
@@ -65,8 +63,6 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
     private static final DynamicStringProperty ADDITIONAL_ENV = ArchaiusUtil.getString("ssh.agent.env");
     private static final DynamicLongProperty SSH_TIMEOUT = ArchaiusUtil.getLong("ssh.timeout.millis");
     private static final DynamicStringProperty BOOTSTRAP_FILE = ArchaiusUtil.getString("ssh.bootstrap.destination");
-    private static final DynamicStringProperty BOOTSTRAP_SOURCE = ArchaiusUtil.getString("ssh.bootstrap.source");
-    private static final DynamicStringProperty BOOTSTRAP_SOURCE_OVERRIDE = ArchaiusUtil.getString("ssh.bootstrap.source.override");
     private static final DynamicStringProperty LOCALHOST_URL_FORMAT = ArchaiusUtil.getString("ssh.localhost.url.format");
 
     private static final Logger log = LoggerFactory.getLogger(SshAgentConnectionFactory.class);
@@ -218,7 +214,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
             Handle handle = sftpClient.open(dest, EnumSet.of(OpenMode.Read, OpenMode.Write, OpenMode.Create, OpenMode.Exclusive));
             Attributes attr = new Attributes().perms(0700);
             sftpClient.setStat(handle, attr);
-            byte[] content = getBootstrapSource(BOOTSTRAP_SOURCE_OVERRIDE.get(), BOOTSTRAP_SOURCE.get());
+            byte[] content = BootstrapScript.getBootStrapSource();
             sftpClient.write(handle, 0, content, 0, content.length);
             sftpClient.close(handle);
 
@@ -291,22 +287,6 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         client.start();
 
         return this.client = client;
-    }
-
-    protected byte[] getBootstrapSource(String... sources) throws IOException {
-        ClassLoader cl = getClass().getClassLoader();
-        for ( String source : sources ) {
-            InputStream is = cl.getResourceAsStream(source);
-            try {
-                if ( is != null ) {
-                    return IOUtils.toByteArray(is);
-                }
-            } finally {
-                IOUtils.closeQuietly(is);
-            }
-        }
-
-        throw new FileNotFoundException("Failed to find [" + Arrays.toString(sources) + "]");
     }
 
     protected boolean writeAuth(SshAgentConnection connection) throws IOException {

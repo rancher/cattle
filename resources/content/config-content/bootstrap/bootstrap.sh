@@ -30,7 +30,7 @@ check_debug
 # End copy
 
 CONF=(/etc/cattle/agent/bootstrap.conf
-      /var/lib/cattle/etc/cattle/agent/bootstrap.conf)
+      ${CATTLE_HOME}/etc/cattle/agent/bootstrap.conf)
 CONTENT_URL=/configcontent/configscripts
 INSTALL_ITEMS="configscripts pyagent"
 DOCKER_AGENT="cattle/agent"
@@ -65,7 +65,7 @@ download_agent()
     cleanup
 
     TEMP_DOWNLOAD=$(mktemp -d bootstrap.XXXXXXX)
-    info Downloading agent "${CATTLE_URL}${CONTENT_URL}"
+    info Downloading agent "${CATTLE_CONFIG_URL}${CONTENT_URL}"
     curl --retry 5 -s -u $CATTLE_ACCESS_KEY:$CATTLE_SECRET_KEY ${CATTLE_CONFIG_URL}${CONTENT_URL} > $TEMP_DOWNLOAD/content
     tar xzf $TEMP_DOWNLOAD/content -C $TEMP_DOWNLOAD || ( cat $TEMP_DOWNLOAD/content 1>&2 && exit 1 )
     bash $TEMP_DOWNLOAD/*/config.sh --no-start $INSTALL_ITEMS
@@ -108,18 +108,20 @@ for conf_file in "${CONF[@]}"; do
     fi
 done
 
-if [ "$INCEPTION" = "true" ] && [ "$INCEPTION_INCEPTION" = "" ] && [ -e /proc-host/1/ns/net ]; then
+if [ "$INCEPTION" = "true" ] && [ "$INCEPTION_INCEPTION" = "" ] && [ -e /host/proc/1/ns/net ]; then
     export INCEPTION_INCEPTION=true
-    exec /usr/sbin/nsenter --net=/proc-host/1/ns/net --uts=/proc-host/1/ns/uts -F -- $0 "$@"
+    exec /usr/sbin/nsenter --net=/host/proc/1/ns/net --uts=/host/proc/1/ns/uts -F -- $0 "$@"
 fi
 
 if [ "$CATTLE_AGENT_INCEPTION" = "true" ] || ! python -V >/dev/null 2>&1; then
     if [ "$INCEPTION" != "true" ]; then
         cleanup_docker
         exec docker run -rm -privileged -i -w $(pwd) \
-                    -v /run:/run \
-                    -v /var:/var \
-                    -v /proc:/proc-host \
+                    -v /run:/host/run \
+                    -v /var:/host/var \
+                    -v /proc:/host/proc \
+                    -v /var/run/docker.sock:/var/run/docker.sock \
+                    -v ${CATTLE_HOME}:${CATTLE_HOME} \
                     -v $(pwd):$(pwd) \
                     -v $(readlink -f /var/lib/docker):$(readlink -f /var/lib/docker) \
                     -e CATTLE_SCRIPT_DEBUG=$CATTLE_SCRIPT_DEBUG \
