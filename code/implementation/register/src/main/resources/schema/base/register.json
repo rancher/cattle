@@ -1,0 +1,31 @@
+{
+    "pluralName" : "register",
+    "resourceFields" : {
+        "authToken" : {
+            "type" : "string"
+        },
+        "key" : {
+            "type" : "string",
+            "required" : true
+        },
+        "accessKey" : {
+            "type" : "string"
+        },
+        "secretKey" : {
+            "type" : "string"
+        }
+    },
+    "resourceActions" : {
+        "stop" : {
+            "input" : "instanceStop",
+            "output" : "instance"
+        }
+    },
+    "collectionFilters" : {
+        "token" : {
+            "modifiers" : [
+                "eq"
+            ]
+        }
+    }
+}

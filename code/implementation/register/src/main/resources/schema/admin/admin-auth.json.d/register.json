@@ -1,0 +1,8 @@
+{
+    "authorize" : {
+        "register.key" : "cr",
+
+        "registrationToken.publicValue" : "",
+        "registrationToken.secretValue" : ""
+    }
+}

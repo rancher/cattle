@@ -1,0 +1,30 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+
+    <bean class="io.cattle.platform.register.process.RegisterCreate" />
+    <bean class="io.cattle.platform.register.process.RegisterTokenCreate" />
+    <bean class="io.cattle.platform.register.process.RegisterTokenAccountCreate" />
+
+    <bean class="io.cattle.platform.register.dao.impl.RegisterDaoImpl" />
+
+    <tx:advice id="RegisterAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createAgentForRegistration" isolation="READ_COMMITTED" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="RegisterAdvice" pointcut="execution(* io.cattle.platform.register.dao.RegisterDao.*(..))" />
+    </aop:config>
+
+</beans>

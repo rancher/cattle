@@ -1,0 +1,26 @@
+{
+    "authorize" : {
+        ".*" : "",
+
+        ".*\\.created" : "r",
+        ".*\\.description" : "cru",
+        ".*\\.kind" : "r",
+        ".*\\.id" : "r",
+        ".*\\.name" : "cru",
+        ".*\\.uuid" : "r",
+        ".*\\.removed" : "r",
+        ".*\\.state" : "r",
+        ".*\\.transitioning": "r",
+        ".*\\.transitioningMessage": "r",
+        ".*\\.transitioningProgress": "r",
+
+        "register" : "crd",
+        "register.accessKey" : "r",
+        "register.secretKey" : "r",
+        "register.key" : "cr",
+
+        "schema" : "r",
+
+        "end" : ""
+    }
+}

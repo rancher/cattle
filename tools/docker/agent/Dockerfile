@@ -1,4 +1,8 @@
 FROM ibuildthecloud/ubuntu-core-base:14.04
 RUN apt-get update && \
-     apt-get install -y python curl python-eventlet pypy
+     apt-get install -y python-minimal curl python-eventlet
+RUN apt-get update && apt-get install -y \
+     busybox
 ADD nsenter /usr/sbin/nsenter
+ADD startup.sh /
+CMD ["/startup.sh"]
