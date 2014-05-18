@@ -306,6 +306,16 @@ def get_plain_id(admin_client, obj):
     return ret[0].id
 
 
+def get_by_plain_id(admin_client, type, id):
+    obj = admin_client.by_id(type, id, _plainId='true')
+    if obj is None:
+        return None
+    objs = admin_client.list(type, uuid=obj.uuid)
+    if len(objs) == 0:
+        return None
+    return objs[0]
+
+
 def create_and_activate(client, type, **kw):
     obj = client.create(type, **kw)
     obj = client.wait_success(obj)
