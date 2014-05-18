@@ -36,6 +36,16 @@ public class DeferredUtils {
         TL.get().add(runnable);
     }
 
+    public static void nest(final Runnable runnable) {
+        nest(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                runnable.run();
+                return null;
+            }
+        });
+    }
+
     public static <T> T nest(Callable<T> callable) {
         List<Runnable> old = TL.get();
         TL.set(new ArrayList<Runnable>());
