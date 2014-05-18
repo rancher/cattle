@@ -30,6 +30,9 @@
     </bean>
 
     <!-- Start Handlers -->
+    <bean class="io.cattle.platform.iaas.api.request.handler.Scripts" >
+        <property name="handlers" value="#{extensionManager.list('scripts.handler')}" />
+    </bean>
     <bean class="io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator" >
         <property name="accountLookups" value="#{extensionManager.list('account.lookup')}" />
         <property name="authorizationProviders" value="#{extensionManager.list('authorization.provider')}" />
@@ -139,5 +142,6 @@
     <extension:discover class="io.github.ibuildthecloud.gdapi.factory.SchemaFactory"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.api.pubsub.subscribe.ApiPubSubEventPostProcessor"/>
+    <extension:discover class="io.cattle.platform.iaas.api.request.handler.ScriptsHandler"/>
 
 </beans>
