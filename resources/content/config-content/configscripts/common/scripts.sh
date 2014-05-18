@@ -17,7 +17,7 @@ debug_on()
 docker_env_vars()
 {
     if [ -e /.dockerenv ]; then
-        cat /proc/1/environ | xargs -0 -I{} echo export '"{}"' | grep CATTLE_
+        cat /proc/1/environ 2>/dev/null | xargs -0 -I{} echo export '"{}"' | grep CATTLE_
     fi
 }
 
