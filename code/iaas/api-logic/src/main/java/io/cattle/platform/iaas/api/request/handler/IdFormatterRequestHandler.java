@@ -21,7 +21,7 @@ public class IdFormatterRequestHandler extends AbstractApiRequestHandler impleme
         Policy policy = ApiUtils.getPolicy();
         if ( policy.isOption(Policy.PLAIN_ID) ) {
             ApiContext.getContext().setIdFormatter(plainFormatter);
-        } else if ( policy.isOption(Policy.PLAIN_ID_OPTION) && "true".equals(request.getOptions().get("_plainId")) ) {
+        } else if ( policy.isOption(Policy.PLAIN_ID_OPTION) && "true".equalsIgnoreCase(request.getOptions().get("_plainId")) ) {
             ApiContext.getContext().setIdFormatter(plainFormatter);
         }
     }
