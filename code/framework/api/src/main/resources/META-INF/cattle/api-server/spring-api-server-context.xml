@@ -62,6 +62,12 @@
         <property name="id" value="noop" />
     </bean>
 
+    <bean class="io.github.ibuildthecloud.gdapi.response.impl.ResourceOutputFilterManagerImpl" >
+        <property name="baseSchemaFactory" ref="CoreSchemaFactory" />
+        <property name="outputFilters" value="#{extensionManager.list('resource.output.filter')}" />
+    </bean>
+
+    <extension:discover class="io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter" />
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler" />
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerFilter" />
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManager" />
