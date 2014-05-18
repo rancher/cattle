@@ -7,6 +7,8 @@ public class AgentConstants {
     public static final String STATE_RECONNECTING = "reconnecting";
     public static final String ID_REF = "agentId";
 
+    public static final String DATA_AGENT_RESOURCES_ACCOUNT_ID = "agentResourcesAccountId";
+
     public static final String PROCESS_ACTIVATE = "agent.activate";
     public static final String PROCESS_RECONNECT = "agent.reconnect";
     public static final String PROCESS_DEACTIVATE = "agent.deactivate";

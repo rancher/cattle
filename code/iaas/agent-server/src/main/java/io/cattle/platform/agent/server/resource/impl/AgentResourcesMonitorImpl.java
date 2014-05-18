@@ -4,6 +4,7 @@ import io.cattle.platform.agent.server.resource.AgentResourceChangeHandler;
 import io.cattle.platform.agent.server.resource.AgentResourcesEventListener;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.lock.LockCallbackWithException;
@@ -12,6 +13,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.HashMap;
@@ -115,7 +117,15 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener, I
                     }
 
                     Agent agent = objectManager.loadResource(Agent.class, agentId);
-                    agentResource.put(ObjectMetaDataManager.ACCOUNT_FIELD, agent.getAccountId());
+                    Long accountId = DataAccessor.fromDataFieldOf(agent)
+                                        .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
+                                        .as(Long.class);
+
+                    if ( accountId == null ) {
+                        accountId = agent.getAccountId();
+                    }
+
+                    agentResource.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
 
                     handler.newResource(agentId, agentResource);
                     return null;
