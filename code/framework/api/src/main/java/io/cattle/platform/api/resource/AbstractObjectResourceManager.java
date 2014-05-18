@@ -301,7 +301,11 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Schema getSchemaForDisplay(SchemaFactory schemaFactory, Object obj) {
-        return ApiUtils.getSchemaForDisplay(schemaFactory, obj);
+        /* Use core schema because parent may not be authorized */
+        String schemaId = ApiUtils.getSchemaIdForDisplay(getObjectManager().getSchemaFactory(), obj);
+
+        /* Still get schema from request's schemaFactory */
+        return schemaFactory.getSchema(schemaId);
     }
 
     @Override

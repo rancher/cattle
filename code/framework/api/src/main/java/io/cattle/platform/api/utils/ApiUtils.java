@@ -160,17 +160,17 @@ public class ApiUtils {
         return new WrappedResource(idFormatter, schema, obj, additionalFields);
     }
 
-    public static Schema getSchemaForDisplay(SchemaFactory factory, Object obj) {
+    public static String getSchemaIdForDisplay(SchemaFactory factory, Object obj) {
         Schema schema = factory.getSchema(obj.getClass());
         if ( schema.getChildren().size() > 0 ) {
             String kind = ObjectUtils.getKind(obj);
             Schema kindSchema = factory.getSchema(kind);
             if ( kindSchema != null ) {
-                return kindSchema;
+                return kindSchema.getId();
             }
         }
 
-        return schema;
+        return schema.getId();
     }
 
 }

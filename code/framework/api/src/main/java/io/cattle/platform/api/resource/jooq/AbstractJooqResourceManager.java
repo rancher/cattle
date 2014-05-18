@@ -61,7 +61,8 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
             return null;
         }
 
-        type = schemaFactory.getSchemaName(clz);
+        /* Use core schema, parent may not be authorized */
+        type = getObjectManager().getSchemaFactory().getSchemaName(clz);
         Table<?> table = JooqUtils.getTableFromRecordClass(clz);
         Sort sort = options == null ? null : options.getSort();
         Pagination pagination = options == null ? null : options.getPagination();
@@ -146,11 +147,10 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         Schema schema = schemaFactory.getSchema(type);
         Class<?> clz = schemaFactory.getSchemaClass(type);
 
-        if ( clz == null && schema.getParent() != null ) {
-            clz = getClass(schemaFactory, schema.getParent(), criteria, false);
-            if ( clz != null && alterCriteria ) {
-                criteria.put(ObjectMetaDataManager.KIND_FIELD, type);
-            }
+        Schema clzSchema = schemaFactory.getSchema(clz);
+
+        if ( clz != null && (clzSchema == null || ! schema.getId().equals(clzSchema.getId())) && alterCriteria ) {
+            criteria.put(ObjectMetaDataManager.KIND_FIELD, type);
         }
 
         return clz;
