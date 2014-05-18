@@ -19,7 +19,14 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DefaultAuthorizationProvider implements AuthorizationProvider, InitializationTask, Priority {
+
+    public static final String ACCOUNT_SCHEMA_FACTORY_NAME = "accountSchemaFactoryName";
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultAuthorizationProvider.class);
 
     Map<String,SchemaFactory> schemaFactories = new HashMap<String, SchemaFactory>();
     List<SchemaFactory> schemaFactoryList;
@@ -28,6 +35,16 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
 
     @Override
     public SchemaFactory getSchemaFactory(Account account, ApiRequest request) {
+        Object name = request.getAttribute(ACCOUNT_SCHEMA_FACTORY_NAME);
+        if ( name != null ) {
+            SchemaFactory schemaFactory = schemaFactories.get(name.toString());
+            if ( schemaFactory == null ) {
+                log.error("Failed to find schema factory [{}]", name);
+            } else {
+                return schemaFactory;
+            }
+        }
+
         return schemaFactories.get(account.getKind());
     }
 
