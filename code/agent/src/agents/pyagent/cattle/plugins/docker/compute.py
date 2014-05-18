@@ -51,7 +51,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
 
         containers = []
         for c in docker_client().containers():
-            names = c.get('Names')
+            names = c.get('Names', [])
             for name in names:
                 if name.startswith('/'):
                     name = name[1:]
@@ -94,7 +94,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
 
     def get_container_by_name(self, name):
         name = '/{0}'.format(name)
-        return self.get_container_by(lambda x: name in x['Names'])
+        return self.get_container_by(lambda x: name in x.get('Names',[]))
 
     def _is_instance_active(self, instance, host):
         container = self.get_container_by_name(instance.uuid)
