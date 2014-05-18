@@ -15,6 +15,7 @@ import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
 
     private DynamicStringListProperty SUPPORTED_TYPES = ArchaiusUtil.getList("account.by.key.credential.types");
+
     @Override
     public Account getAdminAccount() {
         return create()
