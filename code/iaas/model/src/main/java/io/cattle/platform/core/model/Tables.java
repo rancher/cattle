@@ -74,6 +74,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ExternalHandlerProcessTable EXTERNAL_HANDLER_PROCESS = io.cattle.platform.core.model.tables.ExternalHandlerProcessTable.EXTERNAL_HANDLER_PROCESS;
 
 	/**
+	 * The table cattle.generic_object
+	 */
+	public static final io.cattle.platform.core.model.tables.GenericObjectTable GENERIC_OBJECT = io.cattle.platform.core.model.tables.GenericObjectTable.GENERIC_OBJECT;
+
+	/**
 	 * The table cattle.host
 	 */
 	public static final io.cattle.platform.core.model.tables.HostTable HOST = io.cattle.platform.core.model.tables.HostTable.HOST;
