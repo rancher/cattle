@@ -53,6 +53,10 @@ public class BasicAuthImpl implements AccountLookup, Priority {
         return REALM.get();
     }
 
+    public static String[] getUsernamePassword(ApiRequest request) {
+        return getUsernamePassword(request.getServletContext().getRequest().getHeader(AUTH_HEADER));
+    }
+
     public static String[] getUsernamePassword(String auth) {
         if ( auth == null )
             return null;
