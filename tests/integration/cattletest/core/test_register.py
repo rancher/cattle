@@ -60,7 +60,7 @@ def test_registration_token_account_create(admin_client):
     account = create_and_activate(admin_client, 'account')
 
     creds = filter(lambda x: x.kind == 'registrationToken',
-                  account.credentials())
+                   account.credentials())
 
     assert len(creds) == 1
 
