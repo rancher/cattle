@@ -3,8 +3,10 @@ package io.cattle.platform.docker.process.instancehostmap;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.dao.IpAddressDao;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.dao.NicDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostIpAddressMap;
@@ -43,6 +45,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     IpAddressDao ipAddressDao;
     DockerComputeDao dockerDao;
     NicDao nicDao;
+    NetworkDao networkDao;
 
     @Override
     public String[] getProcessNames() {
@@ -141,13 +144,20 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
                         PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddressId,
                         PORT.KIND, PortConstants.KIND_IMAGE);
             } else {
-                if ( PortConstants.KIND_IMAGE.equals(port.getKind()) && ( ! ObjectUtils.equals(port.getPublicPort(), entry.getValue()) ||
-                        ! ObjectUtils.equals(port.getPrivateIpAddressId(), privateIpAddressId) ||
-                        ! ObjectUtils.equals(port.getPublicIpAddressId(), publicIpAddressId) ) ) {
-                    getObjectManager().setFields(port,
-                            PORT.PUBLIC_PORT, entry.getValue(),
-                            PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddressId,
-                            PORT.PUBLIC_IP_ADDRESS_ID, publicIpAddressId);
+                if ( hasPortNetworkService(instance.getId()) ) {
+                    if ( ObjectUtils.equals(port.getPrivateIpAddressId(), privateIpAddressId) ) {
+                        getObjectManager().setFields(port,
+                                PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddressId);
+                    }
+                } else {
+                    if ( ! ObjectUtils.equals(port.getPublicPort(), entry.getValue()) ||
+                            ! ObjectUtils.equals(port.getPrivateIpAddressId(), privateIpAddressId) ||
+                            ! ObjectUtils.equals(port.getPublicIpAddressId(), publicIpAddressId) ) {
+                        getObjectManager().setFields(port,
+                                PORT.PUBLIC_PORT, entry.getValue(),
+                                PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddressId,
+                                PORT.PUBLIC_IP_ADDRESS_ID, publicIpAddressId);
+                    }
                 }
             }
         }
@@ -155,6 +165,10 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         for ( Port port : getObjectManager().children(instance, Port.class) ) {
             createIgnoreCancel(port, null);
         }
+    }
+
+    protected boolean hasPortNetworkService(long instanceId) {
+        return networkDao.getNetworkService(instanceId, NetworkServiceConstants.KIND_PORT_SERVICE).size() > 0;
     }
 
     protected IpAddress getIpAddress(Host host, String hostIp) {
@@ -201,6 +215,15 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     @Inject
     public void setNicDao(NicDao nicDao) {
         this.nicDao = nicDao;
+    }
+
+    public NetworkDao getNetworkDao() {
+        return networkDao;
+    }
+
+    @Inject
+    public void setNetworkDao(NetworkDao networkDao) {
+        this.networkDao = networkDao;
     }
 
 }
