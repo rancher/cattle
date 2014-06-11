@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <changeSet author="darren (generated)" id="dump1">
+        <createTable tableName="credential_instance_map">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="credential_id" type="BIGINT"/>
+            <column name="instance_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump2">
+        <createTable tableName="ip_assocation">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="ip_address_id" type="BIGINT"/>
+            <column name="child_ip_address_id" type="BIGINT"/>
+            <column name="role" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump3">
+        <addColumn tableName="ip_address">
+            <column name="hostname" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump4">
+        <addColumn tableName="instance">
+            <column name="token" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump5">
+        <addColumn tableName="instance">
+            <column name="userdata" type="TEXT(65535)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump6">
+        <addForeignKeyConstraint baseColumnNames="credential_id" baseTableName="credential_instance_map" constraintName="fk_credential_instance_map__credential_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="credential"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump7">
+        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="credential_instance_map" constraintName="fk_credential_instance_map__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump8">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="ip_assocation" constraintName="fk_ip_assocation__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump9">
+        <addForeignKeyConstraint baseColumnNames="child_ip_address_id" baseTableName="ip_assocation" constraintName="fk_ip_assocation__child_ip_address_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="ip_address"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump10">
+        <addForeignKeyConstraint baseColumnNames="ip_address_id" baseTableName="ip_assocation" constraintName="fk_ip_assocation__ip_address_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="ip_address"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump11">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_credential_instance_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="credential_instance_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump12">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_ip_assocation_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="ip_assocation"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump13">
+        <createIndex indexName="idx_credential_instance_map_name" tableName="credential_instance_map" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump14">
+        <createIndex indexName="idx_credential_instance_map_remove_time" tableName="credential_instance_map" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump15">
+        <createIndex indexName="idx_credential_instance_map_removed" tableName="credential_instance_map" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump16">
+        <createIndex indexName="idx_credential_instance_map_state" tableName="credential_instance_map" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump17">
+        <createIndex indexName="idx_ip_assocation_name" tableName="ip_assocation" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump18">
+        <createIndex indexName="idx_ip_assocation_remove_time" tableName="ip_assocation" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump19">
+        <createIndex indexName="idx_ip_assocation_removed" tableName="ip_assocation" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump20">
+        <createIndex indexName="idx_ip_assocation_state" tableName="ip_assocation" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
