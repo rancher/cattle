@@ -31,6 +31,28 @@ public class CollectionUtils {
         return value;
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> void set(Map<T, Object> map, Object value, T... keys) {
+        for ( int i = 0 ; i < keys.length ; i++ ) {
+            T key = keys[i];
+
+            if ( key == null ) {
+                return;
+            }
+
+            if ( i == keys.length - 1 ) {
+                map.put(keys[i], value);
+            } else {
+                Map<T, Object> nestedMap = (Map<T, Object>)map.get(keys[i]);
+                if ( nestedMap == null ) {
+                    nestedMap = new HashMap<T, Object>();
+                    map.put(key, nestedMap);
+                }
+                map = nestedMap;
+            }
+        }
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <K,V extends Collection<T>,T> void addToMap(Map<K,V> data, K key, T value, Class<? extends Collection> clz) {
         V values = data.get(key);
