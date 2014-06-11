@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "instance", schema = "cattle")
-public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record22<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.util.Date>, io.cattle.platform.core.model.Instance {
+public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Instance {
 
-	private static final long serialVersionUID = -530715755;
+	private static final long serialVersionUID = -500367547;
 
 	/**
 	 * Setter for <code>cattle.instance.id</code>.
@@ -390,6 +390,40 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		return (java.util.Date) getValue(21);
 	}
 
+	/**
+	 * Setter for <code>cattle.instance.token</code>.
+	 */
+	@Override
+	public void setToken(java.lang.String value) {
+		setValue(22, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.instance.token</code>.
+	 */
+	@javax.persistence.Column(name = "token", length = 255)
+	@Override
+	public java.lang.String getToken() {
+		return (java.lang.String) getValue(22);
+	}
+
+	/**
+	 * Setter for <code>cattle.instance.userdata</code>.
+	 */
+	@Override
+	public void setUserdata(java.lang.String value) {
+		setValue(23, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.instance.userdata</code>.
+	 */
+	@javax.persistence.Column(name = "userdata", length = 65535)
+	@Override
+	public java.lang.String getUserdata() {
+		return (java.lang.String) getValue(23);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -400,584 +434,6 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@Override
 	public org.jooq.Record1<java.lang.Long> key() {
 		return (org.jooq.Record1) super.key();
-	}
-
-	// -------------------------------------------------------------------------
-	// Record22 type implementation
-	// -------------------------------------------------------------------------
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Row22<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.util.Date> fieldsRow() {
-		return (org.jooq.Row22) super.fieldsRow();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Row22<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.util.Date> valuesRow() {
-		return (org.jooq.Row22) super.valuesRow();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field1() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field2() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.NAME;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field3() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.ACCOUNT_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field4() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.KIND;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field5() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.UUID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field6() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.DESCRIPTION;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field7() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.STATE;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.util.Date> field8() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.CREATED;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.util.Date> field9() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.REMOVED;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.util.Date> field10() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.REMOVE_TIME;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.util.Map<String,Object>> field11() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.DATA;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field12() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.ALLOCATION_STATE;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field13() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.COMPUTE;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field14() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.MEMORY_MB;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field15() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.IMAGE_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field16() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.OFFERING_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field17() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.HOSTNAME;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field18() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.ZONE_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field19() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.INSTANCE_TRIGGERED_STOP;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field20() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.AGENT_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field21() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.DOMAIN;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.util.Date> field22() {
-		return io.cattle.platform.core.model.tables.InstanceTable.INSTANCE.FIRST_RUNNING;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value1() {
-		return getId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value2() {
-		return getName();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value3() {
-		return getAccountId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value4() {
-		return getKind();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value5() {
-		return getUuid();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value6() {
-		return getDescription();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value7() {
-		return getState();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.util.Date value8() {
-		return getCreated();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.util.Date value9() {
-		return getRemoved();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.util.Date value10() {
-		return getRemoveTime();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.util.Map<String,Object> value11() {
-		return getData();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value12() {
-		return getAllocationState();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value13() {
-		return getCompute();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value14() {
-		return getMemoryMb();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value15() {
-		return getImageId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value16() {
-		return getOfferingId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value17() {
-		return getHostname();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value18() {
-		return getZoneId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value19() {
-		return getInstanceTriggeredStop();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value20() {
-		return getAgentId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value21() {
-		return getDomain();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.util.Date value22() {
-		return getFirstRunning();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value1(java.lang.Long value) {
-		setId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value2(java.lang.String value) {
-		setName(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value3(java.lang.Long value) {
-		setAccountId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value4(java.lang.String value) {
-		setKind(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value5(java.lang.String value) {
-		setUuid(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value6(java.lang.String value) {
-		setDescription(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value7(java.lang.String value) {
-		setState(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value8(java.util.Date value) {
-		setCreated(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value9(java.util.Date value) {
-		setRemoved(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value10(java.util.Date value) {
-		setRemoveTime(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value11(java.util.Map<String,Object> value) {
-		setData(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value12(java.lang.String value) {
-		setAllocationState(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value13(java.lang.Long value) {
-		setCompute(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value14(java.lang.Long value) {
-		setMemoryMb(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value15(java.lang.Long value) {
-		setImageId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value16(java.lang.Long value) {
-		setOfferingId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value17(java.lang.String value) {
-		setHostname(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value18(java.lang.Long value) {
-		setZoneId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value19(java.lang.String value) {
-		setInstanceTriggeredStop(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value20(java.lang.Long value) {
-		setAgentId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value21(java.lang.String value) {
-		setDomain(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord value22(java.util.Date value) {
-		setFirstRunning(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public InstanceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.Long value15, java.lang.Long value16, java.lang.String value17, java.lang.Long value18, java.lang.String value19, java.lang.Long value20, java.lang.String value21, java.util.Date value22) {
-		return this;
 	}
 
 	// -------------------------------------------------------------------------
@@ -1011,6 +467,8 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setAgentId(from.getAgentId());
 		setDomain(from.getDomain());
 		setFirstRunning(from.getFirstRunning());
+		setToken(from.getToken());
+		setUserdata(from.getUserdata());
 	}
 
 	/**
@@ -1036,7 +494,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Create a detached, initialised InstanceRecord
 	 */
-	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning) {
+	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning, java.lang.String token, java.lang.String userdata) {
 		super(io.cattle.platform.core.model.tables.InstanceTable.INSTANCE);
 
 		setValue(0, id);
@@ -1061,5 +519,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setValue(19, agentId);
 		setValue(20, domain);
 		setValue(21, firstRunning);
+		setValue(22, token);
+		setValue(23, userdata);
 	}
 }

@@ -190,6 +190,17 @@ public interface IpAddress extends java.io.Serializable {
 	@javax.persistence.Column(name = "role", length = 128)
 	public java.lang.String getRole();
 
+	/**
+	 * Setter for <code>cattle.ip_address.hostname</code>.
+	 */
+	public void setHostname(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.ip_address.hostname</code>.
+	 */
+	@javax.persistence.Column(name = "hostname", length = 255)
+	public java.lang.String getHostname();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

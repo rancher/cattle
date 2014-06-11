@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 1306719362;
+	private static final long serialVersionUID = 2088502151;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -40,6 +40,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.ConfigItemTable.CONFIG_ITEM,
 			io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS,
 			io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL,
+			io.cattle.platform.core.model.tables.CredentialInstanceMapTable.CREDENTIAL_INSTANCE_MAP,
 			io.cattle.platform.core.model.tables.DataTable.DATA,
 			io.cattle.platform.core.model.tables.DatabasechangelogTable.DATABASECHANGELOG,
 			io.cattle.platform.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK,
@@ -57,6 +58,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK,
 			io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS,
 			io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP,
+			io.cattle.platform.core.model.tables.IpAssocationTable.IP_ASSOCATION,
 			io.cattle.platform.core.model.tables.NetworkTable.NETWORK,
 			io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE,
 			io.cattle.platform.core.model.tables.NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER,

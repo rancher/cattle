@@ -143,7 +143,7 @@ public interface GenericObject extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.generic_object.key</code>.
 	 */
-	@javax.persistence.Column(name = "key", length = 128)
+	@javax.persistence.Column(name = "key", length = 255)
 	public java.lang.String getKey();
 
 	// -------------------------------------------------------------------------

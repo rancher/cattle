@@ -18,6 +18,7 @@ public class InstanceConstants {
     public static final String FIELD_VALID_HOST_IDS = "validHostIds";
     public static final String FIELD_SUBNET_IDS = "subnetIds";
     public static final String FIELD_START_ON_CREATE = "startOnCreate";
+    public static final String FIELD_VCPU = "vcpu";
     public static final String FIELD_VNET_IDS = "vnetIds";
     public static final String FIELD_VOLUME_OFFERING_IDS = "volumeOfferingIds";
 

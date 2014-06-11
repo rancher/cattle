@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class GenericObjectTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.GenericObjectRecord> {
 
-	private static final long serialVersionUID = -973830422;
+	private static final long serialVersionUID = -1711059771;
 
 	/**
 	 * The singleton instance of <code>cattle.generic_object</code>
@@ -84,7 +84,7 @@ public class GenericObjectTable extends org.jooq.impl.TableImpl<io.cattle.platfo
 	/**
 	 * The column <code>cattle.generic_object.key</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.GenericObjectRecord, java.lang.String> KEY = createField("key", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.GenericObjectRecord, java.lang.String> KEY = createField("key", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>cattle.generic_object</code> table reference

@@ -44,6 +44,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.CredentialTable CREDENTIAL = io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
 
 	/**
+	 * The table cattle.credential_instance_map
+	 */
+	public static final io.cattle.platform.core.model.tables.CredentialInstanceMapTable CREDENTIAL_INSTANCE_MAP = io.cattle.platform.core.model.tables.CredentialInstanceMapTable.CREDENTIAL_INSTANCE_MAP;
+
+	/**
 	 * The table cattle.data
 	 */
 	public static final io.cattle.platform.core.model.tables.DataTable DATA = io.cattle.platform.core.model.tables.DataTable.DATA;
@@ -127,6 +132,11 @@ public class Tables {
 	 * The table cattle.ip_address_nic_map
 	 */
 	public static final io.cattle.platform.core.model.tables.IpAddressNicMapTable IP_ADDRESS_NIC_MAP = io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
+
+	/**
+	 * The table cattle.ip_assocation
+	 */
+	public static final io.cattle.platform.core.model.tables.IpAssocationTable IP_ASSOCATION = io.cattle.platform.core.model.tables.IpAssocationTable.IP_ASSOCATION;
 
 	/**
 	 * The table cattle.network

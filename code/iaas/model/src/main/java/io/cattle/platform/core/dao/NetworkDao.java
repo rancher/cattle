@@ -9,6 +9,8 @@ public interface NetworkDao {
 
     List<? extends NetworkService> getAgentInstanceNetworkService(long instanceId, String serviceKind);
 
+    List<? extends NetworkService> getNetworkService(long instanceId, String serviceKind);
+
     Nic getPrimaryNic(long instanceId);
 
 }
