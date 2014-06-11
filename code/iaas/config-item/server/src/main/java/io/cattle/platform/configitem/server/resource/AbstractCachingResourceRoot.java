@@ -58,6 +58,9 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
                 outputStream.write(additionalRevisionData);
 
             for ( Resource resource : resources ) {
+                byte[] nameBytes = resource.getName().getBytes();
+                outputStream.write(nameBytes, 0, nameBytes.length);
+
                 InputStream is = null;
                 try {
                     is = resource.getInputStream();
