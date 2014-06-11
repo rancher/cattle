@@ -12,7 +12,7 @@ import java.util.TimeZone;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.binary.Base64;
 
 import com.netflix.config.DynamicLongProperty;
 
@@ -42,7 +42,7 @@ public class RegistrationToken {
             Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
             mac.init(signingKey);
 
-            String signature = Hex.encodeHexString(mac.doFinal(prefix.getBytes("UTF-8")));
+            String signature = Base64.encodeBase64String(mac.doFinal(prefix.getBytes("UTF-8"))).replaceAll("[/=+]", "");
 
             return String.format("%s:%s", prefix, signature);
         } catch (InvalidKeyException e) {
