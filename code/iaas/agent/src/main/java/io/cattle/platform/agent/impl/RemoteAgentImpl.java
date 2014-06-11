@@ -7,6 +7,7 @@ import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.RetryCallback;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -92,6 +93,28 @@ public class RemoteAgentImpl implements RemoteAgent {
             };
 
             options.setProgress(newProgress);
+        }
+
+        final RetryCallback retryCallback = options.getRetryCallback();
+
+        if ( retryCallback != null ) {
+            RetryCallback newCallback = new RetryCallback() {
+                @Override
+                public Event beforeRetry(Event event) {
+                    Object data = event.getData();
+
+                    if ( data instanceof Event ) {
+                        data = retryCallback.beforeRetry((Event)data);
+                        EventVO<Object> newEvent = new EventVO<Object>(event);
+                        newEvent.setData(data);
+                        event = newEvent;
+                    }
+
+                    return event;
+                }
+            };
+
+            options.setRetryCallback(newCallback);
         }
 
 
