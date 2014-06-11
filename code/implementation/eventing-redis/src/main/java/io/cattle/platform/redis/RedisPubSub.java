@@ -29,25 +29,25 @@ public class RedisPubSub extends JedisPubSub {
 
     @Override
     public void onSubscribe(String channel, int subscribedChannels) {
-        log.info("Subscribed to channel [{}], total subscriptions [{}]", channel, subscribedChannels);
+        log.debug("Subscribed to channel [{}], total subscriptions [{}]", channel, subscribedChannels);
         connection.onSubscribed(channel);
     }
 
     @Override
     public void onUnsubscribe(String channel, int subscribedChannels) {
-        log.info("Unsubscribed to channel [{}], total subscriptions [{}]", channel, subscribedChannels);
+        log.debug("Unsubscribed to channel [{}], total subscriptions [{}]", channel, subscribedChannels);
         connection.onSubscribed(channel);
     }
 
     @Override
     public void onPUnsubscribe(String pattern, int subscribedChannels) {
-        log.info("Unsubscribed to pattern [{}], total subscriptions [{}]", pattern, subscribedChannels);
+        log.debug("Unsubscribed to pattern [{}], total subscriptions [{}]", pattern, subscribedChannels);
         connection.onSubscribed(pattern);
     }
 
     @Override
     public void onPSubscribe(String pattern, int subscribedChannels) {
-        log.info("Subscribed to pattern [{}], total subscriptions [{}]", pattern, subscribedChannels);
+        log.debug("Subscribed to pattern [{}], total subscriptions [{}]", pattern, subscribedChannels);
         connection.onSubscribed(pattern);
     }
 
