@@ -5,12 +5,38 @@ from urlparse import urlparse
 
 from cattle import Config
 from cattle.utils import reply
-from .util import container_exec, add_to_env
+from .util import add_to_env
 from .compute import DockerCompute
 from cattle.agent.handler import BaseHandler
 from cattle.progress import Progress
+from cattle.type_manager import get_type, MARSHALLER
+
+import requests
 
 log = logging.getLogger('docker')
+
+_SESSION = requests.Session()
+
+
+def container_exec(ip, token, event):
+    marshaller = get_type(MARSHALLER)
+    data = marshaller.to_string(event)
+    url = 'http://{0}:8080/events?token={1}'.format(ip, token)
+
+    r = _SESSION.post(url, data=data, headers={
+        'Content-Type': 'application/json'
+    })
+
+    if r.status_code != 200:
+        return r.status_code, r.text, None
+
+    result = r.json()
+
+    data = result.get('data')
+    if data is not None:
+        data = marshaller.from_string(data)
+
+    return result.get('exitCode'), result.get('output'), data
 
 
 class DockerDelegate(BaseHandler):
@@ -22,7 +48,8 @@ class DockerDelegate(BaseHandler):
         return ['delegate.request']
 
     def delegate_request(self, req=None, event=None, instanceData=None, **kw):
-        if instanceData.kind != 'container':
+        if instanceData.kind != 'container' or\
+                        instanceData.get('token') is None:
             return
 
         container = self.compute.get_container_by_name(instanceData.uuid)
@@ -32,8 +59,9 @@ class DockerDelegate(BaseHandler):
         inspect = self.compute.inspect(container)
 
         try:
-            pid = inspect['State']['Pid']
-            if not os.path.exists('/proc/{0}'.format(pid)):
+            ip = inspect['NetworkSettings']['IPAddress']
+            running = inspect['State']['Running']
+            if not running:
                 log.error('Can not call [%s], container is not running',
                           instanceData.uuid)
                 return
@@ -43,7 +71,7 @@ class DockerDelegate(BaseHandler):
             return
 
         progress = Progress(event, parent=req)
-        exit_code, output, data = container_exec(pid, event)
+        exit_code, output, data = container_exec(ip, instanceData.token, event)
 
         if exit_code == 0:
             return reply(event, data, parent=req)
