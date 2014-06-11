@@ -370,10 +370,22 @@ def log_request(req, log, *args):
     try:
         if 'ping' in req.name:
             debug = True
+    except:
+        pass
+
+    try:
         if 'ping' in req.data.event.name:
             debug = True
+    except:
+        pass
+
+    try:
         if 'ping' in req.previousNames[0]:
             debug = True
+    except:
+        pass
+
+    try:
         if 'ping' in req.data.previousNames[0]:
             debug = True
     except:
