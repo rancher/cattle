@@ -235,12 +235,17 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             docker_ip = inspect['NetworkSettings']['IPAddress']
             if existing.get('Ports') is not None:
                 for port in existing['Ports']:
-                    if 'PrivatePort' in port:
+                    if 'PublicPort' in port and 'PrivatePort' not in port:
+                        # Remove after docker 0.12/1.0 is released
+                        private_port = '{0}/{1}'.format(port['PublicPort'],
+                                                        port['Type'])
+                        docker_ports[private_port] = None
+                    elif 'PublicPort' in port:
                         private_port = '{0}/{1}'.format(port['PrivatePort'],
                                                         port['Type'])
                         docker_ports[private_port] = str(port['PublicPort'])
                     else:
-                        private_port = '{0}/{1}'.format(port['PublicPort'],
+                        private_port = '{0}/{1}'.format(port['PrivatePort'],
                                                         port['Type'])
                         docker_ports[private_port] = None
 
