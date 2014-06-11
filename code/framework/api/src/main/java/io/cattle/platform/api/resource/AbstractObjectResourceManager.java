@@ -305,7 +305,17 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         String schemaId = ApiUtils.getSchemaIdForDisplay(getObjectManager().getSchemaFactory(), obj);
 
         /* Still get schema from request's schemaFactory */
-        return schemaFactory.getSchema(schemaId);
+        Schema schema = schemaFactory.getSchema(schemaId);
+
+        if ( schema == null ) {
+            /* If schema is null, the child may not be authorized, so try again with the
+             * user's schemaFactory
+             */
+            schemaId = ApiUtils.getSchemaIdForDisplay(schemaFactory, obj);
+            return schemaFactory.getSchema(schemaId);
+        } else {
+            return schema;
+        }
     }
 
     @Override
