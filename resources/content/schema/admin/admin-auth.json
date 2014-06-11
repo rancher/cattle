@@ -99,6 +99,8 @@
         "ipAddress.address" : "cr",
         "ipAddress.networkId" : "r",
 
+        "ipAssociation.role" : "cru",
+
         "offering" : "",
 
         "processDefinition" : "r",
