@@ -31,7 +31,8 @@ def create_user(admin_client, user_name):
 
     active_cred = None
     for cred in account.credentials():
-        if cred.publicValue == user_name and cred.secretValue == password:
+        if cred.kind == 'apiKey' and cred.publicValue == user_name \
+                and cred.secretValue == password:
             active_cred = cred
             break
 

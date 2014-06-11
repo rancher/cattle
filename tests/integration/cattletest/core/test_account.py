@@ -19,9 +19,12 @@ def test_account_create(admin_client):
     assert (count+1) == new_count
 
     new_count = len(admin_client.list_credential())
-    assert (cred_count+1) == new_count
+    assert (cred_count+2) == new_count
 
     creds = account.credentials()
+
+    assert len(creds) == 2
+    creds = filter(lambda x: x.kind == 'apiKey', creds)
 
     assert len(creds) == 1
     assert creds[0].state == "active"

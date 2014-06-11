@@ -30,14 +30,14 @@ def test_agent_create(admin_client, sim_context):
     assert (account_count+1) == new_count
 
     new_count = len(client.list_credential())
-    assert (cred_count+1) == new_count
+    assert (cred_count+2) == new_count
 
     account = agent.account()
     assert account.uuid.startswith("agentAccount")
     assert account.state == "active"
     assert account.kind == "agent"
 
-    creds = account.credentials()
+    creds = filter(lambda x: x.kind == 'apiKey', account.credentials())
     assert len(creds) == 1
     assert creds[0].state == "active"
     assert creds[0].publicValue is not None

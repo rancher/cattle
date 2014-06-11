@@ -22,7 +22,7 @@ account = instances[0].agent().account()
 
 found = False
 for cred in account.credentials():
-    if cred.publicValue == 'ai':
+    if cred.kind == 'apiKey' and cred.publicValue == 'ai':
         found = True
 
 if not found:
