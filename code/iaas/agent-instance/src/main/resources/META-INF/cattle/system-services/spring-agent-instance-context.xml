@@ -33,6 +33,7 @@
                 <value>ipsecTunnelService,parent=networkService</value>
                 <value>linkService,parent=networkService</value>
                 <value>portService,parent=networkService</value>
+                <value>metadataService,parent=networkService</value>
             </list>
         </property>
     </bean>
