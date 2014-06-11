@@ -66,7 +66,7 @@ bogus-priv
 <#elseif primaryNetwork.domain?? >
     <#assign domain = primaryNetwork.domain >
 <#else>
-    <#assign domain = defaultDomain >
+    <#assign domain = hostnameGenerator.getDefaultDomain(true) >
 </#if>
 local=/${domain}/
 

@@ -19,12 +19,15 @@ import io.cattle.platform.core.model.ConfigItemStatus;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventProgress;
+import io.cattle.platform.eventing.RetryCallback;
 import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.config.ScopedConfig;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +111,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         triggerUpdate(request, toTrigger);
     }
 
-    protected void triggerUpdate(final ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
+    protected void triggerUpdate(final ConfigUpdateRequest request, final List<ConfigUpdateItem> items) {
         final Event event = getEvent(request, items);
         if ( event == null ) {
             return;
@@ -130,21 +133,34 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     }
 
     protected EventCallOptions defaultOptions(final ConfigUpdateRequest request) {
-        return new EventCallOptions(RETRY.get(), TIMEOUT.get()).withProgress(new EventProgress() {
+        EventCallOptions options = new EventCallOptions(RETRY.get(), TIMEOUT.get()).withProgress(new EventProgress() {
             @Override
             public void progress(Event event) {
                 logResponse(request, event);
             }
         });
+
+        options.withRetryCallback(new RetryCallback() {
+            @Override
+            public Event beforeRetry(Event event) {
+                Event updatedEvent = getEvent(request);
+                EventVO<Object> newEvent = new EventVO<Object>(event);
+                newEvent.setData(updatedEvent.getData());
+                return newEvent;
+            }
+        });
+
+        return options;
     }
 
 
-    protected Event getEvent(ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
+    protected ConfigUpdate getEvent(ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
+        String url = scopedConfig.getConfigUrl(Agent.class, request.getAgentId());
+
         if ( items.size() == 0 ) {
-            return null;
+            return new ConfigUpdate(url, Collections.<ConfigUpdateItem>emptyList());
         }
 
-        String url = scopedConfig.getConfigUrl(Agent.class, request.getAgentId());
         ConfigUpdate event = new ConfigUpdate(url, items);
 
         event.withResourceType(objectManager.getType(Agent.class))
@@ -153,16 +169,16 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         return event;
     }
 
-    protected Event getEvent(ConfigUpdateRequest request) {
+    protected ConfigUpdate getEvent(ConfigUpdateRequest request) {
         List<ConfigUpdateItem> toTrigger = getNeedsUpdating(request, !request.isMigration());
         return getEvent(request, toTrigger);
     }
 
     @Override
     public ListenableFuture<?> whenReady(final ConfigUpdateRequest request) {
-        Event event = getEvent(request);
+        ConfigUpdate event = getEvent(request);
 
-        if ( event == null ) {
+        if ( event.getData().getItems().size() == 0 ) {
             return AsyncUtils.done();
         }
 

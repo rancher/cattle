@@ -14,11 +14,11 @@ while read DEV MAC IP; do
     fi
 done < interfaces
 
-get_config services
+get_config --force services
 
 for i in $(cat ${CATTLE_HOME}/services | grep -vE '^(services|agent-instance-startup|configscripts)$'); do
     info Getting $i
-    get_config $i
+    get_config --force $i
 done
 
 if [ -e /dev/shm ]; then

@@ -20,6 +20,12 @@
 # ICMP
 -A INPUT -i ${primaryNic} -p icmp -j ACCEPT
 
+# loopback
+-A INPUT -i lo -j ACCEPT
+
+# Node Services
+-A INPUT -p tcp --dport 8080 -j ACCEPT
+
 COMMIT
 
 *nat

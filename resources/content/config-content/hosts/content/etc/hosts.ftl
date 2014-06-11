@@ -8,9 +8,9 @@
             <#assign domain = client.defaultDomain >
         </#if>
         <#if client.instanceId == instance.id >
-127.0.0.1 ${hostname!"i-${client.macAddress?replace(\":\",\"-\")}"} ${hostname!"i-${client.macAddress?replace(\":\",\"-\")}"}.${domain}
+127.0.0.1 ${hostname!"i-${client.macAddress?replace(\":\",\"-\")}"} ${client.fqdn}
         <#else>
-${client.ipAddress} ${hostname!"i-${client.macAddress?replace(\":\",\"-\")}"} ${hostname!"i-${client.macAddress?replace(\":\",\"-\")}"}.${domain} localhost localhost.localdomain
+${client.ipAddress} ${hostname!"i-${client.macAddress?replace(\":\",\"-\")}"} ${client.fqdn} localhost localhost.localdomain
         </#if>
     </#if>
 </#list>

@@ -70,16 +70,44 @@ get_config()
     ${CATTLE_HOME}/config.sh "$@"
 }
 
+reload_monit()
+{
+    local monit=$(pidof monit || true)
+    if [ -n "$monit" ]; then
+        info Reloading monit
+        kill -HUP $monit
+    fi
+}
+
 stage_files()
 {
+    local monit=false
+
     if [ -d content-home ]; then
         find content-home -name "*.sh" -exec chmod +x {} \;
         tar cf - -C content-home . | tar xvf - --no-overwrite-dir -C $CATTLE_HOME | xargs -I{} echo 'INFO: HOME ->' {}
     fi
 
     if [ -d content ]; then
+        for i in content/etc/init.d/*; do
+            if [ -f $i ]; then
+                chmod +x $i
+            fi
+        done
+
+        for i in content/etc/monit/conf.d/*; do
+            if [ -f $i ]; then
+                monit=true
+                chmod 600 $i
+            fi
+        done
+                                
         find content -name "*.sh" -exec chmod +x {} \;
         tar cf - -C content . | tar xvf - --no-overwrite-dir -C / | xargs -I{} echo 'INFO: ROOT ->' {}
+    fi
+
+    if [ "$monit" = "true" ]; then
+        reload_monit
     fi
 }
 

@@ -18,6 +18,7 @@ import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
 import io.cattle.platform.configitem.context.data.HostPortForwardData;
 import io.cattle.platform.configitem.context.data.HostRouteData;
 import io.cattle.platform.configitem.context.data.InstanceLinkData;
+import io.cattle.platform.configitem.context.data.NetworkClientData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
@@ -53,15 +54,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.jooq.impl.DSL;
-
 public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDao {
 
     NetworkDao networkDao;
     JsonMapper jsonMapper;
 
     @Override
-    public List<?> networkClients(Instance instance) {
+    public List<NetworkClientData> networkClients(Instance instance) {
         NicTable instanceNic = NIC.as("instance_nic");
         NicTable clientNic = NIC.as("client_nic");
 
@@ -76,8 +75,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                         INSTANCE.UUID.as("instanceUuid"),
                         IP_ADDRESS.ADDRESS.as("ipAddress"),
                         NETWORK.DOMAIN.as("networkDomain"),
-                        SUBNET.GATEWAY.as("gateway"),
-                        DSL.val(DEFAULT_DOMAIN.get()).as("defaultDomain")
+                        SUBNET.GATEWAY.as("gateway")
                 )
                 .from(instanceNic)
                 .join(NETWORK)
@@ -99,7 +97,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                         .and(INSTANCE.REMOVED.isNull())
                         .and(clientNic.REMOVED.isNull())
                         .and(instanceNic.REMOVED.isNull()))
-                .fetchMaps();
+                .fetchInto(NetworkClientData.class);
     }
 
     @Override

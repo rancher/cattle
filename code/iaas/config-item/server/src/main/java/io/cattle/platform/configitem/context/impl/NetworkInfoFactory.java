@@ -1,6 +1,5 @@
 package io.cattle.platform.configitem.context.impl;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
 import io.cattle.platform.configitem.context.data.NetworkServiceInfo;
 import io.cattle.platform.configitem.server.model.ConfigItem;
@@ -22,18 +21,15 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.netflix.config.DynamicStringListProperty;
-
 @Named
 public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
-
-    public static final DynamicStringListProperty ITEMS = ArchaiusUtil.getList("item.context.network.info.items");
 
     NetworkInfoDao networkInfo;
     IpAddressDao ipAddressDao;
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+        context.getData().put("hostnameGenerator", new HostnameGenerator());
         context.getData().put("networkClients", networkInfo.networkClients(instance));
         context.getData().put("instance", instance);
         context.getData().put("agent", agent);
@@ -84,7 +80,6 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
         context.getData().put("services", servicesMap);
         context.getData().put("serviceSet", serviceSet);
         context.getData().put("primaryNetwork", primaryNetwork);
-        context.getData().put("defaultDomain", NetworkInfoDao.DEFAULT_DOMAIN.get());
     }
 
     public NetworkInfoDao getNetworkInfo() {
