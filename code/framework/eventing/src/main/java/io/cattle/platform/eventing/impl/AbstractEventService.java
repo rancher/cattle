@@ -7,6 +7,7 @@ import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventListener;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.RetryCallback;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -275,6 +276,7 @@ public abstract class AbstractEventService implements EventService {
         final long start = System.currentTimeMillis();
         Integer retries = options.getRetry();
         Long timeoutMillis = options.getTimeoutMillis();
+        final RetryCallback retryCallback = options.getRetryCallback();
 
         if ( event.getTimeoutMillis() != null ) {
             timeoutMillis = event.getTimeoutMillis();
@@ -304,7 +306,17 @@ public abstract class AbstractEventService implements EventService {
         Retry retry = new Retry(retries, timeoutMillis, future, new Runnable() {
             @Override
             public void run() {
-                publish(request, true);
+                Event requestToSend = null;
+                if ( retryCallback == null ) {
+                    requestToSend = request;
+                } else {
+                    requestToSend = retryCallback.beforeRetry(request);
+                    if ( requestToSend == null ) {
+                        requestToSend = request;
+                    }
+                }
+
+                publish(requestToSend, true);
             }
         });
 

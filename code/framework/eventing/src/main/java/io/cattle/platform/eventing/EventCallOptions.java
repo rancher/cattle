@@ -5,6 +5,7 @@ public class EventCallOptions {
     Integer retry;
     Long timeoutMillis;
     EventProgress progress;
+    RetryCallback retryCallback;
 
     public EventCallOptions() {
     }
@@ -14,6 +15,7 @@ public class EventCallOptions {
         this.retry = other.getRetry();
         this.timeoutMillis = other.getTimeoutMillis();
         this.progress = other.getProgress();
+        this.retryCallback = other.getRetryCallback();
     }
 
     public EventCallOptions(Integer retry, Long timeoutMillis) {
@@ -58,6 +60,19 @@ public class EventCallOptions {
 
     public EventCallOptions withProgress(EventProgress progress) {
         this.progress = progress;
+        return this;
+    }
+
+    public RetryCallback getRetryCallback() {
+        return retryCallback;
+    }
+
+    public void setRetryCallback(RetryCallback retryCallback) {
+        this.retryCallback = retryCallback;
+    }
+
+    public EventCallOptions withRetryCallback(RetryCallback retryCallback) {
+        this.retryCallback = retryCallback;
         return this;
     }
 
