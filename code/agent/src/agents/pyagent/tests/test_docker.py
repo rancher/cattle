@@ -117,7 +117,7 @@ def test_instance_activate_ports(agent, responses):
         del fields['dockerIp']
 
         assert len(docker_container['Ports']) == 1
-        assert docker_container['Ports'][0]['PublicPort'] == 8080
+        assert docker_container['Ports'][0]['PrivatePort'] == 8080
         assert docker_container['Ports'][0]['Type'] == 'tcp'
 
     event_test(agent, 'docker/instance_activate_ports', post_func=post)

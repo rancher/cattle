@@ -17,7 +17,7 @@
                     "Ports": [
                         {
                             "Type": "tcp",
-                            "PublicPort": 8080
+                            "PrivatePort": 8080
                         }
                     ]
                 }
