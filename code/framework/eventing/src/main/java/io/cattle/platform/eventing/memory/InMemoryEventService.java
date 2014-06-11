@@ -36,13 +36,13 @@ public class InMemoryEventService extends AbstractThreadPoolingEventService {
 
     @Override
     protected void doSubscribe(String eventName, SettableFuture<?> future) {
-        log.info("Subscribing to [{}]", eventName);
+        log.debug("Subscribing to [{}]", eventName);
         future.set(null);
     }
 
     @Override
     protected void doUnsubscribe(String eventName) {
-        log.info("Unsubscribing from [{}]", eventName);
+        log.debug("Unsubscribing from [{}]", eventName);
     }
 
     @Override
