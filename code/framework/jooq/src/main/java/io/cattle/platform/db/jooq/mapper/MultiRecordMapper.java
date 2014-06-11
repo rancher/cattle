@@ -12,11 +12,11 @@ import org.jooq.Table;
 
 public abstract class MultiRecordMapper<T> implements RecordMapper<Record, T> {
 
-    List<Table<?>> tables = new ArrayList<Table<?>>();
-    List<Class<? extends Record>> classes = new ArrayList<Class<? extends Record>>();
-    Map<String,Target> targets = new HashMap<String, MultiRecordMapper.Target>();
-    List<Field<?>> fields = new ArrayList<Field<?>>();
-    int count = 0;
+    protected List<Table<?>> tables = new ArrayList<Table<?>>();
+    protected List<Class<? extends Record>> classes = new ArrayList<Class<? extends Record>>();
+    protected Map<String,Target> targets = new HashMap<String, MultiRecordMapper.Target>();
+    protected List<Field<?>> fields = new ArrayList<Field<?>>();
+    protected int count = 0;
 
     @SuppressWarnings({ "unchecked", "hiding" })
     public <T extends Table<?>> T add(T input) {
