@@ -18,6 +18,7 @@ code/packaging/app/db-*
 dist
 docs/build
 MANIFEST
+node_modules
 resources/content/db/mysql/cattle_dump*.sql
 resources/content/db/dump-*.xml
 resources/content/cattle-local.properties

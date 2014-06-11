@@ -1,0 +1,3 @@
+ check process cattle-node with pidfile /var/run/cattle-node.pid
+   start program = "/etc/init.d/cattle-node start"
+   stop  program = "/etc/init.d/cattle-node stop"

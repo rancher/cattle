@@ -33,12 +33,23 @@
                         <version>1.2.1</version>
                         <executions>
                             <execution>
+                                <id>pyagent-generate-sources</id>
                                 <phase>generate-sources</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
                                     <executable>${basedir}/src/agents/pyagent/package.sh</executable>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>node-generate-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${basedir}/src/agents/node-services/package.sh</executable>
                                 </configuration>
                             </execution>
                         </executions>
