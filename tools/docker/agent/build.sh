@@ -1,5 +1,7 @@
 #!/bin/bash
 
+TAG=${TAG:-latest}
+
 cd $(dirname $0)
 
 if [ ! -e nsenter ]; then
@@ -15,4 +17,4 @@ if [ ! -e nsenter ]; then
     fi
 fi
 
-docker build -t cattle/agent .
+docker build -t cattle/agent:${TAG} .

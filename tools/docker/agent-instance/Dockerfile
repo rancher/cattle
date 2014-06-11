@@ -7,10 +7,12 @@ RUN apt-get update && apt-get install -y \
     dnsmasq \
     iptables \
     monit \
+    nodejs \
     psmisc \
     uuid-runtime \
     vim-tiny && \
     rm -rf /var/lib/apt/lists
+RUN ln -s /usr/bin/nodejs /usr/bin/node
 ADD startup.sh /etc/init.d/agent-instance-startup
 CMD ["/etc/init.d/agent-instance-startup", "init"]
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y racoon

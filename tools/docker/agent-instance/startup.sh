@@ -66,7 +66,7 @@ download_agent()
     info Downloading agent "${CATTLE_CONFIG_URL}${CONTENT_URL}"
     call_curl --retry 5 ${CATTLE_CONFIG_URL}${CONTENT_URL} > $TEMP_DOWNLOAD/content
     tar xzf $TEMP_DOWNLOAD/content -C $TEMP_DOWNLOAD
-    bash $TEMP_DOWNLOAD/*/config.sh $INSTALL_ITEMS
+    bash $TEMP_DOWNLOAD/*/config.sh --force $INSTALL_ITEMS
 }
 
 setup_config_url()
@@ -99,6 +99,7 @@ start()
 if [ "$1" = "start" ]; then
     start
 elif [ "$1" = "init" ]; then
+    export -p > /.dockerenv-save
     touch /etc/agent-instance
     echo '::sysinit:bash /etc/init.d/agent-instance-startup start' > /etc/inittab
     if [ ! -e /init ]; then
