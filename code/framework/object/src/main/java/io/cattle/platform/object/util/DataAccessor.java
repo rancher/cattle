@@ -4,6 +4,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.UnmodifiableMap;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +43,21 @@ public class DataAccessor {
 
     public static String fieldString(Object obj, String key) {
         return fields(obj).withKey(key).as(String.class);
+    }
+
+    public static List<String> fieldStringList(Object obj, String key) {
+        List<String> result = new ArrayList<String>();
+        Object list = fields(obj).withKey(key).get();
+
+        if ( list == null || !(list instanceof List) ) {
+            return result;
+        }
+
+        for ( Object item : (List<?>)list ) {
+            result.add(org.apache.commons.lang3.ObjectUtils.toString(item, null));
+        }
+
+        return result;
     }
 
     public static Long fieldLong(Object obj, String key) {
