@@ -8,6 +8,7 @@ public class NetworkServiceConstants {
     public static final String KIND_METADATA = "metadataService";
     public static final String KIND_IPSEC_TUNNEL = "ipsecTunnelService";
     public static final String KIND_PORT_SERVICE = "portService";
+    public static final String KIND_HOST_NAT_GATEWAY_SERVICE = "hostNatGatewayService";
 
     public static final String FIELD_PRIVATE_LINK = "privateLinks";
 
