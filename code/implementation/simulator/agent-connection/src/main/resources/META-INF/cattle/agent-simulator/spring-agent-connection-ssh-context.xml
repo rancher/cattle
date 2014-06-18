@@ -17,6 +17,7 @@
     <extension:discover class="io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor"/>
 
     <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorConfigUpdateProcessor" />
+    <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorConsoleProcessor" />
     <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorDelegateProcessor" />
     <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorFailedProcessor" />
     <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorPingProcessor" />
