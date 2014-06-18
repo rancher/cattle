@@ -11,7 +11,9 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.Subnet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,15 +32,17 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         context.getData().put("hostnameGenerator", new HostnameGenerator());
-        context.getData().put("networkClients", networkInfo.networkClients(instance));
         context.getData().put("instance", instance);
         context.getData().put("agent", agent);
 
         List<? extends NetworkService> services = networkInfo.networkServices(instance);
         Map<String,NetworkServiceInfo> servicesMap = new HashMap<String, NetworkServiceInfo>();
+        Map<String,Subnet> subnetMap = new HashMap<String, Subnet>();
+        List<Nic> nics = new ArrayList<Nic>();
+        List<Subnet> subnets = new ArrayList<Subnet>();
         Set<String> serviceSet = new HashSet<String>();
 
-        List<Nic> nics = objectManager.children(instance, Nic.class);
+        Map<Nic, Subnet> nicToSubnet = networkInfo.getNicsAndSubnet(instance);
         Network primaryNetwork = null;
         Map<Long,Network> networks = networkInfo.networks(instance);
         Map<String,IpAddress> ipAddresses = new HashMap<String, IpAddress>();
@@ -52,7 +56,17 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
                 servicesMap.put(service.getKind(), info);
             }
 
-            for ( Nic nic : nics ) {
+            for ( Map.Entry<Nic,Subnet> entry : nicToSubnet.entrySet() ) {
+                Nic nic = entry.getKey();
+                Subnet subnet = entry.getValue();
+
+                if ( subnetMap.put(nic.getId().toString(), subnet) == null ) {
+                    nics.add(nic);
+                    if ( subnet != null ) {
+                        subnets.add(subnet);
+                    }
+                }
+
                 if ( ! ipAddresses.containsKey(nic.getUuid()) ) {
                     ipAddresses.put(nic.getUuid(), ipAddressDao.getPrimaryIpAddress(nic));
                 }
@@ -65,6 +79,7 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
                     if ( ! info.getNicIds().contains(nic.getId()) ) {
                         info.getNicIds().add(nic.getId());
                         info.getNics().add(nic);
+                        info.getNicNames().add("eth" + nic.getDeviceNumber());
                     }
                 }
             }
@@ -76,6 +91,8 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
         }
 
         context.getData().put("nics", nics);
+        context.getData().put("nicToSubnet", subnetMap);
+        context.getData().put("subnets", subnets);
         context.getData().put("primaryIpAddresses", ipAddresses);
         context.getData().put("services", servicesMap);
         context.getData().put("serviceSet", serviceSet);

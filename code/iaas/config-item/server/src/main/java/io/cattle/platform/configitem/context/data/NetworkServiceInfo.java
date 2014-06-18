@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class NetworkServiceInfo {
 
@@ -15,6 +16,7 @@ public class NetworkServiceInfo {
     NetworkService service;
     List<Nic> nics = new ArrayList<Nic>();
     Set<Long> nicIds = new HashSet<Long>();
+    Set<String> nicNames = new TreeSet<String>();
     List<Network> networks = new ArrayList<Network>();
     Set<Long> networkIds = new HashSet<Long>();
 
@@ -70,6 +72,14 @@ public class NetworkServiceInfo {
 
     public void setService(NetworkService service) {
         this.service = service;
+    }
+
+    public Set<String> getNicNames() {
+        return nicNames;
+    }
+
+    public void setNicNames(Set<String> nicNames) {
+        this.nicNames = nicNames;
     }
 
 }

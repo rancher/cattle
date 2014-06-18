@@ -2,21 +2,27 @@ package io.cattle.platform.configitem.context.dao.impl;
 
 import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.IpAssocationTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.configitem.context.dao.MetadataDao;
 import io.cattle.platform.configitem.context.data.MetadataEntry;
+import io.cattle.platform.configitem.context.data.MetadataRedirectData;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.Offering;
@@ -83,41 +89,39 @@ public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
 
         return create()
             .select(mapper.fields())
-            .from(NIC)
+            .from(nic)
             .join(instance)
-                .on(NIC.INSTANCE_ID.eq(instance.ID))
-            .join(nic)
-                .on(instance.ID.eq(nic.ID))
+                .on(nic.INSTANCE_ID.eq(instance.ID))
             .join(network)
-                .on(network.ID.eq(nic.ID))
-            .join(volume)
-                .on(volume.INSTANCE_ID.eq(instance.ID))
+                .on(network.ID.eq(nic.NETWORK_ID))
+            .leftOuterJoin(volume)
+                .on(volume.INSTANCE_ID.eq(instance.ID)
+                    .and(volume.REMOVED.isNull()))
             .leftOuterJoin(CREDENTIAL_INSTANCE_MAP)
-                .on(CREDENTIAL_INSTANCE_MAP.INSTANCE_ID.eq(instance.ID))
+                .on(CREDENTIAL_INSTANCE_MAP.INSTANCE_ID.eq(instance.ID)
+                        .and(CREDENTIAL_INSTANCE_MAP.REMOVED.isNull()))
             .leftOuterJoin(credential)
-                .on(CREDENTIAL_INSTANCE_MAP.CREDENTIAL_ID.eq(credential.ID))
-            .leftOuterJoin(IP_ADDRESS_NIC_MAP)
-                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
-            .leftOuterJoin(primaryIp)
-                .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(primaryIp.ID))
+                .on(CREDENTIAL_INSTANCE_MAP.CREDENTIAL_ID.eq(credential.ID)
+                    .and(credential.REMOVED.isNull())
+                    .and(credential.KIND.eq(CredentialConstants.KIND_SSH_KEY)))
+            .join(IP_ADDRESS_NIC_MAP)
+                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID)
+                    .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull()))
+            .join(primaryIp)
+                .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(primaryIp.ID)
+                    .and(primaryIp.ROLE.in(IpAddressConstants.ROLE_PRIMARY, IpAddressConstants.ROLE_SECONDARY))
+                    .and(primaryIp.REMOVED.isNull()))
             .leftOuterJoin(subnet)
                 .on(primaryIp.SUBNET_ID.eq(subnet.ID))
             .leftOuterJoin(IP_ASSOCATION)
-                .on(IP_ASSOCATION.CHILD_IP_ADDRESS_ID.eq(primaryIp.ID))
+                .on(IP_ASSOCATION.CHILD_IP_ADDRESS_ID.eq(primaryIp.ID)
+                    .and(IP_ASSOCATION.REMOVED.isNull()))
             .leftOuterJoin(publicIp)
-                .on(IP_ASSOCATION.IP_ADDRESS_ID.eq(publicIp.ID))
-            .where(NIC.VNET_ID.eq(vnet.getId())
-                    .and(primaryIp.ROLE.in(IpAddressConstants.ROLE_PRIMARY, IpAddressConstants.ROLE_SECONDARY))
+                .on(IP_ASSOCATION.IP_ADDRESS_ID.eq(publicIp.ID)
                     .and(publicIp.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
-                    .and(nic.REMOVED.isNull())
-                    .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
-                    .and(IP_ASSOCATION.REMOVED.isNull())
-                    .and(CREDENTIAL_INSTANCE_MAP.REMOVED.isNull())
-                    .and(credential.REMOVED.isNull())
-                    .and(credential.KIND.eq(CredentialConstants.KIND_SSH_KEY))
-                    .and(publicIp.REMOVED.isNull())
-                    .and(volume.REMOVED.isNull())
-                    .and(primaryIp.REMOVED.isNull()))
+                    .and(publicIp.REMOVED.isNull()))
+            .where(nic.VNET_ID.eq(vnet.getId())
+                    .and(nic.REMOVED.isNull()))
             .fetch().map(mapper);
     }
 
@@ -131,6 +135,45 @@ public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
     public Zone getZone(Instance instance) {
         //TODO Add caching
         return objectManager.loadResource(Zone.class, instance.getZoneId());
+    }
+
+    @Override
+    public List<MetadataRedirectData> getMetadataRedirects(Agent agent) {
+        AggregateMultiRecordMapper<MetadataRedirectData> mapper =
+                new AggregateMultiRecordMapper<MetadataRedirectData>(MetadataRedirectData.class);
+
+        SubnetTable subnet = mapper.add(SUBNET);
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
+
+        return create()
+                .select(mapper.fields())
+                .from(HOST)
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                .join(INSTANCE)
+                    .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP)
+                    .on(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .join(NETWORK_SERVICE)
+                    .on(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID.eq(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID))
+                .join(NIC)
+                    .on(NIC.INSTANCE_ID.eq(INSTANCE.ID))
+                .join(IP_ADDRESS_NIC_MAP)
+                    .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
+                .join(ipAddress)
+                    .on(ipAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
+                .join(subnet)
+                    .on(subnet.ID.eq(ipAddress.SUBNET_ID))
+                .where(HOST.AGENT_ID.eq(agent.getId())
+                        .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                        .and(NETWORK_SERVICE.KIND.eq(NetworkServiceConstants.KIND_METADATA))
+                        .and(HOST.REMOVED.isNull())
+                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                        .and(NIC.REMOVED.isNull())
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
+                        .and(subnet.REMOVED.isNull()))
+                .fetch().map(mapper);
     }
 
     public ObjectManager getObjectManager() {

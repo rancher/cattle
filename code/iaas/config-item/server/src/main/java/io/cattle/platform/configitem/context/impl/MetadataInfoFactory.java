@@ -54,8 +54,6 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
         Map<Long,Map<String,Object>> instanceMetadatas = new HashMap<Long, Map<String,Object>>();
         Map<Long,String> userData = new HashMap<Long, String>();
 
-        int credCount = 0;
-
         for ( MetadataEntry entry : metadataDao.getMetaData(agentInstance) ) {
             Instance instance = entry.getInstance();
             Nic nic = entry.getNic();
@@ -74,7 +72,7 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
             }
 
 
-            populateCredential(instanceMetadata, credential, credCount++);
+            populateCredential(instanceMetadata, credential);
             populateNic(instanceMetadata, nic, network);
             populateIps(primaryIps, instanceMetadata, instance, nic, network, subnet, localIp, publicIp);
             populateVolume(instanceMetadata, instance, volume);
@@ -90,7 +88,7 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
             fullData.put("meta-data", entry.getValue());
             fullData.put("user-data", userData.get(entry.getKey()));
 
-            metadata.put(primaryIps.get(primaryIps.get(entry.getKey())), fullData);
+            metadata.put(primaryIps.get(entry.getKey()), fullData);
         }
 
         try {
@@ -102,6 +100,10 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
     }
 
     protected void populateVolume(Map<String, Object> instanceMetadata, Instance instance, Volume volume) {
+        if ( volume == null ) {
+            return;
+        }
+
         Integer deviceNumber = volume.getDeviceNumber();
 
         if ( deviceNumber == null ) {
@@ -111,8 +113,8 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
         char index = (char)('a' + deviceNumber.intValue());
 
         if ( deviceNumber == 0 ) {
-            set(instanceMetadata, String.format("/dev/sd%s",index), "block-device-mapping", "ami");
-            set(instanceMetadata, String.format("/dev/sd%s1"), "block-device-mapping", "root");
+            set(instanceMetadata, String.format("/dev/sd%s", index), "block-device-mapping", "ami");
+            set(instanceMetadata, String.format("/dev/sd%s1", index), "block-device-mapping", "root");
         } else {
             set(instanceMetadata, "sd" + index, "block-device-mapping", "ebs" + (deviceNumber+1));
         }
@@ -131,7 +133,7 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
 
         if ( firstNic && primaryIp ) {
             instanceMetadata.put("hostname", localHostname);
-            primaryIps.put(instance.getId(), localIp.getName());
+            primaryIps.put(instance.getId(), localIp.getAddress());
         }
 
         @SuppressWarnings("unchecked")
@@ -165,6 +167,10 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
             nicData.put("subnet-id", formatId(subnet));
             nicData.put("subnet-ipv4-cidr-block",
                     String.format("%s/%d", subnet.getNetworkAddress(), subnet.getCidrSize()));
+            if ( nicData.containsKey("vpc-id") && nicData.get("vpc-ipv4-cidr-block") == null ) {
+                nicData.put("vpc-ipv4-cidr-block",
+                        String.format("%s/%d", subnet.getNetworkAddress(), subnet.getCidrSize()));
+            }
         }
 
         //TODO don't have a security group concept yet
@@ -196,7 +202,20 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
         }
     }
 
-    protected void populateCredential(Map<String, Object> instanceMetadata, Credential credential, int count) {
+    protected void populateCredential(Map<String, Object> instanceMetadata, Credential credential) {
+        if ( credential == null ) {
+            return;
+        }
+
+        int count = 0;
+
+        @SuppressWarnings("unchecked")
+        Map<String,Object> creds = (Map<String, Object>)get(instanceMetadata, "public-keys");
+
+        if ( creds != null ) {
+            count = creds.size();
+        }
+
         String name = credential.getName();
 
         if ( name == null ) {
@@ -212,7 +231,7 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
         data.put("ami-id", formatId(Image.class, instance.getImageId()));
         data.put("ami-manifest-path", "(unknown)");
         data.put("instance-action", "none");
-        data.put("instance-id", formatId(instance));
+        data.put("instance-id", "i-" + formatId(instance));
         data.put("instance-type", getInstanceType(instance));
         data.put("kernel-id", formatId(instance));
         set(data, getZone(instance), "placement", "availability-zone");
@@ -221,7 +240,7 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
         data.put("profile", "default-paravirtual");
 
         //TODO don't have a concept of reservations or launch index yet
-        data.put("ami-launch-index", 0);
+        data.put("ami-launch-index", "0");
         data.put("reservation-id", formatId(instance));
 
         return data;
@@ -243,9 +262,6 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
         } else {
             return;
         }
-
-        data = new HashMap<String, Object>();
-        set(instanceData, data, "network", "interfaces", mac);
 
         data.put("device-number", deviceNumber);
         data.put("mac", nic.getMacAddress());
@@ -286,18 +302,19 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
         }
 
         Long mem = instance.getMemoryMb();
+        if ( mem == null ) {
+            mem = 64L;
+        }
         Long cpu = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_VCPU);
         if ( cpu == null ) {
             cpu = 1L;
         }
 
         StringBuilder buffer = new StringBuilder();
-        if ( mem != null ) {
-            if ( mem < 1024 ) {
-                buffer.append(mem).append("mb-");
-            } else {
-                buffer.append(mem.floatValue()/1024).append("gb-");
-            }
+        if ( mem < 1024 ) {
+            buffer.append(mem).append("mb-");
+        } else {
+            buffer.append(mem.floatValue()/1024).append("gb-");
         }
 
         buffer.append(cpu).append("cpu");

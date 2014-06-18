@@ -15,6 +15,7 @@ public class IaasEvents {
     public static final String AGENT_QUALIFIER = "agent";
     public static final String AGENT_GROUP_QUALIFIER = "agent.group";
 
+    public static final String CONSOLE_ACCESS = "console.access";
 
     public static final String ACCOUNT_SUFFIX = FrameworkEvents.EVENT_SEP + ACCOUNT_QUALIFIER + "=";
     public static final String AGENT_SUFFIX = FrameworkEvents.EVENT_SEP + AGENT_QUALIFIER + "=";

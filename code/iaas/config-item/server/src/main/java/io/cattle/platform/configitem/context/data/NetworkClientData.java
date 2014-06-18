@@ -52,6 +52,10 @@ public class NetworkClientData {
     }
 
     public String getHostname() {
+        if ( hostname == null ) {
+            return HostnameGenerator.lookupHostname(true, hostname, ipAddress);
+        }
+
         return hostname;
     }
 

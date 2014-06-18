@@ -39,28 +39,38 @@ public class HostnameGenerator {
         return lookup(local, instance.getHostname(), instance.getDomain(), address, network.getDomain());
     }
 
-    public static String lookup(boolean local, String instanceHostname, String instanceDomain, String address, String networkDomain) {
+    public static String lookupHostname(boolean local, String instanceHostname, String address) {
         String hostname = local ? instanceHostname : null;
-        String domain = local ? instanceDomain : null;
-        if ( domain == null && local ) {
-            domain = networkDomain;
-        }
 
         String prefix = getDefaultPrefix(local);
-
-        if ( domain == null ) {
-            domain = getDefaultDomain(local);
-        }
 
         if ( hostname == null ) {
             if ( address == null ) {
                 return null;
             }
 
-            return String.format("%s%s.%s", prefix, address.replaceAll("[.]", "-"), domain);
+            return String.format("%s%s", prefix, address.replaceAll("[.]", "-"));
         } else {
-            return String.format("%s.%s", hostname, domain);
+            return hostname;
         }
+    }
+
+    public static String lookup(boolean local, String instanceHostname, String instanceDomain, String address, String networkDomain) {
+        String hostname = lookupHostname(local, instanceHostname, address);
+        if ( hostname == null ) {
+            return null;
+        }
+
+        String domain = local ? instanceDomain : null;
+        if ( domain == null && local ) {
+            domain = networkDomain;
+        }
+
+        if ( domain == null ) {
+            domain = getDefaultDomain(local);
+        }
+
+        return String.format("%s.%s", hostname, domain);
     }
 
 }

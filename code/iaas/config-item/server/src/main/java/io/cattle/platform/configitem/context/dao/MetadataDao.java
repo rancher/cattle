@@ -1,6 +1,8 @@
 package io.cattle.platform.configitem.context.dao;
 
 import io.cattle.platform.configitem.context.data.MetadataEntry;
+import io.cattle.platform.configitem.context.data.MetadataRedirectData;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Offering;
 import io.cattle.platform.core.model.Zone;
@@ -14,5 +16,7 @@ public interface MetadataDao {
     Offering getInstanceOffering(Instance instance);
 
     Zone getZone(Instance instance);
+
+    List<MetadataRedirectData> getMetadataRedirects(Agent agent);
 
 }

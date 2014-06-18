@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
+import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.model.Agent;
@@ -24,7 +25,15 @@ public class IpsecHostsInfoFactory extends AbstractAgentBaseContextFactory {
 
         if ( hosts.size() > 0 ) {
             context.getData().put("currentHost", hosts.get(0));
-            context.getData().put("ipsecClients", networkInfoDao.getIpsecTunnelClient(instance));
+            List<ClientIpsecTunnelInfo> clients = networkInfoDao.getIpsecTunnelClient(instance);
+
+            for ( ClientIpsecTunnelInfo client : clients ) {
+                if ( client.getInstance().getId().equals(instance.getId()) ) {
+                    context.getData().put("agentInstanceClient", client);
+                }
+            }
+
+            context.getData().put("ipsecClients", clients);
         } else {
             context.getData().put("ipsecClients", Collections.emptyList());
         }
