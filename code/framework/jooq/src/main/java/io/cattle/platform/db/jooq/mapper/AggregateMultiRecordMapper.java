@@ -4,6 +4,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+
 public class AggregateMultiRecordMapper<T> extends MultiRecordMapper<T> {
 
     Class<T> resultType;
@@ -19,10 +21,8 @@ public class AggregateMultiRecordMapper<T> extends MultiRecordMapper<T> {
     protected T map(List<Object> input) {
         if ( ctor == null ) {
             try {
-                ctor = resultType.getConstructor(classes.toArray(new Class<?>[classes.size()]));
+                ctor = ConstructorUtils.getMatchingAccessibleConstructor(resultType, classes.toArray(new Class<?>[classes.size()]));
             } catch (SecurityException e) {
-                throw new IllegalArgumentException("Failed to find constructor", e);
-            } catch (NoSuchMethodException e) {
                 throw new IllegalArgumentException("Failed to find constructor", e);
             }
         }

@@ -52,17 +52,26 @@ public abstract class MultiRecordMapper<T> implements RecordMapper<Record, T> {
                 continue;
             }
 
-            maps.get(target.index).put(target.fieldName, entry.getValue());
+            Map<String,Object> map = maps.get(target.index);
+            Object value = entry.getValue();
+            if ( value != null ) {
+                map.put(target.fieldName, value);
+            }
         }
 
         List<Object> result = new ArrayList<Object>();
 
         for ( int i = 0 ; i < maps.size() ; i++ ) {
             try {
-                Record resultRecord = classes.get(i).newInstance();
-                resultRecord.fromMap(maps.get(i));
-                resultRecord.changed(false);
-                result.add(resultRecord);
+                Map<String,Object> map = maps.get(i);
+                if ( map.size() > 0 ) {
+                    Record resultRecord = classes.get(i).newInstance();
+                    resultRecord.fromMap(map);
+                    resultRecord.changed(false);
+                    result.add(resultRecord);
+                } else {
+                    result.add(null);
+                }
             } catch (InstantiationException e) {
                 throw new IllegalStateException(e);
             } catch (IllegalAccessException e) {
