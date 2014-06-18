@@ -24,6 +24,8 @@
                 <value>apiKey,parent=credential</value>
                 <value>sshKey,parent=credential</value>
                 <value>instanceStop</value>
+                <value>instanceConsole</value>
+                <value>instanceConsoleInput</value>
             </set>
         </property>
     </bean>

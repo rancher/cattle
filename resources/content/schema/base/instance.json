@@ -56,6 +56,14 @@
         }
     },
     "resourceActions" : {
+        "console" : {
+            "input" : "instanceConsoleInput",
+            "output" : "instanceConsole",
+            "attributes" : {
+                "capability" : "console",
+                "state" : "running"
+            }
+        },
         "stop" : {
             "input" : "instanceStop",
             "output" : "instance"

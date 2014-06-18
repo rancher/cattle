@@ -51,6 +51,11 @@
         "instance.instanceTriggeredStop" : "cru",
         "instance.requestedHostId" : "cr",
 
+        "instanceConsoleInput" : "r",
+        "instanceConsole" : "r",
+        "instanceConsole.url" : "r",
+        "instanceConsole.password" : "r",
+
         "instanceLink" : "ru",
         "instanceLink.linkName" : "r",
         "instanceLink.targetInstanceId" : "ru",
