@@ -62,10 +62,13 @@ def _should_run(pid):
     if not _check_ts():
         return False
 
-    if PS_UTIL:
-        return psutil.pid_exists(pid)
+    if pid is None:
+        return True
     else:
-        return os.path.exists("/proc/%s" % pid)
+        if PS_UTIL:
+            return psutil.pid_exists(pid)
+        else:
+            return os.path.exists("/proc/%s" % pid)
 
 
 def _worker(queue, ppid):
@@ -99,6 +102,8 @@ def _worker(queue, ppid):
                 break
         except FailedToLock as e:
             log.info("%s for %s", e, req.name)
+            if not _should_run(ppid):
+                break
         except Exception as e:
             error_id = str(uuid.uuid4())
             log.exception("%s : Unknown error", error_id)
@@ -176,7 +181,7 @@ class EventClient:
                             self._queue.put(line, block=False)
                 except Full:
                     log.info("Dropping request %s" % line)
-                if ppid is not None and not _should_run(ppid):
+                if not _should_run(ppid):
                     log.info("Parent process has died or stamp changed,"
                              " exiting")
                     break
