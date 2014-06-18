@@ -6,3 +6,4 @@ datadiff==1.1.5
 mako
 docker-py==0.3.1
 portalocker
+subprocess32
