@@ -14,6 +14,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.NamedUtils;
@@ -46,6 +47,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicIntProperty;
 
@@ -398,12 +400,42 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
 
-        for ( String name : actions.keySet() ) {
+        for ( Map.Entry<String,Action> entry : actions.entrySet() ) {
+            String name = entry.getKey();
+            Action action = entry.getValue();
+
+            if ( ! isValidAction(obj, action) ) {
+                continue;
+            }
+
             ActionDefinition def = defs.get(name);
             if ( def == null || def.getValidStates().contains(state) ) {
                 resource.getActions().put(name, urlBuilder.actionLink(resource, name));
             }
         }
+    }
+
+    protected boolean isValidAction(Object obj, Action action) {
+        Map<String,Object> attributes = action.getAttributes();
+
+        if ( attributes == null || attributes.size() == 0 ) {
+            return true;
+        }
+
+        String capability = ObjectUtils.toString(attributes.get("capability"), null);
+        String state = ObjectUtils.toString(attributes.get(ObjectMetaDataManager.STATE_FIELD), null);
+
+        if ( ! StringUtils.isBlank(capability) &&
+                ! DataAccessor.fieldStringList(obj, ObjectMetaDataManager.CAPABILITIES_FIELD).contains(capability) ) {
+            return false;
+        }
+
+        if ( ! StringUtils.isBlank(state) &&
+                ! state.equals(io.cattle.platform.object.util.ObjectUtils.getState(obj)) ) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
