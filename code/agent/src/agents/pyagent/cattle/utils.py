@@ -11,11 +11,11 @@ import gzip
 import logging
 import os
 import re
-import subprocess32
+import subprocess
 import time
 import uuid
 
-subprocess = subprocess32
+from subprocess import PIPE, Popen, CalledProcessError
 
 HASHES = {
     32: md5,
@@ -289,12 +289,35 @@ def validate_checksum(file_name, checksum_value, buffer_size=2**20):
 def get_command_output(*args, **kw):
     try:
         kw['stderr'] = subprocess.STDOUT
-        return subprocess.check_output(*args, **kw)
+        return _check_output(*args, **kw)
     except subprocess.CalledProcessError as e:
         if not (e.output == 'Lock failed' and e.returncode == 122):
             log.exception('Failed to call %s %s, exit [%s], output :\n%s',
                           args, kw, e.returncode, e.output)
         raise e
+
+
+def _check_output(*popenargs, **kwargs):
+    if 'check_output' in dir(subprocess):
+        return subprocess.check_output(*popenargs, **kwargs)
+
+    # Copyright (c) 2003-2005 by Peter Astrand <astrand@lysator.liu.se>
+    #
+    # Licensed to PSF under a Contributor Agreement.
+    # See http://www.python.org/2.4/license for licensing details.
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    process = Popen(stdout=PIPE, *popenargs, **kwargs)
+    output, _ = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        cmd = kwargs.get("args")
+        if cmd is None:
+            cmd = popenargs[0]
+        e = CalledProcessError(retcode, cmd)
+        e.output = output
+        raise e
+    return output
 
 
 def random_string(length=64):
