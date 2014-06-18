@@ -219,5 +219,5 @@ class Config:
                                                         '.pyagent-stamp'))
 
     @staticmethod
-    def config_update():
-        return default_value('CONFIG_UPDATE', 'true') == 'true'
+    def config_update_pyagent():
+        return default_value('CONFIG_UPDATE_PYAGENT', 'true') == 'true'

@@ -51,7 +51,9 @@ class ConfigUpdateHandler:
         item_names = []
 
         for item in event.data.items:
-            item_names.append(item.name)
+            # For development, don't let the server kill your agent
+            if item.name != 'pyagent' or Config.config_update_pyagent():
+                item_names.append(item.name)
 
         home = Config.home()
 
