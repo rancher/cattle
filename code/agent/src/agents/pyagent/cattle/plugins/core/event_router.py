@@ -1,6 +1,7 @@
 from cattle.type_manager import get_type_list
 from cattle.type_manager import PRE_REQUEST_HANDLER, STORAGE_DRIVER
 from cattle.type_manager import COMPUTE_DRIVER, POST_REQUEST_HANDLER
+from cattle.type_manager import REQUEST_HANDLER
 
 
 class Router:
@@ -24,6 +25,8 @@ def _handlers(req):
 
     if req.name.startswith("compute."):
         drivers = get_type_list(COMPUTE_DRIVER)
+
+    drivers.extend(get_type_list(REQUEST_HANDLER))
 
     for driver in drivers:
         if driver.supports(req):

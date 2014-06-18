@@ -1,5 +1,7 @@
 from os import path
-from cattle import default_value, Config
+from cattle import default_value, Config, CONFIG_OVERRIDE
+
+import os
 import re
 
 
@@ -40,3 +42,31 @@ class LibvirtConfig:
     @staticmethod
     def host_ip():
         return default_value('LIBVIRT_HOST_IP', Config.agent_ip())
+
+    @staticmethod
+    def console_enabled():
+        val = default_value('LIBVIRT_CONSOLE', 'false')
+        return val in ['true', 'True']
+
+    @staticmethod
+    def set_console_enabled(val):
+        CONFIG_OVERRIDE['LIBVIRT_CONSOLE'] = str(val)
+
+    @staticmethod
+    def websockify_session_dir():
+        return default_value('LIBVIRT_WEBSOCKIFY_DIR',
+                             os.path.join(Config.home(), 'websockify',
+                                          'session'))
+
+    @staticmethod
+    def websockify_listen_port():
+        return default_value('LIBVIRT_WEBSOCKIFY_LISTEN_PORT', 9343)
+
+    @staticmethod
+    def websockify_listen_host():
+        return default_value('LIBVIRT_WEBSOCKIFY_LISTEN_HOST',
+                             LibvirtConfig.host_ip())
+
+    @staticmethod
+    def websockify_session_timeout():
+        return int(default_value('LIBVIRT_WEBSOCKIFY_SESSION_TIMEOUT', '300'))

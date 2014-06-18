@@ -132,6 +132,16 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
         utils.ping_add_resources(pong, *resources)
 
+    def get_vnc_connection_info(self, instance, host):
+        conn = self._get_connection(instance, host)
+        existing = self.get_instance_by_uuid(conn, instance.uuid)
+
+        if existing is None:
+            return (None, None, None)
+
+        xml = existing.XMLDesc(0)
+        return read_vnc_info(xml)
+
     def on_ping(self, ping, pong):
         self._add_resources(ping, pong)
         self._add_instances(ping, pong)
@@ -240,6 +250,9 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         return LibvirtConnection.open(type)
 
     def _get_instance_host_map_data(self, obj):
+        host, port, passwd = self.get_vnc_connection_info(obj.instance,
+                                                          obj.host)
+
         conn = self._get_connection(obj.instance, obj.host)
         existing = self.get_instance_by_uuid(conn, obj.instance.uuid)
 
@@ -268,7 +281,7 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
             vnc_address = '{0}:{1}'.format(host, port)
             vnc_passwd = passwd
 
-        return {
+        ret = {
             'instance': {
                 '+data': {
                     '+libvirt': {
@@ -281,6 +294,11 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
                 }
             }
         }
+
+        if LibvirtConfig.console_enabled():
+            ret['instance']['+data']['+fields']['capabilities'] = ['console']
+
+        return ret
 
     def _is_instance_inactive(self, instance, host):
         conn = self._get_connection(instance, host)

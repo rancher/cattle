@@ -11,6 +11,7 @@ ROUTER = 'router'
 STORAGE_DRIVER = 'storage_driver'
 COMPUTE_DRIVER = 'compute_driver'
 PRE_REQUEST_HANDLER = 'pre_request_handler'
+REQUEST_HANDLER = 'request_handler'
 POST_REQUEST_HANDLER = 'post_request_handler'
 LIFECYCLE = 'lifecycle'
 
