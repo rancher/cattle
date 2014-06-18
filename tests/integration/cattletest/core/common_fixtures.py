@@ -253,7 +253,8 @@ def kind_context(admin_client, kind, external_pool=False,
     kind_agent = get_agent(admin_client, kind, default_agent_uuid=uuid,
                            default_uri=uri)
 
-    hosts = filter(lambda x: x.kind == kind, kind_agent.hosts())
+    hosts = filter(lambda x: x.kind == kind and x.removed is None,
+                   kind_agent.hosts())
     assert len(hosts) == 1
     kind_host = activate_resource(admin_client, hosts[0])
 

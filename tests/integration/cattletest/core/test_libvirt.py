@@ -127,3 +127,22 @@ def test_libvirt_default_templates(client, admin_client, libvirt_context):
 
     cirros = admin_client.reload(cirros)
     assert cirros.account().uuid == 'system'
+
+
+@if_libvirt
+def test_libvirt_console(client, admin_client, libvirt_context):
+    image_id = libvirt_context['imageId']
+    vm = client.create_virtual_machine(imageId=image_id)
+    vm = wait_success(client, vm)
+
+    assert vm.state == 'running'
+
+    assert 'console' in vm and callable(vm.console)
+    console = vm.console()
+
+    assert console.kind == 'websocket-vnc'
+    assert console.url is not None
+    assert console.password is not None
+    assert 'vnc.html' in console.links['view']
+
+    admin_client.delete(vm)

@@ -349,3 +349,44 @@ def test_virtual_machine_restore_subnet(admin_client, sim_context, subnet,
 
     assert vm.state == 'running'
     assert vm.nics()[0].ipAddresses()[0].address == address
+
+
+def test_virtual_machine_console(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+    vm = admin_client.create_virtual_machine(imageUuid=image_uuid)
+    vm = admin_client.wait_success(vm)
+
+    assert vm.state == 'running'
+    assert 'console' not in vm
+
+    vm.data.fields['capabilities'] = ['console']
+    vm = admin_client.update(vm, vm)
+
+    assert 'console' in vm
+    assert 'console' in vm and callable(vm.console)
+
+    console = vm.console()
+
+    assert console is not None
+    assert console.kind == 'fake'
+    assert console.url == 'http://localhost/console'
+
+
+def test_virtual_machine_console_visibility(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+    vm = admin_client.create_virtual_machine(imageUuid=image_uuid)
+    vm = admin_client.wait_success(vm)
+
+    assert vm.state == 'running'
+    assert 'console' not in vm
+
+    vm.data.fields['capabilities'] = ['console']
+    vm = admin_client.update(vm, vm)
+
+    assert 'console' in vm
+    assert 'console' in vm and callable(vm.console)
+
+    vm = admin_client.wait_success(vm.stop())
+
+    assert vm.state == 'stopped'
+    assert 'console' not in vm
