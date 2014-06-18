@@ -66,7 +66,7 @@ class ConfigUpdateHandler:
         args = [Config.config_sh()] + item_names
 
         try:
-            output = utils.get_command_output(args, cwd=home)
+            output = utils.get_command_output(args, cwd=home, env=env)
             return utils.reply(event, {
                 'exitCode': 0,
                 'output': output
