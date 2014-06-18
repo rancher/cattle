@@ -1,16 +1,9 @@
 <#list networkClients as client>
     <#if client.macAddress?? && client.ipAddress?? >
-        <#if client.domain?? >
-            <#assign domain = client.domain>
-        <#elseif client.networkDomain?? >
-            <#assign domain = client.networkDomain >
-        <#else>
-            <#assign domain = client.defaultDomain >
-        </#if>
         <#if client.instanceId == instance.id >
-127.0.0.1 ${hostname!"i-${client.macAddress?replace(\":\",\"-\")}"} ${client.fqdn}
+127.0.0.1 localhost localhost.localdomain ${client.hostname} ${client.fqdn}
         <#else>
-${client.ipAddress} ${hostname!"i-${client.macAddress?replace(\":\",\"-\")}"} ${client.fqdn} localhost localhost.localdomain
+${client.ipAddress} ${client.hostname} ${client.fqdn}
         </#if>
     </#if>
 </#list>

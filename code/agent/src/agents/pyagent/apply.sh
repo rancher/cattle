@@ -45,9 +45,9 @@ stage()
 
 conf()
 {
-    CONF=(/var/lib/cattle/pyagent/agent.conf
+    CONF=(${CATTLE_HOME}/pyagent/agent.conf
           /etc/cattle/agent/agent.conf
-          /var/lib/cattle/etc/cattle/agent/agent.conf)
+          ${CATTLE_HOME}/etc/cattle/agent/agent.conf)
 
     for conf_file in "${CONF[@]}"; do
         if [ -e $conf_file ]
@@ -59,38 +59,20 @@ conf()
 
 start()
 {
-    if [ -n "$NO_START" ]; then
-        return 0
-    fi
     chmod +x $MAIN
     if [ "$CATTLE_PYPY" = "true" ] && which pypy >/dev/null; then
         MAIN="pypy $MAIN"
     fi
-    if [ "$DAEMON" = false ]; then
-        info Executing $MAIN
-        cleanup
-        exec $MAIN
-    else
-        info Backgrounding $MAIN
-        $MAIN &
-    fi
+
+    info Executing $MAIN
+    cleanup
+    exec $MAIN
 }
 
-while [ "$#" -gt 0 ]; do
-    case $1 in
-    --no-start)
-        NO_START=true
-        ;;
-    --no-daemon)
-        DAEMON=false
-        ;;
-    start)
-        start
-        exit 0
-        ;;
-    esac
-    shift 1
-done
-
 conf
-stage
+
+if [ "$1" = "start" ]; then
+    start
+else
+    stage
+fi

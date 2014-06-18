@@ -49,6 +49,19 @@ COMMIT
 
 -A POSTROUTING -o ${primaryNic} -m mark --mark 100 -j MASQUERADE
 
+<#if serviceSet?seq_contains("metadataService") >
+    <#list services["metadataService"].nicNames as nic >
+-A PREROUTING -p tcp -m addrtype --dst-type LOCAL --dport 80 -i ${nic} -j DNAT --to :8080
+        <#list vnetClients as vnetClient >
+            <#if vnetClient.ipAddress?? >
+# Metadata mapping
+-A INPUT -m mac --mac-source ${vnetClient.macAddress} -p tcp -m addrtype --dst-type LOCAL -i ${nic} -j SNAT --to-source ${vnetClient.ipAddress}
+            </#if>
+
+        </#list>
+    </#list>
+</#if>
+
 COMMIT
 
 *mangle

@@ -69,6 +69,12 @@ bogus-priv
     <#assign domain = hostnameGenerator.getDefaultDomain(true) >
 </#if>
 local=/${domain}/
+<#list services?values as service >
+    <#if service.kind == "dnsService" && (service.service.data.fields.upstreamDns)?? >
+local=${primaryNetwork.data.fields.upstreamDns?join(",")}
+        <#break>
+    </#if>
+</#list>
 
 # Add domains which you want to force to an IP address here.
 # The example below send any host in double-click.net to a local
@@ -313,7 +319,7 @@ dhcp-range=${primaryIpAddresses[nic.uuid].address},static
 # or /etc/ethers. Equivalent to ISC "deny unknown-clients".
 # This relies on the special "known" tag which is set when 
 # a host is matched.
-#dhcp-ignore=tag:!known
+dhcp-ignore=tag:!known
 
 # Send extra options which are tagged as "red" to any machine whose
 # DHCP vendorclass string includes the substring "Linux"

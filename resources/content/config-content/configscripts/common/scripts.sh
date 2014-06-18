@@ -117,7 +117,10 @@ script_env()
         return
     fi
 
-    local host=$(ip route show dev eth0 | grep ^default | awk '{print $3}')
+    # This is just using the routing tables to determine the primary IP
+    # of the box.  No traffic is sent to 8.8.8.8 and it doesn't matter if 8.8.8.8
+    # is accessible
+    local host=$(ip route get 8.8.8.8 | grep src | awk '{print $7}')
     CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL_SCHEME:-http}"
     CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL}://${CATTLE_CONFIG_URL_HOST:-$host}"
     CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL}:${CATTLE_CONFIG_URL_PORT:-9342}"

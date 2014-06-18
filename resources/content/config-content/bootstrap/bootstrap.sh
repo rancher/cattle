@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-trap cleanup EXIT
+trap cleanup EXIT SIGINT SIGTERM
 
 # This is copied from common/scripts.sh, if there is a change here
 # make it in common and then copy here
@@ -68,7 +68,7 @@ download_agent()
     info Downloading agent "${CATTLE_CONFIG_URL}${CONTENT_URL}"
     curl --retry 5 -s -u $CATTLE_ACCESS_KEY:$CATTLE_SECRET_KEY ${CATTLE_CONFIG_URL}${CONTENT_URL} > $TEMP_DOWNLOAD/content
     tar xzf $TEMP_DOWNLOAD/content -C $TEMP_DOWNLOAD || ( cat $TEMP_DOWNLOAD/content 1>&2 && exit 1 )
-    bash $TEMP_DOWNLOAD/*/config.sh --no-start $INSTALL_ITEMS
+    bash $TEMP_DOWNLOAD/*/config.sh --force $INSTALL_ITEMS
 }
 
 start_agent()
@@ -76,16 +76,7 @@ start_agent()
     local main=${CATTLE_HOME}/pyagent/apply.sh
     export AGENT_PARENT_PID=$$
     info Starting agent $main
-    $main --no-daemon start &
-    AGENT_PID=$!
-}
-
-get_line()
-{  
-    read -t 5 LINE || true
-    if [ -z "$LINE" ]; then
-        sleep 1
-    fi
+    $main start
 }
 
 print_config()
@@ -98,6 +89,28 @@ print_config()
     info Port: $CATTLE_AGENT_PORT
 }
 
+break_out_of_docker()
+{
+    if [ "$CATTLE_INSIDE_DOCKER" = "true" ] && [ -e /host/proc/1/ns/net ] && [ -e /host/proc/1/ns/uts ]; then
+        exec env CATTLE_INSIDE_DOCKER=outside /usr/sbin/nsenter --net=/host/proc/1/ns/net --uts=/host/proc/1/ns/uts -F -- "$@"
+    fi
+}
+
+handle_inception()
+{
+    if [ "$CATTLE_INSIDE_DOCKER" != "outside" ]; then
+        if [ "$CATTLE_AGENT_INCEPTION" = "true" ] || ! python -V >/dev/null 2>&1; then
+            cleanup_docker
+            exec docker run -rm -privileged -i -w $(pwd) \
+                        -v /run:/host/run \
+                        -v /var:/host/var \
+                        -v /proc:/host/proc \
+                        -e CATTLE_EXEC_AGENT=true \
+                        -e CATTLE_SCRIPT_DEBUG=$CATTLE_SCRIPT_DEBUG \
+                        $CATTLE_DOCKER_AGENT_ARGS $DOCKER_AGENT "$@"
+        fi
+    fi
+}
 
 cd $(dirname $0)
 
@@ -108,81 +121,35 @@ for conf_file in "${CONF[@]}"; do
     fi
 done
 
-if [ "$INCEPTION" = "true" ] && [ "$INCEPTION_INCEPTION" = "" ] && [ -e /host/proc/1/ns/net ]; then
-    export INCEPTION_INCEPTION=true
-    exec /usr/sbin/nsenter --net=/host/proc/1/ns/net --uts=/host/proc/1/ns/uts -F -- $0 "$@"
-fi
+break_out_of_docker $0 "$@"
+handle_inception "$@"
 
-if [ "$CATTLE_AGENT_INCEPTION" = "true" ] || ! python -V >/dev/null 2>&1; then
-    if [ "$INCEPTION" != "true" ]; then
-        cleanup_docker
-        exec docker run -rm -privileged -i -w $(pwd) \
-                    -v /run:/host/run \
-                    -v /var:/host/var \
-                    -v /proc:/host/proc \
-                    -v /var/run/docker.sock:/var/run/docker.sock \
-                    -v ${CATTLE_HOME}:${CATTLE_HOME} \
-                    -v $(pwd):$(pwd) \
-                    -v $(readlink -f /var/lib/docker):$(readlink -f /var/lib/docker) \
-                    -e CATTLE_SCRIPT_DEBUG=$CATTLE_SCRIPT_DEBUG \
-                    -e INCEPTION=true \
-                    $CATTLE_DOCKER_AGENT_ARGS $DOCKER_AGENT $0 "$@"
-    fi
-fi
-
-OLD_LINE=
-AGENT_PID=
-while get_line; do
-    if [ -n "$AGENT_PID" ] && [ ! -e /proc/$AGENT_PID ]; then
-        error "Agent pid=$AGENT_PID has died"
-        exit 1
-    fi
-
-    if [ -z "$LINE" ]; then
-        continue
-    fi
-
-    if [ -n "$AGENT_PID" ] && [ "$LINE" != "$OLD_LINE" ]; then
-        info Environment has changed, exiting
-        info "Killing agent, pid=$AGENT_PID"
-        kill $AGENT_PID
-        info "Waiting on agent to die, pid=$AGENT_PID"
-        wait $AGENT_PID
-        info Exiting
-        exit 0
-    fi
-
-    if [ -n "$AGENT_PID" ]; then
-        continue
-    fi
-        
-    OLD_LINE=$LINE
-
-    eval "$LINE"
-    check_debug
-
-    while [ $# != 0 ]; do
-        case $1 in
-        --port)
-            shift 1
-            if [ -z "$CATTLE_AGENT_PORT" ];then
-                export CATTLE_AGENT_PORT=$1
-            fi
-        ;;
-        --ip)
-            shift 1
-            if [ -z "$CATTLE_AGENT_IP" ];then
-                export CATTLE_AGENT_IP=$1
-            fi
-        ;;
-        esac
-
+while [ $# != 0 ]; do
+    case $1 in
+    --port)
         shift 1
-    done
+        if [ -z "$CATTLE_AGENT_PORT" ];then
+            export CATTLE_AGENT_PORT=$1
+        fi
+        ;;
+    --ip)
+        shift 1
+        if [ -z "$CATTLE_AGENT_IP" ];then
+            export CATTLE_AGENT_IP=$1
+        fi
+        ;;
+    --read-env)
+        read LINE
+        eval "$LINE"
+        ;;
+    esac
 
-    print_config
-
-    mkdir -p $CATTLE_HOME
-    download_agent
-    start_agent
+    shift 1
 done
+
+check_debug
+print_config
+
+mkdir -p $CATTLE_HOME
+download_agent
+start_agent
