@@ -26,7 +26,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
     private static final Logger log = LoggerFactory.getLogger(RegisterScriptHandler.class);
 
-    private static final DynamicStringProperty IMAGE = ArchaiusUtil.getString("agent.instance.register.image");
+    private static final DynamicStringProperty IMAGE = ArchaiusUtil.getString("agent.image");
     private static final DynamicStringProperty SCRIPT = ArchaiusUtil.getString("agent.instance.register.script");
     private static final DynamicStringProperty URL = ArchaiusUtil.getString("agent.instance.register.url");
 
@@ -55,9 +55,9 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
         Map<String,String> tokens = new HashMap<String,String>();
         tokens.put("CATTLE_URL", getUrl(request));
-        tokens.put("CATTLE_ACCESS_KEY", RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
-        tokens.put("CATTLE_SECRET_KEY", id);
-        tokens.put("CATTLE_AGENT_REGISTER_IMAGE", IMAGE.get());
+        tokens.put("CATTLE_REGISTRATION_ACCESS_KEY", RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
+        tokens.put("CATTLE_REGISTRATION_SECRET_KEY", id);
+        tokens.put("CATTLE_AGENT_IMAGE", IMAGE.get());
         tokens.put("CATTLE_AGENT_IP", request.getClientIp());
 
         String script = getScript();
