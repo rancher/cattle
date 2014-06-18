@@ -1,10 +1,6 @@
 import logging
 import os
 
-from threading import Thread
-from subprocess import Popen, PIPE
-from cattle.type_manager import get_type, MARSHALLER
-from cattle import Config
 from cattle.utils import get_command_output
 
 log = logging.getLogger('docker')

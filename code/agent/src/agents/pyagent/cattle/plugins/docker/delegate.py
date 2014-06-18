@@ -1,5 +1,4 @@
 import logging
-import os
 
 from urlparse import urlparse
 
@@ -48,8 +47,8 @@ class DockerDelegate(BaseHandler):
         return ['delegate.request']
 
     def delegate_request(self, req=None, event=None, instanceData=None, **kw):
-        if instanceData.kind != 'container' or\
-                        instanceData.get('token') is None:
+        if instanceData.kind != 'container' or \
+           instanceData.get('token') is None:
             return
 
         container = self.compute.get_container_by_name(instanceData.uuid)

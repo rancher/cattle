@@ -14,7 +14,6 @@ import re
 import subprocess32
 import time
 import uuid
-from subprocess32 import PIPE, Popen, CalledProcessError
 
 subprocess = subprocess32
 

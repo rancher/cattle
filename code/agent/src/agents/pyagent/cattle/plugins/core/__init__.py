@@ -2,7 +2,6 @@ import marshaller
 import event_router
 import event_handlers
 import api_proxy
-from cattle import Config
 from cattle.type_manager import register_type, MARSHALLER, ROUTER
 from cattle.type_manager import POST_REQUEST_HANDLER, LIFECYCLE
 
