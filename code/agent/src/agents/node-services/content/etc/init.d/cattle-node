@@ -37,7 +37,7 @@ case "$1" in
 	log_daemon_msg "Starting $DESC configuration" "$NAME" || true
 	mkdir -p $RUNDIR
 
-	if start-stop-daemon --start -b --quiet --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS
+	if start-stop-daemon --start -b --quiet -d $RUNDIR --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS
 	then
 	    log_end_msg 0 || true
 	else

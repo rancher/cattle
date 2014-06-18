@@ -23,7 +23,13 @@ var VERSIONS = [
 var CLIENT_IP = process.env.CLIENT_IP;
 var META_DATA_FILE = 'metadata.json';
 var started = false;
+var strict = false;
 var data = {};
+
+function reload() {
+  load(function() {
+  });
+}
 
 function load(cb) {
   fs.exists(META_DATA_FILE, function(exists) {
@@ -65,8 +71,10 @@ function getData(cb) {
 function start() {
   if ( ! started ) {
     fs.watchFile(META_DATA_FILE, { interval : 1000 }, function() {
-      load();
+      reload();
     });
+
+    process.on('SIGHUP', reload);
 
     started = true;
   }
@@ -82,12 +90,25 @@ function lookup(ip, path, data) {
   path.split('/').forEach(function(val) {
     if ( val.length > 0 ) {
       if ( data != null ) {
-        data = data[val];
+        var newData = data[val];
+        if ( newData == null ) {
+          for ( var key in data ) {
+            if ( key.replace(/=.*/, '') == val ) {
+              newData = data[key];
+            }
+          }
+        }
+
+        data = newData;
       }
     }
   })
 
   return data;
+}
+
+function isNodeString(node) {
+  return typeof(node) == 'string' || node == null;
 }
 
 function getResult(ip, path, data, cb) {
@@ -97,22 +118,23 @@ function getResult(ip, path, data, cb) {
 
   var node = lookup(ip, path, data);
   var directoryRequest = (path.lastIndexOf('/') == (path.length-1))
+  var nodeIsString = isNodeString(node);
   var redirect = false;
   var content = null;
 
-  if ( node == null || (directoryRequest && typeof(node) == 'string') ) {
+  if ( node == null || (directoryRequest && nodeIsString) ) {
     return cb();
-  } else if ( directoryRequest ) {
+  } else if ( directoryRequest || (!strict && !nodeIsString) ) {
     var entries = [];
     for ( var key in node ) {
-      if ( path == '' || typeof(node[key]) == 'string' ) {
+      if ( path == '' || isNodeString(node[key]) || key.indexOf('=') != -1 ) {
         entries.push(key)
       } else {
         entries.push(key + '/')
       }
     }
     content = entries.join('\n');
-  } else if ( typeof(node) == 'string' ) {
+  } else if ( !directoryRequest && nodeIsString ) {
     content = node;
   } else {
     redirect = true;
@@ -146,7 +168,9 @@ function handle(req, res, next) {
       res.type('text/plain');
 
       if ( result.redirect ) {
-        res.redirect(301, req.path + '/')
+        /* Don't use redirect API because it write a message to the body */
+        res.location(req.path + '/');
+        res.send(301, '');
       } else {
         res.send(result.content);
       }
@@ -164,14 +188,21 @@ router.get('/', function(req, res) {
 VERSIONS.forEach(function(version) {
   var path = '/' + version;
   router.get(path, function(req, res) {
-    // Technically EC2 sends the full http://169.254.169.254 for the Location header
-    res.redirect(301, path + '/');
+    /* Technically EC2 sends the full http://169.254.169.254 for the Location header.
+       Don't use redirect API because it write a message to the body */
+    res.location(req.path + '/');
+    res.send(301, '');
   })
 
   router.get(path + '/*', handle);
 })
 
 module.exports = function(config) {
+  config = config || {};
+  if ( config.strict ) {
+    strict = false;
+  }
+
   start();
   return router;
 }
