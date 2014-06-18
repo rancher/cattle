@@ -14,8 +14,7 @@ if __name__ == '__main__':
     if os.path.exists(dist):
         sys.path.insert(0, dist)
 
-from cattle import plugins
-from cattle import Config
+from cattle import plugins, Config, process_manager
 from cattle.agent.event import EventClient
 from cattle.type_manager import types, get_type_list, LIFECYCLE
 
@@ -80,6 +79,8 @@ def main():
     Config.set_access_key(args.access_key)
     Config.set_secret_key(args.secret_key)
     Config.set_api_url(args.url)
+
+    process_manager.init()
 
     plugins.load()
 
