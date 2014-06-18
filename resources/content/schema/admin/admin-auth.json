@@ -86,6 +86,7 @@
         "image.url" : "cr",
 
         "instance" : "r",
+        "instance.credentialIds" : "cr",
         "instance.instanceTriggeredStop" : "cru",
         "instance.vnetIds" : "cr",
         "instance.validHostIds" : "cru",

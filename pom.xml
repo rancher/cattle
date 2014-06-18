@@ -66,7 +66,6 @@
                 <module>code/iaas/config</module>
                 <module>code/iaas/config-item/api</module>
                 <module>code/iaas/config-item/common</module>
-                <module>code/iaas/config-item/scripts</module>
                 <module>code/iaas/config-item/server</module>
                 <module>code/iaas/engine-jooq</module>
                 <module>code/iaas/events</module>
@@ -76,6 +75,7 @@
                 <module>code/iaas/logic-common</module>
                 <module>code/iaas/model</module>
                 <module>code/iaas/resource-pool</module>
+                <module>code/iaas/ssh-common</module>
                 <module>code/iaas/simple-allocator</module>
                 <module>code/iaas/storage-service</module>
                 <module>code/iaas/system</module>

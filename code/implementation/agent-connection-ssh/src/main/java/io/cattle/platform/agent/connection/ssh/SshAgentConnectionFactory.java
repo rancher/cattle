@@ -142,7 +142,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
             String script = copyBootStrap(session);
             int port = setForwarding(session);
             log.info("Allocated random port [{}] on [{}]", port, opts.getHost());
-            EofAwareChannelExec exec = callBootStrap(agent, session, String.format("%s --port %d --ip %s", script, port, hostIp));
+            EofAwareChannelExec exec = callBootStrap(agent, session, String.format("%s --read-env --port %d --ip %s", script, port, hostIp));
 
             final SshAgentConnection sshAgent = new SshAgentConnection(agent.getId(), agent.getUri(), eventService, this, session, exec, port);
             success = true;

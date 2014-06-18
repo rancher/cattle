@@ -1,9 +1,11 @@
 package io.cattle.platform.process.instance;
 
+import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
@@ -21,6 +23,8 @@ import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +38,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     JsonMapper jsonMapper;
     ObjectProcessManager processManager;
-    ObjectManager objectManager;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -44,10 +47,12 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         List<Volume> volumes = objectManager.children(instance, Volume.class);
         List<Nic> nics = objectManager.children(instance, Nic.class);
 
+        Set<Long> creds = createCreds(instance, state.getData());
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
-        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds);
+        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds,
+                "_creds", creds);
         result.shouldDelegate(shouldStart(instance));
 
         return result;
@@ -242,6 +247,35 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         return nicIds;
     }
 
+    protected Set<Long> createCreds(Instance instance, Map<String, Object> data) {
+        List<Long> credIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_CREDENTIAL_IDS, Long.class);
+        if ( credIds == null ) {
+            return Collections.emptySet();
+        }
+
+        Set<Long> created = new HashSet<Long>();
+        List<CredentialInstanceMap> maps = new ArrayList<CredentialInstanceMap>();
+
+        for ( CredentialInstanceMap map : children(instance, CredentialInstanceMap.class) ) {
+            maps.add(map);
+            created.add(map.getCredentialId());
+        }
+
+        for ( Long credId : credIds ) {
+            if ( ! created.contains(credId) ) {
+                maps.add(objectManager.create(CredentialInstanceMap.class,
+                        CREDENTIAL_INSTANCE_MAP.INSTANCE_ID, instance.getId(),
+                        CREDENTIAL_INSTANCE_MAP.CREDENTIAL_ID, credId));
+            }
+        }
+
+        for ( CredentialInstanceMap map : maps ) {
+            createThenActivate(map, data);
+        }
+
+        return new TreeSet<Long>(credIds);
+    }
+
     public static boolean isCreateStart(ProcessState state) {
         Boolean startOnCreate = DataAccessor.fromMap(state.getData())
                 .withScope(InstanceCreate.class)
@@ -260,16 +294,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     public JsonMapper getJsonMapper() {
         return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    @Override
-    public ObjectManager getObjectManager() {
-        return objectManager;
     }
 
     @Override

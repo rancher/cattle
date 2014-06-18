@@ -22,6 +22,7 @@
                 <value>virtualMachine,parent=instance</value>
                 <value>container,parent=instance</value>
                 <value>apiKey,parent=credential</value>
+                <value>sshKey,parent=credential</value>
                 <value>instanceStop</value>
             </set>
         </property>

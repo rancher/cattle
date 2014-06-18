@@ -47,6 +47,7 @@
         "image.checksum" : "r",
 
         "instance" : "r",
+        "instance.credentialIds" : "cr",
         "instance.instanceTriggeredStop" : "cru",
         "instance.requestedHostId" : "cr",
 
