@@ -162,6 +162,11 @@ public class ApiUtils {
 
     public static String getSchemaIdForDisplay(SchemaFactory factory, Object obj) {
         Schema schema = factory.getSchema(obj.getClass());
+
+        if ( schema == null ) {
+            return null;
+        }
+
         if ( schema.getChildren().size() > 0 ) {
             String kind = ObjectUtils.getKind(obj);
             Schema kindSchema = factory.getSchema(kind);
