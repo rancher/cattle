@@ -18,6 +18,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceNetworkValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstancePortsValidationFilter" />
+    <bean class="io.cattle.platform.iaas.api.instance.InstanceConsoleActionHandler" />
 
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
