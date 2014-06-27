@@ -4,11 +4,12 @@ import logging
 import random
 from threading import Thread
 
+from cattle import Config
 from cattle.agent.handler import BaseHandler
 from cattle.plugins.libvirt.config import LibvirtConfig
 from cattle.plugins.libvirt import enabled
 from cattle.type_manager import register_type, LIFECYCLE, REQUEST_HANDLER
-from cattle.process_manager import fork
+from cattle.concurrency import spawn
 
 log = logging.getLogger('libvirt')
 
@@ -39,6 +40,7 @@ class WebsockifyProxy(BaseHandler):
                                     id)
 
         with open(session_file, 'w') as f:
+            log.info('Creating websockify session %s %s:%s', id, host, port)
             f.write('{0}: {1}:{2}\n'.format(id, host, port))
 
         host = LibvirtConfig.websockify_listen_host()
@@ -79,22 +81,35 @@ class WebsockifyProxy(BaseHandler):
         if not os.path.exists(sessions):
             os.makedirs(sessions)
 
-        def spawn():
-            opts = {
-                'target_cfg': sessions,
-                'listen_port': LibvirtConfig.websockify_listen_port(),
-                'listen_host': LibvirtConfig.websockify_listen_host()
-            }
+        def run_vnc():
+            while True:
+                try:
+                    port = LibvirtConfig.websockify_listen_port()
+                    host = LibvirtConfig.websockify_listen_host()
+                    opts = {
+                        'RequestHandlerClass': RequestHandler,
+                        'target_cfg': sessions,
+                        'listen_host': host,
+                        'listen_port': port
+                    }
 
-            server = websockify.LibProxyServer(**opts)
-            # Work around bug
-            server.target_cfg = opts['target_cfg']
-            server.serve_forever()
+                    log.info('Launching Websockify listening on %s:%s',
+                             host, port)
 
-        fork('websockify', spawn)
+                    server = websockify.WebSocketProxy(**opts)
+                    server.start_server()
+                except:
+                    log.exception('Failed to launch Websockify')
+
+                time.sleep(2)
+
+        spawn(target=run_vnc, args=[])
 
         self._do_cleanup()
-        Thread(target=self.cleanup).start()
+
+        t = Thread(target=self.cleanup)
+        t.setDaemon(True)
+        t.start()
 
         LibvirtConfig.set_console_enabled(True)
 
@@ -102,9 +117,18 @@ class WebsockifyProxy(BaseHandler):
 if enabled():
     try:
         import websockify
+        from websockify import ProxyRequestHandler
         from cattle.plugins.libvirt.compute import LibvirtCompute
         ws = WebsockifyProxy()
         register_type(LIFECYCLE, ws)
         register_type(REQUEST_HANDLER, ws)
+
+        class RequestHandler(ProxyRequestHandler):
+            def new_websocket_client(self):
+                if Config.is_eventlet():
+                    from eventlet import hubs
+                    hubs.use_hub()
+
+                return ProxyRequestHandler.new_websocket_client(self)
     except:
         log.exception('Not starting websocket proxy for VNC')

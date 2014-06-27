@@ -36,11 +36,11 @@ do_kill()
     fi
 }
 
-run()
+main()
 {
     while sleep 2; do
         if [ -e /proc/${PGID} ]; then
-            print_ps
+            #print_ps
             continue
         fi
 
@@ -54,4 +54,4 @@ run()
     done
 }
 
-run > /tmp/run.log
+main

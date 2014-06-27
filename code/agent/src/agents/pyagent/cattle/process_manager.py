@@ -1,10 +1,12 @@
 import time
 import os
-import sys
 import logging
 import signal
 from threading import Thread
-from subprocess32 import Popen
+try:
+    from subprocess32 import Popen
+except:
+    from subprocess import Popen
 
 log = logging.getLogger('process-manager')
 
@@ -33,7 +35,9 @@ class ProcessManager(object):
         if launch_script:
             self.background([script])
 
-        Thread(target=self.watch).start()
+        t = Thread(target=self.watch)
+        t.setDaemon(True)
+        t.start()
 
     def watch(self):
         while True:
@@ -61,25 +65,8 @@ class ProcessManager(object):
     def background(self, *args, **kw):
         self._exec(lambda: self._exec_background(*args, **kw))
 
-    def fork(self, name, fn):
-        self._exec(lambda: self._exec_fork(name, fn))
-
-    def _exec_fork(self, name, fn):
-        log.info('Forking %s', name)
-        pid = os.fork()
-        if pid == 0:
-            try:
-                fn()
-            except:
-                sys.exit(1)
-            finally:
-                sys.exit(0)
-        else:
-            return pid
-
 
 _PROCESS_MANAGER = ProcessManager()
 
 background = _PROCESS_MANAGER.background
-fork = _PROCESS_MANAGER.fork
 init = _PROCESS_MANAGER.init
