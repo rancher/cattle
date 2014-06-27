@@ -2,6 +2,7 @@ package io.cattle.platform.simple.allocator.network;
 
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
@@ -40,7 +41,9 @@ public class NetworkAllocationCandidates implements AllocationCandidateCallback 
                 Network network = objectManager.loadResource(Network.class, nic.getNetworkId());
                 if ( network != null ) {
                     for ( Subnet subnet : objectManager.children(network, Subnet.class) ) {
-                        nicToSubnet.add(new ImmutablePair<Long, Long>(nic.getId(), subnet.getId()));
+                        if ( CommonStatesConstants.ACTIVE.equals(subnet.getState()) ) {
+                            nicToSubnet.add(new ImmutablePair<Long, Long>(nic.getId(), subnet.getId()));
+                        }
                     }
                 }
             } else {
