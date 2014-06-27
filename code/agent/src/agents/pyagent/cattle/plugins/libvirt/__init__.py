@@ -29,8 +29,13 @@ if _ENABLED:
 
     register_type(COMPUTE_DRIVER, LibvirtCompute())
     register_type(STORAGE_DRIVER, LibvirtStorage())
+    log.info('Enabling libvirt')
 else:
-    log.info('Disabling libvirt')
+    from .config import LibvirtConfig
+    if LibvirtConfig.libvirt_required():
+        raise Exception('Failed to initialize libvirt')
+    else:
+        log.info('Disabling libvirt')
 
 from qemu_img import QemuImg  # NOQA
 

@@ -1,3 +1,6 @@
+from cattle import CONFIG_OVERRIDE
+CONFIG_OVERRIDE['DOCKER_REQUIRED'] = 'false'
+
 import pytest
 from os.path import dirname
 from datadiff.tools import assert_equals

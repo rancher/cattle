@@ -43,6 +43,10 @@ class DockerConfig:
     def api_version():
         return default_value('DOCKER_API_VERSION', '1.8')
 
+    @staticmethod
+    def docker_required():
+        return default_value('DOCKER_REQUIRED', 'true') == 'true'
+
 
 def docker_client(version=None):
     if version is None:
@@ -94,3 +98,6 @@ if _ENABLED and DockerConfig.docker_enabled():
     type_manager.register_type(DOCKER_COMPUTE_LISTENER, PortSetup())
     type_manager.register_type(type_manager.PRE_REQUEST_HANDLER,
                                _DOCKER_DELEGATE)
+
+if not _ENABLED and DockerConfig.docker_required():
+    raise Exception('Failed to initialize Docker')

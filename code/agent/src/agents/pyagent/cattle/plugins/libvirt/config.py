@@ -70,3 +70,7 @@ class LibvirtConfig:
     @staticmethod
     def websockify_session_timeout():
         return int(default_value('LIBVIRT_WEBSOCKIFY_SESSION_TIMEOUT', '300'))
+
+    @staticmethod
+    def libvirt_required():
+        return default_value('LIBVIRT_REQUIRED', False) == 'true'
