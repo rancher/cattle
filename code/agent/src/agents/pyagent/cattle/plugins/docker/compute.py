@@ -60,7 +60,10 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
 
         containers = []
         for c in docker_client().containers():
-            names = c.get('Names', [])
+            names = c.get('Names')
+            if names is None:
+                continue
+
             for name in names:
                 if name.startswith('/'):
                     name = name[1:]
@@ -101,9 +104,16 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
     def inspect(self, container):
         return docker_client().inspect_container(container)
 
+    @staticmethod
+    def _name_filter(name, container):
+        names = container.get('Names')
+        if names is None:
+            return False
+        return name in names
+
     def get_container_by_name(self, name):
         name = '/{0}'.format(name)
-        return self.get_container_by(lambda x: name in x.get('Names', []))
+        return self.get_container_by(lambda x: self._name_filter(name, x))
 
     def _is_instance_active(self, instance, host):
         container = self.get_container_by_name(instance.uuid)
