@@ -47,12 +47,12 @@ Start with a fresh **Ubuntu 13.10**.  Anything that runs Docker will eventually 
 [ ! -x "$(which docker)" ] && curl -sL https://get.docker.io/ | sh
 
 # Install libvirt too
-sudo apt-get install -y libvirt-bin python-libvirt qemu-kvm
+sudo apt-get install -y libvirt-bin python-libvirt qemu-kvm python-numpy
 
 # Gonna need a ssh server
 sudo apt-get install -y openssh-server
 
-#Start Cattle
+# Start Cattle
 sudo docker run -p 8080:8080 cattle/server
 ```
 

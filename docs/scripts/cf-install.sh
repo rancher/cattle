@@ -6,7 +6,7 @@ do_install()
     [ ! -x "$(which docker)" ] && curl -sL https://get.docker.io/ | sh
 
     # Install libvirt too
-    sudo apt-get install -y libvirt-bin python-libvirt qemu-kvm python-pip
+    sudo apt-get install -y libvirt-bin python-libvirt qemu-kvm python-pip python-numpy
 
     # Gonna need a ssh server
     sudo apt-get install -y openssh-server
