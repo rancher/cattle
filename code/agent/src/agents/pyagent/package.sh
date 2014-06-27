@@ -25,6 +25,7 @@ python_deps()
     fi
 
     pip install -t dist -r dist-requirements.txt
+    pip install --no-deps -t dist websockify
     cp dist-requirements.txt dist
 }
 
