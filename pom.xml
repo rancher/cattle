@@ -172,8 +172,8 @@
                 </property>
             </activation>
             <modules>
-                <module>code/packaging/bundle-parent</module>
                 <module>code/packaging/bundle</module>
+                <module>code/packaging/bundle-parent</module>
             </modules>
         </profile>
     </profiles>
