@@ -53,6 +53,8 @@ def test_agent_instance_create(admin_client, sim_context):
     items = set([x.name for x in agent_instance.agent().configItemStatuses()])
 
     assert set(['configscripts',
+                'monit',
+                'node-services',
                 'services',
                 'agent-instance-startup',
                 'agent-instance-scripts']) == items

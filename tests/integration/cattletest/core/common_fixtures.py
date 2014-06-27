@@ -262,13 +262,17 @@ def kind_context(admin_client, kind, external_pool=False,
         kind_host = admin_client.update(kind_host, isPublic=host_public)
 
     assert kind_host.isPublic == host_public
-    assert kind_host.accountId == kind_agent.accountId
+    assert kind_host.accountId == kind_agent.accountId or \
+        get_plain_id(admin_client, kind_host.account()) == \
+        str(kind_agent.data.agentResourcesAccountId)
 
     pools = kind_host.storagePools()
     assert len(pools) == 1
     kind_pool = activate_resource(admin_client, pools[0])
 
-    assert kind_pool.accountId == kind_agent.accountId
+    assert kind_pool.accountId == kind_agent.accountId or \
+        get_plain_id(admin_client, kind_pool.account()) == \
+        str(kind_agent.data.agentResourcesAccountId)
 
     context = {
         'host': kind_host,

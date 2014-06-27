@@ -44,7 +44,7 @@ def test_sample_data(admin_client, system_account):
     assert network_service_provider.state == 'active'
     assert network_service_provider.agentInstanceImageUuid is None
 
-    network_services = find_count(5, network.networkServices)
+    network_services = find_count(7, network.networkServices)
     network_service_kinds = set()
 
     for service in network_services:
@@ -65,9 +65,15 @@ def test_sample_data(admin_client, system_account):
             service.uuid = 'docker0-ipsec-tunnel-service'
         if service.kind == 'portService':
             service.uuid = 'docker0-port-service'
+        if service.kind == 'hostNatGatewayService':
+            service.uuid = 'docker0-host-nat-gateway-service'
+        if service.kind == 'metadataService':
+            service.uuid = 'metadata-service'
 
     assert network_service_kinds == set(['dnsService',
                                          'dhcpService',
+                                         'hostNatGatewayService',
                                          'ipsecTunnelService',
+                                         'metadataService',
                                          'portService',
                                          'linkService'])

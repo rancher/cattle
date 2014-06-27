@@ -60,7 +60,7 @@ def test_virtual_machine_create(client, sim_context):
     assert vm.state == 'running'
 
     assert vm.vcpu is None
-    assert vm.memoryMb is None
+    assert vm.memoryMb == 256
 
 
 def test_virtual_machine_n_ids_s_ids(client, sim_context, network, subnet):
@@ -390,3 +390,34 @@ def test_virtual_machine_console_visibility(admin_client, sim_context):
 
     assert vm.state == 'stopped'
     assert 'console' not in vm
+
+
+def test_virtual_machine_account_defaults(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+    account = create_and_activate(admin_client, 'account',
+                                  kind='user')
+    cred = create_and_activate(admin_client, 'credential',
+                               accountId=account.id)
+
+    network = create_and_activate(admin_client, 'network')
+    assert network.accountId != account.id
+    network2 = create_and_activate(admin_client, 'network')
+    assert network2.accountId != account.id
+
+    account = admin_client.update(account,
+                                  defaultCredentialIds=[cred.id],
+                                  defaultNetworkIds=[network.id, network2.id])
+    assert account.state == 'active'
+    assert account.defaultCredentialIds == [cred.id]
+    assert account.defaultNetworkIds == [network.id, network2.id]
+
+    vm = admin_client.create_virtual_machine(imageUuid=image_uuid,
+                                             accountId=account.id)
+    vm = admin_client.wait_success(vm)
+
+    assert vm.state == 'running'
+    assert len(vm.credentials()) == 1
+    assert vm.credentials()[0].id == cred.id
+
+    network_ids = set([x.networkId for x in vm.nics()])
+    assert network_ids == set([network.id, network2.id])
