@@ -1,4 +1,4 @@
-FROM ibuildthecloud/ubuntu-core-base:13.10
+FROM ibuildthecloud/ubuntu-core-base:14.04
 RUN apt-get update && apt-get install -y --no-install-recommends openjdk-7-jre-headless
 RUN apt-get update && apt-get install -y curl
 ENV CATTLE_HOME /var/lib/cattle

@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import sys
+import os
 
 from cattle import from_env
 
 
-client = from_env()
+client = from_env(access_key=os.environ['CATTLE_REGISTRATION_ACCESS_KEY'],
+                  secret_key=os.environ['CATTLE_REGISTRATION_SECRET_KEY'])
 
 if not client.valid():
     print "echo Invalid API credentials; exit 1"
