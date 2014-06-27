@@ -188,4 +188,7 @@ class EventClient:
         finally:
             for child in self._children:
                 if hasattr(child, "terminate"):
-                    child.terminate()
+                    try:
+                        child.terminate()
+                    except:
+                        pass
