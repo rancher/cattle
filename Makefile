@@ -1,4 +1,5 @@
-MVN=install
+MVN_OPTS=
+MVN=${MVN_OPTS} install
 
 build: build-env
 	./tools/docker/build.sh mvn ${MVN}
@@ -16,14 +17,14 @@ enter: build-env
 clean: build-env
 	./tools/docker/build.sh find -depth -name __pycache__ -type d -exec rm -rf {} \;
 	./tools/docker/build.sh find -depth -name .tox -type d -exec rm -rf {} \;
-	./tools/docker/build.sh mvn clean
-	./tools/docker/build.sh rm -rf dist ./code/agent/src/agents/pyagent/dist ./tests/integration/.tox ./code/agent/src/agents/pyagent/.tox
+	./tools/docker/build.sh mvn -Drelease clean
+	./tools/docker/build.sh rm -rf dist ./code/agent/src/agents/node-services/content-home/node-services/node_modules ./code/agent/src/agents/pyagent/dist ./tests/integration/.tox ./code/agent/src/agents/pyagent/.tox
 
 test: build
 	FORCE_DB=h2 ./tools/docker/build.sh ./tools/build/runtests.sh
 
-bundle:
-	./tools/docker/build.sh mvn -Drelease clean package
+bundle: build-env
+	./tools/docker/build.sh mvn ${MVN_OPTS} -Drelease package
 
 images: bundle
 	./dist/package.sh
@@ -33,3 +34,6 @@ images-clean:
 
 check-dir:
 	./tools/build/checkin-test.sh check-dir
+
+check-in-test:
+	./tools/build/checkin-test.sh
