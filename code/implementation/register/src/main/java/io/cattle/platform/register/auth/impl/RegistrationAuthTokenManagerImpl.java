@@ -41,6 +41,10 @@ public class RegistrationAuthTokenManagerImpl implements RegistrationAuthTokenMa
 
         Credential cred = authDao.getCredential(parts[0]);
 
+        if ( cred == null ) {
+            return null;
+        }
+
         String token = RegistrationToken.createToken(cred.getPublicValue(), cred.getSecretValue(), date);
 
         if ( ! password.equals(token) ) {
