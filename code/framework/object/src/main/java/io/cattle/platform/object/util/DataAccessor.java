@@ -64,6 +64,27 @@ public class DataAccessor {
         return fields(obj).withKey(key).as(Long.class);
     }
 
+    public static List<Long> fieldLongList(Object obj, String key) {
+        List<Long> result = new ArrayList<Long>();
+        Object list = fields(obj).withKey(key).get();
+
+        if ( list == null || !(list instanceof List) ) {
+            return result;
+        }
+
+        for ( Object item : (List<?>)list ) {
+            if ( item == null ) {
+                result.add(null);
+            } else if ( item instanceof Number ) {
+                result.add(((Number)item).longValue());
+            } else {
+                result.add(Long.parseLong(item.toString()));
+            }
+        }
+
+        return result;
+    }
+
     public static Integer fieldInteger(Object obj, String key) {
         return fields(obj).withKey(key).as(Integer.class);
     }
