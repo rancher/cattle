@@ -30,6 +30,9 @@
                 "restart"
             ]
         },
+        "memoryMb" : {
+            "default" : 256
+        },
         "subnetIds" : {
             "type" : "array[reference[subnet]]",
             "nullable" : true,
