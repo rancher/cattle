@@ -1,5 +1,5 @@
 <#assign iface = "eth0">
-<#assign dummy = "arpproxy">
+<#assign dummy = "lo">
 
 route flush table 200
 
