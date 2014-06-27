@@ -10,7 +10,7 @@ if Config.is_eventlet():
     eventlet.monkey_patch()
     from eventlet.queue import Queue, Empty, Full
 
-    pool = eventlet.GreenPool(size=Config.workers() + 2)
+    pool = eventlet.GreenPool(size=Config.workers() * 2)
 
     class Worker:
         def __init__(self, target=None, args=None):
