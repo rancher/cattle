@@ -29,6 +29,12 @@ if os.path.exists(SCRATCH_DIR):
 os.makedirs(SCRATCH_DIR)
 
 
+@pytest.fixture(scope='session', autouse=True)
+def scratch_dir(request):
+    request.addfinalizer(
+        lambda: shutil.rmtree(SCRATCH_DIR, ignore_errors=True))
+
+
 @pytest.fixture(scope="module")
 def responses():
     r = ResponseHolder()
