@@ -66,7 +66,19 @@ public class Bootstrap implements Closeable {
             System.setProperty("logback.bootstrap.level", "WARN");
         }
 
-        System.out.println("[BOOTSTRAP] CATTLE_HOME=" + this.home.getAbsolutePath());
+        String lib = System.getenv("CATTLE_LIB");
+
+        if ( lib == null ) {
+            lib = System.getProperty("cattle.lib");
+        }
+
+        if ( lib != null ) {
+            System.setProperty("cattle.lib", lib);
+        }
+
+        if ( lib != null ) {
+            libDir = new File(lib);
+        }
     }
 
     protected void mkdirs(File dir) throws IOException {
@@ -122,20 +134,16 @@ public class Bootstrap implements Closeable {
     }
 
     protected void determineLibDir(JarInputStream is) throws IOException {
-        Manifest m = is.getManifest();
-        if ( m != null ) {
-            version = m.getMainAttributes().getValue("Implementation-Version");
-        }
+        version = getVersion(is);
+
         if ( version == null ) {
             System.err.println("No cattle version found in jar");
             version = UUID.randomUUID().toString();
         }
 
-        if ( version.contains("SNAPSHOT") ) {
-            version += "-" + getCattleId();
+        if ( libDir == null ) {
+            libDir = new File(new File(home, "lib"), version);
         }
-
-        libDir = new File(new File(home, "lib"), version);
     }
 
     protected void extractLib(JarInputStream is) throws IOException {
@@ -292,9 +300,46 @@ public class Bootstrap implements Closeable {
         };
     }
 
+    protected String getVersion(JarInputStream input) throws IOException {
+        boolean close = false;
+
+        try {
+            if ( input == null ) {
+                close = true;
+                input = getInput();
+            }
+
+            Manifest m = input.getManifest();
+            String impl = m.getMainAttributes().getValue("Implementation-Version");
+            String scm = m.getMainAttributes().getValue("SCM-Revision");
+
+            if ( impl == null ) {
+                return "dev";
+            }
+
+            if ( impl.contains("SNAPSHOT") && scm != null ) {
+                return impl + "-" + scm + "-" + getCattleId();
+            }
+
+            return impl;
+        } finally {
+            if ( close ) {
+                closeQuietly(input);
+            }
+        }
+    }
 
     public void run(String... args) throws Exception {
-        war = args.length > 0 && args[0].equals("war");
+        for ( String arg : args ) {
+            if ( arg.contains("version") ) {
+                System.out.println(getVersion(null));
+                System.exit(0);
+            } else if ( arg.equals("war") ) {
+                war = true;
+            }
+        }
+
+        System.out.println("[BOOTSTRAP] Starting Cattle");
 
         if ( war ) {
             if ( args.length == 1 ) {
@@ -318,6 +363,10 @@ public class Bootstrap implements Closeable {
             is = getInput();
 
             determineLibDir(is);
+
+            System.out.println("[BOOTSTRAP] CATTLE_HOME=" + this.home.getAbsolutePath());
+            System.out.println("[BOOTSTRAP] CATTLE_LIB=" + this.libDir.getAbsolutePath());
+
             createOutput();
             extractLib(is);
 
@@ -374,7 +423,6 @@ public class Bootstrap implements Closeable {
 
     public static final void main(String... args) {
         try {
-            System.out.println("[BOOTSTRAP] Starting Cattle");
             new Bootstrap().run(args);
         } catch (Exception e) {
             e.printStackTrace();
