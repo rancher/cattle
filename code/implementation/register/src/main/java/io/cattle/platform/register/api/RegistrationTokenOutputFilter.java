@@ -3,9 +3,12 @@ package io.cattle.platform.register.api;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.register.util.RegisterConstants;
 import io.cattle.platform.register.util.RegistrationToken;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
+
+import java.net.URL;
 
 public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
 
@@ -21,7 +24,11 @@ public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
         String secretKey = cred.getSecretValue();
 
         if ( accessKey != null && secretKey != null ) {
-            converted.getFields().put("token", RegistrationToken.createToken(accessKey, secretKey));
+            String token = RegistrationToken.createToken(accessKey, secretKey);
+            URL url = ApiContext.getUrlBuilder().resourceReferenceLink("scripts", token);
+            converted.getFields().put("token", token);
+            converted.getFields().put("registrationUrl", url.toExternalForm());
+            converted.getLinks().put("registrationUrl", url);
         }
 
         return converted;

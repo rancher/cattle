@@ -33,6 +33,7 @@
         <property name="plainTypes">
             <set>
                 <value>typeDocumentation</value>
+                <value>scripts</value>
             </set>
         </property>
     </bean>
