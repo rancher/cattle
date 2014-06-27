@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from cattle import concurrency  # NOQA
+
 import sys
 import os
 import logging
