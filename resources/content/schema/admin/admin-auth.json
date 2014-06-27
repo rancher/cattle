@@ -15,6 +15,8 @@
 
         "account.externalId" : "cru",
         "account.externalIdType" : "cru",
+        "account.defaultCredentialIds" : "cru",
+        "account.defaultNetworkIds" : "cru",
 
         "activeSetting" : "rud",
         "activeSetting.name" : "cr",
