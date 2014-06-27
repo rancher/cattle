@@ -134,9 +134,9 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.IpAddressNicMapTable IP_ADDRESS_NIC_MAP = io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
 
 	/**
-	 * The table cattle.ip_assocation
+	 * The table cattle.ip_association
 	 */
-	public static final io.cattle.platform.core.model.tables.IpAssocationTable IP_ASSOCATION = io.cattle.platform.core.model.tables.IpAssocationTable.IP_ASSOCATION;
+	public static final io.cattle.platform.core.model.tables.IpAssociationTable IP_ASSOCIATION = io.cattle.platform.core.model.tables.IpAssociationTable.IP_ASSOCIATION;
 
 	/**
 	 * The table cattle.network

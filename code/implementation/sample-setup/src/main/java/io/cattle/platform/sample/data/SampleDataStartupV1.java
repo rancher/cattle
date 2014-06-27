@@ -8,6 +8,7 @@ import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
+import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
@@ -113,7 +114,7 @@ public class SampleDataStartupV1 implements InitializationTask {
 
         toCreate.add(createByUuid(NetworkService.class, "docker0-dns-service",
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
-                NETWORK_SERVICE.KIND, "dnsService",
+                NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_DNS,
                 NETWORK_SERVICE.NAME, "DNS for managed docker0",
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
@@ -121,7 +122,7 @@ public class SampleDataStartupV1 implements InitializationTask {
 
         toCreate.add(createByUuid(NetworkService.class, "docker0-dhcp-service",
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
-                NETWORK_SERVICE.KIND, "dhcpService",
+                NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_DHCP,
                 NETWORK_SERVICE.NAME, "DHCP for managed docker0",
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
@@ -129,7 +130,7 @@ public class SampleDataStartupV1 implements InitializationTask {
 
         toCreate.add(createByUuid(NetworkService.class, "docker0-link-service",
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
-                NETWORK_SERVICE.KIND, "linkService",
+                NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_LINK,
                 NETWORK_SERVICE.NAME, "Instance links for managed docker0",
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
@@ -137,7 +138,7 @@ public class SampleDataStartupV1 implements InitializationTask {
 
         toCreate.add(createByUuid(NetworkService.class, "docker0-ipsecTunnel-service",
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
-                NETWORK_SERVICE.KIND, "ipsecTunnelService",
+                NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_IPSEC_TUNNEL,
                 NETWORK_SERVICE.NAME, "IPsec tunnels for managed docker0",
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
@@ -145,7 +146,7 @@ public class SampleDataStartupV1 implements InitializationTask {
 
         toCreate.add(createByUuid(NetworkService.class, "docker0-port-service",
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
-                NETWORK_SERVICE.KIND, "portService",
+                NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_PORT_SERVICE,
                 NETWORK_SERVICE.NAME, "Ports service for managed docker0",
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),

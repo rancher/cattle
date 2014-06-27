@@ -396,7 +396,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                     .on(vnet.ID.eq(NIC.VNET_ID))
                 .leftOuterJoin(networkService)
                     .on(networkService.NETWORK_ID.eq(NIC.NETWORK_ID)
-                            .and(networkService.KIND.eq(NetworkServiceConstants.KIND_HOST_NAT_GATEWAY_SERVICE)))
+                            .and(networkService.KIND.eq(NetworkServiceConstants.KIND_HOST_NAT_GATEWAY)))
                 .where(HOST.AGENT_ID.eq(agent.getId())
                         .and(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                         .and(HOST.REMOVED.isNull())

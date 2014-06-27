@@ -3,14 +3,14 @@ package io.cattle.platform.configitem.context.dao.impl;
 import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
-import static io.cattle.platform.core.model.tables.IpAssocationTable.*;
-import static io.cattle.platform.core.model.tables.NetworkTable.*;
-import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
+import static io.cattle.platform.core.model.tables.IpAssociationTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
+import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
@@ -113,11 +113,11 @@ public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
                     .and(primaryIp.REMOVED.isNull()))
             .leftOuterJoin(subnet)
                 .on(primaryIp.SUBNET_ID.eq(subnet.ID))
-            .leftOuterJoin(IP_ASSOCATION)
-                .on(IP_ASSOCATION.CHILD_IP_ADDRESS_ID.eq(primaryIp.ID)
-                    .and(IP_ASSOCATION.REMOVED.isNull()))
+            .leftOuterJoin(IP_ASSOCIATION)
+                .on(IP_ASSOCIATION.CHILD_IP_ADDRESS_ID.eq(primaryIp.ID)
+                    .and(IP_ASSOCIATION.REMOVED.isNull()))
             .leftOuterJoin(publicIp)
-                .on(IP_ASSOCATION.IP_ADDRESS_ID.eq(publicIp.ID)
+                .on(IP_ASSOCIATION.IP_ADDRESS_ID.eq(publicIp.ID)
                     .and(publicIp.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                     .and(publicIp.REMOVED.isNull()))
             .where(nic.VNET_ID.eq(vnet.getId())

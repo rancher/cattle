@@ -27,7 +27,7 @@
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump2">
-        <createTable tableName="ip_assocation">
+        <createTable tableName="ip_association">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
@@ -74,19 +74,19 @@
         <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="credential_instance_map" constraintName="fk_credential_instance_map__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump8">
-        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="ip_assocation" constraintName="fk_ip_assocation__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="ip_association" constraintName="fk_ip_association__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump9">
-        <addForeignKeyConstraint baseColumnNames="child_ip_address_id" baseTableName="ip_assocation" constraintName="fk_ip_assocation__child_ip_address_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="ip_address"/>
+        <addForeignKeyConstraint baseColumnNames="child_ip_address_id" baseTableName="ip_association" constraintName="fk_ip_association__child_ip_address_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="ip_address"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump10">
-        <addForeignKeyConstraint baseColumnNames="ip_address_id" baseTableName="ip_assocation" constraintName="fk_ip_assocation__ip_address_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="ip_address"/>
+        <addForeignKeyConstraint baseColumnNames="ip_address_id" baseTableName="ip_association" constraintName="fk_ip_association__ip_address_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="ip_address"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump11">
         <addUniqueConstraint columnNames="uuid" constraintName="idx_credential_instance_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="credential_instance_map"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump12">
-        <addUniqueConstraint columnNames="uuid" constraintName="idx_ip_assocation_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="ip_assocation"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_ip_association_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="ip_association"/>
     </changeSet>
     <changeSet author="darren (generated)" id="dump13">
         <createIndex indexName="idx_credential_instance_map_name" tableName="credential_instance_map" unique="false">
@@ -109,22 +109,22 @@
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump17">
-        <createIndex indexName="idx_ip_assocation_name" tableName="ip_assocation" unique="false">
+        <createIndex indexName="idx_ip_association_name" tableName="ip_association" unique="false">
             <column name="name"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump18">
-        <createIndex indexName="idx_ip_assocation_remove_time" tableName="ip_assocation" unique="false">
+        <createIndex indexName="idx_ip_association_remove_time" tableName="ip_association" unique="false">
             <column name="remove_time"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump19">
-        <createIndex indexName="idx_ip_assocation_removed" tableName="ip_assocation" unique="false">
+        <createIndex indexName="idx_ip_association_removed" tableName="ip_association" unique="false">
             <column name="removed"/>
         </createIndex>
     </changeSet>
     <changeSet author="darren (generated)" id="dump20">
-        <createIndex indexName="idx_ip_assocation_state" tableName="ip_assocation" unique="false">
+        <createIndex indexName="idx_ip_association_state" tableName="ip_association" unique="false">
             <column name="state"/>
         </createIndex>
     </changeSet>
