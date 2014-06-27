@@ -50,6 +50,7 @@
         "instance.credentialIds" : "cr",
         "instance.instanceTriggeredStop" : "cru",
         "instance.requestedHostId" : "cr",
+        "instance.userdata" : "cru",
 
         "instanceConsoleInput" : "r",
         "instanceConsole" : "r",

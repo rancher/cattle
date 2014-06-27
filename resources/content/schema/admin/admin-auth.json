@@ -90,6 +90,7 @@
         "instance" : "r",
         "instance.credentialIds" : "cr",
         "instance.instanceTriggeredStop" : "cru",
+        "instance.userdata" : "cru",
         "instance.vnetIds" : "cr",
         "instance.validHostIds" : "cru",
 
