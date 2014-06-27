@@ -52,7 +52,7 @@ public class Compress {
         return false;
     }
 
-    public static final void compressJar(InputStream is, JarEntry entry, String output) throws IOException {
+    public static final void compressJar(InputStream is, JarEntry entry, String output, long mtime) throws IOException {
         JarInputStream jis = new JarInputStream(new NoCloseInputStream(is), true);
         if ( containsSha1(jis.getManifest()) ) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -74,11 +74,18 @@ public class Compress {
             jis = new JarInputStream(new ByteArrayInputStream(baos.toByteArray()));
         }
 
+        File tempOutputFile = new File(output, entry.getName() + ".pack.tmp");
         File outputFile = new File(output, entry.getName() + ".pack");
-        FileUtils.forceMkdir(outputFile.getParentFile());
 
-        System.out.println("Compressing " + entry.getName() + " to " + outputFile);
-        FileOutputStream fos = new FileOutputStream(outputFile);
+        if ( mtime != -1 && outputFile.exists() && outputFile.lastModified() > mtime ) {
+            System.out.println("Already up to date " + outputFile);
+            return;
+        }
+
+        FileUtils.forceMkdir(tempOutputFile.getParentFile());
+
+        System.out.println("Compressing " + entry.getName() + " to " + tempOutputFile);
+        FileOutputStream fos = new FileOutputStream(tempOutputFile);
         try {
             Packer packer = Pack200.newPacker();
             packer.properties().put(Packer.DEFLATE_HINT, Packer.FALSE);
@@ -86,6 +93,10 @@ public class Compress {
             packer.pack(jis, fos);
         } finally {
             IOUtils.closeQuietly(fos);
+        }
+
+        if ( ! tempOutputFile.renameTo(outputFile) ) {
+            throw new IOException("Failed to rename " + tempOutputFile + " to " + outputFile);
         }
     }
 
@@ -116,7 +127,7 @@ public class Compress {
             while ( ( entry = is.getNextJarEntry() ) != null ) {
                 String name = entry.getName();
                 if ( ! exclude(name) && name.endsWith(".jar") ) {
-                    compressJar(is, entry, output);
+                    compressJar(is, entry, output, entry.getTime());
                 } else {
                     System.out.println("Adding [" + entry.getName() + "] to [" + resourcesFile.getPath() + "]");
                     resources.putNextEntry(entry);
