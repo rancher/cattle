@@ -10,6 +10,7 @@ RUN pip install --upgrade pip tox
 RUN git clone --recursive https://github.com/cattleio/cattle.git /opt/cattle-git && \
     cd /opt/cattle-git && \
     git checkout master
+RUN apt-get update && apt-get install -y npm
 ENV HOME /root
 RUN cd /opt/cattle-git && \
     mvn install && \
