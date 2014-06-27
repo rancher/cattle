@@ -130,10 +130,20 @@ public class Main {
 			        (System.currentTimeMillis() - start),
 			        getHttpPort());
 
-			for ( String arg : args ) {
+			for ( int i = 0 ; i < args.length ; i++ ) {
+			    String arg = args[i];
+
 			    if ( "--exit".equals(arg) ) {
 			        System.exit(0);
 			    }
+
+			    if ( "--notify".equals(arg) ) {
+                    consoleLog.info("[POST ] [{}ms] Calling notify [{}]",
+                            (System.currentTimeMillis() - start),
+                            args[i+1]);
+			        Runtime.getRuntime().exec(args[i+1]).waitFor();
+			    }
+
 			}
 
 			s.join();
@@ -141,6 +151,22 @@ public class Main {
 			e.printStackTrace();
 			consoleLog.error("Startup Failed [{}ms]", (System.currentTimeMillis() - start), e);
 			System.err.println("STARTUP FAILED [" + (System.currentTimeMillis() - start) + "] ms");
+
+			for ( int i = 0 ; i < args.length ; i++ ) {
+			    String arg = args[i];
+
+			    if ( "--notify-error".equals(arg) ) {
+                    consoleLog.error("[ERROR] [{}ms] Calling notify [{}]",
+                            (System.currentTimeMillis() - start),
+                            args[i+1]);
+			        try {
+                        Runtime.getRuntime().exec(args[i+1]).waitFor();
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+			    }
+			}
+
 			System.exit(1);
 		}
 	}
