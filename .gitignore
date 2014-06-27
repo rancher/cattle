@@ -4,6 +4,7 @@ __pycache__
 .classpath
 .idea
 .m2
+.npm
 .project
 .settings
 .tox
@@ -23,6 +24,7 @@ resources/content/db/mysql/cattle_dump*.sql
 resources/content/db/dump-*.xml
 resources/content/cattle-local.properties
 resources/content/modules.properties
+resources/local
 runtime
 target
 
