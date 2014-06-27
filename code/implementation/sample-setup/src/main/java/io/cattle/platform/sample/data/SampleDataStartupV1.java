@@ -152,6 +152,22 @@ public class SampleDataStartupV1 implements InitializationTask {
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
                 NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
 
+        toCreate.add(createByUuid(NetworkService.class, "docker0-host-nat-gateway-service",
+                NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
+                NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_HOST_NAT_GATEWAY,
+                NETWORK_SERVICE.NAME, "Host nat gateway service for managed docker0",
+                NETWORK_SERVICE.NETWORK_ID, network.getId(),
+                NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
+                NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
+
+        toCreate.add(createByUuid(NetworkService.class, "docker0-metadata-service",
+                NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
+                NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_METADATA,
+                NETWORK_SERVICE.NAME, "Meta data service for managed docker0",
+                NETWORK_SERVICE.NETWORK_ID, network.getId(),
+                NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
+                NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
+
         for ( Object object : toCreate ) {
             try {
                 processManager.executeStandardProcess(StandardProcess.CREATE, object, null);
