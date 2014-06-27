@@ -17,6 +17,7 @@ import uuid
 
 from subprocess import PIPE, Popen, CalledProcessError
 
+
 HASHES = {
     32: md5,
     40: sha1,
@@ -289,7 +290,7 @@ def validate_checksum(file_name, checksum_value, buffer_size=2**20):
 def get_command_output(*args, **kw):
     try:
         kw['stderr'] = subprocess.STDOUT
-        return _check_output(*args, **kw)
+        return check_output(*args, **kw)
     except subprocess.CalledProcessError as e:
         if not (e.output == 'Lock failed' and e.returncode == 122):
             log.exception('Failed to call %s %s, exit [%s], output :\n%s',
@@ -318,6 +319,16 @@ def _check_output(*popenargs, **kwargs):
         e.output = output
         raise e
     return output
+
+
+try:
+    import subprocess32
+    check_output = subprocess32.check_output
+except:
+    if 'check_output' in dir(subprocess):
+        check_output = subprocess.check_output
+    else:
+        check_output = _check_output
 
 
 def random_string(length=64):
