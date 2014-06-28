@@ -114,7 +114,7 @@ class WebsockifyProxy(BaseHandler):
         LibvirtConfig.set_console_enabled(True)
 
 
-if enabled():
+if LibvirtConfig.websockify_enabled() and enabled():
     try:
         import websockify
         from websockify import ProxyRequestHandler

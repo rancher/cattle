@@ -119,16 +119,12 @@ class Config:
         return Config.access_key(), Config.secret_key()
 
     @staticmethod
-    def storage_url(default=None):
-        if default is None:
-            default = Config.api_url()
-        return default_value('STORAGE_URL', default)
-
-    @staticmethod
-    def config_url(default=None):
-        if default is None:
-            default = Config.api_url()
-        return default_value('CONFIG_URL', default)
+    def config_url():
+        ret = default_value('CONFIG_URL', None)
+        if ret is None:
+            return Config.api_url()
+        else:
+            return ret
 
     @staticmethod
     def is_multi_proc():

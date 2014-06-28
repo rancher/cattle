@@ -85,15 +85,17 @@ class DockerDelegate(BaseHandler):
             return
 
         url = Config.config_url()
-        parsed = urlparse(url)
 
-        if 'localhost' == parsed.hostname:
-            add_to_env(config,
-                       CATTLE_CONFIG_URL_SCHEME=parsed.scheme,
-                       CATTLE_CONFIG_URL_PATH=parsed.path,
-                       CATTLE_CONFIG_URL_PORT=Config.api_proxy_listen_port())
-        else:
-            add_to_env(config, CATTLE_CONFIG_URL=url)
+        if url is not None:
+            parsed = urlparse(url)
+
+            if 'localhost' == parsed.hostname:
+                add_to_env(config,
+                           CATTLE_CONFIG_URL_SCHEME=parsed.scheme,
+                           CATTLE_CONFIG_URL_PATH=parsed.path,
+                           CATTLE_CONFIG_URL_PORT=Config.api_proxy_listen_port())
+            else:
+                add_to_env(config, CATTLE_CONFIG_URL=url)
 
     def after_start(self, instance, host, id):
         pass
