@@ -43,7 +43,7 @@ class WebsockifyProxy(BaseHandler):
             log.info('Creating websockify session %s %s:%s', id, host, port)
             f.write('{0}: {1}:{2}\n'.format(id, host, port))
 
-        host = LibvirtConfig.websockify_listen_host()
+        host = LibvirtConfig.websockify_public_host()
         port = LibvirtConfig.websockify_listen_port()
         path = 'websockify?token={0}'.format(id)
         return self._reply(req, {

@@ -64,6 +64,10 @@ class LibvirtConfig:
 
     @staticmethod
     def websockify_listen_host():
+        return default_value('LIBVIRT_WEBSOCKIFY_LISTEN_HOST', '0.0.0.0')
+
+    @staticmethod
+    def websockify_public_host():
         return default_value('LIBVIRT_WEBSOCKIFY_LISTEN_HOST',
                              LibvirtConfig.host_ip())
 

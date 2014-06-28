@@ -1,6 +1,5 @@
 from cattle import CONFIG_OVERRIDE
 CONFIG_OVERRIDE['DOCKER_REQUIRED'] = 'false'
-CONFIG_OVERRIDE['LIBVIRT_WEBSOCKIFY_ENABLED'] = 'false'
 
 import pytest
 from os.path import dirname
