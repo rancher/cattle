@@ -40,7 +40,7 @@ setup()
 
     echo '$(<key.pub)' > /root/.ssh/authorized_keys
     curl -sL https://get.docker.io/ | sh
-    apt-get install -y python-eventlet python-pip libvirt-dev libvirt-bin python-dev python2.6-dev qemu-kvm python-libvirt
+    apt-get install -y python-eventlet python-pip libvirt-dev libvirt-bin python-dev python2.6-dev qemu-kvm python-libvirt arptables
     if [ ! -e /usr/lib/libvirt-lxc.so ]; then
         ln -s /usr/lib/libvirt-lxc.so.0 /usr/lib/libvirt-lxc.so
     fi
