@@ -68,3 +68,7 @@ binary_deps()
 
 python_deps
 binary_deps
+
+if [ -e build ]; then
+    rm -rf build
+fi
