@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.DataTable.*;
 import io.cattle.platform.agent.connection.ssh.dao.SshAgentDao;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
@@ -36,6 +37,7 @@ public class SshAgentDaoImpl extends AbstractJooqDao implements SshAgentDao {
                     .on(AGENT.ACCOUNT_ID.eq(ACCOUNT.ID))
                 .where(
                         AGENT.ID.eq(agent.getId())
+                        .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_API_KEY))
                         .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)))
                 .orderBy(CREDENTIAL.CREATED.desc())
                 .fetchAny();
