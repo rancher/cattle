@@ -33,7 +33,8 @@ def libvirt_context(admin_client):
 @if_libvirt
 def test_libvirt_create(client, admin_client, libvirt_context):
     image_id = libvirt_context['imageId']
-    vm = client.create_virtual_machine(imageId=image_id)
+    vm = client.create_virtual_machine(imageId=image_id,
+                                       memoryMb=64)
 
     assert vm.state == 'creating'
 
