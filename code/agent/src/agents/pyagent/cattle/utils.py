@@ -15,6 +15,11 @@ import subprocess
 import time
 import uuid
 
+try:
+    from eventlet.green.subprocess import check_output as e_check_output
+except:
+    pass
+
 from subprocess import PIPE, Popen, CalledProcessError
 
 
@@ -299,9 +304,6 @@ def get_command_output(*args, **kw):
 
 
 def _check_output(*popenargs, **kwargs):
-    if 'check_output' in dir(subprocess):
-        return subprocess.check_output(*popenargs, **kwargs)
-
     # Copyright (c) 2003-2005 by Peter Astrand <astrand@lysator.liu.se>
     #
     # Licensed to PSF under a Contributor Agreement.
@@ -321,14 +323,26 @@ def _check_output(*popenargs, **kwargs):
     return output
 
 
-try:
-    import subprocess32
-    check_output = subprocess32.check_output
-except:
-    if 'check_output' in dir(subprocess):
-        check_output = subprocess.check_output
-    else:
-        check_output = _check_output
+_check_output_impl = None
+
+
+def check_output(*popenargs, **kwargs):
+    global _check_output_impl
+    if _check_output_impl is None:
+        from cattle import Config
+        if Config.is_eventlet():
+            _check_output_impl = e_check_output
+        else:
+            try:
+                import subprocess32
+                _check_output_impl = subprocess32.check_output
+            except:
+                if 'check_output' in dir(subprocess):
+                    _check_output_impl = subprocess.check_output
+                else:
+                    _check_output_impl = _check_output
+
+    _check_output_impl(*popenargs, **kwargs)
 
 
 def random_string(length=64):
