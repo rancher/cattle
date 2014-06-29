@@ -342,7 +342,7 @@ def check_output(*popenargs, **kwargs):
                 else:
                     _check_output_impl = _check_output
 
-    _check_output_impl(*popenargs, **kwargs)
+    return _check_output_impl(*popenargs, **kwargs)
 
 
 def random_string(length=64):
