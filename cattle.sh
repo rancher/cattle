@@ -60,6 +60,9 @@ build()
     if [ -e code/packaging/bundle/target/cattle-bundle*.jar ]; then
         if [ code/packaging/bundle/target/cattle-bundle*.jar -nt code/packaging/app/target/*.war ]; then
             cp code/packaging/bundle/target/cattle-bundle*.jar dist/server/artifacts/cattle.jar
+            if [ -e dist/server/artifacts/cattle.jar ]; then
+                java -jar dist/server/artifacts/cattle.jar version > dist/version
+            fi
         fi
     fi
     tar c -C tools/docker/package . | tar xf - -C dist

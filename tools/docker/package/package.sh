@@ -3,7 +3,11 @@ set -e
 
 cd $(dirname $0)
 
-JAR_VERSION=$(java -jar server/artifacts/cattle.jar version || echo dev)
+JAR_VERSION=dev
+if [ -e version ]; then
+    JAR_VERSION=$(<version)
+fi
+
 BASE=${BASE:-cattle/}
 export TAG=${TAG:-$JAR_VERSION}
 
