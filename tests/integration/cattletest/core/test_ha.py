@@ -14,7 +14,7 @@ def test_container_ha_default(admin_client, sim_context):
 
     def callback():
         processes = process_instances(admin_client, c, type='instance')
-        if len(processes) < 3:
+        if 'instance.stop' not in _process_names(processes):
             return None
         return processes
 
@@ -38,7 +38,7 @@ def test_container_ha_stop(admin_client, sim_context):
 
     def callback():
         processes = process_instances(admin_client, c, type='instance')
-        if len(processes) < 3:
+        if 'instance.stop' not in _process_names(processes):
             return None
         return processes
 
@@ -62,7 +62,7 @@ def test_container_ha_restart(admin_client, sim_context):
 
     def callback():
         processes = process_instances(admin_client, c, type='instance')
-        if len(processes) < 4:
+        if 'instance.start' not in _process_names(processes):
             return None
         return processes
 
@@ -87,7 +87,7 @@ def test_container_ha_remove(admin_client, sim_context):
 
     def callback():
         processes = process_instances(admin_client, c, type='instance')
-        if len(processes) < 4:
+        if 'instance.remove' not in _process_names(processes):
             return None
         return processes
 

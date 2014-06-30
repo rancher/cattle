@@ -76,10 +76,6 @@ def test_virtual_machine_n_ids_s_ids(client, sim_context, network, subnet):
 def test_virtual_machine_network(admin_client, client, sim_context, network,
                                  subnet):
     subnet_plain_id = get_plain_id(admin_client, subnet)
-    addresses = admin_client.list_resource_pool(poolType='subnet',
-                                                poolId=subnet_plain_id)
-    addresses_len = len(addresses)
-
     image_uuid = sim_context['imageUuid']
     vm = client.create_virtual_machine(imageUuid=image_uuid,
                                        networkIds=[network.id])
@@ -118,12 +114,12 @@ def test_virtual_machine_network(admin_client, client, sim_context, network,
     assert ip.address is not None
     assert ip.address.startswith('192.168.0')
 
-    addresses = admin_client.list_resource_pool(poolType='subnet',
-                                                poolId=subnet_plain_id)
-    assert len(addresses) == addresses_len + 1
-
     assert vm.primaryIpAddress is not None
     assert vm.primaryIpAddress == ip.address
+
+    addresses = admin_client.list_resource_pool(poolType='subnet',
+                                                poolId=subnet_plain_id)
+    assert ip.address in [x.item for x in addresses]
 
 
 def test_virtual_machine_subnet(client, sim_context, subnet, vnet):
@@ -247,10 +243,6 @@ def test_virtual_machine_remove_subnet(admin_client, sim_context, subnet,
 def test_virtual_machine_purge_subnet(admin_client, sim_context, subnet, vnet):
     image_uuid = sim_context['imageUuid']
     subnet_plain_id = get_plain_id(admin_client, subnet)
-    addresses = admin_client.list_resource_pool(poolType='subnet',
-                                                poolId=subnet_plain_id)
-    addresses_len = len(addresses)
-
     vm = admin_client.create_virtual_machine(subnetIds=[subnet.id],
                                              imageUuid=image_uuid)
     vm = admin_client.wait_success(vm)
@@ -258,7 +250,7 @@ def test_virtual_machine_purge_subnet(admin_client, sim_context, subnet, vnet):
 
     addresses = admin_client.list_resource_pool(poolType='subnet',
                                                 poolId=subnet_plain_id)
-    assert addresses_len + 1 == len(addresses)
+    assert vm.primaryIpAddress in [x.item for x in addresses]
     assert len(vm.nics()) == 1
     assert len(vm.nics()[0].ipAddresses()) == 1
     assert vm.nics()[0].ipAddresses()[0].address.startswith('192.168')
@@ -299,18 +291,13 @@ def test_virtual_machine_purge_subnet(admin_client, sim_context, subnet, vnet):
     assert ip_address.address is not None
     addresses = admin_client.list_resource_pool(poolType='subnet',
                                                 poolId=subnet_plain_id)
-    assert addresses_len == len(addresses)
-    addresses_len = len(addresses)
+    assert vm.primaryIpAddress not in [x.item for x in addresses]
 
 
 def test_virtual_machine_restore_subnet(admin_client, sim_context, subnet,
                                         vnet):
     image_uuid = sim_context['imageUuid']
     subnet_plain_id = get_plain_id(admin_client, subnet)
-    addresses = admin_client.list_resource_pool(poolType='subnet',
-                                                poolId=subnet_plain_id)
-    addresses_len = len(addresses)
-
     vm = admin_client.create_virtual_machine(subnetIds=[subnet.id],
                                              imageUuid=image_uuid)
     vm = admin_client.wait_success(vm)
@@ -318,7 +305,8 @@ def test_virtual_machine_restore_subnet(admin_client, sim_context, subnet,
 
     addresses = admin_client.list_resource_pool(poolType='subnet',
                                                 poolId=subnet_plain_id)
-    assert addresses_len + 1 == len(addresses)
+
+    assert vm.primaryIpAddress in [x.item for x in addresses]
     vm = admin_client.wait_success(vm.stop())
     assert vm.state == 'stopped'
 
