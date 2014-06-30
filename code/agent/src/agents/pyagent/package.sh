@@ -36,6 +36,7 @@ docker_build()
     ID=$(docker run -d agent-build echo)
     docker cp ${ID}:/usr/bin/nsenter ../cattle/plugins/docker || true
     docker cp ${ID}:/usr/local/bin/socat ../cattle/plugins/core || true
+    cd ..
 }
 
 local_build()
@@ -51,6 +52,8 @@ local_build()
 
     cp util-linux*/nsenter ../cattle/plugins/docker/nsenter
     cp socat*/socat ../cattle/plugins/core/socat
+
+    cd ..
 }
 
 binary_deps()

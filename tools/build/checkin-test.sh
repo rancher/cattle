@@ -40,6 +40,10 @@ find . -depth -type d -name .tox -exec rm -rf {} \;
 
 pwd
 
+if [ "$1" = "dirty" ]; then
+    exit 0
+fi
+
 if [ "$1" = "images" ]; then
     clean
 fi
