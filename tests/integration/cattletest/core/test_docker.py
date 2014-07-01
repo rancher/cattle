@@ -298,7 +298,7 @@ def test_agent_instance(admin_client, docker_context):
     c = admin_client.create_container(imageUuid=TEST_IMAGE_UUID,
                                       networkIds=[network.id])
     # TODO: Figure out whats failing here
-    c = admin_client.wait_success(c, timeout=120)
+    c = admin_client.wait_success(c, timeout=240)
     assert c.state == 'running'
 
     agent_instance = None
@@ -326,7 +326,7 @@ def test_no_port_override(admin_client, docker_context):
                                       ports=['8081:8080'])
 
     # TODO: Figure out why this takes so long
-    c = admin_client.wait_success(c, timeout=120)
+    c = admin_client.wait_success(c, timeout=240)
 
     assert c.state == 'running'
     ports = c.ports()
