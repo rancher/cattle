@@ -2,7 +2,7 @@
 
 . ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
-ARPDEV=lo
+ARPDEV=arpproxy
 NETDEV=eth0
 TABLE=200
 
