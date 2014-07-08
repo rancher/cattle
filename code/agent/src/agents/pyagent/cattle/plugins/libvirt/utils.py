@@ -1,3 +1,6 @@
+import os
+import subprocess
+
 from cattle.type_manager import get_type_list, register_type
 
 from .connection import LibvirtConnection
@@ -26,7 +29,44 @@ def pool_drivers():
     return get_type_list(_LIBVIRT_POOL_DRIVER)
 
 
+def _get_hvm_type():
+    if os.path.exists('/proc/cpuinfo') and os.path.exists('/dev/kvm'):
+        for line in open('/proc/cpuinfo'):
+            parts = line.split()
+            if len(parts) and parts[0] == 'flags':
+                if 'svm' in parts:
+                    return 'svm'
+                if 'vmx' in parts:
+                    return 'vmx'
+    return None
+
+
+def _kernel_mode_loaded():
+    type = _get_hvm_type()
+    mod = None
+    if type == 'svm':
+        mod = 'kvm_amd'
+    elif type == 'vmx':
+        mod = 'kvm_intel'
+
+    p = subprocess.Popen(['lsmod'], stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    if mod is not None and mod in out:
+        return True
+
+    return False
+
+
 def get_preferred_libvirt_type():
+    preferred = _get_preferred_libvirt_type_from_caps()
+
+    if preferred == 'kvm' and not _kernel_mode_loaded():
+        return 'qemu'
+
+    return preferred
+
+
+def _get_preferred_libvirt_type_from_caps():
     conn = LibvirtConnection.open('qemu')
     caps = ElementTree.fromstring(conn.getCapabilities())
 
