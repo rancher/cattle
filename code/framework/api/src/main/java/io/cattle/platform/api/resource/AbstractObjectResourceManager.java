@@ -2,6 +2,7 @@ package io.cattle.platform.api.resource;
 
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
@@ -38,6 +39,7 @@ import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractBaseResource
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,12 +50,14 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicIntProperty;
 
 public abstract class AbstractObjectResourceManager extends AbstractBaseResourceManager implements InitializationTask {
 
-//    private static final Logger log = LoggerFactory.getLogger(AbstractObjectResourceManager.class);
+    private static final Logger log = LoggerFactory.getLogger(AbstractObjectResourceManager.class);
 
     public static final String SCHEDULE_UPDATE = "scheduleUpdate";
 
@@ -65,6 +69,8 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     ObjectMetaDataManager metaDataManager;
     Map<String,ActionHandler> actionHandlersMap;
     List<ActionHandler> actionHandlers;
+    Map<String,LinkHandler> linkHandlersMap;
+    List<LinkHandler> linkHandlers;
 
     @Override
     protected Object authorize(Object object) {
@@ -156,6 +162,23 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Object getLinkInternal(String type, String id, String link, ApiRequest request) {
+        LinkHandler linkHandler = linkHandlersMap.get(type);
+        if ( linkHandler != null ) {
+            if ( linkHandler.handles(type, id, link, request) ) {
+                Object currentObject = getById(type, id, new ListOptions(request));
+                if ( currentObject == null ) {
+                    return null;
+                }
+
+                try {
+                    return linkHandler.link(link, currentObject, request);
+                } catch (IOException e) {
+                    log.error("Failed to process link [{}] for [{}:{}]", link, type, id, e);
+                    return null;
+                }
+            }
+        }
+
         Relationship relationship = metaDataManager.getRelationship(type, link);
 
         if ( relationship == null ) {
@@ -441,6 +464,13 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     public void start() {
         actionHandlersMap = NamedUtils.createMapByName(actionHandlers);
+        linkHandlersMap = new HashMap<String, LinkHandler>();
+
+        for ( LinkHandler handler : linkHandlers ) {
+            for ( String type : handler.getTypes() ) {
+                linkHandlersMap.put(type, handler);
+            }
+        }
     }
 
     @Override
@@ -491,6 +521,15 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Inject
     public void setActionHandlers(List<ActionHandler> actionHandlers) {
         this.actionHandlers = actionHandlers;
+    }
+
+    public List<LinkHandler> getLinkHandlers() {
+        return linkHandlers;
+    }
+
+    @Inject
+    public void setLinkHandlers(List<LinkHandler> linkHandlers) {
+        this.linkHandlers = linkHandlers;
     }
 
 }

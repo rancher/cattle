@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+import requests
 
 
 def test_create_ssh_key_default(admin_client):
@@ -11,6 +12,10 @@ def test_create_ssh_key_default(admin_client):
     assert key.publicValue.startswith('ssh-rsa ')
     assert key.publicValue.endswith('cattle@cattle')
     assert key.secretValue.startswith('-----BEGIN RSA PRIVATE KEY-----')
+    assert 'pem' in key.links
+
+    pem = requests.get(key.links['pem']).text
+    assert pem.startswith('-----BEGIN RSA PRIVATE KEY-----')
 
 
 def test_create_ssh_key_with_value(admin_client):
@@ -22,6 +27,7 @@ def test_create_ssh_key_with_value(admin_client):
 
     assert key.publicValue == 'ssh-rsa'
     assert key.secretValue is None
+    assert 'pem' not in key.links
 
 
 def test_create_container(admin_client, sim_context):

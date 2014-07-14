@@ -73,5 +73,6 @@
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerFilter" />
     <extension:discover class="io.github.ibuildthecloud.gdapi.request.resource.ResourceManager" />
     <extension:discover class="io.cattle.platform.api.action.ActionHandler" />
+    <extension:discover class="io.cattle.platform.api.link.LinkHandler" />
 
 </beans>
