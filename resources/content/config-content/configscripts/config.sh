@@ -49,12 +49,12 @@ if [ "$CATTLE_AGENT_STARTUP" != "true" ] && [ -e /etc/agent-instance ]; then
     fi
 fi
 
-if [ "${FLOCKER}" != "$LOCK" ]; then
-    if ! FLOCKER="$LOCK" flock -oe -n "$LOCK" true; then
+if [ "${CATTLE_CONFIG_FLOCKER}" != "$LOCK" ]; then
+    if ! CATTLE_CONFIG_FLOCKER="$LOCK" flock -oe -n "$LOCK" true; then
         echo -n Lock failed
         exit 122
     fi
-    FLOCKER="$LOCK" flock -oe -n "$LOCK" "$0" "$@"
+    CATTLE_CONFIG_FLOCKER="$LOCK" flock -oe -n "$LOCK" "$0" "$@"
     exit $?
 fi
 
