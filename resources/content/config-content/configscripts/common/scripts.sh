@@ -85,7 +85,7 @@ stage_files()
 
     if [ -d content-home ]; then
         find content-home -name "*.sh" -exec chmod +x {} \;
-        tar cf - -C content-home . | tar xvf - --no-overwrite-dir -C $CATTLE_HOME | xargs -I{} echo 'INFO: HOME ->' {}
+        tar cf - -C content-home . | tar xvf - --no-overwrite-dir -C $CATTLE_HOME | sed 's/^/INFO: HOME -> /'
     fi
 
     if [ -d content ]; then
@@ -103,7 +103,7 @@ stage_files()
         done
                                 
         find content -name "*.sh" -exec chmod +x {} \;
-        tar cf - -C content . | tar xvf - --no-overwrite-dir -C / | xargs -I{} echo 'INFO: ROOT ->' {}
+        tar cf - -C content . | tar xvf - --no-overwrite-dir -C / | sed 's/^/INFO: ROOT -> /'
     fi
 
     if [ "$monit" = "true" ]; then
