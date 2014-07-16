@@ -106,6 +106,7 @@ setup_env()
 
     if ! [[ -n "$CATTLE_URL" && -n "$CATTLE_ACCESS_KEY" && "$CATTLE_SECRET_KEY" ]]; then
         echo 'Invalid environment, maybe the server is inaccessible' 1>&2
+        sleep 5
         exit 1
     fi
 
