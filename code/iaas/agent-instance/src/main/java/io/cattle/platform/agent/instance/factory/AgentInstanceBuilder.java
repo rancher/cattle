@@ -29,6 +29,8 @@ public interface AgentInstanceBuilder {
 
     AgentInstanceBuilder withInstanceTriggeredStop(String instanceTriggeredStop);
 
+    AgentInstanceBuilder withName(String name);
+
     public Instance build();
 
 }

@@ -82,6 +82,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(INSTANCE.ACCOUNT_ID, getAccountId(builder));
         properties.put(INSTANCE.AGENT_ID, agent.getId());
         properties.put(INSTANCE.IMAGE_ID, getImage(agent, builder));
+        properties.put(INSTANCE.NAME, builder.getName());
         properties.put(INSTANCE.ZONE_ID, agent.getZoneId());
         properties.put(INSTANCE.KIND, builder.getInstanceKind());
         properties.put(InstanceConstants.FIELD_INSTANCE_TRIGGERED_STOP, builder.getInstanceTriggeredStop());

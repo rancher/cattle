@@ -13,6 +13,7 @@ import com.netflix.config.DynamicStringProperty;
 public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     private static final DynamicStringProperty DEFAULT_IMAGE_UUID = ArchaiusUtil.getString("agent.instance.image.uuid");
+    private static final DynamicStringProperty DEFAULT_NAME = ArchaiusUtil.getString("agent.instance.name");
 
     String instanceKind = InstanceConstants.KIND_CONTAINER;
     Long vnetId;
@@ -21,6 +22,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     Long agentGroupId;
     NetworkServiceProvider networkServiceProvider;
     String imageUuid;
+    String name = DEFAULT_NAME.get();
     String instanceTriggeredStop = InstanceConstants.ON_STOP_RESTART;
     boolean accountOwned = false;
     boolean managedConfig = false;
@@ -59,6 +61,12 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     @Override
     public AgentInstanceBuilder withInstanceTriggeredStop(String instanceTriggeredStop) {
         this.instanceTriggeredStop = instanceTriggeredStop;
+        return this;
+    }
+
+    @Override
+    public AgentInstanceBuilder withName(String name) {
+        this.name = name;
         return this;
     }
 
@@ -178,5 +186,13 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     public void setInstanceTriggeredStop(String instanceTriggeredStop) {
         this.instanceTriggeredStop = instanceTriggeredStop;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
