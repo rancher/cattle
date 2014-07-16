@@ -37,7 +37,7 @@ def test_agent_create(admin_client, sim_context):
     assert account.state == "active"
     assert account.kind == "agent"
 
-    creds = filter(lambda x: x.kind == 'apiKey', account.credentials())
+    creds = filter(lambda x: x.kind == 'agentApiKey', account.credentials())
     assert len(creds) == 1
     assert creds[0].state == "active"
     assert creds[0].publicValue is not None

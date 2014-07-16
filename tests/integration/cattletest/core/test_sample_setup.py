@@ -2,8 +2,18 @@ from common_fixtures import *  # NOQA
 
 
 def test_sample_data(admin_client, system_account):
-    network = find_one(admin_client.list_network, uuid='managed-docker0')
 
+    network = find_one(admin_client.list_network, uuid='unmanaged')
+    assert network.accountId == system_account.id
+    assert network.isPublic
+    assert network.kind == 'network'
+    assert network.removed is None
+    assert network.state == 'active' or network.state == 'inactive'
+    assert 'hostVnetUri' not in network
+    assert 'dynamicCreateVnet' not in network
+    assert 'libvirt' not in network.data
+
+    network = find_one(admin_client.list_network, uuid='managed-docker0')
     assert network.accountId == system_account.id
     assert network.isPublic
     assert network.kind == 'hostOnlyNetwork'

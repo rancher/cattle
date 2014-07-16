@@ -23,7 +23,10 @@ def _client_for_user(name, accounts):
                            secret_key=accounts[name][1])
 
 
-def create_user(admin_client, user_name):
+def create_user(admin_client, user_name, kind=None):
+    if kind is None:
+        kind = user_name
+
     password = user_name + 'pass'
     account = create_type_by_uuid(admin_client, 'account', user_name,
                                   kind=user_name,
@@ -57,8 +60,11 @@ def accounts():
     admin_client = _admin_client()
     for user_name in ['admin', 'agent', 'user', 'agentRegister', 'test',
                       'readAdmin']:
-        result[user_name] = create_user(admin_client, user_name)
+        result[user_name] = create_user(admin_client,
+                                        user_name,
+                                        kind=user_name)
 
+    result['admin'] = create_user(admin_client, 'admin')
     system_account = admin_client.list_account(kind='system', uuid='system')[0]
     result['system'] = [None, None, system_account]
 
