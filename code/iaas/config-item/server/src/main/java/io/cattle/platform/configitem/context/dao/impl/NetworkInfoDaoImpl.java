@@ -11,6 +11,7 @@ import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
@@ -33,6 +34,7 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Vnet;
@@ -42,6 +44,7 @@ import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NetworkServiceTable;
 import io.cattle.platform.core.model.tables.NicTable;
+import io.cattle.platform.core.model.tables.PhysicalHostTable;
 import io.cattle.platform.core.model.tables.PortTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
 import io.cattle.platform.core.model.tables.VnetTable;
@@ -220,7 +223,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
     @Override
     public List<ClientIpsecTunnelInfo> getIpsecTunnelClient(Instance inputAgentInstance) {
         Nic primaryNic = networkDao.getPrimaryNic(inputAgentInstance.getId());
-        final Map<Long,ClientIpsecTunnelInfo> hostToAgentInstance = new HashMap<Long, ClientIpsecTunnelInfo>();
+        final Map<Long,ClientIpsecTunnelInfo> physicalHostToAgentInstance = new HashMap<Long, ClientIpsecTunnelInfo>();
 
         MultiRecordMapper<ClientIpsecTunnelInfo> mapper = new MultiRecordMapper<ClientIpsecTunnelInfo>() {
             @Override
@@ -235,6 +238,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 info.setHostIpAddress(ipAddress);
                 info.setIpAddress((IpAddress)input.get(3));
                 info.setSubnet((Subnet)input.get(4));
+                info.setPhysicalHost((PhysicalHost)input.get(5));
 
                 if ( instance.getAgentId() != null ) {
                     Map<?,?> map = DataAccessor.fromDataFieldOf(instance)
@@ -251,7 +255,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                         info.setIsaKmpPort(((Number)isaKmpPort).intValue());
                         info.setAgentInstance(instance);
 
-                        hostToAgentInstance.put(host.getId(), info);
+                        physicalHostToAgentInstance.put(host.getPhysicalHostId(), info);
                     }
                 }
 
@@ -264,6 +268,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
         IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
         SubnetTable subnet = mapper.add(SUBNET);
+        PhysicalHostTable physicalHost = mapper.add(PHYSICAL_HOST);
 
         List<ClientIpsecTunnelInfo> tempResult = create()
                 .select(mapper.fields())
@@ -274,9 +279,11 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                     .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.ID))
                 .join(host)
                     .on(INSTANCE_HOST_MAP.HOST_ID.eq(host.ID))
-                .join(HOST_IP_ADDRESS_MAP)
+                .leftOuterJoin(physicalHost)
+                    .on(physicalHost.ID.eq(host.PHYSICAL_HOST_ID))
+                .leftOuterJoin(HOST_IP_ADDRESS_MAP)
                     .on(HOST_IP_ADDRESS_MAP.HOST_ID.eq(host.ID))
-                .join(ipAddress)
+                .leftOuterJoin(ipAddress)
                     .on(ipAddress.ID.eq(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID))
                 .join(IP_ADDRESS_NIC_MAP)
                     .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
@@ -303,7 +310,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 continue;
             }
 
-            ClientIpsecTunnelInfo agentInfo = hostToAgentInstance.get(info.getHost().getId());
+            ClientIpsecTunnelInfo agentInfo = physicalHostToAgentInstance.get(info.getHost().getPhysicalHostId());
             if ( agentInfo == null ) {
                 continue;
             }
@@ -312,7 +319,13 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
             info.setNatPort(agentInfo.getNatPort());
             info.setIsaKmpPort(agentInfo.getIsaKmpPort());
 
-            result.add(info);
+            if ( info.getHostIpAddress() == null ) {
+                info.setHostIpAddress(agentInfo.getHostIpAddress());
+            }
+
+            if ( info.getHostIpAddress() != null ) {
+                result.add(info);
+            }
         }
 
         return result;
