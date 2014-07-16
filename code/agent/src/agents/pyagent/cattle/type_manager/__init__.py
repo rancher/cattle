@@ -17,9 +17,12 @@ LIFECYCLE = 'lifecycle'
 
 
 def types():
+    seen = set()
     for v in TYPES.values():
         for i in v:
-            yield i
+            if i not in seen:
+                seen.add(i)
+                yield i
 
 
 def register_type(type_name, impl):
