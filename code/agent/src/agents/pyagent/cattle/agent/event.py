@@ -155,7 +155,8 @@ class EventClient:
         args = {
             "data": _data(events, self._agent_id),
             "stream": True,
-            "headers": headers
+            "headers": headers,
+            "timeout": Config.event_read_timeout()
         }
 
         if self._auth is not None:
@@ -165,6 +166,7 @@ class EventClient:
                 args["auth"] = self._auth
 
         try:
+            drop_count = 0
             r = requests.post(self._url, **args)
             if r.status_code != 201:
                 raise Exception(r.text)
@@ -181,6 +183,11 @@ class EventClient:
                             self._queue.put(line, block=False)
                 except Full:
                     log.info("Dropping request %s" % line)
+                    drop_count += 1
+                    max = Config.max_dropped_requests()
+                    if drop_count > max:
+                        log.error('Max dropped requests [%s] exceeded', max)
+                        break
                 if not _should_run(ppid):
                     log.info("Parent process has died or stamp changed,"
                              " exiting")
@@ -192,3 +199,5 @@ class EventClient:
                         child.terminate()
                     except:
                         pass
+
+        sys.exit(0)

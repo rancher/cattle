@@ -47,6 +47,10 @@ class DockerConfig:
     def docker_required():
         return default_value('DOCKER_REQUIRED', 'true') == 'true'
 
+    @staticmethod
+    def delegate_timeout():
+        return int(default_value('DOCKER_DELEGATE_TIMEOUT', '120'))
+
 
 def docker_client(version=None):
     if version is None:

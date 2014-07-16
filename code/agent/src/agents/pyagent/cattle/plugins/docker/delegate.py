@@ -9,6 +9,7 @@ from .compute import DockerCompute
 from cattle.agent.handler import BaseHandler
 from cattle.progress import Progress
 from cattle.type_manager import get_type, MARSHALLER
+from . import DockerConfig
 
 import requests
 
@@ -24,7 +25,7 @@ def container_exec(ip, token, event):
 
     r = _SESSION.post(url, data=data, headers={
         'Content-Type': 'application/json'
-    })
+    }, timeout=DockerConfig.delegate_timeout())
 
     if r.status_code != 200:
         return r.status_code, r.text, None

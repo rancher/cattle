@@ -216,3 +216,11 @@ class Config:
     @staticmethod
     def config_update_pyagent():
         return default_value('CONFIG_UPDATE_PYAGENT', 'true') == 'true'
+
+    @staticmethod
+    def max_dropped_requests():
+        return int(default_value('MAX_DROPPED_REQUESTS', '1000'))
+
+    @staticmethod
+    def event_read_timeout():
+        return int(default_value('EVENT_READ_TIMEOUT', '60'))
