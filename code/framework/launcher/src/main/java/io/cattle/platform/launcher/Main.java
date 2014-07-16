@@ -151,9 +151,29 @@ public class Main {
 	    return System.getProperty("main", JETTY_LAUNCHER);
 	}
 
+	protected void setupHome() {
+	    String homeEnv = System.getenv("CATTLE_HOME");
+	    String homeProperty = System.getProperty("cattle.home");
+	    String home = homeProperty;
+
+	    if ( home == null ) {
+	        home = homeEnv;
+	    }
+
+	    if ( home != null && ! home.endsWith(File.separator) ) {
+	        home += File.separator;
+	    }
+
+	    if ( home != null && ! home.equals(homeProperty) ) {
+	        System.setProperty("cattle.home", home);
+	    }
+	}
+
 	public void run(String... args) throws Exception {
 	    /* The world is better place without time zones.  Well, at least for computers */
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
+        setupHome();
 
 		try {
 			ClassLoader cl = getClassLoader();
