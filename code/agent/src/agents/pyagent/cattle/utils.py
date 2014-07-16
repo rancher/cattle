@@ -337,7 +337,7 @@ def check_output(*popenargs, **kwargs):
     global _check_output_impl
     if _check_output_impl is None:
         from cattle import Config
-        if Config.is_eventlet():
+        if Config.is_eventlet() and 'e_check_output' in globals():
             _check_output_impl = e_check_output
         else:
             try:
