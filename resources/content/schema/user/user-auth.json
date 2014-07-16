@@ -29,7 +29,6 @@
         "container.imageUuid" : "cr",
         "container.instanceLinks" : "cr",
         "container.networkIds" : "cr",
-        "container.ports" : "cr",
         "container.primaryIpAddress" : "r",
         "container.startOnCreate" : "cr",
         "container.subnetIds" : "cr",
@@ -49,6 +48,7 @@
         "instance" : "r",
         "instance.credentialIds" : "cr",
         "instance.instanceTriggeredStop" : "cru",
+        "instance.ports" : "cr",
         "instance.requestedHostId" : "cr",
         "instance.userdata" : "cru",
 

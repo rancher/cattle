@@ -33,12 +33,6 @@
             "nullable": true,
             "minLength": 1
         },
-        "ports": {
-            "type": "array[string]",
-            "create": true,
-            "nullable": true,
-            "includeInList": false
-        },
         "privileged": {
             "type": "boolean",
             "default": "false"

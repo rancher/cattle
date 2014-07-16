@@ -33,6 +33,12 @@
         "memoryMb" : {
             "default" : 256
         },
+        "ports": {
+            "type": "array[string]",
+            "create": true,
+            "nullable": true,
+            "includeInList": false
+        },
         "subnetIds" : {
             "type" : "array[reference[subnet]]",
             "nullable" : true,
