@@ -17,7 +17,7 @@ wait_for_dev()
     done
     if ! check_dev; then
         echo "$DEV does not exist" 1>&2
-        exit 1
+        exit 41
     fi
 }
 
@@ -49,17 +49,28 @@ while [ "$#" -gt 0 ]; do
     shift 1
 done
 
-if [[ "$PID" = "" || ! -e /proc/$PID/ns/net ]]; then
-    echo "Invalid PID $PID"
-    exit 1
-fi
-
 if [ "$_ENTERED" != "true" ]; then
     NSENTER=nsenter
+    NS_ARGS="-n -t $PID"
     if [ ! -x "$(which nsenter)" ]; then
         NSENTER=$(dirname $0)/nsenter
     fi
-    _ENTERED=true exec $NSENTER -n -t $PID -F -- $0 $ARGS
+
+    if [[ "$PID" = "" ]]; then
+        echo "Invalid PID $PID"
+        exit 42
+    fi
+
+    if [[ ! -e /proc/$PID/ns/net && ! -e /host/proc/$PID/ns/net ]]; then
+        echo "Invalid PID $PID"
+        exit 43
+    fi
+
+    if [ -e /host/proc/$PID/ns/net ]; then
+        NS_ARGS="--net=/host/proc/$PID/ns/net"
+    fi
+
+    _ENTERED=true exec $NSENTER $NS_ARGS -F -- $0 $ARGS
 
     # Not possible
     exit 0
