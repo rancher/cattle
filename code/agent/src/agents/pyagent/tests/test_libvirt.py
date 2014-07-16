@@ -232,7 +232,9 @@ def test_ping(random_qcow2, pool_dir, agent, responses):
     def post(req, resp):
         resources = resp['data']['resources']
 
-        instances = filter(lambda x: x['type'] == 'instance', resources)
+        instances = filter(lambda x: x['type'] == 'instance' and
+                           x['uuid'] == 'c861f990-4472-4fa1-960f-65171b544c28',
+                           resources)
         resources = filter(lambda x: x.get('kind') == 'libvirt', resources)
 
         assert len(instances) == 1
