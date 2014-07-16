@@ -1,0 +1,7 @@
+{
+    "name" : "CoreOS Alpha 367.1.0",
+    "description" : "Default user: core",
+    "uuid" : "coreos-alpha-367.1.0",
+    "url" : "http://alpha.release.core-os.net/amd64-usr/367.1.0/coreos_production_openstack_image.img.bz2",
+    "checksum" : "329888411a1a297546a960a4eff4e09b978a9c6a"
+}
