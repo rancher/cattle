@@ -4,12 +4,17 @@ set -e
 cd /var/lib/cattle
 
 JAR=/usr/share/cattle/cattle.jar
+DEBUG_JAR=/var/lib/cattle/lib/cattle-debug.jar
 
 if [ "$URL" != "" ]
 then
     echo Downloading $URL
     curl -s $URL > cattle-download.jar
     JAR=cattle-download.jar
+fi
+
+if [ -e $DEBUG_JAR ]; then
+    JAR=$DEBUG_JAR
 fi
 
 setup_gelf()
