@@ -70,8 +70,22 @@ class InstanceConfig(object):
 
 class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
     def __init__(self):
+        self._default_type = None
+        self._checked_default_type = False
         KindBasedMixin.__init__(self, kind='libvirt')
         BaseComputeDriver.__init__(self)
+
+    def get_default_type(self):
+        if self._checked_default_type:
+            return self._default_type
+
+        self._default_type = get_preferred_libvirt_type()
+        self._checked_default_type = True
+
+        return self._default_type
+
+    def on_startup(self):
+        self.get_default_type()
 
     @staticmethod
     def get_instance_by(conn, func):
@@ -86,7 +100,7 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         if not utils.ping_include_instances(ping):
             return
 
-        conn = LibvirtConnection.open(get_preferred_libvirt_type())
+        conn = LibvirtConnection.open(self.get_default_type())
         vms = []
 
         for vm in conn.listAllDomains(0):
@@ -116,7 +130,7 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
             'physicalHostUuid': physical_host['uuid'],
             'data': {
                 'libvirt': {
-                    'type': get_preferred_libvirt_type()
+                    'type': self.get_default_type()
                 }
             }
         }

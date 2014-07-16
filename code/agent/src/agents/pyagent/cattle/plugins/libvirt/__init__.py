@@ -21,13 +21,15 @@ LIBVIRT_KIND = 'libvirt'
 
 if _ENABLED:
     from cattle.type_manager import register_type
-    from cattle.type_manager import COMPUTE_DRIVER, STORAGE_DRIVER
+    from cattle.type_manager import COMPUTE_DRIVER, STORAGE_DRIVER, LIFECYCLE
 
     from .storage import LibvirtStorage
     from .compute import LibvirtCompute
     from .utils import *  # NOQA
 
-    register_type(COMPUTE_DRIVER, LibvirtCompute())
+    _LIBVIRT_COMPUTE = LibvirtCompute()
+    register_type(COMPUTE_DRIVER, _LIBVIRT_COMPUTE)
+    register_type(LIFECYCLE, _LIBVIRT_COMPUTE)
     register_type(STORAGE_DRIVER, LibvirtStorage())
     log.info('Enabling libvirt')
 else:

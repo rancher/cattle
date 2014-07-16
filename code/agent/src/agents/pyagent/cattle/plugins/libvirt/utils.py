@@ -1,10 +1,14 @@
 import os
 import subprocess
+import logging
 
 from cattle.type_manager import get_type_list, register_type
 
 from .connection import LibvirtConnection
 from xml.etree import ElementTree
+
+log = logging.getLogger('libvirt')
+
 
 _LIBVIRT_POOL_DRIVER = 'LIBVIRT_POOL_DRIVER'
 _LIBVIRT_VOLUME_DRIVER = 'LIBVIRT_VOLUME_DRIVER'
@@ -52,8 +56,10 @@ def _kernel_mode_loaded():
     p = subprocess.Popen(['lsmod'], stdout=subprocess.PIPE)
     out, err = p.communicate()
     if mod is not None and mod in out:
+        log.info('KVM kernel module found')
         return True
 
+    log.info('KVM kernel module not found')
     return False
 
 
