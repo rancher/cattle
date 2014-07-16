@@ -44,10 +44,16 @@ public class AccountCreate extends AbstractDefaultProcessHandler {
                                         .withDefault(false)
                                         .as(Boolean.class);
 
+        String apiKeyKind = DataAccessor.fromMap(state.getData())
+                                        .withScope(AccountConstants.class)
+                                        .withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND)
+                                        .withDefault(CREDENTIAL_TYPE.get())
+                                        .as(String.class);
+
         if ( createApiKey || CREATE_CREDENTIAL.get() ) {
             List<Credential> creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class,
                     CREDENTIAL.ACCOUNT_ID, account.getId(),
-                    CREDENTIAL.KIND, CREDENTIAL_TYPE.get());
+                    CREDENTIAL.KIND, apiKeyKind);
 
             for (Credential cred : creds) {
                 result.put("_createdCredential" + cred.getId(), true);

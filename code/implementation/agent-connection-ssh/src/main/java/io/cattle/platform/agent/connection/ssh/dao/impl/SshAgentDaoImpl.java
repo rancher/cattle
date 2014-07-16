@@ -37,7 +37,7 @@ public class SshAgentDaoImpl extends AbstractJooqDao implements SshAgentDao {
                     .on(AGENT.ACCOUNT_ID.eq(ACCOUNT.ID))
                 .where(
                         AGENT.ID.eq(agent.getId())
-                        .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_API_KEY))
+                        .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_AGENT_API_KEY))
                         .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)))
                 .orderBy(CREDENTIAL.CREATED.desc())
                 .fetchAny();

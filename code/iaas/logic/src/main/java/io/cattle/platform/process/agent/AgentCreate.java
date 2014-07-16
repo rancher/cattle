@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -38,6 +39,11 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
                 .withScope(AccountConstants.class)
                 .withKey(AccountConstants.OPTION_CREATE_APIKEY)
                 .set(true);
+
+        DataAccessor.fromMap(state.getData())
+                .withScope(AccountConstants.class)
+                .withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND)
+                .set(CredentialConstants.KIND_AGENT_API_KEY);
 
         Account account = createAccountObj(agent);
         create(account, state.getData());

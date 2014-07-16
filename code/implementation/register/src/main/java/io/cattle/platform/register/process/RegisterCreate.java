@@ -83,7 +83,7 @@ public class RegisterCreate extends AbstractGenericObjectProcessLogic implements
         Account account = loadResource(Account.class, agent.getAccountId());
 
         for ( Credential cred : children(account, Credential.class) ) {
-            if ( cred.getKind().equals(CredentialConstants.KIND_API_KEY) &&
+            if ( cred.getKind().equals(CredentialConstants.KIND_AGENT_API_KEY) &&
                     CommonStatesConstants.ACTIVE.equals(cred.getState()) ) {
                 return cred;
             }

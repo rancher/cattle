@@ -37,7 +37,7 @@ public class AgentUtils {
         }
 
         for ( Credential cred : objectManager.children(account, Credential.class) ) {
-            if ( CredentialConstants.KIND_API_KEY.equals(cred.getKind()) && CommonStatesConstants.ACTIVE.equals(cred.getState()) ) {
+            if ( CredentialConstants.KIND_AGENT_API_KEY.equals(cred.getKind()) && CommonStatesConstants.ACTIVE.equals(cred.getState()) ) {
                 try {
                     return "Basic " + Base64.encodeBase64String((cred.getPublicValue() + ":" + cred.getSecretValue()).getBytes("UTF-8"));
                 } catch (UnsupportedEncodingException e) {
