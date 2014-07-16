@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     monit \
     nodejs \
     psmisc \
+    tcpdump \
     uuid-runtime \
     vim-tiny && \
     rm -rf /var/lib/apt/lists
