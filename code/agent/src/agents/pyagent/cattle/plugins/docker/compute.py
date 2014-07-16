@@ -245,6 +245,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             return False
 
     def _get_instance_host_map_data(self, obj):
+        inspect = None
         existing = self.get_container_by_name(obj.instance.uuid)
         docker_ports = {}
         docker_ip = None
@@ -272,6 +273,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             'instance': {
                 '+data': {
                     'dockerContainer': existing,
+                    'dockerInspect': inspect,
                     '+fields': {
                         'dockerHostIp': DockerConfig.docker_host_ip(),
                         'dockerPorts': docker_ports,

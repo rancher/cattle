@@ -88,6 +88,7 @@ def test_instance_only_activate(agent, responses):
     _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
 
     def post(req, resp):
+        del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
         fields = resp['data']['instance']['+data']['+fields']
         del docker_container['Created']
@@ -109,6 +110,7 @@ def test_instance_activate_ports(agent, responses):
     _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
 
     def post(req, resp):
+        del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
         fields = resp['data']['instance']['+data']['+fields']
         del docker_container['Created']
@@ -128,6 +130,7 @@ def test_instance_activate_links(agent, responses):
     _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
 
     def post(req, resp):
+        del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
         id = docker_container['Id']
         fields = resp['data']['instance']['+data']['+fields']
@@ -188,6 +191,7 @@ def test_instance_activate_links_no_service(agent, responses):
     client.start(c)
 
     def post(req, resp):
+        del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
         id = docker_container['Id']
         fields = resp['data']['instance']['+data']['+fields']
@@ -217,6 +221,7 @@ def test_instance_activate_ipsec(agent, responses):
     _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
 
     def post(req, resp):
+        del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
         fields = resp['data']['instance']['+data']['+fields']
         del docker_container['Created']
@@ -239,7 +244,7 @@ def test_instance_activate_agent_instance_localhost(agent, responses):
     _delete_container('/c861f990-4472-4fa1-960f-65171b544c28')
 
     def post(req, resp):
-
+        del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
         fields = resp['data']['instance']['+data']['+fields']
         id = docker_container['Id']
@@ -274,6 +279,7 @@ def test_instance_activate_agent_instance(agent, responses):
 
     def post(req, resp):
 
+        del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
         fields = resp['data']['instance']['+data']['+fields']
         id = docker_container['Id']
@@ -309,6 +315,7 @@ def test_instance_activate_command(agent, responses):
     _delete_container('/c-c861f990-4472-4fa1-960f-65171b544c28')
 
     def post(req, resp):
+        del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
         fields = resp['data']['instance']['+data']['+fields']
         del docker_container['Created']
@@ -330,6 +337,7 @@ def test_instance_activate_command_args(agent, responses):
     _delete_container('/ca-c861f990-4472-4fa1-960f-65171b544c28')
 
     def post(req, resp):
+        del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
         fields = resp['data']['instance']['+data']['+fields']
         del docker_container['Created']
@@ -353,6 +361,7 @@ def test_instance_deactivate(agent, responses):
     test_instance_only_activate(agent, responses)
 
     def post(req, resp):
+        del resp['data']['instance']['+data']['dockerInspect']
         del resp['data']['instance']['+data']['dockerContainer']['Created']
         del resp['data']['instance']['+data']['dockerContainer']['Id']
         del resp['data']['instance']['+data']['dockerContainer']['Status']
