@@ -32,4 +32,13 @@ CONFIG_DIR=/etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new
 # installed: the line below must be uncommented.
 #IGNORE_RESOLVCONF=yes
 
+<#list services?values as service >
+    <#if service.kind == "dnsService" && (service.service.data.fields.dns)?? >
+        <#list service.service.data.fields.dns as dns >
+RESOLV_CONF=/var/lib/cattle/etc/resolv.conf
+        </#list>
+        <#break>
+    </#if>
+</#list>
+
 RESOLV_CONF=/etc/resolv.conf

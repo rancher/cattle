@@ -1,7 +1,9 @@
 #!/bin/bash
 
-if [[ "$1" == init && -e /var/lib/dhcp/dhclient.leases ]]; then
-    cat /var/lib/dhcp/dhclient.leases
+LEASES=/var/lib/misc/dnsmasq.leases
+
+if [[ "$1" == init && -e $LEASES ]]; then
+    cat $LEASES
 else
     echo "$@"
 fi

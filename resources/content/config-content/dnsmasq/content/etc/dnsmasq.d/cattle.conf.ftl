@@ -548,7 +548,7 @@ dhcp-option=vendor:MSFT,2,1i
 # The DHCP server needs somewhere on disk to keep its lease database.
 # This defaults to a sane location, but if you want to change it, use
 # the line below.
-#dhcp-leasefile=/var/lib/misc/dnsmasq.leases
+dhcp-leasefile=/var/lib/misc/dnsmasq.leases
 
 # Set the DHCP server to authoritative mode. In this mode it will barge in
 # and take over the lease for any client which broadcasts on the network,
@@ -564,7 +564,7 @@ dhcp-option=vendor:MSFT,2,1i
 # The arguments sent to the script are "add" or "del", 
 # then the MAC address, the IP address and finally the hostname
 # if there is one. 
-dhcp-script=/usr/bin/dnsmasq-leases.sh
+#dhcp-script=/usr/bin/dnsmasq-leases.sh
 
 # Set the cachesize here.
 #cache-size=150
