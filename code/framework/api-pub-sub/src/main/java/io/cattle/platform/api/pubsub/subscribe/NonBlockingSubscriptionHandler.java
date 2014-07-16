@@ -182,7 +182,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
                 try {
                     write(new Ping(), writer, writeLock, strip);
                 } catch (IOException e) {
-                    log.debug("Got exception on write, disconnecting [{}]", e.getMessage());
+                    log.debug("Got exception on write, disconnecting : {} [{}]", e.getClass(), e.getMessage());
                     unsubscribe(disconnect, listener);
                     future.setException(e);
                     throw new CancelRetryException();
