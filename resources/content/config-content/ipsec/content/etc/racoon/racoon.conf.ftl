@@ -19,7 +19,7 @@ sainfo anonymous
 {
 	pfs_group 2;
 	lifetime time 12 hour ;
-	encryption_algorithm 3des, blowfish, des, rijndael ;
+	encryption_algorithm 3des, des, rijndael ;
 	authentication_algorithm hmac_sha1, hmac_md5 ;
 	compression_algorithm deflate ;
 }
