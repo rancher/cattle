@@ -78,7 +78,15 @@ public class SampleDataStartupV1 implements InitializationTask {
 
         List<Object> toCreate = new ArrayList<Object>();
 
-        Network network = createByUuid(Network.class, "managed-docker0",
+        Network network = createByUuid(Network.class, "unmanaged",
+                NETWORK.ACCOUNT_ID, system.getId(),
+                NETWORK.IS_PUBLIC, true,
+                NETWORK.NAME, "Unmanaged Network",
+                NETWORK.STATE, CommonStatesConstants.REQUESTED);
+
+        toCreate.add(network);
+
+        network = createByUuid(Network.class, "managed-docker0",
                 NetworkConstants.FIELD_HOST_VNET_URI, "bridge://docker0",
                 NetworkConstants.FIELD_DYNAMIC_CREATE_VNET, true,
                 NETWORK.ACCOUNT_ID, system.getId(),
