@@ -159,7 +159,7 @@ apply()
     VERSION=$(<${content_root}/version)
     info "Running ${content_root}/apply.sh"
     pushd ${content_root} >/dev/null
-    ./apply.sh "${opts[@]}"
+    ./apply.sh "${opts[@]}" || CATTLE_SCRIPT_DEBUG=true ./apply.sh "${opts[@]}"
     echo $(basename $(pwd)) > ../current
     popd >/dev/null
 }
