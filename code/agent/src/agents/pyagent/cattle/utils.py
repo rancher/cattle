@@ -35,6 +35,8 @@ DECOMPRESS = {
     '.bz2': bz2.BZ2File
 }
 
+CHUNK_SIZE = 8192
+
 log = logging.getLogger('cattle')
 
 _TEMP_NAME = 'work'
@@ -248,8 +250,13 @@ def decompress(file_name, name=None):
         if name.endswith(ext):
             with open(temp_name, 'wb') as output:
                 input = archive_open(file_name)
-                for line in input:
-                    output.write(line)
+                while True:
+                    chunk = input.read(CHUNK_SIZE)
+                    if chunk:
+                        output.write(chunk)
+                    else:
+                        break
+
                 input.close()
 
             os.rename(temp_name, file_name)
