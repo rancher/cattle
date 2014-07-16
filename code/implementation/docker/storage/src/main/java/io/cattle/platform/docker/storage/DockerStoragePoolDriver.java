@@ -49,7 +49,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
             return false;
         }
 
-        image.setName(String.format("%s (%s)", dockerImage.getFullName(), dockerImage.getId()));
+        image.setName(dockerImage.getFullName());
 
         Map<String,Object> data = image.getData();
         if ( data == null ) {
