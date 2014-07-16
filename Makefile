@@ -30,10 +30,13 @@ images: bundle
 	./dist/package.sh
 
 images-clean:
-	./tools/build/checkin-test.sh images
+	./tools/build/checkin-test.sh -c test clean images
 
-check-dir:
-	./tools/build/checkin-test.sh check-dir
+check-dir-clean:
+	./tools/build/checkin-test.sh -c
 
 check-in-test:
-	./tools/build/checkin-test.sh
+	./tools/build/checkin-test.sh test
+
+check-dir-dirty:
+	./tools/build/checkin-test.sh dirty

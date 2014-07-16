@@ -40,17 +40,17 @@ find . -depth -type d -name .tox -exec rm -rf {} \;
 
 pwd
 
-if [ "$1" = "dirty" ]; then
-    exit 0
-fi
+while [ "$#" -gt 0 ]; do
+    if [ "$1" == "-c" ]; then
+        clean
+    elif [ "$1" == "dirty" ]; then
+        exit 0
+    else
+        break
+    fi
+    shift 1
+done
 
-if [ "$1" = "images" ]; then
-    clean
+if [ "$#" -gt 0 ]; then
+    make "$@"
 fi
-
-if [ "$1" = "check-dir" ]; then
-    clean
-    exit 0
-fi
-
-make clean test "$@"
