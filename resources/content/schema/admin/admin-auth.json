@@ -150,6 +150,12 @@
         "subnet.networkAddress" : "cr",
         "subnet.startAddress" : "cr",
 
+        "subnetIpPool.cidrSize" : "cr",
+        "subnetIpPool.endAddress" : "cr",
+        "subnetIpPool.gateway" : "cr",
+        "subnetIpPool.networkAddress" : "cr",
+        "subnetIpPool.startAddress" : "cr",
+
         "subscribe" : "cr",
         "subscribe.eventNames" : "cr",
 

@@ -1,0 +1,10 @@
+{
+    "resourceActions" : {
+        "acquire" : {
+            "output" : "ipAddress",
+            "attributes" : {
+                "state" : "active"
+            }
+        }
+    }
+}

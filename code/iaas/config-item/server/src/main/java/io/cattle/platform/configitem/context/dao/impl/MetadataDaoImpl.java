@@ -118,7 +118,7 @@ public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
                     .and(IP_ASSOCIATION.REMOVED.isNull()))
             .leftOuterJoin(publicIp)
                 .on(IP_ASSOCIATION.IP_ADDRESS_ID.eq(publicIp.ID)
-                    .and(publicIp.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                    .and(publicIp.ROLE.eq(IpAddressConstants.ROLE_PUBLIC))
                     .and(publicIp.REMOVED.isNull()))
             .where(nic.VNET_ID.eq(vnet.getId())
                     .and(nic.REMOVED.isNull()))

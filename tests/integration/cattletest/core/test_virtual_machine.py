@@ -3,42 +3,6 @@ from cattle import ApiError
 from common_fixtures import *  # NOQA
 
 
-@pytest.fixture(scope='session')
-def network(admin_client):
-    network = create_type_by_uuid(admin_client, 'network', 'test_vm_network',
-                                  isPublic=True)
-
-    subnet = create_type_by_uuid(admin_client, 'subnet', 'test_vm_subnet',
-                                 isPublic=True,
-                                 networkId=network.id,
-                                 networkAddress='192.168.0.0',
-                                 cidrSize=24)
-
-    vnet = create_type_by_uuid(admin_client, 'vnet', 'test_vm_vnet',
-                               networkId=network.id,
-                               uri='fake://')
-
-    create_type_by_uuid(admin_client, 'subnetVnetMap', 'test_vm_vnet_map',
-                        subnetId=subnet.id,
-                        vnetId=vnet.id)
-
-    return network
-
-
-@pytest.fixture(scope='session')
-def subnet(admin_client, network):
-    subnets = network.subnets()
-    assert len(subnets) == 1
-    return subnets[0]
-
-
-@pytest.fixture(scope='session')
-def vnet(admin_client, subnet):
-    vnets = subnet.vnets()
-    assert len(vnets) == 1
-    return vnets[0]
-
-
 def test_virtual_machine_create_cpu_memory(client, sim_context):
     image_uuid = sim_context['imageUuid']
     vm = client.create_virtual_machine(imageUuid=image_uuid,
@@ -288,6 +252,7 @@ def test_virtual_machine_purge_subnet(admin_client, sim_context, subnet, vnet):
     assert len(nic.ipAddresses()) == 0
 
     ip_address = admin_client.reload(ip_address)
+    assert ip_address.state == 'removed'
     assert ip_address.address is not None
     addresses = admin_client.list_resource_pool(poolType='subnet',
                                                 poolId=subnet_plain_id)

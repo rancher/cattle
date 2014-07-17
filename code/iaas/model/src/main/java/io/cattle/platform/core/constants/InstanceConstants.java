@@ -11,6 +11,7 @@ public class InstanceConstants {
     public static final String FIELD_IMAGE_ID = "imageId";
     public static final String FIELD_INSTANCE_LINKS = "instanceLinks";
     public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
+    public static final String FIELD_PUBLIC_IP_ADDRESS_POOL_ID = "publicIpAddressPoolId";
     public static final String FIELD_NETWORK_IDS = "networkIds";
     public static final String FIELD_PORTS = "ports";
     public static final String FIELD_PRIMARY_IP_ADDRESS = "primaryIpAddress";

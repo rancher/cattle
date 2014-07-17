@@ -67,6 +67,9 @@
         "ipAddress" : "r",
         "ipAddress.address" : "r",
 
+        "ipAddressAssociateInput" : "cr",
+        "ipAddressAssociateInput.ipAddressId" : "cr",
+
         "network" : "r",
 
         "nic" : "r",

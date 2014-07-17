@@ -1,5 +1,6 @@
 package io.cattle.platform.process.ipaddress;
 
+import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -26,6 +27,10 @@ public class IpAddressDeactivate extends AbstractDefaultProcessHandler {
         }
 
         poolManager.releaseResource(subnet, ipAddress);
+
+        if ( ipAddress.getKind().equals(IpAddressConstants.KIND_POOLED_IP_ADDRESS) ) {
+            return new HandlerResult().withChainProcessName(IpAddressConstants.PROCESS_REMOVE);
+        }
 
         return null;
     }

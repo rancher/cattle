@@ -42,8 +42,9 @@
     <process:defaultProcesses resourceType="imageStoragePoolMap" />
     <process:defaultProcesses resourceType="instanceHostMap" />
     <process:defaultProcesses resourceType="instanceLink" />
-    <process:defaultProcesses resourceType="ipAddress" />
     <process:defaultProcesses resourceType="ipAddressNicMap" />
+    <process:defaultProcesses resourceType="ipAssociation" />
+    <process:defaultProcesses resourceType="ipPool" />
     <process:defaultProcesses resourceType="network" />
     <process:defaultProcesses resourceType="networkService" />
     <process:defaultProcesses resourceType="networkServiceProvider" />
@@ -57,6 +58,11 @@
     <process:defaultProcesses resourceType="subnetVnetMap" />
     <process:defaultProcesses resourceType="vnet" />
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
+
+    <!-- IP Address -->
+    <process:defaultProcesses resourceType="ipAddress" />
+    <process:process name="ipaddress.associate" resourceType="ipAddress" start="active" transitioning="associating" done="associated" />
+    <process:process name="ipaddress.disassociate" resourceType="ipAddress" start="associating,associated" transitioning="disassociating" done="active" />
 
     <!-- Agent -->
     <process:defaultProcesses resourceType="agent" exclude="agent.deactivate" />

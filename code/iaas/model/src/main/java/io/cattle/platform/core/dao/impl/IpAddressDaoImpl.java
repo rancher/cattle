@@ -1,25 +1,34 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
+import static io.cattle.platform.core.model.tables.IpAssociationTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
-import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.IpAddressConstants;
+import io.cattle.platform.core.constants.IpPoolConstants;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostIpAddressMap;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.IpAddressNicMap;
+import io.cattle.platform.core.model.IpAssociation;
+import io.cattle.platform.core.model.IpPool;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.tables.records.IpAddressRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
 
 public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
 
@@ -80,6 +89,35 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
         return ipAddressObj;
     }
 
+    @Override
+    public IpAddress createIpAddressFromPool(IpPool pool, Object key, Object... value) {
+        Map<Object,Object> data = new HashMap<Object, Object>();
+
+        data.put(IP_ADDRESS.KIND, IpAddressConstants.KIND_POOLED_IP_ADDRESS);
+        data.put(IP_ADDRESS.IP_POOL_ID, pool.getId());
+        data.put(IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PUBLIC);
+        data.put(ObjectMetaDataManager.CAPABILITIES_FIELD, Arrays.asList(IpAddressConstants.CAPABILITY_ASSOCIATE));
+
+        if ( IpPoolConstants.KIND_SUBNET_IP_POOL.equals(pool.getKind()) ) {
+            List<Subnet> subnets = objectManager.children(pool, Subnet.class);
+
+            for ( Subnet subnet : subnets ) {
+                if ( CommonStatesConstants.ACTIVE.equals(subnet.getState()) ) {
+                    data.put(IP_ADDRESS.SUBNET_ID, subnet.getId());
+                    break;
+                }
+            }
+        }
+
+        if ( key != null ) {
+            Map<Object,Object> override = CollectionUtils.asMap(key, value);
+            data.putAll(override);
+        }
+
+        Map<String,Object> props = objectManager.convertToPropertiesFor(IpAddress.class, data);
+        return objectManager.create(IpAddress.class, props);
+    }
+
     public ObjectManager getObjectManager() {
         return objectManager;
     }
@@ -89,5 +127,21 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
         this.objectManager = objectManager;
     }
 
+    @Override
+    public IpAssociation createOrFindAssociation(IpAddress address, IpAddress childIpAddress) {
+        IpAssociation association = objectManager.findOne(IpAssociation.class,
+                IP_ASSOCIATION.IP_ADDRESS_ID, address.getId(),
+                IP_ASSOCIATION.CHILD_IP_ADDRESS_ID, childIpAddress.getId(),
+                IP_ASSOCIATION.REMOVED, null);
+
+        if ( association == null ) {
+            association = objectManager.create(IpAssociation.class,
+                IP_ASSOCIATION.IP_ADDRESS_ID, address.getId(),
+                IP_ASSOCIATION.CHILD_IP_ADDRESS_ID, childIpAddress.getId(),
+                IP_ASSOCIATION.ACCOUNT_ID, childIpAddress.getAccountId());
+        }
+
+        return association;
+    }
 
 }

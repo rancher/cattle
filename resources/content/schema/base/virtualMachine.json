@@ -5,6 +5,10 @@
             "nullable" : true,
             "create" : true
         },
+        "publicIpAddressPoolId" : {
+            "type" : "reference[ipPool]",
+            "nullable" : true
+        },
         "libvirtVncAddress" : {
             "type" : "string"
         },

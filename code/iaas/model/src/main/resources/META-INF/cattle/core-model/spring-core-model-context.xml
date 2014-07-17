@@ -26,6 +26,8 @@
                 <value>instanceStop</value>
                 <value>instanceConsole</value>
                 <value>instanceConsoleInput</value>
+                <value>ipAddressAssociateInput</value>
+                <value>subnetIpPool,parent=ipPool</value>
             </set>
         </property>
     </bean>

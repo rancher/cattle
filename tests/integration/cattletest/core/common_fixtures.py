@@ -100,10 +100,9 @@ def sim_context(request, admin_client):
     host = context['host']
 
     if len(host.ipAddresses()) == 0:
-        ip = admin_client.create_ip_address(address='192.168.10.10',
-                                            isPublic=True)
-        ip = admin_client.wait_success(ip)
-        ip = admin_client.wait_success(ip.activate())
+        ip = create_and_activate(admin_client, 'ipAddress',
+                                 address='192.168.10.10',
+                                 isPublic=True)
         map = admin_client.create_host_ip_address_map(hostId=host.id,
                                                       ipAddressId=ip.id)
         map = admin_client.wait_success(map)
@@ -546,3 +545,39 @@ def resource_pool_items(admin_client, obj, type=None, qualifier=None):
         return admin_client.list_resource_pool(ownerType=type,
                                                ownerId=id,
                                                qualifier=qualifier)
+
+
+@pytest.fixture(scope='session')
+def network(admin_client):
+    network = create_type_by_uuid(admin_client, 'network', 'test_vm_network',
+                                  isPublic=True)
+
+    subnet = create_type_by_uuid(admin_client, 'subnet', 'test_vm_subnet',
+                                 isPublic=True,
+                                 networkId=network.id,
+                                 networkAddress='192.168.0.0',
+                                 cidrSize=24)
+
+    vnet = create_type_by_uuid(admin_client, 'vnet', 'test_vm_vnet',
+                               networkId=network.id,
+                               uri='fake://')
+
+    create_type_by_uuid(admin_client, 'subnetVnetMap', 'test_vm_vnet_map',
+                        subnetId=subnet.id,
+                        vnetId=vnet.id)
+
+    return network
+
+
+@pytest.fixture(scope='session')
+def subnet(admin_client, network):
+    subnets = network.subnets()
+    assert len(subnets) == 1
+    return subnets[0]
+
+
+@pytest.fixture(scope='session')
+def vnet(admin_client, subnet):
+    vnets = subnet.vnets()
+    assert len(vnets) == 1
+    return vnets[0]

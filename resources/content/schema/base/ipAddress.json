@@ -1,0 +1,17 @@
+{
+    "resourceActions" : {
+        "associate" : {
+            "input" : "ipAddressAssociateInput",
+            "output" : "ipPool",
+            "attributes" : {
+                "capability" : "associate"
+            }
+        },
+        "disassociate" : {
+            "output" : "ipAddress",
+            "attributes" : {
+                "capability" : "associate"
+            }
+        }
+    }
+}
