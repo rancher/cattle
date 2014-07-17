@@ -237,7 +237,7 @@ public class JooqObjectManager extends AbstractObjectManager {
         UpdatableRecord<?> recordObject = JooqUtils.getRecordObject(obj);
         Class<UpdatableRecord<?>> parent = JooqUtils.getRecordClass(schemaFactory, obj.getClass());
         Class<UpdatableRecord<?>> child = JooqUtils.getRecordClass(schemaFactory, type);
-        ChildReferenceCacheKey key = new ChildReferenceCacheKey(parent, child);
+        ChildReferenceCacheKey key = new ChildReferenceCacheKey(parent, child, propertyName);
         TableField<?, ?> propertyField = (TableField<?, ?>)(propertyName == null ? null : metaDataManager.convertFieldNameFor(getType(type), propertyName));
 
         ForeignKey<?, ?> foreignKey = childReferenceCache.get(key);
