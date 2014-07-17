@@ -3,6 +3,8 @@ package io.cattle.platform.iaas.api.credential;
 import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Credential;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
@@ -35,7 +37,7 @@ public class SshKeyPemDownloadLinkHandler implements LinkHandler {
 
             response.setContentLength(content.length);
             response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment; filename=mykey.pem");
+            response.setHeader("Content-Disposition", "attachment; filename=" + getFilename((Credential)obj, request));
             response.setHeader("Cache-Control", "private");
             response.setHeader("Pragma", "private");
             response.setHeader("Expires", "Wed 24 Feb 1982 18:42:00 GMT");
@@ -46,6 +48,19 @@ public class SshKeyPemDownloadLinkHandler implements LinkHandler {
         }
 
         return null;
+    }
+
+    protected String getFilename(Credential cred, ApiRequest request) {
+        String name = cred.getName();
+
+        if ( name != null ) {
+            return name.trim().replaceAll("[^a-zA-Z0-9]", "_") + ".pem";
+        } else {
+            IdFormatter formatter = ApiContext.getContext().getIdFormatter();
+            Object id = formatter.formatId(cred.getKind(), cred.getId());
+
+            return "id_rsa_" + id + ".pem";
+        }
     }
 
 }
