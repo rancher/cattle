@@ -7,6 +7,7 @@ remote anonymous
 	my_identifier user_fqdn "${ipsecNetwork.uuid}" ;
     nat_traversal force;
 	lifetime time 24 hour ;
+	dpd_delay 20 ;
 	proposal {
 		encryption_algorithm 3des;
 		hash_algorithm sha1;
