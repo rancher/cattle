@@ -16,6 +16,8 @@ import io.cattle.platform.util.exception.ExecutionException;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.StringUtils;
+
 @Named
 public class IpAddressActivate extends AbstractDefaultProcessHandler {
 
@@ -49,6 +51,7 @@ public class IpAddressActivate extends AbstractDefaultProcessHandler {
         }
 
         return new HandlerResult(IP_ADDRESS.ADDRESS, resource.getName(),
+                IP_ADDRESS.NAME, StringUtils.isBlank(ipAddress.getName()) ? resource.getName() : ipAddress.getName(),
                 IP_ADDRESS.NETWORK_ID, networkId);
     }
 

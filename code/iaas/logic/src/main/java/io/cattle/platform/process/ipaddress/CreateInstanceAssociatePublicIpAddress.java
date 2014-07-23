@@ -62,6 +62,7 @@ public class CreateInstanceAssociatePublicIpAddress extends AbstractObjectProces
         if ( ip == null ) {
             Map<String,Object> data = CollectionUtils.asMap(IpAddressConstants.OPTION_RELEASE_ON_CHILD_PURGE, true);
             ip = ipAddressDao.createIpAddressFromPool(pool,
+                    ObjectMetaDataManager.UUID_FIELD, uuid,
                     ObjectMetaDataManager.CAPABILITIES_FIELD, Collections.emptyList(),
                     ObjectMetaDataManager.DATA_FIELD, data);
         }

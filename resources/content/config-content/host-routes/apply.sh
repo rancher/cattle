@@ -91,9 +91,64 @@ EOF
     apply_config ip -batch etc/cattle/host-routes
 }
 
+get_assigned_ips()
+{
+    ip addr show dev $1 | grep ':cattle' | awk '{print $2}' | cut -f1 -d'/'
+}
+
+setup_ips()
+{
+    declare -A BY_IFACE
+    declare -A ASSIGNED
+
+    mapfile HOST_IPS < content-home/etc/cattle/host-ip
+
+    for line in "${HOST_IPS[@]}"; do
+        set $line
+        IFACE=$1
+        IP_ADDRESS=$2
+
+        BY_IFACE[$IFACE]="${BY_IFACE[$IFACE]} $IP_ADDRESS"
+    done
+
+    for KEY in "${!BY_IFACE[@]}"; do
+        if [ "$KEY" = "default" ]; then
+            IFACE=$(ip route get 8.8.8.8 | grep via | awk '{print $5}')
+        else
+            IFACE=$KEY
+        fi
+
+        if [ -z "$IFACE" ]; then
+            continue
+        fi
+
+        for IP in $(get_assigned_ips $IFACE); do
+            ASSIGNED[$IP]="existing"
+        done
+
+        for IP in ${BY_IFACE[$KEY]}; do
+            if [ "${ASSIGNED[$IP]}" != "existing" ]; then
+                info Adding ${IP}/32 to $IFACE
+                ip addr add ${IP}/32 dev $IFACE label ${IFACE}:cattle
+            else
+                info ${IP}/32 on $IFACE already assigned
+            fi
+            ASSIGNED[$IP]="true"
+        done
+
+        for IP in "${!ASSIGNED[@]}"; do
+            if [ "${ASSIGNED[$IP]}" = "existing" ]; then
+                info Removing $IP from $IFACE
+                ip addr del ${IP}/32 dev $IFACE
+            fi
+        done
+    done
+}
+
 
 setup_routes
 gateway
 setup_arptables
+setup_ips
 
 stage_files

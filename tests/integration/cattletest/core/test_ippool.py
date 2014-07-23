@@ -181,3 +181,19 @@ def test_virtual_machine_with_public_ip(admin_client, sim_context, ip_pool,
     assert child_ip.state == 'purged'
     assert public_ip.state == 'removed'
     assert assoc.state == 'removed'
+
+
+def test_virtual_machine_with_public_ip_restart(admin_client, sim_context,
+                                                ip_pool, network):
+    image_uuid = sim_context['imageUuid']
+    vm = admin_client.create_virtual_machine(imageUuid=image_uuid,
+                                             networkIds=[network.id],
+                                             publicIpAddressPoolId=ip_pool.id)
+
+    vm = admin_client.wait_success(vm)
+
+    assert len(vm.nics()[0].ipAddresses()[0].childIpAssociations()) == 1
+
+    vm = admin_client.wait_success(vm.restart())
+
+    assert len(vm.nics()[0].ipAddresses()[0].childIpAssociations()) == 1

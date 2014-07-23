@@ -153,13 +153,8 @@ def test_ip_address_create(admin_client, admin_account):
     assert ip_address.state == 'registering'
     ip_address = admin_client.wait_success(ip_address)
 
-    assert ip_address.state == 'inactive'
-    assert ip_address.accountId == admin_account.id
-    assert ip_address.address is None
-
-    ip_address = admin_client.wait_success(ip_address.activate())
-
     assert ip_address.state == 'active'
+    assert ip_address.accountId == admin_account.id
     assert ip_address.address is None
 
 
@@ -168,15 +163,12 @@ def test_ip_address_create_from_subnet(admin_client, admin_account, subnet):
                                                 networkId=42)
 
     assert ip_address.state == 'registering'
-    ip_address = admin_client.wait_success(ip_address)
-
-    assert ip_address.state == 'inactive'
     assert ip_address.accountId == admin_account.id
     assert ip_address.address is None
     assert ip_address.networkId is None
     assert ip_address.subnet().id == subnet.id
 
-    ip_address = admin_client.wait_success(ip_address.activate())
+    ip_address = admin_client.wait_success(ip_address)
 
     assert ip_address.state == 'active'
     assert ip_address.address is not None
@@ -199,7 +191,6 @@ def test_ip_address_create_no_address_available(admin_client, admin_account):
     for _ in range(3):
         ip_address = admin_client.create_ip_address(subnetId=subnet.id)
         ip_address = admin_client.wait_success(ip_address)
-        ip_address = admin_client.wait_success(ip_address.activate())
         ip_addresses.append(ip_address)
         assert ip_address.address is not None
         ip_address_addresses.append(ip_address.address)
@@ -210,8 +201,7 @@ def test_ip_address_create_no_address_available(admin_client, admin_account):
     assert '192.168.0.5' in ip_address_addresses
 
     ip_address = admin_client.create_ip_address(subnetId=subnet.id)
-    ip_address = admin_client.wait_success(ip_address)
-    ip_address = admin_client.wait_transitioning(ip_address.activate())
+    ip_address = admin_client.wait_transitioning(ip_address)
 
     assert ip_address.state == 'inactive'
     assert ip_address.transitioning == 'error'
@@ -223,10 +213,6 @@ def test_ip_address_defined(admin_client):
     ip = admin_client.create_ip_address(address='192.168.192.168')
     ip = admin_client.wait_success(ip)
 
-    assert ip.address == '192.168.192.168'
-    assert ip.state == 'inactive'
-
-    ip = admin_client.wait_success(ip.activate())
     assert ip.address == '192.168.192.168'
     assert ip.state == 'active'
 

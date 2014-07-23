@@ -7,6 +7,7 @@ import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.IpAssociationTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
@@ -20,6 +21,7 @@ import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
 import io.cattle.platform.configitem.context.data.HostPortForwardData;
 import io.cattle.platform.configitem.context.data.HostRouteData;
 import io.cattle.platform.configitem.context.data.InstanceLinkData;
+import io.cattle.platform.configitem.context.data.IpAssociationData;
 import io.cattle.platform.configitem.context.data.NetworkClientData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
@@ -51,6 +53,7 @@ import io.cattle.platform.core.model.tables.VnetTable;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
 import io.cattle.platform.core.model.tables.records.NetworkServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.db.jooq.mapper.AggregateMultiRecordMapper;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
@@ -158,6 +161,24 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 .join(NETWORK_SERVICE_PROVIDER)
                     .on(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID.eq(NETWORK_SERVICE_PROVIDER.ID))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
+                        .and(NETWORK_SERVICE_PROVIDER.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE)))
+                .fetchInto(NetworkServiceRecord.class);
+    }
+
+    @Override
+    public List<? extends NetworkService> networkServices(Agent agent) {
+        return create()
+                .select(NETWORK_SERVICE.fields())
+                .from(NETWORK_SERVICE)
+                .join(NIC)
+                    .on(NIC.NETWORK_ID.eq(NETWORK_SERVICE.NETWORK_ID))
+                .join(NETWORK_SERVICE_PROVIDER)
+                    .on(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID.eq(NETWORK_SERVICE_PROVIDER.ID))
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(NIC.INSTANCE_ID))
+                .join(HOST)
+                    .on(HOST.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .where(HOST.AGENT_ID.eq(agent.getId())
                         .and(NETWORK_SERVICE_PROVIDER.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE)))
                 .fetchInto(NetworkServiceRecord.class);
     }
@@ -368,6 +389,43 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                     .and(HOST.REMOVED.isNull()))
             .orderBy(port.CREATED.asc())
             .fetch().map(mapper);
+    }
+
+    @Override
+    public List<IpAssociationData> getHostIps(Agent agent) {
+        AggregateMultiRecordMapper<IpAssociationData> mapper = new AggregateMultiRecordMapper<IpAssociationData>(IpAssociationData.class);
+
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
+        IpAddressTable targetIpAddress = mapper.add(IP_ADDRESS);
+        SubnetTable subnet = mapper.add(SUBNET);
+
+        return create()
+                .select(mapper.fields())
+                .from(HOST)
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                .join(NIC)
+                    .on(NIC.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(IP_ADDRESS_NIC_MAP)
+                    .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
+                .join(targetIpAddress)
+                    .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(targetIpAddress.ID))
+                .join(IP_ASSOCIATION)
+                    .on(IP_ASSOCIATION.CHILD_IP_ADDRESS_ID.eq(targetIpAddress.ID))
+                .join(ipAddress)
+                    .on(ipAddress.ID.eq(IP_ASSOCIATION.IP_ADDRESS_ID))
+                .join(subnet)
+                    .on(subnet.ID.eq(targetIpAddress.SUBNET_ID))
+                .where(HOST.AGENT_ID.eq(agent.getId())
+                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                        .and(INSTANCE_HOST_MAP.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE))
+                        .and(ipAddress.REMOVED.isNull())
+                        .and(IP_ASSOCIATION.REMOVED.isNull())
+                        .and(IP_ASSOCIATION.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE))
+                        .and(ipAddress.ADDRESS.isNotNull())
+                        .and(targetIpAddress.ADDRESS.isNotNull())
+                        .and(NIC.REMOVED.isNull()))
+                .fetch().map(mapper);
     }
 
     @Override

@@ -6,6 +6,13 @@
 -F CATTLE_PREROUTING
 -F CATTLE_POSTROUTING
 
+<#if ipAssociations?? >
+    <#list ipAssociations as assoc >
+-A CATTLE_PREROUTING -m state --state NEW -d ${assoc.ipAddress.address} -j DNAT --to ${assoc.targetIpAddress.address}
+-A CATTLE_POSTROUTING -m state --state NEW -s ${assoc.targetIpAddress.address} ! -d ${assoc.subnet.networkAddress}/${assoc.subnet.cidrSize} -j SNAT --to ${assoc.ipAddress.address}
+    </#list>
+</#if>
+
 <#if ports?? >
     <#list ports as mapping>
         <#if (mapping.publicIpAddress.address)?? && (mapping.privateIpAddress.address)?? && (mapping.port.publicPort)?? && (mapping.port.privatePort)?? >

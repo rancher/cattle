@@ -23,6 +23,7 @@
     <bean class="io.cattle.platform.agent.instance.service.impl.InstanceLinkNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.HostIpAddressMapNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.PortNicLookup" />
+    <bean class="io.cattle.platform.agent.instance.service.impl.IpAssociationNicLookup" />
 
     <bean id="AgentInstanceTypes" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeNames">
