@@ -4,7 +4,7 @@ import static io.cattle.platform.engine.process.ProcessResult.*;
 
 public enum ExitReason {
     ALREADY_DONE(SUCCESS),
-    CANCELED(ProcessResult.CANCELED),
+    CANCELED(ProcessResult.CANCELED, true),
     STATE_CHANGED,
     DONE(SUCCESS),
     DELEGATE(false, false, false, null),
@@ -33,6 +33,10 @@ public enum ExitReason {
 
     private ExitReason(ProcessResult result) {
         this(false, true, false, result);
+    }
+
+    private ExitReason(ProcessResult result, boolean rethrow) {
+        this(rethrow, true, false, result);
     }
 
     private ExitReason(boolean rethrow, boolean terminating, boolean error, ProcessResult result) {

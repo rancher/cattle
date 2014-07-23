@@ -167,7 +167,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             }
 
             if ( e.getExitReason().isRethrow() ) {
-                ExceptionUtils.rethrowRuntime(e.getCause());
+                Throwable t = e.getCause();
+                ExceptionUtils.rethrowRuntime(t == null ? e : t);
             }
 
             throw new ProcessInstanceException(this, e);
