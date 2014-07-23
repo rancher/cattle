@@ -115,20 +115,23 @@ class WebsockifyProxy(BaseHandler):
 
 
 if LibvirtConfig.websockify_enabled() and enabled():
-    try:
-        import websockify
-        from websockify import ProxyRequestHandler
-        from cattle.plugins.libvirt.compute import LibvirtCompute
-        ws = WebsockifyProxy()
-        register_type(LIFECYCLE, ws)
-        register_type(REQUEST_HANDLER, ws)
+    if Config.is_eventlet():
+        try:
+            import websockify
+            from websockify import ProxyRequestHandler
+            from cattle.plugins.libvirt.compute import LibvirtCompute
+            ws = WebsockifyProxy()
+            register_type(LIFECYCLE, ws)
+            register_type(REQUEST_HANDLER, ws)
 
-        class RequestHandler(ProxyRequestHandler):
-            def new_websocket_client(self):
-                if Config.is_eventlet():
-                    from eventlet import hubs
-                    hubs.use_hub()
+            class RequestHandler(ProxyRequestHandler):
+                def new_websocket_client(self):
+                    if Config.is_eventlet():
+                        from eventlet import hubs
+                        hubs.use_hub()
 
-                return ProxyRequestHandler.new_websocket_client(self)
-    except:
-        log.exception('Not starting websocket proxy for VNC')
+                    return ProxyRequestHandler.new_websocket_client(self)
+        except:
+            log.exception('Not starting websocket proxy for VNC')
+    else:
+        log.error('Can only run websocket proxy for VNC with eventlets')
