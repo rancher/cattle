@@ -48,7 +48,7 @@ public class EventUtils {
     }
 
     public static boolean isTransitioningEvent(Event event) {
-        if ( event == null || event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event) ) {
+        if ( event == null || event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event.getTransitioning()) ) {
             return false;
         }
 
