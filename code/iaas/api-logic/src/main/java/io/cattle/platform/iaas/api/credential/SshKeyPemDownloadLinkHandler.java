@@ -11,6 +11,8 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class SshKeyPemDownloadLinkHandler implements LinkHandler {
 
     @Override
@@ -53,13 +55,13 @@ public class SshKeyPemDownloadLinkHandler implements LinkHandler {
     protected String getFilename(Credential cred, ApiRequest request) {
         String name = cred.getName();
 
-        if ( name != null ) {
-            return name.trim().replaceAll("[^a-zA-Z0-9]", "_") + ".pem";
-        } else {
+        if ( StringUtils.isBlank(name) ) {
             IdFormatter formatter = ApiContext.getContext().getIdFormatter();
             Object id = formatter.formatId(cred.getKind(), cred.getId());
 
             return "id_rsa_" + id + ".pem";
+        } else {
+            return name.trim().replaceAll("[^a-zA-Z0-9]", "_") + ".pem";
         }
     }
 
