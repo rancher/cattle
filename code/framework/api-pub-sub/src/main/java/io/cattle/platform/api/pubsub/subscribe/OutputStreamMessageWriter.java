@@ -40,9 +40,10 @@ public class OutputStreamMessageWriter implements MessageWriter {
         if ( os != null ) {
             try {
                 os.close();
-                os = null;
             } catch (IOException e) {
                 log.error("Failed to close output stream for client", e);
+            } finally {
+                os = null;
             }
         }
     }
