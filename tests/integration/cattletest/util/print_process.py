@@ -53,7 +53,8 @@ def print_pi(pi, detail=False):
 
 
 def print_pe(pe, prefix=''):
-    print prefix, print_time(pe), 'PROCESS:', pe.name, pe.exitReason
+    print prefix, print_time(pe), 'PROCESS:', pe.name, \
+        '{}:{}'.format(pe.resourceType, pe.resourceId), pe.exitReason
     for phe in pe.processHandlerExecutions:
         print_phe(phe, prefix=prefix + '  ')
 
@@ -72,3 +73,6 @@ if __name__ == '__main__':
         for pi in client.list_process_instance(sort='startTime', order='desc',
                                                limit=30):
             print_pi(pi)
+    else:
+        pi = client.by_id_process_instance(sys.argv[1])
+        print_pi(pi, detail=True)
