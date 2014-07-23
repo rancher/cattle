@@ -18,7 +18,7 @@ TEST_IMAGE_UUID = 'docker:cattle/test-agent:v7'
 def cleanup(client):
     to_delete = []
     for i in client.list_instance(state='running'):
-        if i.name.startswith('test-'):
+        if i is not None and i.name.startswith('test-'):
             to_delete.append(i)
 
     delete_all(client, to_delete)
