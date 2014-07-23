@@ -12,6 +12,15 @@
     </listener>
 
     <filter>
+        <filter-name>UIFilter</filter-name>
+        <filter-class>io.cattle.platform.iaas.api.servlet.filter.UIPathFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>UIFilter</filter-name>
+        <url-pattern>/static/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>ApiFilter</filter-name>
         <filter-class>io.cattle.platform.api.servlet.ApiRequestFilter</filter-class>
         <init-param>
