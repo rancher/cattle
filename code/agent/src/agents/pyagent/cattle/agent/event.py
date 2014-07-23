@@ -167,6 +167,7 @@ class EventClient:
 
         try:
             drop_count = 0
+            ping_drop = 0
             r = requests.post(self._url, **args)
             if r.status_code != 201:
                 raise Exception(r.text)
@@ -175,19 +176,25 @@ class EventClient:
 
             for line in r.iter_lines(chunk_size=1):
                 try:
+                    ping = '"ping' in line
                     if len(line) > 0:
                         # TODO Need a better approach here
-                        if '"ping' in line:
+                        if ping:
                             self._ping_queue.put(line, block=False)
+                            ping_drop = 0
                         else:
                             self._queue.put(line, block=False)
                 except Full:
                     log.info("Dropping request %s" % line)
-                    drop_count += 1
                     max = Config.max_dropped_requests()
+                    if ping:
+                        ping_drop += 1
+                        max = Config.max_dropped_ping()
+
                     if drop_count > max:
                         log.error('Max dropped requests [%s] exceeded', max)
                         break
+
                 if not _should_run(ppid):
                     log.info("Parent process has died or stamp changed,"
                              " exiting")

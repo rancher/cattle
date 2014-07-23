@@ -222,5 +222,9 @@ class Config:
         return int(default_value('MAX_DROPPED_REQUESTS', '1000'))
 
     @staticmethod
+    def max_dropped_ping():
+        return int(default_value('MAX_DROPPED_PING', '10'))
+
+    @staticmethod
     def event_read_timeout():
         return int(default_value('EVENT_READ_TIMEOUT', '60'))
