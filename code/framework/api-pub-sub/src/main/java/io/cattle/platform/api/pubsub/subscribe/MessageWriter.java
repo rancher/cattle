@@ -6,4 +6,6 @@ public interface MessageWriter {
 
     void write(String message, Object writeLock) throws IOException;
 
+    void close();
+
 }

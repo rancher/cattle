@@ -1,5 +1,6 @@
 package io.cattle.platform.api.pubsub.subscribe;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.retry.RetryTimeoutService;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
@@ -13,7 +14,11 @@ import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.netflix.config.DynamicIntProperty;
+
 public class ServletAsyncSubscriptionHandler extends NonBlockingSubscriptionHandler {
+
+    public static final DynamicIntProperty TIMEOUT = ArchaiusUtil.getInt("api.pub.sub.servlet.timeout.ms");
 
     public ServletAsyncSubscriptionHandler(JsonMapper jsonMapper, EventService eventService,
             RetryTimeoutService retryTimeout, ExecutorService executorService,
@@ -29,9 +34,9 @@ public class ServletAsyncSubscriptionHandler extends NonBlockingSubscriptionHand
         HttpServletResponse response = apiRequest.getServletContext().getResponse();
 
         AsyncContext ctx = request.startAsync(request, response);
-        ctx.setTimeout(0);
+        ctx.setTimeout(TIMEOUT.get());
 
-        return new OutputStreamMessageWriter(ctx.getResponse().getOutputStream());
+        return new AsyncOutputStreamMessageWriter(ctx.getResponse().getOutputStream(), ctx);
     }
 
 }

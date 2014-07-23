@@ -161,7 +161,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
             unsubscribe = true;
         } finally {
             if ( unsubscribe ) {
-                unsubscribe(disconnect, listener);
+                unsubscribe(disconnect, writer, listener);
             }
         }
 
@@ -175,7 +175,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
             @Override
             public void run() {
                 if ( disconnect.get() ) {
-                    unsubscribe(disconnect, listener);
+                    unsubscribe(disconnect, writer, listener);
                     future.setException(new CancelRetryException());
                     throw new CancelRetryException();
                 }
@@ -183,7 +183,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
                     write(new Ping(), writer, writeLock, strip);
                 } catch (IOException e) {
                     log.debug("Got exception on write, disconnecting : {} [{}]", e.getClass(), e.getMessage());
-                    unsubscribe(disconnect, listener);
+                    unsubscribe(disconnect, writer, listener);
                     future.setException(e);
                     throw new CancelRetryException();
                 }
@@ -196,9 +196,9 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
                 try {
                     future.get();
                 } catch (InterruptedException e) {
-                    unsubscribe(disconnect, listener);
+                    unsubscribe(disconnect, writer, listener);
                 } catch (ExecutionException e) {
-                    unsubscribe(disconnect, listener);
+                    unsubscribe(disconnect, writer, listener);
                 }
             }
         }, executorService);
@@ -206,8 +206,9 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         return future;
     }
 
-    protected void unsubscribe(AtomicBoolean disconnect, EventListener listener) {
+    protected void unsubscribe(AtomicBoolean disconnect, MessageWriter writer, EventListener listener) {
         disconnect.set(true);
+        writer.close();
         eventService.unsubscribe(listener);
     }
 
