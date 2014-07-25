@@ -93,6 +93,7 @@ class DockerDelegate(BaseHandler):
             if 'localhost' == parsed.hostname:
                 port = Config.api_proxy_listen_port()
                 add_to_env(config,
+                           CATTLE_AGENT_INSTANCE='true',
                            CATTLE_CONFIG_URL_SCHEME=parsed.scheme,
                            CATTLE_CONFIG_URL_PATH=parsed.path,
                            CATTLE_CONFIG_URL_PORT=port)

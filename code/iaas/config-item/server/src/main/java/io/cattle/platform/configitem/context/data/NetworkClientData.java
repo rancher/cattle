@@ -1,6 +1,6 @@
 package io.cattle.platform.configitem.context.data;
 
-import io.cattle.platform.configitem.context.impl.HostnameGenerator;
+import io.cattle.platform.core.util.HostnameGenerator;
 
 public class NetworkClientData {
 

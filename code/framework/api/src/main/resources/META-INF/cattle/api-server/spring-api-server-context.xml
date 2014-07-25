@@ -28,16 +28,6 @@
         <property name="idFormatter" value="#{extensionManager.first('id.formatter', 'io.github.ibuildthecloud.gdapi.id.IdFormatter')}" />
     </bean>
 
-    <bean id="DefaultIdFormatter" class="io.cattle.platform.api.formatter.DefaultIdFormatter" >
-        <property name="schemaFactory" ref="CoreSchemaFactory" />
-        <property name="plainTypes">
-            <set>
-                <value>typeDocumentation</value>
-                <value>scripts</value>
-            </set>
-        </property>
-    </bean>
-
     <bean class="io.cattle.platform.api.resource.ExtensionResourceManagerLocator" >
         <property name="schemaFactory" ref="CoreSchemaFactory" />
         <property name="defaultResourceManager" ref="DefaultResourceManager" />

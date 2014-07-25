@@ -41,7 +41,7 @@ public class OutputStreamMessageWriter implements MessageWriter {
             try {
                 os.close();
             } catch (IOException e) {
-                log.error("Failed to close output stream for client", e);
+                log.info("Failed to close output stream for client : {}", e.getMessage());
             } finally {
                 os = null;
             }

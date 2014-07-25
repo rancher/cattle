@@ -13,6 +13,21 @@ def test_sample_data(admin_client, system_account):
     assert 'dynamicCreateVnet' not in network
     assert 'libvirt' not in network.data
 
+    network_services = find_count(1, network.networkServices)
+    network_service_kinds = set()
+
+    for service in network_services:
+        network_service_kinds.add(service.kind)
+
+        assert service.accountId == system_account.id
+        assert service.networkId == network.id
+        assert service.removed is None
+
+        if service.kind == 'metadataService':
+            assert service.uuid == 'unmanaged-docker0-metadata-service'
+
+    assert network_service_kinds == set(['metadataService'])
+
     network = find_one(admin_client.list_network, uuid='managed-docker0')
     assert network.accountId == system_account.id
     assert network.isPublic
@@ -66,19 +81,19 @@ def test_sample_data(admin_client, system_account):
         assert service.removed is None
 
         if service.kind == 'dhcpService':
-            service.uuid = 'docker0-dhcp-service'
+            assert service.uuid == 'docker0-dhcp-service'
         if service.kind == 'dnsService':
-            service.uuid = 'docker0-dns-service'
+            assert service.uuid == 'docker0-dns-service'
         if service.kind == 'linkService':
-            service.uuid = 'docker0-link-service'
+            assert service.uuid == 'docker0-link-service'
         if service.kind == 'ipsecTunnelService':
-            service.uuid = 'docker0-ipsec-tunnel-service'
+            assert service.uuid == 'docker0-ipsec-tunnel-service'
         if service.kind == 'portService':
-            service.uuid = 'docker0-port-service'
+            assert service.uuid == 'docker0-port-service'
         if service.kind == 'hostNatGatewayService':
-            service.uuid = 'docker0-host-nat-gateway-service'
+            assert service.uuid == 'docker0-host-nat-gateway-service'
         if service.kind == 'metadataService':
-            service.uuid = 'metadata-service'
+            assert service.uuid == 'docker0-metadata-service'
 
     assert network_service_kinds == set(['dnsService',
                                          'dhcpService',

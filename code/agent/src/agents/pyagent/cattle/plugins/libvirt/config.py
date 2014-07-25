@@ -19,6 +19,15 @@ class LibvirtConfig:
                              path.join(Config.home(), 'pools/libvirt')).split()
 
     @staticmethod
+    def config_drive_directory():
+        return default_value('LIBVIRT_CONFIG_DRIVE_DIR',
+                             path.join(Config.home(), 'pools/config-drive'))
+
+    @staticmethod
+    def genisoimage():
+        return default_value('LIBVIRT_GENISOIMAGE', 'genisoimage')
+
+    @staticmethod
     def libvirt_uuid_file():
         def_value = '{0}/.libvirt_uuid'.format(Config.home())
         return default_value('LIBVIRT_UUID_FILE', def_value)

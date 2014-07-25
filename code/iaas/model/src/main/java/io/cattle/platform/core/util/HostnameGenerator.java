@@ -1,4 +1,4 @@
-package io.cattle.platform.configitem.context.impl;
+package io.cattle.platform.core.util;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -49,7 +49,7 @@ public class HostnameGenerator {
                 return null;
             }
 
-            return String.format("%s%s", prefix, address.replaceAll("[.]", "-"));
+            return String.format("%s%s", prefix, address.replaceAll("[.:]", "-"));
         } else {
             return hostname;
         }

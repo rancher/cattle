@@ -12,6 +12,7 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
+import io.cattle.platform.core.util.HostnameGenerator;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,3 +1,5 @@
+from xml.etree import ElementTree
+
 from .common_fixtures import *  # NOQA
 from cattle import CONFIG_OVERRIDE
 from cattle.progress import LogProgress
@@ -130,6 +132,51 @@ def test_volume_deactivate(random_qcow2, pool_dir, agent, responses):
         req['data']['volumeStoragePoolMap']['storagePool'] = pool
 
     event_test(agent, 'libvirt/volume_deactivate', pre_func=pre)
+
+
+@if_libvirt
+def test_instance_activate_metadata(random_qcow2, pool_dir, agent, responses):
+    _delete_instance('c861f990-4472-4fa1-960f-65171b544c28')
+
+    volume = fake_volume(image_file=random_qcow2)
+    image = volume.image
+    pool = fake_pool(pool_dir)
+    volume['storagePools'] = [pool]
+
+    driver = DirectoryPoolDriver()
+    driver.image_activate(image, pool, LogProgress())
+    driver.volume_activate(volume, pool, LogProgress())
+
+    def pre(req):
+        req.data.instanceHostMap.instance.image = image
+        req.data.instanceHostMap.instance.volumes.append(volume)
+
+    def post(_, resp):
+        data = resp['data']['instance']['+data']
+        xml = data['+libvirt']['xml']
+
+        assert xml is not None
+
+        doc = ElementTree.fromstring(xml)
+
+        for child in doc.findall('devices/disk'):
+            if child.attrib['device'] == 'cdrom':
+                for node in child.getchildren():
+                    if node.tag == 'source' and \
+                            os.path.exists(node.attrib['file']):
+                        break
+                else:
+                    assert False
+                break
+        else:
+            assert False
+
+        data['+libvirt']['xml'] = '<xml/>'
+        data['+fields']['libvirtVncAddress'] = '0.0.0.0:5900'
+        data['+fields']['libvirtVncPassword'] = 'passwd'
+
+    event_test(agent, 'libvirt/instance_activate_metadata', pre_func=pre,
+               post_func=post)
 
 
 @if_libvirt

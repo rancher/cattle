@@ -1,4 +1,4 @@
-package io.cattle.platform.configitem.context.dao.impl;
+package io.cattle.platform.metadata.dao.impl;
 
 import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
@@ -15,9 +15,6 @@ import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-import io.cattle.platform.configitem.context.dao.MetadataDao;
-import io.cattle.platform.configitem.context.data.MetadataEntry;
-import io.cattle.platform.configitem.context.data.MetadataRedirectData;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
@@ -35,10 +32,14 @@ import io.cattle.platform.core.model.tables.NetworkTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
 import io.cattle.platform.core.model.tables.VolumeTable;
+import io.cattle.platform.core.model.tables.records.NetworkServiceRecord;
 import io.cattle.platform.core.model.tables.records.VnetRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.AggregateMultiRecordMapper;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.metadata.dao.MetadataDao;
+import io.cattle.platform.metadata.data.MetadataEntry;
+import io.cattle.platform.metadata.data.MetadataRedirectData;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.Collections;
@@ -46,35 +47,17 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.jooq.Condition;
 import org.jooq.Record;
+import org.jooq.ResultQuery;
 
 public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
 
     NetworkDao networkDao;
     ObjectManager objectManager;
 
-    @Override
-    public List<MetadataEntry> getMetaData(Instance agentInstance) {
-        List<? extends NetworkService> services = networkDao.getAgentInstanceNetworkService(agentInstance.getId(), NetworkServiceConstants.KIND_METADATA);
-
-        if ( services.size() == 0 ) {
-            return Collections.emptyList();
-        }
-
-        Record any = create()
-                .select(VNET.fields())
-                .from(VNET)
-                .join(NIC)
-                    .on(NIC.VNET_ID.eq(VNET.ID))
-                .where(VNET.NETWORK_ID.eq(services.get(0).getNetworkId())
-                        .and(NIC.INSTANCE_ID.eq(agentInstance.getId())))
-                .fetchAny();
-
-        if ( any.size() == 0 ) {
-            return Collections.emptyList();
-        }
-
-        Vnet vnet = any.into(VnetRecord.class);
+    private List<MetadataEntry> getMetaDataInternal(Instance agentInstance, boolean singleInstance) {
+        Condition condition = null;
 
         MultiRecordMapper<MetadataEntry> mapper = new AggregateMultiRecordMapper<MetadataEntry>(MetadataEntry.class);
 
@@ -87,7 +70,35 @@ public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
         NetworkTable network = mapper.add(NETWORK);
         SubnetTable subnet = mapper.add(SUBNET);
 
-        return create()
+        if ( singleInstance ) {
+            condition = nic.INSTANCE_ID.eq(agentInstance.getId());
+        } else {
+            List<? extends NetworkService> services = networkDao.getAgentInstanceNetworkService(agentInstance.getId(), NetworkServiceConstants.KIND_METADATA);
+
+            if ( services.size() == 0 ) {
+                return Collections.emptyList();
+            }
+
+            Record any = create()
+                    .select(VNET.fields())
+                    .from(VNET)
+                    .join(NIC)
+                        .on(NIC.VNET_ID.eq(VNET.ID))
+                    .where(VNET.NETWORK_ID.eq(services.get(0).getNetworkId())
+                            .and(NIC.INSTANCE_ID.eq(agentInstance.getId())))
+                    .fetchAny();
+
+            if ( any.size() == 0 ) {
+                return Collections.emptyList();
+            }
+
+            Vnet vnet = any.into(VnetRecord.class);
+
+            condition = nic.VNET_ID.eq(vnet.getId());
+        }
+
+
+        ResultQuery<?> q = create()
             .select(mapper.fields())
             .from(nic)
             .join(instance)
@@ -104,10 +115,10 @@ public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
                 .on(CREDENTIAL_INSTANCE_MAP.CREDENTIAL_ID.eq(credential.ID)
                     .and(credential.REMOVED.isNull())
                     .and(credential.KIND.eq(CredentialConstants.KIND_SSH_KEY)))
-            .join(IP_ADDRESS_NIC_MAP)
+            .leftOuterJoin(IP_ADDRESS_NIC_MAP)
                 .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID)
                     .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull()))
-            .join(primaryIp)
+            .leftOuterJoin(primaryIp)
                 .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(primaryIp.ID)
                     .and(primaryIp.ROLE.in(IpAddressConstants.ROLE_PRIMARY, IpAddressConstants.ROLE_SECONDARY))
                     .and(primaryIp.REMOVED.isNull()))
@@ -120,21 +131,21 @@ public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
                 .on(IP_ASSOCIATION.IP_ADDRESS_ID.eq(publicIp.ID)
                     .and(publicIp.ROLE.eq(IpAddressConstants.ROLE_PUBLIC))
                     .and(publicIp.REMOVED.isNull()))
-            .where(nic.VNET_ID.eq(vnet.getId())
-                    .and(nic.REMOVED.isNull()))
-            .fetch().map(mapper);
+            .where(condition.and(nic.REMOVED.isNull()));
+
+        return q.fetch().map(mapper);
     }
 
     @Override
-    public Offering getInstanceOffering(Instance instance) {
-        //TODO Add caching
-        return objectManager.loadResource(Offering.class, instance.getOfferingId());
+    public List<MetadataEntry> getMetadata(Instance agentInstance) {
+        return getMetaDataInternal(agentInstance, false);
     }
 
     @Override
-    public Zone getZone(Instance instance) {
-        //TODO Add caching
-        return objectManager.loadResource(Zone.class, instance.getZoneId());
+    public MetadataEntry getMetadataForInstance(Instance agentInstance) {
+        List<MetadataEntry> entries = getMetaDataInternal(agentInstance, true);
+
+        return entries.size() > 0 ? entries.get(0) : null;
     }
 
     @Override
@@ -174,6 +185,31 @@ public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
                         .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
                         .and(subnet.REMOVED.isNull()))
                 .fetch().map(mapper);
+    }
+
+    @Override
+    public List<? extends NetworkService> getMetadataServices(Instance instance) {
+        return create()
+                .select(NETWORK_SERVICE.fields())
+                .from(NIC)
+                .join(NETWORK_SERVICE)
+                    .on(NETWORK_SERVICE.NETWORK_ID.eq(NIC.NETWORK_ID))
+                .where(NETWORK_SERVICE.KIND.eq(NetworkServiceConstants.KIND_METADATA)
+                        .and(NIC.INSTANCE_ID.eq(instance.getId()))
+                        .and(NETWORK_SERVICE.REMOVED.isNull()))
+                .fetchInto(NetworkServiceRecord.class);
+    }
+
+    @Override
+    public Offering getInstanceOffering(Instance instance) {
+        //TODO Add caching
+        return objectManager.loadResource(Offering.class, instance.getOfferingId());
+    }
+
+    @Override
+    public Zone getZone(Instance instance) {
+        //TODO Add caching
+        return objectManager.loadResource(Zone.class, instance.getZoneId());
     }
 
     public ObjectManager getObjectManager() {

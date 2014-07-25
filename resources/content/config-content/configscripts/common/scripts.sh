@@ -117,10 +117,14 @@ script_env()
         return
     fi
 
-    # This is just using the routing tables to determine the primary IP
+    # This is just using the routing tables to determine the primary IP or gateway
     # of the box.  No traffic is sent to 8.8.8.8 and it doesn't matter if 8.8.8.8
     # is accessible
-    local host=$(ip route get 8.8.8.8 | grep src | awk '{print $7}')
+    if [ "$CATTLE_AGENT_INSTANCE" = "true" ]; then
+        local host=$(ip route get 8.8.8.8 | grep src | awk '{print $3}')
+    else
+        local host=$(ip route get 8.8.8.8 | grep src | awk '{print $7}')
+    fi
     CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL_SCHEME:-http}"
     CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL}://${CATTLE_CONFIG_URL_HOST:-$host}"
     CATTLE_CONFIG_URL="${CATTLE_CONFIG_URL}:${CATTLE_CONFIG_URL_PORT:-9342}"

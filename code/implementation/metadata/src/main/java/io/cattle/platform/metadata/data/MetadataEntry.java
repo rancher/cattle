@@ -1,4 +1,4 @@
-package io.cattle.platform.configitem.context.data;
+package io.cattle.platform.metadata.data;
 
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;

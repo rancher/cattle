@@ -18,6 +18,7 @@ except:
     pass
 
 LIBVIRT_KIND = 'libvirt'
+LIBVIRT_COMPUTE_LISTENER = 'libvirt_compute_listener'
 
 if _ENABLED:
     from cattle.type_manager import register_type

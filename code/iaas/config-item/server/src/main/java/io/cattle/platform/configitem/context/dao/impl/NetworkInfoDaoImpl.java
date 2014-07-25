@@ -56,6 +56,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.AggregateMultiRecordMapper;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
 
     NetworkDao networkDao;
     JsonMapper jsonMapper;
+    ObjectManager objectManager;
 
     @Override
     public List<NetworkClientData> networkClients(Instance instance) {
@@ -506,10 +508,6 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
         return result;
     }
 
-    public NetworkDao getNetworkDao() {
-        return networkDao;
-    }
-
     @Inject
     public void setNetworkDao(NetworkDao networkDao) {
         this.networkDao = networkDao;
@@ -524,5 +522,13 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
         this.jsonMapper = jsonMapper;
     }
 
+    public ObjectManager getObjectManager() {
+        return objectManager;
+    }
+
+    @Inject
+    public void setObjectManager(ObjectManager objectManager) {
+        this.objectManager = objectManager;
+    }
 
 }

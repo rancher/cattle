@@ -1,82 +1,38 @@
 package io.cattle.platform.sample.data;
 
-import static io.cattle.platform.core.model.tables.DataTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
-import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Data;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.core.model.Subnet;
-import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.util.type.CollectionUtils;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.netflix.config.DynamicBooleanProperty;
-
-public class SampleDataStartupV1 implements InitializationTask {
-
-    private static final Logger log = LoggerFactory.getLogger(SampleDataStartupV1.class);
-
-    private static final DynamicBooleanProperty RUN = ArchaiusUtil.getBoolean("sample.setup");
-
-    private static final String NAME = "sampleDataVersion1";
-
-    ObjectManager objectManager;
-    ObjectProcessManager processManager;
-    AccountDao accountDao;
-    JsonMapper jsonMapper;
+public class SampleDataStartupV1 extends AbstractSampleData {
 
     @Override
-    public void start() {
-        if ( ! RUN.get() ) {
-            return;
-        }
+    protected String getName() {
+        return "sampleDataVersion1";
+    }
 
-        Data data = objectManager.findAny(Data.class, DATA.NAME, NAME);
-
-        if ( data != null ) {
-            return;
-        }
-
-        Account system = accountDao.getSystemAccount();
-        if ( system == null ) {
-            log.warn("Failed to find system account, not populating system data");
-            return;
-        }
-
+    @Override
+    protected void populatedData(Account system, List<Object> toCreate) {
         Map<String, Object> networkData;
         try {
             networkData = jsonMapper.readValue("{\"libvirt\":{\"network\":{\"source\":[{\"bridge\":\"docker0\"}],\"type\":\"bridge\"}}}");
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-
-        List<Object> toCreate = new ArrayList<Object>();
 
         Network network = createByUuid(Network.class, "unmanaged",
                 NETWORK.ACCOUNT_ID, system.getId(),
@@ -144,7 +100,7 @@ public class SampleDataStartupV1 implements InitializationTask {
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
                 NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
 
-        toCreate.add(createByUuid(NetworkService.class, "docker0-ipsecTunnel-service",
+        toCreate.add(createByUuid(NetworkService.class, "docker0-ipsec-tunnel-service",
                 NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
                 NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_IPSEC_TUNNEL,
                 NETWORK_SERVICE.NAME, "IPsec tunnels for managed docker0",
@@ -175,71 +131,6 @@ public class SampleDataStartupV1 implements InitializationTask {
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
                 NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
-
-        for ( Object object : toCreate ) {
-            try {
-                processManager.executeStandardProcess(StandardProcess.CREATE, object, null);
-            } catch ( ProcessCancelException e ) {
-            }
-        }
-
-        objectManager.create(Data.class,
-                DATA.NAME, NAME,
-                DATA.VALUE, "true");
-    }
-
-    protected <T> T createByUuid(Class<T> type, String uuid, Object key, Object... values) {
-        Map<Object,Object> inputProperties = CollectionUtils.asMap(key, values);
-        inputProperties.put(ObjectMetaDataManager.UUID_FIELD, uuid);
-        Map<String,Object> properties = objectManager.convertToPropertiesFor(type, inputProperties);
-
-        T existing = objectManager.findAny(type, ObjectMetaDataManager.UUID_FIELD, uuid);
-        if ( existing != null ) {
-            objectManager.setFields(existing, properties);
-            return existing;
-        }
-
-        return objectManager.create(type, properties);
-    }
-
-    @Override
-    public void stop() {
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public AccountDao getAccountDao() {
-        return accountDao;
-    }
-
-    @Inject
-    public void setAccountDao(AccountDao accountDao) {
-        this.accountDao = accountDao;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ObjectProcessManager getProcessManager() {
-        return processManager;
-    }
-
-    @Inject
-    public void setProcessManager(ObjectProcessManager processManager) {
-        this.processManager = processManager;
     }
 
 }

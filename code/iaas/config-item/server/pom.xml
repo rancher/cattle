@@ -25,6 +25,11 @@
             <version>${cattle.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-metadata</artifactId>
+            <version>${cattle.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
         </dependency>

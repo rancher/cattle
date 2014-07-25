@@ -107,6 +107,7 @@
                 <module>code/implementation/host-only-network</module>
                 <module>code/implementation/libvirt/allocator</module>
                 <module>code/implementation/libvirt/default-images</module>
+                <module>code/implementation/metadata</module>
                 <module>code/implementation/register</module>
                 <module>code/implementation/sample-setup</module>
                 <module>code/implementation/settings-api</module>

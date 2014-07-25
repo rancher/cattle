@@ -2,7 +2,7 @@ import logging
 import os
 import libvirt
 
-from . import LIBVIRT_KIND
+from . import LIBVIRT_KIND, LIBVIRT_COMPUTE_LISTENER
 from .connection import LibvirtConnection
 from .storage import get_pool_driver
 from .utils import pool_drivers, get_preferred_libvirt_type, read_vnc_info
@@ -11,6 +11,7 @@ from cattle import Config
 from cattle.compute import BaseComputeDriver
 from cattle.agent.handler import KindBasedMixin
 from cattle import utils
+from cattle.type_manager import get_type_list
 
 from mako.template import Template
 from mako.lookup import TemplateLookup
@@ -36,8 +37,15 @@ class InstanceConfig(object):
         self.instance = instance
         self.host = host
         self.paths = paths
+        self.params = {}
+
+    def set_param(self, name, value):
+        self.params[name] = value
 
     def param(self, name, default=None):
+        if name in self.params:
+            return self.params[name]
+
         for path in self.paths:
             do_continue = False
             src = self
@@ -238,18 +246,30 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
 
         return interfaces
 
+    def _call_listeners(self, start, *args):
+        for listener in get_type_list(LIBVIRT_COMPUTE_LISTENER):
+            if start:
+                listener.before_start(*args)
+            else:
+                listener.before_stop(*args)
+
     def _do_instance_activate(self, instance, host, progress):
         config = InstanceConfig(instance, host)
         template = self._get_template(config)
         interfaces = self._get_interfaces(config, instance, host)
 
-        output = template.render(instance=instance,
-                                 volumes=self._get_volumes(instance),
-                                 interfaces=interfaces,
-                                 host=host,
-                                 config=config,
-                                 randomToken=utils.random_string())
+        template_ctx = {
+            'instance': instance,
+            'volumes': self._get_volumes(instance),
+            'interfaces': interfaces,
+            'host': host,
+            'config': config,
+            'randomToken': utils.random_string()
+        }
 
+        self._call_listeners(True, instance, host, progress, config)
+
+        output = template.render(**template_ctx)
         conn = self._get_connection(instance, host)
 
         existing = self.get_instance_by_uuid(conn, instance.uuid)
@@ -321,9 +341,10 @@ class LibvirtCompute(KindBasedMixin, BaseComputeDriver):
         return vm is None
 
     def _do_instance_deactivate(self, instance, host, progress):
+        self._call_listeners(False, instance, host)
+
         conn = self._get_connection(instance, host)
         vm = self.get_instance_by_uuid(conn, instance.uuid)
-
         self._destroy_domain(vm)
 
     def _destroy_domain(self, vm):

@@ -11,5 +11,6 @@ public class NetworkServiceConstants {
     public static final String KIND_HOST_NAT_GATEWAY = "hostNatGatewayService";
 
     public static final String FIELD_PRIVATE_LINK = "privateLinks";
+    public static final String FIELD_CONFIG_DRIVE = "configDrive";
 
 }

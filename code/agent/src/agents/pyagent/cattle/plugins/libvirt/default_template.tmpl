@@ -99,6 +99,16 @@ ${nestedattr(k, o)}
         </disk>
         % endfor
 </%block>\
+<%block name="config_drive" >\
+        % if config.param('config-drive-iso') is not None:
+        <disk type='file' device='cdrom'>
+            <driver name='qemu' type='raw'/>
+            <source file='${config.param('config-drive-iso')}'/>
+            <target dev='hdd' bus='ide'/>
+            <readonly/>
+        </disk>
+        % endif
+</%block>\
 <%block name="network_interfaces" >\
         % for iface in interfaces:
         ${nestedattr('interface', iface)}

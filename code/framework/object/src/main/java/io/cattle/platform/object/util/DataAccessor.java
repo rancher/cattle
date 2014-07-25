@@ -93,6 +93,10 @@ public class DataAccessor {
         return fields(obj).withKey(key).as(Boolean.class);
     }
 
+    public static boolean fieldBool(Object obj, String key) {
+        return fields(obj).withKey(key).withDefault(false).as(Boolean.class);
+    }
+
     public static <T> T field(Object obj, String name, JsonMapper mapper, Class<T> type) {
         return fields(obj)
                 .withKey(name)

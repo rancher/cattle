@@ -1,0 +1,8 @@
+{
+    "resourceFields": {
+        "configDrive": {
+            "type" : "boolean",
+            "default" : false
+        }
+    }
+}

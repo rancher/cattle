@@ -20,3 +20,14 @@ def test_dns_service_create(admin_client):
 
     assert dns.state == 'active'
     assert dns.dns == ['8.8.8.8', '8.8.4.4']
+
+
+def test_metadata_service(admin_client):
+    network = admin_client.create_network()
+    meta_data = admin_client.create_metadata_service(networkId=network.id)
+
+    assert meta_data.configDrive is False
+
+    meta_data = admin_client.create_metadata_service(networkId=network.id,
+                                                     configDrive=True)
+    assert meta_data.configDrive
