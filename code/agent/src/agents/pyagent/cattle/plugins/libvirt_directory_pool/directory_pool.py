@@ -116,7 +116,7 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
 
             percent = (((count*size*100)/total)/3)*3
             if state['percent'] != percent or \
-                ((counter % check_every) == 0 and \
+                ((counter % check_every) == 0 and
                  time.time() - state['time'] >= 2):
                 state['percent'] = percent
                 state['time'] = time.time()
