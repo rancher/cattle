@@ -6,6 +6,7 @@ public class EventCallOptions {
     Long timeoutMillis;
     EventProgress progress;
     RetryCallback retryCallback;
+    boolean progressIsKeepAlive = true;
 
     public EventCallOptions() {
     }
@@ -73,6 +74,19 @@ public class EventCallOptions {
 
     public EventCallOptions withRetryCallback(RetryCallback retryCallback) {
         this.retryCallback = retryCallback;
+        return this;
+    }
+
+    public boolean isProgressIsKeepAlive() {
+        return progressIsKeepAlive;
+    }
+
+    public void setProgressIsKeepAlive(boolean progressIsKeepAlive) {
+        this.progressIsKeepAlive = progressIsKeepAlive;
+    }
+
+    public EventCallOptions withProgressIsKeepAlive(boolean val) {
+        this.progressIsKeepAlive = val;
         return this;
     }
 

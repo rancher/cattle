@@ -637,16 +637,19 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
         Map<String, Object> result = new LinkedHashMap<String, Object>();
         result.put(TRANSITIONING_FIELD, TRANSITIONING_NO);
+        result.put(TRANSITIONING_MESSAGE_FIELD, null);
+        result.put(TRANSITIONING_PROGRESS_FIELD, null);
+
+        String message = DataAccessor.fieldString(obj, TRANSITIONING_MESSAGE_FIELD);
+        Integer progress = DataAccessor.fieldInteger(obj, TRANSITIONING_PROGRESS_FIELD);
 
         String state = DataUtils.getState(obj);
         if ( state != null && states.contains(state) ) {
             result.put(TRANSITIONING_FIELD, TRANSITIONING_YES);
-            result.put(TRANSITIONING_MESSAGE_FIELD, TRANSITIONING_MESSAGE_DEFAULT_FIELD);
-            result.put(TRANSITIONING_PROGRESS_FIELD, null);
-        } else {
-            if ( DataAccessor.fields(obj).withKey(TRANSITIONING_FIELD).get() != null ) {
-                return Collections.emptyMap();
-            }
+            result.put(TRANSITIONING_MESSAGE_FIELD, message == null ? TRANSITIONING_MESSAGE_DEFAULT_FIELD : message);
+            result.put(TRANSITIONING_PROGRESS_FIELD, progress);
+        } else if ( TRANSITIONING_ERROR.equals(DataAccessor.fieldString(obj, TRANSITIONING_FIELD)) ) {
+            return Collections.emptyMap();
         }
 
         return result;

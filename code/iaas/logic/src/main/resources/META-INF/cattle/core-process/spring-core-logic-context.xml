@@ -13,10 +13,12 @@
 
     <context:component-scan base-package="io.cattle.platform.process" />
 
+    <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler" />
     <bean class="io.cattle.platform.process.common.handler.EventBasedProcessHandler" />
 
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+        p:reportProgress="true"
         p:name="ImageStoragePoolMapActivate"
         p:commandName="storage.image.activate"
         p:agentResourceRelationship="storagePool"

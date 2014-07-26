@@ -34,6 +34,11 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
         add(event);
     }
 
+    @Override
+    public void resourceProgress(Event event) {
+        add(event);
+    }
+
     protected void add(Event event) {
         String id = event.getResourceId();
         String type = event.getResourceType();

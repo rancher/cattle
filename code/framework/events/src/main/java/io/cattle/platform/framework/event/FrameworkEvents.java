@@ -5,6 +5,7 @@ public class FrameworkEvents {
     public static final String API_CHANGE = "api.change";
     public static final String API_EXCEPTION = "api.exception";
     public static final String STATE_CHANGE = "state.change";
+    public static final String RESOURCE_PROGRESS = "resource.progress";
     public static final String PING = "ping";
     public static final String EXECUTE_TASK = "execute.task";
 

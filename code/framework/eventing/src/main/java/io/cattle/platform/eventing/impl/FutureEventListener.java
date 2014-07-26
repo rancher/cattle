@@ -1,5 +1,6 @@
 package io.cattle.platform.eventing.impl;
 
+import io.cattle.platform.async.retry.Retry;
 import io.cattle.platform.eventing.EventListener;
 import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
@@ -18,6 +19,7 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
     EventProgress progress;
     Event event;
     boolean failed;
+    Retry retry;
 
     public FutureEventListener(EventService eventService, String replyTo) {
         super();
@@ -43,6 +45,9 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
                 } else if ( Event.TRANSITIONING_ERROR.equals(transitioning) ) {
                     future.setException(new EventExecutionException(replyWithName));
                 } else if ( progress != null ){
+                    if ( retry != null ) {
+                        retry.setKeepalive(true);
+                    }
                     progress.progress(replyWithName);
                 }
             }
@@ -63,6 +68,7 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
         future = null;
         event = null;
         progress = null;
+        retry = null;
     }
 
     public SettableFuture<Event> getFuture() {
@@ -115,6 +121,14 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
 
     public void setProgress(EventProgress progress) {
         this.progress = progress;
+    }
+
+    public Retry getRetry() {
+        return retry;
+    }
+
+    public void setRetry(Retry retry) {
+        this.retry = retry;
     }
 
 }

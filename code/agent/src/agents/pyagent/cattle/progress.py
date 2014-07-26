@@ -13,18 +13,21 @@ class EventProgress(object):
 
     def update(self, msg, progress=None, data=None):
         resp = utils.reply(self._req, data)
-        resp["transitioning"] = "yes"
-        resp["transitionMessage"] = msg
-        resp["transitionProgress"] = progress
+        resp['transitioning'] = 'yes'
+        resp['transitioningMessage'] = msg
+        resp['transitioningProgress'] = progress
 
         if self._parent is not None:
             resp = utils.reply(self._parent, resp)
-            resp["transitioning"] = "yes"
-            resp["transitionMessage"] = msg
-            resp["transitionProgress"] = progress
+            resp['transitioning'] = 'yes'
+            resp['transitioningMessage'] = msg
+            resp['transitioningProgress'] = progress
 
         publisher = get_type(PUBLISHER)
-        publisher.publish(resp)
+        try:
+            publisher.publish(resp)
+        except:
+            pass
 
 
 Progress = EventProgress

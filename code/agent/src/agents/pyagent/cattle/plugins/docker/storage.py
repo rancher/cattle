@@ -1,4 +1,5 @@
 import logging
+from cattle.type_manager import get_type, MARSHALLER
 from cattle.storage import BaseStoragePool
 from cattle.agent.handler import KindBasedMixin
 from . import docker_client, get_compute
@@ -41,9 +42,7 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
     def _do_image_activate(self, image, storage_pool, progress):
         client = docker_client()
         data = image.data.dockerImage
-
-        # TODO: Disable progress until 0.3.0+ is released, bug makes this fail
-        progress = None
+        marshaller = get_type(MARSHALLER)
 
         if progress is None:
             client.pull(repository=data.qualifiedName, tag=data.tag)
@@ -51,8 +50,13 @@ class DockerPool(KindBasedMixin, BaseStoragePool):
             for status in client.pull(repository=data.qualifiedName,
                                       tag=data.tag,
                                       stream=True):
-                log.info('Pulling [%s] status : %s', data.fullName, status)
-                progress.update(status)
+                try:
+                    log.info('Pulling [%s] status : %s', data.fullName, status)
+                    status = marshaller.from_string(status)
+                    message = status['status']
+                    progress.update(message)
+                except:
+                    pass
 
     def _get_image_storage_pool_map_data(self, obj):
         image = self._get_image_by_label(obj.image.data.dockerImage.fullName)

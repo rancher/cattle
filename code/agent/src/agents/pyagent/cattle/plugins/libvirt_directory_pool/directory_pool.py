@@ -3,12 +3,15 @@ from os import path
 
 import glob
 import os
+import logging
+import time
 
 from cattle import utils
 from cattle.plugins.libvirt import LIBVIRT_KIND, volume_drivers
 from cattle.plugins.libvirt.config import LibvirtConfig
 from cattle.plugins.libvirt.drivers import LibvirtStoragePoolDriver
 
+log = logging.getLogger('libvirt-directory-pool')
 
 POOL_DRIVER_NAME = 'directory'
 
@@ -96,8 +99,32 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
         return self._is_active(volume, storage_pool)
 
     def image_activate(self, image, storage_pool, progress):
+        state = {
+            'percent': 0,
+            'time': time.time(),
+            'counter': 0
+        }
+        check_every = 100
+        counter = 0
+
         def report(*args):
-            pass
+            state['counter'] += 1
+            count, size, total = args
+
+            if total <= 0:
+                return
+
+            percent = (((count*size*100)/total)/3)*3
+            if state['percent'] != percent or \
+                ((counter % check_every) == 0 and \
+                 time.time() - state['time'] >= 2):
+                state['percent'] = percent
+                state['time'] = time.time()
+                state['total'] = total
+                state['current'] = count*size
+
+                log.info('Progress %s %s', image.url, state)
+                progress.update(None, progress=percent, data=state)
 
         pool_path = self._get_path(storage_pool)
         downloaded = None

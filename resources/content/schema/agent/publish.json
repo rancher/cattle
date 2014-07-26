@@ -29,13 +29,16 @@
             "create": true
         },
         "transitioningInternalMessage": {
-            "create": true
+            "create": true,
+            "nullable": true
         },
         "transitioningMessage": {
-            "create": true
+            "create": true,
+            "nullable": true
         },
         "transitioningProgress": {
-            "create": true
+            "create": true,
+            "nullable": true
         }
     }
 }

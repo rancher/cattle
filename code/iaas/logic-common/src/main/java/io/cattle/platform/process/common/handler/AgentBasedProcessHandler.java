@@ -6,6 +6,8 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.meta.Relationship;
@@ -13,6 +15,8 @@ import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.process.progress.ProcessProgress;
+import io.cattle.platform.process.progress.ProcessProgressInstance;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.Priority;
@@ -33,7 +37,9 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     AgentLocator agentLocator;
     ObjectSerializerFactory factory;
     ObjectSerializer serializer;
+    ProcessProgress progress;
 
+    boolean reportProgress = false;
     boolean shouldContinue;
     String configPrefix = "event.data.";
     String dataType;
@@ -94,7 +100,26 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         preProcessEvent(event, state, process, eventResource, dataResource, agentResource);
 
-        Event reply = agent.callSync(event);
+        EventCallOptions options = new EventCallOptions();
+        final ProcessProgressInstance progressInstance = progress.get();
+
+        if ( reportProgress && progressInstance != null ) {
+            options.withProgressIsKeepAlive(true).withProgress(new EventProgress() {
+                @Override
+                public void progress(Event event) {
+                    String message = event.getTransitioningMessage();
+                    if ( message != null ) {
+                        progressInstance.messsage(message);
+                    }
+
+                    Integer eventProgress = event.getTransitioningProgress();
+                    if ( eventProgress != null ) {
+                        progressInstance.progress(eventProgress);
+                    }
+                }
+            });
+        }
+        Event reply = agent.callSync(event, options);
 
         postProcessEvent(event, reply, state, process, eventResource, dataResource, agentResource);
 
@@ -355,6 +380,23 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     public void setShouldContinue(boolean shouldContinue) {
         this.shouldContinue = shouldContinue;
+    }
+
+    public ProcessProgress getProgress() {
+        return progress;
+    }
+
+    @Inject
+    public void setProgress(ProcessProgress progress) {
+        this.progress = progress;
+    }
+
+    public boolean isReportProgress() {
+        return reportProgress;
+    }
+
+    public void setReportProgress(boolean reportProgress) {
+        this.reportProgress = reportProgress;
     }
 
 }

@@ -18,6 +18,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.List;
@@ -40,6 +41,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
     GenericMapDao mapDao;
     IpAddressDao ipAddressDao;
+    ProcessProgress progress;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -48,25 +50,27 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         Map<String,Object> resultData = new ConcurrentHashMap<String,Object>();
         HandlerResult result = new HandlerResult(resultData);
 
-        String stage = "find placement";
+        progress.init(state, 5, 5, 80, 5, 5);
+
         try {
+            progress.checkPoint("find placement");
             allocate(instance);
 
-            stage = "create network";
+            progress.checkPoint("create network");
             network(instance, state);
 
-            stage = "create storage";
+            progress.checkPoint("create storage");
             storage(instance, state);
         } catch ( ExecutionException e ) {
-            log.error("Failed to {} for instance [{}]", stage, instance.getId());
+            log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
             return stopOrRemove(state, instance, e);
         }
 
         try {
-            stage = "create compute";
+            progress.checkPoint("create compute");
             compute(instance, state);
         } catch ( ExecutionException e ) {
-            log.error("Failed to {} for instance [{}]", stage, instance.getId());
+            log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
             if ( incrementComputeTry(state) >= getMaxComputeTries(instance) ) {
                 return stopOrRemove(state, instance, e);
             }
@@ -74,10 +78,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
 
         try {
-            stage = "post network";
+            progress.checkPoint("post network");
             postNetwork(instance, state);
         } catch ( ExecutionException e ) {
-            log.error("Failed to {} for instance [{}]", stage, instance.getId());
+            log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
             return stopOrRemove(state, instance, e);
         }
 
@@ -204,6 +208,15 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     @Inject
     public void setIpAddressDao(IpAddressDao ipAddressDao) {
         this.ipAddressDao = ipAddressDao;
+    }
+
+    public ProcessProgress getProgress() {
+        return progress;
+    }
+
+    @Inject
+    public void setProgress(ProcessProgress progress) {
+        this.progress = progress;
     }
 
 }

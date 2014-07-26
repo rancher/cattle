@@ -326,6 +326,10 @@ public abstract class AbstractEventService implements EventService {
         listener.setFuture(future);
         listener.setEvent(request);
 
+        if ( options.isProgressIsKeepAlive() && options.getProgress() != null ) {
+            listener.setRetry(retry);
+        }
+
         future.addListener(new Runnable() {
             @Override
             public void run() {

@@ -8,6 +8,7 @@ public class Retry {
     Long timeoutMillis;
     Runnable runnable;
     Future<?> future;
+    boolean keepalive = false;
 
     public Retry(int retries, Long timeoutMillis, Future<?> future, Runnable runnable) {
         super();
@@ -40,6 +41,14 @@ public class Retry {
 
     public int increment() {
         return ++retryCount;
+    }
+
+    public void setKeepalive(boolean keepalive) {
+        this.keepalive = keepalive;
+    }
+
+    public boolean isKeepalive() {
+        return keepalive;
     }
 
 }

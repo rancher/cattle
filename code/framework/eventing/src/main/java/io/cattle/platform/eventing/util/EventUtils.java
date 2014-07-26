@@ -43,6 +43,7 @@ public class EventUtils {
 
     public static EventCallOptions chainOptions(Event event) {
         return new EventCallOptions()
+            .withProgressIsKeepAlive(true)
             .withRetry(0)
             .withTimeoutMillis(event.getTimeoutMillis());
     }
@@ -57,8 +58,8 @@ public class EventUtils {
 
     public static void copyTransitioning(Event from, EventVO<?> to) {
         to.setTransitioning(from.getTransitioning());
-        to.setTransitioningInternalMessage(to.getTransitioningInternalMessage());
-        to.setTransitioningMessage(to.getTransitioningMessage());
-        to.setTransitioningProgress(to.getTransitioningProgress());
+        to.setTransitioningInternalMessage(from.getTransitioningInternalMessage());
+        to.setTransitioningMessage(from.getTransitioningMessage());
+        to.setTransitioningProgress(from.getTransitioningProgress());
     }
 }
