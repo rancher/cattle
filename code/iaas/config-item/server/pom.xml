@@ -26,7 +26,7 @@
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-metadata</artifactId>
+            <artifactId>cattle-iaas-metadata</artifactId>
             <version>${cattle.version}</version>
         </dependency>
         <dependency>
