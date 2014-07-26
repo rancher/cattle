@@ -31,8 +31,10 @@ public class IpsecInfoFactory extends AbstractAgentBaseContextFactory {
             }
         }
 
-        context.getData().put("ipsecNetwork", network);
-        context.getData().put("ipsecKey", data.getValue());
+        if ( data != null ) {
+            context.getData().put("ipsecNetwork", network);
+            context.getData().put("ipsecKey", data.getValue());
+        }
     }
 
     public NetworkDao getNetworkDao() {
