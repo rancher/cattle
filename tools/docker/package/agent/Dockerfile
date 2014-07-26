@@ -5,6 +5,7 @@ RUN apt-get update && \
      bridge-utils \
      ca-certificates \
      curl \
+     genisoimage \
      iptables \
      python-eventlet \
      python-libvirt \
