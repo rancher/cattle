@@ -6,6 +6,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.object.serialization.ObjectTypeSerializerPostProcessor;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
     JsonMapper jsonMapper;
     ObjectManager objectManager;
     ObjectMetaDataManager metaDataManager;
-    Map<String,ObjectTypeSerializerPostProcessor> postProcessorsMap = new HashMap<String, ObjectTypeSerializerPostProcessor>();
+    Map<String,List<ObjectTypeSerializerPostProcessor>> postProcessorsMap = new HashMap<String, List<ObjectTypeSerializerPostProcessor>>();
     List<ObjectTypeSerializerPostProcessor> postProcessors;
 
     @Override
@@ -40,7 +41,7 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
     public void start() {
         for ( ObjectTypeSerializerPostProcessor postProcessor : postProcessors ) {
             for ( String type : postProcessor.getTypes() ) {
-                postProcessorsMap.put(type, postProcessor);
+                CollectionUtils.addToMap(postProcessorsMap, type, postProcessor, ArrayList.class);
             }
         }
     }

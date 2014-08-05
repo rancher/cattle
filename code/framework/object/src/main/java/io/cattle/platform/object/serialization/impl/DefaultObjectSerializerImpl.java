@@ -19,10 +19,10 @@ public class DefaultObjectSerializerImpl implements ObjectSerializer {
     ObjectMetaDataManager metaDataManager;
     Action action;
     String expression;
-    Map<String,ObjectTypeSerializerPostProcessor> postProcessors;
+    Map<String,List<ObjectTypeSerializerPostProcessor>> postProcessors;
 
     public DefaultObjectSerializerImpl(JsonMapper jsonMapper, ObjectManager objectManager,
-            ObjectMetaDataManager metaDataManager, Map<String,ObjectTypeSerializerPostProcessor> postProcessors,
+            ObjectMetaDataManager metaDataManager, Map<String,List<ObjectTypeSerializerPostProcessor>> postProcessors,
             Action action, String expression) {
         super();
         this.jsonMapper = jsonMapper;
@@ -76,9 +76,11 @@ public class DefaultObjectSerializerImpl implements ObjectSerializer {
             }
         }
 
-        ObjectTypeSerializerPostProcessor postProcessor = postProcessors.get(type);
-        if ( postProcessor != null ) {
-            postProcessor.process(obj, type, data);
+        List<ObjectTypeSerializerPostProcessor> postProcessorList = postProcessors.get(type);
+        if ( postProcessorList != null ) {
+            for ( ObjectTypeSerializerPostProcessor postProcessor : postProcessorList ) {
+                postProcessor.process(obj, type, data);
+            }
         }
 
         return data;
