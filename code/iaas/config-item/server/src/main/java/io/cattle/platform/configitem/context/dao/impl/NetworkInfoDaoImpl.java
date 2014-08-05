@@ -419,6 +419,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 .join(subnet)
                     .on(subnet.ID.eq(targetIpAddress.SUBNET_ID))
                 .where(HOST.AGENT_ID.eq(agent.getId())
+                        .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
                         .and(INSTANCE_HOST_MAP.REMOVED.isNull())
                         .and(INSTANCE_HOST_MAP.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE))
                         .and(ipAddress.REMOVED.isNull())
