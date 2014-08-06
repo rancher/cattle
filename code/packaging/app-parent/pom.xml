@@ -13,54 +13,54 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-jmx</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-eventing-redis</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-docker-storage</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-docker-allocator</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-simulator-agent-connection</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-simulator-storage</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-simulator-allocator</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-launcher</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-db-loader</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-meta</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -153,7 +153,7 @@
                             <mainClass>io.cattle.platform.launcher.Main</mainClass>
                         </manifest>
                         <manifestEntries>
-                            <Implementation-Version>${cattle.version}</Implementation-Version>
+                            <Implementation-Version>${project.version}</Implementation-Version>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -208,7 +208,7 @@
                 <dependency>
                     <groupId>io.cattle</groupId>
                     <artifactId>cattle-dev</artifactId>
-                    <version>${cattle.version}</version>
+                    <version>${project.version}</version>
                 </dependency>
             </dependencies>
         </profile>

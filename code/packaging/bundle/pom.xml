@@ -9,10 +9,10 @@
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <properties>
-        <implementation.version>${cattle.version}</implementation.version>
+        <implementation.version>${project.version}</implementation.version>
         <war.groupId>io.cattle</war.groupId>
         <war.artifactId>cattle-app</war.artifactId>
-        <war.version>${cattle.version}</war.version>
+        <war.version>${project.version}</war.version>
         <war.name>cattle.war</war.name>
     </properties>
     <packaging>jar</packaging>

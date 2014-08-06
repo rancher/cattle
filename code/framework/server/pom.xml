@@ -12,7 +12,7 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-archaius</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

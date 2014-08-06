@@ -16,12 +16,12 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-json</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-utils</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>

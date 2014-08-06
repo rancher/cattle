@@ -12,27 +12,27 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-agent-connection-event</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-ssh-common</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-bootstrap</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-config</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-jooq</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>

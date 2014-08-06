@@ -12,52 +12,52 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-deferred</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-server</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-lock</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-archaius</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-json</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-extension</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-managed-context</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-events</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-metrics</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-system-task</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

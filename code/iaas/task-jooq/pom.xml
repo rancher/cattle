@@ -12,22 +12,22 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-system-task</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-model</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-api</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-jooq</artifactId>
-            <version>${cattle.version}</version>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
