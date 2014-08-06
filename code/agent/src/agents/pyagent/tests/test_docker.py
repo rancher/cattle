@@ -366,9 +366,11 @@ def test_instance_deactivate(agent, responses):
         del resp['data']['instance']['+data']['dockerContainer']['Id']
         del resp['data']['instance']['+data']['dockerContainer']['Status']
         del resp['data']['instance']['+data']['+fields']['dockerIp']
+
         # TODO: this shouldn't be needed but sometimes dockerPorts is set
         # on really slow machines (m1.small on ec2)
         resp['data']['instance']['+data']['+fields']['dockerPorts'] = {}
+        resp['data']['instance']['+data']['dockerContainer']['Ports'] = []
 
     event_test(agent, 'docker/instance_deactivate', post_func=post)
 
