@@ -54,17 +54,31 @@ build()
         mvn "$@"
     fi
     mkdir -p dist/server/artifacts
-    if [ -e code/packaging/app/target/*.war ]; then
-        cp code/packaging/app/target/*.war dist/server/artifacts/cattle.jar
-    fi
-    if [ -e code/packaging/bundle/target/cattle-bundle*.jar ]; then
-        if [ code/packaging/bundle/target/cattle-bundle*.jar -nt code/packaging/app/target/*.war ]; then
-            cp code/packaging/bundle/target/cattle-bundle*.jar dist/server/artifacts/cattle.jar
-            if [ -e dist/server/artifacts/cattle.jar ]; then
-                java -jar dist/server/artifacts/cattle.jar version > dist/version
+
+    local max=0
+    local files=(code/packaging/app/target/*.war
+             code/packaging/bundle/target/cattle-bundle*.jar
+             target/checkout/.m2/io/cattle/cattle-bundle/*/cattle-bundle-[0-9].[0-9].[0-9].jar)
+
+    local src=
+    local target=dist/server/artifacts/cattle.jar
+
+    for i in ${files[@]}; do
+        if [ -e "$i" ]; then
+            if [ "$src" = "" ] || [ $i -nt $src ]; then
+                src=$i
             fi
         fi
+    done
+
+    if [ ! -e $target ] || [ "$src" -nt "$target" ]; then
+        echo "Copying $src => $target"
+        cp $src $target
+        if [[ $src =~ .*jar$ ]]; then
+            java -jar $target version > dist/version
+        fi
     fi
+
     tar c -C tools/docker/package . | tar xf - -C dist
 }
 
