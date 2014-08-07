@@ -1,6 +1,9 @@
 MVN_OPTS=
 MVN=${MVN_OPTS} install
 
+shell: build-env
+	./tools/docker/build.sh bash
+
 build: build-env
 	./tools/docker/build.sh mvn ${MVN}
 
@@ -25,6 +28,9 @@ test: build
 
 bundle: build-env
 	./tools/docker/build.sh mvn ${MVN_OPTS} -Drelease package
+
+release-images: build
+	./dist/package.sh
 
 images: bundle
 	./dist/package.sh
