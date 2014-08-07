@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 <!-- 
   Why does this parent pom exist and not just have the root as the parent?  The reason is because
   of IDEs.  You want to have all the poms open in your IDE so that you can quickly change things, but
@@ -10,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.cattle</groupId>
     <artifactId>cattle-meta-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>pom</packaging>
     <name>Cattle</name>
     <description>Cattle</description>
@@ -26,7 +25,7 @@
         <connection>scm:git:git@github.com:cattleio/cattle.git</connection>
         <developerConnection>scm:git:git@github.com:cattleio/cattle.git</developerConnection>
         <url>git@github.com:cattleio/cattle.git</url>
-        <tag>HEAD</tag>
+        <tag>v0.1.0</tag>
     </scm>
     <distributionManagement>
         <!--
