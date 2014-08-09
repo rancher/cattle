@@ -186,6 +186,7 @@ class EventClient:
                             self._queue.put(line, block=False)
                 except Full:
                     log.info("Dropping request %s" % line)
+                    drop_count += 1
                     max = Config.max_dropped_requests()
                     if ping:
                         ping_drop += 1
