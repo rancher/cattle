@@ -48,6 +48,7 @@
         "container.commandArgs" : "cr",
         "container.compute" : "cr",
         "container.directory" : "cr",
+        "container.dockerVolumes" : "cr",
         "container.hostname" : "cr",
         "container.kind" : "r",
         "container.networkIds" : "cr",

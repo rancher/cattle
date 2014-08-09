@@ -8,6 +8,10 @@
         },
         "dockerIp": {
             "type": "string"
+        },
+        "dockerVolumes": {
+            "type": "array[string]",
+            "nullable": true
         }
     }
 }

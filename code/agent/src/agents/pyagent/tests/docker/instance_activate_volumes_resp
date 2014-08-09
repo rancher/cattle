@@ -5,17 +5,15 @@
                 "+fields": {
                     "dockerHostIp": "1.2.3.4",
                     "dockerPorts": {
-                        "500/udp": "1500",
-                        "4500/udp": "5500",
                         "8080/tcp": "1234",
                         "12201/udp": "5678"
                     }
                 },
                 "dockerContainer": {
-                    "Command": "/sleep.sh",
+                    "Command": "sleep 5",
                     "Image": "ibuildthecloud/helloworld:latest",
                     "Names": [
-                        "/c861f990-4472-4fa1-960f-65171b544c28"
+                        "/c-c861f990-4472-4fa1-960f-65171b544c28"
                     ],
                     "Ports": [
                         {
@@ -27,18 +25,6 @@
                             "IP": "0.0.0.0",
                             "Type": "tcp",
                             "PrivatePort": 8080
-                        },
-                        {
-                            "IP": "0.0.0.0",
-                            "Type": "udp",
-                            "PrivatePort": 4500,
-                            "PublicPort": 5500
-                        },
-                        {
-                            "IP": "0.0.0.0",
-                            "Type": "udp",
-                            "PrivatePort": 500,
-                            "PublicPort": 1500
                         }
                     ]
                 }

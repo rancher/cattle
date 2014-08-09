@@ -94,6 +94,7 @@ def test_instance_only_activate(agent, responses):
         del docker_container['Created']
         del docker_container['Id']
         del docker_container['Status']
+        docker_container = _sort_ports(docker_container)
         del docker_container['Ports'][0]['PublicPort']
         del docker_container['Ports'][1]['PublicPort']
         del fields['dockerIp']
@@ -137,6 +138,7 @@ def test_instance_activate_links(agent, responses):
         del docker_container['Created']
         del docker_container['Id']
         del docker_container['Status']
+        docker_container = _sort_ports(docker_container)
         del docker_container['Ports'][0]['PublicPort']
         del docker_container['Ports'][1]['PublicPort']
         del fields['dockerIp']
@@ -198,6 +200,7 @@ def test_instance_activate_links_no_service(agent, responses):
         del docker_container['Created']
         del docker_container['Id']
         del docker_container['Status']
+        docker_container = _sort_ports(docker_container)
         del docker_container['Ports'][0]['PublicPort']
         del docker_container['Ports'][1]['PublicPort']
         del fields['dockerIp']
@@ -227,8 +230,9 @@ def test_instance_activate_ipsec(agent, responses):
         del docker_container['Created']
         del docker_container['Id']
         del docker_container['Status']
-        del docker_container['Ports'][2]['PublicPort']
-        del docker_container['Ports'][3]['PublicPort']
+        docker_container = _sort_ports(docker_container)
+        del docker_container['Ports'][0]['PublicPort']
+        del docker_container['Ports'][1]['PublicPort']
         del fields['dockerIp']
         assert fields['dockerPorts']['8080/tcp'] is not None
         assert fields['dockerPorts']['12201/udp'] is not None
@@ -252,6 +256,7 @@ def test_instance_activate_agent_instance_localhost(agent, responses):
         del docker_container['Created']
         del docker_container['Id']
         del docker_container['Status']
+        docker_container = _sort_ports(docker_container)
         del docker_container['Ports'][0]['PublicPort']
         del docker_container['Ports'][1]['PublicPort']
         del fields['dockerIp']
@@ -287,6 +292,7 @@ def test_instance_activate_agent_instance(agent, responses):
         del docker_container['Created']
         del docker_container['Id']
         del docker_container['Status']
+        docker_container = _sort_ports(docker_container)
         del docker_container['Ports'][0]['PublicPort']
         del docker_container['Ports'][1]['PublicPort']
         del fields['dockerIp']
@@ -310,6 +316,52 @@ def test_instance_activate_agent_instance(agent, responses):
                post_func=post)
 
 
+def _sort_ports(docker_container):
+    docker_container['Ports'] = sorted(docker_container['Ports'],
+                                       key=lambda x: 1-x['PrivatePort'])
+    return docker_container
+
+
+@if_docker
+def test_instance_activate_volumes(agent, responses):
+    _delete_container('/c-c861f990-4472-4fa1-960f-65171b544c28')
+
+    def post(req, resp):
+        inspect = resp['data']['instance']['+data']['dockerInspect']
+
+        assert inspect['Volumes']['/host/proc'] == '/proc'
+        assert inspect['Volumes']['/host/sys'] == '/sys'
+        assert inspect['Volumes']['/random'] is not None
+
+        assert len(inspect['Volumes']) == 3
+
+        assert inspect['VolumesRW'] == {
+            '/host/proc': True,
+            '/host/sys': True,
+            '/random': True
+        }
+
+        assert set(['/sys:/host/sys', '/proc:/host/proc']) == \
+               set(inspect['HostConfig']['Binds'])
+
+        del resp['data']['instance']['+data']['dockerInspect']
+        docker_container = resp['data']['instance']['+data']['dockerContainer']
+        fields = resp['data']['instance']['+data']['+fields']
+        del docker_container['Created']
+        del docker_container['Id']
+        del docker_container['Status']
+        docker_container = _sort_ports(docker_container)
+        del docker_container['Ports'][0]['PublicPort']
+        del docker_container['Ports'][1]['PublicPort']
+        del fields['dockerIp']
+        assert fields['dockerPorts']['8080/tcp'] is not None
+        assert fields['dockerPorts']['12201/udp'] is not None
+        fields['dockerPorts']['8080/tcp'] = '1234'
+        fields['dockerPorts']['12201/udp'] = '5678'
+
+    event_test(agent, 'docker/instance_activate_volumes', post_func=post)
+
+
 @if_docker
 def test_instance_activate_command(agent, responses):
     _delete_container('/c-c861f990-4472-4fa1-960f-65171b544c28')
@@ -321,6 +373,7 @@ def test_instance_activate_command(agent, responses):
         del docker_container['Created']
         del docker_container['Id']
         del docker_container['Status']
+        docker_container = _sort_ports(docker_container)
         del docker_container['Ports'][0]['PublicPort']
         del docker_container['Ports'][1]['PublicPort']
         del fields['dockerIp']
@@ -343,6 +396,7 @@ def test_instance_activate_command_args(agent, responses):
         del docker_container['Created']
         del docker_container['Id']
         del docker_container['Status']
+        docker_container = _sort_ports(docker_container)
         del docker_container['Ports'][0]['PublicPort']
         del docker_container['Ports'][1]['PublicPort']
         del fields['dockerIp']

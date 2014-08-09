@@ -185,7 +185,7 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         # Docker-py doesn't support working_dir, maybe in 0.2.4?
         copy_fields = [
             ('environment', 'environment'),
-            ('hostname', 'hostname'),
+            ('directory', 'working_dir'),
             ('user', 'user')]
 
         for src, dest in copy_fields:
@@ -194,13 +194,34 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             except (KeyError, AttributeError):
                 pass
 
-        self._setup_command(config, instance)
-        self._setup_ports(config, instance)
+        try:
+            config['hostname'] = instance.hostname
+        except (KeyError, AttributeError):
+            pass
 
         start_config = {
             'publish_all_ports': True,
             'privileged': self._is_privileged(instance)
         }
+
+        try:
+            volumes = instance.data.fields['dockerVolumes']
+            volumes_map = {}
+            binds_map = {}
+            if volumes is not None and len(volumes) > 0:
+                for i in volumes:
+                    parts = i.split(':', 2)
+                    if len(parts) == 1:
+                        volumes_map[parts[0]] = {}
+                    else:
+                        binds_map[parts[0]] = parts[1]
+                config['volumes'] = volumes_map
+                start_config['binds'] = binds_map
+        except (KeyError, AttributeError):
+            pass
+
+        self._setup_command(config, instance)
+        self._setup_ports(config, instance)
 
         self._setup_links(start_config, instance)
 
@@ -249,6 +270,8 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
         existing = self.get_container_by_name(obj.instance.uuid)
         docker_ports = {}
         docker_ip = None
+
+        print existing
 
         if existing is not None:
             inspect = docker_client().inspect_container(existing['Id'])
