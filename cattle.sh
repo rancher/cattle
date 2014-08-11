@@ -71,7 +71,7 @@ build()
         fi
     done
 
-    if [ ! -e $target ] || [ "$src" -nt "$target" ]; then
+    if [ -e "$src" ] && [ ! -e $target ] || [ "$src" -nt "$target" ]; then
         echo "Copying $src => $target"
         cp $src $target
         if [[ $src =~ .*jar$ ]]; then
