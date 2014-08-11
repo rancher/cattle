@@ -342,7 +342,7 @@ def test_instance_activate_volumes(agent, responses):
         }
 
         assert set(['/sys:/host/sys', '/proc:/host/proc']) == \
-               set(inspect['HostConfig']['Binds'])
+            set(inspect['HostConfig']['Binds'])
 
         del resp['data']['instance']['+data']['dockerInspect']
         docker_container = resp['data']['instance']['+data']['dockerContainer']
