@@ -28,22 +28,11 @@ Em.RSVP.configure('onerror', function(error) {
 App.ApplicationRoute = Em.Route.extend({
   actions: {
     error: function(err) {
-      this.transitionTo('application.error');
-//      console.log(arguments);
-//      Growl.error('Error',err);
+      Growl.error('Error',err);
+      console.log(arguments);
     }
   }
 });
-
-App.ApplicationErrorRoute = Em.Route.extend({
-  renderTemplate: function() {
-    debugger;
-  }
-})
-
-App.ApplicationErrorView = Em.View.extend({
-  templateName: 'error'
-})
 
 App.ApplicationController = Em.Controller.extend({
 });
@@ -294,7 +283,17 @@ App.GdapiAdapter = Em.Object.extend({
       }
 
       function fail(xhr, textStatus, err) {
-        reject(self.typeifier.typeify(err));
+        var body;
+        if ( xhr.responseJSON )
+        {
+          body = self.typeifier.typeify(xhr.responseJSON);
+        }
+        else
+        {
+          body = xhr.responseText;
+        }
+        
+        reject(body);
       }
     });
 
@@ -1274,10 +1273,89 @@ App.HostsRoute = Em.Route.extend({
 
 App.HostsView = Em.View.extend({
   templateName: 'hosts',
+
+  resizeFn: null,
+  didInsertElement: function() {
+    console.log('didInsertElement');
+    this._super();
+    
+    this.set('resizeFn', this.onResize.bind(this));
+    $(window).on('resize', this.get('resizeFn'));
+  },
+
+  willDestroyElement: function() {
+    $(window).off('resize', this.get('resizeFn'));
+  },
+
+  windowWidth: $(window).width(),
+  onResize: function() {
+    this.set('windowWidth', $(window).width());
+  },
+
+  columnCount: function() {
+    var width = this.get('windowWidth');
+    return Math.floor((width-42)/310);
+  }.property('windowWidth'),
+
+  columns: function() {
+    var hosts = this.get('context.byPhysical');
+    var total = hosts.get('length');
+    var columnCount = this.get('columnCount');
+    var perColumn = Math.ceil(total/columnCount);
+
+    var out = [];
+    for ( var i = 0 ; i < total ; i++ )
+    {
+      // If on a column boundary, create a new column
+      if ( i % perColumn == 0 )
+      {
+        out.push([]);
+      }
+
+      // Add the host to the last column
+      out[out.length-1].push(hosts[i]);
+    }
+
+    return out;
+  }.property('context.byPhysical.[]','columnCount'),
 });
 
 App.HostsController = App.CattleCollectionController.extend({
   itemController: 'host',
+
+  byPhysical: function() {
+    var phy = {};
+    this.get('model').forEach(function(host) {
+      var phyId = host.get('physicalHostId');
+      if ( phy[phyId] )
+      {
+        phy[phyId].get('hosts').pushObject(host);
+        phy[phyId].set('multiple',true);
+      }
+      else
+      {
+        phy[phyId] = Em.Object.create({
+                      id: phyId,
+                      name: host.get('physicalHost.name') || host.get('name'),
+                      hosts: [host],
+                      multiple: false
+                     });
+      }
+    });
+
+    var out = [];
+    Object.keys(phy).forEach(function(key) {
+      out.push(phy[key]);
+    });
+
+    out.sort(function(a,b) {
+      var an = a.get('name');
+      var bn = b.get('name');
+      return (an < bn ? -1 : (an > bn ? 1 : 0));
+    });
+
+    return out;
+  }.property('model.[]','model.@each.physicalHostId')
 });
 
 App.HostsItemView = Em.View.extend({
@@ -1320,6 +1398,7 @@ App.HostController.reopenClass({
     'registering':      {icon: 'fa-ticket',      color: 'text-danger'},
     'activating':       {icon: 'fa-ticket',      color: 'text-danger'},
     'active':           {icon: _hostIcon,        color: ''},
+    'reconnecting':     {icon: 'fa-cog fa-spin', color: 'text-danger'},
     'updating-active':  {icon: _hostIcon,        color: 'text-success'},
     'updating-inactive':{icon: 'fa-stop',        color: 'text-danger'},
     'deactivating':     {icon: 'fa-pause',       color: 'text-danger'},
@@ -1538,7 +1617,7 @@ App.InstanceEditController = Em.ObjectController.extend({
   networkId: null,
   networks: Em.computed.alias('controllers.networks'),
   networkIdDidChange: function() {
-    var ary = this.get('networkIds');
+    var ary = this.get('networkIds')||[];
     ary.length = 0;
     ary.push(this.get('networkId'));
   }.observes('networkId'),
@@ -1547,10 +1626,30 @@ App.InstanceEditController = Em.ObjectController.extend({
     return true;
   },
 
+  error: null,
   actions: {
+    error: function(err) {
+      var msg;
+      if ( err.get('status') == 422 )
+      {
+        switch ( err.get('fieldName') )
+        {
+          case 'imageUuid':
+            msg = 'Invalid source image name';
+            break;
+          default:
+            msg = 'Invalid ' + err.get('fieldName');
+            break;
+        }
+      }
+
+      this.set('error', msg);
+    },
+
     save: function() {
       var self = this;
 
+      this.set('error',null);
       var ok = this.validate();
       if ( !ok )
         return;
@@ -1700,6 +1799,7 @@ App.ContainerEditController = App.InstanceEditController.extend({
     this.initArgs();
     this.initPorts();
     this.initLinks();
+    this.userImageUuidDidChange();
   },
 
   loadDependencies: function() {
@@ -1945,13 +2045,22 @@ App.ContainerEditController = App.InstanceEditController.extend({
     ary.endPropertyChanges();
   }.observes('linksArray.@each.{linkName,targetInstanceId}'),
 
-  validate: function() {
-    var image = this.get('imageUuid');
-    if ( image.indexOf('docker:') !== 0 )
+  userImageUuid: 'stackbrew/ubuntu:14.04',
+  userImageUuidDidChange: function() {
+    var image = this.get('userImageUuid');
+    if ( image.indexOf('docker:') === 0 )
     {
-      this.set('imageUuid', 'docker:'+ image);
+      this.set('userImageUuid', image.replace(/^docker:/,''));
+    }
+    else
+    {
+      image = 'docker:' + image;
     }
 
+    this.set('imageUuid', image);
+  }.observes('userImageUuid'),
+
+  validate: function() {
     return true;
   },
 
@@ -1997,7 +2106,6 @@ App.ContainerNewRoute = App.InstanceNewRoute.extend({
     var model = App.Container.create({
       requestedHostId: host.get('id'),
       commandArgs: [],
-      imageUuid: 'stackbrew/ubuntu:13.04',
       networkIds: [networkId],
       environment: {
       }
@@ -2012,6 +2120,12 @@ App.ContainerNewRoute = App.InstanceNewRoute.extend({
 // --------
 App.ContainerDeleteRoute = App.InstanceDeleteRoute.extend({
   controllerName: 'container'
+});
+
+App.ContainerLoadingRoute = Em.Route.extend({
+  renderTemplate: function() {
+    this.render('loading', {into: 'application', outlet: 'overlay'});
+  },
 });
 ;
 
@@ -2591,6 +2705,15 @@ App.SshkeyController = App.TransitioningResourceController.extend({
   algorithm: Em.computed.alias('publicParts.algorithm'),
   comment: Em.computed.alias('publicParts.comment'),
 
+  unbreakablePublicValue: function() {
+    var val = this.get('publicValue')||'';
+
+    var str = '<span class="clip">'+ Em.Handlebars.Utils.escapeExpression(val.substr(0,20))+'</span>';
+    str += Em.Handlebars.Utils.escapeExpression(val.substr(21));
+
+    return new Em.Handlebars.SafeString(str);
+  }.property('publicValue'),
+
   canEdit: function() {
     var state = this.get('state');
     return state != 'removed' && state != 'purged';
@@ -3133,15 +3256,37 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
   function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', escapeExpression=this.escapeExpression;
+  var buffer = '', stack1, escapeExpression=this.escapeExpression, self=this;
 
-
-  data.buffer.push("<section>\n  ");
-  data.buffer.push(escapeExpression(helpers.each.call(depth0, "dataSource", {hash:{
+function program1(depth0,data) {
+  
+  var buffer = '', stack1;
+  data.buffer.push("\n    <div class=\"host-column\">\n      ");
+  stack1 = helpers.each.call(depth0, "physicalHost", "in", "col", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(2, program2, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n    </div>\n  ");
+  return buffer;
+  }
+function program2(depth0,data) {
+  
+  var buffer = '';
+  data.buffer.push("\n        <div ");
+  data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+    'class': (":physical-host physicalHost.multiple:physical-host-multiple")
+  },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+  data.buffer.push(">\n          ");
+  data.buffer.push(escapeExpression(helpers.each.call(depth0, "physicalHost.hosts", {hash:{
     'itemViewClass': ("App.HostsItemView"),
     'itemController': ("host")
   },hashTypes:{'itemViewClass': "STRING",'itemController': "STRING"},hashContexts:{'itemViewClass': depth0,'itemController': depth0},contexts:[depth0],types:["ID"],data:data})));
-  data.buffer.push("\n  \n</section>\n");
+  data.buffer.push("\n        </div>\n      ");
+  return buffer;
+  }
+
+  data.buffer.push("<section class=\"hosts clearfix\">\n  ");
+  stack1 = helpers.each.call(depth0, "col", "in", "view.columns", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n</section>\n");
   return buffer;
   
 }
@@ -3465,7 +3610,7 @@ function program16(depth0,data) {
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("</div>\n</div>\n<div ");
   data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
-    'class': ("isError:text-danger:text-muted showTransitioningMessage::hide")
+    'class': (":force-wrap isError:text-danger:text-muted showTransitioningMessage::hide")
   },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
   data.buffer.push(">\n  ");
   stack1 = helpers._triageMustache.call(depth0, "transitioningMessage", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
@@ -3637,7 +3782,7 @@ function program19(depth0,data) {
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("</div>\n</div>\n<div ");
   data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
-    'class': (":text-muted showTransitioningMessage::hide")
+    'class': (":force-wrap isError:text-danger:text-muted showTransitioningMessage::hide")
   },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
   data.buffer.push(">\n  ");
   stack1 = helpers._triageMustache.call(depth0, "transitioningMessage", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
@@ -3721,6 +3866,16 @@ function program3(depth0,data) {
 function program5(depth0,data) {
   
   var buffer = '', stack1;
+  data.buffer.push("\n  <div class=\"alert alert-danger\">\n    <i style=\"float: left;\" class=\"fa fa-exclamation-circle\"></i>\n    <p style=\"margin-left: 50px\">");
+  stack1 = helpers._triageMustache.call(depth0, "error", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("</p>\n  </div>\n");
+  return buffer;
+  }
+
+function program7(depth0,data) {
+  
+  var buffer = '', stack1;
   data.buffer.push("\n      ");
   stack1 = self.invokePartial(partials['container-edit-ports'], 'container-edit-ports', depth0, helpers, partials, data);
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
@@ -3731,7 +3886,7 @@ function program5(depth0,data) {
   return buffer;
   }
 
-function program7(depth0,data) {
+function program9(depth0,data) {
   
   var buffer = '', stack1;
   data.buffer.push("\n      <div class=\"form-group\">\n        <label for=\"networkId\"><i class=\"fa fa-sitemap\"></i> Network</label>\n        ");
@@ -3752,7 +3907,7 @@ function program7(depth0,data) {
   return buffer;
   }
 
-function program9(depth0,data) {
+function program11(depth0,data) {
   
   var buffer = '', stack1;
   data.buffer.push("\n  <div class=\"row\">\n    <div class=\"col-md-6\">\n      ");
@@ -3778,7 +3933,10 @@ function program9(depth0,data) {
   data.buffer.push("<h1><i class=\"fa fa-tint\"></i> ");
   stack1 = helpers['if'].call(depth0, "editing", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push(" Container</h1>\n\n<div class=\"row\">\n  <div class=\"col-md-6\">\n    <div class=\"form-group\">\n      <label for=\"name\">Name</label>\n      ");
+  data.buffer.push(" Container</h1>\n\n");
+  stack1 = helpers['if'].call(depth0, "error", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0],types:["ID"],data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n\n<div class=\"row\">\n  <div class=\"col-md-6\">\n    <div class=\"form-group\">\n      <label for=\"name\">Name</label>\n      ");
   data.buffer.push(escapeExpression((helper = helpers.input || (depth0 && depth0.input),options={hash:{
     'id': ("name"),
     'type': ("text"),
@@ -3795,10 +3953,10 @@ function program9(depth0,data) {
     'placeholder': ("e.g. It serves the webs")
   },hashTypes:{'id': "STRING",'value': "ID",'classNames': "STRING",'rows': "STRING",'placeholder': "STRING"},hashContexts:{'id': depth0,'value': depth0,'classNames': depth0,'rows': depth0,'placeholder': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "textarea", options))));
   data.buffer.push("\n    </div>\n  </div>\n\n  <div class=\"col-md-6\">\n    ");
-  stack1 = helpers['if'].call(depth0, "editing", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(7, program7, data),fn:self.program(5, program5, data),contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers['if'].call(depth0, "editing", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(9, program9, data),fn:self.program(7, program7, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n  </div>\n</div>\n\n");
-  stack1 = helpers.unless.call(depth0, "editing", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers.unless.call(depth0, "editing", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(11, program11, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n\n");
   stack1 = self.invokePartial(partials['save-cancel'], 'save-cancel', depth0, helpers, partials, data);
@@ -4022,8 +4180,8 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
     'disabled': ("isRancher"),
     'type': ("text"),
     'class': ("form-control"),
-    'value': ("imageUuid"),
-    'placeholder': ("e.g. stackbrew/ubuntu:13.04")
+    'value': ("userImageUuid"),
+    'placeholder': ("e.g. stackbrew/ubuntu:14.04")
   },hashTypes:{'disabled': "ID",'type': "STRING",'class': "STRING",'value': "ID",'placeholder': "STRING"},hashContexts:{'disabled': depth0,'type': depth0,'class': depth0,'value': depth0,'placeholder': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "input", options))));
   data.buffer.push("\n  </div>\n</div>\n");
   return buffer;
@@ -4093,8 +4251,14 @@ function program4(depth0,data) {
   return buffer;
   }
 
-  data.buffer.push("<label>Links</label>\n<table class=\"table\">\n  <tr>\n    <th width=\"45%\">Link Container</th>\n    <th>&nbsp;</th>\n    <th width=\"45%\">As Name</th>\n  </tr>\n  ");
-  stack1 = helpers.each.call(depth0, "link", "in", "linksArray", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
+function program6(depth0,data) {
+  
+  
+  data.buffer.push("\n    <tr>\n      <td colspan=\"3\">\n        <i>None</i>\n      </td>\n    </tr>\n  ");
+  }
+
+  data.buffer.push("<label>Links</label>\n<table class=\"table\">\n  <tr>\n    <th width=\"45%\">Destination Container</th>\n    <th>&nbsp;</th>\n    <th width=\"45%\">As Name</th>\n  </tr>\n  ");
+  stack1 = helpers.each.call(depth0, "link", "in", "linksArray", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(6, program6, data),fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n</table>\n");
   return buffer;
@@ -4165,13 +4329,23 @@ function program3(depth0,data) {
 function program5(depth0,data) {
   
   var buffer = '', stack1;
+  data.buffer.push("\n  <div class=\"alert alert-danger\">\n    <i style=\"float: left;\" class=\"fa fa-exclamation-circle\"></i>\n    <p style=\"margin-left: 50px\">");
+  stack1 = helpers._triageMustache.call(depth0, "error", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("</p>\n  </div>\n");
+  return buffer;
+  }
+
+function program7(depth0,data) {
+  
+  var buffer = '', stack1;
   data.buffer.push("\n        ");
-  stack1 = helpers.each.call(depth0, "img", "in", "images", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
+  stack1 = helpers.each.call(depth0, "img", "in", "images", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(8, program8, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n    ");
   return buffer;
   }
-function program6(depth0,data) {
+function program8(depth0,data) {
   
   var buffer = '', stack1, helper, options;
   data.buffer.push("\n          <label>\n            ");
@@ -4188,16 +4362,16 @@ function program6(depth0,data) {
   return buffer;
   }
 
-function program8(depth0,data) {
+function program10(depth0,data) {
   
   var buffer = '', stack1;
   data.buffer.push("\n        ");
-  stack1 = helpers.each.call(depth0, "key", "in", "sshkeyObjs", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
+  stack1 = helpers.each.call(depth0, "key", "in", "sshkeyObjs", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(11, program11, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n      ");
   return buffer;
   }
-function program9(depth0,data) {
+function program11(depth0,data) {
   
   var buffer = '', stack1, helper, options;
   data.buffer.push("\n          <label>\n            ");
@@ -4216,7 +4390,10 @@ function program9(depth0,data) {
   data.buffer.push("<h1><i class=\"fa fa-desktop\"></i> ");
   stack1 = helpers['if'].call(depth0, "editing", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push(" Virtual Machine</h1>\n\n<div class=\"row\">\n  <div class=\"col-md-4\">\n    <div class=\"form-group\">\n      <label for=\"name\">Name</label>\n      ");
+  data.buffer.push(" Virtual Machine</h1>\n\n");
+  stack1 = helpers['if'].call(depth0, "error", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0],types:["ID"],data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n\n<div class=\"row\">\n  <div class=\"col-md-4\">\n    <div class=\"form-group\">\n      <label for=\"name\">Name</label>\n      ");
   data.buffer.push(escapeExpression((helper = helpers.input || (depth0 && depth0.input),options={hash:{
     'id': ("name"),
     'type': ("text"),
@@ -4266,10 +4443,10 @@ function program9(depth0,data) {
     'placeholder': ("e.g. It serves the webs")
   },hashTypes:{'id': "STRING",'value': "ID",'classNames': "STRING",'rows': "STRING",'placeholder': "STRING"},hashContexts:{'id': depth0,'value': depth0,'classNames': depth0,'rows': depth0,'placeholder': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "textarea", options))));
   data.buffer.push("\n    </div>\n\n    <label><i class=\"fa fa-image\"></i> Image</label>\n    <div class=\"well radio-well\" style=\"max-height: 150px; overflow-y: auto\">\n      ");
-  stack1 = helpers['with'].call(depth0, "controller", "as", "ctl", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
+  stack1 = helpers['with'].call(depth0, "controller", "as", "ctl", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n    </div>\n  </div>\n\n  <div class=\"col-md-6\">\n    <label><i class=\"fa fa-key\"></i> SSH Keys</label>\n    <div class=\"well radio-well\">\n     ");
-  stack1 = helpers['with'].call(depth0, "controller", "as", "controller", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(8, program8, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
+  stack1 = helpers['with'].call(depth0, "controller", "as", "controller", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(10, program10, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n    </div>\n\n    <label for=\"userdata\"><i class=\"fa fa-file-code-o\"></i> User Data</label>\n    ");
   data.buffer.push(escapeExpression((helper = helpers.textarea || (depth0 && depth0.textarea),options={hash:{
@@ -4599,7 +4776,7 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
 function program1(depth0,data) {
   
   var buffer = '', stack1, helper, options;
-  data.buffer.push("\n        <tr>\n          <td ");
+  data.buffer.push("\n        <tr class=\"info-row\">\n          <td ");
   data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
     'class': ("stateColor")
   },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
@@ -4616,12 +4793,11 @@ function program1(depth0,data) {
   data.buffer.push("\n            <p class=\"text-muted\">");
   stack1 = helpers['if'].call(depth0, "key.description", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(8, program8, data),fn:self.program(6, program6, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("</p>\n\n          </td>\n          <td>\n            <div>");
+  data.buffer.push("</p>\n          </td>\n          <td>\n            <div>");
   data.buffer.push(escapeExpression((helper = helpers.momentCalendar || (depth0 && depth0.momentCalendar),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data},helper ? helper.call(depth0, "key.created", options) : helperMissing.call(depth0, "momentCalendar", "key.created", options))));
-  data.buffer.push("</div>\n            <div class=\"text-muted force-wrap\">");
-  stack1 = helpers['if'].call(depth0, "key.publicValue", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(12, program12, data),fn:self.program(10, program10, data),contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("</div>\n          </td>\n          <td align=\"right\">\n            <button ");
+  data.buffer.push("</div>\n            <p class=\"text-muted\">");
+  data.buffer.push(escapeExpression((helper = helpers.uppercase || (depth0 && depth0.uppercase),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data},helper ? helper.call(depth0, "algorithm", options) : helperMissing.call(depth0, "uppercase", "algorithm", options))));
+  data.buffer.push("</p>\n          </td>\n          <td align=\"right\">\n            <button ");
   data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
     'class': (":btn :btn-sm :btn-info key.actions.activate::hide")
   },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
@@ -4651,7 +4827,10 @@ function program1(depth0,data) {
   },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
   data.buffer.push(" ");
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "delete", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
-  data.buffer.push(" title=\"Delete\"><i class=\"fa fa-trash-o\"></i></button>\n          </td>\n        </tr>\n      ");
+  data.buffer.push(" title=\"Delete\"><i class=\"fa fa-trash-o\"></i></button>\n          </td>\n        </tr>\n        <tr class=\"key-row\">\n          <td colspan=\"4\">\n            <div class=\"text-muted force-wrap\">");
+  stack1 = helpers['if'].call(depth0, "key.publicValue", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(12, program12, data),fn:self.program(10, program10, data),contexts:[depth0],types:["ID"],data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("</div>\n          </td>\n        </tr>\n      ");
   return buffer;
   }
 function program2(depth0,data) {
@@ -4686,7 +4865,7 @@ function program10(depth0,data) {
   
   var buffer = '', stack1;
   data.buffer.push("<small class=\"text-mono\">");
-  stack1 = helpers._triageMustache.call(depth0, "key.publicValue", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers._triageMustache.call(depth0, "key.unbreakablePublicValue", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("</small>");
   return buffer;
@@ -4702,7 +4881,7 @@ function program12(depth0,data) {
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "newSshkey", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
   data.buffer.push(" class=\"btn btn-primary\"><i class=\"fa fa-plus\"></i> Create a SSH key pair</button>\n        <button ");
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "importPublicKey", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
-  data.buffer.push(" class=\"btn btn-primary\"><i class=\"fa fa-upload\"></i> Import a public key</button>\n      </div>\n    </div>\n    <table class=\"table fixed\" style=\"margin-bottom: 0\">\n      <tr>\n        <th width=\"120\">State</th>\n        <th width=\"300\">Name<br/><span class=\"text-muted\">Description</span></th>\n        <th>Created<br/><span class=\"text-muted\">Public Key</span></th>\n        <th width=\"170\">&nbsp;</th>\n      </tr>\n      ");
+  data.buffer.push(" class=\"btn btn-primary\"><i class=\"fa fa-upload\"></i> Import a public key</button>\n      </div>\n    </div>\n    <table class=\"table fixed\" style=\"margin-bottom: 0\">\n      <tr>\n        <th width=\"120\">State</th>\n        <th width=\"300\">Name<br/><span class=\"text-muted\">Description</span></th>\n        <th>Created<br/><span class=\"text-muted\">Algorithm</span></th>\n        <th width=\"170\">&nbsp;</th>\n      </tr>\n      ");
   stack1 = helpers.each.call(depth0, "key", "in", "dataSource", {hash:{
     'itemController': ("sshkey")
   },hashTypes:{'itemController': "STRING"},hashContexts:{'itemController': depth0},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],data:data});

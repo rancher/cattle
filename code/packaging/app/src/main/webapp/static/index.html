@@ -6,26 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Rancher</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
-    <link href="framework.css" rel="stylesheet">
-    <link href="main.css" rel="stylesheet">
-    <script src="framework.js"></script>
+    <link href="framework.min.css" rel="stylesheet">
+    <link href="main.min.css" rel="stylesheet">
+    <script src="framework.min.js"></script>
   </head>
   <body class="">
     <div id="outlet"></div>
     <script type="text/javascript">
       var _serverState = {
         "appName":"Rancher",
-        "homeUrl":"/ui/",
+        "homeUrl":"/static/",
         "assetBase":"",
         "apiEndpoint": window.location.origin + '/v1/',
         "wsEndpoint":"/v1/subscribe?include=hosts&include=instances&include=instanceLinks&eventNames=resource.change"
       }
     </script>
-    <script src="main.js"></script>
-    <script src="console.js"></script>
+    <script src="main.min.js"></script>
+    <script src="console.min.js"></script>
     <script>
       App.Router.reopen({
-        rootURL: '/ui/'
+        rootURL: '/static/'
       });
     </script>
   </body>

@@ -195,15 +195,39 @@ BODY.login {
 }
 
 
-.host {
-  float: left;
-  width: 290px;
-  margin: 10px;
+.hosts {
+  overflow: visible;
+  white-space: no-wrap;
 }
 
+.host-column {
+  width: 290px;
+  margin: 10px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.physical-host-multiple {
+  border: 1px dashed #aaa;
+  margin: -1px;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: #eaeaea;
+  /* public/image/striped.gif */
+  background-image: url(data:image/gif;base64,R0lGODlhBgAGAIABAP///wAAACH5BAEKAAEALAAAAAAGAAYAAAIJRGKXibrXYgQFADs=);
+}
+
+.host {
+  margin-bottom: 20px;
+}
+
+.physical-host .host:last-of-type {
+  margin-bottom: 0;
+}
 
 .host .well {
   position: relative;
+  margin: 0;
   padding: 9px;
   padding-bottom: 39px;
   background-color: #e3e3e3;
@@ -364,3 +388,13 @@ BODY.login {
 
 
 
+
+
+.table .info-row TD {
+  padding-bottom: 0;
+}
+
+.table .key-row TD {
+  border-top: 0;
+  padding-top: 0;
+}
