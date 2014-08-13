@@ -68,14 +68,14 @@ etcd_registration()
     local url="http://$(ip route get 8.8.8.8 | grep via | awk '{print $3}'):4001/v2/keys/cattle/registration_url"
     local first=true
 
-    while ! curl --fail -s $url; do
+    while ! curl -L --fail -s $url; do
         if [ "$first" = "true" ]; then
             echo "Waiting for $url"
         fi
         sleep 5
     done
 
-    CATTLE_REGISTRATION_URL="$(curl -s $url | jq -r .node.value)"
+    CATTLE_REGISTRATION_URL="$(curl -L -s $url | jq -r .node.value)"
 }
 
 setup_env()
