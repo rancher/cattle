@@ -207,7 +207,7 @@ BODY.login {
   vertical-align: top;
 }
 
-.physical-host-multiple {
+.physical-host {
   border: 1px dashed #aaa;
   margin: -1px;
   border-radius: 10px;
@@ -215,6 +215,9 @@ BODY.login {
   background-color: #eaeaea;
   /* public/image/striped.gif */
   background-image: url(data:image/gif;base64,R0lGODlhBgAGAIABAP///wAAACH5BAEKAAEALAAAAAAGAAYAAAIJRGKXibrXYgQFADs=);
+}
+
+.physical-host-multiple {
 }
 
 .host {

@@ -202,19 +202,6 @@ $.jGrowl.defaults.closerTemplate = '<div><button type="button" class="btn btn-in
 //$.jGrowl.defaults.glue = 'before';
 ;
 
-// Error
-App.ErrorRoute = Em.Route.extend({
-  renderTemplate: function() {
-    this.render('error', {into: 'application', outlet: 'error'});
-  }
-});
-
-App.ErrorView = Em.View.extend({
-  classNames: ['error'],
-  templateName: 'error',
-});
-;
-
 // Loading
 App.LoadingRoute = Em.Route.extend({
   renderTemplate: function() {
@@ -426,11 +413,11 @@ App.GdapiTypeMixin = Em.Mixin.create({
     });
   },
 
-  importLink: function(name) {
+  importLink: function(name,as) {
     var self = this;
     return new Em.RSVP.Promise(function(resolve,reject) {
       self.followLink(name).then(function(data) {
-        self.set(name,data);
+        self.set(as||name,data);
         resolve(self);
       }).catch(function(err) {
         reject(err);
@@ -470,7 +457,7 @@ App.GdapiTypeMixin = Em.Mixin.create({
 
   save: function() {
     var self = this;
-    var baseUrl = this.constructor.baseUrl.replace(/\/+$/,'');
+    var baseUrl = (this.constructor.baseUrl||'').replace(/\/+$/,'');
     var url = this.get('links.self') || baseUrl;
     var json = this.toJSON();
 
@@ -598,6 +585,104 @@ App.CattleCollectionController = Em.ArrayController.extend({
   }.property('arrangedContent.@each.state')
 })
 
+App.CattleEditController = Em.ObjectController.extend({
+  error: null,
+
+  validate: function() {
+    return true;
+  },
+
+  actions: {
+    error: function(err) {
+      var msg;
+      if ( err instanceof App.Error )
+      {
+        if ( err.get('status') == 422 )
+        {
+          this.send('validationError',err);
+        }
+        else
+        {
+          var str = err.get('message');
+          if ( err.get('detail') )
+          {
+            str += ' (' + err.get('detail') + ')';
+          }
+
+          this.set('error', str);
+        }
+      }
+      else
+      {
+
+      }
+    },
+
+    validationError: function(err) {
+      this.set('error', 'Validation failed:', err.get('fieldName') + ' (' + err.get('detail') + ')');
+    },
+
+    save: function() {
+      return this.doSave();
+    }
+  },
+
+  doSave: function() {
+    var self = this;
+
+    this.set('error',null);
+    var ok = this.validate();
+    if ( !ok )
+    {
+      // Validation failed
+      return;
+    }
+
+    if ( this.get('saving') )
+    {
+      // Already saving
+      return;
+    }
+
+    this.set('saving',true);
+
+    var model = this.get('model');
+
+    return model.save().then(function(newData) {
+      if ( self.get('editing') )
+      {
+        var original = self.get('originalModel');
+        if ( original )
+        {
+          original.merge(newData);
+        }
+      }
+      else
+      {
+        self.rememberDefaults();
+      }
+    }).then(this.didSave.bind(this))
+    .then(this.doneSaving.bind(this))
+    .catch(function(err) {
+      self.send('error', err);
+    }).finally(function() {
+      self.set('saving',false);
+    });
+  },
+
+  // This can be used to remember values for future creates
+  rememberDefaults: function() {
+  },
+
+  // didSave can be used to do additional saving of dependent resources
+  didSave: function() {
+  },
+
+  // doneSaving happens after didSave
+  doneSaving: function() {
+    return true;
+  },
+});
 
 // Cattle resources that transition have these
 App.TransitioningResource = App.CattleResource.extend({
@@ -707,6 +792,25 @@ App.adapter = App.GdapiAdapter.create({
   typeifier: App.CattleTypeifier
 });
 
+;
+
+// Error
+App.ErrorRoute = Em.Route.extend({
+  renderTemplate: function() {
+    this.render('error', {into: 'application', outlet: 'error'});
+  }
+});
+
+App.ErrorView = Em.View.extend({
+  classNames: ['error'],
+  templateName: 'error',
+});
+
+App.Error = App.CattleResource.extend({
+  status: null,
+  message: null,
+  detail: null,
+});
 ;
 
 // Router
@@ -832,16 +936,24 @@ App.OverlayView = Em.View.extend({
 
   keyDown: function(event) {
     if ( event.keyCode == 27 ) // Escape
+    {
       this.send('overlayClose');
+    }
     else if ( event.keyCode == 13 || event.keyCode == 10 ) // Enter
     {
       if ( event.target.tagName == 'A' || event.target.tagName == 'TEXTAREA' )
+      {
         return true;
+      }
       else
+      {
         this.send('overlayEnter'); 
+      }
     }
     else
+    {
       return true;
+    }
   },
 
   actions: {
@@ -1592,7 +1704,7 @@ App.InstanceEditRoute = Em.Route.extend({
   }
 });
 
-App.InstanceEditController = Em.ObjectController.extend({
+App.InstanceEditController = App.CattleEditController.extend({
   needs: ['networks'],
   editing: false,
   saving: false,
@@ -1609,9 +1721,10 @@ App.InstanceEditController = Em.ObjectController.extend({
       this.set('networkId', null);
   },
 
-  saveDefaults: function() {
+  rememberDefaults: function() {
     // Override me to remember more defaults for future new creates
     this.set('lastNetworkId', (this.get('networkIds')||[])[0]);
+    this._super();
   },
 
   networkId: null,
@@ -1622,66 +1735,8 @@ App.InstanceEditController = Em.ObjectController.extend({
     ary.push(this.get('networkId'));
   }.observes('networkId'),
 
-  validate: function() {
-    return true;
-  },
-
-  error: null,
-  actions: {
-    error: function(err) {
-      var msg;
-      if ( err.get('status') == 422 )
-      {
-        switch ( err.get('fieldName') )
-        {
-          case 'imageUuid':
-            msg = 'Invalid source image name';
-            break;
-          default:
-            msg = 'Invalid ' + err.get('fieldName');
-            break;
-        }
-      }
-
-      this.set('error', msg);
-    },
-
-    save: function() {
-      var self = this;
-
-      this.set('error',null);
-      var ok = this.validate();
-      if ( !ok )
-        return;
-
-      if ( self.get('saving') )
-      {
-        return;
-      }
-
-      self.set('saving',true);
-
-      var model = self.get('model');
-      model.save().then(function(newData) {
-        if ( self.get('editing') )
-        {
-          var original = self.get('originalModel');
-          if ( original )
-            original.merge(newData);
-        }
-        else
-        {
-          self.saveDefaults();
-        }
-
-        self.transitionToRoute('hosts');
-
-      }).catch(function(err) {
-        self.send('error', err);
-      }).finally(function() {
-        self.set('saving',false);
-      });
-    },
+  doneSaving: function() {
+    this.transitionToRoute('hosts');
   }
 });
 
@@ -1840,7 +1895,7 @@ App.ContainerEditController = App.InstanceEditController.extend({
       {
         out[row.key] = row.value;
       }
-      else if ( i != len-1 )
+      else if ( !this.get('editing') && i != len-1 )
       {
         // Don't remove the last one
         ary.removeAt(i);
@@ -1884,7 +1939,7 @@ App.ContainerEditController = App.InstanceEditController.extend({
       {
         out.push(row.value);
       }
-      else if ( i != len-1 )
+      else if ( !this.get('editing') && i != len-1 )
       {
         // Don't remove the last one
         ary.removeAt(i);
@@ -1907,15 +1962,18 @@ App.ContainerEditController = App.InstanceEditController.extend({
     {label: 'TCP', value: 'tcp'}, 
     {label: 'UDP', value: 'udp'}
  ],
+
   portsArray: null,
+  portsAsStrArray: null,
   initPorts: function() {
     var out = [];
     var ports = this.get('ports')||[];
+
     ports.forEach(function(value) {
       // Objects, from edit
       if ( value.id )
       {
-        out.push({public: value.publicPort, private: value.privatePort, protocol: value.protocol, existing: true});
+        out.push({public: value.publicPort, private: value.privatePort, protocol: value.protocol, existing: true, obj: value});
       }
       else
       {
@@ -1931,7 +1989,7 @@ App.ContainerEditController = App.InstanceEditController.extend({
     this.set('portsArray', out);
   },
 
-  portsChanged: function() {
+  portsArrayDidChange: function() {
     var ary = this.get('portsArray');
     ary.beginPropertyChanges();
     
@@ -1947,7 +2005,7 @@ App.ContainerEditController = App.InstanceEditController.extend({
       {
         out.push(row.public+":"+row.private+'/'+row.protocol);
       }
-      else if ( i != len-1 )
+      else if ( !this.get('editing') && i != len-1 )
       {
         // Don't remove the last one
         ary.removeAt(i);
@@ -1964,12 +2022,11 @@ App.ContainerEditController = App.InstanceEditController.extend({
       }
     }
 
-    this.set('ports', out);
+    this.set('portsAsStrArray', out);
     ary.endPropertyChanges();
   }.observes('portsArray.@each.{public,private,protocol}'),
 
   // Links
-  linksArray: null,
   containers: function() {
     var list = [];
     var id = this.get('id');
@@ -1984,6 +2041,8 @@ App.ContainerEditController = App.InstanceEditController.extend({
     return list;
   }.property('controllers.hosts.@each.[]','controllers.hosts.@each.instancesUpdated').volatile(),
 
+  linksArray: null,
+  linksAsStrArray: null,
   initLinks: function() {
     var out = [];
     var links = this.get('instanceLinks')||[];
@@ -1992,7 +2051,7 @@ App.ContainerEditController = App.InstanceEditController.extend({
       // Objects, from edit
       if ( value.id )
       {
-        out.push({linkName: value.linkName, targetInstanceId: value.targetInstanceId, existing: true});
+        out.push({linkName: value.linkName, targetInstanceId: value.targetInstanceId, existing: true, obj: value});
       }
       else
       {
@@ -2008,7 +2067,7 @@ App.ContainerEditController = App.InstanceEditController.extend({
     this.set('linksArray', out);
   },
 
-  linksChanged: function() {
+  linksDidChange: function() {
     var ary = this.get('linksArray');
     ary.beginPropertyChanges();
     
@@ -2024,7 +2083,7 @@ App.ContainerEditController = App.InstanceEditController.extend({
       {
         out[ row.linkName ] = row.targetInstanceId;
       }
-      else if ( i != len-1 )
+      else if ( !this.get('editing') && i != len-1 )
       {
         // Don't remove the last one
         ary.removeAt(i);
@@ -2041,11 +2100,11 @@ App.ContainerEditController = App.InstanceEditController.extend({
       }
     }
 
-    this.set('instanceLinks', out);
+    this.set('linksAsStrArray', out);
     ary.endPropertyChanges();
   }.observes('linksArray.@each.{linkName,targetInstanceId}'),
 
-  userImageUuid: 'stackbrew/ubuntu:14.04',
+  userImageUuid: 'dockerfile/ghost:latest',
   userImageUuidDidChange: function() {
     var image = this.get('userImageUuid');
     if ( image.indexOf('docker:') === 0 )
@@ -2061,10 +2120,77 @@ App.ContainerEditController = App.InstanceEditController.extend({
   }.observes('userImageUuid'),
 
   validate: function() {
+    // Workaround for 'ports' and 'instanceLinks' needing to be strings for create and coming back as object on edit
+    if ( !this.get('editing') )
+    {
+      this.set('ports', this.get('portsAsStrArray'));
+      this.set('instanceLinks', this.get('linksAsStrArray'));
+    }
+    
     return true;
   },
 
+  didSave: function() {
+    var self = this;
+    var model = this.get('model');
+    if ( !this.get('editing') )
+    {
+      return self._super();
+    }
+
+    return Em.RSVP.all([
+      this.savePorts(),
+      this.saveLinks(),
+    ]);
+  },
+
+  savePorts: function() {
+    var promises = [];
+    this.get('portsArray').forEach(function(port) {
+      var neu = parseInt(port.public,10);
+      var obj = port.obj;
+      if ( neu != obj.get('publicPort') )
+      {
+        console.log('Changing',obj.toJSON(),'to',neu);
+        obj.set('publicPort', neu);
+        promises.push(obj.save());
+      }
+    });
+
+    return Em.RSVP.all(promises);
+  },
+
+  saveLinks: function() {
+    var promises = [];
+    this.get('linksArray').forEach(function(link) {
+      var neu = link.targetInstanceId;
+      var obj = link.obj;
+      if ( neu != obj.get('targetInstanceId') )
+      {
+        console.log('Changing',obj.toJSON(),'to',neu);
+        obj.set('targetInstanceId', neu);
+        promises.push(obj.save());
+      }
+    });
+
+    return Em.RSVP.all(promises);
+  },
+
   actions: {
+    validationError: function(err) {
+      switch ( err.get('fieldName') )
+      {
+        case 'imageUuid':
+          msg = 'Invalid source image name';
+          break;
+        default:
+          msg = 'Invalid ' + err.get('fieldName');
+          break;
+      }
+
+      this.set('error', msg);
+    },
+
     removeArg: function(obj) {
       this.get('argsArray').removeObject(obj);
     },
