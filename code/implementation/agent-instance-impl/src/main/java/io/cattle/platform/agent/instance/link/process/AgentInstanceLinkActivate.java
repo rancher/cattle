@@ -25,7 +25,9 @@ import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -87,11 +89,32 @@ public class AgentInstanceLinkActivate extends AbstractObjectProcessHandler {
             throw new ExecutionException(message, message, link);
         }
 
-        List<PortSpec> result = new ArrayList<PortSpec>();
         List<Port> ports = children(targetInstance, Port.class);
 
         if ( ports.size() == 0 ) {
             return null;
+        }
+
+        List<PortSpec> result = new ArrayList<PortSpec>();
+        Map<Integer,PortSpec> assigned = new HashMap<Integer, PortSpec>();
+        Map<Integer,Port> portsByPrivatePort = new HashMap<Integer, Port>();
+
+        for ( Port port : ports ) {
+            if ( port.getPrivatePort() != null ) {
+                portsByPrivatePort.put(port.getPrivatePort(), port);
+            }
+        }
+
+        for ( PortSpec spec : DataAccessor.fields(link)
+                                     .withKey(InstanceLinkConstants.FIELD_PORTS)
+                                     .withDefault(new ArrayList<PortSpec>())
+                                     .asList(jsonMapper, PortSpec.class) ) {
+            if ( spec.getPublicPort() != null ) {
+                assigned.put(spec.getPublicPort(), spec);
+                if ( portsByPrivatePort.remove(spec.getPrivatePort()) != null ) {
+                    result.add(spec);
+                }
+            }
         }
 
         List<PooledResource> portItems = resourcePoolManager.allocateResource(info.getNetworkService(), link,
@@ -103,8 +126,15 @@ public class AgentInstanceLinkActivate extends AbstractObjectProcessHandler {
 
         String ipAddress = info.getIpAddress().getAddress();
         for ( int i = 0 ; i < ports.size() ; i++ ) {
-            PortSpec spec = new PortSpec(ipAddress, Integer.parseInt(portItems.get(i).getName()), ports.get(i));
-            result.add(spec);
+            int publicPort = Integer.parseInt(portItems.get(i).getName());
+            PortSpec spec = assigned.remove(publicPort);
+
+            if ( spec == null && portsByPrivatePort.size() > 0 ) {
+                Port port = portsByPrivatePort.values().iterator().next();
+                portsByPrivatePort.remove(port.getPrivatePort());
+                spec = new PortSpec(ipAddress, publicPort, port);
+                result.add(spec);
+            }
         }
 
         return new HandlerResult(InstanceLinkConstants.FIELD_PORTS, result).withShouldContinue(true);

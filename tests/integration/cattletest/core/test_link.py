@@ -39,6 +39,7 @@ def test_link_instance_stop_start(admin_client, sim_context, link_network):
     assert c.state == 'stopped'
 
     for link in c.instanceLinks():
+        assert len(link.data.fields.ports) == 2
         for port in link.data.fields.ports:
             new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
 
@@ -49,6 +50,7 @@ def test_link_instance_stop_start(admin_client, sim_context, link_network):
     assert c.state == 'running'
 
     for link in c.instanceLinks():
+        assert len(link.data.fields.ports) == 2
         for port in link.data.fields.ports:
             new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
 

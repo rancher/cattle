@@ -24,6 +24,9 @@ public class PortSpec {
     Integer publicPort;
     String protocol;
 
+    public PortSpec() {
+    }
+
     public PortSpec(String ipAddress, int publicPort, Port port) {
         this.ipAddress = ipAddress;
         this.publicPort = publicPort;
@@ -81,6 +84,18 @@ public class PortSpec {
 
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
+    }
+
+    public void setPrivatePort(int privatePort) {
+        this.privatePort = privatePort;
+    }
+
+    public void setPublicPort(Integer publicPort) {
+        this.publicPort = publicPort;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
 }
