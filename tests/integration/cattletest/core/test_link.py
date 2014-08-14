@@ -11,6 +11,50 @@ def link_network(admin_client, sim_context):
     return admin_client.by_id_network(nsp.networkId)
 
 
+def test_link_instance_stop_start(admin_client, sim_context, link_network):
+    target1 = create_sim_container(admin_client, sim_context,
+                                   ports=['180', '122/udp'],
+                                   networkIds=[link_network.id])
+    target2 = create_sim_container(admin_client, sim_context,
+                                   ports=['280', '222/udp'])
+
+    c = create_sim_container(admin_client, sim_context,
+                             networkIds=[link_network.id],
+                             instanceLinks={
+                                 'target1_link': target1.id,
+                                 'target2_link': target2.id})
+
+    assert c.state == 'running'
+
+    ports = set()
+
+    for link in c.instanceLinks():
+        for port in link.data.fields.ports:
+            ports.add('{}:{}'.format(port.publicPort, port.privatePort))
+
+    assert len(ports) > 0
+
+    new_ports = set()
+    c = admin_client.wait_success(c.stop())
+    assert c.state == 'stopped'
+
+    for link in c.instanceLinks():
+        for port in link.data.fields.ports:
+            new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
+
+    assert ports == new_ports
+
+    new_ports = set()
+    c = admin_client.wait_success(c.start())
+    assert c.state == 'running'
+
+    for link in c.instanceLinks():
+        for port in link.data.fields.ports:
+            new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
+
+    assert ports == new_ports
+
+
 def test_link_create(admin_client, sim_context, link_network):
     target1 = create_sim_container(admin_client, sim_context,
                                    ports=['180', '122/udp'],
@@ -72,6 +116,20 @@ def test_link_create(admin_client, sim_context, link_network):
 
     c = admin_client.wait_success(c.stop())
     for link in c.instanceLinks():
+        assert len(resource_pool_items(admin_client, link)) == 2
+
+    c = admin_client.wait_success(c.remove())
+    for link in c.instanceLinks():
+        assert len(resource_pool_items(admin_client, link)) == 2
+
+    c = admin_client.wait_success(c.purge())
+    for link in c.instanceLinks():
+        assert len(link.data.fields.ports) > 0
+        assert len(resource_pool_items(admin_client, link)) == 2
+
+    for link in c.instanceLinks():
+        link = admin_client.wait_success(link.purge())
+        assert len(link.data.fields.ports) == 0
         assert len(resource_pool_items(admin_client, link)) == 0
 
 

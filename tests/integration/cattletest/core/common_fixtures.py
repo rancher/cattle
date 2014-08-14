@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 
 NOT_NONE = object()
-DEFAULT_TIMEOUT = 45
+DEFAULT_TIMEOUT = 90
 DEFAULT_AGENT_URI = 'ssh://root@localhost:22'
 DEFAULT_AGENT_UUID = 'test-agent'
 SLEEP_DELAY = 0.5

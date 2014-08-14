@@ -18,14 +18,14 @@ import java.util.ArrayList;
 
 import javax.inject.Inject;
 
-public class AgentInstanceLinkDeactivate extends AbstractObjectProcessHandler {
+public class AgentInstanceLinkPurge extends AbstractObjectProcessHandler {
 
     AgentInstanceManager agentInstanceManager;
     ResourcePoolManager resourcePoolManager;
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instancelink.deactivate" };
+        return new String[] { "instancelink.purge" };
     }
 
     @Override
