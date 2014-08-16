@@ -24,7 +24,7 @@ fixperms()
 
 run()
 {
-    WAR="$(echo code/packaging/app/target/*war)"
+    WAR="$(selectjar)"
     if [ ! -e "$WAR" ]; then
         mvn clean install
     fi
@@ -33,7 +33,29 @@ run()
     mkdir -p runtime
     cd runtime
 
+    echo Running $WAR "$@"
     exec java -jar $WAR "$@"
+}
+
+selectjar()
+{
+    local files=(code/packaging/app/target/*.war
+             code/packaging/bundle/target/cattle-bundle*.jar
+             target/checkout/.m2/io/cattle/cattle-bundle/*/cattle-bundle-[0-9].[0-9].[0-9].jar)
+
+    local src=
+
+    for i in ${files[@]}; do
+        if [ -e "$i" ]; then
+            if [ "$src" = "" ] || [ $i -nt $src ]; then
+                src=$i
+            fi
+        fi
+    done
+
+    if [ -e "${src}" ]; then
+        echo ${src}
+    fi
 }
 
 build()
@@ -55,21 +77,8 @@ build()
     fi
     mkdir -p dist/server/artifacts
 
-    local max=0
-    local files=(code/packaging/app/target/*.war
-             code/packaging/bundle/target/cattle-bundle*.jar
-             target/checkout/.m2/io/cattle/cattle-bundle/*/cattle-bundle-[0-9].[0-9].[0-9].jar)
-
-    local src=
     local target=dist/server/artifacts/cattle.jar
-
-    for i in ${files[@]}; do
-        if [ -e "$i" ]; then
-            if [ "$src" = "" ] || [ $i -nt $src ]; then
-                src=$i
-            fi
-        fi
-    done
+    local src=$(selectjar)
 
     if [ -e "$src" ] && [ ! -e $target ] || [ "$src" -nt "$target" ]; then
         echo "Copying $src => $target"

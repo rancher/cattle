@@ -17,10 +17,15 @@ build-env:
 enter: build-env
 	./tools/docker/build.sh bash
 
-clean: build-env
+mvn-clean: build-env
+	./tools/docker/build.sh mvn -Drelease clean
+
+runtime-clean:
+	rm -rf ./runtime
+
+clean: mvn-clean
 	./tools/docker/build.sh find -depth -name __pycache__ -type d -exec rm -rf {} \;
 	./tools/docker/build.sh find -depth -name .tox -type d -exec rm -rf {} \;
-	./tools/docker/build.sh mvn -Drelease clean
 	./tools/docker/build.sh rm -rf dist ./code/agent/src/agents/node-services/content-home/node-services/node_modules ./code/agent/src/agents/pyagent/dist ./tests/integration/.tox ./code/agent/src/agents/pyagent/.tox
 
 test: build
@@ -42,7 +47,7 @@ check-dir-clean:
 	./tools/build/checkin-test.sh -c
 
 check-in-test:
-	./tools/build/checkin-test.sh test
+	./tools/build/checkin-test.sh mvn-clean runtime-clean test
 
 check-dir-dirty:
 	./tools/build/checkin-test.sh dirty
