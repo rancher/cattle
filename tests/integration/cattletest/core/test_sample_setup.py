@@ -50,8 +50,8 @@ def test_sample_data(admin_client, system_account):
     subnet = find_one(network.subnets)
 
     assert subnet.accountId == system_account.id
-    assert subnet.cidrSize == 24
-    assert subnet.endAddress == '10.42.0.250'
+    assert subnet.cidrSize == 16
+    assert subnet.endAddress == '10.42.255.250'
     assert subnet.gateway == '10.42.0.1'
     assert subnet.isPublic
     assert subnet.kind == 'subnet'

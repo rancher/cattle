@@ -56,15 +56,12 @@ public class SampleDataStartupV1 extends AbstractSampleData {
 
         toCreate.add(createByUuid(Subnet.class, "docker0-subnet",
                 SUBNET.ACCOUNT_ID, system.getId(),
-                SUBNET.CIDR_SIZE, 24,
-                SUBNET.END_ADDRESS, "10.42.0.250",
+                SUBNET.CIDR_SIZE, 16,
                 SUBNET.KIND, "subnet",
-                SUBNET.GATEWAY, "10.42.0.1",
                 SUBNET.IS_PUBLIC, true,
                 SUBNET.NAME, "Subnet for managed docker0",
                 SUBNET.NETWORK_ADDRESS, "10.42.0.0",
                 SUBNET.NETWORK_ID, network.getId(),
-                SUBNET.START_ADDRESS, "10.42.0.2",
                 SUBNET.STATE, CommonStatesConstants.REQUESTED));
 
         NetworkServiceProvider networkServiceProvider = createByUuid(NetworkServiceProvider.class, "docker0-agent-instance-provider",
