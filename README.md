@@ -4,8 +4,6 @@
 
 Cattle is an infrastructure orchestration platform for such tasks as running containers and virtual machines.  It was created as a sandbox to try out new architectural ideas that would be either too risky or too difficult to do within an established platform like OpenStack or Apache CloudStack.
 
-The focus of Cattle is to create a solid foundation and platform for orchestration.  The killer feature of Cattle is intended to be the strength of the platform.  The strength and flexibility of the platform should then be used to foster innovation and new ideas in the IaaS/PaaS space.
-
 The key areas of focus are
 
 * Simplicity
@@ -16,29 +14,46 @@ The key areas of focus are
 
 ## What does it currently do?
 
-As the focus is on the platform, much of the current effort has been on building a solid platform.  In terms of user functionality only the most basic Docker and libvirt operations are supported.
-
 ### Features
 
+* Virtual Machines
+  * Libvirt/KVM
+  * EC2/OpenStack images work out of the box
+  * EC2 style meta data
+  * OpenStack config drive
+  * Managed DNS/DHCP
+  * User data
+  * Floating IPs
+  * Private networking
+  * VNC Console
+  * CoreOS, Ubuntu, Fedora, and Cirros templates preconfigured
 * Docker
-    * Create
-    * Start/Stop
-    * Delete
-
-* Libvirt
-    * Create
-    * Start/Stop
-    * Delete
+  * Link containers across servers
+  * Dynamically reassign links and ports
+* Networking
+  * VMs and containers can share the same network space
+  * By default, a private IPSec VPN is created that spans servers
+  * All containers and VMs live on a virtual network that can span across cloud
+  * Can also use any libvirt networking models for VMs
+* Interface
+  * UI
+  * REST API
+    * Use web browser to explore and use API
+  * Command line client
+  * Python API bindings
 
 ### Coming Next
 
-A lot of networking features
+A lot of storage features and load balancing
 
 # Getting Started
 
+
 ## Install Server and a Host
 
-**Note: You can install this quickly with [AWS CloudFormation][5] too.**
+**NOTE: You should probably look at [Stampede.io](http://stampede.io) if you want to run Cattle.  That is a more user friendly packaging of Cattle.**
+
+**NOTE: You can install this quickly with [AWS CloudFormation][5] too.**
 
 Start with a fresh **Ubuntu 13.10**.  Anything that runs Docker will eventually be supported, but development is done on Ubuntu 13.10, so that's your best bet.  To make this simple were going to install everything on a single server.
 
@@ -46,7 +61,7 @@ Start with a fresh **Ubuntu 13.10**.  Anything that runs Docker will eventually 
 # Install docker if you don't have it
 [ ! -x "$(which docker)" ] && curl -sL https://get.docker.io/ | sh
 
-# Install libvirt too
+# Install libvirt too, plus some other stuff
 sudo apt-get install -y libvirt-bin python-libvirt qemu-kvm python-numpy arptables genisoimage
 
 # Gonna need a ssh server
@@ -100,6 +115,13 @@ Add the below to your `.bashrc` or similar profile script:
 ```
 eval "$(register-python-argcomplete cattle)"
 ```
+
+## Use the UI
+
+UI is available at http://localhost:8080
+
+<p align=center>  ![UI][13]
+
 ## Navigate the API
 
 You can click around and use the API from a web browser at http://localhost:8080/v1
@@ -128,7 +150,7 @@ cattle create-virtualMachine --memoryMb 256 --imageUuid cirros
 cattle list-virtualMachine
 ```
 
-Once running refer to `libvirtVncAddress` and `libvirtVncPassword` fields to get access to the console.
+Once running refer to `libvirtVncAddress` and `libvirtVncPassword` fields to get access to the console or use the console action to get a URL to a noVNC capable stream.  It's far easier to just use the UI if you want console access.
 
 
 ## Integrating
@@ -232,4 +254,5 @@ There are [other examples][1] of integrating with Cattle.  For example, adding a
   [10]: https://github.com/cattleio/cattle-cli/blob/master/README.md
   [11]: docs/source/images/apiui.png
   [12]: http://stedolan.github.io/jq/
+  [13]: docs/source/images/ui.png
   
