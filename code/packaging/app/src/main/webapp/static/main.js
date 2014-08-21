@@ -1523,24 +1523,6 @@ App.HostController.reopenClass({
   }
 })
 
-App.HostContainerView = Em.View.extend({
-  classNames: ['instance'],
-  tagName: 'DIV',
-  templateName: 'host-container-item',
-  didInsertElement: function() {
-    this.$('BUTTON, SPAN, I').tooltip();
-  }
-});
-
-App.HostVirtualMachineView = Em.View.extend({
-  classNames: ['instance'],
-  tagName: 'DIV',
-  templateName: 'host-virtualmachine-item',
-  didInsertElement: function() {
-    this.$('BUTTON, SPAN, I').tooltip();
-  }
-});
-
 App.HostView = Em.View.extend();
 
 App.HostEditRoute = Em.Route.extend({
@@ -1647,6 +1629,18 @@ App.Instance.reopenClass({
 App.Instance.reopen({
   requestedHostId: null,
   networkIds: null,
+  primaryIpAddress: null,
+  primaryAssociatedIpAddress: null,
+});
+
+
+App.HostInstanceView = Em.View.extend({
+  classNames: ['instance'],
+  tagName: 'DIV',
+  templateName: 'host-instance',
+  didInsertElement: function() {
+    this.$('BUTTON, SPAN, I').tooltip();
+  }
 });
 
 App.InstanceController = App.TransitioningResourceController.extend({
@@ -1656,11 +1650,24 @@ App.InstanceController = App.TransitioningResourceController.extend({
     stop:     function() { return this.doAction('stop'); },
     delete:   function() { return this.delete(); },
     purge:    function() { return this.doAction('purge'); },
+
+    edit: function() {
+      this.transitionToRoute(this.get('type')+'.edit', this.get('model'));
+    },
+    promptDelete: function() {
+      this.transitionToRoute(this.get('type')+'.delete', this.get('model'));
+    },
   },
+
+  icon: 'fa-question-circle',
 
   isOn: function() {
     return ['running','updating-running','migrating','restarting'].indexOf(this.get('state')) >= 0;
   }.property('state'),
+
+  displayIp: function() {
+    return this.get('primaryAssociatedIpAddress') || this.get('primaryIpAddress');
+  }.property('primaryIpAddress','primaryAssociatedIpAddress'),
 });
 
 App.InstanceController.reopenClass({
@@ -1812,6 +1819,7 @@ App.InstanceDeleteRoute = Em.Route.extend({
 
 // Container
 App.Container = App.Instance.extend({
+  type: 'container',
   imageUuid: null,
   requestedHostId: null,
   command: null,
@@ -1825,7 +1833,9 @@ App.Container.reopenClass({
   baseUrl: 'containers'
 });
 
-App.ContainerController = App.InstanceController.extend();
+App.ContainerController = App.InstanceController.extend({
+  icon: 'fa-tint',
+});
 
 // --------
 // Edit
@@ -2257,6 +2267,7 @@ App.ContainerLoadingRoute = Em.Route.extend({
 
 // VirtualMachine
 App.VirtualMachine = App.Instance.extend({
+  type: 'virtualmachine',
   imageId: null,
   memoryMb: null,
   credentialIds: null,
@@ -2267,7 +2278,9 @@ App.VirtualMachine.reopenClass({
   baseUrl: 'virtualmachines'
 });
 
-App.VirtualMachineController = App.InstanceController.extend();
+App.VirtualMachineController = App.InstanceController.extend({
+  icon: 'fa-desktop',
+});
 
 // --------
 // Individual View
@@ -2404,7 +2417,7 @@ App.VirtualMachineEditController = App.InstanceEditController.extend({
           return img.get('format') != 'docker'
         }));
       }),
-      App.Ippool.find(null, {filter: {isPublic: true}}).then(function(data) {
+      App.Ippool.find().then(function(data) {
         self.set('controllers.ippools.model',data);
       }),
       App.Network.find().then(function(data) {
@@ -3498,7 +3511,7 @@ function program11(depth0,data) {
   
   var buffer = '';
   data.buffer.push("\n      ");
-  data.buffer.push(escapeExpression(helpers.view.call(depth0, "App.HostContainerView", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data})));
+  data.buffer.push(escapeExpression(helpers.view.call(depth0, "App.HostInstanceView", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data})));
   data.buffer.push("\n    ");
   return buffer;
   }
@@ -3526,33 +3539,24 @@ function program17(depth0,data) {
   data.buffer.push("\n    ");
   stack1 = helpers.each.call(depth0, "instances", {hash:{
     'itemController': ("virtualMachine")
-  },hashTypes:{'itemController': "STRING"},hashContexts:{'itemController': depth0},inverse:self.program(20, program20, data),fn:self.program(18, program18, data),contexts:[depth0],types:["ID"],data:data});
+  },hashTypes:{'itemController': "STRING"},hashContexts:{'itemController': depth0},inverse:self.program(18, program18, data),fn:self.program(11, program11, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n    ");
   stack1 = (helper = helpers['link-to'] || (depth0 && depth0['link-to']),options={hash:{
     'tagName': ("div"),
     'classNames': ("add-to-host")
-  },hashTypes:{'tagName': "STRING",'classNames': "STRING"},hashContexts:{'tagName': depth0,'classNames': depth0},inverse:self.noop,fn:self.program(22, program22, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "virtualMachineNew", "", options) : helperMissing.call(depth0, "link-to", "virtualMachineNew", "", options));
+  },hashTypes:{'tagName': "STRING",'classNames': "STRING"},hashContexts:{'tagName': depth0,'classNames': depth0},inverse:self.noop,fn:self.program(20, program20, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "virtualMachineNew", "", options) : helperMissing.call(depth0, "link-to", "virtualMachineNew", "", options));
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n  ");
   return buffer;
   }
 function program18(depth0,data) {
   
-  var buffer = '';
-  data.buffer.push("\n      ");
-  data.buffer.push(escapeExpression(helpers.view.call(depth0, "App.HostVirtualMachineView", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data})));
-  data.buffer.push("\n    ");
-  return buffer;
-  }
-
-function program20(depth0,data) {
-  
   
   data.buffer.push("\n      <i class=\"text-muted\">No VMs yet</i>\n    ");
   }
 
-function program22(depth0,data) {
+function program20(depth0,data) {
   
   var buffer = '';
   data.buffer.push("\n      <a ");
@@ -3596,7 +3600,7 @@ function program22(depth0,data) {
 }
 );;
 
-// host-container-item
+// host-instance
 (function(handlebars, container, name, compiled) {
   container = [].concat(container);
   var tpl = handlebars.template(compiled,{});
@@ -3607,23 +3611,13 @@ function program22(depth0,data) {
 })(
   Ember.Handlebars,
   Ember.TEMPLATES,
-  'host-container-item',
+  'host-instance',
   function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, helper, options, escapeExpression=this.escapeExpression, self=this, helperMissing=helpers.helperMissing;
+  var buffer = '', stack1, escapeExpression=this.escapeExpression, self=this, helperMissing=helpers.helperMissing;
 
 function program1(depth0,data) {
-  
-  var buffer = '', stack1;
-  data.buffer.push("\n    <i class=\"fa fa-tint\"></i> ");
-  stack1 = helpers._triageMustache.call(depth0, "displayName", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  return buffer;
-  }
-
-function program3(depth0,data) {
   
   var buffer = '';
   data.buffer.push("\n    <a ");
@@ -3632,170 +3626,16 @@ function program3(depth0,data) {
   return buffer;
   }
 
-function program5(depth0,data) {
-  
-  var buffer = '';
-  data.buffer.push("\n    <a ");
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "start", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
-  data.buffer.push(" href=\"#\"><i class=\"fa fa-arrow-up\" title=\"Start\"></i></a>\n  ");
-  return buffer;
-  }
-
-function program7(depth0,data) {
-  
-  var buffer = '';
-  data.buffer.push("\n    <a ");
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "stop", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
-  data.buffer.push(" href=\"#\"><i class=\"fa fa-arrow-down\" title=\"Stop\"></i></a>\n  ");
-  return buffer;
-  }
-
-function program9(depth0,data) {
-  
-  
-  data.buffer.push("<i class=\"fa fa-edit\" title=\"Edit\"></i>");
-  }
-
-function program11(depth0,data) {
-  
-  var buffer = '', stack1, helper, options;
-  data.buffer.push("\n    ");
-  stack1 = (helper = helpers['link-to'] || (depth0 && depth0['link-to']),options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "container.delete", "", options) : helperMissing.call(depth0, "link-to", "container.delete", "", options));
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  return buffer;
-  }
-function program12(depth0,data) {
-  
-  
-  data.buffer.push("<i class=\"fa fa-trash-o\" title=\"Delete\"></i>");
-  }
-
-function program14(depth0,data) {
-  
-  var buffer = '';
-  data.buffer.push("\n    <a ");
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "purge", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
-  data.buffer.push(" href=\"#\"><i class=\"fa fa-fire\" title=\"Purge\"></i></a>\n  ");
-  return buffer;
-  }
-
-function program16(depth0,data) {
-  
-  var buffer = '', stack1;
-  data.buffer.push("\n  <div class=\"progress progress-striped active\">\n    <div class=\"progress-bar\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" ");
-  data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
-    'aria-valuenow': ("displayProgress"),
-    'style': ("progressStyle")
-  },hashTypes:{'aria-valuenow': "ID",'style': "ID"},hashContexts:{'aria-valuenow': depth0,'style': depth0},contexts:[],types:[],data:data})));
-  data.buffer.push(">\n      <span class=\"sr-only\">");
-  stack1 = helpers._triageMustache.call(depth0, "displayProgress", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("% Complete</span>\n    </div>\n  </div>\n");
-  return buffer;
-  }
-
-  data.buffer.push("<div class=\"instance-name\">\n  ");
-  stack1 = (helper = helpers['link-to'] || (depth0 && depth0['link-to']),options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "container", "", options) : helperMissing.call(depth0, "link-to", "container", "", options));
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n</div>\n<div class=\"instance-actions\">\n  ");
-  stack1 = helpers['if'].call(depth0, "actions.restart", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  stack1 = helpers['if'].call(depth0, "actions.start", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  stack1 = helpers['if'].call(depth0, "actions.stop", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  stack1 = (helper = helpers['link-to'] || (depth0 && depth0['link-to']),options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "container.edit", "", options) : helperMissing.call(depth0, "link-to", "container.edit", "", options));
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  stack1 = helpers.unless.call(depth0, "isDeleted", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(11, program11, data),contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  stack1 = helpers['if'].call(depth0, "actions.purge", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(14, program14, data),contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n</div>\n<div>\n  <div ");
-  data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
-    'class': (":instance-status stateColor")
-  },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
-  data.buffer.push(">\n    <i ");
-  data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
-    'class': (":fa stateIcon")
-  },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
-  data.buffer.push("></i> ");
-  stack1 = helpers._triageMustache.call(depth0, "displayState", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  </div>\n  <div ");
-  data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
-    'class': (":instance-ip isOn::text-muted")
-  },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
-  data.buffer.push(">");
-  stack1 = helpers._triageMustache.call(depth0, "primaryIpAddress", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("</div>\n</div>\n<div ");
-  data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
-    'class': (":force-wrap isError:text-danger:text-muted showTransitioningMessage::hide")
-  },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
-  data.buffer.push(">\n  ");
-  stack1 = helpers._triageMustache.call(depth0, "transitioningMessage", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n</div>\n");
-  stack1 = helpers['if'].call(depth0, "isTransitioning", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(16, program16, data),contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n");
-  return buffer;
-  
-}
-);;
-
-// host-virtualmachine-item
-(function(handlebars, container, name, compiled) {
-  container = [].concat(container);
-  var tpl = handlebars.template(compiled,{});
-  for ( var i = 0 ; i < container.length ; i++ ) {
-    container[i][name] = tpl;
-  }
-  handlebars.registerPartial(name, tpl);
-})(
-  Ember.Handlebars,
-  Ember.TEMPLATES,
-  'host-virtualmachine-item',
-  function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, helper, options, escapeExpression=this.escapeExpression, self=this, helperMissing=helpers.helperMissing;
-
-function program1(depth0,data) {
-  
-  var buffer = '', stack1;
-  data.buffer.push("\n    <i class=\"fa fa-desktop\"></i> ");
-  stack1 = helpers._triageMustache.call(depth0, "displayName", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  return buffer;
-  }
-
 function program3(depth0,data) {
   
   var buffer = '';
   data.buffer.push("\n    <a ");
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "restart", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
-  data.buffer.push(" href=\"#\"><i class=\"fa fa-refresh\" title=\"Restart\"></i></a>\n  ");
-  return buffer;
-  }
-
-function program5(depth0,data) {
-  
-  var buffer = '';
-  data.buffer.push("\n    <a ");
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "start", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
   data.buffer.push(" href=\"#\"><i class=\"fa fa-arrow-up\" title=\"Start\"></i></a>\n  ");
   return buffer;
   }
 
-function program7(depth0,data) {
+function program5(depth0,data) {
   
   var buffer = '';
   data.buffer.push("\n    <a ");
@@ -3804,43 +3644,31 @@ function program7(depth0,data) {
   return buffer;
   }
 
-function program9(depth0,data) {
+function program7(depth0,data) {
   
   var buffer = '', stack1, helper, options;
   data.buffer.push("\n    ");
-  stack1 = (helper = helpers['link-to'] || (depth0 && depth0['link-to']),options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(10, program10, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "virtualMachine.console", "", options) : helperMissing.call(depth0, "link-to", "virtualMachine.console", "", options));
+  stack1 = (helper = helpers['link-to'] || (depth0 && depth0['link-to']),options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(8, program8, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "virtualMachine.console", "", options) : helperMissing.call(depth0, "link-to", "virtualMachine.console", "", options));
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n  ");
   return buffer;
   }
-function program10(depth0,data) {
+function program8(depth0,data) {
   
   
   data.buffer.push("<i class=\"fa fa-terminal\" title=\"Console\"></i>");
   }
 
-function program12(depth0,data) {
+function program10(depth0,data) {
   
-  
-  data.buffer.push("<i class=\"fa fa-edit\" title=\"Edit\"></i>");
-  }
-
-function program14(depth0,data) {
-  
-  var buffer = '', stack1, helper, options;
-  data.buffer.push("\n    ");
-  stack1 = (helper = helpers['link-to'] || (depth0 && depth0['link-to']),options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(15, program15, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "virtualMachine.delete", "", options) : helperMissing.call(depth0, "link-to", "virtualMachine.delete", "", options));
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
+  var buffer = '';
+  data.buffer.push("\n    <a ");
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "promptDelete", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
+  data.buffer.push("><i class=\"fa fa-trash-o\" title=\"Delete\"></i></a>\n  ");
   return buffer;
   }
-function program15(depth0,data) {
-  
-  
-  data.buffer.push("<i class=\"fa fa-trash-o\" title=\"Delete\"></i>");
-  }
 
-function program17(depth0,data) {
+function program12(depth0,data) {
   
   var buffer = '';
   data.buffer.push("\n    <a ");
@@ -3849,7 +3677,7 @@ function program17(depth0,data) {
   return buffer;
   }
 
-function program19(depth0,data) {
+function program14(depth0,data) {
   
   var buffer = '', stack1;
   data.buffer.push("\n  <div class=\"progress progress-striped active\">\n    <div class=\"progress-bar\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" ");
@@ -3864,29 +3692,32 @@ function program19(depth0,data) {
   return buffer;
   }
 
-  data.buffer.push("<div class=\"instance-name\">\n  ");
-  stack1 = (helper = helpers['link-to'] || (depth0 && depth0['link-to']),options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "virtualMachine", "", options) : helperMissing.call(depth0, "link-to", "virtualMachine", "", options));
+  data.buffer.push("<div class=\"instance-name\">\n  <i ");
+  data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+    'class': (":fa icon")
+  },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+  data.buffer.push("></i> ");
+  stack1 = helpers._triageMustache.call(depth0, "displayName", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n</div>\n<div class=\"instance-actions\">\n  ");
-  stack1 = helpers['if'].call(depth0, "actions.restart", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers['if'].call(depth0, "actions.restart", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n  ");
-  stack1 = helpers['if'].call(depth0, "actions.start", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers['if'].call(depth0, "actions.start", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n  ");
-  stack1 = helpers['if'].call(depth0, "actions.stop", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers['if'].call(depth0, "actions.stop", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n  ");
-  stack1 = helpers['if'].call(depth0, "actions.console", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers['if'].call(depth0, "actions.console", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0],types:["ID"],data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n  <a ");
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "edit", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
+  data.buffer.push("><i class=\"fa fa-edit\" title=\"Edit\"></i></a>\n  ");
+  stack1 = helpers.unless.call(depth0, "isDeleted", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(10, program10, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n  ");
-  stack1 = (helper = helpers['link-to'] || (depth0 && depth0['link-to']),options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[depth0,depth0],types:["STRING","ID"],data:data},helper ? helper.call(depth0, "virtualMachine.edit", "", options) : helperMissing.call(depth0, "link-to", "virtualMachine.edit", "", options));
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  stack1 = helpers.unless.call(depth0, "isDeleted", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(14, program14, data),contexts:[depth0],types:["ID"],data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  ");
-  stack1 = helpers['if'].call(depth0, "actions.purge", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(17, program17, data),contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers['if'].call(depth0, "actions.purge", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n</div>\n<div>\n  <div ");
   data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
@@ -3904,7 +3735,7 @@ function program19(depth0,data) {
     'class': (":instance-ip isOn::text-muted")
   },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
   data.buffer.push(">");
-  stack1 = helpers._triageMustache.call(depth0, "primaryIpAddress", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers._triageMustache.call(depth0, "displayIp", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("</div>\n</div>\n<div ");
   data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
@@ -3914,7 +3745,7 @@ function program19(depth0,data) {
   stack1 = helpers._triageMustache.call(depth0, "transitioningMessage", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n</div>\n");
-  stack1 = helpers['if'].call(depth0, "isTransitioning", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(19, program19, data),contexts:[depth0],types:["ID"],data:data});
+  stack1 = helpers['if'].call(depth0, "isTransitioning", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(14, program14, data),contexts:[depth0],types:["ID"],data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n");
   return buffer;
