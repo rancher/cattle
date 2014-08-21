@@ -95,4 +95,4 @@ setup_zk
 
 env | grep CATTLE | grep -v PASS | sort
 
-exec java ${JAVA_OPTS:--Xmx256m} -jar $JAR "$@" $ARGS
+exec java ${CATTLE_JAVA_OPTS:--Xmx256m} -jar $JAR "$@" $ARGS
