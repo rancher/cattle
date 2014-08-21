@@ -183,6 +183,33 @@ def test_virtual_machine_with_public_ip(admin_client, sim_context, ip_pool,
     assert assoc.state == 'removed'
 
 
+def test_virtual_machine_assigned_ip_field(admin_client, sim_context,
+                                           ip_pool, network):
+    image_uuid = sim_context['imageUuid']
+    vm = admin_client.create_virtual_machine(imageUuid=image_uuid,
+                                             networkIds=[network.id],
+                                             publicIpAddressPoolId=ip_pool.id)
+    vm = admin_client.wait_success(vm)
+
+    assert vm.state == 'running'
+    assert vm.primaryAssociatedIpAddress is not None
+
+    ip = vm.nics()[0].ipAddresses()[0]
+    assert vm.primaryIpAddress == ip.address
+
+    assoc_ip = ip.childIpAssociations()[0].ipAddress()
+    assert vm.primaryAssociatedIpAddress == assoc_ip.address
+
+
+def test_virtual_machine_no_assigned_ip_field(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+    vm = admin_client.create_virtual_machine(imageUuid=image_uuid)
+    vm = admin_client.wait_success(vm)
+
+    assert vm.state == 'running'
+    assert vm.primaryAssociatedIpAddress is None
+
+
 def test_virtual_machine_with_public_ip_restart(admin_client, sim_context,
                                                 ip_pool, network):
     image_uuid = sim_context['imageUuid']

@@ -85,15 +85,12 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             return stopOrRemove(state, instance, e);
         }
 
-        String ipAddress = getPrimaryIpAddress(instance);
-        if ( ipAddress != null ) {
-            resultData.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, ipAddress);
-        }
+        assignPrimaryIpAddress(instance, resultData);
 
         return result;
     }
 
-    protected String getPrimaryIpAddress(Instance instance) {
+    protected void assignPrimaryIpAddress(Instance instance, Map<String,Object> resultData) {
         int min = Integer.MAX_VALUE;
         IpAddress ip = null;
         IpAddress fallBackIp = null;
@@ -110,10 +107,20 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             }
         }
 
+        String address = null;
         if ( ip == null ) {
-            return fallBackIp == null ? null : fallBackIp.getAddress();
+            address = fallBackIp == null ? null : fallBackIp.getAddress();
         } else {
-            return ip.getAddress();
+            address = ip.getAddress();
+        }
+
+        if ( ip != null ) {
+            resultData.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, address);
+        }
+
+        IpAddress assoc = ipAddressDao.getPrimaryAssociatedIpAddress(ip);
+        if ( assoc != null ) {
+            resultData.put(InstanceConstants.FIELD_PRIMARY_ASSOCIATED_IP_ADDRESS, assoc.getAddress());
         }
     }
 

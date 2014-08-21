@@ -52,6 +52,9 @@
         "primaryIpAddress" : {
             "type" : "string"
         },
+        "primaryAssociatedIpAddress" : {
+            "type" : "string"
+        },
         "startOnCreate" : {
             "type" : "boolean",
             "create" : true,

@@ -1,9 +1,9 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
-import static io.cattle.platform.core.model.tables.IpAssociationTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.IpAssociationTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.IpPoolConstants;
@@ -53,6 +53,24 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
                     .fetchInto(IpAddressRecord.class);
 
         return ipAddresses.size() > 0 ? ipAddresses.get(0) : null;
+    }
+
+    @Override
+    public IpAddress getPrimaryAssociatedIpAddress(IpAddress ipAddress) {
+        if ( ipAddress == null ) {
+            return null;
+        }
+
+        List<? extends IpAddress> ips = create().select(IP_ADDRESS.fields())
+            .from(IP_ASSOCIATION)
+            .join(IP_ADDRESS)
+                .on(IP_ADDRESS.ID.eq(IP_ASSOCIATION.IP_ADDRESS_ID))
+            .where(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PUBLIC)
+                    .and(IP_ASSOCIATION.CHILD_IP_ADDRESS_ID.eq(ipAddress.getId()))
+                    .and(IP_ASSOCIATION.REMOVED.isNull()))
+            .fetchInto(IpAddressRecord.class);
+
+        return ips.size() == 0 ? null : ips.get(0);
     }
 
     @Override
