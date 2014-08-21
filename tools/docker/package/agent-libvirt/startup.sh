@@ -10,8 +10,15 @@ mkdir -p /var/lib/cattle
 mkdir -p /host/run/cattle/libvirt
 mkdir -p /host/var/lib/cattle/libvirt
 
+if [ ! -e /host/var/lib/cattle/etc/libvirt ]; then
+    rsync -a /etc/libvirt/ /host/var/lib/cattle/etc/libvirt >/dev/null 2>&1
+fi
+
 mount --bind /host/proc /proc
+mount --bind /host/sys /sys
+mount --bind /host/dev /dev
 mount --bind /host/run/cattle/libvirt /run
+mount --bind /host/var/lib/cattle/etc/libvirt /etc/libvirt
 mount --bind /host/var/lib/cattle/libvirt /var/lib/libvirt
 mount --bind /host/var/lib/cattle /var/lib/cattle
 
