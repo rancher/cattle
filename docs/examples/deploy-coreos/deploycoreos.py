@@ -22,7 +22,7 @@ coreos:
 client = cattle.from_env()
 
 cred = client.list_ssh_key(uuid='defaultSshKey')[0]
-image = client.list_image(imageUuid_like='coreos-stable-%')[0]
+image = client.list_image(uuid_like='coreos-stable-%')[0]
 
 for i in range(3):
     c = client.create_virtual_machine(imageId=image.id,
