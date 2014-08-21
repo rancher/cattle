@@ -175,6 +175,11 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         if ( networkIds != null ) {
             for ( int i = 0 ; i < networkIds.size() ; i++ ) {
                 Number createId = networkIds.get(i);
+                if ( createId == null ) {
+                    deviceId++;
+                    continue;
+                }
+
                 Nic newNic = null;
                 for ( Nic nic : nics ) {
                     if ( nic.getNetworkId() == createId.longValue() ) {

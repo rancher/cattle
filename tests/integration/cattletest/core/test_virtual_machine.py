@@ -27,6 +27,16 @@ def test_virtual_machine_create(client, sim_context):
     assert vm.memoryMb == 256
 
 
+def test_virtual_machine_create_null_network_id(client, sim_context):
+    image_uuid = sim_context['imageUuid']
+    try:
+        client.create_virtual_machine(imageUuid=image_uuid,
+                                      networkIds=[None])
+        assert False
+    except ApiError as e:
+        assert e.error.code == 'NotNullable'
+
+
 def test_virtual_machine_n_ids_s_ids(client, sim_context, network, subnet):
     image_uuid = sim_context['imageUuid']
     try:

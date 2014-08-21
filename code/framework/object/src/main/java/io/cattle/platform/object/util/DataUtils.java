@@ -65,7 +65,8 @@ public class DataUtils {
 
         if ( value instanceof List ) {
             List<?> list = (List<?>)value;
-            if ( list.size() > 0 && type.isAssignableFrom(list.get(0).getClass()) ) {
+            Object firstValue = list.size() > 0 ? list.get(0) : null;
+            if ( list.size() > 0 && firstValue != null && type.isAssignableFrom(firstValue.getClass()) ) {
                 return (List<T>) list;
             }
 
