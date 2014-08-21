@@ -114,7 +114,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             address = ip.getAddress();
         }
 
-        if ( ip != null ) {
+        if ( address != null ) {
             resultData.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, address);
         }
 
