@@ -8,6 +8,7 @@ PID_FILE=/run/libvirtd.pid
 mkdir -p /run/libvirt
 mkdir -p /var/lib/cattle
 mkdir -p /host/run/cattle/libvirt
+mkdir -p /host/var/lib/cattle/etc
 mkdir -p /host/var/lib/cattle/libvirt
 
 if [ ! -e /host/var/lib/cattle/etc/libvirt ]; then
@@ -20,7 +21,7 @@ mount --bind /host/dev /dev
 mount --bind /host/run/cattle/libvirt /run
 mount --bind /host/var/lib/cattle/etc/libvirt /etc/libvirt
 mount --bind /host/var/lib/cattle/libvirt /var/lib/libvirt
-mount --bind /host/var/lib/cattle /var/lib/cattle
+mount --rbind /host/var/lib/cattle /var/lib/cattle
 
 if [ -e $PID_FILE ]; then
     rm $PID_FILE

@@ -116,7 +116,10 @@ setup_env()
 
 setup_mounts()
 {
-    for i in /var/lib/cattle /var/lib/docker /lib/modules; do
+    mkdir -p /var/lib/cattle
+    mount --rbind /host/var/lib/cattle /var/lib/cattle
+
+    for i in /var/lib/docker /lib/modules; do
         local host_dir=/host${i}
 
         if [ -e $host_dir ]; then
