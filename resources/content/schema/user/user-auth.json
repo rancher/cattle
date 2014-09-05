@@ -46,6 +46,7 @@
         "image.checksum" : "r",
 
         "instance" : "r",
+        "instance.count" : "cr",
         "instance.credentialIds" : "cr",
         "instance.instanceTriggeredStop" : "cru",
         "instance.ports" : "cr",

@@ -6,6 +6,10 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class InstanceManager extends AbstractJooqResourceManager {
 
     @Override
@@ -17,6 +21,8 @@ public class InstanceManager extends AbstractJooqResourceManager {
     public Class<?>[] getTypeClasses() {
         return new Class<?>[] { Instance.class };
     }
+
+
 
     @Override
     protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
@@ -33,5 +39,26 @@ public class InstanceManager extends AbstractJooqResourceManager {
             return super.deleteInternal(type, id, obj, request);
         }
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected <T> T createAndScheduleObject(Class<T> clz, Map<String, Object> properties) {
+        Object count = properties.get(InstanceConstants.FIELD_COUNT);
+
+        if ( count instanceof Number && ((Number)count).intValue() > 1 ) {
+            int max = ((Number)count).intValue();
+
+            List<Object> result = new ArrayList<Object>(max);
+            for ( int i = 0 ; i < max ; i++ ) {
+                Object instance = super.createAndScheduleObject(clz, properties);
+                result.add(instance);
+            }
+
+            return (T)result;
+        } else {
+            return super.createAndScheduleObject(clz, properties);
+        }
+    }
+
 
 }

@@ -5,6 +5,7 @@ public class InstanceConstants {
     public static final String TYPE = "instance";
 
     public static final String FIELD_AGENT_INSTANCE = "agentInstance";
+    public static final String FIELD_COUNT = "count";
     public static final String FIELD_CREDENTIAL_IDS = "credentialIds";
     public static final String FIELD_ENVIRONMENT = "environment";
     public static final String FIELD_IMAGE_UUID = "imageUuid";

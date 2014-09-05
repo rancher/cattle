@@ -4,6 +4,19 @@ from datetime import timedelta
 import time
 
 
+def test_container_create_count(admin_client, sim_context):
+    image_uuid = sim_context['imageUuid']
+
+    cs = admin_client.create_container(imageUuid=image_uuid,
+                                       count=3)
+
+    assert len(cs) == 3
+
+    for c in cs:
+        c = admin_client.wait_success(c)
+        assert c.state == 'running'
+
+
 def test_container_create_only(admin_client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = admin_client.create_container(name="test",

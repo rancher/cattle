@@ -16,6 +16,11 @@
             "nullable" : true,
             "includeInList" : false
         },
+        "count" : {
+            "type" : "int",
+            "nullable" : true,
+            "includeInList" : false
+        },
         "credentialIds" : {
             "type" : "array[reference[credential]]",
             "nullable" : true,

@@ -87,13 +87,17 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         return doCreate(type, clz, CollectionUtils.toMap(request.getRequestObject()));
     }
 
-    @SuppressWarnings("unchecked")
     protected <T> T doCreate(String type, Class<T> clz, Map<Object,Object> data) {
         Map<String,Object> properties = getObjectManager().convertToPropertiesFor(clz, data);
         if ( ! properties.containsKey(ObjectMetaDataManager.KIND_FIELD) ) {
             properties.put(ObjectMetaDataManager.KIND_FIELD, type);
         }
 
+        return createAndScheduleObject(clz, properties);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T createAndScheduleObject(Class<T> clz, Map<String,Object> properties) {
         Object result = objectManager.create(clz, properties);
         try {
             scheduleProcess(StandardProcess.CREATE, result, properties);
