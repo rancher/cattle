@@ -28,6 +28,7 @@
                     "fields": {
                         "imageUuid": "docker:ibuildthecloud/helloworld",
                         "command": "sleep 5",
+                        "publishAllPorts": "true",
                         "dockerVolumes": ["/proc:/host/proc", "/sys:/host/sys", "/random"],
                         "startOnCreate": "true"
                     }
@@ -54,7 +55,7 @@
                     "data": {
                         "dockerImage": {
                             "fullName": "ibuildthecloud/helloworld:latest",
-                            "id": "5f2847a3a0fa55d93bd22f7441b435661c21139b36f1529a9647b9ef7b34bbe8",
+                            "id": "4aece5bf9124998dae604ab09a9e3d6a3a5e305c68c313198f0faca6c67a1c3f",
                             "namespace": "cattle",
                             "qualifiedName": "ibuildthecloud/helloworld",
                             "repository": "helloworld",

@@ -33,6 +33,10 @@
             "nullable": true,
             "minLength": 1
         },
+        "publishAllPorts": {
+            "type": "boolean",
+            "default": false
+        },
         "privileged": {
             "type": "boolean",
             "default": "false"

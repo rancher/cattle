@@ -29,6 +29,7 @@
         "container.imageUuid" : "cr",
         "container.instanceLinks" : "cr",
         "container.networkIds" : "cr",
+        "container.publishAllPorts": "cr",
         "container.startOnCreate" : "cr",
         "container.subnetIds" : "cr",
         "container.system" : "cr",

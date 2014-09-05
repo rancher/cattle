@@ -176,6 +176,53 @@ def test_docker_image_format(admin_client, docker_context):
 
 
 @if_docker
+def test_docker_ports_from_container_publish_all(client, admin_client,
+                                                 docker_context):
+    uuid = TEST_IMAGE_UUID
+    c = client.create_container(name='test',
+                                publishAllPorts=True,
+                                imageUuid=uuid)
+
+    c = client.wait_success(c)
+
+    assert c.state == 'running'
+
+    ports = c.ports()
+    assert len(ports) == 1
+    port = ports[0]
+
+    assert port.publicPort is not None
+    assert port.privatePort == 8080
+    assert port.publicIpAddressId is not None
+    assert port.kind == 'imagePort'
+
+    client.delete(c)
+
+
+@if_docker
+def test_docker_ports_from_container_no_publish(client, admin_client,
+                                                docker_context):
+    uuid = TEST_IMAGE_UUID
+    c = client.create_container(name='test',
+                                imageUuid=uuid)
+
+    c = client.wait_success(c)
+
+    assert c.state == 'running'
+
+    ports = c.ports()
+    assert len(ports) == 1
+    port = ports[0]
+
+    assert port.publicPort is None
+    assert port.privatePort == 8080
+    assert port.publicIpAddressId is not None
+    assert port.kind == 'imagePort'
+
+    client.delete(c)
+
+
+@if_docker
 def test_docker_ports_from_container(client, admin_client, docker_context):
     network = admin_client.create_network(isPublic=True)
     network = admin_client.wait_success(network)
@@ -183,6 +230,7 @@ def test_docker_ports_from_container(client, admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
     c = client.create_container(name='test',
                                 startOnCreate=False,
+                                publishAllPorts=True,
                                 networkIds=[network.id],
                                 imageUuid=uuid,
                                 ports=[

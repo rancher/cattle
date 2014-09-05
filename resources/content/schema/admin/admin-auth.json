@@ -53,6 +53,7 @@
         "container.kind" : "r",
         "container.networkIds" : "cr",
         "container.offeringId" : "",
+        "container.publishAllPorts": "cr",
         "container.privileged" : "cr",
         "container.startOnCreate" : "cr",
         "container.subnetIds" : "cr",
@@ -89,6 +90,7 @@
         "image.url" : "cr",
 
         "instance" : "r",
+        "instance.count" : "cr",
         "instance.credentialIds" : "cr",
         "instance.instanceTriggeredStop" : "cru",
         "instance.ports" : "cr",

@@ -200,9 +200,15 @@ class DockerCompute(KindBasedMixin, BaseComputeDriver):
             pass
 
         start_config = {
-            'publish_all_ports': True,
+            'publish_all_ports': False,
             'privileged': self._is_privileged(instance)
         }
+
+        try:
+            if instance.data.fields.publishAllPorts:
+                start_config['publish_all_ports'] = True
+        except (KeyError, AttributeError):
+            pass
 
         try:
             volumes = instance.data.fields['dockerVolumes']
