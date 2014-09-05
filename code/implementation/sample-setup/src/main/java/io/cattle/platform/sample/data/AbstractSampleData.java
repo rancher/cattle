@@ -7,10 +7,13 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Data;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockCallbackNoReturn;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.sample.lock.SampleDataLock;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 
@@ -35,6 +38,7 @@ public abstract class AbstractSampleData implements InitializationTask {
     protected ObjectProcessManager processManager;
     protected AccountDao accountDao;
     protected JsonMapper jsonMapper;
+    protected LockManager lockManager;
 
     @Override
     public final void start() {
@@ -42,6 +46,18 @@ public abstract class AbstractSampleData implements InitializationTask {
             return;
         }
 
+        lockManager.lock(new SampleDataLock(), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                startWithLock();
+            }
+        });
+    }
+
+    protected final void startWithLock() {
+        if ( ! RUN.get() ) {
+            return;
+        }
         String name = getName();
 
         Data data = objectManager.findAny(Data.class, DATA.NAME, name);
@@ -128,6 +144,15 @@ public abstract class AbstractSampleData implements InitializationTask {
     @Inject
     public void setProcessManager(ObjectProcessManager processManager) {
         this.processManager = processManager;
+    }
+
+    public LockManager getLockManager() {
+        return lockManager;
+    }
+
+    @Inject
+    public void setLockManager(LockManager lockManager) {
+        this.lockManager = lockManager;
     }
 
 }
