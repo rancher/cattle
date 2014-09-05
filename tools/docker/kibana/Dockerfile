@@ -1,6 +1,6 @@
-FROM ibuildthecloud/ubuntu-core-base:13.10
+FROM ibuildthecloud/ubuntu-core-base:14.04-1
 RUN apt-get update && apt-get install -y apache2 curl
-RUN curl https://download.elasticsearch.org/kibana/kibana/kibana-3.0.0milestone5.tar.gz | tar xvzf - -C /var/www/ --strip-components=1
+RUN curl https://download.elasticsearch.org/kibana/kibana/kibana-3.1.0.tar.gz | tar xvzf - -C /var/www/html --strip-components=1
 ADD run.sh /
 CMD ["/run.sh"]
 EXPOSE 80
