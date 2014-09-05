@@ -121,7 +121,10 @@ public class MetadataServiceImpl implements MetadataService {
             fullData.put("meta-data", entry.getValue());
             fullData.put("user-data", userData.get(entry.getKey()));
 
-            metadata.put(primaryIps.get(entry.getKey()), fullData);
+            String key = primaryIps.get(entry.getKey());
+            if ( key != null ) {
+                metadata.put(key, fullData);
+            }
         }
 
         return metadata;
@@ -164,12 +167,19 @@ public class MetadataServiceImpl implements MetadataService {
 
         if ( firstNic && primaryIp ) {
             instanceMetadata.put("hostname", localHostname);
-            primaryIps.put(instance.getId(), addressKey);
+            String existingKey = primaryIps.get(instance.getId());
+            if ( existingKey == null || existingKey.contains(":") ) { // It's a MAC address
+                primaryIps.put(instance.getId(), addressKey);
+            }
         }
 
         @SuppressWarnings("unchecked")
         Map<String,Object> nicData = (Map<String, Object>)CollectionUtils.get(instanceMetadata, "network",
                 "interfaces", "macs", nic.getMacAddress());
+
+        if ( nicData == null ) {
+            return;
+        }
 
 
         setIfTrueOrNull(primaryIp, nicData, "local-hostname", localHostname);
