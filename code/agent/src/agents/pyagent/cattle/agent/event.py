@@ -71,7 +71,14 @@ def _should_run(pid):
             return os.path.exists("/proc/%s" % pid)
 
 
-def _worker(queue, ppid):
+def _worker(worker_name, queue, ppid):
+    try:
+        _worker_main(worker_name, queue, ppid)
+    finally:
+        log.error('%s : Exiting', worker_name)
+
+
+def _worker_main(worker_name, queue, ppid):
     agent = Agent()
     marshaller = type_manager.get_type(type_manager.MARSHALLER)
     publisher = type_manager.get_type(type_manager.PUBLISHER)
@@ -82,21 +89,21 @@ def _worker(queue, ppid):
 
             req = marshaller.from_string(line)
 
-            utils.log_request(req, log, 'Request: %s' % line)
+            utils.log_request(req, log, 'Request: %s', line)
 
             id = req.id
             start = time.time()
             try:
-                utils.log_request(req, log, 'Starting request %s for %s', id,
-                                  req.name)
+                utils.log_request(req, log, '%s : Starting request %s for %s',
+                                  worker_name, id, req.name)
                 resp = agent.execute(req)
                 if resp is not None:
                     publisher.publish(resp)
             finally:
                 duration = time.time() - start
                 utils.log_request(req, log,
-                                  'Done request %s for %s [%s] seconds', id,
-                                  req.name, duration)
+                                  '%s : Done request %s for %s [%s] seconds',
+                                  worker_name, id, req.name, duration)
         except Empty:
             if not _should_run(ppid):
                 break
@@ -139,10 +146,11 @@ class EventClient:
     def _start_children(self):
         pid = os.getpid()
         for i in range(self._workers):
-            p = spawn(target=_worker, args=(self._queue, pid))
+            p = spawn(target=_worker, args=('worker{0}'.format(i),
+                                            self._queue, pid))
             self._children.append(p)
 
-        p = spawn(target=_worker, args=(self._ping_queue, pid))
+        p = spawn(target=_worker, args=('ping', self._ping_queue, pid))
         self._children.append(p)
 
     def run(self, events):
@@ -174,7 +182,8 @@ class EventClient:
 
             self._start_children()
 
-            for line in r.iter_lines(chunk_size=1):
+            for line in r.iter_lines(chunk_size=512):
+                line = line.strip()
                 try:
                     ping = '"ping' in line
                     if len(line) > 0:

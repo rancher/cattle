@@ -88,7 +88,7 @@ class Config:
 
     @staticmethod
     def workers():
-        return int(default_value('WORKERS', '25'))
+        return int(default_value('WORKERS', '50'))
 
     @staticmethod
     def set_secret_key(value):
@@ -152,7 +152,7 @@ class Config:
 
     @staticmethod
     def queue_depth():
-        return int(default_value('QUEUE_DEPTH', Config.workers()))
+        return int(default_value('QUEUE_DEPTH', 5))
 
     @staticmethod
     def stop_timeout():

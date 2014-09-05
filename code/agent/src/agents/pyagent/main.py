@@ -8,7 +8,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import argparse
 
-_LOG_SIZE = 2097152
+_LOG_SIZE = 20971520
 _LOG_COUNT = 2
 
 if __name__ == '__main__':

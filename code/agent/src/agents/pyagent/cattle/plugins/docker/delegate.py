@@ -15,7 +15,16 @@ import requests
 
 log = logging.getLogger('docker')
 
-_SESSION = requests.Session()
+
+def _make_session():
+    session = requests.Session()
+    adapter = requests.adapters.HTTPAdapter(pool_connections=Config.workers(),
+                                            pool_maxsize=Config.workers())
+    session.mount('http://', adapter)
+    return session
+
+
+_SESSION = _make_session()
 
 
 def container_exec(ip, token, event):
@@ -69,6 +78,14 @@ class DockerDelegate(BaseHandler):
             log.error('Can not call [%s], container is not running',
                       instanceData.uuid)
             return
+
+        try:
+            # Optimization for empty config.updates, should really find a
+            # better way to do this
+            if event.name == 'config.update' and len(event.data.items) == 0:
+                return reply(event, None, parent=req)
+        except:
+            pass
 
         progress = Progress(event, parent=req)
         exit_code, output, data = container_exec(ip, instanceData.token, event)
