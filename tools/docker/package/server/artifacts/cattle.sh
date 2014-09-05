@@ -17,6 +17,13 @@ if [ -e $DEBUG_JAR ]; then
     JAR=$DEBUG_JAR
 fi
 
+setup_graphite()
+{
+    # Setup Graphite
+    export CATTLE_GRAPHITE_HOST=${CATTLE_GRAPHITE_HOST:-$GRAPHITE_PORT_2003_TCP_ADDR}
+    export CATTLE_GRAPHITE_PORT=${CATTLE_GRAPHITE_PORT:-$GRAPHITE_PORT_2003_TCP_PORT}
+}
+
 setup_gelf()
 {
     # Setup GELF
@@ -88,6 +95,7 @@ setup_zk()
     fi
 }
 
+setup_graphite
 setup_gelf
 setup_mysql
 setup_redis
