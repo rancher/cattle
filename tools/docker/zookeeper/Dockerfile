@@ -1,10 +1,11 @@
-FROM ibuildthecloud/ubuntu-core-base:13.10
+FROM ibuildthecloud/ubuntu-core-base:14.04-1
 RUN apt-get update && \
-     apt-get install -y --no-install-recommends openjdk-7-jre-headless python-pip
-RUN pip install requests kazoo
-ADD http://apache.cs.utah.edu/zookeeper/zookeeper-3.4.5/zookeeper-3.4.5.tar.gz /
-RUN mv zookeeper-3.4.5.tar.gz/zookeeper-3.4.5 /zookeeper && \
-    rm -rf zookeeper-3.4.5.tar.gz
+     apt-get install -y --no-install-recommends openjdk-7-jre-headless python-requests
+ADD http://mirrors.ibiblio.org/apache/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz /
+#COPY zookeeper-3.4.6.tar.gz /
+RUN tar xvzf zookeeper-3.4.6.tar.gz && \
+    mv /zookeeper-3.4.6 /zookeeper && \
+    rm -rf zookeeper-3.4.6.tar.gz
 ADD startup.py /zookeeper/bin/startup.py
 RUN chmod +x /zookeeper/bin/startup.py
 CMD ["/zookeeper/bin/startup.py"]
