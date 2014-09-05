@@ -116,7 +116,11 @@ setup_env()
 
 setup_mounts()
 {
-    mkdir -p /var/lib/cattle
+    mkdir -p /host/run/cattle/libvirt/libvirt
+    mkdir -p /host/var/lib/cattle/libvirt
+    mkdir -p /run/libvirt
+    mkdir -p /var/lib/cattle/libvirt
+    mkdir -p /var/lib/libvirt
     mount --rbind /host/var/lib/cattle /var/lib/cattle
 
     for i in /var/lib/docker /lib/modules; do
@@ -135,8 +139,6 @@ setup_mounts()
         fi
     done
 
-    mkdir -p /host/run/cattle/libvirt /run/libvirt
-    mkdir -p /host/var/lib/cattle/libvirt /var/lib/libvirt
 
     mount --bind /host/run/cattle/libvirt/libvirt /run/libvirt
     mount --bind /var/lib/cattle/libvirt /var/lib/libvirt
