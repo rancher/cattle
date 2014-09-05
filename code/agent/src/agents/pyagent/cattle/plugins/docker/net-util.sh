@@ -92,6 +92,10 @@ if [ -n "$IP" ]; then
         ip link show
         ip addr show
     fi
+
+    if ! ip route show | grep -q 169.254.0.0; then
+        ip route add 169.254.0.0/16 dev $DEV src $(echo $IP | cut -f1 -d'/')
+    fi
 fi
 
 if [ -n "$MAC" ]; then
