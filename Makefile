@@ -1,11 +1,11 @@
 MVN_OPTS=
 MVN=${MVN_OPTS} install
 
-shell: build-env
-	./tools/docker/build.sh bash
-
 build: build-env
 	./tools/docker/build.sh mvn ${MVN}
+
+shell: build-env
+	./tools/docker/build.sh bash
 
 run: build
 	./tools/docker/build.sh run
