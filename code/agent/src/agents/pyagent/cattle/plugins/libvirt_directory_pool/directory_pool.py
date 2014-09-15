@@ -6,7 +6,7 @@ import os
 import logging
 import time
 
-from cattle import utils
+from cattle.download import download_file
 from cattle.plugins.libvirt import LIBVIRT_KIND, volume_drivers
 from cattle.plugins.libvirt.config import LibvirtConfig
 from cattle.plugins.libvirt.drivers import LibvirtStoragePoolDriver
@@ -129,10 +129,10 @@ class DirectoryPoolDriver(LibvirtStoragePoolDriver):
         pool_path = self._get_path(storage_pool)
         downloaded = None
         try:
-            downloaded = utils.download_file(image.url,
-                                             pool_path,
-                                             reporthook=report,
-                                             checksum=image.checksum)
+            downloaded = download_file(image.url,
+                                       pool_path,
+                                       reporthook=report,
+                                       checksum=image.checksum)
 
             volume = None
             for driver in volume_drivers():

@@ -3,7 +3,7 @@ from cattle import Config
 
 log = logging.getLogger('concurrency')
 
-__all__ = ['Queue', 'Empty', 'Full', 'Worker', 'run', 'spawn']
+__all__ = ['Queue', 'Empty', 'Full', 'Worker', 'run', 'spawn', 'blocking']
 
 if Config.is_eventlet():
     import eventlet
@@ -21,6 +21,13 @@ if Config.is_eventlet():
             pool.spawn_n(self._target, *self._args)
 
     log.info('Using eventlet')
+
+    port = Config.eventlet_backdoor()
+
+    if port:
+        from eventlet import backdoor
+        log.info('Launching eventlet backdoor on port %s', port)
+        eventlet.spawn(backdoor.backdoor_server, eventlet.listen(('localhost', port)))
 elif Config.is_multi_proc():
     from Queue import Empty, Full
     from multiprocessing import Queue, Process
@@ -51,3 +58,10 @@ def run(method, *args):
         pool.spawn(method, *args).wait()
     else:
         method(*args)
+
+
+def blocking(method, *args, **kw):
+    if Config.is_eventlet():
+        return eventlet.tpool.execute(method, *args, **kw)
+    else:
+        return method(*args, **kw)

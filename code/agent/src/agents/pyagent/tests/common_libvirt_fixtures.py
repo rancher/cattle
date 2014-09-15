@@ -8,6 +8,7 @@ from uuid import uuid4
 from cattle.plugins.core.marshaller import JsonObject
 from cattle.progress import LogProgress
 from cattle import utils
+from cattle import download
 
 
 if_libvirt = pytest.mark.skipif('os.environ.get("LIBVIRT_TEST") != "true"',
@@ -95,7 +96,7 @@ def fake_image(file):
     })
 
     if file is not None:
-        ret.checksum = utils.checksum(file)
+        ret.checksum = download.checksum(file)
 
     return ret
 

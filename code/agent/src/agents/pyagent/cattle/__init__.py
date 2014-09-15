@@ -228,3 +228,11 @@ class Config:
     @staticmethod
     def event_read_timeout():
         return int(default_value('EVENT_READ_TIMEOUT', '60'))
+
+    @staticmethod
+    def eventlet_backdoor():
+        val = default_value('EVENTLET_BACKDOOR', None)
+        if val:
+            return int(val)
+        else:
+            return None
