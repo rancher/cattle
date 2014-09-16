@@ -1,13 +1,9 @@
 from tempfile import NamedTemporaryFile
 from os import path
-from urllib import urlretrieve
-from hashlib import md5, sha1, sha256, sha512
 from urlparse import urlparse
 
 import binascii
-import bz2
 import calendar
-import gzip
 import logging
 import os
 import re

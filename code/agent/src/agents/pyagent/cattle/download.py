@@ -34,7 +34,7 @@ def download_file(url, destination, reporthook=None, decompression=True,
 
 
 def _download_file(url, destination, reporthook=None, decompression=True,
-                  checksum=None):
+                   checksum=None):
     temp_name = temp_file_in_work_dir(destination)
 
     log.info('Downloading %s to %s', url, temp_name)

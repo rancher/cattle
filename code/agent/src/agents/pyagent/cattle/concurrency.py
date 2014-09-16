@@ -27,7 +27,8 @@ if Config.is_eventlet():
     if port:
         from eventlet import backdoor
         log.info('Launching eventlet backdoor on port %s', port)
-        eventlet.spawn(backdoor.backdoor_server, eventlet.listen(('localhost', port)))
+        eventlet.spawn(backdoor.backdoor_server,
+                       eventlet.listen(('localhost', port)))
 elif Config.is_multi_proc():
     from Queue import Empty, Full
     from multiprocessing import Queue, Process

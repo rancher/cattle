@@ -7,7 +7,6 @@ from uuid import uuid4
 
 from cattle.plugins.core.marshaller import JsonObject
 from cattle.progress import LogProgress
-from cattle import utils
 from cattle import download
 
 
