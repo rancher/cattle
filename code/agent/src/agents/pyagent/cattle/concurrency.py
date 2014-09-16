@@ -9,6 +9,7 @@ if Config.is_eventlet():
     import eventlet
     eventlet.monkey_patch()
     from eventlet.queue import Queue, Empty, Full
+    from eventlet import tpool
 
     pool = eventlet.GreenPool(size=Config.workers() * 2)
 
@@ -63,6 +64,6 @@ def run(method, *args):
 
 def blocking(method, *args, **kw):
     if Config.is_eventlet():
-        return eventlet.tpool.execute(method, *args, **kw)
+        return tpool.execute(method, *args, **kw)
     else:
         return method(*args, **kw)
