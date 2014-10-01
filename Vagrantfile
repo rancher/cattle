@@ -13,6 +13,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.memory = 1024
   end
 
+  config.vm.network "forwarded_port", guest: 3306, host: 3306,
+    auto_correct: true
+
+  config.vm.network :private_network, ip: "172.17.7.100"
+
   config.vm.provision "shell", path: "tools/development/bootstrap.vagrant"
 
 end
