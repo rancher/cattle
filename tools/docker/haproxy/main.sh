@@ -39,6 +39,7 @@ while true; do
         HOST=${SERVER##tcp://}
         HOST=${HOST%%:*}
         PORT=${SERVER##*:}
+        curl --connect-timeout 1 http://${HOST}:${PORT} >/dev/null 2>&1 || true
         cat >> haproxy.cfg << EOF
     server server${i} ${HOST}:${PORT} check
 EOF
