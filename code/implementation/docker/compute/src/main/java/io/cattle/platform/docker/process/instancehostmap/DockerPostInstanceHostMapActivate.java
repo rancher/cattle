@@ -25,6 +25,8 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockCallback;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
@@ -46,6 +48,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     DockerComputeDao dockerDao;
     NicDao nicDao;
     NetworkDao networkDao;
+    LockManager lockManager;
 
     @Override
     public String[] getProcessNames() {
@@ -104,12 +107,19 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         }
     }
 
-    protected void processPorts(String hostIp, Map<String,String> ports, Instance instance, Nic nic, Host host) {
+    protected void processPorts(final String hostIp, Map<String,String> ports, Instance instance, Nic nic, final Host host) {
         IpAddress ipAddress = getIpAddress(host, hostIp);
         IpAddress dockerIpAddress = dockerDao.getDockerIp(DockerProcessUtils.getDockerIp(instance), instance);
         Long privateIpAddressId = dockerIpAddress == null ? null : dockerIpAddress.getId();
 
         if ( ipAddress == null && DYNAMIC_ADD_IP.get() ) {
+            ipAddress = lockManager.lock(new AssignHostIpLockDefinition(host), new LockCallback<IpAddress>() {
+                @Override
+                public IpAddress doWithLock() {
+                    IpAddress ipAddress = getIpAddress(host, hostIp);
+                    return ipAddress == null ? ipAddressDao.assignNewAddress(host, hostIp) : ipAddress;
+                }
+            });
             ipAddress = ipAddressDao.assignNewAddress(host, hostIp);
         }
 
@@ -224,6 +234,15 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     @Inject
     public void setNetworkDao(NetworkDao networkDao) {
         this.networkDao = networkDao;
+    }
+
+    public LockManager getLockManager() {
+        return lockManager;
+    }
+
+    @Inject
+    public void setLockManager(LockManager lockManager) {
+        this.lockManager = lockManager;
     }
 
 }
