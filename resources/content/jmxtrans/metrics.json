@@ -1,6 +1,36 @@
 {
     "queries" : [
         {
+            "objectName" : "metrics:name=allocator.*",
+            "resultAlias" : "metric.process_server.%name%",
+            "attributes" : [
+                {
+                    "name" : "95thPercentile"
+                },
+                {
+                    "name" : "Count"
+                },
+                {
+                    "name" : "Max"
+                },
+                {
+                    "name" : "Mean"
+                },
+                {
+                    "name" : "Min"
+                },
+                {
+                    "name" : "OneMinuteRate"
+                },
+                {
+                    "name" : "FiveMinuteRate"
+                },
+                {
+                    "name" : "FifteenMinuteRate"
+                }
+            ]
+        },
+        {
             "objectName" : "metrics:name=process_execution.*",
             "resultAlias" : "metric.process_server.%name%",
             "attributes" : [
