@@ -30,7 +30,7 @@ subnet_bridge_gateway()
 routes()
 {
     subnet_bridge_gateway | while read SUBNET BRIDGE GATEWAY; do
-        echo route add $SUBNET dev $BRIDGE table 300
+        echo route add $SUBNET dev $BRIDGE src $GATEWAY table 300
     done
 }
 
