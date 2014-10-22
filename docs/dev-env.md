@@ -5,7 +5,9 @@
 The following commands will let you run the cattle build with no other setup than a Linux box.  This may even work with boot2docker on a Mac.
 
 `make` - Builds the full cattle
+
 `make test` -  Runs the full test suite
+
 `make run` - Runs Cattle in a Docker container exposing port 8080 locally
 
 All of the those commands are not particularly fast and the very first invocation will take a very long time.  Subsequent invocations should be faster.
