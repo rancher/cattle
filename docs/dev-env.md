@@ -14,7 +14,7 @@ All of the those commands are not particularly fast and the very first invocatio
 
 ## Full Development Environment
 
-The following instructions are for setting up a development environment on Linux
+The following instructions are for setting up a development environment on Linux. **After cloning the git repo you should run `make` at least one to ensure all of the dependencies are properly built.**
 
 ### Eclipse
 
