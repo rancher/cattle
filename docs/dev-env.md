@@ -29,12 +29,15 @@ Eclipse is the preferred IDE for Java development for Cattle.  Download the late
 ##### Code Formatting
 
 Indentation -> Tab Policy: Spaces Only
+
 Line Wrapping -> Maximum line width: 120
 
 ##### Other Preferences
 
 Java -> Code Style -> Organize Imports -> Number of static imports needed for .*: 1
+
 General -> Editors -> Text Editors -> Displayed tab width: 4
+
 Java -> Editor -> Save Actions: As below
 
 ```
