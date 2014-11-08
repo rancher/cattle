@@ -33,7 +33,6 @@ CONF=(/etc/cattle/agent/bootstrap.conf
       ${CATTLE_HOME}/etc/cattle/agent/bootstrap.conf)
 CONTENT_URL=/configcontent/configscripts
 INSTALL_ITEMS="configscripts pyagent"
-DOCKER_AGENT="cattle/agent"
 
 cleanup()
 {
@@ -96,22 +95,6 @@ break_out_of_docker()
     fi
 }
 
-handle_inception()
-{
-    if [ "$CATTLE_INSIDE_DOCKER" != "outside" ]; then
-        if [ "$CATTLE_AGENT_INCEPTION" = "true" ] || ! python -V >/dev/null 2>&1; then
-            cleanup_docker
-            exec docker run -rm -privileged -i -w $(pwd) \
-                        -v /run:/host/run \
-                        -v /var:/host/var \
-                        -v /proc:/host/proc \
-                        -e CATTLE_EXEC_AGENT=true \
-                        -e CATTLE_SCRIPT_DEBUG=$CATTLE_SCRIPT_DEBUG \
-                        $CATTLE_DOCKER_AGENT_ARGS $DOCKER_AGENT "$@"
-        fi
-    fi
-}
-
 cd $(dirname $0)
 
 for conf_file in "${CONF[@]}"; do
@@ -122,7 +105,6 @@ for conf_file in "${CONF[@]}"; do
 done
 
 break_out_of_docker $0 "$@"
-handle_inception "$@"
 
 while [ $# != 0 ]; do
     case $1 in
