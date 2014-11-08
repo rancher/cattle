@@ -46,13 +46,6 @@ public class RegisterScriptHandler implements ScriptsHandler {
             return false;
         }
 
-        String url = getUrl(request);
-
-        if ( url.contains("://localhost") ) {
-            log.error("Don't use localhost to download the script, use the hostname or IP");
-            return false;
-        }
-
         Map<String,String> tokens = new HashMap<String,String>();
         tokens.put("CATTLE_URL", getUrl(request));
         tokens.put("CATTLE_REGISTRATION_ACCESS_KEY", RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
