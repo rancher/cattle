@@ -1,7 +1,6 @@
 import time
 import os
 import logging
-import signal
 from threading import Thread
 try:
     from subprocess32 import Popen
@@ -19,6 +18,7 @@ log = logging.getLogger('process-manager')
 class ProcessManager(object):
     def __init__(self):
         self.pids = {}
+        self.processes = []
 
     def init(self):
         script = os.path.join(os.path.dirname(__file__), 'process_watcher.sh')
@@ -27,7 +27,6 @@ class ProcessManager(object):
         try:
             # If this isn't UNIX, this will fail, so just ignore it
             os.setpgid(0, 0)
-            signal.signal(signal.SIGCHLD, signal.SIG_IGN)
             launch_script = True
         except:
             pass
@@ -42,9 +41,14 @@ class ProcessManager(object):
     def watch(self):
         while True:
             time.sleep(2)
-            for pid, spawn in self.pids.items():
-                if not os.path.exists('/proc/{0}'.format(pid)):
-                    self._exec(spawn, pid)
+            try:
+                self.processes = filter(_wait_process, self.processes)
+
+                for pid, spawn in self.pids.items():
+                    if not os.path.exists('/proc/{0}'.format(pid)):
+                        self._exec(spawn, pid)
+            except:
+                log.exception('Error in process watcher')
 
     def _exec(self, spawn, old_pid=None):
         try:
@@ -60,11 +64,21 @@ class ProcessManager(object):
     def _exec_background(self, *args, **kw):
         log.info('Launching %s', args[0])
         p = Popen(*args, **kw)
+        self.processes.append(p)
+        log.info('Launched %s as pid %d', args[0], p.pid)
         return p.pid
 
     def background(self, *args, **kw):
         self._exec(lambda: self._exec_background(*args, **kw))
 
+
+def _wait_process(process):
+    process.poll()
+    if process.returncode is not None:
+        log.info('Process %d is dead, return code %d', process.pid,
+                 process.returncode)
+        return False
+    return True
 
 _PROCESS_MANAGER = ProcessManager()
 

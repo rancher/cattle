@@ -256,7 +256,21 @@ def check_output(*popenargs, **kwargs):
                 else:
                     _check_output_impl = _check_output
 
-    return _check_output_impl(*popenargs, **kwargs)
+    try:
+        return _check_output_impl(*popenargs, **kwargs)
+    except subprocess.CalledProcessError as e:
+        raise e
+    except Exception as e:
+        # eventlets seems to throw a CalledProcessError that isn't the same
+        # as the subprocess package exception
+        try:
+            raise subprocess.CalledProcessError(e.returncode, e.cmd, e.output)
+        except subprocess.CalledProcessError as e1:
+            raise e1
+        except:
+            # This is in case CallProcessError doesn't have returncode, cmd,
+            # or output
+            raise e
 
 
 def random_string(length=64):
