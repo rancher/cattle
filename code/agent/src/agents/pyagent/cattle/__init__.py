@@ -194,7 +194,7 @@ class Config:
 
     @staticmethod
     def api_proxy_listen_port():
-        return default_value('API_PROXY_LISTEN_PORT', 9342)
+        return int(default_value('API_PROXY_LISTEN_PORT', '9342'))
 
     @staticmethod
     def api_proxy_listen_host():
@@ -224,6 +224,28 @@ class Config:
     @staticmethod
     def max_dropped_ping():
         return int(default_value('MAX_DROPPED_PING', '10'))
+
+    @staticmethod
+    def cadvisor_port():
+        return int(default_value('CADVISOR_PORT', '9344'))
+
+    @staticmethod
+    def cadvisor_ip():
+        return default_value('CADVISOR_IP', '127.0.0.1')
+
+    @staticmethod
+    def host_api_ip():
+        return default_value('HOST_API_IP', '0.0.0.0')
+
+    @staticmethod
+    def host_api_port():
+        return int(default_value('HOST_API_PORT', '9345'))
+
+    @staticmethod
+    def host_api_config_file():
+        default_path = os.path.join(Config.home(), 'etc', 'cattle',
+                                    'host-api.conf')
+        return default_value('HOST_API_CONFIG_FILE', default_path)
 
     @staticmethod
     def event_read_timeout():
