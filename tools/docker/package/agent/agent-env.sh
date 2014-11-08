@@ -116,11 +116,15 @@ setup_env()
 
 setup_mounts()
 {
-    mkdir -p /host/run/cattle/libvirt/libvirt
-    mkdir -p /host/var/lib/cattle/libvirt
-    mkdir -p /run/libvirt
-    mkdir -p /var/lib/cattle/libvirt
-    mkdir -p /var/lib/libvirt
+    if [ "$CATTLE_LIBVIRT_ENABLE" = "true" ]; then
+        mkdir -p /host/run/cattle/libvirt/libvirt
+        mkdir -p /host/var/lib/cattle/libvirt
+        mkdir -p /run/libvirt
+        mkdir -p /var/lib/cattle/libvirt
+        mkdir -p /var/lib/libvirt
+    fi
+
+    mkdir -p /var/lib/cattle
     mount --rbind /host/var/lib/cattle /var/lib/cattle
 
     for i in /var/lib/docker /lib/modules; do
@@ -133,15 +137,17 @@ setup_mounts()
     done
 
     for i in /host/run/docker.sock /host/var/run/docker.sock; do
-        if [ -e $i ]; then
+        if [ -e $i ] && [ ! -e /run/docker.sock ]; then
             ln -s $i /run/docker.sock
             break
         fi
     done
 
 
-    mount --bind /host/run/cattle/libvirt/libvirt /run/libvirt
-    mount --bind /var/lib/cattle/libvirt /var/lib/libvirt
+    if [ "$CATTLE_LIBVIRT_ENABLE" = "true" ]; then
+        mount --bind /host/run/cattle/libvirt/libvirt /run/libvirt
+        mount --bind /var/lib/cattle/libvirt /var/lib/libvirt
+    fi
 }
 
 run_bootstrap()
