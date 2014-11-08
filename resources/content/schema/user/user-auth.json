@@ -124,6 +124,8 @@
         "volume.physicalSizeMb" : "",
         "volume.virtualSizeMb" : "r",
 
+        "zone" : "r",
+
         "end" : ""
     }
 }

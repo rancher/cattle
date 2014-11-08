@@ -11,7 +11,6 @@
         ".*\\.name" : "cru",
         ".*\\.removeTime" : "ru",
         ".*\\.uuid" : "cr",
-        ".*\\.zoneId" : "",
 
         "account.externalId" : "cru",
         "account.externalIdType" : "cru",
@@ -190,8 +189,6 @@
         "volume.format" : "r",
         "volume.physicalSizeMb" : "",
         "volume.virtualSizeMb" : "r",
-
-        "zone" : "",
 
         "end" : ""
     }
