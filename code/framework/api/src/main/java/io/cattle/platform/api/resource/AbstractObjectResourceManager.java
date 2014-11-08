@@ -40,6 +40,7 @@ import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -69,7 +70,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     ObjectMetaDataManager metaDataManager;
     Map<String,ActionHandler> actionHandlersMap;
     List<ActionHandler> actionHandlers;
-    Map<String,LinkHandler> linkHandlersMap;
+    Map<String,List<LinkHandler>> linkHandlersMap;
     List<LinkHandler> linkHandlers;
 
     @Override
@@ -166,19 +167,21 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Object getLinkInternal(String type, String id, String link, ApiRequest request) {
-        LinkHandler linkHandler = linkHandlersMap.get(type);
-        if ( linkHandler != null ) {
-            if ( linkHandler.handles(type, id, link, request) ) {
-                Object currentObject = getById(type, id, new ListOptions(request));
-                if ( currentObject == null ) {
-                    return null;
-                }
+        List<LinkHandler> linkHandlers = linkHandlersMap.get(type);
+        if ( linkHandlers != null ) {
+            for ( LinkHandler linkHandler : linkHandlers ) {
+                if ( linkHandler.handles(type, id, link, request) ) {
+                    Object currentObject = getById(type, id, new ListOptions(request));
+                    if ( currentObject == null ) {
+                        return null;
+                    }
 
-                try {
-                    return linkHandler.link(link, currentObject, request);
-                } catch (IOException e) {
-                    log.error("Failed to process link [{}] for [{}:{}]", link, type, id, e);
-                    return null;
+                    try {
+                        return linkHandler.link(link, currentObject, request);
+                    } catch (IOException e) {
+                        log.error("Failed to process link [{}] for [{}:{}]", link, type, id, e);
+                        return null;
+                    }
                 }
             }
         }
@@ -468,11 +471,11 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     public void start() {
         actionHandlersMap = NamedUtils.createMapByName(actionHandlers);
-        linkHandlersMap = new HashMap<String, LinkHandler>();
+        linkHandlersMap = new HashMap<String, List<LinkHandler>>();
 
         for ( LinkHandler handler : linkHandlers ) {
             for ( String type : handler.getTypes() ) {
-                linkHandlersMap.put(type, handler);
+                CollectionUtils.addToMap(linkHandlersMap, type, handler, ArrayList.class);
             }
         }
     }
