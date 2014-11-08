@@ -10,6 +10,7 @@
 
     <bean class="io.cattle.platform.core.dao.impl.AccountDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.AgentDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.DataDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.GenericMapDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.GenericResourceDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.InstanceDaoImpl" />

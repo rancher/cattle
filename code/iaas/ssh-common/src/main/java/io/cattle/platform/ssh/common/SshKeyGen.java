@@ -27,22 +27,28 @@ public class SshKeyGen {
     private static final DynamicStringProperty SSH_FORMAT = ArchaiusUtil.getString("ssh.key.text.format");
 
     public static String[] generateKeys() throws Exception {
-        KeyPairGenerator generator = SecurityUtils.getKeyPairGenerator("RSA");
-        generator.initialize(2048);
-        KeyPair pair = generator.generateKeyPair();
+        KeyPair pair = generateKeyPair();
 
         String publicString = sshRsaTextFormat((RSAPublicKey)pair.getPublic());
 
         return new String[] { publicString, writeKeyPair(pair) };
     }
 
+    public static KeyPair generateKeyPair() throws Exception {
+        KeyPairGenerator generator = SecurityUtils.getKeyPairGenerator("RSA");
+        generator.initialize(2048);
+        return generator.generateKeyPair();
+    }
+
     public static KeyPair readKeyPair(String key) throws Exception {
+        SecurityUtils.isBouncyCastleRegistered();
+
         PEMReader r = null;
         try {
             if ( key.startsWith("---") ) {
                 r = new PEMReader(new StringReader(key));
             } else {
-                /* Backward compatibility with how the key was storaged in data table */
+                /* Backward compatibility with how the key was stored in data table */
                 ByteArrayInputStream bais = new ByteArrayInputStream(Base64.decodeBase64(key));
                 r = new PEMReader(new InputStreamReader(bais));
             }
@@ -53,6 +59,8 @@ public class SshKeyGen {
     }
 
     public static String writeKeyPair(KeyPair kp) throws Exception {
+        SecurityUtils.isBouncyCastleRegistered();
+
         StringWriter stringWriter = new StringWriter();
 
         PEMWriter w = new PEMWriter(stringWriter);

@@ -15,6 +15,13 @@ public class ExceptionUtils {
         rethrow(t, Error.class);
     }
 
+    public static <T extends Throwable> void throwRuntime(String message, Throwable t) {
+        rethrow(t, RuntimeException.class);
+        rethrow(t, Error.class);
+
+        throw new RuntimeException(message, t);
+    }
+
     public static <T extends Throwable> void rethrowExpectedRuntime(Throwable t) {
         rethrowRuntime(t);
         throw new IllegalStateException(t);
