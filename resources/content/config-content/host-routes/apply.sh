@@ -146,8 +146,8 @@ setup_ips()
 }
 
 
-setup_routes
 gateway
+setup_routes
 setup_arptables
 setup_ips
 
