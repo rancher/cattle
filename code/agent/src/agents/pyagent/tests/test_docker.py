@@ -437,7 +437,7 @@ def test_ping(agent, responses):
     CONFIG_OVERRIDE['PHYSICAL_HOST_UUID'] = 'hostuuid'
 
     def post(req, resp):
-        hostname = Config.hostname() + '/docker'
+        hostname = Config.hostname()
         pool_name = hostname + ' Storage Pool'
         resources = resp['data']['resources']
 
@@ -453,7 +453,7 @@ def test_ping(agent, responses):
 
         assert resp['data']['resources'][0]['name'] == hostname
         assert resp['data']['resources'][1]['name'] == pool_name
-        resp['data']['resources'][0]['name'] = 'localhost/docker'
-        resp['data']['resources'][1]['name'] = 'localhost/docker Storage Pool'
+        resp['data']['resources'][0]['name'] = 'localhost'
+        resp['data']['resources'][1]['name'] = 'localhost Storage Pool'
 
     event_test(agent, 'docker/ping', post_func=post)
