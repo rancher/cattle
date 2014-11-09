@@ -120,7 +120,6 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
                     return ipAddress == null ? ipAddressDao.assignNewAddress(host, hostIp) : ipAddress;
                 }
             });
-            ipAddress = ipAddressDao.assignNewAddress(host, hostIp);
         }
 
         if ( DYNAMIC_ADD_IP.get() ) {
