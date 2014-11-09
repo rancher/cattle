@@ -1,7 +1,6 @@
 language: java
 jdk:
   - oraclejdk7
-  - openjdk6
   - openjdk7
 env:
   global:
@@ -18,10 +17,6 @@ env:
     - CATTLE_DB_CATTLE_DATABASE=postgres MAVEN_ARGS=-Dpostgres
 matrix:
   exclude:
-    - jdk: openjdk6
-      env: EXTERNAL_AGENT_TEST=true EC2_TEST=true LIBVIRT_TEST=true DOCKER_TEST=true
-    - jdk: openjdk6
-      env: CATTLE_DB_CATTLE_DATABASE=postgres MAVEN_ARGS=-Dpostgres
     - jdk: openjdk7
       env: EXTERNAL_AGENT_TEST=true EC2_TEST=true LIBVIRT_TEST=true DOCKER_TEST=true
 services:
