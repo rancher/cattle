@@ -38,6 +38,7 @@
         <module>code/framework/server</module>
         <module>code/framework/spring</module>
         <module>code/framework/system-task</module>
+        <module>code/framework/token</module>
         <module>code/framework/utils</module>
         <module>code/meta-parent</module>
         <module>code/parent</module>
@@ -104,7 +105,9 @@
                 <module>code/implementation/hazelcast/common</module>
                 <module>code/implementation/hazelcast/eventing</module>
                 <module>code/implementation/hazelcast/lock</module>
+                <module>code/implementation/host-api</module>
                 <module>code/implementation/host-only-network</module>
+                <module>code/implementation/host-stats</module>
                 <module>code/implementation/libvirt/allocator</module>
                 <module>code/implementation/libvirt/default-images</module>
                 <module>code/implementation/register</module>
