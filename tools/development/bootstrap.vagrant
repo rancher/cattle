@@ -1,0 +1,29 @@
+#!/bin/bash
+
+sudo apt-get update -qq
+
+sudo apt-get install -y build-essential \
+			git \
+			docker.io \
+            libvirt-bin \
+            python-libvirt \
+            qemu-kvm \
+            python-numpy \
+            arptables \
+            genisoimage \
+            python-eventlet
+
+sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y mysql-server-5.5 phpmyadmin
+
+ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-enabled/phpmyadmin.conf
+sudo service apache2 restart
+
+cat /src/cattle/resources/content/db/mysql/create_db_and_user_dev.sql | mysql  -uroot
+
+grep docker /etc/group
+if [ $? -eq 0 ];then
+    sudo gpasswd -a vagrant docker
+    sudo service docker.io restart
+fi
+
+sudo docker run --rm -v /usr/local/bin:/target jpetazzo/nsenter
