@@ -58,6 +58,7 @@
     <process:defaultProcesses resourceType="subnetVnetMap" />
     <process:defaultProcesses resourceType="vnet" />
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
+    <process:defaultProcesses resourceType="zone" />
 
     <!-- IP Address -->
     <process:defaultProcesses resourceType="ipAddress" />
