@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.apache.commons.collections.Transformer;
 
 public class ApiUtils {
@@ -27,6 +27,13 @@ public class ApiUtils {
     public static final String SINGLE_ATTACHMENT_PREFIX = "s__";
 
     private static final Policy DEFAULT_POLICY = new DefaultPolicy();
+
+    private static final ManagedThreadLocal<Integer> DEPTH = new ManagedThreadLocal<Integer>() {
+        @Override
+        protected Integer initialValue() {
+            return 0;
+        }
+    };
 
     public static Object getFirstFromList(Object obj) {
         if ( obj instanceof Collection ) {
@@ -136,28 +143,37 @@ public class ApiUtils {
 
     public static Resource createResourceWithAttachments(final ResourceManager resourceManager, final ApiRequest request,
             final IdFormatter idFormatter, final Schema schema, Object obj, Map<String,Object> inputAdditionalFields) {
-        Map<String,Object> additionalFields = new LinkedHashMap<String, Object>();
-        additionalFields.putAll(DataUtils.getFields(obj));
+        Integer depth = DEPTH.get();
 
-        if ( inputAdditionalFields != null && inputAdditionalFields.size() > 0 ) {
-            additionalFields.putAll(inputAdditionalFields);
-        }
+        try {
+            DEPTH.set(depth + 1);
+            Map<String,Object> additionalFields = new LinkedHashMap<String, Object>();
+            additionalFields.putAll(DataUtils.getFields(obj));
 
-        Map<String,Object> attachments = ApiUtils.getAttachements(obj, new Transformer() {
-            @Override
-            public Object transform(Object input) {
-                input = ApiUtils.authorize(input);
-                if ( input == null )
-                    return null;
-
-
-                return resourceManager.convertResponse(input, request);
+            if ( inputAdditionalFields != null && inputAdditionalFields.size() > 0 ) {
+                additionalFields.putAll(inputAdditionalFields);
             }
-        });
 
-        additionalFields.putAll(attachments);
+            if ( depth == 0 ) {
+                Map<String,Object> attachments = ApiUtils.getAttachements(obj, new Transformer() {
+                    @Override
+                    public Object transform(Object input) {
+                        input = ApiUtils.authorize(input);
+                        if ( input == null )
+                            return null;
 
-        return new WrappedResource(idFormatter, schema, obj, additionalFields);
+
+                        return resourceManager.convertResponse(input, request);
+                    }
+                });
+
+                additionalFields.putAll(attachments);
+            }
+
+            return new WrappedResource(idFormatter, schema, obj, additionalFields);
+        } finally {
+            DEPTH.set(depth);
+        }
     }
 
     public static String getSchemaIdForDisplay(SchemaFactory factory, Object obj) {
