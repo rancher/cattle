@@ -1,0 +1,9 @@
+machine:
+  services:
+    - docker
+dependencies:
+  override:
+    - echo "skip inferred"
+test:
+  override:
+    - make -j4 -d
