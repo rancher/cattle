@@ -3,8 +3,10 @@
     <property name="mediumtext" value="TEXT" dbms="postgresql" />
     <property name="mediumtext" value="MEDIUMTEXT" />
     <changeSet author="darren (generated)" id="dump1">
+        <validCheckSum>7:250772af0d72805d6039c355dc2e279c</validCheckSum>
+        <validCheckSum>7:02a6fd1fe6481d52514cf6e4bf9c25b5</validCheckSum>
         <addColumn tableName="instance">
-            <column name="first_running" type="DATETIME(19)"/>
+            <column name="first_running" type="datetime"/>
         </addColumn>
     </changeSet>
 </databaseChangeLog>
