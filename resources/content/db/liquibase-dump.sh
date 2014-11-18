@@ -3,13 +3,31 @@ set -x -e
 
 LIQUIBASE_HOME=${LIQUIBASE_HOME:-~/.local/liquibase}
 DB=${DB:-cattle}
-DRIVER=${DRIVER:-"$HOME/.m2/repository/mysql/mysql-connector-java/5.1.26/mysql-connector-java-5.1.26.jar"}
+DRIVER_VERSION=5.1.34
+
+function prep_driver_jar(){
+    if [ -n "$DRIVER" ]; then
+        echo $DRIVER
+    else
+        if [ -z "$(find $HOME/.m2 -name mysql-connector-java*.jar)" ]; then
+            mvn -DgroupId=mysql -DartifactId=mysql-connector-java -Dversion=$DRIVER_VERSION dependency:get &> /dev/null
+        fi
+        if [ -n "$(find $HOME/.m2 -name mysql-connector-java*.jar)" ]; then
+            echo $(find $HOME/.m2 -name mysql-connector-java*.jar -print -quit)
+        else
+            # Couldn't install driver
+            return 1
+        fi
+    fi
+}
 
 if [ -e dump.xml ]; then
     mv dump.xml dump-$(date '+%s').xml
 fi
 
-$LIQUIBASE_HOME/liquibase --classpath="$DRIVER"  \
+DRIVER_JAR=$(prep_driver_jar)
+
+$LIQUIBASE_HOME/liquibase --classpath="$DRIVER_JAR"  \
     --driver=com.mysql.jdbc.Driver \
     --changeLogFile=dump.xml \
     --url="jdbc:mysql://localhost:3306/${DB}_base" \
