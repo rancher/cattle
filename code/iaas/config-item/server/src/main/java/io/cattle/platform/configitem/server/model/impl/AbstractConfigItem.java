@@ -9,6 +9,7 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 public abstract class AbstractConfigItem implements ConfigItem {
 
     String name;
+    boolean dynamicallyApplied;
     ConfigItemStatusManager versionManager;
 
     public AbstractConfigItem(String name, ConfigItemStatusManager versionManager) {
@@ -43,6 +44,15 @@ public abstract class AbstractConfigItem implements ConfigItem {
 
     public void setVersionManager(ConfigItemStatusManager versionManager) {
         this.versionManager = versionManager;
+    }
+
+    @Override
+    public boolean isDynamicallyApplied() {
+        return dynamicallyApplied;
+    }
+
+    public void setDynamicallyApplied(boolean dynamicallyApplied) {
+        this.dynamicallyApplied = dynamicallyApplied;
     }
 
 }

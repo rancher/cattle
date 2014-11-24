@@ -2,6 +2,7 @@ package io.cattle.platform.configitem.server.impl;
 
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.registry.ConfigItemRegistry;
+import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.RefreshableConfigItem;
 import io.cattle.platform.configitem.server.model.Request;
@@ -78,9 +79,16 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
         }
 
         if ( ! versionManager.isAssigned(req.getClient(), req.getItemName()) ) {
-            log.error("Client [{}] requesting non-assigned item [{}]", req.getClient(), req.getItemName());
-            req.setResponseCode(Request.NOT_FOUND);
-            return;
+            if ( item.isDynamicallyApplied() ) {
+                ConfigUpdateRequest updateRequest = new ConfigUpdateRequest(req.getClient().getResourceId())
+                .withDeferredTrigger(true);
+                updateRequest.addItem(req.getItemName());
+                versionManager.updateConfig(updateRequest);
+            } else {
+                log.error("Client [{}] requesting non-assigned item [{}]", req.getClient(), req.getItemName());
+                req.setResponseCode(Request.NOT_FOUND);
+                return;
+            }
         }
 
         log.info("Processing [{}] for client [{}]", req.getItemName(), req.getClient());
