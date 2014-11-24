@@ -9,9 +9,14 @@
         "dockerIp": {
             "type": "string"
         },
-        "dockerVolumes": {
+        "dataVolumes": {
             "type": "array[string]",
-            "nullable": true
+            "nullable": true,
+            "create": true
+        },
+        "dataVolumesFrom": {
+            "type" : "array[reference[container]]",
+            "nullable" : true
         }
     }
 }

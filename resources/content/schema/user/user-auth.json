@@ -34,6 +34,8 @@
         "container.subnetIds" : "cr",
         "container.system" : "cr",
         "container.user" : "cr",
+        "container.dataVolumes" : "cr",
+        "container.dataVolumesFrom" : "cr",
 
         "credential" : "r",
 
@@ -123,7 +125,13 @@
         "volume.format" : "",
         "volume.physicalSizeMb" : "",
         "volume.virtualSizeMb" : "r",
+        "volume.uri" : "r",
+        "volume.isHostPath" : "r",
 
+        "mount" : "r",
+        "mount.path" : "r",
+        "mount.permissions" : "r",
+		
         "zone" : "r",
 
         "end" : ""
