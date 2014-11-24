@@ -1,7 +1,0 @@
-argparse
-mako
-docker-py==0.3.1
-portalocker
-libvirt-python
-websockify
-subprocess32
