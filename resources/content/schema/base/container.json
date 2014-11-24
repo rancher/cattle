@@ -46,6 +46,15 @@
             "create": true,
             "nullable": true,
             "includeInList": false
+        },
+        "dataVolumes": {
+            "type": "array[string]",
+            "nullable": true,
+            "create": true
+        },
+        "dataVolumesFrom": {
+            "type" : "array[reference[container]]",
+            "nullable" : true
         }
     }
 }

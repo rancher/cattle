@@ -86,7 +86,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
         log.info("Created Docker external pool [{}]", storagePool.getId());
     }
 
-    public boolean isDockerPool(StoragePool pool) {
+    public static boolean isDockerPool(StoragePool pool) {
         return pool == null ? false : DOCKER_KIND.equals(pool.getKind());
     }
 

@@ -245,6 +245,17 @@ public interface Volume extends java.io.Serializable {
 	@javax.persistence.Column(name = "zone_id", precision = 19)
 	public java.lang.Long getZoneId();
 
+	/**
+	 * Setter for <code>cattle.volume.uri</code>.
+	 */
+	public void setUri(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.volume.uri</code>.
+	 */
+	@javax.persistence.Column(name = "uri", length = 512)
+	public java.lang.String getUri();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

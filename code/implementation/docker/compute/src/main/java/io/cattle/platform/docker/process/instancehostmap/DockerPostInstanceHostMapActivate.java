@@ -1,10 +1,15 @@
 package io.cattle.platform.docker.process.instancehostmap;
 
-import static io.cattle.platform.core.model.tables.IpAddressTable.*;
-import static io.cattle.platform.core.model.tables.PortTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
+import static io.cattle.platform.core.model.tables.MountTable.MOUNT;
+import static io.cattle.platform.core.model.tables.PortTable.PORT;
+import static io.cattle.platform.docker.constants.DockerVolumeConstants.READ_ONLY;
+import static io.cattle.platform.docker.constants.DockerVolumeConstants.READ_WRITE;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.PortConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
+import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.dao.NicDao;
@@ -13,13 +18,19 @@ import io.cattle.platform.core.model.HostIpAddressMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
+import io.cattle.platform.core.model.StoragePool;
+import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerIpAddressConstants;
 import io.cattle.platform.docker.process.dao.DockerComputeDao;
+import io.cattle.platform.docker.process.lock.DockerStoragePoolVolumeCreateLock;
 import io.cattle.platform.docker.process.util.DockerProcessUtils;
+import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -31,11 +42,14 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
 
@@ -43,11 +57,14 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
     public static final DynamicBooleanProperty DYNAMIC_ADD_IP = ArchaiusUtil.getBoolean("docker.compute.auto.add.host.ip");
 
+    private static final Logger log = LoggerFactory.getLogger(DockerPostInstanceHostMapActivate.class);
+
     JsonMapper jsonMapper;
     IpAddressDao ipAddressDao;
     DockerComputeDao dockerDao;
     NicDao nicDao;
     NetworkDao networkDao;
+    GenericMapDao mapDao;
     LockManager lockManager;
 
     @Override
@@ -81,9 +98,114 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             processPorts(hostIp, ports, instance, nic, host);
         }
 
+        processVolumes(instance, host, state);
+
         return null;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected void processVolumes(Instance instance, Host host, ProcessState state) {
+        StoragePool storagePool = null;
+        for ( StoragePool pool : objectManager.mappedChildren(host, StoragePool.class) ) {
+            if ( DockerStoragePoolDriver.isDockerPool(pool)) {
+                storagePool = pool;
+                break;
+            }
+        }
+        
+        if ( storagePool == null ) {
+            log.warn("Could not find docker storage pool for host [{}]. Volumes will not be created.",
+                    host.getId());
+            return;
+        }
+        
+        Map<String,Object> inspect = (Map<String, Object>)instance.getData().get("dockerInspect");
+        Map<String,String> volumes = (Map<String, String>)inspect.get("Volumes");
+        Map<String,Boolean> volumesRW = (Map<String, Boolean>)inspect.get("VolumesRW");
+        Map<String, String> hostBindMounts = extractHostBindMounts((List<String>)((Map)inspect.get("HostConfig")).get("Binds"));
+
+        for ( Map.Entry<String, String> volumeKV : volumes.entrySet() ) {
+            String pathInContainer = volumeKV.getKey();
+            String pathOnHost = volumeKV.getValue();
+            
+            String volumeUri = String.format(VolumeConstants.URI_FORMAT, pathOnHost);
+            boolean isHostPath = hostBindMounts.containsKey(pathInContainer);
+            Volume volume = createVolumeInStoragePool(storagePool, instance, volumeUri, isHostPath);
+            log.debug("Created volume and storage pool mapping. Volume id [{}], storage pool id [{}].",
+                    volume.getId(), storagePool.getId());
+            createIgnoreCancel(volume, state.getData());
+            
+            for ( VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class,
+                    volume.getId()) ) {
+                if ( map.getStoragePoolId().equals(storagePool.getId()) )
+                    createThenActivate(map, state.getData());
+            }
+            
+            activate(volume, state.getData());
+            
+            Boolean readWrite = volumesRW.get(pathInContainer);
+            String perms = readWrite ? READ_WRITE : READ_ONLY;
+            Mount mount = mountVolume(volume, instance, pathInContainer, perms);
+            log.info("Volme mount created. Volume id [{}], instance id [{}], mount id [{}]", volume.getId(),
+                    instance.getId(), mount.getId());
+            createThenActivate(mount, null);
+        }
+    }
+
+    private Map<String, String> extractHostBindMounts(List<String> bindMounts) {
+        Map<String, String> hostBindMounts = new HashMap<String, String>();
+        if ( bindMounts == null)
+            return hostBindMounts;
+            
+        for (String bindMount : bindMounts) {
+            String[] parts = bindMount.split(":");
+            hostBindMounts.put(parts[1], parts[0]);
+        }
+        return hostBindMounts;
+    }
+
+    protected Volume createVolumeInStoragePool(final StoragePool storagePool, final Instance instance,
+            final String volumeUri, final boolean isHostPath) {
+        Volume volume = dockerDao.getDockerVolumeInPool(volumeUri, storagePool);
+        if ( volume != null )
+            return volume;
+        
+        return lockManager.lock(new DockerStoragePoolVolumeCreateLock(storagePool, volumeUri),
+            new LockCallback<Volume>() {
+                @Override
+                public Volume doWithLock() {
+                    Volume volume = dockerDao.getDockerVolumeInPool(volumeUri, storagePool);
+                    if ( volume != null )
+                        return volume;
+
+                    volume = dockerDao.createDockerVolumeInPool(instance.getAccountId(), volumeUri, storagePool, isHostPath);
+                    
+                    return volume;
+                }
+            });
+    }
+    
+    protected Mount mountVolume(final Volume volume, final Instance instance, final String path,
+            final String permissions) {
+        Mount mount = objectManager.findOne(Mount.class, 
+                MOUNT.VOLUME_ID, volume.getId(),
+                MOUNT.INSTANCE_ID, instance.getId(),
+                MOUNT.PATH, path);
+        
+        if ( mount != null ) {
+            if ( ! mount.getPath().equalsIgnoreCase(permissions) )
+                objectManager.setFields(mount, MOUNT.PERMISSIONS, permissions);
+            return mount;
+        }
+        
+        return objectManager.create(Mount.class, 
+              MOUNT.ACCOUNT_ID, instance.getAccountId(),
+              MOUNT.INSTANCE_ID, instance.getId(), 
+              MOUNT.VOLUME_ID, volume.getId(),
+              MOUNT.PATH, path,
+              MOUNT.PERMISSIONS, permissions);
+    }
+    
     protected void processDockerIp(Instance instance, Nic nic, String dockerIp) {
         if ( nic == null ) {
             return;
@@ -242,6 +364,15 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     @Inject
     public void setLockManager(LockManager lockManager) {
         this.lockManager = lockManager;
+    }
+
+    public GenericMapDao getMapDao() {
+        return mapDao;
+    }
+
+    @Inject
+    public void setMapDao(GenericMapDao mapDao) {
+        this.mapDao = mapDao;
     }
 
 }

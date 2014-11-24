@@ -58,6 +58,8 @@
         "container.subnetIds" : "cr",
         "container.user" : "cr",
         "container.uuid" : "r",
+        "container.dataVolumes" : "cr",
+        "container.dataVolumesFrom" : "cr",
 
         "credential.publicValue" : "cru",
         "credential.secretValue" : "cru",
@@ -189,7 +191,12 @@
         "volume.format" : "r",
         "volume.physicalSizeMb" : "",
         "volume.virtualSizeMb" : "r",
+        "volume.uri" : "r",
+        "volume.isHostPath" : "r",
 
+		"mount.path" : "r",
+		"mount.permissions" : "r",
+		
         "end" : ""
     }
 }

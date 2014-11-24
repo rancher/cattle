@@ -1,3 +1,4 @@
+import uuid as py_uuid
 from common_fixtures import *  # NOQA
 from cattle import ApiError
 
@@ -388,3 +389,93 @@ def test_no_port_override(admin_client, docker_context):
     assert ports[0].kind == 'userPort'
     assert ports[0].publicPort == 8081
     assert ports[0].privatePort == 8080
+
+
+@if_docker
+def test_docker_volumes(client, admin_client, docker_context):
+    uuid = TEST_IMAGE_UUID
+    bind_mount_uuid = py_uuid.uuid4().hex
+    bar_host_path = '/tmp/bar%s' % bind_mount_uuid
+    bar_bind_mount = '%s:/bar' % bar_host_path
+    baz_host_path = '/tmp/baz%s' % bind_mount_uuid
+    baz_bind_mount = '%s:/baz:ro' % baz_host_path
+
+    c = admin_client.create_container(name="volumes_test",
+                                      imageUuid=uuid,
+                                      startOnCreate=False,
+                                      dataVolumes=['/foo',
+                                                   bar_bind_mount,
+                                                   baz_bind_mount])
+
+    c = admin_client.wait_success(c)
+    assert len(c.dataVolumes) == 3
+    assert set(c.dataVolumes) == set(['/foo',
+                                      bar_bind_mount,
+                                      baz_bind_mount])
+
+    c = admin_client.wait_success(c.start())
+
+    volumes = c.volumes()
+    assert len(volumes) == 1
+
+    mounts = c.mounts()
+    assert len(mounts) == 3
+    foo_mount, bar_mount, baz_mount = None, None, None
+    foo_vol, bar_vol, baz_vol = None, None, None
+    for mount in mounts:
+        assert mount.instance().id == c.id
+        if mount.path == '/foo':
+            foo_mount = mount
+            foo_vol = mount.volume()
+        elif mount.path == '/bar':
+            bar_mount = mount
+            bar_vol = mount.volume()
+        elif mount.path == '/baz':
+            baz_mount = mount
+            baz_vol = mount.volume()
+
+    assert foo_mount is not None
+    assert foo_mount.permissions == 'rw'
+    assert foo_vol is not None
+
+    assert bar_mount is not None
+    assert bar_mount.permissions == 'rw'
+    assert bar_vol is not None
+
+    assert baz_mount is not None
+    assert baz_mount.permissions == 'ro'
+    assert baz_vol is not None
+
+    assert not foo_vol.isHostPath
+
+    assert bar_vol.isHostPath
+    # We use 'in' instead of '==' because Docker uses the fully qualified
+    # non-linked path and it might look something like: /mnt/sda1/<path>
+    assert bar_host_path in bar_vol.uri
+
+    assert baz_vol.isHostPath
+    assert baz_host_path in baz_vol.uri
+
+    c2 = admin_client.create_container(name="volumes_from_test",
+                                       imageUuid=uuid,
+                                       startOnCreate=False,
+                                       dataVolumesFrom=[c.id])
+    c2 = admin_client.wait_success(c2)
+    assert len(c2.dataVolumesFrom) == 1
+    assert set(c2.dataVolumesFrom) == set([c.id])
+
+    c2 = admin_client.wait_success(c2.start())
+    c2_mounts = c2.mounts()
+    assert len(c2_mounts) == 3
+
+    for mount in c2_mounts:
+        assert mount.instance().id == c2.id
+        if mount.path == '/foo':
+            assert mount.volumeId == foo_vol.id
+        elif mount.path == '/bar':
+            assert mount.volumeId == bar_vol.id
+        elif mount.path == '/baz':
+            assert mount.volumeId == baz_vol.id
+
+    c.stop(remove=True)
+    c2.stop(remove=True)
