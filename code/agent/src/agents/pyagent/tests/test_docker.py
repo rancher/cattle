@@ -1,4 +1,5 @@
-from docker import Client, APIError
+from docker.errors import APIError
+from cattle.plugins.docker import docker_client
 
 # TODO cattle.plugins.load_plugins() somehow make cattle.plugin.* modules
 # unavailable, importing it first
@@ -17,7 +18,7 @@ CONFIG_OVERRIDE['DOCKER_HOST_IP'] = '1.2.3.4'
 
 
 def _delete_container(name):
-    client = Client()
+    client = docker_client()
     for c in client.containers(all=True):
         for container_name in c['Names']:
             if name == container_name:
@@ -29,7 +30,7 @@ def _delete_container(name):
 
 
 def _get_container(name):
-    client = Client()
+    client = docker_client()
     for c in client.containers(all=True):
         for container_name in c['Names']:
             if name == container_name:
@@ -39,7 +40,7 @@ def _get_container(name):
 
 @if_docker
 def test_image_list():
-    c = Client()
+    c = docker_client()
     images = c.images(all=True)
     if len(images) == 0:
         c.pull('busybox')
@@ -53,7 +54,7 @@ def test_image_list():
 @if_docker
 def test_image_activate(agent, responses):
     try:
-        Client().remove_image('ibuildthecloud/helloworld:latest')
+        docker_client().remove_image('ibuildthecloud/helloworld:latest')
     except APIError:
         pass
 
@@ -76,7 +77,7 @@ def test_volume_deactivate(agent, responses):
 @if_docker
 def test_instance_activate_need_pull_image(agent, responses):
     try:
-        Client().remove_image('ibuildthecloud/helloworld:latest')
+        docker_client().remove_image('ibuildthecloud/helloworld:latest')
     except APIError:
         pass
 
@@ -147,7 +148,7 @@ def test_instance_activate_links(agent, responses):
         fields['dockerPorts']['8080/tcp'] = '1234'
         fields['dockerPorts']['12201/udp'] = '5678'
 
-        inspect = Client().inspect_container(id)
+        inspect = docker_client().inspect_container(id)
 
         env = inspect['Config']['Env']
 
@@ -179,7 +180,7 @@ def test_instance_activate_links_no_service(agent, responses):
     _delete_container('/target_redis')
     _delete_container('/target_mysql')
 
-    client = Client()
+    client = docker_client()
     c = client.create_container('ibuildthecloud/helloworld',
                                 ports=['3307/udp', '3306/tcp'],
                                 name='target_mysql')
@@ -209,11 +210,12 @@ def test_instance_activate_links_no_service(agent, responses):
         fields['dockerPorts']['8080/tcp'] = '1234'
         fields['dockerPorts']['12201/udp'] = '5678'
 
-        inspect = Client().inspect_container(id)
+        inspect = docker_client().inspect_container(id)
 
-        # TODO: This seems like a bug in docker, but 'HostConfig.Links' is
-        # never set
-        assert inspect['HostConfig']['Links'] is None
+        assert set(
+            ['/target_mysql:/c861f990-4472-4fa1-960f-65171b544c28/mysql',
+             '/target_redis:/c861f990-4472-4fa1-960f-65171b544c28/'
+             'redis']) == set(inspect['HostConfig']['Links'])
 
     event_test(agent, 'docker/instance_activate_links_no_service',
                post_func=post)
@@ -265,7 +267,7 @@ def test_instance_activate_agent_instance_localhost(agent, responses):
         fields['dockerPorts']['8080/tcp'] = '1234'
         fields['dockerPorts']['12201/udp'] = '5678'
 
-        inspect = Client().inspect_container(id)
+        inspect = docker_client().inspect_container(id)
 
         port = Config.api_proxy_listen_port()
         assert 'CATTLE_CONFIG_URL_SCHEME=https' in inspect['Config']['Env']
@@ -301,7 +303,7 @@ def test_instance_activate_agent_instance(agent, responses):
         fields['dockerPorts']['8080/tcp'] = '1234'
         fields['dockerPorts']['12201/udp'] = '5678'
 
-        inspect = Client().inspect_container(id)
+        inspect = docker_client().inspect_container(id)
 
         port = Config.api_proxy_listen_port()
         assert 'CATTLE_CONFIG_URL={0}'.format(Config.config_url()) in \
@@ -341,7 +343,7 @@ def test_instance_activate_volumes(agent, responses):
             '/random': True
         }
 
-        assert set(['/sys:/host/sys', '/proc:/host/proc']) == \
+        assert set(['/sys:/host/sys:rw', '/proc:/host/proc:rw']) == \
             set(inspect['HostConfig']['Binds'])
 
         del resp['data']['instance']['+data']['dockerInspect']

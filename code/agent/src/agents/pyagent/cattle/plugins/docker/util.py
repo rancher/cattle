@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 from cattle.utils import get_command_output
 
@@ -17,6 +18,11 @@ def pipe_error(ctx, stderr, buffer):
 
 
 def net_util(pid, ip=None, mac=None, device=None):
+    if not sys.platform.startswith('linux'):
+        log.warn('Skipping net_util call because it is not supported on this '
+                 'platform.')
+        return
+
     args = [_NET_UTIL, '-p', str(pid)]
 
     if ip is not None:

@@ -1,5 +1,6 @@
 import logging
 
+from docker.utils import kwargs_from_env
 from cattle import default_value, Config
 
 log = logging.getLogger('docker')
@@ -41,7 +42,7 @@ class DockerConfig:
 
     @staticmethod
     def api_version():
-        return default_value('DOCKER_API_VERSION', '1.8')
+        return default_value('DOCKER_API_VERSION', '1.15')
 
     @staticmethod
     def docker_required():
@@ -51,12 +52,24 @@ class DockerConfig:
     def delegate_timeout():
         return int(default_value('DOCKER_DELEGATE_TIMEOUT', '120'))
 
+    @staticmethod
+    def use_boot2docker_connection_env_vars():
+        use_b2d = default_value('DOCKER_USE_BOOT2DOCKER', 'false')
+        return use_b2d.lower() == 'true'
+
 
 def docker_client(version=None):
+    if DockerConfig.use_boot2docker_connection_env_vars():
+        kwargs = kwargs_from_env(assert_hostname=False)
+    else:
+        kwargs = {'base_url': DockerConfig.url_base()}
+
     if version is None:
         version = DockerConfig.api_version()
-    return Client(base_url=DockerConfig.url_base(),
-                  version=version)
+
+    kwargs['version'] = version
+
+    return Client(**kwargs)
 
 
 def pull_image(image, progress):

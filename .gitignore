@@ -30,6 +30,7 @@ resources/content/modules.properties
 resources/local
 runtime
 target
+venv
 
 *.egg-info
 *.launch
