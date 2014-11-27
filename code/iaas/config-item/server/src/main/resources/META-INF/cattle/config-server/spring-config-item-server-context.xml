@@ -52,6 +52,17 @@
     <bean class="io.cattle.platform.configitem.server.task.ItemMigrationTask" />
     <bean class="io.cattle.platform.configitem.server.task.ItemSourceVersionSyncTask" />
 
+    <bean class="io.cattle.platform.configitem.server.agentinclude.impl.AgentIncludeConfigItemFactoryImpl" >
+        <property name="fileRoot" value="../../../resources/content/agent/agent-include" />
+        <property name="root" value="agent" />
+        <property name="resources" >
+            <bean class="io.cattle.platform.configitem.spring.URLArrayFactory" >
+                <property name="locations" value="classpath*:agent/agent-include/**/*" />
+            </bean>
+        </property>
+    </bean>
+    <bean class="io.cattle.platform.configitem.server.agentinclude.impl.AgentIncludeMapImpl" />
+
     <context:component-scan base-package="io.cattle.platform.configitem.context.impl" />
 
 </beans>

@@ -73,6 +73,7 @@ download()
 
     local name=$1
     local current
+    local archive_version
 
     if [ "$FORCE" != "true" ] && [ -e "${DOWNLOAD}/$name/current" ]; then
         current=$(<${DOWNLOAD}/$name/current)
@@ -80,9 +81,23 @@ download()
 
     DOWNLOAD_URL=${URL}/${URL_SUFFIX}/$name
 
+    local get_opts
+    local archive_version
+    if [ -n "$ARCHIVE_URL" ]; then
+        DOWNLOAD_URL=${ARCHIVE_URL}
+        get_opts="--no-auth"
+        archive_version=$(echo "$ARCHIVE_URL" | md5sum | awk '{print $1}')
+        if [ "$archive_version" = "$current" ]; then
+            info $DOWNLOAD_URL already downloaded
+            UPTODATE=true
+            VERSION=$current
+            return 0
+        fi
+    fi
+
     info Downloading $DOWNLOAD_URL "current=$current"
 
-    get "$DOWNLOAD_URL?current=$current" > $DOWNLOAD_TEMP/download
+    get $get_opts "$DOWNLOAD_URL?current=$current" > $DOWNLOAD_TEMP/download
     tar xzf $DOWNLOAD_TEMP/download -C $DOWNLOAD_TEMP
     rm $DOWNLOAD_TEMP/download
 
@@ -104,6 +119,13 @@ download()
         sha1sum -c $dir/SHA1SUMSSUM
         sha1sum -c $dir/SHA1SUMS
     ) >/dev/null
+
+    if [ -n "$archive_version" ]; then
+        mv ${DOWNLOAD_TEMP}/$dir ${DOWNLOAD_TEMP}/${archive_version}
+
+        dir=$archive_version
+        echo "$archive_version" > ${DOWNLOAD_TEMP}/${dir}/version
+    fi
 
     content_root=${DOWNLOAD}/$name/${dir}
 
@@ -189,6 +211,10 @@ while [ "$#" -gt 0 ]; do
         docker_env_vars
         exit 0
         ;;
+    --archive-url)
+        shift 1
+        ARCHIVE_URL=$1
+        ;;
     --url)
         shift 1
         URL=$1
@@ -206,7 +232,9 @@ while [ "$#" -gt 0 ]; do
         if [ "$UPTODATE" != "true" ]; then
             apply
         fi
-        applied $1
+        if [ -z "$ARCHIVE_URL" ]; then
+            applied $1
+        fi
         ;;
     esac
     shift 1
