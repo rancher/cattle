@@ -39,4 +39,9 @@ public class WriteStringConfigItem implements ConfigItem, ConfigItemFactory {
         return Arrays.asList((ConfigItem)this);
     }
 
+    @Override
+    public boolean isDynamicallyApplied() {
+        return false;
+    }
+
 }

@@ -4,7 +4,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.context.ConfigItemContextFactory;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.ConfigItemFactory;
-import io.cattle.platform.configitem.server.resource.AbstractCachingResourceRoot;
+import io.cattle.platform.configitem.server.model.util.ConfigItemResourceUtil;
 import io.cattle.platform.configitem.server.resource.FileBasedResourceRoot;
 import io.cattle.platform.configitem.server.resource.URLBaseResourceRoot;
 import io.cattle.platform.configitem.server.template.TemplateFactory;
@@ -17,14 +17,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,73 +63,18 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
     }
 
     protected void locateResourceRoot() throws IOException {
-            File devRoot = findDevRoot();
-            if ( devRoot == null ) {
-                log.info("Using classpath for location [{}]", name);
-                processUrlRoot();
-            } else {
-                log.info("Using filesytem for location [{}] at [{}]", name, devRoot);
-                processFileRoot(devRoot);
-            }
+        File devRoot = findDevRoot();
+        if ( devRoot == null ) {
+            log.info("Using classpath for location [{}]", name);
+            processUrlRoot();
+        } else {
+            log.info("Using filesytem for location [{}] at [{}]", name, devRoot);
+            processFileRoot(devRoot);
+        }
     }
 
     protected void processUrlRoot() throws IOException {
-        List<URL> baseUrls = Collections.list(GenericConfigItemFactory.class.getClassLoader().getResources(root));
-        if ( baseUrls.size() == 0 ) {
-            if ( ignoreNotFound ) {
-                return;
-            } else {
-                throw new IllegalStateException("Failed to find [" + root + "] for config items [" + name + "]");
-            }
-        }
-
-        Map<String,Map<String,URL>> config = new TreeMap<String, Map<String,URL>>();
-        outer:
-        for ( URL resource : resources ) {
-            String name = null;
-            String path = null;
-
-            for ( URL baseUrl : baseUrls ) {
-                String base = baseUrl.toExternalForm();
-                String fullUrl = resource.toExternalForm();
-                if ( ! fullUrl.startsWith(base) ) {
-                    continue;
-                }
-
-                String part = trimLeading(fullUrl.substring(base.length()));
-                int idx = StringUtils.indexOfAny(part, "/", "\\");
-                if ( idx != -1 ) {
-                    name = part.substring(0, idx);
-                    path = part.substring(idx);
-                    break;
-                }
-            }
-
-            if ( name == null ) {
-                log.error("Ignoring resource [{}] can not find it realtive to root [{}]", resource, root);
-                continue;
-            }
-
-            path = trimLeading(path);
-
-            if ( StringUtils.isBlank(path) || path.endsWith("/") || path.endsWith("\\") ) {
-                continue;
-            }
-
-            for ( String part : path.split("[/\\\\]") ) {
-                if ( AbstractCachingResourceRoot.shouldIgnore(part) ) {
-                    continue outer;
-                }
-            }
-
-            Map<String,URL> urlMapping = config.get(name);
-            if ( urlMapping == null ) {
-                urlMapping = new TreeMap<String, URL>();
-                config.put(name, urlMapping);
-            }
-
-            urlMapping.put(path, resource);
-        }
+        Map<String,Map<String,URL>> config = ConfigItemResourceUtil.processUrlRoot(ignoreNotFound, root, resources);
 
         for ( Map.Entry<String, Map<String,URL>> entry : config.entrySet() ) {
             String item = entry.getKey();
@@ -157,14 +98,6 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
         }
 
         return result;
-    }
-
-    protected String trimLeading(String text) {
-        if ( text.startsWith("/") || text.startsWith("\\") ) {
-            return text.substring(1);
-        } else {
-            return text;
-        }
     }
 
     protected void processFileRoot(File root) throws IOException {

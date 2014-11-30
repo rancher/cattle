@@ -10,4 +10,6 @@ public interface ConfigItem extends Named {
 
     String getSourceRevision();
 
+    boolean isDynamicallyApplied();
+
 }
