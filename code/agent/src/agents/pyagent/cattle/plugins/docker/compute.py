@@ -9,7 +9,7 @@ from cattle.compute import BaseComputeDriver
 from cattle.agent.handler import KindBasedMixin
 from cattle.type_manager import get_type_list
 from cattle import utils
-from docker import APIError
+from docker.errors import APIError
 
 log = logging.getLogger('docker')
 
