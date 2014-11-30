@@ -1,0 +1,61 @@
+#!/bin/bash
+set -e
+
+cd $(dirname $0)/..
+
+selectjar()
+{
+    local files=(code/packaging/app/target/*.war
+             code/packaging/bundle/target/cattle-bundle*.jar
+             target/checkout/.m2/io/cattle/cattle-bundle/*/cattle-bundle-[0-9].[0-9].[0-9].jar)
+
+    local src=
+
+    for i in ${files[@]}; do
+        if [ -e "$i" ]; then
+            if [ "$src" = "" ] || [ $i -nt $src ]; then
+                src=$i
+            fi
+        fi
+    done
+
+    if [ -e "${src}" ]; then
+        echo ${src}
+    fi
+}
+
+build()
+{
+    echo HOME=$HOME
+
+    if [ -d /source ]; then
+        if [ ! -e /source/.m2 ] && [ -e ${HOME}/.m2 ]; then
+            cp -rf ${HOME}/.m2 /source
+        fi
+
+        if [ ! -L ${HOME}/.m2 ] && [ -d /source/.m2 ]; then
+            mv ${HOME}/.m2{,.backup}
+            ln -s /source/.m2 ${HOME}/.m2
+        fi
+    fi
+
+    mvn ${MAVEN_ARGS} ${RELEASE_ARGS} ${MAVEN_TARGET:-install}
+    mkdir -p dist/artifacts
+
+    local target=dist/artifacts/cattle.jar
+    local src=$(selectjar)
+
+    if [ -e "$src" ] && [ ! -e $target ] || [ "$src" -nt "$target" ]; then
+        echo "Copying $src => $target"
+        cp $src $target
+        if [[ $src =~ .*jar$ ]]; then
+            java -jar $target version > dist/version
+        fi
+    fi
+}
+
+if [ "$1" = "--release" ]; then
+    RELEASE_ARGS="-Drelease"
+fi
+
+build

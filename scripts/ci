@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e
+
+cd $(dirname $0)
+
+export DOCKER_DRIVER=vfs
+export RUNTIME_DIR=../../../runtime/ci/
+export RUNTIME_DIR_CLEAN=true
+export CATTLE_LOGBACK_ROOT_LEVEL=warn
+#export CATTLE_IDEMPOTENT_CHECKS=false
+
+
+if [ -x "$(which wrapdocker)" ]; then
+    echo Launching Docker
+    wrapdocker >/tmp/docker.log 2>&1
+fi
+
+DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/register.log &
+
+run()
+{
+    echo Running "$@"
+
+    "$@" > /tmp/${1}.log || {
+        echo "$@" failed
+        cat /tmp/${1}.log
+        echo "$@" failed
+        exit 1
+    }
+}
+
+run ./bootstrap
+run ./clean
+MAVEN_ARGS='-B -q' ./build
+run ./run --background
+
+./test

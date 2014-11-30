@@ -265,9 +265,13 @@ def get_agent(admin_client, name, default_uri=DEFAULT_AGENT_URI,
 def kind_context(admin_client, kind, external_pool=False,
                  uri=DEFAULT_AGENT_URI,
                  uuid=DEFAULT_AGENT_UUID,
-                 host_public=False):
-    kind_agent = get_agent(admin_client, kind, default_agent_uuid=uuid,
-                           default_uri=uri)
+                 host_public=False,
+                 agent=None):
+    if agent is None:
+        kind_agent = get_agent(admin_client, kind, default_agent_uuid=uuid,
+                               default_uri=uri)
+    else:
+        kind_agent = agent
 
     hosts = filter(lambda x: x.kind == kind and x.removed is None,
                    kind_agent.hosts())

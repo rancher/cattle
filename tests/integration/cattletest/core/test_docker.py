@@ -5,13 +5,18 @@ TEST_IMAGE = 'ibuildthecloud/helloworld'
 TEST_IMAGE_LATEST = TEST_IMAGE + ':latest'
 TEST_IMAGE_UUID = 'docker:' + TEST_IMAGE
 
-if_docker = pytest.mark.skipif("os.environ.get('DOCKER_TEST') != 'true'",
+if_docker = pytest.mark.skipif("os.environ.get('DOCKER_TEST') == 'false'",
                                reason='DOCKER_TEST is not set')
 
 
 @pytest.fixture(scope='session')
 def docker_context(admin_client):
-    return kind_context(admin_client, 'docker', external_pool=True)
+    for host in admin_client.list_host(state='active', remove_null=True,
+                                       kind='docker'):
+        return kind_context(admin_client, 'docker', external_pool=True,
+                            agent=host.agent())
+
+    raise Exception('Failed to find docker host, please register one')
 
 
 @if_docker

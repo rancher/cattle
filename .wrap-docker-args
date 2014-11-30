@@ -1,0 +1,1 @@
+--net=host --privileged -v /var/tmp/cattle-build-cache/docker:/var/lib/docker

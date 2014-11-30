@@ -1,40 +1,26 @@
-__pycache__
-
 /.bash_history
 /.gitconfig
 
-.cache
+/.cache
+/.idea
+/.m2
+
 .classpath
-.idea
-.m2
-.npm
 .project
 .settings
-.tox
 
-code/agent/src/agents/pyagent/build
-code/agent/src/agents/pyagent/cattle/plugins/core/socat
-code/agent/src/agents/pyagent/cattle/plugins/docker/nsenter
-code/agent/src/agents/pyagent/locks
-code/agent/src/agents/pyagent/tests/scratch
-code/agent/src/agents/pyagent/tests/locks
-code/packaging/app/db-*
 dist
 docs/build
-MANIFEST
-node_modules
 resources/content/db/mysql/cattle_dump*.sql
 resources/content/db/dump-*.xml
-resources/content/cattle-local.properties
-resources/content/modules.properties
-resources/local
 runtime
 target
+tests/integration/.idea/
+tests/integration/.tox/
+tests/integration/MANIFEST
 
 *.egg-info
 *.launch
-*.log
-*.log.gz
 *.pyc
 *.pyo
 *.swp

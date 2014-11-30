@@ -1,0 +1,34 @@
+#!/bin/bash
+set -e
+
+cd $(dirname $0)/..
+
+RUNTIME_DIR=${RUNTIME_DIR:-../../../runtime/cli/}
+
+cd code/packaging/app
+
+if [ "${RUNTIME_DIR_CLEAN}" = "true" ]; then
+    rm -rf $RUNTIME_DIR
+fi
+
+mkdir -p $RUNTIME_DIR
+
+CMD="java
+    -Dcattle.http.port=8081
+    -Dlogback.log.dir=$RUNTIME_DIR/logs/
+    -Ddb.cattle.home=${RUNTIME_DIR}/db/
+    -Xmx512m -jar target/*.war"
+
+if [ "$1" = "--background" ]; then
+    rm -rf ${RUNTIME_DIR}/{run-success,run-error}
+    $CMD --notify ../../../tools/development/run-success.sh --notify-error ../../../tools/development/run-error.sh &
+    while sleep .5; do
+        if [ -f ${RUNTIME_DIR}/run-success ]; then
+            break
+        elif [ -f ${RUNTIME_DIR}/run-error ]; then
+            exit 1
+        fi
+    done
+else
+    $CMD
+fi
