@@ -61,7 +61,6 @@ before
 
 (
     cd tests/integration
-    . ./env
     tox $TOXARGS
 )
 
