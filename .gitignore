@@ -18,6 +18,7 @@ target
 tests/integration/.idea/
 tests/integration/.tox/
 tests/integration/MANIFEST
+venv
 
 *.egg-info
 *.launch

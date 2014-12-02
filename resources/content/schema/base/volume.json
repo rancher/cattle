@@ -1,0 +1,8 @@
+{
+    "resourceFields": {
+        "isHostPath": {
+            "type": "boolean",
+            "default": false
+        }
+    }
+}

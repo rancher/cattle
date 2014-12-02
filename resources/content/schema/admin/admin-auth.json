@@ -47,7 +47,6 @@
         "container.commandArgs" : "cr",
         "container.compute" : "cr",
         "container.directory" : "cr",
-        "container.dockerVolumes" : "cr",
         "container.hostname" : "cr",
         "container.kind" : "r",
         "container.networkIds" : "cr",
@@ -58,6 +57,8 @@
         "container.subnetIds" : "cr",
         "container.user" : "cr",
         "container.uuid" : "r",
+        "container.dataVolumes" : "cr",
+        "container.dataVolumesFrom" : "cr",
 
         "credential.publicValue" : "cru",
         "credential.secretValue" : "cru",
@@ -189,7 +190,13 @@
         "volume.format" : "r",
         "volume.physicalSizeMb" : "",
         "volume.virtualSizeMb" : "r",
+        "volume.uri" : "r",
+        "volume.isHostPath" : "r",
 
+        "mount" : "r",
+        "mount.path" : "r",
+        "mount.permissions" : "r",
+		
         "end" : ""
     }
 }

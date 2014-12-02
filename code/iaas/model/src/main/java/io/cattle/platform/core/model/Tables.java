@@ -144,6 +144,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.IpPoolTable IP_POOL = io.cattle.platform.core.model.tables.IpPoolTable.IP_POOL;
 
 	/**
+	 * The table cattle.mount
+	 */
+	public static final io.cattle.platform.core.model.tables.MountTable MOUNT = io.cattle.platform.core.model.tables.MountTable.MOUNT;
+
+	/**
 	 * The table cattle.network
 	 */
 	public static final io.cattle.platform.core.model.tables.NetworkTable NETWORK = io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
