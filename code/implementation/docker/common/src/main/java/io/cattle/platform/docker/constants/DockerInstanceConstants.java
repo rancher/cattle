@@ -8,4 +8,10 @@ public class DockerInstanceConstants {
     public static final String FIELD_VOLUMES_FROM = "dataVolumesFrom";
     public static final String EVENT_FIELD_VOLUMES_FROM = "dataVolumesFromContainers";
 
+    public static final String DOCKER_ATTACH_STDIN = "AttachStdin";
+    public static final String DOCKER_ATTACH_STDOUT = "AttachStdout";
+    public static final String DOCKER_TTY = "Tty";
+    public static final String DOCKER_CMD = "Cmd";
+    public static final String DOCKER_CONTAINER = "Container";
+
 }

@@ -1,3 +1,6 @@
+import base64
+import json
+
 from cattle import ApiError
 from common_fixtures import *  # NOQA
 from datetime import timedelta
@@ -626,3 +629,50 @@ def test_container_auth(admin_client, client):
         'dataVolumes': 'cr',
         'dataVolumesFrom': 'cr'
     })
+
+
+def test_container_exec(admin_client, sim_context):
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      requestedHostId=sim_context['host'].id)
+    c = admin_client.wait_success(c)
+    assert c.state == 'running'
+
+    assert callable(c.execute)
+
+    resp = c.execute(command=['/bin/sh'])
+
+    assert resp.url is not None
+    assert resp.token is not None
+
+    jwt = _get_jwt(resp.token)
+
+    assert jwt['exec']['AttachStdin']
+    assert jwt['exec']['AttachStdout']
+    assert jwt['exec']['Tty']
+    assert jwt['exec']['Cmd'] == ['/bin/sh']
+    assert jwt['exec']['Container'] == c.uuid
+    assert jwt['exp'] is not None
+
+    resp = c.execute(command=['/bin/sh2', 'blah'], attachStdin=False,
+                     attachStdout=False, tty=False)
+
+    assert resp.url is not None
+    assert resp.token is not None
+
+    jwt = _get_jwt(resp.token)
+
+    assert not jwt['exec']['AttachStdin']
+    assert not jwt['exec']['AttachStdout']
+    assert not jwt['exec']['Tty']
+    assert jwt['exec']['Cmd'] == ['/bin/sh2', 'blah']
+
+    admin_client.delete(c)
+
+
+def _get_jwt(token):
+    text = token.split('.')[1]
+    missing_padding = 4 - len(text) % 4
+    if missing_padding:
+        text += '=' * missing_padding
+
+    return json.loads(base64.b64decode(text))

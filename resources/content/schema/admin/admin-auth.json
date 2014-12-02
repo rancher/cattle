@@ -60,6 +60,11 @@
         "container.dataVolumes" : "cr",
         "container.dataVolumesFrom" : "cr",
 
+        "containerExec.attachStdin" : "cr",
+        "containerExec.attachStdout" : "cr",
+        "containerExec.tty" : "cr",
+        "containerExec.command" : "cr",
+
         "credential.publicValue" : "cru",
         "credential.secretValue" : "cru",
 

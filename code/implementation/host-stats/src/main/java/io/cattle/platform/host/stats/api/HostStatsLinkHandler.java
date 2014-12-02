@@ -8,6 +8,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.constants.DockerHostConstants;
+import io.cattle.platform.docker.util.DockerUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.host.stats.utils.HostStatsConstants;
@@ -39,27 +40,6 @@ public class HostStatsLinkHandler implements LinkHandler {
         return HostStatsConstants.LINK_STATS.equals(link);
     }
 
-    protected Host getHostFromContainer(Instance instance) {
-        Host found = null;
-        for ( Host host : objectManager.mappedChildren(instance, Host.class) ) {
-            found = host;
-        }
-
-        if ( found != null ) {
-            found = ApiUtils.getPolicy().authorizeObject(found);
-        }
-
-        if ( found == null ) {
-            return null;
-        }
-
-        if ( ! DockerHostConstants.KIND_DOCKER.equals(found.getKind()) ) {
-            return null;
-        }
-
-        return found;
-    }
-
     @Override
     public Object link(String name, Object obj, ApiRequest request) throws IOException {
         Host host = null;
@@ -67,7 +47,7 @@ public class HostStatsLinkHandler implements LinkHandler {
 
         if (obj instanceof Instance) {
             instance = (Instance) obj;
-            host = getHostFromContainer(instance);
+            host = DockerUtils.getHostFromContainer(objectManager, instance);
         } else if (obj instanceof Host) {
             host = (Host) obj;
         }

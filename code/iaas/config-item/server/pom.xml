@@ -10,6 +10,11 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
+            <artifactId>cattle-host-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-config-item-common</artifactId>
             <version>${project.version}</version>
         </dependency>

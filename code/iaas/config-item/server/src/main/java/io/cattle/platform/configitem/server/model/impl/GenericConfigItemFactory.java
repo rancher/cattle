@@ -87,17 +87,7 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
     }
 
     protected List<ConfigItemContextFactory> getFactories(String item) {
-        List<ConfigItemContextFactory> result = new ArrayList<ConfigItemContextFactory>();
-
-        for ( ConfigItemContextFactory factory : factories ) {
-            for ( String check : factory.getItems() ) {
-                if ( item.equals(check) ) {
-                    result.add(factory);
-                }
-            }
-        }
-
-        return result;
+        return ConfigItemResourceUtil.getFactories(factories, item);
     }
 
     protected void processFileRoot(File root) throws IOException {

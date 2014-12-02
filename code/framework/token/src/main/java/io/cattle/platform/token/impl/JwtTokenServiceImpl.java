@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.netflix.config.DynamicLongProperty;
 import com.netflix.config.DynamicStringProperty;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -24,15 +25,16 @@ public class JwtTokenServiceImpl implements TokenService {
 
     private static final DynamicStringProperty SUBJECT = ArchaiusUtil.getString("jwt.default.subject");
     private static final DynamicStringProperty ISSUER = ArchaiusUtil.getString("jwt.default.issuer");
+    private static final DynamicLongProperty EXPIRATION = ArchaiusUtil.getLong("jwt.default.expiration.seconds");
 
     RSAKeyProvider keyProvider;
 
     @Override
     public String generateToken(Map<String, Object> payload) {
-        return generateToken(payload, new Date());
+        return generateToken(payload, new Date(), new Date(System.currentTimeMillis() + EXPIRATION.get() * 1000));
     }
 
-    protected String generateToken(Map<String, Object> payload, Date issueTime) {
+    protected String generateToken(Map<String, Object> payload, Date issueTime, Date expireDate) {
         RSAPrivateKeyHolder privateKey = keyProvider.getPrivateKey();
 
         // Create RSA-signer with the private key
@@ -46,6 +48,10 @@ public class JwtTokenServiceImpl implements TokenService {
 
         if ( payload != null ) {
             customClaims.putAll(payload);
+        }
+
+        if ( expireDate != null ) {
+            claimsSet.setExpirationTime(expireDate);
         }
 
         claimsSet.setCustomClaims(customClaims);
