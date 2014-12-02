@@ -120,7 +120,7 @@
         "virtualMachine.subnetIds" : "cr",
         "virtualMachine.vcpu" : "cr",
 
-        "volume" : "r",
+        "volume" : "rd",
         "volume.deviceNumber" : "r",
         "volume.format" : "",
         "volume.physicalSizeMb" : "",

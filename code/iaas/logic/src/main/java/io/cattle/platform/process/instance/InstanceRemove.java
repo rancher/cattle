@@ -2,6 +2,7 @@ package io.cattle.platform.process.instance;
 
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -46,6 +47,11 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
             } else {
                 execute("volume.detach", volume, null);
             }
+        }
+
+        List<Mount> mounts = getObjectManager().children(instance, Mount.class);
+        for ( Mount mount : mounts ) {
+            execute("mount.deactivate", mount, data);
         }
     }
 
