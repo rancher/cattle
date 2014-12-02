@@ -7,6 +7,7 @@ import io.cattle.platform.configitem.server.resource.ResourceRoot;
 import io.cattle.platform.configitem.server.template.TemplateFactory;
 import io.cattle.platform.configitem.server.template.TemplatesBasedArchiveItem;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.object.ObjectManager;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,8 +19,10 @@ public class AgentPackagesConfigItem extends TemplatesBasedArchiveItem {
     AgentIncludeMap map;
 
     public AgentPackagesConfigItem(String name, ConfigItemStatusManager versionManager, ResourceRoot resourceRoot,
-            TemplateFactory templateFactory, AgentIncludeMap map) {
-        super(name, versionManager, resourceRoot, templateFactory, Arrays.asList((ConfigItemContextFactory)new AgentPackagesContextFactory(name, map)));
+            TemplateFactory templateFactory, AgentIncludeMap map, ObjectManager objectManager,
+            ConfigItemStatusManager statusManager) {
+        super(name, versionManager, resourceRoot, templateFactory,
+                Arrays.asList((ConfigItemContextFactory)new AgentPackagesContextFactory(name, map, objectManager, statusManager)));
         this.map = map;
     }
 

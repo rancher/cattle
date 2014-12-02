@@ -46,7 +46,7 @@ public class JwtTokenServiceImplTest {
 
     @Test
     public void test() {
-        assertEquals(TOKEN, impl.generateToken(null, new Date(1413936626719L)));
+        assertEquals(TOKEN, impl.generateToken(null, new Date(1413936626719L), null));
     }
 
 }

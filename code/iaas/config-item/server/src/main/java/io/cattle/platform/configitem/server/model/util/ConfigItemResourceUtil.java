@@ -1,9 +1,12 @@
 package io.cattle.platform.configitem.server.model.util;
 
+import io.cattle.platform.configitem.context.ConfigItemContextFactory;
 import io.cattle.platform.configitem.server.model.impl.GenericConfigItemFactory;
 import io.cattle.platform.configitem.server.resource.AbstractCachingResourceRoot;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +20,20 @@ import org.slf4j.LoggerFactory;
 public class ConfigItemResourceUtil {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigItemResourceUtil.class);
+
+    public static List<ConfigItemContextFactory> getFactories(List<ConfigItemContextFactory> factories, String item) {
+        List<ConfigItemContextFactory> result = new ArrayList<ConfigItemContextFactory>();
+
+        for ( ConfigItemContextFactory factory : factories ) {
+            for ( String check : factory.getItems() ) {
+                if ( item.equals(check) ) {
+                    result.add(factory);
+                }
+            }
+        }
+
+        return result;
+    }
 
     public static Map<String,Map<String,URL>> processUrlRoot(boolean ignoreNotFound, String root, URL[] resources) throws IOException {
         List<URL> baseUrls = Collections.list(GenericConfigItemFactory.class.getClassLoader().getResources(root));

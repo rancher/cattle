@@ -11,6 +11,7 @@ import io.cattle.platform.configitem.server.resource.URLBaseResourceRoot;
 import io.cattle.platform.configitem.server.template.TemplateFactory;
 import io.cattle.platform.configitem.server.template.TemplatesBasedArchiveItem;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.object.ObjectManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +33,9 @@ public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
     AgentIncludeMap map;
     TemplateFactory templateFactory;
     ConfigItemStatusManager versionManager;
+    List<ConfigItemContextFactory> factories;
+    ObjectManager objectManager;
+    ConfigItemStatusManager statusManager;
 
     @Override
     public Collection<ConfigItem> getConfigItems() throws IOException {
@@ -39,7 +43,7 @@ public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
         List<ConfigItem> itemList = new ArrayList<>();
 
         for ( String name : map.getNamedMaps() ) {
-            itemList.add(new AgentPackagesConfigItem(name, versionManager, getResourceRoot(), templateFactory, map));
+            itemList.add(new AgentPackagesConfigItem(name, versionManager, getResourceRoot(), templateFactory, map, objectManager, statusManager));
 
             Map<String,String> values = map.getMap(name);
             for ( String key : values.keySet() ) {
@@ -50,7 +54,7 @@ public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
                         FileBasedResourceRoot itemResource = new FileBasedResourceRoot(new File(value));
                         itemResource.scan();
 
-                        TemplatesBasedArchiveItem archiveItem = new TemplatesBasedArchiveItem(key, versionManager, itemResource, templateFactory, new ArrayList<ConfigItemContextFactory>());
+                        TemplatesBasedArchiveItem archiveItem = new TemplatesBasedArchiveItem(key, versionManager, itemResource, templateFactory, getFactories(key));
                         archiveItem.setDynamicallyApplied(true);
                         itemList.add(archiveItem);
                     }
@@ -61,6 +65,10 @@ public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
         }
 
         return itemList;
+    }
+
+    protected List<ConfigItemContextFactory> getFactories(String item) {
+        return ConfigItemResourceUtil.getFactories(factories, item);
     }
 
     protected ResourceRoot getResourceRoot() throws IOException {
@@ -131,6 +139,33 @@ public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
 
     public void setResources(URL[] resources) {
         this.resources = resources;
+    }
+
+    public List<ConfigItemContextFactory> getFactories() {
+        return factories;
+    }
+
+    @Inject
+    public void setFactories(List<ConfigItemContextFactory> factories) {
+        this.factories = factories;
+    }
+
+    public ObjectManager getObjectManager() {
+        return objectManager;
+    }
+
+    @Inject
+    public void setObjectManager(ObjectManager objectManager) {
+        this.objectManager = objectManager;
+    }
+
+    public ConfigItemStatusManager getStatusManager() {
+        return statusManager;
+    }
+
+    @Inject
+    public void setStatusManager(ConfigItemStatusManager statusManager) {
+        this.statusManager = statusManager;
     }
 
 }

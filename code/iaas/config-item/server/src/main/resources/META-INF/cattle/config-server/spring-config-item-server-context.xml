@@ -60,6 +60,7 @@
                 <property name="locations" value="classpath*:agent/agent-include/**/*" />
             </bean>
         </property>
+        <property name="factories" value="#{extensionManager.list('config.item.context.factory')}" />
     </bean>
     <bean class="io.cattle.platform.configitem.server.agentinclude.impl.AgentIncludeMapImpl" />
 

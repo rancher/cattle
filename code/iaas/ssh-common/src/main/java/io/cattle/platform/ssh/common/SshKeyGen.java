@@ -11,6 +11,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 
 import org.apache.commons.codec.binary.Base64;
@@ -65,6 +66,19 @@ public class SshKeyGen {
 
         PEMWriter w = new PEMWriter(stringWriter);
         w.writeObject(kp);
+        w.flush();
+        IOUtils.closeQuietly(w);
+
+        return stringWriter.toString();
+    }
+
+    public static String writePublicKey(PublicKey pk) throws Exception {
+        SecurityUtils.isBouncyCastleRegistered();
+
+        StringWriter stringWriter = new StringWriter();
+
+        PEMWriter w = new PEMWriter(stringWriter);
+        w.writeObject(pk);
         w.flush();
         IOUtils.closeQuietly(w);
 

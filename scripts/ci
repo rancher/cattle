@@ -6,7 +6,7 @@ cd $(dirname $0)
 export DOCKER_DRIVER=vfs
 export RUNTIME_DIR=../../../runtime/ci/
 export RUNTIME_DIR_CLEAN=true
-export CATTLE_LOGBACK_ROOT_LEVEL=warn
+export CATTLE_LOGBACK_ROOT_LEVEL=error
 #export CATTLE_IDEMPOTENT_CHECKS=false
 
 
@@ -34,4 +34,9 @@ run ./clean
 MAVEN_ARGS='-B -q' ./build
 run ./run --background
 
-./test
+./test || {
+    echo Test failed
+    cat /tmp/run.log
+    echo Test failed
+    exit 1
+}

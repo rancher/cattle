@@ -9,8 +9,6 @@ import io.cattle.platform.host.service.HostApiRSAKeyProvider;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.token.TokenService;
-import io.cattle.platform.util.type.CollectionUtils;
-
 import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +30,11 @@ public class HostApiServiceImpl implements HostApiService {
 
     @Override
     public HostApiAccess getAccess(Long hostId) {
+        return getAccess(hostId, new HashMap<String,Object>());
+    }
+
+    @Override
+    public HostApiAccess getAccess(Long hostId, Map<String,Object> data) {
         Host host = objectManager.loadResource(Host.class, hostId);
         if ( host == null ) {
             return null;
@@ -42,7 +45,7 @@ public class HostApiServiceImpl implements HostApiService {
             return null;
         }
 
-        String token = getToken(host);
+        String token = getToken(host, data);
         if ( token == null ) {
             return null;
         }
@@ -59,15 +62,21 @@ public class HostApiServiceImpl implements HostApiService {
     }
 
 
-    protected String getToken(Host host) {
-        String token = tokenService.generateToken(CollectionUtils.asMap(HOST_UUID, host.getUuid()));
-        return token;
+    protected String getToken(Host host, Map<String,Object> inputData) {
+        Map<String,Object> data = new HashMap<String,Object>(inputData);
+        data.put(HOST_UUID, host.getUuid());
+
+        return tokenService.generateToken(data);
     }
 
     protected IpAddress getIpAddress(Host host) {
         IpAddress choice = null;
 
         for ( IpAddress ip : objectManager.mappedChildren(host, IpAddress.class) ) {
+            if ( ip.getAddress() == null ) {
+                continue;
+            }
+
             if ( IpAddressConstants.ROLE_PRIMARY.equals(ip.getRole()) ) {
                 choice = ip;
                 break;

@@ -18,5 +18,11 @@
             "type" : "array[reference[container]]",
             "nullable" : true
         }
+    },
+    "resourceActions": {
+        "execute": {
+            "input": "containerExec",
+            "output": "containerExecOutput"
+        }
     }
 }
