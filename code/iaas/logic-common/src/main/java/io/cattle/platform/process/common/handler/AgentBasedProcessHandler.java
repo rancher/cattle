@@ -49,6 +49,8 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     String agentResourceRelationship;
     String dataResourceRelationship;
     String eventResourceRelationship;
+    String shortCircuitIfRemoved;
+
     String expression;
     int priority = Priority.SPECIFIC;
 
@@ -73,6 +75,13 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        if ( shortCircuitIfRemoved != null ) {
+            Object shortCircuit = getObjectByRelationship(shortCircuitIfRemoved, state.getResource());
+            if ( shortCircuit != null && ObjectUtils.getRemoved(shortCircuit) != null ) {
+                return null;
+            }
+        }
+
         Object eventResource = getEventResource(state, process);
         Object dataResource = getDataResource(state, process);
         Object agentResource = getAgentResource(state, process, dataResource);
@@ -88,7 +97,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         RemoteAgent agent = agentLocator.lookupAgent(agentResource);
 
         if ( agent == null ) {
-            return new HandlerResult(true, CollectionUtils.asMap("_noAgent", true));
+            return new HandlerResult(true, CollectionUtils.asMap((Object)"_noAgent", true));
         }
 
         ObjectSerializer serializer = getObjectSerializer(dataResource);
@@ -399,4 +408,11 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         this.reportProgress = reportProgress;
     }
 
+    public String getShortCircuitIfRemoved() {
+        return shortCircuitIfRemoved;
+    }
+
+    public void setShortCircuitIfRemoved(String shortCircuitIfRemoved) {
+        this.shortCircuitIfRemoved = shortCircuitIfRemoved;
+    }
 }

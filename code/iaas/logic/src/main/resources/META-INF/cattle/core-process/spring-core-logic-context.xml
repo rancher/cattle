@@ -56,7 +56,8 @@
         p:commandName="storage.volume.deactivate"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.cattle.platform.core.model.VolumeStoragePoolMap"
-        p:processNames="volumestoragepoolmap.deactivate" >
+        p:processNames="volumestoragepoolmap.deactivate"
+        p:shortCircuitIfRemoved="storagePool" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
@@ -67,7 +68,8 @@
         p:commandName="storage.volume.remove"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.cattle.platform.core.model.VolumeStoragePoolMap"
-        p:processNames="volumestoragepoolmap.remove" >
+        p:processNames="volumestoragepoolmap.remove"
+        p:shortCircuitIfRemoved="storagePool" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
@@ -89,7 +91,8 @@
         p:commandName="compute.instance.deactivate"
         p:agentResourceRelationship="host"
         p:dataTypeClass="io.cattle.platform.core.model.InstanceHostMap"
-        p:processNames="instancehostmap.deactivate" >
+        p:processNames="instancehostmap.deactivate"
+        p:shortCircuitIfRemoved="host" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
