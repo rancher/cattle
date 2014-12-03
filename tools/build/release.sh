@@ -25,10 +25,6 @@ echo "Build Tag:    " $TAG
 echo "Build Version:" $VERSION
 echo "Next Version: " $NEXT_VERSION
 
-if [ ! -e .gitconfig ]; then
-    cp ~/.gitconfig .
-fi
-
 OPTS="-Drelease -Darguments=-Drelease -DlocalCheckout=true -DautoVersionSubmodules=true -DpushChanges=false -DreleaseVersion=$VERSION -Dtag=${TAG} -DdevelopmentVersion=$NEXT_VERSION"
-make MVN="$OPTS org.apache.maven.plugins:maven-release-plugin:2.5:prepare" build
-make MVN="$OPTS org.apache.maven.plugins:maven-release-plugin:2.5:perform" release-images
+mvn $OPTS org.apache.maven.plugins:maven-release-plugin:2.5:prepare
+mvn $OPTS org.apache.maven.plugins:maven-release-plugin:2.5:perform
