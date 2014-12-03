@@ -15,6 +15,7 @@ public class BootstrapScript {
 
     private static final DynamicStringProperty BOOTSTRAP_SOURCE = ArchaiusUtil.getString("bootstrap.source");
     private static final DynamicStringProperty BOOTSTRAP_SOURCE_OVERRIDE = ArchaiusUtil.getString("bootstrap.source.override");
+    private static final DynamicStringProperty REQUIRED_IMAGE = ArchaiusUtil.getString("bootstrap.required.image");
 
     public static byte[] getBootStrapSource() throws IOException {
         return getBootstrapSource(BOOTSTRAP_SOURCE_OVERRIDE.get(), BOOTSTRAP_SOURCE.get());
@@ -26,7 +27,9 @@ public class BootstrapScript {
             InputStream is = cl.getResourceAsStream(source);
             try {
                 if ( is != null ) {
-                    return IOUtils.toByteArray(is);
+                    String content = IOUtils.toString(is);
+                    content = content.replace("REQUIRED_IMAGE=", String.format("REQUIRED_IMAGE=\"%s\"", REQUIRED_IMAGE.get()));
+                    return content.getBytes("UTF-8");
                 }
             } finally {
                 IOUtils.closeQuietly(is);

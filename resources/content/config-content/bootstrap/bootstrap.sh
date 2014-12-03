@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+CATTLE_SCRIPT_DEBUG=x
+
 trap cleanup EXIT SIGINT SIGTERM
 
 # This is copied from common/scripts.sh, if there is a change here
@@ -33,6 +35,7 @@ CONF=(/etc/cattle/agent/bootstrap.conf
       ${CATTLE_HOME}/etc/cattle/agent/bootstrap.conf)
 CONTENT_URL=/configcontent/configscripts
 INSTALL_ITEMS="configscripts pyagent"
+REQUIRED_IMAGE=
 
 cleanup()
 {
@@ -88,6 +91,21 @@ print_config()
     info Port: $CATTLE_AGENT_PORT
 }
 
+upgrade()
+{
+    if [ "$CATTLE_INSIDE_DOCKER" != "outside" ]; then
+        return 0
+    fi
+
+    if [[ -n "${REQUIRED_IMAGE}" && "${RANCHER_AGENT_IMAGE}" != "${REQUIRED_IMAGE}" ]]; then
+        info Upgrading to image ${REQUIRED_IMAGE}
+        docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock ${REQUIRED_IMAGE} upgrade
+        exit 0
+    elif [ -n "${REQUIRED_IMAGE}" ]; then
+        info Using image ${REQUIRED_IMAGE}
+    fi
+}
+
 break_out_of_docker()
 {
     if [ "$CATTLE_INSIDE_DOCKER" = "true" ] && [ -e /host/proc/1/ns/net ] && [ -e /host/proc/1/ns/uts ]; then
@@ -131,6 +149,8 @@ done
 
 check_debug
 print_config
+
+upgrade
 
 mkdir -p $CATTLE_HOME
 download_agent
