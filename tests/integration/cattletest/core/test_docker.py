@@ -1,3 +1,5 @@
+import re
+import time
 import uuid as py_uuid
 from common_fixtures import *  # NOQA
 from cattle import ApiError
@@ -485,3 +487,114 @@ def test_docker_volumes(client, admin_client, docker_context):
 
     c.stop(remove=True)
     c2.stop(remove=True)
+
+    _check_path(foo_vol, True, admin_client)
+    foo_vol = admin_client.wait_success(foo_vol.deactivate())
+    foo_vol = admin_client.wait_success(foo_vol.remove())
+    foo_vol = admin_client.wait_success(foo_vol.purge())
+    _check_path(foo_vol, False, admin_client)
+
+    _check_path(bar_vol, True, admin_client)
+    bar_vol = admin_client.wait_success(bar_vol.deactivate())
+    bar_vol = admin_client.wait_success(bar_vol.remove())
+    bar_vol = admin_client.wait_success(bar_vol.purge())
+    # Host bind mount. Wont actually delete the dir on the host.
+    _check_path(bar_vol, True, admin_client)
+
+    _check_path(baz_vol, True, admin_client)
+    baz_vol = admin_client.wait_success(baz_vol.deactivate())
+    baz_vol = admin_client.wait_success(baz_vol.remove())
+    baz_vol = admin_client.wait_success(baz_vol.purge())
+    # Host bind mount. Wont actually delete the dir on the host.
+    _check_path(baz_vol, True, admin_client)
+
+
+@if_docker
+def test_docker_mount_life_cycle(client, admin_client, docker_context):
+    uuid = TEST_IMAGE_UUID
+    bind_mount_uuid = py_uuid.uuid4().hex
+    bar_host_path = '/tmp/bar%s' % bind_mount_uuid
+    bar_bind_mount = '%s:/bar' % bar_host_path
+
+    c = admin_client.create_container(name="volumes_test",
+                                      imageUuid=uuid,
+                                      startOnCreate=False,
+                                      dataVolumes=['/foo',
+                                                   bar_bind_mount])
+
+    c = admin_client.wait_success(c)
+    c = admin_client.wait_success(c.start())
+
+    def check_mounts(container, expected_state=None, length=0):
+        mounts = container.mounts()
+        assert len(mounts) == length
+        if expected_state:
+            for mount in mounts:
+                assert mount.state == expected_state
+        return mounts
+
+    check_mounts(c, 'active', 2)
+
+    c = admin_client.wait_success(c.stop(remove=True))
+    check_mounts(c, 'inactive', 2)
+
+    c = admin_client.wait_success(c.restore())
+    assert c.state == 'stopped'
+    check_mounts(c, 'inactive', 2)
+
+    c = admin_client.wait_success(c.start())
+    assert c.state == 'running'
+    check_mounts(c, 'active', 2)
+
+    c = admin_client.wait_success(c.stop(remove=True))
+    c = admin_client.wait_success(c.purge())
+    assert c.state == 'purged'
+    check_mounts(c, 'removed', 2)
+
+
+def _check_path(volume, should_exist, admin_client):
+    path = _path_to_volume(volume)
+    c = admin_client. \
+        create_container(name="volume_check",
+                         imageUuid="docker:cjellick/rancher-test-tools",
+                         startOnCreate=False,
+                         environment={'TEST_PATH': path},
+                         command='/opt/tools/check_path_exists.sh',
+                         dataVolumes=[
+                             '/var/lib/docker:/host/var/lib/docker',
+                             '/tmp:/host/tmp'])
+    c.start()
+    c = admin_client.wait_success(c)
+    c = _wait_until_stopped(c, admin_client)
+
+    code = c.data.dockerInspect.State.ExitCode
+    if should_exist:
+        # The exit code of the container should be a 10 if the path existed
+        assert code == 10
+    else:
+        # And 11 if the path did not exist
+        assert code == 11
+
+    c.remove()
+
+
+def _path_to_volume(volume):
+    path = volume.uri.replace('file://', '')
+    mounted_path = re.sub('^.*?/var/lib/docker', '/host/var/lib/docker',
+                          path)
+    if not mounted_path.startswith('/host/var/lib/docker'):
+        mounted_path = re.sub('^.*?/tmp', '/host/tmp',
+                              path)
+    return mounted_path
+
+
+def _wait_until_stopped(container, admin_client, timeout=45):
+        start = time.time()
+        container = admin_client.reload(container)
+        while container.state != 'stopped':
+            time.sleep(.5)
+            container = admin_client.reload(container)
+            if time.time() - start > timeout:
+                raise Exception('Timeout waiting for container to stop.')
+
+        return container

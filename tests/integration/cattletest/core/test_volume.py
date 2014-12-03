@@ -3,7 +3,7 @@ from test_virtual_machine import *  # NOQA
 
 
 def test_volume_auth(admin_client, client):
-    auth_check(admin_client.schema, 'volume', 'r', {
+    auth_check(admin_client.schema, 'volume', 'rd', {
         'accountId': 'r',
         'allocationState': 'r',
         'attachedState': 'r',
@@ -30,7 +30,7 @@ def test_volume_auth(admin_client, client):
         'isHostPath': 'r'
     })
 
-    auth_check(client.schema, 'volume', 'r', {
+    auth_check(client.schema, 'volume', 'rd', {
         'created': 'r',
         'description': 'r',
         'deviceNumber': 'r',

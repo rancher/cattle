@@ -190,7 +190,7 @@
 
         "vnet.uri" : "cr",
 
-        "volume" : "r",
+        "volume" : "rd",
         "volume.deviceNumber" : "r",
         "volume.format" : "r",
         "volume.physicalSizeMb" : "",
