@@ -631,6 +631,19 @@ def test_container_auth(admin_client, client):
     })
 
 
+def test_container_exec_on_stop(admin_client, sim_context):
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      requestedHostId=sim_context['host'].id)
+    c = admin_client.wait_success(c)
+    assert c.state == 'running'
+
+    assert callable(c.execute)
+
+    c = admin_client.wait_success(c.stop())
+
+    assert 'execute' not in c
+
+
 def test_container_exec(admin_client, sim_context):
     c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
                                       requestedHostId=sim_context['host'].id)

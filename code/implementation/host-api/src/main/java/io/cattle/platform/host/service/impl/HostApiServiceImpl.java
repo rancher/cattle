@@ -1,6 +1,7 @@
 package io.cattle.platform.host.service.impl;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.IpAddress;
@@ -9,6 +10,7 @@ import io.cattle.platform.host.service.HostApiRSAKeyProvider;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.token.TokenService;
+
 import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,7 +75,7 @@ public class HostApiServiceImpl implements HostApiService {
         IpAddress choice = null;
 
         for ( IpAddress ip : objectManager.mappedChildren(host, IpAddress.class) ) {
-            if ( ip.getAddress() == null ) {
+            if ( ip.getAddress() == null || ! CommonStatesConstants.ACTIVE.equals(ip.getState()) ) {
                 continue;
             }
 
