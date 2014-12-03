@@ -70,6 +70,10 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
         return getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, obj, data);
     }
 
+    protected ExitReason purge(Object obj, Map<String,Object> data) {
+        return getObjectProcessManager().executeStandardProcess(StandardProcess.PURGE, obj, data);
+    }
+
     protected ExitReason restore(Object obj, Map<String,Object> data) {
         return getObjectProcessManager().executeStandardProcess(StandardProcess.RESTORE, obj, data);
     }
