@@ -14,6 +14,7 @@
 
     <bean class="io.cattle.platform.iaas.api.manager.DataManager" />
     <bean class="io.cattle.platform.iaas.api.manager.InstanceManager" />
+    <bean class="io.cattle.platform.iaas.api.manager.VolumeManager" />
     <bean class="io.cattle.platform.iaas.api.filter.agent.AgentFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceNetworkValidationFilter" />
