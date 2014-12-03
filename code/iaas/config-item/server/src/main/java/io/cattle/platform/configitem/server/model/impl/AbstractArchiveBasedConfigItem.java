@@ -164,6 +164,17 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         return entry;
     }
 
+
+    @Override
+    public String getSourceRevision() {
+        String hash = super.getSourceRevision();
+        for ( ConfigItemContextFactory factory : contextFactories ) {
+            hash = factory.getContentHash(hash);
+        }
+
+        return hash;
+    }
+
     protected interface WithEntry {
         public void with(OutputStream os) throws IOException;
     }

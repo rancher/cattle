@@ -37,6 +37,12 @@ public class AgentPackagesContextFactory extends AbstractAgentBaseContextFactory
         this.statusManager = statusManager;
     }
 
+
+    @Override
+    public String getContentHash(String hash) {
+        return hash + map.getSourceRevision(name);
+    }
+
     @Override
     public String[] getItems() {
         return new String[] {};

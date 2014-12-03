@@ -10,4 +10,6 @@ public interface ConfigItemContextFactory {
 
     void populateContext(Request req, ConfigItem item, ArchiveContext context);
 
+    String getContentHash(String hash);
+
 }

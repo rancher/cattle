@@ -49,11 +49,6 @@ public class AgentPackagesConfigItem extends TemplatesBasedArchiveItem {
         });
     }
 
-    @Override
-    public String getSourceRevision() {
-        return super.getSourceRevision() + map.getSourceRevision(getName());
-    }
-
     public static final boolean isDevVersion(String value) {
         if ( value == null ) {
             return false;

@@ -39,6 +39,11 @@ public abstract class AbstractAgentBaseContextFactory implements ConfigItemConte
     }
 
     @Override
+    public String getContentHash(String hash) {
+        return hash;
+    }
+
+    @Override
     public final void populateContext(Request req, ConfigItem item, ArchiveContext context) {
         Client client = req.getClient();
         if ( ! Agent.class.equals(client.getResourceType()) ) {
