@@ -27,13 +27,6 @@ public class SampleDataStartupV1 extends AbstractSampleData {
 
     @Override
     protected void populatedData(Account system, List<Object> toCreate) {
-        Map<String, Object> networkData;
-        try {
-            networkData = jsonMapper.readValue("{\"libvirt\":{\"network\":{\"source\":[{\"bridge\":\"docker0\"}],\"type\":\"bridge\"}}}");
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-
         Network network = createByUuid(Network.class, "unmanaged",
                 NETWORK.ACCOUNT_ID, system.getId(),
                 NETWORK.IS_PUBLIC, true,
@@ -49,8 +42,7 @@ public class SampleDataStartupV1 extends AbstractSampleData {
                 NETWORK.IS_PUBLIC, true,
                 NETWORK.KIND, NetworkConstants.KIND_HOSTONLY,
                 NETWORK.NAME, "Managed Network on docker0",
-                NETWORK.STATE, CommonStatesConstants.REQUESTED,
-                NETWORK.DATA, networkData);
+                NETWORK.STATE, CommonStatesConstants.REQUESTED);
 
         toCreate.add(network);
 

@@ -1,7 +1,0 @@
-{
-    "name" : "CentOS 6.5 20140117.0",
-    "description" : "Default user: cloud-user",
-    "uuid" : "centos-6.5",
-    "url" : "http://repos.fedorapeople.org/repos/openstack/guest-images/centos-6.5-20140117.0.x86_64.qcow2",
-    "checksum" : "a1a39b05246bc7e4eb856c47db8e86b6cbe3c8b7"
-}
