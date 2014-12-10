@@ -437,6 +437,14 @@ def test_container_storage_fail(admin_client, sim_context):
     _assert_removed(container)
 
 
+def test_create_with_privilege(admin_client, sim_context):
+    c = admin_client.create_container(name="cap_add_test",
+                                      imageUuid='docker:ibuildthecloud/helloworld',
+                                      privileged=True)
+    c = admin_client.wait_success(c)
+    assert c.data['dockerInspect']['HostConfig']['Privileged']
+
+
 def test_create_with_vnet(admin_client, sim_context):
     network = create_and_activate(admin_client, 'network')
 
