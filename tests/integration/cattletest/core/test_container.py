@@ -504,6 +504,7 @@ def test_create_with_vnet2(admin_client, sim_context):
     assert nic.vnetId == vnet.id
     assert nic.subnetId == subnet2.id
 
+
 def test_create_with_vnet_multiple_nics(admin_client, sim_context):
     network = create_and_activate(admin_client, 'network')
 
