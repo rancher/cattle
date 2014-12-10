@@ -438,8 +438,9 @@ def test_container_storage_fail(admin_client, sim_context):
 
 
 def test_create_with_privilege(admin_client, sim_context):
-    c = admin_client.create_container(name="cap_add_test",
-                                      imageUuid='docker:ibuildthecloud/helloworld',
+    image_uuid = 'docker:ibuildthecloud/helloworld'
+    c = admin_client.create_container(name="privilege_test",
+                                      imageUuid=image_uuid,
                                       privileged=True)
     c = admin_client.wait_success(c)
     assert c.data['dockerInspect']['HostConfig']['Privileged']
