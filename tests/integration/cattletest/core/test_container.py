@@ -504,6 +504,16 @@ def test_create_with_vnet2(admin_client, sim_context):
     assert nic.vnetId == vnet.id
     assert nic.subnetId == subnet2.id
 
+def test_cap_add(client, admin_client):
+    c = admin_client.create_container(name="cap_add_test",
+                                      imageUuid='docker:ibuildthecloud/helloworld',
+                                      startOnCreate=False,
+                                      capAdd=["SYS_ADMIN", "MKNOD"])
+
+    c = admin_client.wait_success(c)
+    c = admin_client.wait_success(c.start())
+
+    assert c.data['dockerInspect']['HostConfig']['CapAdd'] == ["SYS_ADMIN", "MKNOD"]
 
 def test_create_with_vnet_multiple_nics(admin_client, sim_context):
     network = create_and_activate(admin_client, 'network')
@@ -597,7 +607,8 @@ def test_container_auth(admin_client, client):
         'ports': 'cr',
         'publishAllPorts': 'cr',
         'dataVolumes': 'cr',
-        'dataVolumesFrom': 'cr'
+        'dataVolumesFrom': 'cr',
+        'capAdd': 'cr'
     })
 
     auth_check(client.schema, 'container', 'crud', {
