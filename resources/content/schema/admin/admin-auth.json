@@ -59,7 +59,8 @@
         "container.uuid" : "r",
         "container.dataVolumes" : "cr",
         "container.dataVolumesFrom" : "cr",
-
+		"container.capAdd" : "cr",
+        
         "containerExec.attachStdin" : "cr",
         "containerExec.attachStdout" : "cr",
         "containerExec.tty" : "cr",

@@ -41,6 +41,11 @@
             "type": "boolean",
             "default": "false"
         },
+        "capAdd": {
+        	"type": "array[string]",
+        	"nullable": true,
+        	"create": true
+        },
         "instanceLinks": {
             "type": "map[reference[instance]]",
             "create": true,
