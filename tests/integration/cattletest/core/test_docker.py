@@ -510,6 +510,26 @@ def test_docker_volumes(client, admin_client, docker_context):
 
 
 @if_docker
+def test_cap_add(client, admin_client, docker_context):
+    caps = ["SYS_MODULE","SYS_RAWIO","SYS_PACCT","SYS_ADMIN",
+            "SYS_NICE","SYS_RESOURCE","SYS_TIME","SYS_TTY_CONFIG",
+            "MKNOD","AUDIT_WRITE","AUDIT_CONTROL","MAC_OVERRIDE",
+            "MAC_ADMIN","NET_ADMIN","SYSLOG","CHOWN","NET_RAW",
+            "DAC_OVERRIDE","FOWNER","DAC_READ_SEARCH","FSETID",
+            "KILL","SETGID","SETUID","LINUX_IMMUTABLE",
+            "NET_BIND_SERVICE","NET_BROADCAST","IPC_LOCK",
+            "IPC_OWNER","SYS_CHROOT","SYS_PTRACE","SYS_BOOT",
+            "LEASE","SETFCAP","WAKE_ALARM","BLOCK_SUSPEND"]
+    c = admin_client.create_container(name="cap_add_test",
+                                      imageUuid='docker:ibuildthecloud/helloworld',
+                                      capAdd=caps)
+
+    c = admin_client.wait_success(c)
+
+    assert c.data['dockerInspect']['HostConfig']['CapAdd'] == caps
+
+
+@if_docker
 def test_docker_mount_life_cycle(client, admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
     bind_mount_uuid = py_uuid.uuid4().hex
