@@ -4,8 +4,6 @@ import uuid as py_uuid
 from common_fixtures import *  # NOQA
 from cattle import ApiError
 
-from sets import Set
-
 TEST_IMAGE = 'ibuildthecloud/helloworld'
 TEST_IMAGE_LATEST = TEST_IMAGE + ':latest'
 TEST_IMAGE_UUID = 'docker:' + TEST_IMAGE
@@ -512,7 +510,7 @@ def test_docker_volumes(client, admin_client, docker_context):
 
 
 @if_docker
-def test_cap_add(client, admin_client, docker_context):
+def test_container_fields(client, admin_client, docker_context):
     caps = ["SYS_MODULE", "SYS_RAWIO", "SYS_PACCT", "SYS_ADMIN",
             "SYS_NICE", "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG",
             "MKNOD", "AUDIT_WRITE", "AUDIT_CONTROL", "MAC_OVERRIDE",
@@ -521,31 +519,26 @@ def test_cap_add(client, admin_client, docker_context):
             "KILL", "SETGID", "SETUID", "LINUX_IMMUTABLE",
             "NET_BIND_SERVICE", "NET_BROADCAST", "IPC_LOCK",
             "IPC_OWNER", "SYS_CHROOT", "SYS_PTRACE", "SYS_BOOT",
-            "LEASE", "SETFCAP", "WAKE_ALARM", "BLOCK_SUSPEND"]
+            "LEASE", "SETFCAP", "WAKE_ALARM", "BLOCK_SUSPEND", "ALL"]
     cap_add_name = 'cap_add_test'
     image_uuid = 'docker:ibuildthecloud/helloworld'
 
     c = admin_client.create_container(name=cap_add_name,
                                       imageUuid=image_uuid,
-                                      capAdd=caps)
-
+                                      capAdd=caps,
+                                      capDrop=caps,
+                                      dnsSearch=['8.8.8.8', '1.2.3.4'],
+                                      dns=['8.8.8.8', '1.2.3.4'],
+                                      privileged=True)
     c = admin_client.wait_success(c)
 
-    assert Set(c.data['dockerInspect']['HostConfig']['CapAdd']) == Set(caps)
-
-
-@if_docker
-def test_dns(client, admin_client, docker_context):
-    dns_test_name = 'dns_test'
-    image_uuid = 'docker:ibuildthecloud/helloworld'
-    c = admin_client.create_container(name=dns_test_name,
-                                      imageUuid=image_uuid,
-                                      dns=['8.8.8.8', '1.2.3.4'])
-
-    c = admin_client.wait_success(c)
-
+    assert set(c.data['dockerInspect']['HostConfig']['CapAdd']) == set(caps)
+    assert set(c.data['dockerInspect']['HostConfig']['CapDrop']) == set(caps)
     actual_dns = c.data['dockerInspect']['HostConfig']['Dns']
-    assert Set(actual_dns) == Set(['8.8.8.8', '1.2.3.4'])
+    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
+    actual_dns = c.data['dockerInspect']['HostConfig']['DnsSearch']
+    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
+    assert c.data['dockerInspect']['HostConfig']['Privileged']
 
 
 @if_docker

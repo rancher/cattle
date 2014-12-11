@@ -60,7 +60,9 @@
         "container.dataVolumes" : "cr",
         "container.dataVolumesFrom" : "cr",
         "container.capAdd" : "cr",
+        "container.capDrop" : "cr",
         "container.dns" : "cr",
+        "container.dnsSearch" : "cr",
 
         "containerExec.attachStdin" : "cr",
         "containerExec.attachStdout" : "cr",
