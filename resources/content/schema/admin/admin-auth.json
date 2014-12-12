@@ -64,6 +64,8 @@
         "container.dns" : "cr",
         "container.dnsSearch" : "cr",
         "container.domainName" : "cr",
+        "container.memorySwap" : "cr",
+        "container.memory" : "cr",
 
         "containerExec.attachStdin" : "cr",
         "containerExec.attachStdout" : "cr",

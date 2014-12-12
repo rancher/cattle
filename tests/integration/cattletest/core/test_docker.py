@@ -520,17 +520,19 @@ def test_container_fields(client, admin_client, docker_context):
             "NET_BIND_SERVICE", "NET_BROADCAST", "IPC_LOCK",
             "IPC_OWNER", "SYS_CHROOT", "SYS_PTRACE", "SYS_BOOT",
             "LEASE", "SETFCAP", "WAKE_ALARM", "BLOCK_SUSPEND", "ALL"]
-    cap_add_name = 'cap_add_test'
+    test_name = 'container_test'
     image_uuid = 'docker:ibuildthecloud/helloworld'
 
-    c = admin_client.create_container(name=cap_add_name,
+    c = admin_client.create_container(name=test_name,
                                       imageUuid=image_uuid,
                                       capAdd=caps,
                                       capDrop=caps,
                                       dnsSearch=['8.8.8.8', '1.2.3.4'],
                                       dns=['8.8.8.8', '1.2.3.4'],
                                       privileged=True,
-                                      domainName="rancher.io")
+                                      domainName="rancher.io",
+                                      memory=8000000,
+                                      memorySwap=16000000)
     c = admin_client.wait_success(c)
 
     assert set(c.data['dockerInspect']['HostConfig']['CapAdd']) == set(caps)
@@ -541,6 +543,8 @@ def test_container_fields(client, admin_client, docker_context):
     assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
     assert c.data['dockerInspect']['HostConfig']['Privileged']
     assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
+    assert c.data['dockerInspect']['Config']['Memory'] == 8000000
+    assert c.data['dockerInspect']['Config']['MemorySwap'] == 16000000
 
 
 @if_docker

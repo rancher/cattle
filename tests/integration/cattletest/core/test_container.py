@@ -599,7 +599,12 @@ def test_container_auth(admin_client, client):
         'dataVolumes': 'cr',
         'dataVolumesFrom': 'cr',
         'capAdd': 'cr',
-        'capDrop': 'cr'
+        'capDrop': 'cr',
+        'dns': 'cr',
+        'dnsSearch': 'cr',
+        'domainName': 'cr',
+        'memorySwap': 'cr',
+        'memory': 'cr'
     })
 
     auth_check(client.schema, 'container', 'crud', {
