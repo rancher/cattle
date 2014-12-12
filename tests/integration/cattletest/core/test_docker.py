@@ -529,7 +529,8 @@ def test_container_fields(client, admin_client, docker_context):
                                       capDrop=caps,
                                       dnsSearch=['8.8.8.8', '1.2.3.4'],
                                       dns=['8.8.8.8', '1.2.3.4'],
-                                      privileged=True)
+                                      privileged=True,
+                                      domainName="rancher.io")
     c = admin_client.wait_success(c)
 
     assert set(c.data['dockerInspect']['HostConfig']['CapAdd']) == set(caps)
@@ -539,6 +540,7 @@ def test_container_fields(client, admin_client, docker_context):
     actual_dns = c.data['dockerInspect']['HostConfig']['DnsSearch']
     assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
     assert c.data['dockerInspect']['HostConfig']['Privileged']
+    assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
 
 
 @if_docker

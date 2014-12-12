@@ -138,6 +138,10 @@
             "create": true,
             "nullable": true,
             "includeInList": false
+        },
+        "domainName": {
+            "type": "string",
+            "nullable": true
         }
     }
 }

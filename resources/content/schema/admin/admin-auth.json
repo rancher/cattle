@@ -63,6 +63,7 @@
         "container.capDrop" : "cr",
         "container.dns" : "cr",
         "container.dnsSearch" : "cr",
+        "container.domainName" : "cr",
 
         "containerExec.attachStdin" : "cr",
         "containerExec.attachStdout" : "cr",
