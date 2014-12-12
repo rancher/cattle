@@ -66,6 +66,7 @@
         "container.domainName" : "cr",
         "container.memorySwap" : "cr",
         "container.memory" : "cr",
+        "container.cpuSet" : "cr",
 
         "containerExec.attachStdin" : "cr",
         "containerExec.attachStdout" : "cr",

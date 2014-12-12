@@ -532,7 +532,8 @@ def test_container_fields(client, admin_client, docker_context):
                                       privileged=True,
                                       domainName="rancher.io",
                                       memory=8000000,
-                                      memorySwap=16000000)
+                                      memorySwap=16000000,
+                                      cpuSet="0,1")
     c = admin_client.wait_success(c)
 
     assert set(c.data['dockerInspect']['HostConfig']['CapAdd']) == set(caps)
@@ -545,6 +546,7 @@ def test_container_fields(client, admin_client, docker_context):
     assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
     assert c.data['dockerInspect']['Config']['Memory'] == 8000000
     assert c.data['dockerInspect']['Config']['MemorySwap'] == 16000000
+    assert c.data['dockerInspect']['Config']['Cpuset'] == "0,1"
 
 
 @if_docker

@@ -604,7 +604,8 @@ def test_container_auth(admin_client, client):
         'dnsSearch': 'cr',
         'domainName': 'cr',
         'memorySwap': 'cr',
-        'memory': 'cr'
+        'memory': 'cr',
+        'cpuSet': 'cr',
     })
 
     auth_check(client.schema, 'container', 'crud', {
