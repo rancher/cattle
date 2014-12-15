@@ -27,6 +27,14 @@ public class AgentIncludeMapImpl implements AgentIncludeMap {
         return KEYS.get();
     }
 
+    protected String sanitize(String s) {
+        if ( s == null ) {
+            return s;
+        }
+
+        return s.replaceAll("-", ".").toLowerCase();
+    }
+
     @Override
     public Map<String,String> getMap(String name) {
         Map<String,String> result = new LinkedHashMap<String, String>();
@@ -35,8 +43,8 @@ public class AgentIncludeMapImpl implements AgentIncludeMap {
             return result;
         }
 
-        for ( String item : ArchaiusUtil.getList("agent.packages." + name).get() ) {
-            String key = String.format("agent.package.%s.url", item);
+        for ( String item : ArchaiusUtil.getList("agent.packages." + sanitize(name)).get() ) {
+            String key = String.format("agent.package.%s.url", sanitize(item));
             DynamicStringProperty prop = values.get(key);
 
             if ( prop == null ) {
