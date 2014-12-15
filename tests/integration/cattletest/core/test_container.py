@@ -597,7 +597,15 @@ def test_container_auth(admin_client, client):
         'ports': 'cr',
         'publishAllPorts': 'cr',
         'dataVolumes': 'cr',
-        'dataVolumesFrom': 'cr'
+        'dataVolumesFrom': 'cr',
+        'capAdd': 'cr',
+        'capDrop': 'cr',
+        'dns': 'cr',
+        'dnsSearch': 'cr',
+        'domainName': 'cr',
+        'memorySwap': 'cr',
+        'memory': 'cr',
+        'cpuSet': 'cr',
     })
 
     auth_check(client.schema, 'container', 'crud', {

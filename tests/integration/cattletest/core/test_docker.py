@@ -510,6 +510,46 @@ def test_docker_volumes(client, admin_client, docker_context):
 
 
 @if_docker
+def test_container_fields(client, admin_client, docker_context):
+    caps = ["SYS_MODULE", "SYS_RAWIO", "SYS_PACCT", "SYS_ADMIN",
+            "SYS_NICE", "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG",
+            "MKNOD", "AUDIT_WRITE", "AUDIT_CONTROL", "MAC_OVERRIDE",
+            "MAC_ADMIN", "NET_ADMIN", "SYSLOG", "CHOWN", "NET_RAW",
+            "DAC_OVERRIDE", "FOWNER", "DAC_READ_SEARCH", "FSETID",
+            "KILL", "SETGID", "SETUID", "LINUX_IMMUTABLE",
+            "NET_BIND_SERVICE", "NET_BROADCAST", "IPC_LOCK",
+            "IPC_OWNER", "SYS_CHROOT", "SYS_PTRACE", "SYS_BOOT",
+            "LEASE", "SETFCAP", "WAKE_ALARM", "BLOCK_SUSPEND", "ALL"]
+    test_name = 'container_test'
+    image_uuid = 'docker:ibuildthecloud/helloworld'
+
+    c = admin_client.create_container(name=test_name,
+                                      imageUuid=image_uuid,
+                                      capAdd=caps,
+                                      capDrop=caps,
+                                      dnsSearch=['8.8.8.8', '1.2.3.4'],
+                                      dns=['8.8.8.8', '1.2.3.4'],
+                                      privileged=True,
+                                      domainName="rancher.io",
+                                      memory=8000000,
+                                      memorySwap=16000000,
+                                      cpuSet="0,1")
+    c = admin_client.wait_success(c)
+
+    assert set(c.data['dockerInspect']['HostConfig']['CapAdd']) == set(caps)
+    assert set(c.data['dockerInspect']['HostConfig']['CapDrop']) == set(caps)
+    actual_dns = c.data['dockerInspect']['HostConfig']['Dns']
+    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
+    actual_dns = c.data['dockerInspect']['HostConfig']['DnsSearch']
+    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
+    assert c.data['dockerInspect']['HostConfig']['Privileged']
+    assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
+    assert c.data['dockerInspect']['Config']['Memory'] == 8000000
+    assert c.data['dockerInspect']['Config']['MemorySwap'] == 16000000
+    assert c.data['dockerInspect']['Config']['Cpuset'] == "0,1"
+
+
+@if_docker
 def test_docker_mount_life_cycle(client, admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
     bind_mount_uuid = py_uuid.uuid4().hex
