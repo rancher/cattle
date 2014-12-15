@@ -574,7 +574,6 @@ def test_container_auth(admin_client, client):
         'dataVolumes': 'cr',
         'dataVolumesFrom': 'cr',
         'description': 'cru',
-        'detach': 'cr',
         'directory': 'cr',
         'dns': 'cr',
         'dnsSearch': 'cr',

@@ -167,10 +167,6 @@
             "type": "boolean",
             "default": false
         },
-        "detach": {
-            "type": "boolean",
-            "default": false
-        },
         "entryPoint": {
             "type": "array[string]",
             "nullable": true

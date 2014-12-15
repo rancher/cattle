@@ -555,8 +555,6 @@ def test_container_fields(client, admin_client, docker_context):
     assert c.data['dockerInspect']['Config']['Cpuset'] == "0,1"
     assert c.data['dockerInspect']['Config']['Tty']
     assert c.data['dockerInspect']['Config']['OpenStdin']
-    assert c.data['dockerInspect']['Config']['AttachStdin']
-    assert c.data['dockerInspect']['Config']['StdinOnce']
     actual_entry_point = set(c.data['dockerInspect']['Config']['Entrypoint'])
     assert actual_entry_point == set(["/bin/sh", "-c"])
     for conf in c.data['dockerInspect']['HostConfig']['LxcConf']:

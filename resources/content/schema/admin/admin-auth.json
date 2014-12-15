@@ -44,7 +44,6 @@
         "container.cpuSet" : "cr",
         "container.dataVolumes" : "cr",
         "container.dataVolumesFrom" : "cr",
-        "container.detach" : "cr",
         "container.directory" : "cr",
         "container.dns" : "cr",
         "container.dnsSearch" : "cr",
