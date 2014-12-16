@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-CATTLE_SCRIPT_DEBUG=x
-
 trap cleanup EXIT SIGINT SIGTERM
 
 # This is copied from common/scripts.sh, if there is a change here

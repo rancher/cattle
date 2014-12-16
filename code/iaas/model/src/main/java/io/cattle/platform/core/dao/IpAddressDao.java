@@ -16,6 +16,8 @@ public interface IpAddressDao {
 
     IpAddress assignNewAddress(Host host, String ipAddress);
 
+    IpAddress assignAndActivateNewAddress(Host host, String ipAddress);
+
     IpAssociation createOrFindAssociation(IpAddress ip, IpAddress childIp);
 
     IpAddress createIpAddressFromPool(IpPool pool, Object key, Object... values);

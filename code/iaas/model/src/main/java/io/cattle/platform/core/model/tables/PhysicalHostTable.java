@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class PhysicalHostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.PhysicalHostRecord> {
 
-	private static final long serialVersionUID = 1111803306;
+	private static final long serialVersionUID = -48517371;
 
 	/**
 	 * The singleton instance of <code>cattle.physical_host</code>
@@ -82,6 +82,11 @@ public class PhysicalHostTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.PhysicalHostRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
+	 * The column <code>cattle.physical_host.agent_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.PhysicalHostRecord, java.lang.Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.physical_host</code> table reference
 	 */
 	public PhysicalHostTable() {
@@ -132,7 +137,7 @@ public class PhysicalHostTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.PhysicalHostRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.PhysicalHostRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_PHYSICAL_HOST__ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.PhysicalHostRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_PHYSICAL_HOST__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_PHYSICAL_HOST__AGENT_ID);
 	}
 
 	/**

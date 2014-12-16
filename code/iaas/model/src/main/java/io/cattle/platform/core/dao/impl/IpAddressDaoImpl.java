@@ -20,6 +20,8 @@ import io.cattle.platform.core.model.tables.records.IpAddressRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Arrays;
@@ -33,6 +35,7 @@ import javax.inject.Inject;
 public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
 
     ObjectManager objectManager;
+    ObjectProcessManager processManager;
 
     @Override
     public IpAddress getPrimaryIpAddress(Nic nic) {
@@ -44,13 +47,13 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
 
         List<? extends IpAddress> ipAddresses = create()
                 .select(IP_ADDRESS.fields())
-                    .from(IP_ADDRESS)
-                    .join(IP_ADDRESS_NIC_MAP)
-                        .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(IP_ADDRESS.ID)
-                                .and(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.getId())))
-                    .where(IP_ADDRESS.SUBNET_ID.eq(subnetId)
-                            .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull()))
-                    .fetchInto(IpAddressRecord.class);
+                .from(IP_ADDRESS)
+                .join(IP_ADDRESS_NIC_MAP)
+                .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(IP_ADDRESS.ID)
+                        .and(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.getId())))
+                        .where(IP_ADDRESS.SUBNET_ID.eq(subnetId)
+                                .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull()))
+                                .fetchInto(IpAddressRecord.class);
 
         return ipAddresses.size() > 0 ? ipAddresses.get(0) : null;
     }
@@ -62,13 +65,13 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
         }
 
         List<? extends IpAddress> ips = create().select(IP_ADDRESS.fields())
-            .from(IP_ASSOCIATION)
-            .join(IP_ADDRESS)
+                .from(IP_ASSOCIATION)
+                .join(IP_ADDRESS)
                 .on(IP_ADDRESS.ID.eq(IP_ASSOCIATION.IP_ADDRESS_ID))
-            .where(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PUBLIC)
-                    .and(IP_ASSOCIATION.CHILD_IP_ADDRESS_ID.eq(ipAddress.getId()))
-                    .and(IP_ASSOCIATION.REMOVED.isNull()))
-            .fetchInto(IpAddressRecord.class);
+                .where(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PUBLIC)
+                        .and(IP_ASSOCIATION.CHILD_IP_ADDRESS_ID.eq(ipAddress.getId()))
+                        .and(IP_ASSOCIATION.REMOVED.isNull()))
+                        .fetchInto(IpAddressRecord.class);
 
         return ips.size() == 0 ? null : ips.get(0);
     }
@@ -103,6 +106,22 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
         objectManager.create(HostIpAddressMap.class,
                 HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID, ipAddressObj.getId(),
                 HOST_IP_ADDRESS_MAP.HOST_ID, host.getId());
+
+        return ipAddressObj;
+    }
+
+    @Override
+    public IpAddress assignAndActivateNewAddress(Host host, String ipAddress) {
+        IpAddress ipAddressObj = objectManager.create(IpAddress.class,
+                IP_ADDRESS.ADDRESS, ipAddress,
+                IP_ADDRESS.ACCOUNT_ID, host.getAccountId());
+
+        HostIpAddressMap map = objectManager.create(HostIpAddressMap.class,
+                HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID, ipAddressObj.getId(),
+                HOST_IP_ADDRESS_MAP.HOST_ID, host.getId());
+
+        processManager.scheduleStandardProcess(StandardProcess.CREATE, ipAddressObj, null);
+        processManager.scheduleStandardProcess(StandardProcess.CREATE, map, null);
 
         return ipAddressObj;
     }
@@ -154,12 +173,21 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
 
         if ( association == null ) {
             association = objectManager.create(IpAssociation.class,
-                IP_ASSOCIATION.IP_ADDRESS_ID, address.getId(),
-                IP_ASSOCIATION.CHILD_IP_ADDRESS_ID, childIpAddress.getId(),
-                IP_ASSOCIATION.ACCOUNT_ID, childIpAddress.getAccountId());
+                    IP_ASSOCIATION.IP_ADDRESS_ID, address.getId(),
+                    IP_ASSOCIATION.CHILD_IP_ADDRESS_ID, childIpAddress.getId(),
+                    IP_ASSOCIATION.ACCOUNT_ID, childIpAddress.getAccountId());
         }
 
         return association;
+    }
+
+    public ObjectProcessManager getProcessManager() {
+        return processManager;
+    }
+
+    @Inject
+    public void setProcessManager(ObjectProcessManager processManager) {
+        this.processManager = processManager;
     }
 
 }
