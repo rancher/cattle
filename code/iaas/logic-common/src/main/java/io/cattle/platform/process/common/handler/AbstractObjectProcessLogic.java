@@ -50,6 +50,10 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
     }
 
     protected ExitReason createThenActivate(Object obj, Map<String,Object> data) {
+        if ( CommonStatesConstants.ACTIVE.equals(ObjectUtils.getState(obj)) ) {
+            return ExitReason.ALREADY_DONE;
+        }
+
         createIgnoreCancel(obj, data);
         return getObjectProcessManager().executeStandardProcess(StandardProcess.ACTIVATE, obj, data);
     }

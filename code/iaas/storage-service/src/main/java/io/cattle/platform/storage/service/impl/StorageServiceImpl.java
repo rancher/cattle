@@ -1,5 +1,6 @@
 package io.cattle.platform.storage.service.impl;
 
+import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.lock.LockCallback;
@@ -8,7 +9,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.storage.pool.StoragePoolDriver;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.storage.service.dao.ImageDao;
-import io.cattle.platform.storage.service.dao.StoragePoolDao;
 import io.cattle.platform.storage.service.lock.ExternalTemplateRegister;
 
 import java.io.IOException;

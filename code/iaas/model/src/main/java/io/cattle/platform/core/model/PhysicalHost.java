@@ -135,6 +135,17 @@ public interface PhysicalHost extends java.io.Serializable {
 	@javax.persistence.Column(name = "data", length = 65535)
 	public java.util.Map<String,Object> getData();
 
+	/**
+	 * Setter for <code>cattle.physical_host.agent_id</code>.
+	 */
+	public void setAgentId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.physical_host.agent_id</code>.
+	 */
+	@javax.persistence.Column(name = "agent_id", precision = 19)
+	public java.lang.Long getAgentId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

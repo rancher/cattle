@@ -1,11 +1,12 @@
 package io.cattle.platform.agent.server.resource.impl;
 
-import io.cattle.platform.lock.definition.AbstractLockDefinition;
+import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.lock.definition.AbstractBlockingLockDefintion;
 
-public class AgentResourceCreateLock extends AbstractLockDefinition {
+public class AgentResourceCreateLock extends AbstractBlockingLockDefintion {
 
-    public AgentResourceCreateLock(String uuid) {
-        super("AGENT.RESOUCE.CREATE." + uuid);
+    public AgentResourceCreateLock(Agent agent) {
+        super("AGENT.RESOUCE.CREATE." + agent.getId());
     }
 
 }

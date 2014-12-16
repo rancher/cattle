@@ -17,6 +17,7 @@
     <bean class="io.cattle.platform.core.dao.impl.IpAddressDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.NicDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.NetworkDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.StoragePoolDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.VnetDaoImpl" />
 
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
@@ -29,6 +30,13 @@
         <tx:attributes>
             <tx:method name="mapNewIpAddress" isolation="READ_COMMITTED" />
             <tx:method name="assignNewAddress" isolation="READ_COMMITTED" />
+            <tx:method name="assignAndActivateNewAddress" isolation="READ_COMMITTED" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="StoragePoolDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="mapNewPool" isolation="READ_COMMITTED" />
         </tx:attributes>
     </tx:advice>
 
@@ -37,6 +45,8 @@
             pointcut="execution(* io.cattle.platform.core.dao.GenericResourceDao.*(..))" />
         <aop:advisor advice-ref="IpAddressDaoImplAdvice"
             pointcut="execution(* io.cattle.platform.core.dao.IpAddressDao.*(..))" />
+        <aop:advisor advice-ref="StoragePoolDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.StoragePoolDao.*(..))" />
     </aop:config>
 
 </beans>

@@ -17,7 +17,6 @@
     </bean>
 
     <bean class="io.cattle.platform.storage.service.dao.impl.ImageDaoImpl" />
-    <bean class="io.cattle.platform.storage.service.dao.impl.StoragePoolDaoImpl" />
 
     <tx:advice id="ImageDaoAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>

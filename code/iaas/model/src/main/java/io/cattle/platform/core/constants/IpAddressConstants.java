@@ -2,6 +2,8 @@ package io.cattle.platform.core.constants;
 
 public class IpAddressConstants {
 
+    public static final String TYPE = "ipAddress";
+
     public static final String STATE_ASSOCIATED = "associated";
 
     public static final String KIND_POOLED_IP_ADDRESS = "pooledIpAddress";

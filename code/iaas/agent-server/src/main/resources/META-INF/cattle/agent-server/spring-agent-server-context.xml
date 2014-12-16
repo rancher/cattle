@@ -24,50 +24,10 @@
 
     <bean class="io.cattle.platform.agent.server.group.impl.AgentGroupManagerImpl" />
 
-    <bean class="io.cattle.platform.agent.server.ping.dao.imp.PingDaoImpl" />
+    <bean class="io.cattle.platform.agent.server.ping.dao.impl.PingDaoImpl" />
     <bean class="io.cattle.platform.agent.server.ping.impl.PingMonitorImpl" />
-    <bean class="io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitorImpl" >
-        <property name="changeHandlers" value="#{extensionManager.list('agent.resource.change.handler')}" />
-    </bean>
-
-    <bean id="HostChangeHandler" class="io.cattle.platform.agent.server.resource.impl.HostAgentResourceChangeHandler" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-        <property name="type" value="host" />
-    </bean>
-    <bean id="PhysicalHostChangeHandler" class="io.cattle.platform.agent.server.resource.impl.GenericTypeAgentResourceChangeHandler" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-        <property name="type" value="physicalHost" />
-    </bean>
-    <bean id="StoragePoolChangeHandler" class="io.cattle.platform.agent.server.resource.impl.MappedTypeAgentResourceChangeHandler" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-        <property name="type" value="storagePool" />
-        <property name="resourceUuidKey" value="hostUuid" />
-        <property name="resourceType" value="io.cattle.platform.core.model.StoragePool" />
-        <property name="mappingType" value="io.cattle.platform.core.model.StoragePoolHostMap" />
-        <property name="otherType" value="io.cattle.platform.core.model.Host" />
-    </bean>
-
-    <bean id="MappedResourceChangeHandlerDaoImpl" 
-        class="io.cattle.platform.agent.server.resource.dao.impl.MappedResourceChangeHandlerDaoImpl" />
+    <bean class="io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitorImpl" />
 
     <extension:discover class="io.cattle.platform.agent.server.connection.AgentConnectionFactory" />
-    <extension:discover class="io.cattle.platform.agent.server.resource.AgentResourceChangeHandler" />
-
-    <tx:advice id="MappedResourceChangeHandlerDaoImplAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <tx:method name="newResource" isolation="READ_COMMITTED" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
-        <aop:advisor advice-ref="MappedResourceChangeHandlerDaoImplAdvice" 
-            pointcut="execution(* io.cattle.platform.agent.server.resource.dao.MappedResourceChangeHandlerDao.*(..))" />
-    </aop:config>
 
 </beans>

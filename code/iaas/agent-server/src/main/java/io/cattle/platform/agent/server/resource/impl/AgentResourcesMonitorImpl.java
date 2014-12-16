@@ -1,32 +1,39 @@
 package io.cattle.platform.agent.server.resource.impl;
 
-import io.cattle.platform.agent.server.resource.AgentResourceChangeHandler;
+import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
+import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.agent.server.resource.AgentResourcesEventListener;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.constants.IpAddressConstants;
+import io.cattle.platform.core.constants.StoragePoolConstants;
+import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.IpAddressDao;
+import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.PhysicalHost;
+import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.framework.event.Ping;
-import io.cattle.platform.lock.LockCallbackWithException;
+import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,17 +41,19 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.netflix.config.DynamicLongProperty;
 
-public class AgentResourcesMonitorImpl implements AgentResourcesEventListener, InitializationTask {
+public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
 
     private static final Logger log = LoggerFactory.getLogger(AgentResourcesMonitorImpl.class);
     private static final DynamicLongProperty CACHE_RESOURCE = ArchaiusUtil.getLong("agent.resource.monitor.cache.resource.seconds");
 
+    PingDao pingDao;
+    GenericResourceDao resourceDao;
+    StoragePoolDao storagePoolDao;
+    IpAddressDao ipAddressDao;
     ObjectManager objectManager;
     LockDelegator lockDelegator;
     LockManager lockManager;
-    Map<String,AgentResourceChangeHandler> handlers;
-    List<AgentResourceChangeHandler> changeHandlers;
-    Cache<ImmutablePair<String, String>, Map<String,Object>> resourceCache = CacheBuilder.newBuilder()
+    Cache<String,Boolean> resourceCache = CacheBuilder.newBuilder()
             .expireAfterWrite(CACHE_RESOURCE.get(), TimeUnit.SECONDS)
             .build();
 
@@ -65,77 +74,189 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener, I
             return;
         }
 
-        Queue<Map<String,Object>> queue = new LinkedBlockingQueue<Map<String,Object>>(ping.getData().getResources());
-        long max = queue.size() * 3;
-        long count = 0;
-        while ( queue.size() > 0 ) {
-            Map<String,Object> agentResource = queue.remove();
-            try {
-                processResource(agentId, ping, agentResource);
-            } catch ( MissingDependencyException e ) {
-                queue.add(agentResource);
+        final AgentResources resources = processResources(ping);
+        if ( ! resources.hasContent() ) {
+            return;
+        }
+
+        Boolean done = resourceCache.getIfPresent(resources.getHash());
+
+        if ( done != null && done.booleanValue() ) {
+            return;
+        }
+
+        final Agent agent = objectManager.loadResource(Agent.class, agentId);
+
+        lockManager.lock(new AgentResourceCreateLock(agent), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                Boolean done = resourceCache.getIfPresent(resources.getHash());
+
+                if ( done != null && done.booleanValue() ) {
+                    return;
+                }
+
+                Map<String,Host> hosts = setHosts(agent, resources);
+                setStoragePools(hosts, agent, resources);
+                setIpAddresses(hosts, agent, resources);
+
+                resourceCache.put(resources.getHash(), true);
+            }
+        });
+    }
+
+    protected Map<String,StoragePool> setStoragePools(Map<String,Host> hosts, Agent agent, AgentResources resources) {
+        Map<String, StoragePool> pools = pingDao.getStoragePools(agent.getId());
+
+        for ( Map.Entry<String,Map<String,Object>> poolData : resources.getStoragePools().entrySet() ) {
+            String uuid = poolData.getKey();
+            Map<String,Object> data = poolData.getValue();
+
+            if ( pools.containsKey(uuid) ) {
+                continue;
             }
 
-            if ( count++ > max && queue.size() > 0 ) {
-                throw new IllegalStateException("For agent [" + agentIdStr +
-                        "] failed to add resources, dependency may not be found, resource=" + queue);
+            Host host = hosts.get(ObjectUtils.toString(data.get(HostConstants.FIELD_HOST_UUID), null));
+
+            if ( host == null ) {
+                continue;
+            }
+
+            data = createData(agent, uuid, data);
+            pools.put(uuid, storagePoolDao.mapNewPool(host, data));
+        }
+
+        return pools;
+    }
+
+    protected void setIpAddresses(Map<String,Host> hosts, Agent agent, AgentResources resources) {
+        for ( Map.Entry<String,Map<String,Object>> ipData : resources.getIpAddresses().entrySet() ) {
+            String address = ipData.getKey();
+            Map<String,Object> data = ipData.getValue();
+            Host host = hosts.get(ObjectUtils.toString(data.get(HostConstants.FIELD_HOST_UUID), null));
+
+            if ( host == null ) {
+                continue;
+            }
+
+            List<IpAddress> ips = objectManager.mappedChildren(host, IpAddress.class);
+            if ( ips.size() == 0 ) {
+                ipAddressDao.assignAndActivateNewAddress(host, address);
+            } else {
+                IpAddress ip = ips.get(0);
+                if ( ! address.equalsIgnoreCase(ip.getAddress()) ) {
+                    ip.setAddress(address);
+                    objectManager.persist(ip);
+                }
             }
         }
     }
 
-    protected void processResource(final long agentId, Ping ping, final Map<String,Object> agentResource) throws MissingDependencyException {
-        final String type = ObjectUtils.toString(agentResource.get(ObjectMetaDataManager.TYPE_FIELD), null);
-        final String uuid = ObjectUtils.toString(agentResource.get(ObjectMetaDataManager.UUID_FIELD), null);
+    protected Map<String,Host> setHosts(Agent agent, AgentResources resources) {
+        Map<String, Host> hosts = pingDao.getHosts(agent.getId());
 
-        if ( type == null || uuid == null ) {
-            log.error("type [{}] or uuid [{}] is null for resource on pong from agent [{}]", type, uuid, ping.getResourceId());
-            return;
+        for ( Map.Entry<String,Map<String,Object>> hostData : resources.getHosts().entrySet() ) {
+            String uuid = hostData.getKey();
+            Map<String,Object> data = hostData.getValue();
+            String physicalHostUuid = ObjectUtils.toString(data.get(HostConstants.FIELD_PHYSICAL_HOST_UUID), null);
+            Long physicalHostId = getPhysicalHost(agent, physicalHostUuid, new HashMap<String,Object>());
+
+            if ( hosts.containsKey(uuid) ) {
+                Host host = hosts.get(uuid);
+                if ( physicalHostId != null && ! physicalHostId.equals(host.getPhysicalHostId()) ) {
+                    host.setPhysicalHostId(physicalHostId);
+                    objectManager.persist(host);
+                }
+
+                continue;
+            }
+
+            data = createData(agent, uuid, data);
+            data.put(HostConstants.FIELD_PHYSICAL_HOST_ID, physicalHostId);
+
+            hosts.put(uuid, resourceDao.createAndSchedule(Host.class, data));
         }
 
-        final AgentResourceChangeHandler handler = handlers.get(type);
-        if ( handler == null ) {
-            return;
+        return hosts;
+    }
+
+    protected Long getPhysicalHost(Agent agent, String uuid, Map<String,Object> properties) {
+        if ( uuid == null ) {
+            return null;
         }
 
-        ImmutablePair<String, String> key = new ImmutablePair<String, String>(type, uuid);
-        Map<String,Object> cachedResource = resourceCache.getIfPresent(key);
-        if ( cachedResource == null ) {
-            cachedResource = handler.load(uuid);
-            if ( cachedResource != null ) {
-                resourceCache.put(key, cachedResource);
+        Map<String, PhysicalHost> hosts = pingDao.getPhysicalHosts(agent.getId());
+        PhysicalHost host = hosts.get(uuid);
+
+        if ( host != null ) {
+            return host.getId();
+        }
+
+        host = objectManager.findAny(PhysicalHost.class,
+                PHYSICAL_HOST.UUID, uuid);
+
+        if ( host != null && host.getRemoved() == null ) {
+            Long agentId = DataAccessor.fields(host).withKey(AgentConstants.ID_REF).as(Long.class);
+            if ( agentId != null && agentId.longValue() == agent.getId() ) {
+                host.setAgentId(agent.getId());
+                DataAccessor.fields(host).withKey(AgentConstants.ID_REF).remove();
+                objectManager.persist(host);
+                return host.getId();
             }
         }
 
-        if ( cachedResource == null ) {
-            cachedResource = lockManager.lock(new AgentResourceCreateLock(uuid),
-                    new LockCallbackWithException<Map<String,Object>,MissingDependencyException>() {
-                @Override
-                public Map<String, Object> doWithLock() throws MissingDependencyException {
-                    Map<String,Object> cachedResource = handler.load(uuid);
-                    if ( cachedResource != null ) {
-                        return cachedResource;
-                    }
+        Map<String,Object> data = createData(agent, uuid, properties);
+        host = resourceDao.createAndSchedule(PhysicalHost.class, data);
 
-                    Agent agent = objectManager.loadResource(Agent.class, agentId);
-                    Long accountId = DataAccessor.fromDataFieldOf(agent)
-                                        .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
-                                        .as(Long.class);
+        return host.getId();
+    }
 
-                    if ( accountId == null ) {
-                        accountId = agent.getAccountId();
-                    }
+    protected Map<String,Object> createData(Agent agent, String uuid, Map<String,Object> data) {
+        Map<String,Object> properties = new HashMap<>(data);
+        properties.put(HostConstants.FIELD_REPORTED_UUID, uuid);
+        properties.remove(ObjectMetaDataManager.UUID_FIELD);
 
-                    agentResource.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+        Long accountId = DataAccessor.fromDataFieldOf(agent)
+                .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
+                .as(Long.class);
 
-                    handler.newResource(agentId, agentResource);
-                    return null;
-                }
-            }, MissingDependencyException.class);
+        if ( accountId == null ) {
+            accountId = agent.getAccountId();
         }
 
-        if ( cachedResource != null && handler.areDifferent(agentResource, cachedResource) ) {
-            handler.changed(agentResource, cachedResource);
+        properties.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+        properties.put(AgentConstants.ID_REF, agent.getId());
+
+        return properties;
+    }
+
+    protected AgentResources processResources(Ping ping) {
+        AgentResources resources = new AgentResources();
+        List<Map<String,Object>> pingData = ping.getData().getResources();
+
+        if ( pingData == null ) {
+            return resources;
         }
+
+        for ( Map<String,Object> resource : pingData ) {
+            final String type = ObjectUtils.toString(resource.get(ObjectMetaDataManager.TYPE_FIELD), null);
+            final String uuid = ObjectUtils.toString(resource.get(ObjectMetaDataManager.UUID_FIELD), null);
+
+            if ( type == null || uuid == null ) {
+                log.error("type [{}] or uuid [{}] is null for resource on pong from agent [{}]", type, uuid, ping.getResourceId());
+                continue;
+            }
+
+            if ( type.equals(HostConstants.TYPE) ) {
+                resources.getHosts().put(uuid, resource);
+            } else if ( type.equals(StoragePoolConstants.TYPE) ) {
+                resources.getStoragePools().put(uuid, resource);
+            } else if ( type.equals(IpAddressConstants.TYPE) ) {
+                resources.getIpAddresses().put(uuid, resource);
+            }
+        }
+
+        return resources;
     }
 
     public LockDelegator getLockDelegator() {
@@ -147,28 +268,49 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener, I
         this.lockDelegator = lockDelegator;
     }
 
-    public List<AgentResourceChangeHandler> getChangeHandlers() {
-        return changeHandlers;
+    public ObjectManager getObjectManager() {
+        return objectManager;
     }
 
     @Inject
-    public void setChangeHandlers(List<AgentResourceChangeHandler> changeHandlers) {
-        this.changeHandlers = changeHandlers;
+    public void setObjectManager(ObjectManager objectManager) {
+        this.objectManager = objectManager;
     }
 
-    @Override
-    public void start() {
-        handlers = new HashMap<String, AgentResourceChangeHandler>();
-        for ( AgentResourceChangeHandler handler : changeHandlers ) {
-            String type = handler.getType();
-            if ( ! handlers.containsKey(type) ) {
-                handlers.put(type, handler);
-            }
-        }
+    public PingDao getPingDao() {
+        return pingDao;
     }
 
-    @Override
-    public void stop() {
+    @Inject
+    public void setPingDao(PingDao pingDao) {
+        this.pingDao = pingDao;
+    }
+
+    public GenericResourceDao getResourceDao() {
+        return resourceDao;
+    }
+
+    @Inject
+    public void setResourceDao(GenericResourceDao resourceDao) {
+        this.resourceDao = resourceDao;
+    }
+
+    public StoragePoolDao getStoragePoolDao() {
+        return storagePoolDao;
+    }
+
+    @Inject
+    public void setStoragePoolDao(StoragePoolDao storagePoolDao) {
+        this.storagePoolDao = storagePoolDao;
+    }
+
+    public IpAddressDao getIpAddressDao() {
+        return ipAddressDao;
+    }
+
+    @Inject
+    public void setIpAddressDao(IpAddressDao ipAddressDao) {
+        this.ipAddressDao = ipAddressDao;
     }
 
     public LockManager getLockManager() {
@@ -178,15 +320,6 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener, I
     @Inject
     public void setLockManager(LockManager lockManager) {
         this.lockManager = lockManager;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
 }
