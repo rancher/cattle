@@ -158,6 +158,22 @@
         "cpuSet": {
             "type": "string",
             "nullable": true
+        },
+        "stdinOpen": {
+            "type": "boolean",
+            "default": false
+        },
+        "tty": {
+            "type": "boolean",
+            "default": false
+        },
+        "entryPoint": {
+            "type": "array[string]",
+            "nullable": true
+        },
+        "lxcConf": {
+            "type": "map[string]",
+            "nullable": true
         }
     }
 }

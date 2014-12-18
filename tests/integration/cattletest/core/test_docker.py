@@ -522,6 +522,7 @@ def test_container_fields(client, admin_client, docker_context):
             "LEASE", "SETFCAP", "WAKE_ALARM", "BLOCK_SUSPEND", "ALL"]
     test_name = 'container_test'
     image_uuid = 'docker:ibuildthecloud/helloworld'
+    expectedLxcConf = {"lxc.network.type": "veth"}
 
     c = admin_client.create_container(name=test_name,
                                       imageUuid=image_uuid,
@@ -533,7 +534,12 @@ def test_container_fields(client, admin_client, docker_context):
                                       domainName="rancher.io",
                                       memory=8000000,
                                       memorySwap=16000000,
-                                      cpuSet="0,1")
+                                      cpuSet="0,1",
+                                      stdinOpen=True,
+                                      tty=True,
+                                      entryPoint=["/bin/sh", "-c"],
+                                      lxcConf=expectedLxcConf)
+
     c = admin_client.wait_success(c)
 
     assert set(c.data['dockerInspect']['HostConfig']['CapAdd']) == set(caps)
@@ -547,6 +553,12 @@ def test_container_fields(client, admin_client, docker_context):
     assert c.data['dockerInspect']['Config']['Memory'] == 8000000
     assert c.data['dockerInspect']['Config']['MemorySwap'] == 16000000
     assert c.data['dockerInspect']['Config']['Cpuset'] == "0,1"
+    assert c.data['dockerInspect']['Config']['Tty']
+    assert c.data['dockerInspect']['Config']['OpenStdin']
+    actual_entry_point = set(c.data['dockerInspect']['Config']['Entrypoint'])
+    assert actual_entry_point == set(["/bin/sh", "-c"])
+    for conf in c.data['dockerInspect']['HostConfig']['LxcConf']:
+        assert expectedLxcConf[conf['Key']] == conf['Value']
 
 
 @if_docker
