@@ -523,6 +523,7 @@ def test_container_fields(client, admin_client, docker_context):
     test_name = 'container_test'
     image_uuid = 'docker:ibuildthecloud/helloworld'
     expectedLxcConf = {"lxc.network.type": "veth"}
+    restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
 
     c = admin_client.create_container(name=test_name,
                                       imageUuid=image_uuid,
@@ -538,7 +539,10 @@ def test_container_fields(client, admin_client, docker_context):
                                       stdinOpen=True,
                                       tty=True,
                                       entryPoint=["/bin/sh", "-c"],
-                                      lxcConf=expectedLxcConf)
+                                      lxcConf=expectedLxcConf,
+                                      cpuShares=400,
+                                      restartPolicy=restart_policy,
+                                      devices="/dev/null:/dev/xnull:rw")
 
     c = admin_client.wait_success(c)
 
@@ -559,6 +563,15 @@ def test_container_fields(client, admin_client, docker_context):
     assert actual_entry_point == set(["/bin/sh", "-c"])
     for conf in c.data['dockerInspect']['HostConfig']['LxcConf']:
         assert expectedLxcConf[conf['Key']] == conf['Value']
+    assert c.data['dockerInspect']['Config']['CpuShares'] == 400
+    act_restart_pol = c.data['dockerInspect']['HostConfig']['RestartPolicy']
+    assert act_restart_pol['MaximumRetryCount'] == 2
+    assert act_restart_pol['Name'] == "on-failure"
+    actual_devices = c.data['dockerInspect']['HostConfig']['Devices']
+    assert len(actual_devices) == 1
+    assert actual_devices[0]['CgroupPermissions'] == "rw"
+    assert actual_devices[0]['PathOnHost'] == "/dev/null"
+    assert actual_devices[0]['PathInContainer'] == "/dev/xnull"
 
 
 @if_docker

@@ -173,6 +173,18 @@
         },
         "lxcConf": {
             "type": "map[string]",
+            "nullable": true       
+        },
+        "cpuShares": {
+            "type": "float",
+            "nullable": true
+        },
+        "restartPolicy":{
+            "type": "json",
+            "nullable": true
+        },
+        "devices":{
+            "type":"array[string]",
             "nullable": true
         }
     }
