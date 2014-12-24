@@ -40,7 +40,8 @@ def _get_host_stats_ip(host):
 @if_docker
 def test_stats_container(admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test', imageUuid=uuid)
+    container = admin_client.create_container(name='test',
+                                              imageUuid=uuid)
     container = admin_client.wait_success(container)
 
     assert container.state == 'running'

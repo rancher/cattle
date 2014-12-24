@@ -2,12 +2,12 @@ from common_fixtures import *  # NOQA
 
 
 @pytest.fixture
-def new_sim_context(admin_client):
+def new_sim_context(internal_test_client):
     uri = 'sim://' + random_str()
-    sim_context = kind_context(admin_client, 'sim', uri=uri, uuid=uri)
+    sim_context = kind_context(internal_test_client, 'sim', uri=uri, uuid=uri)
 
     for i in ['host', 'pool', 'agent']:
-        sim_context[i] = admin_client.wait_success(sim_context[i])
+        sim_context[i] = internal_test_client.wait_success(sim_context[i])
 
     host = sim_context['host']
     pool = sim_context['pool']
@@ -35,7 +35,8 @@ def test_host_deactivate(admin_client, new_sim_context):
     assert agent.state == 'inactive'
 
 
-def test_host_deactivate_two_hosts(admin_client, new_sim_context):
+def test_host_deactivate_two_hosts(admin_client, internal_test_client,
+                                   new_sim_context):
     host = new_sim_context['host']
     agent = new_sim_context['agent']
 
@@ -43,8 +44,8 @@ def test_host_deactivate_two_hosts(admin_client, new_sim_context):
     agent = admin_client.wait_success(agent)
     assert agent.state == 'active'
 
-    other_host = admin_client.create_host(agentId=agent.id)
-    other_host = admin_client.wait_success(other_host)
+    other_host = internal_test_client.create_host(agentId=agent.id)
+    other_host = internal_test_client.wait_success(other_host)
     assert other_host.state == 'active'
     assert other_host.agentId == agent.id
 

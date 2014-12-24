@@ -1,7 +1,7 @@
 from common_fixtures import *  # NOQA
 
 
-def test_register_create(admin_client):
+def test_register_create(admin_client, internal_test_client):
     assert_required_fields(admin_client.create_register,
                            key='abc')
 
@@ -25,7 +25,7 @@ def test_register_create(admin_client):
     agent = get_by_plain_id(admin_client, 'agent', r.data.agentId)
 
     raw_account_id = get_plain_id(admin_client, r.account())
-
+    agent = internal_test_client.reload(agent)
     assert str(agent.data.agentResourcesAccountId) == raw_account_id
 
     assert agent is not None

@@ -40,6 +40,30 @@
             </list>
         </property>
     </bean>
+    
+    <bean id="InternalTestSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
+        <property name="id" value="internalTest" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/internal-test" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/internal-test/internal-test-auth.json</value>
+                                    <value>classpath*:schema/internal-test/internal-test-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
 
     <bean id="Token" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="token" />

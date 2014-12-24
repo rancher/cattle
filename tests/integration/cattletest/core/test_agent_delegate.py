@@ -21,18 +21,18 @@ def ihn_network(admin_client):
     return network
 
 
-def test_delegate_agent_create(client, admin_client, sim_context,
+def test_delegate_agent_create(client, internal_test_client, sim_context,
                                system_account):
-    network = create_and_activate(admin_client, 'hostOnlyNetwork',
+    network = create_and_activate(internal_test_client, 'hostOnlyNetwork',
                                   dynamicCreateVnet=True,
                                   isPublic=True)
-    create_and_activate(admin_client, 'subnet',
+    create_and_activate(internal_test_client, 'subnet',
                         networkId=network.id,
                         networkAddress='192.168.1.0')
-    ni = create_and_activate(admin_client, 'agentInstanceProvider',
+    ni = create_and_activate(internal_test_client, 'agentInstanceProvider',
                              networkId=network.id,
                              agentInstanceImageUuid=_IMAGE_UUID)
-    create_and_activate(admin_client, 'networkService',
+    create_and_activate(internal_test_client, 'networkService',
                         networkServiceProviderId=ni.id,
                         networkId=network.id)
 
@@ -41,18 +41,18 @@ def test_delegate_agent_create(client, admin_client, sim_context,
     c = client.wait_success(c)
     assert c.state == 'running'
 
-    c = admin_client.reload(c)
+    c = internal_test_client.reload(c)
 
     vnets = network.vnets()
     assert len(vnets) == 1
 
     uri = 'delegate:///?vnetId={}&networkServiceProviderId={}'.format(
-        get_plain_id(admin_client, vnets[0]),
-        get_plain_id(admin_client, ni))
-    agents = admin_client.list_agent(uri=uri)
+        get_plain_id(internal_test_client, vnets[0]),
+        get_plain_id(internal_test_client, ni))
+    agents = internal_test_client.list_agent(uri=uri)
 
     assert len(agents) == 1
-    agent = admin_client.wait_success(agents[0])
+    agent = internal_test_client.wait_success(agents[0])
 
     assert agent.state == 'active'
     assert agent.account().kind == 'agent'
@@ -62,7 +62,7 @@ def test_delegate_agent_create(client, admin_client, sim_context,
     assert len(instances) == 1
 
     instance = instances[0]
-    instance = admin_client.wait_success(instance)
+    instance = internal_test_client.wait_success(instance)
 
     assert instance.state == 'running'
     assert instance.kind == 'container'

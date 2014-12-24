@@ -1,0 +1,220 @@
+{
+    "authorize" : {
+        "[a-zA-Z]*" : "crud",
+        "[a-zA-Z]*\\..*" : "r",
+
+        ".*\\..*Id" : "cru",
+        ".*\\.data" : "cru",
+        ".*\\.description" : "cru",
+        ".*\\.isPublic" : "cru",
+        ".*\\.kind" : "cr",
+        ".*\\.name" : "cru",
+        ".*\\.removeTime" : "ru",
+        ".*\\.uuid" : "cr",
+
+        "account.externalId" : "cru",
+        "account.externalIdType" : "cru",
+        "account.defaultCredentialIds" : "cru",
+        "account.defaultNetworkIds" : "cru",
+
+        "activeSetting" : "rud",
+        "activeSetting.name" : "cr",
+        "activeSetting.value" : "ru",
+
+        "agent.managedConfig" : "cru",
+        "agent.uri" : "cru",
+        "agent.user" : "cr",
+
+        "agentInstanceProvider.agentInstanceImageUuid" : "cru",
+
+        "configItemStatus.appliedUpdated" : "cru",
+        "configItemStatus.appliedVersion" : "cru",
+        "configItemStatus.name" : "cru",
+        "configItemStatus.requestedUpdated" : "cru",
+        "configItemStatus.requestedVersion" : "cru",
+        "configItemStatus.sourceVersion" : "cru",
+
+        "configItem.sourceVersion" : "cru",
+
+        "container.capAdd" : "cr",
+        "container.capDrop" : "cr",
+        "container.command" : "cr",
+        "container.commandArgs" : "cr",
+        "container.compute" : "cr",
+        "container.cpuSet" : "cr",
+        "container.dataVolumes" : "cr",
+        "container.dataVolumesFrom" : "cr",
+        "container.directory" : "cr",
+        "container.dns" : "cr",
+        "container.dnsSearch" : "cr",
+        "container.dockerHostIp" : "",
+        "container.dockerIp" : "",
+        "container.dockerPorts" : "",
+        "container.domainName" : "cr",
+        "container.entryPoint" : "cr",
+        "container.environment" : "cr",
+        "container.hostname" : "cr",
+        "container.imageId" : "cr",
+        "container.imageUuid" : "cr",
+        "container.instanceLinks" : "cr",
+        "container.kind" : "r",
+        "container.lxcConf" : "cr",
+        "container.memory" : "cr",
+        "container.memorySwap" : "cr",
+        "container.networkIds" : "cr",
+        "container.offeringId" : "",
+        "container.privileged" : "cr",
+        "container.publishAllPorts": "cr",
+        "container.startOnCreate" : "cr",
+        "container.stdinOpen" : "cr",
+        "container.subnetIds" : "cr",
+        "container.tty" : "cr",
+        "container.user" : "cr",
+        "container.uuid" : "r",
+
+        "containerExec.attachStdin" : "cr",
+        "containerExec.attachStdout" : "cr",
+        "containerExec.tty" : "cr",
+        "containerExec.command" : "cr",
+
+        "credential.publicValue" : "cru",
+        "credential.secretValue" : "cru",
+
+        "data.value" : "cru",
+
+        "dnsService.dns" : "cru",
+
+        "extensionPoint" : "r",
+
+        "externalHandler.priority" : "cru",
+        "externalHandler.priorityString" : "cru",
+        "externalHandler.retries" : "cru",
+        "externalHandler.timeoutMillis" : "cru",
+        "externalHandler.processNames" : "cr",
+
+        "host.computeFree" : "cru",
+        "host.computeTotal" : "cru",
+
+        "databasechangeloglock" : "rd",
+        "databasechangelog" : "rd",
+
+        "image" : "cru",
+        "image.checksum" : "cr",
+        "image.format" : "r",
+        "image.instanceKind" : "cru",
+        "image.physicalSizeMb" : "r",
+        "image.virtualSizeMb" : "r",
+        "image.url" : "cr",
+
+        "instance" : "r",
+        "instance.count" : "cr",
+        "instance.credentialIds" : "cr",
+        "instance.instanceTriggeredStop" : "cru",
+        "instance.ports" : "cr",
+        "instance.userdata" : "cru",
+        "instance.vnetIds" : "cr",
+        "instance.validHostIds" : "cru",
+
+        "instanceLink" : "ru",
+        "instanceLink.instanceId" : "r",
+
+        "instanceStop.remove" : "cr",
+        "instanceStop.deallocateFromHost" : "cr",
+
+        "ipAddress.address" : "cr",
+        "ipAddress.networkId" : "r",
+
+        "ipAssociation.role" : "cru",
+
+        "metadataService.configDrive" : "cru",
+
+        "offering" : "",
+
+        "processDefinition" : "r",
+        "processExecution" : "r",
+        "processInstance" : "r",
+
+        "port" : "ru",
+        "port.instanceId" : "r",
+        "port.publicIpAddressId" : "r",
+        "port.publicPort" : "ru",
+        "port.privateIpAddressId" : "r",
+        "port.privatePort" : "r",
+        "port.protocol" : "r",
+
+        "publish.id": "cr",
+        "publish.name": "cr",
+        "publish.previousIds": "cr",
+        "publish.publisher": "cr",
+        "publish.resourceId": "cr",
+        "publish.resourceType": "cr",
+        "publish.time": "cr",
+        "publish.data": "cr",
+        "publish.transitioning": "cr",
+        "publish.transitioningInternalMessage": "cr",
+        "publish.transitioningMessage": "cr",
+        "publish.transitioningProgress": "cr",
+
+        "resourceDefinition" : "r",
+
+
+        "schema" : "r",
+
+        "setting.name" : "cr",
+        "setting.value" : "cru",
+
+        "storagePool.external" : "cru",
+        "storagePool.physicalTotalSizeMb" : "",
+        "storagePool.virtualTotalSizeMb" : "",
+
+        "subnet.cidrSize" : "cr",
+        "subnet.endAddress" : "cr",
+        "subnet.gateway" : "cr",
+        "subnet.networkAddress" : "cr",
+        "subnet.startAddress" : "cr",
+
+        "subnetIpPool.cidrSize" : "cr",
+        "subnetIpPool.endAddress" : "cr",
+        "subnetIpPool.gateway" : "cr",
+        "subnetIpPool.networkAddress" : "cr",
+        "subnetIpPool.startAddress" : "cr",
+
+        "subscribe" : "cr",
+        "subscribe.eventNames" : "cr",
+
+        "taskInstance" : "rd",
+        "task" : "r",
+
+        "typeDocumentation" : "r",
+
+        "virtualMachine.imageId" : "cr",
+        "virtualMachine.imageUuid" : "cr",
+        "virtualMachine.compute" : "cr",
+        "virtualMachine.memoryMb" : "cr",
+        "virtualMachine.networkIds" : "cr",
+        "virtualMachine.kind" : "r",
+        "virtualMachine.offeringId" : "",
+        "virtualMachine.startOnCreate" : "cr",
+        "virtualMachine.subnetIds" : "cr",
+        "virtualMachine.vcpu" : "cr",
+
+        "virtualMachine.libvirtVncAddress" : "r",
+        "virtualMachine.libvirtVncPassword" : "r",
+
+        "vnet.uri" : "cr",
+
+        "volume" : "rd",
+        "volume.deviceNumber" : "r",
+        "volume.format" : "r",
+        "volume.physicalSizeMb" : "",
+        "volume.virtualSizeMb" : "r",
+        "volume.uri" : "r",
+        "volume.isHostPath" : "r",
+
+        "mount" : "r",
+        "mount.path" : "r",
+        "mount.permissions" : "r",
+		
+        "end" : ""
+    }
+}

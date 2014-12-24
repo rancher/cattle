@@ -1,8 +1,8 @@
 {
     "authorize" : {
         ".*" : "",
-
-        ".*\\..*Id" : "r",
+        
+        ".*\\.accountId" : "r",
         ".*\\.created" : "r",
         ".*\\.description" : "cru",
         ".*\\.kind" : "r",
@@ -14,34 +14,62 @@
         ".*\\.transitioning": "r",
         ".*\\.transitioningMessage": "r",
         ".*\\.transitioningProgress": "r",
-
-        "apiKey" : "crud",
-        "apiKey.publicValue" : "r",
-        "apiKey.secretValue" : "r",
-
+        
+        "account": "r",
+        "account.externalId": "",
+        
+        "agent" : "r",
+        "agent.managedConfig" : "",
+        "agent.uri" : "", 
+        
+        "apiKey" : "crud", 
+        "apiKey.publicValue" : "r", 
+        
         "container" : "crud",
+        "container.agentId" : "r",
         "container.environment" : "cr",
         "container.command" : "cr",
         "container.commandArgs" : "cr",
+        "container.count" : "cr",
         "container.directory" : "cr",
+        "container.domain" : "cr",
+        "container.environment" : "cr",
+        "container.firstRunning" : "r",
         "container.hostname" : "cr",
-        "container.imageId" : "cr",
         "container.imageUuid" : "cr",
         "container.instanceLinks" : "cr",
+        "container.instanceTriggeredStop" : "",
         "container.networkIds" : "cr",
+        "container.ports" : "cr",
+        "container.primaryIpAddress" : "r",
+        "container.privileged" : "cr",
         "container.publishAllPorts": "cr",
         "container.restartPolicy" : "cr",
+"container.requestedhostId" : "cr",
+        "container.subnetIds" : "",
         "container.startOnCreate" : "cr",
-        "container.subnetIds" : "cr",
         "container.system" : "cr",
         "container.user" : "cr",
         "container.dataVolumes" : "cr",
         "container.dataVolumesFrom" : "cr",
+        
+        "containerExec" : "cr",
+        "containerExec.attachStdin" : "cr",
+        "containerExec.attachStdout" : "cr",
+        "containerExec.tty" : "cr",
+        "containerExec.command" : "cr",
+        
+        "containerExecOutput" : "r",
+        "containerExecOutput.token" : "r",
+        "containerExecOutput.url" : "r",
 
         "credential" : "r",
 
-        "host" : "r",
-
+        "host" : "rud",
+        "host.agentId" : "r",
+        "host.computeTotal" : "r",
+        "host.zoneId" : "ru",
+        
         "image" : "r",
         "image.isPublic" : "r",
         "image.instanceKind" : "r",
@@ -64,6 +92,7 @@
         "instanceConsole.password" : "r",
 
         "instanceLink" : "ru",
+        "instanceLink.instanceId" : "r",
         "instanceLink.linkName" : "r",
         "instanceLink.targetInstanceId" : "ru",
 
@@ -75,25 +104,46 @@
 
         "ipAddressAssociateInput" : "cr",
         "ipAddressAssociateInput.ipAddressId" : "cr",
+        
+        "mount" : "r",
+        "mount.instanceId" : "r",
+        "mount.path" : "r",
+        "mount.permissions" : "r",
+        "mount.volumeId" : "r",
 
         "network" : "r",
 
         "nic" : "r",
         "nic.macAddress" : "r",
 
-        "schema" : "r",
-
+        "schema\\.*" : "r",
+        
+        "statsAccess" : "r",
+        "statsAccess.token" : "r",
+        "statsAccess.url" : "r",
+      
         "subnet" : "r",
 
         "subscribe" : "cr",
         "subscribe.eventNames" : "cr",
+        "subscribe.agentId" : "r",
 
         "port" : "ru",
+        "port.instanceId" : "r",
         "port.publicPort" : "ru",
+        "port.privateIpAddressId": "r",
         "port.privatePort" : "r",
         "port.publicIpAddressId" : "r",
         "port.protocol" : "r",
-
+        
+        "processExecution" : "r",
+        "processExecution.processInstanceId" : "",
+        
+        "processInstance" : "r",
+        "processInstance.runningProcessServerId" : "",
+        "processInstance.resourceId" : "",
+        "processInstance.startProcessServerId" : "",
+        
         "publish.id": "cr",
         "publish.name": "cr",
         "publish.previousIds": "cr",
@@ -111,6 +161,17 @@
         "restartPolicy.maximumRetryCount" : "cr",
 
         "typeDocumentation" : "r",
+        
+        "registrationToken" : "cr",
+        "registrationToken.state":"r",
+        "registrationToken.registrationUrl" : "r",
+        
+        "register": "cr",
+        "register.key":"cr",
+        "register.secretKey" : "r",
+        "register.accessKey" : "r",
+        
+        "resourceDefinition.name" : "r",
 
         "virtualMachine" : "crud",
         "virtualMachine.imageId" : "cr",
@@ -131,13 +192,14 @@
         "volume.virtualSizeMb" : "r",
         "volume.uri" : "r",
         "volume.isHostPath" : "r",
-
-        "mount" : "r",
-        "mount.path" : "r",
-        "mount.permissions" : "r",
+        "volume.instanceId" : "r",
+        "volume.imageId" : "r",
+        "volume.zoneId" : "r",
 		
         "zone" : "r",
-
+        "zone.id" : "r",
+    
+        
         "end" : ""
     }
 }

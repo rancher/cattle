@@ -10,8 +10,7 @@ import time
 def test_container_create_count(admin_client, sim_context):
     image_uuid = sim_context['imageUuid']
 
-    cs = admin_client.create_container(imageUuid=image_uuid,
-                                       count=3)
+    cs = admin_client.create_container(imageUuid=image_uuid, count=3)
 
     assert len(cs) == 3
 
@@ -20,7 +19,8 @@ def test_container_create_count(admin_client, sim_context):
         assert c.state == 'running'
 
 
-def test_container_create_only(admin_client, sim_context):
+def test_container_create_only(admin_client, internal_test_client,
+                               sim_context):
     uuid = "sim:{}".format(random_num())
     container = admin_client.create_container(name="test",
                                               imageUuid=uuid,
@@ -32,7 +32,6 @@ def test_container_create_only(admin_client, sim_context):
         "allocationState": "inactive",
         "state": "creating",
         "imageUuid": uuid,
-        "imageId": NOT_NONE,
         "firstRunning": None,
     })
 
@@ -43,11 +42,14 @@ def test_container_create_only(admin_client, sim_context):
         "allocationState": "inactive",
         "state": "stopped",
         "imageUuid": uuid,
-        "imageId": NOT_NONE,
     })
 
+    container = internal_test_client.reload(container)
+
+    assert container.imageId is not None
+
     image = container.image()
-    image = wait_success(admin_client, image)
+    image = wait_success(internal_test_client, image)
     assert_fields(image, {
         "state": "active"
     })
@@ -55,7 +57,7 @@ def test_container_create_only(admin_client, sim_context):
     volumes = container.volumes()
     assert len(volumes) == 1
 
-    root_volume = wait_success(admin_client, volumes[0])
+    root_volume = wait_success(internal_test_client, volumes[0])
     assert_fields(root_volume, {
         "allocationState": "inactive",
         "attachedState": "active",
@@ -72,7 +74,8 @@ def test_container_create_only(admin_client, sim_context):
     # nics = container.nics()
     # assert len(nics) == 0
 
-    image = wait_success(admin_client, admin_client.list_image(uuid=uuid)[0])
+    image = wait_success(internal_test_client,
+                         internal_test_client.list_image(uuid=uuid)[0])
     assert_fields(image, {
         "state": "active",
         "uuid": uuid,
@@ -82,14 +85,14 @@ def test_container_create_only(admin_client, sim_context):
 
     assert len(image_mappings) == 1
 
-    image_mapping = wait_success(admin_client, image_mappings[0])
+    image_mapping = wait_success(internal_test_client, image_mappings[0])
     assert_fields(image_mapping, {
         "imageId": image.id,
         "storagePoolId": sim_context["external_pool"].id,
         "state": "inactive",
     })
 
-    return container
+    return admin_client.reload(container)
 
 
 def _assert_running(container, sim_context):
@@ -140,22 +143,25 @@ def _assert_running(container, sim_context):
     })
 
 
-def test_container_create_then_start(admin_client, sim_context):
-    container = test_container_create_only(admin_client, sim_context)
+def test_container_create_then_start(admin_client, internal_test_client,
+                                     sim_context):
+    container = test_container_create_only(admin_client, internal_test_client,
+                                           sim_context)
     container = container.start()
 
     assert_fields(container, {
         "state": "starting"
     })
-
-    container = wait_success(admin_client, container)
+    container = internal_test_client.reload(container)
+    container = wait_success(internal_test_client, container)
 
     _assert_running(container, sim_context)
 
 
 def test_container_first_running(admin_client, sim_context):
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      startOnCreate=False)
+    c = admin_client.create_container(
+        imageUuid=sim_context['imageUuid'],
+        startOnCreate=False)
     c = admin_client.wait_success(c)
 
     assert c.state == 'stopped'
@@ -172,20 +178,23 @@ def test_container_first_running(admin_client, sim_context):
     assert c.firstRunning == first
 
 
-def test_container_restart(admin_client, sim_context):
-    container = test_container_create_only(admin_client, sim_context)
+def test_container_restart(admin_client, internal_test_client, sim_context):
+    container = test_container_create_only(admin_client, internal_test_client,
+                                           sim_context)
     container = container.start()
-    container = wait_success(admin_client, container)
+    container = internal_test_client.reload(container)
+    container = wait_success(internal_test_client, container)
     _assert_running(container, sim_context)
-
+    container = admin_client.reload(container)
     container = container.restart()
 
     assert container.state == 'restarting'
     container = wait_success(admin_client, container)
+    container = internal_test_client.reload(container)
     _assert_running(container, sim_context)
 
 
-def test_container_stop(admin_client, sim_context):
+def test_container_stop(admin_client, internal_test_client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = admin_client.create_container(name="test",
                                               imageUuid=uuid,
@@ -209,6 +218,7 @@ def test_container_stop(admin_client, sim_context):
         "state": "stopped"
     })
 
+    container = internal_test_client.reload(container)
     root_volume = container.volumes()[0]
     assert_fields(root_volume, {
         "state": "inactive"
@@ -264,7 +274,7 @@ def _assert_removed(container):
     return container
 
 
-def test_container_remove(admin_client, sim_context):
+def test_container_remove(admin_client, internal_test_client, sim_context):
     uuid = "sim:{}".format(random_num())
     container = admin_client.create_container(name="test",
                                               imageUuid=uuid,
@@ -279,11 +289,13 @@ def test_container_remove(admin_client, sim_context):
     assert container.state == "removing"
 
     container = wait_success(admin_client, container)
+    container = internal_test_client.reload(container)
+    container = _assert_removed(container)
+    return admin_client.reload(container)
 
-    return _assert_removed(container)
 
-
-def test_container_delete_while_running(admin_client, sim_context):
+def test_container_delete_while_running(admin_client, internal_test_client,
+                                        sim_context):
     uuid = "sim:{}".format(random_num())
     container = admin_client.create_container(name="test",
                                               imageUuid=uuid)
@@ -294,11 +306,13 @@ def test_container_delete_while_running(admin_client, sim_context):
     assert container.state == 'stopping'
 
     container = wait_success(admin_client, container)
+    container = internal_test_client.reload(container)
     return _assert_removed(container)
 
 
-def test_container_restore(admin_client, sim_context):
-    container = test_container_remove(admin_client, sim_context)
+def test_container_restore(admin_client, internal_test_client, sim_context):
+    container = test_container_remove(admin_client, internal_test_client,
+                                      sim_context)
 
     assert container.state == "removed"
 
@@ -316,14 +330,16 @@ def test_container_restore(admin_client, sim_context):
 
     assert volumes[0].state == "inactive"
     assert_restored_fields(volumes[0])
-
+    container = internal_test_client.reload(container)
+    volumes = container.volumes()
     volume_mappings = volumes[0].volumeStoragePoolMaps()
     assert len(volume_mappings) == 1
     assert volume_mappings[0].state == "inactive"
 
 
-def test_container_purge(admin_client, sim_context):
-    container = test_container_remove(admin_client, sim_context)
+def test_container_purge(admin_client, internal_test_client, sim_context):
+    container = test_container_remove(admin_client, internal_test_client,
+                                      sim_context)
 
     assert container.state == "removed"
 
@@ -351,6 +367,7 @@ def test_container_purge(admin_client, sim_context):
     container = wait_success(admin_client, container)
     assert container.state == "purged"
 
+    container = internal_test_client.reload(container)
     instance_host_mappings = container.instanceHostMaps()
     assert len(instance_host_mappings) == 1
     assert instance_host_mappings[0].state == "removed"
@@ -364,7 +381,8 @@ def test_container_purge(admin_client, sim_context):
 
     volume = wait_transitioning(admin_client, volume)
     assert volume.state == 'purged'
-
+    container = internal_test_client.reload(container)
+    volume = container.volumes()[0]
     pool_maps = volume.volumeStoragePoolMaps()
     assert len(pool_maps) == 1
     assert pool_maps[0].state == 'removed'
@@ -396,7 +414,7 @@ def test_container_image_required(client, sim_context):
         assert e.error.fieldName == 'imageUuid'
 
 
-def test_container_compute_fail(admin_client, sim_context):
+def test_container_compute_fail(internal_test_client, sim_context):
     image_uuid = sim_context['imageUuid']
 
     data = {
@@ -406,10 +424,10 @@ def test_container_compute_fail(admin_client, sim_context):
         }
     }
 
-    container = admin_client.create_container(imageUuid=image_uuid,
-                                              data=data)
+    container = internal_test_client.create_container(imageUuid=image_uuid,
+                                                      data=data)
 
-    container = wait_transitioning(admin_client, container)
+    container = wait_transitioning(internal_test_client, container)
 
     assert container.transitioning == 'error'
     assert container.transitioningMessage == \
@@ -418,17 +436,17 @@ def test_container_compute_fail(admin_client, sim_context):
     _assert_removed(container)
 
 
-def test_container_storage_fail(admin_client, sim_context):
+def test_container_storage_fail(internal_test_client, sim_context):
     image_uuid = sim_context['imageUuid']
 
     data = {
         'storage.volume.activate::fail': True,
     }
 
-    container = admin_client.create_container(imageUuid=image_uuid,
-                                              data=data)
+    container = internal_test_client.create_container(imageUuid=image_uuid,
+                                                      data=data)
 
-    container = wait_transitioning(admin_client, container)
+    container = wait_transitioning(internal_test_client, container)
 
     assert container.transitioning == 'error'
     assert container.transitioningMessage == \
@@ -437,27 +455,28 @@ def test_container_storage_fail(admin_client, sim_context):
     _assert_removed(container)
 
 
-def test_create_with_vnet(admin_client, sim_context):
-    network = create_and_activate(admin_client, 'network')
+def test_create_with_vnet(internal_test_client, sim_context):
+    network = create_and_activate(internal_test_client, 'network')
 
-    subnet1 = create_and_activate(admin_client, 'subnet',
+    subnet1 = create_and_activate(internal_test_client, 'subnet',
                                   networkId=network.id,
                                   networkAddress='192.168.0.0')
-    create_and_activate(admin_client, 'subnet',
+    create_and_activate(internal_test_client, 'subnet',
                         networkId=network.id,
                         networkAddress='192.168.1.0')
 
-    vnet = create_and_activate(admin_client, 'vnet',
+    vnet = create_and_activate(internal_test_client, 'vnet',
                                networkId=network.id,
                                uri='dummy:///')
 
-    create_and_activate(admin_client, 'subnetVnetMap',
+    create_and_activate(internal_test_client, 'subnetVnetMap',
                         vnetId=vnet.id,
                         subnetId=subnet1.id)
 
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      vnetIds=[vnet.id])
-    c = admin_client.wait_success(c)
+    c = internal_test_client.create_container(
+        imageUuid=sim_context['imageUuid'],
+        vnetIds=[vnet.id])
+    c = internal_test_client.wait_success(c)
     assert c.state == 'running'
     assert 'vnetIds' not in c
 
@@ -471,27 +490,28 @@ def test_create_with_vnet(admin_client, sim_context):
     assert nic.subnetId == subnet1.id
 
 
-def test_create_with_vnet2(admin_client, sim_context):
-    network = create_and_activate(admin_client, 'network')
+def test_create_with_vnet2(internal_test_client, sim_context):
+    network = create_and_activate(internal_test_client, 'network')
 
-    create_and_activate(admin_client, 'subnet',
+    create_and_activate(internal_test_client, 'subnet',
                         networkId=network.id,
                         networkAddress='192.168.0.0')
-    subnet2 = create_and_activate(admin_client, 'subnet',
+    subnet2 = create_and_activate(internal_test_client, 'subnet',
                                   networkId=network.id,
                                   networkAddress='192.168.1.0')
 
-    vnet = create_and_activate(admin_client, 'vnet',
+    vnet = create_and_activate(internal_test_client, 'vnet',
                                networkId=network.id,
                                uri='dummy:///')
 
-    create_and_activate(admin_client, 'subnetVnetMap',
+    create_and_activate(internal_test_client, 'subnetVnetMap',
                         vnetId=vnet.id,
                         subnetId=subnet2.id)
 
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      vnetIds=[vnet.id])
-    c = admin_client.wait_success(c)
+    c = internal_test_client.create_container(
+        imageUuid=sim_context['imageUuid'],
+        vnetIds=[vnet.id])
+    c = internal_test_client.wait_success(c)
     assert c.state == 'running'
     assert 'vnetIds' not in c
 
@@ -505,35 +525,36 @@ def test_create_with_vnet2(admin_client, sim_context):
     assert nic.subnetId == subnet2.id
 
 
-def test_create_with_vnet_multiple_nics(admin_client, sim_context):
-    network = create_and_activate(admin_client, 'network')
+def test_create_with_vnet_multiple_nics(internal_test_client, sim_context):
+    network = create_and_activate(internal_test_client, 'network')
 
-    subnet1 = create_and_activate(admin_client, 'subnet',
+    subnet1 = create_and_activate(internal_test_client, 'subnet',
                                   networkId=network.id,
                                   networkAddress='192.168.0.0')
-    subnet2 = create_and_activate(admin_client, 'subnet',
+    subnet2 = create_and_activate(internal_test_client, 'subnet',
                                   networkId=network.id,
                                   networkAddress='192.168.1.0')
 
-    vnet = create_and_activate(admin_client, 'vnet',
+    vnet = create_and_activate(internal_test_client, 'vnet',
                                networkId=network.id,
                                uri='dummy:///')
 
-    vnet2 = create_and_activate(admin_client, 'vnet',
+    vnet2 = create_and_activate(internal_test_client, 'vnet',
                                 networkId=network.id,
                                 uri='dummy:///')
 
-    create_and_activate(admin_client, 'subnetVnetMap',
+    create_and_activate(internal_test_client, 'subnetVnetMap',
                         vnetId=vnet.id,
                         subnetId=subnet2.id)
 
-    create_and_activate(admin_client, 'subnetVnetMap',
+    create_and_activate(internal_test_client, 'subnetVnetMap',
                         vnetId=vnet2.id,
                         subnetId=subnet1.id)
 
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      vnetIds=[vnet.id, vnet2.id])
-    c = admin_client.wait_success(c)
+    c = internal_test_client.create_container(
+        imageUuid=sim_context['imageUuid'],
+        vnetIds=[vnet.id, vnet2.id])
+    c = internal_test_client.wait_success(c)
     assert c.state == 'running'
     assert 'vnetIds' not in c
 
@@ -554,108 +575,6 @@ def test_create_with_vnet_multiple_nics(admin_client, sim_context):
         elif nic.deviceNumber == 1:
             nic.subnetId == subnet1.id
             nic.vnetId == vnet2.id
-
-
-def test_container_restart_policy(admin_client, client):
-    for c in [admin_client, client]:
-        restart_policy = c.schema.types['restartPolicy']
-        assert len(restart_policy.resourceFields) == 2
-        assert 'name' in restart_policy.resourceFields
-        assert 'maximumRetryCount' in restart_policy.resourceFields
-        container = c.schema.types['container']
-        assert 'restartPolicy' == \
-               container.resourceFields['restartPolicy'].type
-
-
-def test_container_auth(admin_client, client):
-    auth_check(admin_client.schema, 'container', 'crud', {
-        'accountId': 'cru',
-        'agentId': 'cru',
-        'allocationState': 'r',
-        'capAdd': 'cr',
-        'capDrop': 'cr',
-        'command': 'cr',
-        'commandArgs': 'cr',
-        'compute': 'cr',
-        'count': 'cr',
-        'cpuSet': 'cr',
-        'cpuShares': 'cr',
-        'created': 'r',
-        'credentialIds': 'cr',
-        'data': 'cru',
-        'dataVolumes': 'cr',
-        'dataVolumesFrom': 'cr',
-        'description': 'cru',
-        'devices': 'cr',
-        'directory': 'cr',
-        'dns': 'cr',
-        'dnsSearch': 'cr',
-        'domain': 'r',
-        'domainName': 'cr',
-        'entryPoint': 'cr',
-        'environment': 'cr',
-        'firstRunning': 'r',
-        'hostname': 'cr',
-        'id': 'r',
-        'imageId': 'cr',
-        'imageUuid': 'cr',
-        'instanceLinks': 'cr',
-        'instanceTriggeredStop': 'cru',
-        'lxcConf': 'cr',
-        'memory': 'cr',
-        'memoryMb': 'r',
-        'memorySwap': 'cr',
-        'networkIds': 'cr',
-        'ports': 'cr',
-        'primaryAssociatedIpAddress': 'r',
-        'primaryIpAddress': 'r',
-        'privileged': 'cr',
-        'publishAllPorts': 'cr',
-        'removeTime': 'ru',
-        'requestedHostId': 'cru',
-        'restartPolicy': 'cr',
-        'startOnCreate': 'cr',
-        'stdinOpen': 'cr',
-        'subnetIds': 'cr',
-        'token': 'r',
-        'tty': 'cr',
-        'user': 'cr',
-        'userdata': 'cru',
-        'validHostIds': 'cru',
-        'vnetIds': 'cr',
-        'zoneId': 'cru'
-    })
-
-    auth_check(client.schema, 'container', 'crud', {
-        'command': 'cr',
-        'commandArgs': 'cr',
-        'count': 'cr',
-        'created': 'r',
-        'credentialIds': 'cr',
-        'dataVolumes': 'cr',
-        'dataVolumesFrom': 'cr',
-        'description': 'cru',
-        'directory': 'cr',
-        'environment': 'cr',
-        'hostname': 'cr',
-        'id': 'r',
-        'imageId': 'cr',
-        'imageUuid': 'cr',
-        'instanceLinks': 'cr',
-        'instanceTriggeredStop': 'cru',
-        'networkIds': 'cr',
-        'ports': 'cr',
-        'primaryAssociatedIpAddress': 'r',
-        'primaryIpAddress': 'r',
-        'publishAllPorts': 'cr',
-        'restartPolicy': 'cr',
-        'requestedHostId': 'cr',
-        'startOnCreate': 'cr',
-        'subnetIds': 'cr',
-        'user': 'cr',
-        'userdata': 'cru',
-        'zoneId': 'r'
-    })
 
 
 def test_container_exec_on_stop(admin_client, sim_context):
