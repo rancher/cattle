@@ -4,11 +4,13 @@ import static org.junit.Assert.*;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Date;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +41,18 @@ public class JwtTokenServiceImplTest {
                     throw new RuntimeException(e);
                 }
             }
+
+			@Override
+			public Map<String, PublicKey> getPublicKeys() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public PublicKey getDefaultPublicKey() {
+				// TODO Auto-generated method stub
+				return null;
+			}
         });
 
 
@@ -46,7 +60,7 @@ public class JwtTokenServiceImplTest {
 
     @Test
     public void test() {
-        assertEquals(TOKEN, impl.generateToken(null, new Date(1413936626719L), null));
+        assertEquals(TOKEN, impl.generateToken(null, new Date(1413936626719L), null, false));
     }
 
 }

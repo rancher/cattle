@@ -49,6 +49,11 @@
             <artifactId>commons-codec</artifactId>
         </dependency>
         <dependency>
+		    <groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>1.8</version>
+		</dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <scope>provided</scope>
