@@ -25,17 +25,18 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
 
     private static final String KEY = "host.api.key";
     private static final String DEFAULT = "default";
+    
+    private static KeyPair keyPair;
 
     DataDao dataDao;
 
     @Override
     public RSAPrivateKeyHolder getPrivateKey() {
-        KeyPair kp = getKeyPair();
-        if ( kp == null ) {
-            return null;
+        if ( keyPair == null ) {
+            keyPair = getKeyPair();
         }
 
-        return new RSAPrivateKeyHolder(DEFAULT, (RSAPrivateKey) kp.getPrivate());
+        return new RSAPrivateKeyHolder(DEFAULT, (RSAPrivateKey) keyPair.getPrivate());
     }
 
     @Override
@@ -66,7 +67,13 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
             return null;
         }
     }
+    
+    @Override
+    public PublicKey getDefaultPublicKey() {
+    	return getPublicKeys().get(DEFAULT);
+    }
 
+    @Override
     public Map<String,PublicKey> getPublicKeys() {
         Map<String,PublicKey> result = new HashMap<String, PublicKey>();
 
