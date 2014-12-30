@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ ! -e /usr/src/.build-cache ]; then
+    mkdir -p /usr/src/cattle
+    cd /usr/src/cattle
+    git clone https://github.com/cattleio/cattle.git .
+    mvn -DskipTests=true install || true
+    mvn dependency:go-offline || true
+    mvn clean
+    cd ..
+    rm -rf cattle
+    touch /usr/src/.build-cache
+fi

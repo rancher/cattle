@@ -4,4 +4,4 @@ set -e
 apt-get update
 apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip
 
-pip install --upgrade pip tox virtualenv==1.11.6
+pip install --upgrade pip tox virtualenv
