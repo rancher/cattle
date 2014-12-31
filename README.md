@@ -1,5 +1,4 @@
-# Cattle
-
+# Cattle [![Build Status](http://drone.rancher.io/api/badge/github.com/rancherio/cattle/status.svg?branch=master)](http://drone.rancher.io/github.com/rancherio/cattle)
 **This is early alpha stuff.  You've been warned.**
 
 Cattle is an infrastructure orchestration platform for such tasks as running containers and virtual machines.  It was created as a sandbox to try out new architectural ideas that would be either too risky or too difficult to do within an established platform like OpenStack or Apache CloudStack.
