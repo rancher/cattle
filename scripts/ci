@@ -3,7 +3,6 @@ set -e
 
 cd $(dirname $0)
 
-export DOCKER_DRIVER=vfs
 export RUNTIME_DIR=../../../runtime/ci/
 export RUNTIME_DIR_CLEAN=true
 export CATTLE_LOGBACK_ROOT_LEVEL=error
@@ -13,6 +12,7 @@ export CATTLE_LOGBACK_ROOT_LEVEL=error
 if [ -x "$(which wrapdocker)" ]; then
     echo Launching Docker
     wrapdocker >/tmp/docker.log 2>&1
+    docker info
 fi
 
 DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/register.log &
