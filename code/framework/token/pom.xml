@@ -23,5 +23,10 @@
              </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+        	<groupId>org.bouncycastle</groupId>
+        	<artifactId>bcprov-jdk16</artifactId>
+        	<scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
