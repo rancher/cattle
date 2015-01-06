@@ -1,18 +1,25 @@
 package io.cattle.platform.token.impl;
 
 import static org.junit.Assert.*;
+import io.cattle.platform.token.TokenException;
 
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.util.Date;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.nimbusds.jose.util.Base64;
 
 public class JwtTokenServiceImplTest {
@@ -24,29 +31,65 @@ public class JwtTokenServiceImplTest {
 
     @Before
     public void setUp() {
+        Security.addProvider(new BouncyCastleProvider());
         impl = new JwtTokenServiceImpl();
         impl.setKeyProvider(new RSAKeyProvider() {
+
+            KeyFactory kf;
+            EncodedKeySpec spec = new PKCS8EncodedKeySpec(new Base64(KEY).decode());
+
             @Override
             public RSAPrivateKeyHolder getPrivateKey() {
 
                 try {
-                    EncodedKeySpec spec = new PKCS8EncodedKeySpec(new Base64(KEY).decode());
-                    KeyFactory kf = KeyFactory.getInstance("RSA");
-                    return new RSAPrivateKeyHolder("abc", (RSAPrivateKey)kf.generatePrivate(spec));
+                    kf = KeyFactory.getInstance("RSA");
+                    return new RSAPrivateKeyHolder("abc", (RSAPrivateKey) kf.generatePrivate(spec));
                 } catch (NoSuchAlgorithmException e) {
                     throw new RuntimeException(e);
                 } catch (InvalidKeySpecException e) {
                     throw new RuntimeException(e);
                 }
             }
-        });
 
+            @Override
+            public Map<String, PublicKey> getPublicKeys() {
+                // TODO Auto-generated method stub
+                return null;
+            }
+
+            @Override
+            public PublicKey getDefaultPublicKey() {
+                try {
+                    kf = KeyFactory.getInstance("RSA");
+                    BigInteger modulus = new BigInteger(
+                            "111477103238322465633334802347196848276745427190035850232359047430738831490294428792865542779043266665451160648116725279287065632589519313377918207473210865843357067938152969267052295101676828476867765239574399207781254529735105609482031252978262212237371891597488765482508817144842927535892383110624969098603");
+                    BigInteger exponent = new BigInteger("65537");
+                    RSAPublicKeySpec publicKeySpec = new java.security.spec.RSAPublicKeySpec(modulus, exponent);
+                    return kf.generatePublic(publicKeySpec);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
 
     }
 
     @Test
-    public void test() {
-        assertEquals(TOKEN, impl.generateToken(null, new Date(1413936626719L), null));
+    public void testGeneratesToken() {
+        assertEquals(TOKEN, impl.generateToken(null, new Date(1413936626719L), null, false));
     }
 
+    @Test(expected = TokenException.class)
+    public void testCheckExpiry() throws TokenException {
+        String expiredToken = impl.generateToken(null, new Date(1413936626719L), new Date(1413936626719L), false);
+        impl.getJsonPayload(expiredToken, false);
+    }
+
+    @Test
+    public void testDecryptsEncryptedToken() throws TokenException {
+        String newEncryptedToken = impl.generateToken(null, new Date(1413936626719L), new Date(1923109200000L), true);
+        Map<String, Object> decrypted = impl.getJsonPayload(newEncryptedToken, true);
+        assertEquals(decrypted.get("exp"), Long.valueOf(1923109200));
+        assertEquals(decrypted.get("iat"), Long.valueOf(1413936626));
+    }
 }
