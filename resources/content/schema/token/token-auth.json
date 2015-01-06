@@ -1,0 +1,7 @@
+{
+    "authorize" : {
+        "schema": "r",
+        "token": "cr",
+        "token.jwt": "r"
+    }
+}
