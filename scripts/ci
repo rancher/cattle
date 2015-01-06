@@ -15,7 +15,7 @@ if [ -x "$(which wrapdocker)" ]; then
     docker info
 fi
 
-DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/register.log &
+docker pull rancher/agent 
 
 run()
 {
@@ -32,6 +32,9 @@ run()
 run ./bootstrap
 run ./clean
 MAVEN_ARGS='-B -q' ./build
+
+DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/register.log &
+
 run ./run --background
 
 ./test || {
