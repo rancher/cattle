@@ -13,22 +13,21 @@ DEFAULT_AGENT_UUID = 'test-agent'
 SLEEP_DELAY = 0.5
 
 
-def _cattle_url():
-    try:
-        return os.environ['CATTLE_URL']
-    except KeyError:
-        return 'http://localhost:8080/v1/schemas'
+@pytest.fixture(scope='session')
+def cattle_url():
+    default_url = 'http://localhost:8080/v1/schemas'
+    return os.environ.get('CATTLE_URL', default_url)
 
 
 def _admin_client():
-    return cattle.from_env(url=_cattle_url(),
+    return cattle.from_env(url=cattle_url(),
                            cache=False,
                            access_key='admin',
                            secrect_key='adminpass')
 
 
 def _client_for_user(name, accounts):
-    return cattle.from_env(url=_cattle_url(),
+    return cattle.from_env(url=cattle_url(),
                            cache=False,
                            access_key=accounts[name][0],
                            secret_key=accounts[name][1])
