@@ -16,6 +16,9 @@ if [ -x "$(which wrapdocker)" ]; then
 fi
 
 docker pull rancher/agent 
+for i in agent.instance.image bootstrap.required.image; do
+    docker pull $(grep $i ../resources/content/cattle-global.properties | cut -f2 -d=)
+done
 
 run()
 {
