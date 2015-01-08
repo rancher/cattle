@@ -8,5 +8,4 @@ Contents:
 
    simple-handler
    hypervisor
-   libvirt-template
 

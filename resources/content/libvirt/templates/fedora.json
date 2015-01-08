@@ -1,7 +1,0 @@
-{
-    "name" : "Fedora 20",
-    "description" : "Default user: fedora",
-    "uuid" : "fedora-20",
-    "url" : "http://fedora.mirror.constant.com/linux/updates/20/Images/x86_64/Fedora-x86_64-20-20140407-sda.qcow2",
-    "checksum" : "c6ada5d30c1c8571b2ae24e7c3e940cedb524c5a"
-}

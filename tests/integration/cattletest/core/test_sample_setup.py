@@ -11,7 +11,6 @@ def test_sample_data(admin_client, system_account):
     assert network.state == 'active' or network.state == 'inactive'
     assert 'hostVnetUri' not in network
     assert 'dynamicCreateVnet' not in network
-    assert 'libvirt' not in network.data
 
     network_services = find_count(1, network.networkServices)
     network_service_kinds = set()
@@ -36,16 +35,6 @@ def test_sample_data(admin_client, system_account):
     assert network.state == 'active' or network.state == 'inactive'
     assert network.hostVnetUri == 'bridge://docker0'
     assert network.dynamicCreateVnet
-    assert network.data.libvirt == {
-        'network': {
-            'source': [
-                {
-                    'bridge': 'docker0'
-                }
-            ],
-            'type': 'bridge'
-        }
-    }
 
     subnet = find_one(network.subnets)
 

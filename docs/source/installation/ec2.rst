@@ -20,7 +20,7 @@ Regions
 Information
 ***********
 
-This CloudFormation template will create a single EC2 instance that has Cattle installed and it will register itself as a docker and libvirt hypervisor.  Once the installation is done, which could take 20 minutes, the UI and API will be accessible at http://ec2-XX-XXX-XXX-XX.us-west-1.compute.amazonaws.com:8080/v1.
+This CloudFormation template will create a single EC2 instance that has Cattle installed and it will register itself as a Docker server.  Once the installation is done, which could take 20 minutes, the UI and API will be accessible at http://ec2-XX-XXX-XXX-XX.us-west-1.compute.amazonaws.com:8080/v1.
 
 
 Logging in
@@ -30,4 +30,4 @@ You can log into the server by running ssh similar to below
 
 ``ssh -l ubuntu -i mykey.pem ec2-XX-XXX-XXX-XX.us-west-1.compute.amazonaws.com``
 
-The installation log is at :file:`/var/log/cattle-install.log`.  If everything ran successfully you should be able to run ``cattle list-host`` and see two hosts registered, one for Docker and one for Libvirt.
+The installation log is at :file:`/var/log/cattle-install.log`.  If everything ran successfully you should be able to run ``cattle list-host`` and see one host registered.

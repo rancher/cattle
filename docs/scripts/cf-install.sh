@@ -5,8 +5,8 @@ do_install()
     # Install docker if you don't have it
     [ ! -x "$(which docker)" ] && curl -sL https://get.docker.io/ | sh
 
-    # Install libvirt too
-    sudo apt-get install -y libvirt-bin python-libvirt qemu-kvm python-pip python-numpy arptables genisoimage
+    # Install some packages
+    sudo apt-get install -y python-pip arptables
 
     # Gonna need a ssh server
     sudo apt-get install -y openssh-server

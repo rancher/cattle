@@ -15,17 +15,6 @@ The key areas of focus are
 
 ### Features
 
-* Virtual Machines
-  * Libvirt/KVM
-  * EC2/OpenStack images work out of the box
-  * EC2 style meta data
-  * OpenStack config drive
-  * Managed DNS/DHCP
-  * User data
-  * Floating IPs
-  * Private networking
-  * VNC Console
-  * CoreOS, Ubuntu, Fedora, and Cirros templates preconfigured
 * Docker
   * Link containers across servers
   * Dynamically reassign links and ports
@@ -33,7 +22,6 @@ The key areas of focus are
   * VMs and containers can share the same network space
   * By default, a private IPSec VPN is created that spans servers
   * All containers and VMs live on a virtual network that can span across cloud
-  * Can also use any libvirt networking models for VMs
 * Interface
   * UI
   * REST API
@@ -60,8 +48,8 @@ Start with a fresh **Ubuntu 13.10**.  Anything that runs Docker will eventually 
 # Install docker if you don't have it
 [ ! -x "$(which docker)" ] && curl -sL https://get.docker.io/ | sh
 
-# Install libvirt too, plus some other stuff
-sudo apt-get install -y libvirt-bin python-libvirt qemu-kvm python-numpy arptables genisoimage
+# Install some other packages
+sudo apt-get install -y arptables
 
 # Gonna need a ssh server
 sudo apt-get install -y openssh-server
@@ -139,17 +127,6 @@ cattle list-container
 ```
 
 Once running refer to `dockerHostIp` and `dockerPorts` fields to get the network information for port 22 to SSH into the container.  The username and password is **user/password**.
-
-### Virtual Machines
-
-```bash
-cattle create-virtualMachine --memoryMb 256 --imageUuid cirros
-
-# Check if it's done
-cattle list-virtualMachine
-```
-
-Once running refer to `libvirtVncAddress` and `libvirtVncPassword` fields to get access to the console or use the console action to get a URL to a noVNC capable stream.  It's far easier to just use the UI if you want console access.
 
 
 ## Integrating
@@ -236,7 +213,7 @@ done
 
 The full documentation is available at http://docs.cattle.io
 
-There are [other examples][1] of integrating with Cattle.  For example, adding a [new hypervisor][3] or [customizing libvirt][4].
+There are [other examples][1] of integrating with Cattle.  For example, adding a [new hypervisor][3].
 
 
 # License
@@ -245,7 +222,6 @@ There are [other examples][1] of integrating with Cattle.  For example, adding a
   [1]: http://docs.cattle.io/en/latest/examples/toc.html
   [2]: http://www.apache.org/licenses/LICENSE-2.0.html
   [3]: http://docs.cattle.io/en/latest/examples/hypervisor.html
-  [4]: http://docs.cattle.io/en/latest/examples/libvirt-template.html
   [5]: http://cattle.readthedocs.org/en/latest/installation/ec2.html
   [6]: http://docs.cattle.io/en/latest/concepts/orchestration.html
   [8]: http://cattle.readthedocs.org/en/latest/toc.html

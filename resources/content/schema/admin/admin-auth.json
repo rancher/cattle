@@ -200,9 +200,6 @@
         "virtualMachine.subnetIds" : "cr",
         "virtualMachine.vcpu" : "cr",
 
-        "virtualMachine.libvirtVncAddress" : "r",
-        "virtualMachine.libvirtVncPassword" : "r",
-
         "vnet.uri" : "cr",
 
         "volume" : "rd",
