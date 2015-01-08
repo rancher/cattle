@@ -46,41 +46,39 @@ public class InstanceConsoleActionHandler implements ActionHandler {
 
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
-        if ( ! (obj instanceof Instance) ) {
+        if (!(obj instanceof Instance)) {
             return null;
         }
 
-        Instance instance = (Instance)obj;
+        Instance instance = (Instance) obj;
 
         List<Host> hosts = objectManager.mappedChildren(instance, Host.class);
 
-        if ( hosts.size() != 1 ) {
+        if (hosts.size() != 1) {
             return null;
         }
 
         RemoteAgent agent = locator.lookupAgent(hosts.get(0));
 
-        if ( agent == null ) {
+        if (agent == null) {
             return null;
         }
 
-        Map<String,Object> data = CollectionUtils.asMap(
-                HostConstants.TYPE, hosts.get(0),
-                InstanceConstants.TYPE, instance,
-                ObjectMetaDataManager.KIND_FIELD, null);
+        Map<String, Object> data = CollectionUtils.asMap(HostConstants.TYPE, hosts.get(0), InstanceConstants.TYPE, instance, ObjectMetaDataManager.KIND_FIELD,
+                null);
         EventVO<Object> event = EventVO.newEvent(IaasEvents.CONSOLE_ACCESS).withData(data);
 
         try {
             Event result = agent.callSync(event, new EventCallOptions(0, 5000L));
 
-            if ( result.getData() == null ) {
+            if (result.getData() == null) {
                 return null;
             }
 
-            Map<String,Object> responseData = CollectionUtils.<String,Object>toMap(result.getData());
-            Map<String,Object> subData = new HashMap<String,Object>();
-            for ( Map.Entry<String, Object> entry : responseData.entrySet() ) {
-                if ( entry.getValue() != null ) {
+            Map<String, Object> responseData = CollectionUtils.<String, Object> toMap(result.getData());
+            Map<String, Object> subData = new HashMap<String, Object>();
+            for (Map.Entry<String, Object> entry : responseData.entrySet()) {
+                if (entry.getValue() != null) {
                     subData.put(entry.getKey(), URLEncoder.encode(entry.getValue().toString(), "UTF-8"));
                 }
             }
@@ -88,9 +86,9 @@ public class InstanceConsoleActionHandler implements ActionHandler {
             subData.put("static", ApiContext.getUrlBuilder().staticResource());
 
             ResourceImpl resource = new ResourceImpl(null, "instanceConsole", responseData);
-            if ( responseData.size() > 0 ) {
+            if (responseData.size() > 0) {
                 String format = ArchaiusUtil.getString(VIEW_URL_FORMAT + responseData.get("kind")).get();
-                if ( format != null ) {
+                if (format != null) {
                     String url = new StrSubstitutor(subData).replace(format);
                     try {
                         resource.getFields().put("view", url);
@@ -100,9 +98,9 @@ public class InstanceConsoleActionHandler implements ActionHandler {
                 }
             }
             return resource;
-        } catch ( TimeoutException e ) {
+        } catch (TimeoutException e) {
             return null;
-        } catch ( UnsupportedEncodingException e ) {
+        } catch (UnsupportedEncodingException e) {
             return null;
         }
     }

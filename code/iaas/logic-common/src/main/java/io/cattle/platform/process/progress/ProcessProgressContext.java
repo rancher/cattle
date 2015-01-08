@@ -22,8 +22,7 @@ public class ProcessProgressContext implements ProcessProgressInstance {
     JsonMapper jsonMapper;
     EventService eventService;
 
-    public ProcessProgressContext(ProcessState processState, ObjectManager objectManager,
-            JsonMapper jsonMapper, EventService eventService) {
+    public ProcessProgressContext(ProcessState processState, ObjectManager objectManager, JsonMapper jsonMapper, EventService eventService) {
         super();
         this.processState = processState;
         this.objectManager = objectManager;
@@ -33,12 +32,11 @@ public class ProcessProgressContext implements ProcessProgressInstance {
 
     @Override
     public void init(ProcessState state, int... checkpointWeights) {
-        DataAccessor value = DataAccessor.fromMap(state.getData())
-                                .withKey("progress");
+        DataAccessor value = DataAccessor.fromMap(state.getData()).withKey("progress");
 
         progressState = value.as(jsonMapper, ProcessProgressState.class);
 
-        if ( progressState == null ) {
+        if (progressState == null) {
             progressState = new ProcessProgressState(checkpointWeights);
             value.set(progressState);
         }
@@ -46,21 +44,21 @@ public class ProcessProgressContext implements ProcessProgressInstance {
 
     @Override
     public void checkPoint(String name) {
-        if ( progressState.checkPoint(name) ) {
+        if (progressState.checkPoint(name)) {
             update();
         }
     }
 
     @Override
     public void progress(Integer progress) {
-        if ( progressState.setIntermediateProgress(progress) ) {
+        if (progressState.setIntermediateProgress(progress)) {
             update();
         }
     }
 
     @Override
     public void messsage(String message) {
-        if ( progressState.setMessage(message) ) {
+        if (progressState.setMessage(message)) {
             update();
         }
     }
@@ -71,20 +69,16 @@ public class ProcessProgressContext implements ProcessProgressInstance {
 
         final Object resource = objectManager.reload(processState.getResource());
 
-        objectManager.setFields(resource,
-                ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message,
-                ObjectMetaDataManager.TRANSITIONING_PROGRESS_FIELD, progress);
+        objectManager.setFields(resource, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message, ObjectMetaDataManager.TRANSITIONING_PROGRESS_FIELD,
+                progress);
 
         DeferredUtils.nest(new Runnable() {
             @Override
             public void run() {
                 String type = objectManager.getType(resource);
                 Object id = ObjectUtils.getId(resource);
-                if ( id != null ) {
-                    Event event = EventVO
-                            .newEvent(FrameworkEvents.RESOURCE_PROGRESS)
-                            .withResourceType(type)
-                            .withResourceId(id.toString());
+                if (id != null) {
+                    Event event = EventVO.newEvent(FrameworkEvents.RESOURCE_PROGRESS).withResourceType(type).withResourceId(id.toString());
                     eventService.publish(event);
                 }
             }

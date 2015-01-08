@@ -15,7 +15,7 @@ public abstract class AbstractBlockingLockDefintion extends AbstractLockDefiniti
     @Override
     public long getWait() {
         String lockId = getLockId();
-        if ( lockId == null ) {
+        if (lockId == null) {
             return DEFAULT_WAIT.get();
         } else {
             long wait = ArchaiusUtil.getLong(lockId + ".wait").get();

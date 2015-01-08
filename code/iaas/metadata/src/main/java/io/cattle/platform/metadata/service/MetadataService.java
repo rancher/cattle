@@ -10,9 +10,9 @@ import java.util.Map;
 
 public interface MetadataService {
 
-    Map<String,Object> getMetadata(Instance agentInstance, IdFormatter idformatter);
+    Map<String, Object> getMetadata(Instance agentInstance, IdFormatter idformatter);
 
-    Map<String,Object> getMetadataForInstance(Instance instance, IdFormatter idformatter);
+    Map<String, Object> getMetadataForInstance(Instance instance, IdFormatter idformatter);
 
     List<MetadataRedirectData> getMetadataRedirects(Agent agent);
 

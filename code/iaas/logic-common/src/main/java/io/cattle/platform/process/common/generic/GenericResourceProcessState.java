@@ -26,7 +26,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     String resourceId;
     ObjectManager objectManager;
     LockDefinition processLock;
-    Map<String,Object> data;
+    Map<String, Object> data;
 
     public GenericResourceProcessState(JsonMapper jsonMapper, ResourceStatesDefinition stateDef, LaunchConfiguration config, ObjectManager objectManager) {
         super(jsonMapper, stateDef);
@@ -50,7 +50,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     @Override
     public String getState() {
         try {
-            if ( resource == null ) {
+            if (resource == null) {
                 return null;
             }
             return BeanUtils.getProperty(resource, getStatesDefinition().getStateField());
@@ -70,20 +70,14 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
 
     @Override
     protected boolean setState(boolean transitioning, String oldState, String newState) {
-        if ( resource != null && transitioning &&
-                ObjectMetaDataManager.STATE_FIELD.equals(getStatesDefinition().getStateField())) {
-            DataAccessor.fields(resource)
-                        .withKey(ObjectMetaDataManager.TRANSITIONING_FIELD)
-                        .remove();
+        if (resource != null && transitioning && ObjectMetaDataManager.STATE_FIELD.equals(getStatesDefinition().getStateField())) {
+            DataAccessor.fields(resource).withKey(ObjectMetaDataManager.TRANSITIONING_FIELD).remove();
 
-            DataAccessor.fields(resource)
-                        .withKey(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD)
-                        .remove();
+            DataAccessor.fields(resource).withKey(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD).remove();
         }
 
-        Object newResource = objectManager.setFields(resource,
-                getStatesDefinition().getStateField(), newState);
-        if ( newResource == null ) {
+        Object newResource = objectManager.setFields(resource, getStatesDefinition().getStateField(), newState);
+        if (newResource == null) {
             return false;
         } else {
             resource = newResource;
@@ -109,7 +103,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
 
     @Override
     public boolean shouldCancel(ProcessRecord record) {
-        if ( resource == null ) {
+        if (resource == null) {
             log.error("Resource is null, can't find resource id [{}]", resourceId);
             return true;
         }

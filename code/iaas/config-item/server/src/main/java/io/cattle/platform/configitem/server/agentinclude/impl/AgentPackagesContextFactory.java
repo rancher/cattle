@@ -28,15 +28,13 @@ public class AgentPackagesContextFactory extends AbstractAgentBaseContextFactory
     String name;
     AgentIncludeMap map;
 
-    public AgentPackagesContextFactory(String name, AgentIncludeMap map, ObjectManager objectManager,
-            ConfigItemStatusManager statusManager) {
+    public AgentPackagesContextFactory(String name, AgentIncludeMap map, ObjectManager objectManager, ConfigItemStatusManager statusManager) {
         super();
         this.name = name;
         this.map = map;
         this.objectManager = objectManager;
         this.statusManager = statusManager;
     }
-
 
     @Override
     public String getContentHash(String hash) {
@@ -52,21 +50,21 @@ public class AgentPackagesContextFactory extends AbstractAgentBaseContextFactory
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         context.getData().put("data", map.getMap(name));
 
-        if ( instance != null ) {
+        if (instance != null) {
             return;
         }
 
         Client client = new DefaultClient(Agent.class, agent.getId());
         ConfigUpdateRequest request = new ConfigUpdateRequest(client.getResourceId()).withDeferredTrigger(true);
 
-        for ( String itemName : REQUIRED.get() ) {
-            if ( ! statusManager.isAssigned(client, itemName) ) {
+        for (String itemName : REQUIRED.get()) {
+            if (!statusManager.isAssigned(client, itemName)) {
                 log.info("Adding missing [{}] to agent [{}]", itemName, agent.getId());
                 request.addItem(itemName);
             }
         }
 
-        if ( request.getItems().size() > 0 ) {
+        if (request.getItems().size() > 0) {
             statusManager.updateConfig(request);
         }
     }

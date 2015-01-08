@@ -12,10 +12,11 @@ public interface AgentConnection {
     String getUri();
 
     /**
-     * The future that is returned is expected to always complete, either success or failure.
-     * It it up to the implementation of the AgentConnection to ensure that the future
-     * is cancelled or set to an exception in the situation of a timeout.  In other words,
-     * The AgentConnection is responsible for handling the timeout logic.
+     * The future that is returned is expected to always complete, either
+     * success or failure. It it up to the implementation of the AgentConnection
+     * to ensure that the future is cancelled or set to an exception in the
+     * situation of a timeout. In other words, The AgentConnection is
+     * responsible for handling the timeout logic.
      *
      * @param event
      * @return

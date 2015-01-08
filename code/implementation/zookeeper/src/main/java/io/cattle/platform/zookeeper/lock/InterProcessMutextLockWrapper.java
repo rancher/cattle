@@ -49,7 +49,7 @@ public class InterProcessMutextLockWrapper implements Lock {
     public void unlock() {
         try {
             mutex.release();
-        } catch ( IllegalMonitorStateException e ) {
+        } catch (IllegalMonitorStateException e) {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to unlock [" + name + "] due to exception", e);
         }

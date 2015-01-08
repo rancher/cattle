@@ -4,7 +4,7 @@ import java.util.Map;
 
 public interface ObjectSerializer {
 
-    Map<String,Object> serialize(Object obj);
+    Map<String, Object> serialize(Object obj);
 
     String getExpression();
 

@@ -21,7 +21,7 @@ public class SubnetCreate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Subnet subnet = (Subnet)state.getResource();
+        Subnet subnet = (Subnet) state.getResource();
 
         String networkAddress = subnet.getNetworkAddress();
         int cidrSize = subnet.getCidrSize();
@@ -29,21 +29,19 @@ public class SubnetCreate extends AbstractDefaultProcessHandler {
         String startAddress = subnet.getStartAddress();
         String endAddress = subnet.getEndAddress();
 
-        if ( gateway == null ) {
+        if (gateway == null) {
             gateway = NetUtils.getDefaultGateway(networkAddress, cidrSize);
         }
 
-        if ( startAddress == null ) {
+        if (startAddress == null) {
             startAddress = NetUtils.getDefaultStartAddress(networkAddress, cidrSize);
         }
 
-        if ( endAddress == null ) {
+        if (endAddress == null) {
             endAddress = NetUtils.getDefaultEndAddress(networkAddress, cidrSize);
         }
 
-        return new HandlerResult(SUBNET.GATEWAY, gateway,
-                SUBNET.START_ADDRESS, startAddress,
-                SUBNET.END_ADDRESS, endAddress);
+        return new HandlerResult(SUBNET.GATEWAY, gateway, SUBNET.START_ADDRESS, startAddress, SUBNET.END_ADDRESS, endAddress);
     }
 
     public JsonMapper getJsonMapper() {

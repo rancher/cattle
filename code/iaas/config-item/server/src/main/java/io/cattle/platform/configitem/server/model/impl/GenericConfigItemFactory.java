@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
 
-public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
+public class GenericConfigItemFactory implements ConfigItemFactory, Named {
 
     private static final Logger log = LoggerFactory.getLogger(GenericConfigItemFactory.class);
 
@@ -43,14 +43,14 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
     boolean ignoreNotFound = false;
 
     protected File findDevRoot() {
-        if ( IGNORE_FS.get() ) {
+        if (IGNORE_FS.get()) {
             return null;
         }
 
         URL url = GenericConfigItemFactory.class.getClassLoader().getResource(root);
-        if ( url != null && "file".equals(url.getProtocol()) ) {
+        if (url != null && "file".equals(url.getProtocol())) {
             File scriptsRoot = new File(url.getPath(), devRelativePath);
-            if ( scriptsRoot.exists() ) {
+            if (scriptsRoot.exists()) {
                 try {
                     return new File(scriptsRoot.getCanonicalPath());
                 } catch (IOException e) {
@@ -64,7 +64,7 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
 
     protected void locateResourceRoot() throws IOException {
         File devRoot = findDevRoot();
-        if ( devRoot == null ) {
+        if (devRoot == null) {
             log.info("Using classpath for location [{}]", name);
             processUrlRoot();
         } else {
@@ -74,9 +74,9 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
     }
 
     protected void processUrlRoot() throws IOException {
-        Map<String,Map<String,URL>> config = ConfigItemResourceUtil.processUrlRoot(ignoreNotFound, root, resources);
+        Map<String, Map<String, URL>> config = ConfigItemResourceUtil.processUrlRoot(ignoreNotFound, root, resources);
 
-        for ( Map.Entry<String, Map<String,URL>> entry : config.entrySet() ) {
+        for (Map.Entry<String, Map<String, URL>> entry : config.entrySet()) {
             String item = entry.getKey();
 
             URLBaseResourceRoot resourceRoot = new URLBaseResourceRoot(entry.getValue());
@@ -93,12 +93,12 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named  {
     protected void processFileRoot(File root) throws IOException {
         String[] children = root.list();
 
-        if ( children == null )
+        if (children == null)
             return;
 
-        for ( String child : children ) {
+        for (String child : children) {
             File childFile = new File(root, child);
-            if ( ! child.startsWith(".") && childFile.isDirectory() ) {
+            if (!child.startsWith(".") && childFile.isDirectory()) {
                 FileBasedResourceRoot itemResource = new FileBasedResourceRoot(childFile);
                 itemResource.scan();
                 items.add(new TemplatesBasedArchiveItem(child, versionManager, itemResource, templateFactory, getFactories(child)));

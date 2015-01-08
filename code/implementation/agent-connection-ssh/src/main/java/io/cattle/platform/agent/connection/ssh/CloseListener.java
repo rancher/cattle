@@ -32,7 +32,7 @@ public class CloseListener implements SessionListener, SshFutureListener<OpenFut
 
     @Override
     public void operationComplete(OpenFuture future) {
-        if ( ! future.isOpened() ) {
+        if (!future.isOpened()) {
             log.error("Failed to execute bootstrap command for agent [{}]", connection.getAgentId(), future.getException());
             connection.close();
         }

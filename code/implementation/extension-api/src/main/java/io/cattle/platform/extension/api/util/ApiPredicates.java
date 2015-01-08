@@ -14,10 +14,9 @@ public class ApiPredicates {
 
     private static final Logger log = LoggerFactory.getLogger(ApiPredicates.class);
 
-
-    public static <T> Predicate<T> filterOn(Map<?,Object> criteria, String... keys) {
+    public static <T> Predicate<T> filterOn(Map<?, Object> criteria, String... keys) {
         Predicate<T> condition = Predicates.alwaysTrue();
-        for ( String prop : keys ) {
+        for (String prop : keys) {
             condition = Predicates.and(condition, ApiPredicates.fieldFilter(prop, criteria.get(prop)));
         }
 
@@ -28,7 +27,7 @@ public class ApiPredicates {
         return new Predicate<T>() {
             @Override
             public boolean apply(T input) {
-                if ( value == null ) {
+                if (value == null) {
                     return true;
                 }
                 Object result;
@@ -45,7 +44,7 @@ public class ApiPredicates {
                     return false;
                 }
 
-                if ( result == null ) {
+                if (result == null) {
                     return false;
                 }
 

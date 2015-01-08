@@ -15,7 +15,7 @@ public class FirstInstanceInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if ( method.getDeclaringClass() == Object.class ) {
+        if (method.getDeclaringClass() == Object.class) {
             return method.invoke(obj, args);
         }
 

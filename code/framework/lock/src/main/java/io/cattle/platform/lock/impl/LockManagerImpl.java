@@ -17,22 +17,22 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
     LockProvider lockProvider;
 
     @Override
-    protected <T, E extends Throwable> T doLock(LockDefinition lockDef, LockCallbackWithException<T, E> callback,
-            WithLock with) throws E {
+    protected <T, E extends Throwable> T doLock(LockDefinition lockDef, LockCallbackWithException<T, E> callback, WithLock with) throws E {
         Lock lock = null;
         try {
             lock = getLock(lockDef);
 
-            /* Important to lock in the try because the Lock may be a multi-lock
-             * and if a multi-lock fails to lock it can be in a half locked state
-             * so it must be unlocked
+            /*
+             * Important to lock in the try because the Lock may be a multi-lock
+             * and if a multi-lock fails to lock it can be in a half locked
+             * state so it must be unlocked
              */
-            if ( ! with.withLock(lock) )
+            if (!with.withLock(lock))
                 return null;
 
             return callback.doWithLock();
         } finally {
-            if ( lock != null ) {
+            if (lock != null) {
                 try {
                     lock.unlock();
                 } catch (Throwable t) {
@@ -45,11 +45,11 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
     }
 
     protected void releaseLock(Lock lock) {
-        if ( lock instanceof MultiLock ) {
-            for ( Lock lockPart : ((MultiLock)lock).getLocks() ) {
+        if (lock instanceof MultiLock) {
+            for (Lock lockPart : ((MultiLock) lock).getLocks()) {
                 try {
                     lockProvider.releaseLock(lockPart);
-                } catch ( Throwable t ) {
+                } catch (Throwable t) {
                     /* Should never happen, but I don't trust people */
                     log.error("Failed to release lock [{}], releaseLock() should never throw an exception", lockPart.getLockDefinition(), t);
                 }
@@ -60,8 +60,8 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
     }
 
     protected Lock getLock(LockDefinition def) {
-        if ( def instanceof MultiLockDefinition ) {
-            return new MultiLock((MultiLockDefinition)def, lockProvider);
+        if (def instanceof MultiLockDefinition) {
+            return new MultiLock((MultiLockDefinition) def, lockProvider);
         } else {
             return lockProvider.getLock(def);
         }

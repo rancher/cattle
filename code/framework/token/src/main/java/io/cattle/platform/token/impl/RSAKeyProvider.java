@@ -6,9 +6,9 @@ import java.util.Map;
 public interface RSAKeyProvider {
 
     RSAPrivateKeyHolder getPrivateKey();
-    
+
     Map<String, PublicKey> getPublicKeys();
-    
+
     PublicKey getDefaultPublicKey();
 
 }

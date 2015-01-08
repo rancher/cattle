@@ -22,16 +22,14 @@ public class SshKeyCreate extends AbstractObjectProcessLogic implements ProcessP
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Credential cred = (Credential)state.getResource();
+        Credential cred = (Credential) state.getResource();
 
-        if ( ! CredentialConstants.KIND_SSH_KEY.equals(cred.getKind()) ) {
+        if (!CredentialConstants.KIND_SSH_KEY.equals(cred.getKind())) {
             return null;
         }
 
-        if ( cred.getPublicValue() != null ) {
-            return new HandlerResult(
-                    CREDENTIAL.PUBLIC_VALUE, cred.getPublicValue(),
-                    CREDENTIAL.SECRET_VALUE, cred.getSecretValue());
+        if (cred.getPublicValue() != null) {
+            return new HandlerResult(CREDENTIAL.PUBLIC_VALUE, cred.getPublicValue(), CREDENTIAL.SECRET_VALUE, cred.getSecretValue());
         }
 
         String[] key;
@@ -41,9 +39,7 @@ public class SshKeyCreate extends AbstractObjectProcessLogic implements ProcessP
             throw new RuntimeException("Failed to generate ssh key", e);
         }
 
-        return new HandlerResult(
-                CREDENTIAL.PUBLIC_VALUE, key[0],
-                CREDENTIAL.SECRET_VALUE, key[1]);
+        return new HandlerResult(CREDENTIAL.PUBLIC_VALUE, key[0], CREDENTIAL.SECRET_VALUE, key[1]);
     }
 
 }

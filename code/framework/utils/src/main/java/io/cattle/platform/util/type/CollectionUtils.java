@@ -14,7 +14,7 @@ public class CollectionUtils {
 
     public static <T> Set<T> set(T... objects) {
         Set<T> set = new HashSet<T>();
-        for ( T obj : objects) {
+        for (T obj : objects) {
             set.add(obj);
         }
 
@@ -23,8 +23,8 @@ public class CollectionUtils {
 
     public static Object get(Object map, String... keys) {
         Object value = map;
-        for ( String key : keys ) {
-            Map<String,Object> mapObject = CollectionUtils.toMap(value);
+        for (String key : keys) {
+            Map<String, Object> mapObject = CollectionUtils.toMap(value);
             value = mapObject.get(key);
         }
 
@@ -33,18 +33,18 @@ public class CollectionUtils {
 
     @SuppressWarnings("unchecked")
     public static <T> void set(Map<T, Object> map, Object value, T... keys) {
-        for ( int i = 0 ; i < keys.length ; i++ ) {
+        for (int i = 0; i < keys.length; i++) {
             T key = keys[i];
 
-            if ( key == null ) {
+            if (key == null) {
                 return;
             }
 
-            if ( i == keys.length - 1 ) {
+            if (i == keys.length - 1) {
                 map.put(keys[i], value);
             } else {
-                Map<T, Object> nestedMap = (Map<T, Object>)map.get(keys[i]);
-                if ( nestedMap == null ) {
+                Map<T, Object> nestedMap = (Map<T, Object>) map.get(keys[i]);
+                if (nestedMap == null) {
                     nestedMap = new HashMap<T, Object>();
                     map.put(key, nestedMap);
                 }
@@ -54,11 +54,11 @@ public class CollectionUtils {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static <K,V extends Collection<T>,T> void addToMap(Map<K,V> data, K key, T value, Class<? extends Collection> clz) {
+    public static <K, V extends Collection<T>, T> void addToMap(Map<K, V> data, K key, T value, Class<? extends Collection> clz) {
         V values = data.get(key);
-        if ( values == null ) {
+        if (values == null) {
             try {
-                values = (V)clz.newInstance();
+                values = (V) clz.newInstance();
             } catch (InstantiationException e) {
                 throw new IllegalArgumentException("Failed to create collection class", e);
             } catch (IllegalAccessException e) {
@@ -70,10 +70,11 @@ public class CollectionUtils {
 
         values.add(value);
     }
+
     public static List<?> toList(Object obj) {
-        if ( obj instanceof List ) {
-            return (List<?>)obj;
-        } else if ( obj == null ) {
+        if (obj instanceof List) {
+            return (List<?>) obj;
+        } else if (obj == null) {
             return Collections.emptyList();
         } else {
             return Arrays.asList(obj);
@@ -81,12 +82,12 @@ public class CollectionUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <K,V> Map<K,V> toMap(Object obj) {
-        if ( obj == null ) {
+    public static <K, V> Map<K, V> toMap(Object obj) {
+        if (obj == null) {
             return new HashMap<K, V>();
         }
 
-        if ( obj instanceof Map ) {
+        if (obj instanceof Map) {
             return (Map<K, V>) obj;
         } else {
             return new HashMap<K, V>();
@@ -94,12 +95,12 @@ public class CollectionUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <K,V> Map<K,V> castMap(Object obj) {
-        if ( obj == null ) {
+    public static <K, V> Map<K, V> castMap(Object obj) {
+        if (obj == null) {
             return new HashMap<K, V>();
         }
 
-        if ( obj instanceof Map ) {
+        if (obj instanceof Map) {
             return (Map<K, V>) obj;
         } else {
             throw new IllegalArgumentException("Expected [" + obj + "] to be a Map");
@@ -107,16 +108,16 @@ public class CollectionUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Map<T,Object> asMap(T key, Object... values) {
-        Map<T,Object> result = new LinkedHashMap<T, Object>();
+    public static <T> Map<T, Object> asMap(T key, Object... values) {
+        Map<T, Object> result = new LinkedHashMap<T, Object>();
 
-        if ( values == null || values.length % 2 == 0 ) {
+        if (values == null || values.length % 2 == 0) {
             throw new IllegalArgumentException("value[] must be not null and an odd length");
         }
 
         result.put(key, values[0]);
-        for ( int i = 1 ; i < values.length ; i+=2 ) {
-            result.put((T)values[i], values[i+1]);
+        for (int i = 1; i < values.length; i += 2) {
+            result.put((T) values[i], values[i + 1]);
         }
 
         return result;

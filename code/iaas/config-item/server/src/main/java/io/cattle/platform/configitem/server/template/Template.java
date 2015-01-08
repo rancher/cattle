@@ -7,7 +7,7 @@ import java.util.Map;
 public interface Template {
 
     String getOutputName();
-    
+
     long getSize();
 
     void execute(Map<String, Object> context, OutputStream os) throws IOException;

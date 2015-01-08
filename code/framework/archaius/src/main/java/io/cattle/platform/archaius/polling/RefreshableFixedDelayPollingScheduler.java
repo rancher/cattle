@@ -14,13 +14,11 @@ public class RefreshableFixedDelayPollingScheduler extends FixedDelayPollingSche
 
     List<Runnable> tasks = new ArrayList<Runnable>();
 
-
     public RefreshableFixedDelayPollingScheduler() {
         super();
     }
 
-    public RefreshableFixedDelayPollingScheduler(int initialDelayMillis, int delayMillis,
-            boolean ignoreDeletesFromSource) {
+    public RefreshableFixedDelayPollingScheduler(int initialDelayMillis, int delayMillis, boolean ignoreDeletesFromSource) {
         super(initialDelayMillis, delayMillis, ignoreDeletesFromSource);
     }
 
@@ -31,10 +29,10 @@ public class RefreshableFixedDelayPollingScheduler extends FixedDelayPollingSche
     }
 
     public void refresh() {
-        for ( Runnable runnable : tasks ) {
+        for (Runnable runnable : tasks) {
             try {
                 runnable.run();
-            } catch ( Throwable t ){
+            } catch (Throwable t) {
                 log.error("Failed to reload configuration", t);
             }
         }

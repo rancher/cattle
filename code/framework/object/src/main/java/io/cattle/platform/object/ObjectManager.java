@@ -12,11 +12,11 @@ public interface ObjectManager {
 
     <T> T create(T obj);
 
-    <T> T create(T obj, Map<String,Object> properties);
+    <T> T create(T obj, Map<String, Object> properties);
 
     <T> T create(T obj, Object key, Object... valueKeyValue);
 
-    <T> T create(Class<T> clz, Map<String,Object> properties);
+    <T> T create(Class<T> clz, Map<String, Object> properties);
 
     <T> T create(Class<T> clz, Object key, Object... valueKeyValue);
 
@@ -34,11 +34,11 @@ public interface ObjectManager {
 
     <T> T loadResource(String resourceType, Long resourceId);
 
-    <T> T setFields(Object obj, Map<String,Object> values);
+    <T> T setFields(Object obj, Map<String, Object> values);
 
     <T> T setFields(Object obj, Object key, Object... valueKeyValue);
 
-    Map<String,Object> convertToPropertiesFor(Object obj, Map<Object,Object> object);
+    Map<String, Object> convertToPropertiesFor(Object obj, Map<Object, Object> object);
 
     <T> List<T> children(Object obj, Class<T> type);
 
@@ -46,15 +46,15 @@ public interface ObjectManager {
 
     <T> List<T> mappedChildren(Object obj, Class<T> type);
 
-    <T> T findOne(Class<T> clz, Map<Object,Object> values);
+    <T> T findOne(Class<T> clz, Map<Object, Object> values);
 
     <T> T findOne(Class<T> clz, Object key, Object... valueKeyValue);
 
-    <T> T findAny(Class<T> clz, Map<Object,Object> values);
+    <T> T findAny(Class<T> clz, Map<Object, Object> values);
 
     <T> T findAny(Class<T> clz, Object key, Object... valueKeyValue);
 
-    <T> List<T> find(Class<T> clz, Map<Object,Object> values);
+    <T> List<T> find(Class<T> clz, Map<Object, Object> values);
 
     <T> List<T> find(Class<T> clz, Object key, Object... valueKeyValue);
 

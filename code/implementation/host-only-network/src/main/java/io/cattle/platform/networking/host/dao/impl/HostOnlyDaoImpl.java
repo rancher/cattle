@@ -32,70 +32,43 @@ public class HostOnlyDaoImpl extends AbstractJooqDao implements HostOnlyDao {
         Long physicalHostId = host.getPhysicalHostId();
         Record record = null;
 
-        if ( physicalHostId == null ) {
-            record = create()
-                    .select(VNET.fields())
-                        .from(VNET)
-                        .join(HOST_VNET_MAP)
-                            .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
-                    .where(VNET.NETWORK_ID.eq(network.getId())
-                            .and(HOST_VNET_MAP.HOST_ID.eq(host.getId()))
-                            .and(HOST_VNET_MAP.REMOVED.isNull()))
-                    .fetchAny();
+        if (physicalHostId == null) {
+            record = create().select(VNET.fields()).from(VNET).join(HOST_VNET_MAP).on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
+                    .where(VNET.NETWORK_ID.eq(network.getId()).and(HOST_VNET_MAP.HOST_ID.eq(host.getId())).and(HOST_VNET_MAP.REMOVED.isNull())).fetchAny();
         } else {
-            record = create()
-                    .select(VNET.fields())
-                        .from(VNET)
-                        .join(HOST_VNET_MAP)
-                            .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
-                        .join(HOST)
-                            .on(HOST_VNET_MAP.HOST_ID.eq(HOST.ID))
-                    .where(VNET.NETWORK_ID.eq(network.getId())
-                            .and(HOST.PHYSICAL_HOST_ID.eq(physicalHostId))
-                            .and(HOST_VNET_MAP.REMOVED.isNull()))
-                    .fetchAny();
+            record = create().select(VNET.fields()).from(VNET).join(HOST_VNET_MAP).on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID)).join(HOST)
+                    .on(HOST_VNET_MAP.HOST_ID.eq(HOST.ID))
+                    .where(VNET.NETWORK_ID.eq(network.getId()).and(HOST.PHYSICAL_HOST_ID.eq(physicalHostId)).and(HOST_VNET_MAP.REMOVED.isNull())).fetchAny();
         }
         return record == null ? null : record.into(VnetRecord.class);
     }
 
     @Override
     public Vnet createVnetForHost(Network network, Host host, Subnet subnet, String uri) {
-        if ( uri == null ) {
+        if (uri == null) {
             uri = HostOnlyConstants.DEFAULT_HOST_SUBNET_URI;
         }
 
-        Vnet vnet = objectManager.create(Vnet.class,
-                VNET.URI, uri,
-                VNET.ACCOUNT_ID, network.getAccountId(),
-                VNET.NETWORK_ID, network.getId());
+        Vnet vnet = objectManager.create(Vnet.class, VNET.URI, uri, VNET.ACCOUNT_ID, network.getAccountId(), VNET.NETWORK_ID, network.getId());
 
-        objectManager.create(HostVnetMap.class,
-                HOST_VNET_MAP.VNET_ID, vnet.getId(),
-                HOST_VNET_MAP.HOST_ID, host.getId());
+        objectManager.create(HostVnetMap.class, HOST_VNET_MAP.VNET_ID, vnet.getId(), HOST_VNET_MAP.HOST_ID, host.getId());
 
-        if ( subnet != null ) {
-            objectManager.create(SubnetVnetMap.class,
-                    SUBNET_VNET_MAP.VNET_ID, vnet.getId(),
-                    SUBNET_VNET_MAP.SUBNET_ID, subnet.getId());
+        if (subnet != null) {
+            objectManager.create(SubnetVnetMap.class, SUBNET_VNET_MAP.VNET_ID, vnet.getId(), SUBNET_VNET_MAP.SUBNET_ID, subnet.getId());
         }
 
         return vnet;
     }
 
-
     @Override
     public HostVnetMap mapVnetToHost(Vnet vnet, Host host) {
-        List<HostVnetMap> maps = objectManager.find(HostVnetMap.class,
-                HOST_VNET_MAP.VNET_ID, vnet.getId(),
-                HOST_VNET_MAP.HOST_ID, host.getId());
+        List<HostVnetMap> maps = objectManager.find(HostVnetMap.class, HOST_VNET_MAP.VNET_ID, vnet.getId(), HOST_VNET_MAP.HOST_ID, host.getId());
 
-        if ( maps.size() > 0 ) {
+        if (maps.size() > 0) {
             return maps.get(0);
         }
 
-        return objectManager.create(HostVnetMap.class,
-                HOST_VNET_MAP.VNET_ID, vnet.getId(),
-                HOST_VNET_MAP.HOST_ID, host.getId());
+        return objectManager.create(HostVnetMap.class, HOST_VNET_MAP.VNET_ID, vnet.getId(), HOST_VNET_MAP.HOST_ID, host.getId());
     }
 
     public ObjectManager getObjectManager() {

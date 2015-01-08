@@ -43,10 +43,10 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
         Policy policy = ApiUtils.getPolicy();
 
         SubscriptionStyle style = SubscriptionUtils.getSubscriptionStyle(policy);
-        for ( String eventName : eventNames ) {
+        for (String eventName : eventNames) {
             switch (style) {
             case QUALIFIED:
-                if ( eventName.contains(FrameworkEvents.EVENT_SEP) ) {
+                if (eventName.contains(FrameworkEvents.EVENT_SEP)) {
                     eventName = StringUtils.substringBefore(eventName, FrameworkEvents.EVENT_SEP);
                 }
 
@@ -64,8 +64,8 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
         request.setResponseContentType("text/plain");
 
         try {
-            for ( SubscriptionHandler handler : handlers ) {
-                if ( handler.subscribe(filteredEventNames, request, style != SubscriptionStyle.RAW) ) {
+            for (SubscriptionHandler handler : handlers) {
+                if (handler.subscribe(filteredEventNames, request, style != SubscriptionStyle.RAW)) {
                     return new Object();
                 }
             }
@@ -80,23 +80,23 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
         Subscribe subscribe = request.proxyRequestObject(Subscribe.class);
 
         List<String> eventNames = subscribe.getEventNames();
-        if ( eventNames != null ) {
+        if (eventNames != null) {
             return eventNames;
         }
 
         eventNames = new ArrayList<String>();
-        Map<String,List<Condition>> conditions = request.getConditions();
-        if ( conditions == null ) {
+        Map<String, List<Condition>> conditions = request.getConditions();
+        if (conditions == null) {
             return eventNames;
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
-        List<?> list = ProxyUtils.proxy((Map)conditions, Subscribe.class).getEventNames();
-        if ( list != null ) {
-            for ( Object condition : list ) {
-                if ( condition instanceof Condition ) {
-                    Object value = ((Condition)condition).getValue();
-                    if ( value != null ) {
+        List<?> list = ProxyUtils.proxy((Map) conditions, Subscribe.class).getEventNames();
+        if (list != null) {
+            for (Object condition : list) {
+                if (condition instanceof Condition) {
+                    Object value = ((Condition) condition).getValue();
+                    if (value != null) {
                         eventNames.add(value.toString());
                     }
                 }

@@ -25,7 +25,7 @@ public class LogbackStartup implements Runnable {
 
         URL url = LogbackStartup.class.getClassLoader().getResource(LOGBACK_CONFIG.get());
 
-        if ( url != null ) {
+        if (url != null) {
             try {
                 JoranConfigurator configurator = new JoranConfigurator();
                 configurator.setContext(context);
@@ -37,7 +37,7 @@ public class LogbackStartup implements Runnable {
             }
         }
 
-//        StatusPrinter.printInCaseOfErrorsOrWarnings(context);
+        // StatusPrinter.printInCaseOfErrorsOrWarnings(context);
     }
 
 }

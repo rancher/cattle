@@ -20,8 +20,7 @@ public class ServletAsyncSubscriptionHandler extends NonBlockingSubscriptionHand
 
     public static final DynamicIntProperty TIMEOUT = ArchaiusUtil.getInt("api.pub.sub.servlet.timeout.ms");
 
-    public ServletAsyncSubscriptionHandler(JsonMapper jsonMapper, EventService eventService,
-            RetryTimeoutService retryTimeout, ExecutorService executorService,
+    public ServletAsyncSubscriptionHandler(JsonMapper jsonMapper, EventService eventService, RetryTimeoutService retryTimeout, ExecutorService executorService,
             List<ApiPubSubEventPostProcessor> eventProcessors) {
         super(jsonMapper, eventService, retryTimeout, executorService, eventProcessors);
     }

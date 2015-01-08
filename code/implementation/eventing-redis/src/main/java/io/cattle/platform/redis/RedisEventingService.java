@@ -27,19 +27,19 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
     public void reconnect() {
         List<RedisConnection> newConnections = new ArrayList<RedisConnection>();
 
-        for ( String host : REDIS_HOST.get().trim().split("\\s*,\\s*") ) {
+        for (String host : REDIS_HOST.get().trim().split("\\s*,\\s*")) {
             String[] parts = host.split(":");
-            if ( parts.length > 2 ) {
+            if (parts.length > 2) {
                 throw new IllegalArgumentException("Invalid redis host [" + host + "] should be in host:port format");
             }
 
             String hostName = parts[0];
             int port = Protocol.DEFAULT_PORT;
 
-            if ( parts.length > 1 ) {
+            if (parts.length > 1) {
                 try {
                     port = Integer.parseInt(parts[1]);
-                } catch ( NumberFormatException e ) {
+                } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Invalid redis host [" + host + "] should be in host:port format", e);
                 }
             }
@@ -50,11 +50,11 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
         List<RedisConnection> oldConnections = connections;
         connections = newConnections;
 
-        for ( RedisConnection conn : newConnections ) {
+        for (RedisConnection conn : newConnections) {
             getExecutorService().submit(conn);
         }
 
-        for ( RedisConnection conn : oldConnections ) {
+        for (RedisConnection conn : oldConnections) {
             conn.stop();
         }
     }
@@ -77,7 +77,7 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
     public void stop() {
         super.stop();
 
-        for ( RedisConnection conn : connections ) {
+        for (RedisConnection conn : connections) {
             conn.stop();
         }
     }
@@ -88,22 +88,22 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
 
     @Override
     protected boolean doPublish(String name, Event event, String eventString) throws IOException {
-        if ( connections.size() == 0 ) {
+        if (connections.size() == 0) {
             return false;
         }
 
         RedisConnection conn = null;
         try {
             conn = connections.get(index);
-        } catch ( IndexOutOfBoundsException e ) {
-            if ( connections.size() > 0 ) {
+        } catch (IndexOutOfBoundsException e) {
+            if (connections.size() > 0) {
                 conn = connections.get(0);
             }
         }
 
-        index = (index+1) % connections.size();
+        index = (index + 1) % connections.size();
 
-        if ( conn != null ) {
+        if (conn != null) {
             return conn.publish(name, eventString);
         }
 
@@ -114,7 +114,7 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
     protected void doSubscribe(String eventName, final SettableFuture<?> future) {
         List<SettableFuture<?>> futures = new ArrayList<SettableFuture<?>>();
 
-        for ( RedisConnection conn : connections ) {
+        for (RedisConnection conn : connections) {
             SettableFuture<?> newFuture = SettableFuture.create();
             conn.subscribe(eventName, newFuture);
             futures.add(newFuture);
@@ -139,17 +139,16 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
 
     @Override
     protected void doUnsubscribe(String eventName) {
-        for ( RedisConnection conn : connections ) {
+        for (RedisConnection conn : connections) {
             conn.unsubscribe(eventName);
         }
     }
 
     @Override
     protected void disconnect() {
-        for ( RedisConnection conn : connections ) {
+        for (RedisConnection conn : connections) {
             conn.disconnect();
         }
     }
-
 
 }

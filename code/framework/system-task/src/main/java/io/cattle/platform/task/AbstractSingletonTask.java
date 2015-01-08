@@ -11,7 +11,7 @@ public abstract class AbstractSingletonTask implements LockDefinition, Task {
 
     @Override
     public final void run() {
-        if ( ! delegator.tryLock(this) ) {
+        if (!delegator.tryLock(this)) {
             return;
         }
 

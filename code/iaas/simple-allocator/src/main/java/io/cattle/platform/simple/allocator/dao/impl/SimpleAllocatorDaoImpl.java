@@ -41,25 +41,19 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
         return iteratorHosts(volumes, options, true, callback);
     }
 
-    protected Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options, boolean hosts,
-            AllocationCandidateCallback callback) {
-        final Cursor<Record2<Long,Long>> cursor = create()
+    protected Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options, boolean hosts, AllocationCandidateCallback callback) {
+        final Cursor<Record2<Long, Long>> cursor = create()
                 .select(HOST.ID, STORAGE_POOL.ID)
                 .from(HOST)
                 .leftOuterJoin(STORAGE_POOL_HOST_MAP)
-                    .on(STORAGE_POOL_HOST_MAP.HOST_ID.eq(HOST.ID)
-                        .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull()))
+                .on(STORAGE_POOL_HOST_MAP.HOST_ID.eq(HOST.ID).and(STORAGE_POOL_HOST_MAP.REMOVED.isNull()))
                 .join(STORAGE_POOL)
-                    .on(STORAGE_POOL.ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
+                .on(STORAGE_POOL.ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
                 .leftOuterJoin(AGENT)
-                    .on(AGENT.ID.eq(HOST.AGENT_ID))
-                .where(
-                    AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
-                    .and(HOST.STATE.eq(CommonStatesConstants.ACTIVE))
-                    .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
-                    .and(getQueryOptionCondition(options)))
-                .orderBy(SPREAD.get() ? HOST.COMPUTE_FREE.desc() : HOST.COMPUTE_FREE.asc())
-                .fetchLazy();
+                .on(AGENT.ID.eq(HOST.AGENT_ID))
+                .where(AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE)).and(HOST.STATE.eq(CommonStatesConstants.ACTIVE))
+                        .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE)).and(getQueryOptionCondition(options)))
+                .orderBy(SPREAD.get() ? HOST.COMPUTE_FREE.desc() : HOST.COMPUTE_FREE.asc()).fetchLazy();
 
         return new AllocationCandidateIterator(objectManager, cursor, volumes, hosts, callback);
     }
@@ -67,24 +61,23 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
     protected Condition getQueryOptionCondition(QueryOptions options) {
         Condition condition = null;
 
-        if ( options.getHosts().size() > 0 ) {
+        if (options.getHosts().size() > 0) {
             condition = append(condition, HOST.ID.in(options.getHosts()));
         }
 
-        if ( options.getCompute() != null ) {
+        if (options.getCompute() != null) {
             condition = append(condition, HOST.COMPUTE_FREE.ge(options.getCompute()));
         }
 
-        if ( options.getKind() != null ) {
-            condition = append(condition,
-                    HOST.KIND.eq(options.getKind()).and(STORAGE_POOL.KIND.eq(options.getKind())));
+        if (options.getKind() != null) {
+            condition = append(condition, HOST.KIND.eq(options.getKind()).and(STORAGE_POOL.KIND.eq(options.getKind())));
         }
 
         return condition == null ? DSL.trueCondition() : condition;
     }
 
     protected Condition append(Condition base, Condition next) {
-        if ( base == null ) {
+        if (base == null) {
             return next;
         } else {
             return base.and(next);

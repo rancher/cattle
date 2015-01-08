@@ -45,7 +45,7 @@ public class ConfigContentManager extends AbstractNoOpResourceManager {
     @Override
     protected Object getByIdInternal(String type, String id, ListOptions options) {
         ApiRequest request = ApiContext.getContext().getApiRequest();
-        if ( Method.GET.isMethod(request.getMethod()) ) {
+        if (Method.GET.isMethod(request.getMethod())) {
             return handle(id, request, false);
         } else {
             return new Object();
@@ -57,18 +57,18 @@ public class ConfigContentManager extends AbstractNoOpResourceManager {
         ItemVersion version = apply ? DefaultItemVersion.fromString(content.getVersion()) : null;
         ItemVersion current = null;
 
-        if ( ! apply ) {
+        if (!apply) {
             Object currentValue = RequestUtils.makeSingular(request.getRequestParams().get("current"));
-            if ( currentValue != null ) {
+            if (currentValue != null) {
                 current = DefaultItemVersion.fromString(currentValue.toString());
             }
         }
 
         Long agentId = request.proxyRequestObject(ConfigContent.class).getAgentId();
 
-        if ( agentId == null ) {
+        if (agentId == null) {
             String agentIdStr = ApiUtils.getPolicy().getOption(Policy.AGENT_ID);
-            if ( agentIdStr == null ) {
+            if (agentIdStr == null) {
                 throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "agentId");
             } else {
                 agentId = new Long(agentIdStr);
@@ -78,7 +78,7 @@ public class ConfigContentManager extends AbstractNoOpResourceManager {
         try {
             ApiConfigItemRequest configRequest = new ApiConfigItemRequest(id, agentId, version, current, request);
             configItemServer.handleRequest(configRequest);
-            if ( configRequest.getResponseCode() == Request.NOT_FOUND ) {
+            if (configRequest.getResponseCode() == Request.NOT_FOUND) {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
         } catch (IOException e) {

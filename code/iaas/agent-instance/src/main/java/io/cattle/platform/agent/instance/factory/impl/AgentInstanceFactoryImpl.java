@@ -47,9 +47,9 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     public Long getAgentGroupId(Instance instance) {
-        for ( Host host : objectManager.mappedChildren(instance, Host.class) ) {
+        for (Host host : objectManager.mappedChildren(instance, Host.class)) {
             RemoteAgent remoteAgent = agentLocator.lookupAgent(host);
-            if ( remoteAgent != null ) {
+            if (remoteAgent != null) {
                 Agent agent = objectManager.loadResource(Agent.class, remoteAgent.getAgentId());
                 return agent.getAgentGroupId();
             }
@@ -67,17 +67,17 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     private Instance getInstance(Agent agent, AgentInstanceBuilderImpl builder) {
         Instance instance = factoryDao.getInstanceByAgent(agent);
 
-        if ( instance != null ) {
+        if (instance != null) {
             return instance;
         }
 
-        Map<String,Object> properties = getInstanceProperties(agent, builder);
+        Map<String, Object> properties = getInstanceProperties(agent, builder);
 
         return createInstance(agent, properties, builder);
     }
 
     private Map<String, Object> getInstanceProperties(Agent agent, AgentInstanceBuilderImpl builder) {
-        Map<Object,Object> properties = new HashMap<Object, Object>();
+        Map<Object, Object> properties = new HashMap<Object, Object>();
 
         properties.put(INSTANCE.ACCOUNT_ID, getAccountId(builder));
         properties.put(INSTANCE.AGENT_ID, agent.getId());
@@ -117,7 +117,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         String uri = getUri(builder);
         Agent agent = factoryDao.getAgentByUri(uri);
 
-        if ( agent == null ) {
+        if (agent == null) {
             agent = createAgent(uri, builder);
         }
 
@@ -131,13 +131,13 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         return agent;
     }
 
-    protected Instance createInstance(final Agent agent, final Map<String,Object> properties, final AgentInstanceBuilderImpl builder) {
+    protected Instance createInstance(final Agent agent, final Map<String, Object> properties, final AgentInstanceBuilderImpl builder) {
         return lockManager.lock(new AgentInstanceAgentCreateLock(agent.getUri()), new LockCallback<Instance>() {
             @Override
             public Instance doWithLock() {
                 Instance instance = factoryDao.getInstanceByAgent(agent);
 
-                if ( instance == null ) {
+                if (instance == null) {
                     instance = DeferredUtils.nest(new Callable<Instance>() {
                         @Override
                         public Instance call() throws Exception {
@@ -157,15 +157,12 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             public Agent doWithLock() {
                 Agent agent = factoryDao.getAgentByUri(uri);
 
-                if ( agent == null ) {
+                if (agent == null) {
                     agent = DeferredUtils.nest(new Callable<Agent>() {
                         @Override
                         public Agent call() throws Exception {
-                            return resourceDao.createAndSchedule(Agent.class,
-                                    AGENT.URI, uri,
-                                    AGENT.MANAGED_CONFIG, builder.isManagedConfig(),
-                                    AGENT.AGENT_GROUP_ID, builder.getAgentGroupId(),
-                                    AGENT.ZONE_ID, builder.getZoneId());
+                            return resourceDao.createAndSchedule(Agent.class, AGENT.URI, uri, AGENT.MANAGED_CONFIG, builder.isManagedConfig(),
+                                    AGENT.AGENT_GROUP_ID, builder.getAgentGroupId(), AGENT.ZONE_ID, builder.getZoneId());
                         }
                     });
                 }
@@ -176,7 +173,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     protected Long getAccountId(AgentInstanceBuilderImpl builder) {
-        if ( builder.isAccountOwned() && builder.getAccountId() != null ) {
+        if (builder.isAccountOwned() && builder.getAccountId() != null) {
             return builder.getAccountId();
         }
 
@@ -184,11 +181,9 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     protected String getUri(AgentInstanceBuilderImpl builder) {
-        Long networkServiceProviderId = builder.getNetworkServiceProvider() == null ? null :
-            builder.getNetworkServiceProvider().getId();
+        Long networkServiceProviderId = builder.getNetworkServiceProvider() == null ? null : builder.getNetworkServiceProvider().getId();
 
-        return String.format("delegate:///?vnetId=%d&networkServiceProviderId=%d", builder.getVnetId(),
-                networkServiceProviderId);
+        return String.format("delegate:///?vnetId=%d&networkServiceProviderId=%d", builder.getVnetId(), networkServiceProviderId);
     }
 
     public AgentInstanceDao getFactoryDao() {

@@ -146,8 +146,8 @@ public class JwtTokenServiceImpl implements TokenService {
             throw new TokenException("Error: Fradulent token, unrecognized signature", e);
         }
     }
-    
-    private Map<String, Object> getJSONObject(JOSEObject jose, boolean encrypted) throws TokenException {     
+
+    private Map<String, Object> getJSONObject(JOSEObject jose, boolean encrypted) throws TokenException {
         Long exp = (Long) jose.getPayload().toJSONObject().get("exp");
         if (exp != null && exp * 1000 <= System.currentTimeMillis()) {
             throw new TokenException("Expired Token");

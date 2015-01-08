@@ -14,7 +14,7 @@ public abstract class MultiRecordMapper<T> implements RecordMapper<Record, T> {
 
     protected List<Table<?>> tables = new ArrayList<Table<?>>();
     protected List<Class<? extends Record>> classes = new ArrayList<Class<? extends Record>>();
-    protected Map<String,Target> targets = new HashMap<String, MultiRecordMapper.Target>();
+    protected Map<String, Target> targets = new HashMap<String, MultiRecordMapper.Target>();
     protected List<Field<?>> fields = new ArrayList<Field<?>>();
     protected int count = 0;
 
@@ -24,7 +24,7 @@ public abstract class MultiRecordMapper<T> implements RecordMapper<Record, T> {
         String prefix = String.format("%s_%d", input.getName(), index);
         Table<?> alias = input.as(prefix);
 
-        for ( Field<?> field : alias.fields() ) {
+        for (Field<?> field : alias.fields()) {
             String fieldAlias = String.format("%s_%s", prefix, field.getName());
             Target target = new Target(field.getName(), index);
 
@@ -34,37 +34,37 @@ public abstract class MultiRecordMapper<T> implements RecordMapper<Record, T> {
 
         classes.add(input.getRecordType());
 
-        return (T)alias;
+        return (T) alias;
     }
 
     @Override
     public T map(Record record) {
-        List<Map<String,Object>> maps = new ArrayList<Map<String,Object>>(classes.size());
-        for ( int i = 0 ; i < classes.size() ; i++ ) {
-            maps.add(new HashMap<String,Object>());
+        List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>(classes.size());
+        for (int i = 0; i < classes.size(); i++) {
+            maps.add(new HashMap<String, Object>());
         }
 
-        Map<String,Object> row = record.intoMap();
+        Map<String, Object> row = record.intoMap();
 
-        for ( Map.Entry<String, Object> entry : row.entrySet() ) {
+        for (Map.Entry<String, Object> entry : row.entrySet()) {
             Target target = targets.get(entry.getKey());
-            if ( target == null ) {
+            if (target == null) {
                 continue;
             }
 
-            Map<String,Object> map = maps.get(target.index);
+            Map<String, Object> map = maps.get(target.index);
             Object value = entry.getValue();
-            if ( value != null ) {
+            if (value != null) {
                 map.put(target.fieldName, value);
             }
         }
 
         List<Object> result = new ArrayList<Object>();
 
-        for ( int i = 0 ; i < maps.size() ; i++ ) {
+        for (int i = 0; i < maps.size(); i++) {
             try {
-                Map<String,Object> map = maps.get(i);
-                if ( map.size() > 0 ) {
+                Map<String, Object> map = maps.get(i);
+                if (map.size() > 0) {
                     Record resultRecord = classes.get(i).newInstance();
                     resultRecord.fromMap(map);
                     resultRecord.changed(false);

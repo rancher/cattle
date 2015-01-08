@@ -27,22 +27,16 @@ public class SampleDataStartupV2 extends AbstractSampleData {
         v1.start();
 
         Network network = objectManager.findAny(Network.class, NETWORK.UUID, "unmanaged");
-        if ( network == null ) {
+        if (network == null) {
             return;
         }
 
-        toCreate.add(createByUuid(NetworkService.class, "unmanaged-docker0-metadata-service",
-                NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
-                NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_METADATA,
-                NETWORK_SERVICE.NAME, "Meta data service for unmanaged docker0",
-                NETWORK_SERVICE.NETWORK_ID, network.getId(),
-                NetworkServiceConstants.FIELD_CONFIG_DRIVE, true,
-                NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
-        
-        toCreate.add(createByUuid(Account.class, "token",
-                ACCOUNT.KIND, "token", 
-                ACCOUNT.NAME, "token"));
-        
+        toCreate.add(createByUuid(NetworkService.class, "unmanaged-docker0-metadata-service", NETWORK_SERVICE.ACCOUNT_ID, system.getId(), NETWORK_SERVICE.KIND,
+                NetworkServiceConstants.KIND_METADATA, NETWORK_SERVICE.NAME, "Meta data service for unmanaged docker0", NETWORK_SERVICE.NETWORK_ID,
+                network.getId(), NetworkServiceConstants.FIELD_CONFIG_DRIVE, true, NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
+
+        toCreate.add(createByUuid(Account.class, "token", ACCOUNT.KIND, "token", ACCOUNT.NAME, "token"));
+
     }
 
     public SampleDataStartupV1 getV1() {

@@ -1,9 +1,9 @@
 package io.cattle.platform.api.resource.jooq;
 
-
 public class DefaultJooqResourceManager extends AbstractJooqResourceManager {
 
-//    private static final Logger log = LoggerFactory.getLogger(DefaultJooqResourceManager.class);
+    // private static final Logger log =
+    // LoggerFactory.getLogger(DefaultJooqResourceManager.class);
 
     @Override
     public String[] getTypes() {

@@ -32,16 +32,16 @@ public class MethodInvokingListener implements EventListener, PoolSpecificListen
         this.target = target;
         this.handler = handler;
 
-        if ( method.getParameterTypes().length > 1 ) {
+        if (method.getParameterTypes().length > 1) {
             throw new IllegalArgumentException("Illegal EventHandler method, must have 0 or 1 arguments [" + method + "]");
-        } else if ( method.getParameterTypes().length == 1 ) {
+        } else if (method.getParameterTypes().length == 1) {
             targetType = method.getParameterTypes()[0];
-            if ( targetType != Event.class ) {
+            if (targetType != Event.class) {
                 marshall = true;
             }
         }
 
-        if ( handler.lock() != LockDefinition.class ) {
+        if (handler.lock() != LockDefinition.class) {
             try {
                 ctor = handler.lock().getConstructor(Event.class);
             } catch (SecurityException e) {
@@ -55,7 +55,7 @@ public class MethodInvokingListener implements EventListener, PoolSpecificListen
     @Override
     public void onEvent(final Event event) {
         final Object arg;
-        if ( marshall ) {
+        if (marshall) {
             arg = jsonMapper.convertValue(event, targetType);
         } else {
             arg = event;
@@ -95,8 +95,8 @@ public class MethodInvokingListener implements EventListener, PoolSpecificListen
 
     @Override
     public boolean isAllowQueueing() {
-        if ( target instanceof PoolSpecificListener ) {
-            return ((PoolSpecificListener)target).isAllowQueueing();
+        if (target instanceof PoolSpecificListener) {
+            return ((PoolSpecificListener) target).isAllowQueueing();
         }
 
         return handler.allowQueueing();
@@ -104,8 +104,8 @@ public class MethodInvokingListener implements EventListener, PoolSpecificListen
 
     @Override
     public int getQueueDepth() {
-        if ( target instanceof PoolSpecificListener ) {
-            return ((PoolSpecificListener)target).getQueueDepth();
+        if (target instanceof PoolSpecificListener) {
+            return ((PoolSpecificListener) target).getQueueDepth();
         }
 
         return handler.queueDepth();
@@ -113,8 +113,9 @@ public class MethodInvokingListener implements EventListener, PoolSpecificListen
 
     @Override
     public String getPoolKey() {
-        if ( target instanceof PoolSpecificListener ) {;
-            return ((PoolSpecificListener)target).getPoolKey();
+        if (target instanceof PoolSpecificListener) {
+            ;
+            return ((PoolSpecificListener) target).getPoolKey();
         }
 
         return handler.poolKey();

@@ -24,13 +24,13 @@ import com.netflix.config.DynamicStringProperty;
 
 public class SshKeyGen {
 
-    private static final byte[] HEADER = new byte[] {'s', 's', 'h', '-', 'r', 's', 'a'};
+    private static final byte[] HEADER = new byte[] { 's', 's', 'h', '-', 'r', 's', 'a' };
     private static final DynamicStringProperty SSH_FORMAT = ArchaiusUtil.getString("ssh.key.text.format");
 
     public static String[] generateKeys() throws Exception {
         KeyPair pair = generateKeyPair();
 
-        String publicString = sshRsaTextFormat((RSAPublicKey)pair.getPublic());
+        String publicString = sshRsaTextFormat((RSAPublicKey) pair.getPublic());
 
         return new String[] { publicString, writeKeyPair(pair) };
     }
@@ -46,14 +46,17 @@ public class SshKeyGen {
 
         PEMReader r = null;
         try {
-            if ( key.startsWith("---") ) {
+            if (key.startsWith("---")) {
                 r = new PEMReader(new StringReader(key));
             } else {
-                /* Backward compatibility with how the key was stored in data table */
+                /*
+                 * Backward compatibility with how the key was stored in data
+                 * table
+                 */
                 ByteArrayInputStream bais = new ByteArrayInputStream(Base64.decodeBase64(key));
                 r = new PEMReader(new InputStreamReader(bais));
             }
-            return (KeyPair)r.readObject();
+            return (KeyPair) r.readObject();
         } finally {
             IOUtils.closeQuietly(r);
         }
@@ -85,8 +88,7 @@ public class SshKeyGen {
         return stringWriter.toString();
     }
 
-    public static String sshRsaTextFormat(RSAPublicKey key) throws IOException
-    {
+    public static String sshRsaTextFormat(RSAPublicKey key) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         write(out, HEADER);
         write(out, key.getPublicExponent().toByteArray());
@@ -97,10 +99,10 @@ public class SshKeyGen {
 
     protected static void write(OutputStream os, byte[] content) throws IOException {
         byte[] length = new byte[4];
-        length[0] = (byte)((content.length >>> 24) & 0xff);
-        length[1] = (byte)((content.length >>> 16) & 0xff);
-        length[2] = (byte)((content.length >>> 8) & 0xff);
-        length[3] = (byte)(content.length & 0xff);
+        length[0] = (byte) ((content.length >>> 24) & 0xff);
+        length[1] = (byte) ((content.length >>> 16) & 0xff);
+        length[2] = (byte) ((content.length >>> 8) & 0xff);
+        length[3] = (byte) (content.length & 0xff);
 
         os.write(length);
         os.write(content);

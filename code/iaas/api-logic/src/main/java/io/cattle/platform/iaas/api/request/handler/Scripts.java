@@ -18,21 +18,21 @@ public class Scripts extends AbstractResponseGenerator {
 
     @Override
     protected void generate(ApiRequest request) throws IOException {
-        if ( ! SCRIPTS.equals(request.getType()) ) {
+        if (!SCRIPTS.equals(request.getType())) {
             return;
         }
 
         request.setResponseContentType("text/plain");
         boolean handled = false;
 
-        for ( ScriptsHandler handler : handlers ) {
+        for (ScriptsHandler handler : handlers) {
             handled = handler.handle(request);
-            if ( handled ) {
+            if (handled) {
                 break;
             }
         }
 
-        if ( ! handled ) {
+        if (!handled) {
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
         }
 

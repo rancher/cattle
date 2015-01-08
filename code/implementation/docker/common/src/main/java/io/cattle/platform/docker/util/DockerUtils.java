@@ -10,19 +10,19 @@ public class DockerUtils {
 
     public static Host getHostFromContainer(ObjectManager objectManager, Instance instance, String hostKind) {
         Host found = null;
-        for ( Host host : objectManager.mappedChildren(instance, Host.class) ) {
+        for (Host host : objectManager.mappedChildren(instance, Host.class)) {
             found = host;
         }
 
-        if ( found != null ) {
+        if (found != null) {
             found = ApiUtils.getPolicy().authorizeObject(found);
         }
 
-        if ( found == null ) {
+        if (found == null) {
             return null;
         }
 
-        if ( hostKind != null && ! hostKind.equals(found.getKind()) ) {
+        if (hostKind != null && !hostKind.equals(found.getKind())) {
             return null;
         }
 

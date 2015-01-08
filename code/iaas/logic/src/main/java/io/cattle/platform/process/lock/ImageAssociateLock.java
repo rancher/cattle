@@ -14,5 +14,4 @@ public class ImageAssociateLock extends AbstractLockDefinition implements Blocki
         return 1000;
     }
 
-
 }

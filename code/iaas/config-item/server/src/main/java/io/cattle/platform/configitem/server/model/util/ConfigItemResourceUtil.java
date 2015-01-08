@@ -24,9 +24,9 @@ public class ConfigItemResourceUtil {
     public static List<ConfigItemContextFactory> getFactories(List<ConfigItemContextFactory> factories, String item) {
         List<ConfigItemContextFactory> result = new ArrayList<ConfigItemContextFactory>();
 
-        for ( ConfigItemContextFactory factory : factories ) {
-            for ( String check : factory.getItems() ) {
-                if ( item.equals(check) ) {
+        for (ConfigItemContextFactory factory : factories) {
+            for (String check : factory.getItems()) {
+                if (item.equals(check)) {
                     result.add(factory);
                 }
             }
@@ -35,69 +35,68 @@ public class ConfigItemResourceUtil {
         return result;
     }
 
-    public static Map<String,Map<String,URL>> processUrlRoot(boolean ignoreNotFound, String root, URL[] resources) throws IOException {
+    public static Map<String, Map<String, URL>> processUrlRoot(boolean ignoreNotFound, String root, URL[] resources) throws IOException {
         List<URL> baseUrls = Collections.list(GenericConfigItemFactory.class.getClassLoader().getResources(root));
-        if ( baseUrls.size() == 0 ) {
-            if ( ignoreNotFound ) {
-                return new HashMap<String, Map<String,URL>>();
+        if (baseUrls.size() == 0) {
+            if (ignoreNotFound) {
+                return new HashMap<String, Map<String, URL>>();
             } else {
                 throw new IllegalStateException("Failed to find [" + root + "]");
             }
         }
 
-        Map<String,Map<String,URL>> config = new TreeMap<String, Map<String,URL>>();
-        outer:
-            for ( URL resource : resources ) {
-                String name = null;
-                String path = null;
+        Map<String, Map<String, URL>> config = new TreeMap<String, Map<String, URL>>();
+        outer: for (URL resource : resources) {
+            String name = null;
+            String path = null;
 
-                for ( URL baseUrl : baseUrls ) {
-                    String base = baseUrl.toExternalForm();
-                    String fullUrl = resource.toExternalForm();
-                    if ( ! fullUrl.startsWith(base) ) {
-                        continue;
-                    }
-
-                    String part = trimLeading(fullUrl.substring(base.length()));
-                    int idx = StringUtils.indexOfAny(part, "/", "\\");
-                    if ( idx != -1 ) {
-                        name = part.substring(0, idx);
-                        path = part.substring(idx);
-                        break;
-                    }
-                }
-
-                if ( name == null ) {
-                    log.error("Ignoring resource [{}] can not find it realtive to root [{}]", resource, root);
+            for (URL baseUrl : baseUrls) {
+                String base = baseUrl.toExternalForm();
+                String fullUrl = resource.toExternalForm();
+                if (!fullUrl.startsWith(base)) {
                     continue;
                 }
 
-                path = trimLeading(path);
-
-                if ( StringUtils.isBlank(path) || path.endsWith("/") || path.endsWith("\\") ) {
-                    continue;
+                String part = trimLeading(fullUrl.substring(base.length()));
+                int idx = StringUtils.indexOfAny(part, "/", "\\");
+                if (idx != -1) {
+                    name = part.substring(0, idx);
+                    path = part.substring(idx);
+                    break;
                 }
-
-                for ( String part : path.split("[/\\\\]") ) {
-                    if ( AbstractCachingResourceRoot.shouldIgnore(part) ) {
-                        continue outer;
-                    }
-                }
-
-                Map<String,URL> urlMapping = config.get(name);
-                if ( urlMapping == null ) {
-                    urlMapping = new TreeMap<String, URL>();
-                    config.put(name, urlMapping);
-                }
-
-                urlMapping.put(path, resource);
             }
+
+            if (name == null) {
+                log.error("Ignoring resource [{}] can not find it realtive to root [{}]", resource, root);
+                continue;
+            }
+
+            path = trimLeading(path);
+
+            if (StringUtils.isBlank(path) || path.endsWith("/") || path.endsWith("\\")) {
+                continue;
+            }
+
+            for (String part : path.split("[/\\\\]")) {
+                if (AbstractCachingResourceRoot.shouldIgnore(part)) {
+                    continue outer;
+                }
+            }
+
+            Map<String, URL> urlMapping = config.get(name);
+            if (urlMapping == null) {
+                urlMapping = new TreeMap<String, URL>();
+                config.put(name, urlMapping);
+            }
+
+            urlMapping.put(path, resource);
+        }
 
         return config;
     }
 
     protected static String trimLeading(String text) {
-        if ( text.startsWith("/") || text.startsWith("\\") ) {
+        if (text.startsWith("/") || text.startsWith("\\")) {
             return text.substring(1);
         } else {
             return text;

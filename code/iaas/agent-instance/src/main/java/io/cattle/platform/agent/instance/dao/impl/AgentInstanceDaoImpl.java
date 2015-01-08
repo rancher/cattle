@@ -47,55 +47,41 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
 
     @Override
     public Agent getAgentByUri(String uri) {
-        return create()
-                .selectFrom(AGENT)
-                .where(AGENT.URI.eq(uri)
-                        .and(AGENT.REMOVED.isNull()))
-                .fetchAny();
+        return create().selectFrom(AGENT).where(AGENT.URI.eq(uri).and(AGENT.REMOVED.isNull())).fetchAny();
     }
 
     @Override
     public Instance getInstanceByAgent(Agent agent) {
-        return create()
-                .selectFrom(INSTANCE)
-                .where(INSTANCE.AGENT_ID.eq(agent.getId())
-                        .and(INSTANCE.REMOVED.isNull()))
-                .fetchAny();
+        return create().selectFrom(INSTANCE).where(INSTANCE.AGENT_ID.eq(agent.getId()).and(INSTANCE.REMOVED.isNull())).fetchAny();
     }
 
     @Override
     public List<? extends NetworkServiceProvider> getProviders(Long networkId) {
-        if ( networkId == null ) {
+        if (networkId == null) {
             return Collections.emptyList();
         }
 
-        return create()
-                .select(NETWORK_SERVICE_PROVIDER.fields())
-                .from(NETWORK_SERVICE)
-                .join(NETWORK_SERVICE_PROVIDER)
-                    .on(NETWORK_SERVICE_PROVIDER.ID.eq(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID))
-                .where(NETWORK_SERVICE.NETWORK_ID.eq(networkId)
-                        .and(NETWORK_SERVICE_PROVIDER.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE)))
+        return create().select(NETWORK_SERVICE_PROVIDER.fields()).from(NETWORK_SERVICE).join(NETWORK_SERVICE_PROVIDER)
+                .on(NETWORK_SERVICE_PROVIDER.ID.eq(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID))
+                .where(NETWORK_SERVICE.NETWORK_ID.eq(networkId).and(NETWORK_SERVICE_PROVIDER.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE)))
                 .fetchInto(NetworkServiceProviderRecord.class);
     }
 
     @Override
     public Instance getAgentInstance(NetworkServiceProvider provider, Nic nic) {
-        if ( provider == null || nic == null || nic.getVnetId() == null ) {
+        if (provider == null || nic == null || nic.getVnetId() == null) {
             return null;
         }
 
         List<InstanceRecord> records = create()
                 .select(INSTANCE.fields())
-                    .from(INSTANCE)
-                    .join(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP)
-                        .on(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                    .join(NIC)
-                        .on(NIC.INSTANCE_ID.eq(INSTANCE.ID))
-                    .where(NIC.VNET_ID.eq(nic.getVnetId())
-                            .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId()))
-                            .and(INSTANCE.REMOVED.isNull()))
-                    .fetchInto(InstanceRecord.class);
+                .from(INSTANCE)
+                .join(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP)
+                .on(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .join(NIC)
+                .on(NIC.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(NIC.VNET_ID.eq(nic.getVnetId()).and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId()))
+                        .and(INSTANCE.REMOVED.isNull())).fetchInto(InstanceRecord.class);
 
         return records.size() > 0 ? records.get(0) : null;
     }
@@ -104,9 +90,8 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
     public Instance createInstanceForProvider(NetworkServiceProvider provider, Map<String, Object> properties) {
         Instance instance = resourceDao.createAndSchedule(Instance.class, properties);
 
-        if ( provider != null ) {
-            resourceDao.createAndSchedule(NetworkServiceProviderInstanceMap.class,
-                    NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID, instance.getId(),
+        if (provider != null) {
+            resourceDao.createAndSchedule(NetworkServiceProviderInstanceMap.class, NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID, instance.getId(),
                     NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID, provider.getId());
         }
 
@@ -115,28 +100,19 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
 
     @Override
     public List<? extends Agent> getAgents(NetworkServiceProvider provider) {
-        return create()
-                .select(AGENT.fields())
-                .from(AGENT)
-                .join(INSTANCE)
-                    .on(INSTANCE.AGENT_ID.eq(AGENT.ID))
-                .join(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP)
-                    .on(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(INSTANCE.REMOVED.isNull()
-                        .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId())))
+        return create().select(AGENT.fields()).from(AGENT).join(INSTANCE).on(INSTANCE.AGENT_ID.eq(AGENT.ID)).join(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP)
+                .on(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(INSTANCE.REMOVED.isNull().and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId())))
                 .fetchInto(AgentRecord.class);
     }
 
     @Override
     public List<? extends Credential> getActivateCredentials(Agent agent) {
-        if ( agent.getAccountId() == null ) {
+        if (agent.getAccountId() == null) {
             return Collections.emptyList();
         }
 
-        return create()
-                .selectFrom(CREDENTIAL)
-                .where(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)
-                        .and(CREDENTIAL.ACCOUNT_ID.eq(agent.getAccountId())))
+        return create().selectFrom(CREDENTIAL).where(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE).and(CREDENTIAL.ACCOUNT_ID.eq(agent.getAccountId())))
                 .fetch();
     }
 
@@ -145,12 +121,7 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
         MultiRecordMapper<NetworkServiceInfo> mapper = new MultiRecordMapper<NetworkServiceInfo>() {
             @Override
             protected NetworkServiceInfo map(List<Object> input) {
-                return new NetworkServiceInfo((NetworkServiceProvider)input.get(0),
-                        (NetworkService)input.get(1),
-                        (Nic)input.get(2),
-                        null,
-                        null,
-                        null);
+                return new NetworkServiceInfo((NetworkServiceProvider) input.get(0), (NetworkService) input.get(1), (Nic) input.get(2), null, null, null);
             }
         };
 
@@ -162,29 +133,26 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                 .select(mapper.fields())
                 .from(provider)
                 .join(networkService)
-                    .on(provider.NETWORK_ID.eq(networkService.NETWORK_ID))
+                .on(provider.NETWORK_ID.eq(networkService.NETWORK_ID))
                 .join(nic)
-                    .on(nic.NETWORK_ID.eq(networkService.NETWORK_ID))
-                .where(nic.INSTANCE_ID.eq(instance)
-                        .and(networkService.KIND.eq(serviceKind))
-                        .and(provider.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE))
-                        .and(networkService.REMOVED.isNull()))
-                .fetch().map(mapper);
+                .on(nic.NETWORK_ID.eq(networkService.NETWORK_ID))
+                .where(nic.INSTANCE_ID.eq(instance).and(networkService.KIND.eq(serviceKind))
+                        .and(provider.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE)).and(networkService.REMOVED.isNull())).fetch().map(mapper);
 
         return infos.size() == 0 ? null : infos.get(0);
     }
 
     @Override
     public void populateNicAndIp(final NetworkServiceInfo service) {
-        if ( service.getAgentInstance() == null ) {
+        if (service.getAgentInstance() == null) {
             return;
         }
 
         MultiRecordMapper<Object> mapper = new MultiRecordMapper<Object>() {
             @Override
             protected Object map(List<Object> input) {
-                service.setAgentNic((Nic)input.get(0));
-                service.setIpAddress((IpAddress)input.get(1));
+                service.setAgentNic((Nic) input.get(0));
+                service.setIpAddress((IpAddress) input.get(1));
                 return new Object();
             }
         };
@@ -192,20 +160,15 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
         NicTable nic = mapper.add(NIC);
         IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
 
-        create()
-            .select(mapper.fields())
-            .from(nic)
-            .join(IP_ADDRESS_NIC_MAP)
+        create().select(mapper.fields())
+                .from(nic)
+                .join(IP_ADDRESS_NIC_MAP)
                 .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
-            .join(ipAddress)
+                .join(ipAddress)
                 .on(ipAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
-            .where(nic.INSTANCE_ID.eq(service.getAgentInstance().getId())
-                    .and(nic.NETWORK_ID.eq(service.getNetworkServiceProvider().getNetworkId()))
-                    .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
-                    .and(nic.REMOVED.isNull())
-                    .and(ipAddress.REMOVED.isNull())
-                    .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull()))
-            .fetch().map(mapper);
+                .where(nic.INSTANCE_ID.eq(service.getAgentInstance().getId()).and(nic.NETWORK_ID.eq(service.getNetworkServiceProvider().getNetworkId()))
+                        .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY)).and(nic.REMOVED.isNull()).and(ipAddress.REMOVED.isNull())
+                        .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())).fetch().map(mapper);
     }
 
     public GenericResourceDao getResourceDao() {

@@ -42,19 +42,20 @@ public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
         Set<String> itemSet = new HashSet<>();
         List<ConfigItem> itemList = new ArrayList<>();
 
-        for ( String name : map.getNamedMaps() ) {
+        for (String name : map.getNamedMaps()) {
             itemList.add(new AgentPackagesConfigItem(name, versionManager, getResourceRoot(), templateFactory, map, objectManager, statusManager));
 
-            Map<String,String> values = map.getMap(name);
-            for ( String key : values.keySet() ) {
+            Map<String, String> values = map.getMap(name);
+            for (String key : values.keySet()) {
                 String value = values.get(key);
 
-                if ( value != null && ! itemSet.contains(value) ) {
-                    if ( AgentPackagesConfigItem.isDevVersion(value) ) {
+                if (value != null && !itemSet.contains(value)) {
+                    if (AgentPackagesConfigItem.isDevVersion(value)) {
                         FileBasedResourceRoot itemResource = new FileBasedResourceRoot(new File(value));
                         itemResource.scan();
 
-                        TemplatesBasedArchiveItem archiveItem = new TemplatesBasedArchiveItem(key, versionManager, itemResource, templateFactory, getFactories(key));
+                        TemplatesBasedArchiveItem archiveItem = new TemplatesBasedArchiveItem(key, versionManager, itemResource, templateFactory,
+                                getFactories(key));
                         archiveItem.setDynamicallyApplied(true);
                         itemList.add(archiveItem);
                     }
@@ -72,13 +73,13 @@ public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
     }
 
     protected ResourceRoot getResourceRoot() throws IOException {
-        if ( new File(fileRoot).exists() ) {
+        if (new File(fileRoot).exists()) {
             FileBasedResourceRoot root = new FileBasedResourceRoot(new File(fileRoot));
             root.scan();
             return root;
         } else {
-            Map<String,Map<String, URL>> configs = ConfigItemResourceUtil.processUrlRoot(false, root, resources);
-            if ( configs.size() == 0 ) {
+            Map<String, Map<String, URL>> configs = ConfigItemResourceUtil.processUrlRoot(false, root, resources);
+            if (configs.size() == 0) {
                 throw new IllegalStateException("Failed to find to find agent-include");
             }
 

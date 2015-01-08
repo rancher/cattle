@@ -14,11 +14,11 @@ public class ComputeContstraint implements Constraint {
 
     @Override
     public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
-        for ( long id : candidate.getHosts() ) {
+        for (long id : candidate.getHosts()) {
             Host host = candidate.loadResource(Host.class, id);
             Long free = host.getComputeFree();
 
-            if ( free != null && free.longValue() < computeFree ) {
+            if (free != null && free.longValue() < computeFree) {
                 return false;
             }
         }

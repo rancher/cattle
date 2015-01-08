@@ -10,7 +10,7 @@ public class DeferredActionsHandler extends AbstractApiRequestHandler {
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        if ( request.getExceptions().size() > 0 ) {
+        if (request.getExceptions().size() > 0) {
             DeferredUtils.resetDeferred();
         }
     }

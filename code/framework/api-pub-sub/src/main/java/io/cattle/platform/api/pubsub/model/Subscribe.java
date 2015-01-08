@@ -5,7 +5,6 @@ import java.util.List;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-
 @Type(pluralName = "subscribe")
 public interface Subscribe {
 

@@ -47,16 +47,16 @@ public class HazelcastFactory {
         String name = NAME.get();
         String password = PASS.get();
 
-        if ( StringUtils.isBlank(name) ) {
+        if (StringUtils.isBlank(name)) {
             name = hazelcastDao.getGroupName();
         }
 
-        if ( StringUtils.isBlank(password) ) {
+        if (StringUtils.isBlank(password)) {
             password = hazelcastDao.getGroupPassword();
         }
 
         Config config = new Config();
-        if ( JMX.get() ) {
+        if (JMX.get()) {
             config.setProperty("hazelcast.jmx", "true");
         }
 
@@ -67,33 +67,33 @@ public class HazelcastFactory {
         groupConfig.setPassword(password);
         config.setGroupConfig(groupConfig);
 
-        if ( AWS.get() ) {
+        if (AWS.get()) {
             AwsConfig awsConfig = new AwsConfig();
             awsConfig.setAccessKey(ACCESS_KEY.get());
             awsConfig.setSecretKey(SECRET_KEY.get());
             awsConfig.setEnabled(true);
 
-            if ( ! StringUtils.isBlank(HOST_HEADER.get()) ) {
+            if (!StringUtils.isBlank(HOST_HEADER.get())) {
                 awsConfig.setHostHeader(HOST_HEADER.get());
             }
 
-            if ( ! StringUtils.isBlank(SECURITY_GROUP.get()) ) {
+            if (!StringUtils.isBlank(SECURITY_GROUP.get())) {
                 awsConfig.setSecurityGroupName(SECURITY_GROUP.get());
             }
 
-            if ( ! StringUtils.isBlank(TAG_KEY.get()) ) {
+            if (!StringUtils.isBlank(TAG_KEY.get())) {
                 awsConfig.setTagKey(TAG_KEY.get());
             }
 
-            if ( ! StringUtils.isBlank(TAG_VALUE.get()) ) {
+            if (!StringUtils.isBlank(TAG_VALUE.get())) {
                 awsConfig.setTagValue(TAG_VALUE.get());
             }
 
-            if ( ! StringUtils.isBlank(REGION.get()) ) {
+            if (!StringUtils.isBlank(REGION.get())) {
                 awsConfig.setRegion(REGION.get());
             }
 
-            if ( TIMEOUT.get() > 0 ) {
+            if (TIMEOUT.get() > 0) {
                 awsConfig.setConnectionTimeoutSeconds(TIMEOUT.get());
             }
 
@@ -112,10 +112,10 @@ public class HazelcastFactory {
             networkConfig.setJoin(joinConfig);
 
             config.setNetworkConfig(networkConfig);
-        } else if ( IFACE.get().size() > 0 ){
+        } else if (IFACE.get().size() > 0) {
             InterfacesConfig ifacesConfig = new InterfacesConfig();
             ifacesConfig.setEnabled(true);
-            for ( String iface : IFACE.get() ) {
+            for (String iface : IFACE.get()) {
                 ifacesConfig.addInterface(iface);
             }
 

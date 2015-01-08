@@ -25,12 +25,12 @@ public class VolumeValidStoragePoolConstraint implements Constraint {
     public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
         Set<Long> poolIds = candidate.getPools().get(volume.getId());
 
-        if ( storagePools.size() == 0 && poolIds.size() == 0 ) {
+        if (storagePools.size() == 0 && poolIds.size() == 0) {
             return true;
         }
 
-        for ( Long poolId : poolIds ) {
-            if ( ! storagePools.contains(poolId) ) {
+        for (Long poolId : poolIds) {
+            if (!storagePools.contains(poolId)) {
                 return false;
             }
         }

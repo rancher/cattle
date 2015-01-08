@@ -39,43 +39,41 @@ public class NicActivate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = (Nic)state.getResource();
+        Nic nic = (Nic) state.getResource();
         Network network = getObjectManager().loadResource(Network.class, nic.getNetworkId());
         Subnet subnet = getObjectManager().loadResource(Subnet.class, nic.getSubnetId());
 
-        if ( network == null ) {
+        if (network == null) {
             return null;
         }
 
         activate(network, state.getData());
 
         Vnet vnet = getVnet(nic, subnet);
-        if ( vnet != null ) {
+        if (vnet != null) {
             activate(vnet, state.getData());
         }
 
         IpAddress ipAddress = getIpAddress(nic, subnet);
 
-        if ( ipAddress != null ) {
+        if (ipAddress != null) {
             activate(ipAddress, state.getData());
         }
 
         String mac = assignMacAddress(network, nic);
 
-        return new HandlerResult(NIC.VNET_ID, nic.getVnetId(),
-                NIC.MAC_ADDRESS, mac);
+        return new HandlerResult(NIC.VNET_ID, nic.getVnetId(), NIC.MAC_ADDRESS, mac);
     }
 
     protected String assignMacAddress(Network network, Nic nic) {
         String mac = nic.getMacAddress();
 
-        if ( mac != null ) {
+        if (mac != null) {
             return mac;
         }
 
-        PooledResource resource = poolManager.allocateOneResource(network, nic,
-                new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC));
-        if ( resource == null ) {
+        PooledResource resource = poolManager.allocateOneResource(network, nic, new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC));
+        if (resource == null) {
             throw new ExecutionException("MAC allocation error", "Failed to allocate MAC from network", nic);
         }
 
@@ -85,15 +83,15 @@ public class NicActivate extends AbstractDefaultProcessHandler {
     protected IpAddress getIpAddress(Nic nic, Subnet subnet) {
         IpAddress ipAddress = ipAddressDao.getPrimaryIpAddress(nic);
 
-        if ( ipAddress == null && nic.getSubnetId() != null ) {
+        if (ipAddress == null && nic.getSubnetId() != null) {
             ipAddress = ipAddressDao.mapNewIpAddress(nic, IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PRIMARY);
         }
 
-        for ( IpAddressNicMap map : mapDao.findNonRemoved(IpAddressNicMap.class, Nic.class, nic.getId()) ) {
+        for (IpAddressNicMap map : mapDao.findNonRemoved(IpAddressNicMap.class, Nic.class, nic.getId())) {
             getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, null);
         }
 
-        if ( ipAddress != null ) {
+        if (ipAddress != null) {
             getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, ipAddress, null);
         }
 
@@ -103,13 +101,13 @@ public class NicActivate extends AbstractDefaultProcessHandler {
     protected Vnet getVnet(Nic nic, Subnet subnet) {
         Vnet vnet = getObjectManager().loadResource(Vnet.class, nic.getVnetId());
 
-        if ( vnet != null ) {
+        if (vnet != null) {
             return vnet;
         }
 
         vnet = lookupVnet(nic, subnet);
 
-        if ( vnet != null ) {
+        if (vnet != null) {
             getObjectManager().setFields(nic, NIC.VNET_ID, vnet.getId());
         }
 
@@ -117,17 +115,17 @@ public class NicActivate extends AbstractDefaultProcessHandler {
     }
 
     protected Vnet lookupVnet(Nic nic, Subnet subnet) {
-        if ( subnet == null ) {
+        if (subnet == null) {
             return null;
         }
 
         List<? extends SubnetVnetMap> vnets = mapDao.findNonRemoved(SubnetVnetMap.class, Subnet.class, subnet.getId());
 
-        if ( vnets.size() == 0 ) {
+        if (vnets.size() == 0) {
             return null;
         }
 
-        if ( vnets.size() == 1 ) {
+        if (vnets.size() == 1) {
             return getObjectManager().loadResource(Vnet.class, vnets.get(0).getVnetId());
         }
 

@@ -1,6 +1,5 @@
 package io.cattle.platform.lock.definition;
 
-
 public class AbstractLockDefinition implements LockDefinition {
 
     String lockId;

@@ -18,7 +18,7 @@ public class EofAwareChannelExec extends ChannelExec {
     public void handleEof() throws IOException {
         super.handleEof();
 
-        for ( Runnable run : eofHandler ) {
+        for (Runnable run : eofHandler) {
             run.run();
         }
     }

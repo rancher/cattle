@@ -41,7 +41,7 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
     boolean explicitByDefault = false;
     boolean whiteList = false;
     Set<String> ignoreTypes = new HashSet<String>();
-    Map<String,List<URL>> resources = new HashMap<String, List<URL>>();
+    Map<String, List<URL>> resources = new HashMap<String, List<URL>>();
 
     String path;
     ResourceLoader resourceLoader;
@@ -53,18 +53,17 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
 
     @Override
     public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactory factory) {
-        if ( ignoreTypes.contains(schema.getId()) ) {
+        if (ignoreTypes.contains(schema.getId())) {
             return schema;
         }
 
         try {
             List<URL> resources = lookUpResource(schema.getId());
-            if ( whiteList && resources.size() == 0 ) {
+            if (whiteList && resources.size() == 0) {
                 return null;
             }
-        } catch ( IOException e) {
-            throw new IllegalStateException("Failed to lookup schema for [" + schema.getId() +
-                    "] at [" + path + "]");
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to lookup schema for [" + schema.getId() + "] at [" + path + "]");
         }
 
         return super.postProcessRegister(schema, factory);
@@ -76,12 +75,12 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         String override = String.format("%s/%s.json.d/**/*.json", path, id);
 
         URL url = getClass().getClassLoader().getResource(base);
-        if ( url != null ) {
+        if (url != null) {
             log.info("Loading JSON schema overlay for type [{}] from [{}]", id, url);
             result.add(url);
         }
 
-        for ( URL overrideUrl : resourceLoader.getResources(override) ) {
+        for (URL overrideUrl : resourceLoader.getResources(override)) {
             log.info("Loading JSON schema overlay for type [{}] from [{}]", id, overrideUrl);
             result.add(overrideUrl);
         }
@@ -93,29 +92,29 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
 
     @Override
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
-        if ( ignoreTypes.contains(schema.getId()) ) {
+        if (ignoreTypes.contains(schema.getId())) {
             return schema;
         }
 
         List<URL> resources = this.resources.get(schema.getId());
-        if ( resources == null || resources.size() == 0 ) {
+        if (resources == null || resources.size() == 0) {
             return schema;
         }
 
-        for ( URL resource : resources ) {
+        for (URL resource : resources) {
             InputStream is = null;
             try {
                 is = resource.openStream();
 
-                if ( is == null ) {
+                if (is == null) {
                     continue;
                 }
 
                 byte[] bytes = IOUtils.toByteArray(is);
 
-                Map<String,Object> mapData = jsonMapper.readValue(bytes);
-                SchemaOverlayImpl data = schemaMashaller.readValue(bytes, explicitByDefault ? ExplicitByDefaultSchemaOverlayImpl.class :
-                    SchemaOverlayImpl.class);
+                Map<String, Object> mapData = jsonMapper.readValue(bytes);
+                SchemaOverlayImpl data = schemaMashaller.readValue(bytes, explicitByDefault ? ExplicitByDefaultSchemaOverlayImpl.class
+                        : SchemaOverlayImpl.class);
 
                 processSchema(schema, data, mapData);
             } catch (IllegalAccessException e) {
@@ -134,21 +133,22 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         return schema;
     }
 
-    protected void processSchema(SchemaImpl schema, SchemaOverlayImpl data, Map<String, Object> mapData) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    protected void processSchema(SchemaImpl schema, SchemaOverlayImpl data, Map<String, Object> mapData) throws IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
 
-        for ( PropertyDescriptor prop : PropertyUtils.getPropertyDescriptors(schema) ) {
+        for (PropertyDescriptor prop : PropertyUtils.getPropertyDescriptors(schema)) {
             String name = prop.getName();
             Method writeMethod = prop.getWriteMethod();
-            if ( writeMethod == null || prop.getReadMethod() == null ) {
+            if (writeMethod == null || prop.getReadMethod() == null) {
                 continue;
             }
 
             Class<?> type = prop.getPropertyType();
-            if ( Map.class.isAssignableFrom(type) ) {
+            if (Map.class.isAssignableFrom(type)) {
                 processMapData(schema, data, mapData, name);
             } else {
                 Object newValue = PropertyUtils.getProperty(data, name);
-                if ( mapData.containsKey(name) ) {
+                if (mapData.containsKey(name)) {
                     PropertyUtils.setProperty(schema, name, newValue);
                 }
             }
@@ -156,44 +156,45 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
     }
 
     @SuppressWarnings("unchecked")
-    protected void processMapData(SchemaImpl schema, SchemaOverlayImpl data, Map<String, Object> mapData, String name) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        Map<String,Object> oldValues = (Map<String, Object>)PropertyUtils.getProperty(schema, name);
-        Map<String,Object> newValues = (Map<String, Object>)PropertyUtils.getProperty(data, name);
+    protected void processMapData(SchemaImpl schema, SchemaOverlayImpl data, Map<String, Object> mapData, String name) throws IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
+        Map<String, Object> oldValues = (Map<String, Object>) PropertyUtils.getProperty(schema, name);
+        Map<String, Object> newValues = (Map<String, Object>) PropertyUtils.getProperty(data, name);
 
         Object value = null;
         try {
             value = PropertyUtils.getProperty(data, name + "Explicit");
-        } catch ( NoSuchMethodException e ) {
+        } catch (NoSuchMethodException e) {
             return;
         }
 
-        if ( Boolean.TRUE.equals(value) ) {
-            for ( String key : new HashSet<String>(oldValues.keySet()) ) {
-                if ( newValues == null || ! newValues.containsKey(key) ) {
+        if (Boolean.TRUE.equals(value)) {
+            for (String key : new HashSet<String>(oldValues.keySet())) {
+                if (newValues == null || !newValues.containsKey(key)) {
                     oldValues.remove(key);
                 }
             }
         }
 
-        if ( newValues == null || newValues.size() == 0 ) {
+        if (newValues == null || newValues.size() == 0) {
             return;
         }
 
-        for ( String key : newValues.keySet() ) {
-            if ( key.startsWith(REMOVE) ) {
+        for (String key : newValues.keySet()) {
+            if (key.startsWith(REMOVE)) {
                 oldValues.remove(StringUtils.removeStart(key, REMOVE));
                 continue;
             }
 
             Object oldValue = oldValues.get(key);
             Object newValue = newValues.get(key);
-            if ( newValue == null ) {
+            if (newValue == null) {
                 continue;
             }
 
-            Map<String,Object> mapProperty = (Map<String, Object>)mapData.get(name);
+            Map<String, Object> mapProperty = (Map<String, Object>) mapData.get(name);
 
-            if ( oldValue == null ) {
+            if (oldValue == null) {
                 BeanUtils.copyProperties(newValue, mapProperty.get(key));
                 oldValues.put(key, newValue);
                 continue;

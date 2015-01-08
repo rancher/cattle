@@ -15,29 +15,16 @@ public class AgentDelegateDaoImpl extends AbstractJooqDao implements AgentDelega
 
     @Override
     public Host getHost(Agent agent) {
-        Record record = create()
-                .select(HOST.fields())
-                    .from(INSTANCE)
-                    .join(INSTANCE_HOST_MAP)
-                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID)
-                                .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
-                    .join(HOST)
-                        .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
-                    .where(INSTANCE.AGENT_ID.eq(agent.getId())
-                            .and(INSTANCE.REMOVED.isNull())
-                            .and(HOST.REMOVED.isNull()))
-                    .fetchAny();
+        Record record = create().select(HOST.fields()).from(INSTANCE).join(INSTANCE_HOST_MAP)
+                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID).and(INSTANCE_HOST_MAP.REMOVED.isNull())).join(HOST).on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                .where(INSTANCE.AGENT_ID.eq(agent.getId()).and(INSTANCE.REMOVED.isNull()).and(HOST.REMOVED.isNull())).fetchAny();
 
         return record == null ? null : record.into(Host.class);
     }
 
     @Override
     public Instance getInstance(Agent agent) {
-        return create()
-                .selectFrom(INSTANCE)
-                .where(INSTANCE.AGENT_ID.eq(agent.getId())
-                        .and(INSTANCE.REMOVED.isNull()))
-                .fetchOne();
+        return create().selectFrom(INSTANCE).where(INSTANCE.AGENT_ID.eq(agent.getId()).and(INSTANCE.REMOVED.isNull())).fetchOne();
     }
 
 }

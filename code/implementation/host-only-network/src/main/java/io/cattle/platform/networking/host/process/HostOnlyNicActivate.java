@@ -38,49 +38,49 @@ public class HostOnlyNicActivate extends AbstractObjectProcessLogic implements P
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = (Nic)state.getResource();
+        Nic nic = (Nic) state.getResource();
         Network network = loadResource(Network.class, nic.getNetworkId());
         Instance instance = loadResource(Instance.class, nic.getInstanceId());
         Subnet subnet = loadResource(Subnet.class, nic.getSubnetId());
 
-        if ( ! objectManager.isKind(network, HostOnlyConstants.KIND_HOST_ONLY) ) {
+        if (!objectManager.isKind(network, HostOnlyConstants.KIND_HOST_ONLY)) {
             return null;
         }
 
         Vnet vnet = null;
 
-        for ( Host host : mappedChildren(instance, Host.class) ) {
+        for (Host host : mappedChildren(instance, Host.class)) {
             vnet = hostOnlyDao.getVnetForHost(network, host);
 
-            if ( vnet == null ) {
+            if (vnet == null) {
                 vnet = createVnetForHost(subnet, network, host);
             }
 
             createIgnoreCancel(vnet, null);
 
             boolean mapped = false;
-            for ( HostVnetMap map : mapDao.findNonRemoved(HostVnetMap.class, Vnet.class, vnet.getId()) ) {
-                if ( map.getHostId().equals(host.getId()) ) {
+            for (HostVnetMap map : mapDao.findNonRemoved(HostVnetMap.class, Vnet.class, vnet.getId())) {
+                if (map.getHostId().equals(host.getId())) {
                     createThenActivate(map, state.getData());
                     mapped = true;
                 }
             }
 
-            if ( ! mapped ) {
+            if (!mapped) {
                 HostVnetMap map = mapVnetToHost(vnet, network, host);
                 createThenActivate(map, state.getData());
             }
 
-            if ( subnet != null ) {
-                for ( SubnetVnetMap map : mapDao.findNonRemoved(SubnetVnetMap.class, Vnet.class, vnet.getId()) ) {
-                    if ( map.getSubnetId().equals(subnet.getId()) ) {
+            if (subnet != null) {
+                for (SubnetVnetMap map : mapDao.findNonRemoved(SubnetVnetMap.class, Vnet.class, vnet.getId())) {
+                    if (map.getSubnetId().equals(subnet.getId())) {
                         createThenActivate(map, state.getData());
                     }
                 }
             }
         }
 
-        if ( vnet == null ) {
+        if (vnet == null) {
             return null;
         } else {
             return new HandlerResult(NIC.VNET_ID, vnet.getId()).withShouldContinue(true);
@@ -103,7 +103,7 @@ public class HostOnlyNicActivate extends AbstractObjectProcessLogic implements P
             @Override
             public Vnet doWithLock() {
                 Vnet vnet = hostOnlyDao.getVnetForHost(network, host);
-                if ( vnet != null ) {
+                if (vnet != null) {
                     return vnet;
                 }
 

@@ -26,11 +26,11 @@ public class IpPoolAcquireActionHandler implements ActionHandler {
 
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
-        if ( ! ( obj instanceof IpPool ) ) {
+        if (!(obj instanceof IpPool)) {
             return null;
         }
 
-        IpPool pool = (IpPool)obj;
+        IpPool pool = (IpPool) obj;
         IpAddress ipAddress = ipAddressDao.createIpAddressFromPool(pool, null);
 
         processManager.scheduleStandardProcess(StandardProcess.CREATE, ipAddress, new HashMap<String, Object>());

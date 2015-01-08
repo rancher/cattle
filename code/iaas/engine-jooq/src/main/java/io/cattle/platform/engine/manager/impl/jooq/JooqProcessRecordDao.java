@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicIntProperty;
 
-
 public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessRecordDao {
 
     private static DynamicIntProperty PROCESS_REPLAY_BATCH = ArchaiusUtil.getInt("process.replay.batch.size");
@@ -47,69 +46,51 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     @Override
     public List<Long> pendingTasks(String resourceType, String resourceId) {
         final List<Long> result = new ArrayList<Long>();
-        /* I know I should and can do this unique logic in SQL, but I couldn't
-         * figure out a simple way to do it in HSQLDB.  So if you're reading this
-         * and can find a query that does this across all the supported DB, please
-         * let someone know.
-         *
-         * Here's what I wanted to do
-         *
-         * select
-         *     min(PROCESS_INSTANCE.ID)
-         * from PROCESS_INSTANCE
-         * where
-         *     PROCESS_INSTANCE.END_TIME is null
-         * group by PROCESS_INSTANCE.RESOURCE_TYPE, PROCESS_INSTANCE.RESOURCE_ID
-         * order by PROCESS_INSTANCE.START_TIME asc
-         * limit 10000 offset 0
-         *
-         *  But you can't order by something that is not in the group by.  So how
-         *  do I get a unique pair of resource_type, resource_id, but still order by
-         *  id or start_time
+        /*
+         * I know I should and can do this unique logic in SQL, but I couldn't
+         * figure out a simple way to do it in HSQLDB. So if you're reading this
+         * and can find a query that does this across all the supported DB,
+         * please let someone know. Here's what I wanted to do select
+         * min(PROCESS_INSTANCE.ID) from PROCESS_INSTANCE where
+         * PROCESS_INSTANCE.END_TIME is null group by
+         * PROCESS_INSTANCE.RESOURCE_TYPE, PROCESS_INSTANCE.RESOURCE_ID order by
+         * PROCESS_INSTANCE.START_TIME asc limit 10000 offset 0 But you can't
+         * order by something that is not in the group by. So how do I get a
+         * unique pair of resource_type, resource_id, but still order by id or
+         * start_time
          */
         final Set<String> seen = new HashSet<String>();
-        create()
-            .select(PROCESS_INSTANCE.ID,
-                    PROCESS_INSTANCE.RESOURCE_TYPE,
-                    PROCESS_INSTANCE.RESOURCE_ID)
-                .from(PROCESS_INSTANCE)
-            .where(processCondition(resourceType, resourceId))
-            .orderBy(PROCESS_INSTANCE.PRIORITY.desc(), PROCESS_INSTANCE.ID.asc())
-            .limit(PROCESS_REPLAY_BATCH.get())
-            .fetchInto(new RecordHandler<Record3<Long,String,String>>() {
-                @Override
-                public void next(Record3<Long,String,String> record) {
-                    String resource = String.format("%s:%s", record.value2(), record.value3());
-                    if ( seen.contains(resource) ) {
-                        return;
-                    }
+        create().select(PROCESS_INSTANCE.ID, PROCESS_INSTANCE.RESOURCE_TYPE, PROCESS_INSTANCE.RESOURCE_ID).from(PROCESS_INSTANCE)
+                .where(processCondition(resourceType, resourceId)).orderBy(PROCESS_INSTANCE.PRIORITY.desc(), PROCESS_INSTANCE.ID.asc())
+                .limit(PROCESS_REPLAY_BATCH.get()).fetchInto(new RecordHandler<Record3<Long, String, String>>() {
+                    @Override
+                    public void next(Record3<Long, String, String> record) {
+                        String resource = String.format("%s:%s", record.value2(), record.value3());
+                        if (seen.contains(resource)) {
+                            return;
+                        }
 
-                    seen.add(resource);
-                    result.add(record.value1());
-                }
-            });
+                        seen.add(resource);
+                        result.add(record.value1());
+                    }
+                });
 
         return result;
     }
 
     protected Condition processCondition(String resourceType, String resourceId) {
-        if ( resourceType == null ) {
+        if (resourceType == null) {
             return PROCESS_INSTANCE.END_TIME.isNull();
         } else {
-            return PROCESS_INSTANCE.END_TIME.isNull()
-                    .and(PROCESS_INSTANCE.RESOURCE_TYPE.eq(resourceType))
-                    .and(PROCESS_INSTANCE.RESOURCE_ID.eq(resourceId));
+            return PROCESS_INSTANCE.END_TIME.isNull().and(PROCESS_INSTANCE.RESOURCE_TYPE.eq(resourceType)).and(PROCESS_INSTANCE.RESOURCE_ID.eq(resourceId));
         }
     }
 
     @Override
     public ProcessRecord getRecord(Long id) {
-        io.cattle.platform.core.model.ProcessInstance record = create()
-                .selectFrom(PROCESS_INSTANCE)
-                .where(PROCESS_INSTANCE.ID.eq(id))
-                .fetchOne();
+        io.cattle.platform.core.model.ProcessInstance record = create().selectFrom(PROCESS_INSTANCE).where(PROCESS_INSTANCE.ID.eq(id)).fetchOne();
 
-        if ( record == null ) {
+        if (record == null) {
             return null;
         }
 
@@ -148,12 +129,9 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
 
     @Override
     public void update(ProcessRecord record, boolean schedule) {
-        ProcessInstanceRecord pi =
-                create().selectFrom(PROCESS_INSTANCE)
-                        .where(PROCESS_INSTANCE.ID.eq(record.getId()))
-                        .fetchOne();
+        ProcessInstanceRecord pi = create().selectFrom(PROCESS_INSTANCE).where(PROCESS_INSTANCE.ID.eq(record.getId())).fetchOne();
 
-        if ( pi == null ) {
+        if (pi == null) {
             throw new IllegalStateException("Failed to find process instance for [" + record.getId() + "]");
         }
 
@@ -161,34 +139,27 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
 
         pi.update();
 
-        /* TODO: This is really a hack.  For some reason if you persist the
+        /*
+         * TODO: This is really a hack. For some reason if you persist the
          * process execution in schedule, the API thread will deadlock with a
-         * process server thread in H2.
-         *
-         * Need to retest removing this.  This may have been fixed by some changes
-         * in the queries in the process server.
+         * process server thread in H2. Need to retest removing this. This may
+         * have been fixed by some changes in the queries in the process server.
          */
-        if ( schedule ) {
+        if (schedule) {
             return;
         }
 
         ProcessLog processLog = record.getProcessLog();
 
-        if ( record.getId() != null && processLog != null && processLog.getUuid() != null ) {
+        if (record.getId() != null && processLog != null && processLog.getUuid() != null) {
             String uuid = processLog.getUuid();
-            Map<String,Object> log = convertToMap(record, processLog);
+            Map<String, Object> log = convertToMap(record, processLog);
 
-            int result = create()
-                    .update(PROCESS_EXECUTION)
-                    .set(PROCESS_EXECUTION.LOG, log)
-                    .where(PROCESS_EXECUTION.UUID.eq(uuid))
-                    .execute();
+            int result = create().update(PROCESS_EXECUTION).set(PROCESS_EXECUTION.LOG, log).where(PROCESS_EXECUTION.UUID.eq(uuid)).execute();
 
-            if ( result == 0 ) {
-                create()
-                    .insertInto(PROCESS_EXECUTION, PROCESS_EXECUTION.PROCESS_INSTANCE_ID, PROCESS_EXECUTION.UUID, PROCESS_EXECUTION.LOG)
-                    .values(record.getId(), uuid, log)
-                    .execute();
+            if (result == 0) {
+                create().insertInto(PROCESS_EXECUTION, PROCESS_EXECUTION.PROCESS_INSTANCE_ID, PROCESS_EXECUTION.UUID, PROCESS_EXECUTION.LOG)
+                        .values(record.getId(), uuid, log).execute();
             }
         }
     }
@@ -220,13 +191,13 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String,Object> convertToMap(ProcessRecord record, ProcessLog obj) {
-        if ( obj == null )
+    protected Map<String, Object> convertToMap(ProcessRecord record, ProcessLog obj) {
+        if (obj == null)
             return null;
 
         try {
             String stringData = jsonMapper.writeValueAsString(obj);
-            if ( stringData.length() > 1000000 ) {
+            if (stringData.length() > 1000000) {
                 log.error("Process log is too long for id [{}] truncating executions : {}", record.getId(), stringData);
                 obj.getExecutions().clear();
             }

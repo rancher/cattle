@@ -19,20 +19,20 @@ public class IpAddressAssociate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        IpAddress address = (IpAddress)state.getResource();
+        IpAddress address = (IpAddress) state.getResource();
         Object id = state.getData().get(IpAddressConstants.DATA_IP_ADDRESS_ID);
 
-        if ( id == null ) {
+        if (id == null) {
             return null;
         }
 
         IpAddress ip = loadResource(IpAddress.class, id.toString());
 
-        if ( ip == null ) {
+        if (ip == null) {
             return null;
         }
 
-        IpAssociation association = ipAddressDao.createOrFindAssociation(address,  ip);
+        IpAssociation association = ipAddressDao.createOrFindAssociation(address, ip);
 
         createThenActivate(association, state.getData());
 

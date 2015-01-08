@@ -42,7 +42,7 @@ public class ListenerPoolObjectFactory implements PooledObjectFactory<FutureEven
 
     @Override
     public boolean validateObject(PooledObject<FutureEventListener> p) {
-        return ! p.getObject().isFailed();
+        return !p.getObject().isFailed();
     }
 
     @Override

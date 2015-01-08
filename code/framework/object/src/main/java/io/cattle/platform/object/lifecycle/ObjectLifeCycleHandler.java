@@ -8,6 +8,6 @@ public interface ObjectLifeCycleHandler {
         CREATE, UPDATE, DELETE
     }
 
-    public <T> T onEvent(LifeCycleEvent event, T instance, Class<T> clz, Map<String,Object> properties);
+    public <T> T onEvent(LifeCycleEvent event, T instance, Class<T> clz, Map<String, Object> properties);
 
 }

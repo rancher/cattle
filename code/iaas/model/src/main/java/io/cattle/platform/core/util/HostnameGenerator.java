@@ -44,8 +44,8 @@ public class HostnameGenerator {
 
         String prefix = getDefaultPrefix(local);
 
-        if ( hostname == null ) {
-            if ( address == null ) {
+        if (hostname == null) {
+            if (address == null) {
                 return null;
             }
 
@@ -57,16 +57,16 @@ public class HostnameGenerator {
 
     public static String lookup(boolean local, String instanceHostname, String instanceDomain, String address, String networkDomain) {
         String hostname = lookupHostname(local, instanceHostname, address);
-        if ( hostname == null ) {
+        if (hostname == null) {
             return null;
         }
 
         String domain = local ? instanceDomain : null;
-        if ( domain == null && local ) {
+        if (domain == null && local) {
             domain = networkDomain;
         }
 
-        if ( domain == null ) {
+        if (domain == null) {
             domain = getDefaultDomain(local);
         }
 

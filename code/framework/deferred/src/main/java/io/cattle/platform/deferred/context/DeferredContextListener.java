@@ -13,7 +13,7 @@ public class DeferredContextListener implements ManagedContextListener<Object> {
 
     @Override
     public void onLeaveContext(Object data, boolean reentry, Throwable t) {
-        if ( ! reentry && t == null ) {
+        if (!reentry && t == null) {
             DeferredUtils.runDeferred();
         }
     }

@@ -9,8 +9,8 @@ public interface Event {
     public static final String TRANSITIONING_NO = "no";
     public static final String TRANSITIONING_ERROR = "error";
 
-    public static final String REPLY_PREFIX  = "reply.";
-    public static final String REPLY_SUFFIX  = ".reply";
+    public static final String REPLY_PREFIX = "reply.";
+    public static final String REPLY_SUFFIX = ".reply";
 
     String getId();
 
@@ -42,5 +42,5 @@ public interface Event {
 
     String getPublisher();
 
-    Map<String,Object> getContext();
+    Map<String, Object> getContext();
 }

@@ -17,7 +17,7 @@ public abstract class AbstractStringRangeGenerator implements PooledResourceItem
         this.min = fromString(min);
         this.max = fromString(max);
         this.length = (this.max - this.min + 1);
-        this.start = current = this.min + (long)(RANDOM.nextDouble() * length);
+        this.start = current = this.min + (long) (RANDOM.nextDouble() * length);
     }
 
     @Override
@@ -29,7 +29,7 @@ public abstract class AbstractStringRangeGenerator implements PooledResourceItem
     public String next() {
         String next = toString(current);
 
-        if ( ++current > max ) {
+        if (++current > max) {
             current = min;
         }
 

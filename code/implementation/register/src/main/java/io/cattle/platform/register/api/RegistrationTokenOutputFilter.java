@@ -14,16 +14,16 @@ public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if ( ! (original instanceof Credential) ) {
+        if (!(original instanceof Credential)) {
             return converted;
         }
 
-        Credential cred = (Credential)original;
+        Credential cred = (Credential) original;
 
         String accessKey = cred.getPublicValue();
         String secretKey = cred.getSecretValue();
 
-        if ( accessKey != null && secretKey != null ) {
+        if (accessKey != null && secretKey != null) {
             String token = RegistrationToken.createToken(accessKey, secretKey);
             URL url = ApiContext.getUrlBuilder().resourceReferenceLink("scripts", token);
             converted.getFields().put("token", token);

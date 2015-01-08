@@ -22,7 +22,7 @@ public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implem
     @Override
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
         Class<?> clz = factory.getSchemaClass(schema.getId());
-        if ( clz == null || clz.getAnnotation(Entity.class) == null ) {
+        if (clz == null || clz.getAnnotation(Entity.class) == null) {
             return schema;
         }
 
@@ -30,7 +30,7 @@ public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implem
         schema.setUpdate(true);
         schema.setDeletable(true);
 
-        for ( PropertyDescriptor prop : PropertyUtils.getPropertyDescriptors(clz) ) {
+        for (PropertyDescriptor prop : PropertyUtils.getPropertyDescriptors(clz)) {
             processProperty(schema, prop);
         }
 
@@ -38,7 +38,7 @@ public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implem
     }
 
     protected void processProperty(SchemaImpl schema, PropertyDescriptor prop) {
-        if ( TypeUtils.ID_FIELD.equals(prop.getName()) ) {
+        if (TypeUtils.ID_FIELD.equals(prop.getName())) {
             return;
         }
 
@@ -46,25 +46,25 @@ public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implem
         Method writeMethod = prop.getWriteMethod();
         Method readMethod = prop.getReadMethod();
 
-        if ( field == null || writeMethod == null ) {
+        if (field == null || writeMethod == null) {
             return;
         }
 
         Column column = writeMethod.getAnnotation(Column.class);
-        if ( column == null && readMethod != null ) {
+        if (column == null && readMethod != null) {
             column = readMethod.getAnnotation(Column.class);
         }
 
-        if ( column == null ) {
+        if (column == null) {
             return;
         }
 
         field.setNullable(field.getTypeEnum() == FieldType.STRING ? true : column.nullable());
-        if ( column.length() > 0 ) {
-            field.setMaxLength((long)column.length());
+        if (column.length() > 0) {
+            field.setMaxLength((long) column.length());
         }
 
-        if ( ! prop.getName().equals(TypeUtils.ID_FIELD) ) {
+        if (!prop.getName().equals(TypeUtils.ID_FIELD)) {
             field.setCreate(true);
         }
 
@@ -73,8 +73,8 @@ public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implem
 
     protected FieldImpl getField(SchemaImpl schema, String name) {
         Field field = schema.getResourceFields().get(name);
-        if ( field instanceof FieldImpl ) {
-            return (FieldImpl)field;
+        if (field instanceof FieldImpl) {
+            return (FieldImpl) field;
         }
 
         return null;

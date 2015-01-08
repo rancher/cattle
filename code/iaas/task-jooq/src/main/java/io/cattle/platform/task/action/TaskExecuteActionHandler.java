@@ -18,7 +18,7 @@ public class TaskExecuteActionHandler implements ActionHandler {
 
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
-        Task task = (Task)obj;
+        Task task = (Task) obj;
         taskManager.execute(task.getName());
         return task;
     }

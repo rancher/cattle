@@ -11,7 +11,7 @@ public abstract class AbstractGenericObjectProcessLogic extends AbstractObjectPr
 
     @Override
     public final HandlerResult handle(ProcessState state, ProcessInstance process) {
-        if ( getKind().equals(ObjectUtils.getKind(state.getResource())) ) {
+        if (getKind().equals(ObjectUtils.getKind(state.getResource()))) {
             return handleKind(state, process);
         }
 

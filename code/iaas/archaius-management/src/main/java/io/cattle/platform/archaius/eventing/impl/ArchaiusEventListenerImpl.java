@@ -16,8 +16,8 @@ public class ArchaiusEventListenerImpl implements ArchaiusEventListener {
 
     @Override
     public void apiChange(Event event) {
-        Map<String,Object> data = CollectionUtils.toMap(event.getData());
-        if ( "activeSetting".equals(data.get("type")) ) {
+        Map<String, Object> data = CollectionUtils.toMap(event.getData());
+        if ("activeSetting".equals(data.get("type"))) {
             log.info("Refreshing settings");
             ArchaiusUtil.refresh();
         }

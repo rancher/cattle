@@ -37,7 +37,7 @@ public class PortSpec {
     public PortSpec(String spec) {
         Matcher m = PATTERN.matcher(spec);
 
-        if ( ! m.matches() ) {
+        if (!m.matches()) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, WRONG_FORMAT);
         }
 
@@ -45,19 +45,19 @@ public class PortSpec {
         Integer publicPort = m.group(2) == null ? null : Integer.parseInt(m.group(2));
         String protocol = m.group(5);
 
-        if ( privatePort <= 0 || privatePort > 65535 ) {
+        if (privatePort <= 0 || privatePort > 65535) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PRIVATE_PORT);
         }
 
-        if ( publicPort != null && ( publicPort <= 0 || publicPort > 65535 ) ) {
+        if (publicPort != null && (publicPort <= 0 || publicPort > 65535)) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PUBLIC_PORT);
         }
 
-        if ( protocol == null ) {
+        if (protocol == null) {
             protocol = "tcp";
         }
 
-        if ( ! PROTOCOLS.contains(protocol) ) {
+        if (!PROTOCOLS.contains(protocol)) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PROTOCOL);
         }
 

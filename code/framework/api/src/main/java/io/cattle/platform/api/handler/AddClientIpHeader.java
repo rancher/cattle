@@ -11,7 +11,7 @@ public class AddClientIpHeader extends AbstractApiRequestHandler {
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        if ( request.isCommitted() ) {
+        if (request.isCommitted()) {
             return;
         }
 

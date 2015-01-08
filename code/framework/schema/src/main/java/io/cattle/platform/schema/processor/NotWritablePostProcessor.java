@@ -15,15 +15,14 @@ public class NotWritablePostProcessor extends AbstractSchemaPostProcessor implem
         schema.setUpdate(false);
         schema.setDeletable(false);
 
-        for ( Field field : schema.getResourceFields().values() ) {
-            if ( field instanceof FieldImpl ) {
-                ((FieldImpl)field).setCreate(false);
-                ((FieldImpl)field).setUpdate(false);
+        for (Field field : schema.getResourceFields().values()) {
+            if (field instanceof FieldImpl) {
+                ((FieldImpl) field).setCreate(false);
+                ((FieldImpl) field).setUpdate(false);
             }
         }
 
         return schema;
     }
-
 
 }

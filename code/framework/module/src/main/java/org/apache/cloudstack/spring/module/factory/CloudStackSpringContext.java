@@ -61,7 +61,7 @@ public class CloudStackSpringContext {
     }
 
     public CloudStackSpringContext(boolean init) {
-        if ( init ) {
+        if (init) {
             throw new IllegalArgumentException("Call CloudStackSpringContext() if want to initization the context on construction");
         }
     }
@@ -69,7 +69,7 @@ public class CloudStackSpringContext {
     public void init() throws IOException {
         Collection<ModuleDefinition> defs = loader.locateModules(contextName);
 
-        if ( defs.size() == 0 )
+        if (defs.size() == 0)
             throw new RuntimeException("No modules found to load for Spring");
 
         moduleDefinitionSet = factory.loadModules(defs, baseName);
@@ -78,26 +78,26 @@ public class CloudStackSpringContext {
     public void registerShutdownHook() {
         ApplicationContext base = moduleDefinitionSet.getApplicationContext(baseName);
 
-        if ( base instanceof ConfigurableApplicationContext ) {
-            ((ConfigurableApplicationContext)base).registerShutdownHook();
+        if (base instanceof ConfigurableApplicationContext) {
+            ((ConfigurableApplicationContext) base).registerShutdownHook();
         }
     }
 
     public ModuleDefinition getModuleDefinitionForWeb(String name) {
         ModuleDefinition def = moduleDefinitionSet.getModuleDefinition(name);
 
-        if ( def != null ) {
+        if (def != null) {
             return def;
         }
 
         /* Grab farthest descendant that is deterministic */
         def = moduleDefinitionSet.getModuleDefinition(baseName);
 
-        if ( def == null ) {
+        if (def == null) {
             throw new RuntimeException("Failed to find base spring module to extend for web");
         }
 
-        while ( def.getChildren().size() == 1 ) {
+        while (def.getChildren().size() == 1) {
             def = def.getChildren().iterator().next();
         }
 
@@ -105,10 +105,9 @@ public class CloudStackSpringContext {
     }
 
     public static ApplicationContext getApplicationContext(ServletContext servletContext, String module) {
-        CloudStackSpringContext context =
-                (CloudStackSpringContext) servletContext.getAttribute(CloudStackSpringContext.CLOUCATTLE_CONTEXT_SERVLET_KEY);
+        CloudStackSpringContext context = (CloudStackSpringContext) servletContext.getAttribute(CloudStackSpringContext.CLOUCATTLE_CONTEXT_SERVLET_KEY);
 
-        if ( context == null )
+        if (context == null)
             return null;
 
         return context.getApplicationContextForWeb(module);
@@ -121,21 +120,21 @@ public class CloudStackSpringContext {
     }
 
     public String[] getConfigLocationsForWeb(String name, String[] configured) {
-        if ( configured == null )
+        if (configured == null)
             configured = new String[] {};
 
         ModuleDefinition def = getModuleDefinitionForWeb(name);
 
         List<Resource> inherited = new ArrayList<Resource>();
 
-        while ( def != null ) {
+        while (def != null) {
             inherited.addAll(def.getInheritableContextLocations());
             def = moduleDefinitionSet.getModuleDefinition(def.getParentName());
         }
 
         List<String> urlList = new ArrayList<String>();
 
-        for ( Resource r : inherited ) {
+        for (Resource r : inherited) {
             try {
                 String urlString = r.getURL().toExternalForm();
                 urlList.add(urlString);

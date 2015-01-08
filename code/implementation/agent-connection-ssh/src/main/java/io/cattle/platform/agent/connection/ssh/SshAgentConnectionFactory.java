@@ -67,11 +67,9 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
 
     private static final Logger log = LoggerFactory.getLogger(SshAgentConnectionFactory.class);
 
-    private static final Pattern SSH_PATTERN = Pattern.compile("ssh://"
-                                            + "([^:]+)(:([^@]+))?@"
-                                            + "([^:]+)(:([0-9]+))?");
+    private static final Pattern SSH_PATTERN = Pattern.compile("ssh://" + "([^:]+)(:([^@]+))?@" + "([^:]+)(:([0-9]+))?");
     private static final String PROTOCOL = "ssh://";
-    private static final Map<String,String> URLS = new LinkedHashMap<String, String>();
+    private static final Map<String, String> URLS = new LinkedHashMap<String, String>();
     static {
         URLS.put(ScopedConfig.API_URL, "CATTLE_URL");
         URLS.put(ScopedConfig.CONFIG_URL, "CATTLE_CONFIG_URL");
@@ -91,12 +89,12 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
     @Override
     public AgentConnection createConnection(Agent agent) throws IOException {
         String uri = agent.getUri();
-        if ( uri == null || ! uri.startsWith(PROTOCOL) ) {
+        if (uri == null || !uri.startsWith(PROTOCOL)) {
             return null;
         }
 
         SshConnectionOptions opts = parseOpts(uri);
-        if ( opts == null ) {
+        if (opts == null) {
             return null;
         }
 
@@ -109,9 +107,8 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
 
     protected SshConnectionOptions parseOpts(String uri) {
         Matcher m = SSH_PATTERN.matcher(uri);
-        if ( ! m.matches() ) {
-            log.error("{} does not match ssh option, must be in the format "
-                    + "ssh://user:password@host:port where password and port are optional");
+        if (!m.matches()) {
+            log.error("{} does not match ssh option, must be in the format " + "ssh://user:password@host:port where password and port are optional");
             return null;
         }
 
@@ -125,7 +122,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
 
     protected String getIp(SshConnectionOptions opts) throws IOException {
         InetAddress address = InetAddress.getByName(opts.getHost());
-        if ( address.isLoopbackAddress() ) {
+        if (address.isLoopbackAddress()) {
             address = InetAddress.getByName(ServerContext.getServerAddress().getUrl().getHost());
         }
         return address.getHostAddress();
@@ -167,19 +164,19 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
                 throw new IllegalStateException("Interrupted waiting for script [" + script + "]", e);
             }
 
-            if ( ! execOpen.isOpened() ) {
+            if (!execOpen.isOpened()) {
                 throw new IOException("Failed to start script [" + script + "]");
             }
 
             success = writeAuth(sshAgent);
-            if ( ! success ) {
+            if (!success) {
                 sshAgent.close();
                 throw new IOException("Failed to write context info for agent [" + sshAgent.getAgentId() + "]");
             }
 
             return sshAgent;
         } finally {
-            if ( ! success && session != null ) {
+            if (!success && session != null) {
                 session.close(true);
             }
         }
@@ -220,7 +217,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
 
             return dest;
         } finally {
-            if ( sftpClient != null ) {
+            if (sftpClient != null) {
                 sftpClient.close();
             }
         }
@@ -237,24 +234,24 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         ClientSession session = connect.getSession();
         boolean success = false;
         try {
-                if ( session == null ) {
-                    throw new IOException("Failed to create session to [" + opts + "]");
-                }
+            if (session == null) {
+                throw new IOException("Failed to create session to [" + opts + "]");
+            }
 
-                KeyPair kp = keyPairProvider.loadKey(KeyPairProvider.SSH_RSA);
-                session.authPublicKey(opts.getUsername(), kp);
-                if ( ! authSuccess(session) ) {
-                    session.authPassword(opts.getUsername(), opts.getPassword());
-                }
+            KeyPair kp = keyPairProvider.loadKey(KeyPairProvider.SSH_RSA);
+            session.authPublicKey(opts.getUsername(), kp);
+            if (!authSuccess(session)) {
+                session.authPassword(opts.getUsername(), opts.getPassword());
+            }
 
-                if ( ! authSuccess(session) ) {
-                    throw new IOException("Failed to authenticate with [" + opts + "]");
-                }
+            if (!authSuccess(session)) {
+                throw new IOException("Failed to authenticate with [" + opts + "]");
+            }
 
-                success = true;
-                return session;
+            success = true;
+            return session;
         } finally {
-            if ( ! success && session != null ) {
+            if (!success && session != null) {
                 session.close(true);
             }
         }
@@ -272,7 +269,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
 
     @SuppressWarnings("unchecked")
     protected synchronized SshClient getClient() {
-        if ( client != null ) {
+        if (client != null) {
             return client;
         }
 
@@ -281,8 +278,7 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         client.setTcpipForwardingFilter(new ReverseConnectAllowFilter());
         client.setIoServiceFactory(new SharedExecutorMinaServiceServiceFactory(executorService));
         client.setIoServiceFactory(new MinaServiceFactory());
-        client.setChannelFactories(Arrays.<NamedFactory<Channel>>asList(
-                new EofClosingTcpipServerChannel.EofClosingTcpipServerChannelFactory(executorService)));
+        client.setChannelFactories(Arrays.<NamedFactory<Channel>> asList(new EofClosingTcpipServerChannel.EofClosingTcpipServerChannelFactory(executorService)));
 
         client.start();
 
@@ -290,36 +286,36 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
     }
 
     protected boolean writeAuth(SshAgentConnection connection) throws IOException {
-        if ( ! connection.isOpen() ) {
+        if (!connection.isOpen()) {
             return false;
         }
 
         Agent agent = objectManager.loadResource(Agent.class, connection.getAgentId());
-        if ( agent == null ) {
+        if (agent == null) {
             return false;
         }
 
         String[] keys = agentDao.getLastestActiveApiKeys(agent);
-        if ( keys == null ) {
+        if (keys == null) {
             log.error("Failed to find active API keys for agent [{}]", agent.getId());
         }
 
-        Map<String,String> data = new LinkedHashMap<String, String>();
+        Map<String, String> data = new LinkedHashMap<String, String>();
         data.put(ACCESS_KEY, keys[0]);
         data.put(SECRET_KEY, keys[1]);
 
-        Map<String,Object> config = CollectionUtils.castMap(CollectionUtils.castMap(agent.getData()).get(URL_CONFIG));
+        Map<String, Object> config = CollectionUtils.castMap(CollectionUtils.castMap(agent.getData()).get(URL_CONFIG));
 
-        for ( Map.Entry<String,String> entry : URLS.entrySet() ) {
+        for (Map.Entry<String, String> entry : URLS.entrySet()) {
             String url = entry.getKey();
             String envName = entry.getValue();
 
             Object configValue = config.get(url);
             String value = null;
 
-            if ( DEFAULT.equals(configValue) ) {
+            if (DEFAULT.equals(configValue)) {
                 value = scopedConfig.getUrl(agent, url);
-            } else if ( configValue != null && ! StringUtils.isBlank(configValue.toString()) ) {
+            } else if (configValue != null && !StringUtils.isBlank(configValue.toString())) {
                 value = configValue.toString();
             } else {
                 value = String.format(LOCALHOST_URL_FORMAT.get(), connection.getCallbackPort());
@@ -329,8 +325,8 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         }
 
         StringBuilder line = new StringBuilder("export");
-        for ( Map.Entry<String, String> entry : data.entrySet() ) {
-            if ( line.length() > 0 ) {
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            if (line.length() > 0) {
                 line.append(" ");
             }
 

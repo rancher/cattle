@@ -21,9 +21,8 @@ public class IaasEvents {
     public static final String AGENT_SUFFIX = FrameworkEvents.EVENT_SEP + AGENT_QUALIFIER + "=";
     public static final String AGENT_GROUP_SUFFIX = FrameworkEvents.EVENT_SEP + AGENT_GROUP_QUALIFIER + "=";
 
-
     public static String appendAccount(String name, Long accountId) {
-        if ( accountId == null ) {
+        if (accountId == null) {
             throw new IllegalArgumentException("accountId can not be null");
         }
 
@@ -31,7 +30,7 @@ public class IaasEvents {
     }
 
     public static String appendAgent(String name, Long agentId) {
-        if ( agentId == null ) {
+        if (agentId == null) {
             throw new IllegalArgumentException("agentId can not be null");
         }
 
@@ -39,7 +38,7 @@ public class IaasEvents {
     }
 
     public static String appendAgentGroup(String name, Long agentGroupId) {
-        if ( agentGroupId == null ) {
+        if (agentGroupId == null) {
             throw new IllegalArgumentException("agentGroupId can not be null");
         }
 

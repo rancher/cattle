@@ -24,20 +24,15 @@ public class MetadataInstanceSerializer implements ObjectTypeSerializerPostProce
 
     @Override
     public void process(Object obj, String type, Map<String, Object> data) {
-        if ( ! ( obj instanceof Instance ) ) {
+        if (!(obj instanceof Instance)) {
             return;
         }
 
-        if ( DataAccessor.fromDataFieldOf(obj)
-                .withKey(MetadataConstants.METADATA_ATTACH)
-                .withDefault(false)
-                .as(Boolean.class) ) {
-            Map<String,Object> metadata = metadataService.getMetadataForInstance((Instance)obj, idFormatter);
+        if (DataAccessor.fromDataFieldOf(obj).withKey(MetadataConstants.METADATA_ATTACH).withDefault(false).as(Boolean.class)) {
+            Map<String, Object> metadata = metadataService.getMetadataForInstance((Instance) obj, idFormatter);
 
-            if ( metadata != null ) {
-                DataAccessor.fromDataFieldOf(data)
-                    .withKey(MetadataConstants.METADATA)
-                    .set(metadata);
+            if (metadata != null) {
+                DataAccessor.fromDataFieldOf(data).withKey(MetadataConstants.METADATA).set(metadata);
             }
         }
     }

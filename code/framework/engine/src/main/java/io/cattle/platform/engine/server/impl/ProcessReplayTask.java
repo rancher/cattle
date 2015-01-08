@@ -14,7 +14,7 @@ public class ProcessReplayTask implements Task {
 
     @Override
     public void run() {
-        if ( lockDelegator.tryLock(new ProcessReplayLock()) ) {
+        if (lockDelegator.tryLock(new ProcessReplayLock())) {
             processServer.runOutstandingJobs();
         }
     }

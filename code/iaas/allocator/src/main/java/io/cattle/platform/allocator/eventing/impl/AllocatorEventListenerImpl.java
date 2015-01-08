@@ -45,31 +45,28 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
         deallocate(event);
     }
 
-
     protected void allocate(Event event) {
         log.info("Allocating [{}:{}]", event.getResourceType(), event.getResourceId());
 
         AllocationRequest request = new AllocationRequest(event);
         boolean handled = false;
 
-        for ( Allocator allocator : allocators ) {
-            if ( allocator.allocate(request) ) {
+        for (Allocator allocator : allocators) {
+            if (allocator.allocate(request)) {
                 handled = true;
                 log.info("Allocator [{}] handled request [{}]", allocator, request);
                 break;
             }
         }
 
-        if ( handled ) {
-            if ( request.isSendReply() ) {
+        if (handled) {
+            if (request.isSendReply()) {
                 eventService.publish(EventVO.reply(event));
             }
         } else {
             log.error("No allocator handled [{}]", event);
-            if ( FAIL_ON_NO_ALLOCATOR.get() ) {
-                eventService.publish(EventVO.reply(event)
-                        .withTransitioningMessage("Failed to find a placement")
-                        .withTransitioning(Event.TRANSITIONING_ERROR));
+            if (FAIL_ON_NO_ALLOCATOR.get()) {
+                eventService.publish(EventVO.reply(event).withTransitioningMessage("Failed to find a placement").withTransitioning(Event.TRANSITIONING_ERROR));
             }
         }
     }
@@ -80,20 +77,18 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
         AllocationRequest request = new AllocationRequest(event);
         boolean handled = false;
 
-        for ( Allocator allocator : allocators ) {
-            if ( allocator.deallocate(request) ) {
+        for (Allocator allocator : allocators) {
+            if (allocator.deallocate(request)) {
                 handled = true;
                 log.info("Deallocator [{}] handled request [{}]", allocator, request);
                 break;
             }
         }
 
-        if ( handled && request.isSendReply() ) {
+        if (handled && request.isSendReply()) {
             eventService.publish(EventVO.reply(event));
         }
     }
-
-
 
     public EventService getEventService() {
         return eventService;

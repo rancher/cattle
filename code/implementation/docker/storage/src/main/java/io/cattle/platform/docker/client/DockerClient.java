@@ -33,27 +33,25 @@ public class DockerClient {
     private static final DynamicStringProperty INDEX_USER = ArchaiusUtil.getString("docker.index.user");
     private static final DynamicStringProperty INDEX_PASS = ArchaiusUtil.getString("docker.index.pass");
 
-
     Executor executor;
     JsonMapper jsonMapper;
 
     public DockerImage lookup(final DockerImage image) throws IOException {
         String url = String.format("%s/v1/repositories/%s/images", INDEX_URL.get(), image.getQualifiedName());
 
-        Request r = Request.Get(url)
-            .addHeader(TOKEN_HEADER, "true");
+        Request r = Request.Get(url).addHeader(TOKEN_HEADER, "true");
 
         return executor.execute(r).handleResponse(new ResponseHandler<DockerImage>() {
             @Override
             public DockerImage handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-                if ( response.getStatusLine().getStatusCode() != 200 ) {
+                if (response.getStatusLine().getStatusCode() != 200) {
                     return null;
                 }
 
                 Header endpoints = response.getFirstHeader(REPO);
                 Header token = response.getFirstHeader(TOKEN);
 
-                if ( endpoints == null || token == null ) {
+                if (endpoints == null || token == null) {
                     throw new IOException("Did not get both " + REPO + " and " + TOKEN + " in response");
                 }
 
@@ -69,14 +67,14 @@ public class DockerClient {
         return executor.execute(r).handleResponse(new ResponseHandler<DockerImage>() {
             @Override
             public DockerImage handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-                if ( response.getStatusLine().getStatusCode() != 200 ) {
+                if (response.getStatusLine().getStatusCode() != 200) {
                     return null;
                 }
 
-                Map<String,Object> data = jsonMapper.readValue(response.getEntity().getContent());
+                Map<String, Object> data = jsonMapper.readValue(response.getEntity().getContent());
 
                 Object id = data.get(image.getTag());
-                if ( id == null ) {
+                if (id == null) {
                     return null;
                 } else {
                     image.setId(id.toString());
@@ -92,7 +90,7 @@ public class DockerClient {
     }
 
     public void reload(boolean initial) {
-        if ( initial ) {
+        if (initial) {
             Runnable onChange = new Runnable() {
                 @Override
                 public void run() {
@@ -108,7 +106,7 @@ public class DockerClient {
         log.info("Using docker index url [{}] and user [{}]", INDEX_URL.get(), INDEX_USER.get());
 
         Executor executor = Executor.newInstance();
-        if ( ! StringUtils.isBlank(INDEX_USER.get()) ) {
+        if (!StringUtils.isBlank(INDEX_USER.get())) {
             executor = executor.auth(INDEX_USER.get(), INDEX_PASS.get());
         }
 

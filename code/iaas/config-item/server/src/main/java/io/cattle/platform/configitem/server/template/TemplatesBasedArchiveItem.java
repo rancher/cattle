@@ -17,8 +17,8 @@ public class TemplatesBasedArchiveItem extends AbstractArchiveBasedConfigItem {
 
     TemplateFactory templateFactory;
 
-    public TemplatesBasedArchiveItem(String name, ConfigItemStatusManager versionManager, ResourceRoot resourceRoot,
-            TemplateFactory templateFactory, List<ConfigItemContextFactory> contextFactories) {
+    public TemplatesBasedArchiveItem(String name, ConfigItemStatusManager versionManager, ResourceRoot resourceRoot, TemplateFactory templateFactory,
+            List<ConfigItemContextFactory> contextFactories) {
         super(name, versionManager, resourceRoot, contextFactories);
         this.templateFactory = templateFactory;
     }
@@ -27,18 +27,18 @@ public class TemplatesBasedArchiveItem extends AbstractArchiveBasedConfigItem {
     protected void writeContent(final ArchiveContext context) throws IOException {
         super.writeContent(context);
 
-        for ( Resource resource : getResourceRoot().getResources() ) {
+        for (Resource resource : getResourceRoot().getResources()) {
             Template template = null;
             Object cached = resource.getAttibute(TEMPLATE_KEY);
 
-            if ( cached == null || ! ( cached instanceof Template )) {
+            if (cached == null || !(cached instanceof Template)) {
                 template = templateFactory.loadTemplate(resource);
                 resource.setAttribute(TEMPLATE_KEY, template);
             } else {
-                template = (Template)cached;
+                template = (Template) cached;
             }
 
-            if ( template == null )
+            if (template == null)
                 continue;
 
             final Template templateFinal = template;

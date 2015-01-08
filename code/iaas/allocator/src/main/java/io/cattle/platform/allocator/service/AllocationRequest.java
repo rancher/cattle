@@ -16,9 +16,9 @@ public class AllocationRequest {
     public AllocationRequest(Event event) {
         super();
         this.event = event;
-        if ( event.getName().startsWith("instance") ) {
+        if (event.getName().startsWith("instance")) {
             this.type = Type.INSTANCE;
-        } else if ( event.getName().startsWith("volume") ) {
+        } else if (event.getName().startsWith("volume")) {
             this.type = Type.VOLUME;
         }
         this.resourceId = Long.parseLong(event.getResourceId());

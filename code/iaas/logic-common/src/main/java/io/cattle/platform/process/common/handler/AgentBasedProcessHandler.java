@@ -54,20 +54,20 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     String expression;
     int priority = Priority.SPECIFIC;
 
-    Map<String,ObjectSerializer> serializers = new ConcurrentHashMap<String, ObjectSerializer>();
+    Map<String, ObjectSerializer> serializers = new ConcurrentHashMap<String, ObjectSerializer>();
 
     public AgentBasedProcessHandler() {
-        if ( this.getClass() == AgentBasedProcessHandler.class ) {
+        if (this.getClass() == AgentBasedProcessHandler.class) {
             setName(DEFAULT_NAME);
         }
     }
 
     @Override
     public String[] getProcessNames() {
-        if ( DEFAULT_NAME.equals(getName()) ) {
+        if (DEFAULT_NAME.equals(getName())) {
             return new String[0];
         }
-        if ( processNames == null ) {
+        if (processNames == null) {
             return new String[] { ProcessUtils.getDefaultProcessName(this) };
         }
         return processNames;
@@ -75,9 +75,9 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        if ( shortCircuitIfRemoved != null ) {
+        if (shortCircuitIfRemoved != null) {
             Object shortCircuit = getObjectByRelationship(shortCircuitIfRemoved, state.getResource());
-            if ( shortCircuit != null && ObjectUtils.getRemoved(shortCircuit) != null ) {
+            if (shortCircuit != null && ObjectUtils.getRemoved(shortCircuit) != null) {
                 return null;
             }
         }
@@ -86,43 +86,41 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         Object dataResource = getDataResource(state, process);
         Object agentResource = getAgentResource(state, process, dataResource);
 
-        if ( eventResource == null ) {
+        if (eventResource == null) {
             throw new IllegalStateException("Event resource is null");
         }
 
-        if ( dataResource == null ) {
+        if (dataResource == null) {
             throw new IllegalStateException("Data resource is null");
         }
 
         RemoteAgent agent = agentLocator.lookupAgent(agentResource);
 
-        if ( agent == null ) {
-            return new HandlerResult(true, CollectionUtils.asMap((Object)"_noAgent", true));
+        if (agent == null) {
+            return new HandlerResult(true, CollectionUtils.asMap((Object) "_noAgent", true));
         }
 
         ObjectSerializer serializer = getObjectSerializer(dataResource);
-        Map<String,Object> data = serializer == null ? null : serializer.serialize(dataResource);
-        EventVO<Object> event = EventVO.newEvent(getCommandName() == null ? process.getName() : getCommandName())
-                .withData(data)
-                .withResourceType(getObjectManager().getType(eventResource))
-                .withResourceId(ObjectUtils.getId(eventResource).toString());
+        Map<String, Object> data = serializer == null ? null : serializer.serialize(dataResource);
+        EventVO<Object> event = EventVO.newEvent(getCommandName() == null ? process.getName() : getCommandName()).withData(data)
+                .withResourceType(getObjectManager().getType(eventResource)).withResourceId(ObjectUtils.getId(eventResource).toString());
 
         preProcessEvent(event, state, process, eventResource, dataResource, agentResource);
 
         EventCallOptions options = new EventCallOptions();
         final ProcessProgressInstance progressInstance = progress.get();
 
-        if ( reportProgress && progressInstance != null ) {
+        if (reportProgress && progressInstance != null) {
             options.withProgressIsKeepAlive(true).withProgress(new EventProgress() {
                 @Override
                 public void progress(Event event) {
                     String message = event.getTransitioningMessage();
-                    if ( message != null ) {
+                    if (message != null) {
                         progressInstance.messsage(message);
                     }
 
                     Integer eventProgress = event.getTransitioningProgress();
-                    if ( eventProgress != null ) {
+                    if (eventProgress != null) {
                         progressInstance.progress(eventProgress);
                     }
                 }
@@ -135,12 +133,12 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         return new HandlerResult(shouldContinue, CollectionUtils.castMap(reply.getData()));
     }
 
-    protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process,
-            Object eventResource, Object dataResource, Object agentResource) {
+    protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
+            Object agentResource) {
     }
 
-    protected void preProcessEvent(EventVO<?> event, ProcessState state, ProcessInstance process, Object eventResource,
-            Object dataResource, Object agentResource) {
+    protected void preProcessEvent(EventVO<?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
+            Object agentResource) {
     }
 
     protected Object getAgentResource(ProcessState state, ProcessInstance process, Object dataResource) {
@@ -156,30 +154,29 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     }
 
     protected Object getObjectByRelationship(String relationship, Object obj) {
-        if ( relationship == null || obj == null ) {
+        if (relationship == null || obj == null) {
             return obj;
         }
 
         String type = getObjectManager().getType(obj);
-        if ( type == null ) {
+        if (type == null) {
             throw new IllegalArgumentException("Failed to find type for [" + obj + "]");
         }
 
         Relationship rel = getObjectMetaDataManager().getRelationship(type, relationship);
-        if ( rel == null ) {
+        if (rel == null) {
             throw new IllegalStateException("Failed to find relationship [" + relationship + "] on obj [" + obj + "]");
         }
 
-        if ( rel.isListResult() ) {
+        if (rel.isListResult()) {
             throw new IllegalStateException("Relationship [" + relationship + "] on obj [" + obj + "] is a list result");
         }
 
         return getObjectManager().getObjectByRelationship(obj, rel);
     }
 
-    protected String getCommandName(ProcessState state, ProcessInstance process,Object eventResource,
-            Object dataResource, Object agentResource) {
-        if ( commandName != null ) {
+    protected String getCommandName(ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource) {
+        if (commandName != null) {
             return commandName;
         } else {
             return process.getName();
@@ -187,17 +184,17 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     }
 
     protected ObjectSerializer getObjectSerializer(Object obj) {
-        if ( serializer != null ) {
+        if (serializer != null) {
             return serializer;
         }
 
         String type = getObjectManager().getType(obj);
-        if ( type == null ) {
+        if (type == null) {
             throw new IllegalStateException("Failed to find type for [" + obj + "]");
         }
 
         ObjectSerializer serializer = serializers.get(type);
-        if ( serializer != null ) {
+        if (serializer != null) {
             return serializer;
         }
 
@@ -206,12 +203,12 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     protected synchronized ObjectSerializer buildSerializer(String type) {
         ObjectSerializer serializer = serializers.get(type);
-        if ( serializer != null ) {
+        if (serializer != null) {
             return serializer;
         }
 
         String expression = getExpression(type);
-        if ( expression == null ) {
+        if (expression == null) {
             return null;
         }
 
@@ -222,11 +219,11 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     }
 
     public String getExpression() {
-        if ( expression != null ) {
+        if (expression != null) {
             return expression;
         }
 
-        if ( serializer != null ) {
+        if (serializer != null) {
             return serializer.getExpression();
         }
 
@@ -234,15 +231,15 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     }
 
     protected String getExpression(String type) {
-        if ( expression != null ) {
+        if (expression != null) {
             return expression;
         }
 
         DynamicStringProperty prop = getExpressionProperty(type);
-        if ( StringUtils.isBlank(prop.get()) ) {
-            if ( dataTypeClass != null || dataType != null || dataResourceRelationship != null ) {
-                throw new IllegalStateException("Failed to find expression for object serialization for type [" + type +
-                        "] config property [" + getConfigPrefix() + type + "] is blank");
+        if (StringUtils.isBlank(prop.get())) {
+            if (dataTypeClass != null || dataType != null || dataResourceRelationship != null) {
+                throw new IllegalStateException("Failed to find expression for object serialization for type [" + type + "] config property ["
+                        + getConfigPrefix() + type + "] is blank");
             } else {
                 return null;
             }
@@ -251,7 +248,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         prop.addCallback(new Runnable() {
             @Override
             public void run() {
-                for ( String type : serializers.keySet() ) {
+                for (String type : serializers.keySet()) {
                     buildSerializer(type);
                 }
             }
@@ -275,14 +272,14 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     @Override
     public void start() {
-        if ( dataType == null && dataTypeClass != null) {
+        if (dataType == null && dataTypeClass != null) {
             dataType = getObjectManager().getType(dataTypeClass);
-            if ( dataType == null ) {
+            if (dataType == null) {
                 throw new IllegalStateException("Failed to find type for class [" + dataTypeClass + "]");
             }
         }
 
-        if ( dataType != null ) {
+        if (dataType != null) {
             loadDefaultSerializer();
             getExpressionProperty(dataType).addCallback(new Runnable() {
                 @Override

@@ -25,14 +25,14 @@ public class MacAddressNetworkActivate extends AbstractObjectProcessLogic implem
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Network network = (Network)state.getResource();
+        Network network = (Network) state.getResource();
 
         String field = DataAccessor.field(network, NetworkConstants.FIELD_MAC_PREFIX, String.class);
 
-        if ( field == null ) {
-            PooledResource mac = resourcePoolManager.allocateOneResource(ResourcePoolManager.GLOBAL,
-                network, new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC_PREFIX));
-            if ( mac == null ) {
+        if (field == null) {
+            PooledResource mac = resourcePoolManager.allocateOneResource(ResourcePoolManager.GLOBAL, network,
+                    new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC_PREFIX));
+            if (mac == null) {
                 throw new ExecutionException("Mac prefix allocation error", "Failed to get mac prefix", network);
             }
             field = mac.getName();

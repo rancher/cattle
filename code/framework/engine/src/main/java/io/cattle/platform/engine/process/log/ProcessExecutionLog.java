@@ -30,8 +30,10 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
     List<ProcessLogicExecutionLog> processHandlerExecutions = new ArrayList<ProcessLogicExecutionLog>();
     ExceptionLog exception;
 
-//    List<ProcessLogicExecutionLog> handlerExecutions = new ArrayList<ProcessLogicExecutionLog>();
-//    List<ProcessExecutionLog> executions = new ArrayList<ProcessExecutionLog>();
+    // List<ProcessLogicExecutionLog> handlerExecutions = new
+    // ArrayList<ProcessLogicExecutionLog>();
+    // List<ProcessExecutionLog> executions = new
+    // ArrayList<ProcessExecutionLog>();
 
     ExitReason exitReason;
 
@@ -42,13 +44,13 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
     }
 
     public void close() {
-        if ( processLock != null && lockAcquired != null && lockAcquireEnd != null ) {
+        if (processLock != null && lockAcquired != null && lockAcquireEnd != null) {
             lockHoldTime = lockAcquireEnd - lockAcquired;
         }
     }
 
     public ProcessLogicExecutionLog newProcessLogicExecution(Named handler) {
-        if ( handler == null ) {
+        if (handler == null) {
             return new ProcessLogicExecutionLog();
         }
         ProcessLogicExecutionLog execution = new ProcessLogicExecutionLog();

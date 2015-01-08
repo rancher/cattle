@@ -15,7 +15,7 @@ public class HandlerResult {
     Map<Object, Object> data;
 
     public HandlerResult() {
-        this((Boolean)null, (Map<Object, Object>)null);
+        this((Boolean) null, (Map<Object, Object>) null);
     }
 
     public HandlerResult(Object key, Object... values) {
@@ -24,17 +24,17 @@ public class HandlerResult {
 
     @SuppressWarnings("unchecked")
     public HandlerResult(Map<?, Object> data) {
-        this(null, (Map<Object, Object>)data);
+        this(null, (Map<Object, Object>) data);
     }
 
     public HandlerResult(Boolean shouldContinue, Map<Object, Object> data) {
         super();
         this.shouldContinue = shouldContinue;
-        this.data = Collections.unmodifiableMap(data == null ? new HashMap<Object,Object>() : data);
+        this.data = Collections.unmodifiableMap(data == null ? new HashMap<Object, Object>() : data);
     }
 
     public Boolean shouldContinue(ProcessPhase phase) {
-        if ( shouldContinue == null ) {
+        if (shouldContinue == null) {
             return phase != ProcessPhase.HANDLERS;
         }
         return shouldContinue;
@@ -43,7 +43,6 @@ public class HandlerResult {
     public Map<Object, Object> getData() {
         return data;
     }
-
 
     public boolean shouldDelegate() {
         return shouldDelegate;
@@ -81,7 +80,7 @@ public class HandlerResult {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        HandlerResult other = (HandlerResult)obj;
+        HandlerResult other = (HandlerResult) obj;
         if (data == null) {
             if (other.data != null)
                 return false;
@@ -99,8 +98,7 @@ public class HandlerResult {
 
     @Override
     public String toString() {
-        return "HandlerResult [shouldContinue=" + shouldContinue + ", shouldDelegate=" + shouldDelegate + ", data="
-                + data + "]";
+        return "HandlerResult [shouldContinue=" + shouldContinue + ", shouldDelegate=" + shouldDelegate + ", data=" + data + "]";
     }
 
     public String getChainProcessName() {

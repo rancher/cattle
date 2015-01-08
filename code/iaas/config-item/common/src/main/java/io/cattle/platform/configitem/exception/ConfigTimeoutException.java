@@ -35,7 +35,7 @@ public class ConfigTimeoutException extends TimeoutException {
     private static String message(ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
         List<String> names = new ArrayList<String>();
 
-        for ( ConfigUpdateItem item : items ) {
+        for (ConfigUpdateItem item : items) {
             names.add(item.getName());
         }
 

@@ -40,14 +40,14 @@ public class AgentInstanceApplyItems extends AbstractApplyItems implements Proce
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         List<? extends Nic> nics = getNics(state, process);
 
-        if ( nics == null ) {
+        if (nics == null) {
             log.error("Failed to find nic for [{}:{}]", objectManager.getType(state.getResource()), state.getResourceId());
             return null;
         }
 
-        for ( Nic nic : nics ) {
+        for (Nic nic : nics) {
             Map<NetworkServiceProvider, Instance> agentInstances = agentInstanceManager.getAgentInstances(nic);
-            for ( Map.Entry<NetworkServiceProvider, Instance> entry : agentInstances.entrySet() ) {
+            for (Map.Entry<NetworkServiceProvider, Instance> entry : agentInstances.entrySet()) {
                 Agent agent = objectManager.loadResource(Agent.class, entry.getValue().getAgentId());
 
                 assignItems(entry.getKey(), agent, nic, state, process);
@@ -63,8 +63,8 @@ public class AgentInstanceApplyItems extends AbstractApplyItems implements Proce
     }
 
     @Override
-    protected List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent,
-            ProcessState state, ProcessInstance processInstance) {
+    protected List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessState state,
+            ProcessInstance processInstance) {
         return agentInstanceManager.getAgents(provider);
     }
 
@@ -81,6 +81,5 @@ public class AgentInstanceApplyItems extends AbstractApplyItems implements Proce
     public void setAgentInstanceManager(AgentInstanceManager agentInstanceManager) {
         this.agentInstanceManager = agentInstanceManager;
     }
-
 
 }

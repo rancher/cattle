@@ -5,13 +5,13 @@ import java.util.Date;
 
 import org.jooq.Converter;
 
-public class DateConverter implements Converter<Timestamp, Date>{
+public class DateConverter implements Converter<Timestamp, Date> {
 
     private static final long serialVersionUID = -3093938632174221235L;
 
     @Override
     public Date from(Timestamp databaseObject) {
-        if ( databaseObject == null ) {
+        if (databaseObject == null) {
             return null;
         }
         return new Date(databaseObject.getTime());
@@ -19,7 +19,7 @@ public class DateConverter implements Converter<Timestamp, Date>{
 
     @Override
     public Timestamp to(Date userObject) {
-        if ( userObject == null ) {
+        if (userObject == null) {
             return null;
         }
         return new Timestamp(userObject.getTime());

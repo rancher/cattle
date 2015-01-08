@@ -28,7 +28,7 @@ public class InstanceNetworkValidationFilter extends AbstractDefaultResourceMana
         List<?> networkIds = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_NETWORK_IDS, List.class);
         List<?> subnetIds = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_SUBNET_IDS, List.class);
 
-        if ( networkIds != null && subnetIds != null && networkIds.size() > 0 && subnetIds.size() > 0 ) {
+        if (networkIds != null && subnetIds != null && networkIds.size() > 0 && subnetIds.size() > 0) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, "NetworkIdsSubnetIdsMutuallyExclusive");
         }
 

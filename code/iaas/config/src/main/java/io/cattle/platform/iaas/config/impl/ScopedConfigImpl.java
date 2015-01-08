@@ -51,13 +51,12 @@ public class ScopedConfigImpl implements ScopedConfig {
     @Override
     public String getUrl(Class<?> typeClass, Object id, String name) {
         String type = objectManager.getType(typeClass);
-        if ( type == null || id == null ) {
+        if (type == null || id == null) {
             return ServerContext.getServerAddress(name).getUrlString();
         } else {
             return ServerContext.getServerAddress(String.format("%s.%s", type, id), name).getUrlString();
         }
     }
-
 
     public ObjectManager getObjectManager() {
         return objectManager;

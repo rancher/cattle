@@ -29,13 +29,11 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Agent agent = (Agent)state.getResource();
+        Agent agent = (Agent) state.getResource();
 
         RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
-        remoteAgent.callSync(AgentUtils.newPing(agent)
-                .withOption(Ping.STATS, true)
-                .withOption(Ping.RESOURCES, true),
-                new EventCallOptions(PING_RETRY.get(), PING_TIMEOUT.get()));
+        remoteAgent.callSync(AgentUtils.newPing(agent).withOption(Ping.STATS, true).withOption(Ping.RESOURCES, true), new EventCallOptions(PING_RETRY.get(),
+                PING_TIMEOUT.get()));
 
         return new HandlerResult();
     }
@@ -53,6 +51,5 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
     public void setAgentLocator(AgentLocator agentLocator) {
         this.agentLocator = agentLocator;
     }
-
 
 }

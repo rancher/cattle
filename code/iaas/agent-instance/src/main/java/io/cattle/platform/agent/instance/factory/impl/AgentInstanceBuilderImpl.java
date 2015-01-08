@@ -86,17 +86,11 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     @Override
     public AgentInstanceBuilder withNetworkServiceProvider(NetworkServiceProvider networkServiceProvider) {
         this.networkServiceProvider = networkServiceProvider;
-        withImageUuid(DataAccessor
-                .fields(networkServiceProvider)
-                .withKey(NetworkServiceProviderConstants.FIELD_AGENT_INSTANCE_IMAGE_UUID)
-                .withDefault(getImageUuid())
-                .as(String.class));
+        withImageUuid(DataAccessor.fields(networkServiceProvider).withKey(NetworkServiceProviderConstants.FIELD_AGENT_INSTANCE_IMAGE_UUID)
+                .withDefault(getImageUuid()).as(String.class));
 
-        withAccountOwned(DataAccessor
-                .fields(networkServiceProvider)
-                .withKey(NetworkServiceProviderConstants.FIELD_AGENT_ACCOUNT_OWNED)
-                .withDefault(isAccountOwned())
-                .as(Boolean.class));
+        withAccountOwned(DataAccessor.fields(networkServiceProvider).withKey(NetworkServiceProviderConstants.FIELD_AGENT_ACCOUNT_OWNED)
+                .withDefault(isAccountOwned()).as(Boolean.class));
 
         return this;
     }

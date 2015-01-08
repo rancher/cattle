@@ -24,9 +24,9 @@ public class InstanceDeallocate extends EventBasedProcessHandler {
 
     @Override
     protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
-        Instance instance = (Instance)state.getResource();
+        Instance instance = (Instance) state.getResource();
 
-        for ( InstanceHostMap map : mapDao.findToRemove(InstanceHostMap.class, Instance.class, instance.getId()) ) {
+        for (InstanceHostMap map : mapDao.findToRemove(InstanceHostMap.class, Instance.class, instance.getId())) {
             remove(map, state.getData());
         }
 

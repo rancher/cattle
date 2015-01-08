@@ -13,11 +13,8 @@ public class RegistrationTokenAuthDaoImpl extends AbstractJooqDao implements Reg
     public Credential getCredential(String accessKey) {
         return create()
                 .selectFrom(CREDENTIAL)
-                .where(CREDENTIAL.KIND.eq(RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN)
-                        .and(CREDENTIAL.PUBLIC_VALUE.eq(accessKey))
-                        .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
-                        .and(CREDENTIAL.REMOVED.isNull()))
-                .fetchOne();
+                .where(CREDENTIAL.KIND.eq(RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN).and(CREDENTIAL.PUBLIC_VALUE.eq(accessKey))
+                        .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)).and(CREDENTIAL.REMOVED.isNull())).fetchOne();
     }
 
 }

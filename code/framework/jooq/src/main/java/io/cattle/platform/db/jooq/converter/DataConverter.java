@@ -13,7 +13,7 @@ import org.jooq.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DataConverter implements Converter<String, Map<String,Object>> {
+public class DataConverter implements Converter<String, Map<String, Object>> {
 
     private static final Logger log = LoggerFactory.getLogger(DataConverter.class);
 
@@ -23,7 +23,7 @@ public class DataConverter implements Converter<String, Map<String,Object>> {
 
     @Override
     public Map<String, Object> from(String databaseObject) {
-        if ( databaseObject == null ) {
+        if (databaseObject == null) {
             return null;
         }
 
@@ -31,7 +31,7 @@ public class DataConverter implements Converter<String, Map<String,Object>> {
             return new JsonUnmodifiableMap<String, Object>(mapper, databaseObject);
         } catch (IOException e) {
             log.error("Failed to unmarshall [{}]", databaseObject, e);
-            Map<String,Object> result = new HashMap<String, Object>();
+            Map<String, Object> result = new HashMap<String, Object>();
             result.put("_string", databaseObject);
             result.put("_exception", ExceptionUtils.toString(e));
             return result;
@@ -40,7 +40,7 @@ public class DataConverter implements Converter<String, Map<String,Object>> {
 
     @Override
     public String to(Map<String, Object> userObject) {
-        if ( userObject == null ) {
+        if (userObject == null) {
             return null;
         }
         try {
@@ -57,8 +57,8 @@ public class DataConverter implements Converter<String, Map<String,Object>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Class<Map<String,Object>> toType() {
-        return (Class<Map<String,Object>>)(Class<?>)Map.class;
+    public Class<Map<String, Object>> toType() {
+        return (Class<Map<String, Object>>) (Class<?>) Map.class;
     }
 
 }

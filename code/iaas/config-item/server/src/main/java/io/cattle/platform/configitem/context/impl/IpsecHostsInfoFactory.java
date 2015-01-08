@@ -23,12 +23,12 @@ public class IpsecHostsInfoFactory extends AbstractAgentBaseContextFactory {
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         List<Host> hosts = objectManager.mappedChildren(instance, Host.class);
 
-        if ( hosts.size() > 0 ) {
+        if (hosts.size() > 0) {
             context.getData().put("currentHost", hosts.get(0));
             List<ClientIpsecTunnelInfo> clients = networkInfoDao.getIpsecTunnelClient(instance);
 
-            for ( ClientIpsecTunnelInfo client : clients ) {
-                if ( client.getInstance().getId().equals(instance.getId()) ) {
+            for (ClientIpsecTunnelInfo client : clients) {
+                if (client.getInstance().getId().equals(instance.getId())) {
                     context.getData().put("agentInstanceClient", client);
                 }
             }

@@ -32,15 +32,15 @@ public class EventNotificationHandler implements ApiRequestHandler {
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        if ( Method.GET.isMethod(request.getMethod()) ) {
+        if (Method.GET.isMethod(request.getMethod())) {
             return;
         }
 
-        if ( excludeTypes.contains(request.getType()) ) {
+        if (excludeTypes.contains(request.getType())) {
             return;
         }
 
-        Map<String,Object> data = new HashMap<String,Object>();
+        Map<String, Object> data = new HashMap<String, Object>();
         data.put("method", request.getMethod().toString());
         data.put("id", request.getId());
         data.put("type", request.getType());
@@ -48,19 +48,17 @@ public class EventNotificationHandler implements ApiRequestHandler {
         data.put("responseCode", request.getResponseCode());
         data.put("accountId", ApiUtils.getPolicy().getAccountId());
 
-        DeferredUtils.deferPublish(eventService, EventVO.newEvent(FrameworkEvents.API_CHANGE)
-                .withResourceId(request.getId())
-                .withResourceType(request.getType())
-                .withData(data));
+        DeferredUtils.deferPublish(eventService,
+                EventVO.newEvent(FrameworkEvents.API_CHANGE).withResourceId(request.getId()).withResourceType(request.getType()).withData(data));
     }
 
     @Override
     public boolean handleException(ApiRequest request, Throwable t) throws IOException, ServletException {
-        if ( t instanceof ClientVisibleException ) {
+        if (t instanceof ClientVisibleException) {
             return false;
         }
 
-        Map<String,Object> data = new HashMap<String,Object>();
+        Map<String, Object> data = new HashMap<String, Object>();
         data.put("method", request.getMethod().toString());
         data.put("id", request.getId());
         data.put("type", request.getType());
@@ -69,8 +67,7 @@ public class EventNotificationHandler implements ApiRequestHandler {
         data.put("message", t.getMessage());
         data.put("stackTrace", ExceptionUtils.toString(t));
 
-        DeferredUtils.deferPublish(eventService, EventVO.newEvent(FrameworkEvents.API_EXCEPTION)
-                .withData(data));
+        DeferredUtils.deferPublish(eventService, EventVO.newEvent(FrameworkEvents.API_EXCEPTION).withData(data));
 
         return false;
     }

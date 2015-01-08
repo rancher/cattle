@@ -22,7 +22,7 @@ public class AgentInstanceNicActivate extends AbstractObjectProcessLogic impleme
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        agentInstanceManager.getAgentInstances((Nic)state.getResource());
+        agentInstanceManager.getAgentInstances((Nic) state.getResource());
 
         return null;
     }

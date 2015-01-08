@@ -23,8 +23,7 @@ import javax.inject.Inject;
 
 public class ExternalDynamicExtensionHandlerImpl implements DynamicExtensionHandler {
 
-    private static final Pattern PROCESS_PATTERN =
-            Pattern.compile("process\\.(.*)\\.(handler|post\\.listener|pre\\.listener)s");
+    private static final Pattern PROCESS_PATTERN = Pattern.compile("process\\.(.*)\\.(handler|post\\.listener|pre\\.listener)s");
     private static final String[] PREFIX = new String[] { "pre.", "post." };
 
     ExternalHandlerDao externalHandlerDao;
@@ -36,36 +35,36 @@ public class ExternalDynamicExtensionHandlerImpl implements DynamicExtensionHand
     @SuppressWarnings("unchecked")
     @Override
     public <T> List<T> getExtensionList(String key, Class<T> type) {
-        if ( type != null && ! ProcessLogic.class.isAssignableFrom(type) ) {
+        if (type != null && !ProcessLogic.class.isAssignableFrom(type)) {
             return Collections.emptyList();
         }
 
         Matcher m = PROCESS_PATTERN.matcher(key);
-        if ( ! m.matches() ) {
+        if (!m.matches()) {
             return Collections.emptyList();
         }
 
         String eventName = m.group(1);
         String phase = m.group(2);
 
-        for ( String i : PREFIX ) {
-            if ( phase.startsWith(i) ) {
+        for (String i : PREFIX) {
+            if (phase.startsWith(i)) {
                 eventName = i + eventName;
                 break;
             }
         }
 
         List<? extends ExternalHandler> externalHandlers = externalHandlerDao.getExternalHandler(eventName);
-        if ( externalHandlers.size() == 0 ) {
+        if (externalHandlers.size() == 0) {
             return Collections.emptyList();
         }
 
         List<Object> result = new ArrayList<Object>(externalHandlers.size());
-        for ( ExternalHandler handler : externalHandlers ) {
+        for (ExternalHandler handler : externalHandlers) {
             result.add(toEventHandler(eventName, handler));
         }
 
-        return (List<T>)result;
+        return (List<T>) result;
     }
 
     protected Object toEventHandler(String eventName, ExternalHandler handler) {
@@ -74,12 +73,11 @@ public class ExternalDynamicExtensionHandlerImpl implements DynamicExtensionHand
         String priorityName = DataAccessor.fieldString(handler, ExternalHandlerConstants.FIELD_PRIORITY_NAME);
         Integer priority = handler.getPriority();
 
-        if ( priority == null ) {
+        if (priority == null) {
             priority = PriorityUtils.getPriorityFromString(priorityName);
         }
 
-        EventBasedProcessHandler processHandler = new EventBasedProcessHandler(eventService, objectManager,
-                objectProcessManager, objectMetaDataManager);
+        EventBasedProcessHandler processHandler = new EventBasedProcessHandler(eventService, objectManager, objectProcessManager, objectMetaDataManager);
 
         processHandler.setEventName(String.format("%s;handler=%s", eventName, handler.getName()));
         processHandler.setName(handler.getName());

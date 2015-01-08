@@ -24,9 +24,8 @@ public class ExtensionManagerApi extends AbstractNoOpResourceManager {
 
     @Override
     protected Resource createResource(Object obj, IdFormatter idFormatter, ApiRequest request) {
-        if ( obj instanceof ExtensionPoint ) {
-            return constructResource(idFormatter, request.getSchemaFactory(),
-                    request.getSchemaFactory().getSchema(ExtensionPoint.class), obj, request);
+        if (obj instanceof ExtensionPoint) {
+            return constructResource(idFormatter, request.getSchemaFactory(), request.getSchemaFactory().getSchema(ExtensionPoint.class), obj, request);
         }
 
         return super.createResource(obj, idFormatter, request);

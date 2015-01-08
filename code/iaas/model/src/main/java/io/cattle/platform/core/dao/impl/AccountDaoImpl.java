@@ -9,9 +9,8 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
 
     @Override
     public Account getSystemAccount() {
-        Account system = objectManager.findOne(Account.class,
-                ACCOUNT.UUID, AccountConstants.SYSTEM_UUID);
-        if ( system == null ) {
+        Account system = objectManager.findOne(Account.class, ACCOUNT.UUID, AccountConstants.SYSTEM_UUID);
+        if (system == null) {
             throw new IllegalStateException("Failed to find system account");
         }
 

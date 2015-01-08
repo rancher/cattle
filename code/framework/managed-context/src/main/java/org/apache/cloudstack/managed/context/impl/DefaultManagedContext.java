@@ -34,8 +34,7 @@ public class DefaultManagedContext implements ManagedContext {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultManagedContext.class);
 
-    List<ManagedContextListener<?>> listeners =
-            new CopyOnWriteArrayList<ManagedContextListener<?>>();
+    List<ManagedContextListener<?>> listeners = new CopyOnWriteArrayList<ManagedContextListener<?>>();
 
     @Override
     public void registerListener(ManagedContextListener<?> listener) {
@@ -58,9 +57,9 @@ public class DefaultManagedContext implements ManagedContext {
                 }
             });
         } catch (Exception e) {
-            /* Only care about non-checked exceptions
-             * as the nature of runnable prevents checked
-             * exceptions from happening
+            /*
+             * Only care about non-checked exceptions as the nature of runnable
+             * prevents checked exceptions from happening
              */
             ManagedContextUtils.rethrowException(e);
         }
@@ -72,76 +71,85 @@ public class DefaultManagedContext implements ManagedContext {
         Object owner = new Object();
 
         Stack<ListenerInvocation> invocations = new Stack<ListenerInvocation>();
-        boolean reentry = ! ManagedContextUtils.setAndCheckOwner(owner);
+        boolean reentry = !ManagedContextUtils.setAndCheckOwner(owner);
         Throwable preError = null;
         Throwable logicError = null;
 
         try {
-            for ( ManagedContextListener<?> listener : listeners ) {
+            for (ManagedContextListener<?> listener : listeners) {
                 Object data = null;
 
                 try {
                     data = listener.onEnterContext(reentry);
-                } catch ( Throwable t ) {
-                    /* If one listener fails, still call all other listeners
-                     * and then we will call onLeaveContext for all
+                } catch (Throwable t) {
+                    /*
+                     * If one listener fails, still call all other listeners and
+                     * then we will call onLeaveContext for all
                      */
-                    if ( preError == null ) {
+                    if (preError == null) {
                         preError = t;
                     }
                     log.error("Failed onEnterContext for listener [{}]", listener, t);
                 }
 
-                /* Stack data structure is used because in between onEnter and onLeave
-                 * the listeners list could have changed
+                /*
+                 * Stack data structure is used because in between onEnter and
+                 * onLeave the listeners list could have changed
                  */
                 invocations.push(new ListenerInvocation((ManagedContextListener<Object>) listener, data));
             }
 
             try {
-                if ( preError == null ) {
-                    /* Only call if all the listeners didn't blow up on onEnterContext */
+                if (preError == null) {
+                    /*
+                     * Only call if all the listeners didn't blow up on
+                     * onEnterContext
+                     */
                     return callable.call();
                 } else {
                     throwException(preError);
                     return null;
                 }
-            } catch ( Throwable t ) {
-                if ( preError != t ) {
+            } catch (Throwable t) {
+                if (preError != t) {
                     logicError = t;
                 }
                 throwException(t);
-                /* The below line should never be hit, but put here to make the compiler happy */
+                /*
+                 * The below line should never be hit, but put here to make the
+                 * compiler happy
+                 */
                 return null;
             } finally {
                 Throwable postError = null;
 
-                while ( ! invocations.isEmpty() ) {
+                while (!invocations.isEmpty()) {
                     ListenerInvocation invocation = invocations.pop();
                     try {
                         invocation.listener.onLeaveContext(invocation.data, reentry, logicError == null ? preError : logicError);
-                    } catch ( Throwable t ) {
+                    } catch (Throwable t) {
                         postError = t;
                         log.error("Failed onLeaveContext for listener [{}]", invocation.listener, t);
                     }
                 }
 
-                if ( preError == null && postError != null ) {
+                if (preError == null && postError != null) {
                     throwException(postError);
                 }
             }
         } finally {
-            if ( ManagedContextUtils.clearOwner(owner) )
+            if (ManagedContextUtils.clearOwner(owner))
                 ManagedThreadLocal.reset();
         }
     };
 
     protected void throwException(Throwable t) throws Exception {
         ManagedContextUtils.rethrowException(t);
-        if ( t instanceof Exception ) {
-            throw (Exception)t;
+        if (t instanceof Exception) {
+            throw (Exception) t;
         }
     }
+
     public List<ManagedContextListener<?>> getListeners() {
         return listeners;
     }

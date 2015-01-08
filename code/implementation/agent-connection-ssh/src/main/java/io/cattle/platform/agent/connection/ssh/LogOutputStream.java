@@ -27,7 +27,7 @@ public class LogOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        if ( b == '\n' ) {
+        if (b == '\n') {
             flush();
         } else {
             baos.write(b);
@@ -36,19 +36,19 @@ public class LogOutputStream extends OutputStream {
 
     @Override
     public void flush() throws IOException {
-        if ( baos.size() == 0 ) {
+        if (baos.size() == 0) {
             return;
         }
 
         String content = new String(baos.toByteArray(), "UTF-8");
         baos.reset();
 
-        if ( ! agentId.equals(MDC.get(AGENT_MDC)) ) {
+        if (!agentId.equals(MDC.get(AGENT_MDC))) {
             MDC.clear();
             MDC.put(AGENT_MDC, agentId);
         }
 
-        if ( error ) {
+        if (error) {
             logger.error(format, content);
         } else {
             logger.info(format, content);

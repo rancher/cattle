@@ -35,21 +35,21 @@ public class ServerContext {
     public static ServerAddress getServerAddress(String scope, String name) {
         String url = null;
 
-        if ( scope != null ) {
+        if (scope != null) {
             url = ArchaiusUtil.getString(String.format(URL_SETTING_FORMAT, scope + "." + name)).get();
         }
 
-        if ( url == null ) {
+        if (url == null) {
             url = ArchaiusUtil.getString(String.format(URL_SETTING_FORMAT, name)).get();
         }
 
-        if ( url == null ) {
+        if (url == null) {
             url = ArchaiusUtil.getString(DEFAULT_URL).get();
         }
 
-        if ( url == null ) {
+        if (url == null) {
             StringBuilder buffer = new StringBuilder();
-            if ( HTTPS_PORT.get() > 0 ) {
+            if (HTTPS_PORT.get() > 0) {
                 buffer.append("https://");
                 buffer.append(getServerIp());
                 buffer.append(":").append(HTTPS_PORT.get());
@@ -71,7 +71,7 @@ public class ServerContext {
         String id = SERVER_ID.get();
         String ip = getServerIp();
 
-        if ( id != null ) {
+        if (id != null) {
             return String.format(id, ip);
         }
 
@@ -88,21 +88,21 @@ public class ServerContext {
         String v6Address = null;
 
         try {
-            for ( NetworkInterface iface : Collections.list(NetworkInterface.getNetworkInterfaces()) ) {
-                for ( InetAddress addr : Collections.list(iface.getInetAddresses()) ) {
-                    if ( addr instanceof Inet6Address ) {
+            for (NetworkInterface iface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                for (InetAddress addr : Collections.list(iface.getInetAddresses())) {
+                    if (addr instanceof Inet6Address) {
                         v6Address = addr.getHostAddress();
                     } else {
-                        if ( ! addr.isLoopbackAddress() && ( address == null || ! addr.isSiteLocalAddress() ) ) {
+                        if (!addr.isLoopbackAddress() && (address == null || !addr.isSiteLocalAddress())) {
                             address = addr.getHostAddress();
                         }
                     }
                 }
             }
 
-            if ( address != null ) {
+            if (address != null) {
                 return address;
-            } else if ( v6Address != null ) {
+            } else if (v6Address != null) {
                 return v6Address;
             } else {
                 return "localhost";

@@ -35,9 +35,9 @@ public abstract class ModuleBasedFilter implements Filter {
         String module = getModule(filterConfig);
         ApplicationContext applicationContext = CloudStackSpringContext.getApplicationContext(filterConfig.getServletContext(), module);
 
-        if ( applicationContext != null ) {
+        if (applicationContext != null) {
             AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
-            if ( factory != null ) {
+            if (factory != null) {
                 factory.autowireBean(this);
                 enabled = true;
             }

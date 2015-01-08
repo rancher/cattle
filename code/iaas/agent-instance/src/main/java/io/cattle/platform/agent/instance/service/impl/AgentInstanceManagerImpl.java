@@ -37,36 +37,31 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
     List<InstanceNicLookup> nicLookups;
 
     @Override
-    public Map<NetworkServiceProvider,Instance> getAgentInstances(Nic nic) {
-        Map<NetworkServiceProvider,Instance> result = new HashMap<NetworkServiceProvider, Instance>();
+    public Map<NetworkServiceProvider, Instance> getAgentInstances(Nic nic) {
+        Map<NetworkServiceProvider, Instance> result = new HashMap<NetworkServiceProvider, Instance>();
         Vnet vnet = objectManager.loadResource(Vnet.class, nic.getVnetId());
 
-        if ( vnet == null || nic.getNetworkId() == null ) {
+        if (vnet == null || nic.getNetworkId() == null) {
             return result;
         }
 
         Instance instance = objectManager.loadResource(Instance.class, nic.getInstanceId());
 
-        if ( instance == null || instance.getAgentId() != null ) {
+        if (instance == null || instance.getAgentId() != null) {
             return result;
         }
 
-        for ( NetworkServiceProvider provider : agentInstanceDao.getProviders(nic.getNetworkId()) ) {
+        for (NetworkServiceProvider provider : agentInstanceDao.getProviders(nic.getNetworkId())) {
             Instance agentInstance = agentInstanceDao.getAgentInstance(provider, nic);
 
-            if ( agentInstance == null ) {
-                agentInstance = agentInstanceFactory
-                        .newBuilder()
-                        .withNetworkServiceProvider(provider)
-                        .withInstance(instance)
-                        .withPrivileged(true)
-                        .forVnetId(nic.getVnetId())
-                        .build();
+            if (agentInstance == null) {
+                agentInstance = agentInstanceFactory.newBuilder().withNetworkServiceProvider(provider).withInstance(instance).withPrivileged(true)
+                        .forVnetId(nic.getVnetId()).build();
             } else {
                 start(agentInstance);
             }
 
-            if ( agentInstance != null ) {
+            if (agentInstance != null) {
                 result.put(provider, agentInstance);
             }
         }
@@ -75,7 +70,7 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
     }
 
     protected void start(final Instance agentInstance) {
-        if ( InstanceConstants.STATE_STOPPED.equals(agentInstance.getState()) ) {
+        if (InstanceConstants.STATE_STOPPED.equals(agentInstance.getState())) {
             DeferredUtils.nest(new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {
@@ -88,26 +83,26 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
 
     @Override
     public NetworkServiceInfo getNetworkService(Instance instance, String kind, boolean waitForStart) {
-        if ( instance == null || kind == null ) {
+        if (instance == null || kind == null) {
             return null;
         }
 
         NetworkServiceInfo info = agentInstanceDao.getNetworkServiceInfo(instance.getId(), kind);
 
-        if ( info == null ) {
+        if (info == null) {
             return null;
         }
 
-        Map<NetworkServiceProvider,Instance> instances = getAgentInstances(info.getClientNic());
+        Map<NetworkServiceProvider, Instance> instances = getAgentInstances(info.getClientNic());
 
-        for ( Map.Entry<NetworkServiceProvider, Instance> entry : instances.entrySet() ) {
-            if ( entry.getKey().getId().equals(info.getNetworkServiceProvider().getId()) ) {
+        for (Map.Entry<NetworkServiceProvider, Instance> entry : instances.entrySet()) {
+            if (entry.getKey().getId().equals(info.getNetworkServiceProvider().getId())) {
                 info.setAgentInstance(entry.getValue());
                 break;
             }
         }
 
-        if ( waitForStart ) {
+        if (waitForStart) {
             start(info.getAgentInstance());
             instance = resourceMonitor.waitFor(info.getAgentInstance(), new ResourcePredicate<Instance>() {
                 @Override
@@ -131,15 +126,15 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
 
     @Override
     public List<? extends Nic> getNicsFromResource(Object resource) {
-        if ( resource instanceof Nic ) {
-            return Arrays.asList((Nic)resource);
+        if (resource instanceof Nic) {
+            return Arrays.asList((Nic) resource);
         }
 
         List<? extends Nic> nics = null;
 
-        for ( InstanceNicLookup lookup : nicLookups ) {
+        for (InstanceNicLookup lookup : nicLookups) {
             nics = lookup.getNics(resource);
-            if ( nics != null ) {
+            if (nics != null) {
                 break;
             }
         }
@@ -208,6 +203,5 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
     public void setNicLookups(List<InstanceNicLookup> nicLookups) {
         this.nicLookups = nicLookups;
     }
-
 
 }

@@ -29,7 +29,7 @@ public class AllocationCandidate {
         this.subnetIds = candidate.subnetIds == null ? null : new HashMap<Long, Long>(candidate.subnetIds);
         this.pools = candidate.pools == null ? null : new HashMap<Long, Set<Long>>(candidate.pools);
         this.objectManager = candidate.objectManager;
-        this.resources = candidate.resources == null ? null : new HashMap<Pair<Class<?>,Long>, Object>(candidate.resources);
+        this.resources = candidate.resources == null ? null : new HashMap<Pair<Class<?>, Long>, Object>(candidate.resources);
         this.valid = candidate.valid;
     }
 
@@ -38,12 +38,12 @@ public class AllocationCandidate {
         this.objectManager = objectManager;
         this.resources = resources;
         this.hosts = new HashSet<Long>();
-        if ( hostId != null ) {
+        if (hostId != null) {
             this.hosts.add(hostId);
         }
         this.pools = new HashMap<Long, Set<Long>>();
 
-        for ( Map.Entry<Long, Long> entry : pools.entrySet() ) {
+        for (Map.Entry<Long, Long> entry : pools.entrySet()) {
             Set<Long> set = new HashSet<Long>();
             set.add(entry.getValue());
             this.pools.put(entry.getKey(), set);
@@ -52,19 +52,19 @@ public class AllocationCandidate {
 
     @SuppressWarnings("unchecked")
     public <T> T loadResource(Class<T> clz, Long id) {
-        if ( id == null ) {
+        if (id == null) {
             return null;
         }
 
-        Pair<Class<?>,Long> key = new ImmutablePair<Class<?>, Long>(clz, id);
+        Pair<Class<?>, Long> key = new ImmutablePair<Class<?>, Long>(clz, id);
         Object resource = resources.get(key);
 
-        if ( resource == null ) {
+        if (resource == null) {
             resource = objectManager.loadResource(clz, id);
             resources.put(key, resource);
         }
 
-        return (T)resource;
+        return (T) resource;
     }
 
     public String getId() {

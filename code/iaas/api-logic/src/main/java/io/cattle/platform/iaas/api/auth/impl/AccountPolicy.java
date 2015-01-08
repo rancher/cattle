@@ -23,11 +23,11 @@ public class AccountPolicy extends DefaultPolicy {
 
     @Override
     public <T> T authorizeObject(T obj) {
-        if ( isOption(AUTHORIZED_FOR_ALL_ACCOUNTS) || obj == null ) {
+        if (isOption(AUTHORIZED_FOR_ALL_ACCOUNTS) || obj == null) {
             return obj;
         } else {
-            if ( obj instanceof Account ) {
-                if ( ((Account)obj).getId().longValue() == getAccountId() ) {
+            if (obj instanceof Account) {
+                if (((Account) obj).getId().longValue() == getAccountId()) {
                     return obj;
                 } else {
                     return null;
@@ -36,11 +36,11 @@ public class AccountPolicy extends DefaultPolicy {
 
             try {
                 Object prop = PropertyUtils.getProperty(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
-                if ( prop != null && prop.equals(getAccountId()) ) {
+                if (prop != null && prop.equals(getAccountId())) {
                     return obj;
                 } else {
                     Object isPublic = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.PUBLIC_FIELD);
-                    if ( isPublic instanceof Boolean && ((Boolean)isPublic).booleanValue() ) {
+                    if (isPublic instanceof Boolean && ((Boolean) isPublic).booleanValue()) {
                         return obj;
                     }
                     log.error("Dropping unauthorized object [{}] for acccount [{}]", ObjectUtils.toStringWrapper(obj), getAccountId());

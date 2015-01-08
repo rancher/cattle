@@ -42,5 +42,4 @@ public class IpAssociationData {
         this.subnet = subnet;
     }
 
-
 }

@@ -84,7 +84,7 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
     }
 
     public void load() throws IOException {
-        if ( ! loadRootContext() )
+        if (!loadRootContext())
             return;
 
         count = 0;
@@ -109,7 +109,7 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
     protected boolean loadRootContext() {
         ModuleDefinition def = modules.get(root);
 
-        if ( def == null )
+        if (def == null)
             return false;
 
         ApplicationContext defaultsContext = getDefaultsContext();
@@ -137,11 +137,12 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
                         Runnable runnable = context.getBean(name, Runnable.class);
                         log.info("{} module [{}]", logAction, def.getName());
                         runnable.run();
-                    } catch ( BeansException e ) {
-                       // Ignore
+                    } catch (BeansException e) {
+                        // Ignore
                     }
-                } catch ( EmptyStackException e ) {
-                    // The root context is already loaded, so ignore the exception
+                } catch (EmptyStackException e) {
+                    // The root context is already loaded, so ignore the
+                    // exception
                 }
             }
         });
@@ -154,8 +155,9 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
                 try {
                     ApplicationContext parent = getApplicationContext(parents.peek().getName());
                     loadContext(def, parent);
-                } catch ( EmptyStackException e ) {
-                    // The root context is already loaded, so ignore the exception
+                } catch (EmptyStackException e) {
+                    // The root context is already loaded, so ignore the
+                    // exception
                 }
             }
         });
@@ -171,12 +173,12 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         context.setClassLoader(def.getClassLoader());
 
         long start = System.currentTimeMillis();
-        if ( log.isInfoEnabled() ) {
-            for ( Resource resource : resources ) {
+        if (log.isInfoEnabled()) {
+            for (Resource resource : resources) {
                 log.info("Loading module context [{}] from {}", def.getName(), resource);
             }
         }
-        for ( String profile : profiles ) {
+        for (String profile : profiles) {
             context.getEnvironment().addActiveProfile(profile);
         }
         context.refresh();
@@ -188,15 +190,14 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
     }
 
     protected boolean shouldLoad(ModuleDefinition def) {
-        return ! excludes.contains(def.getName());
+        return !excludes.contains(def.getName());
     }
 
     protected ApplicationContext getDefaultsContext() {
         URL config = DefaultModuleDefinitionSet.class.getResource(DEFAULT_CONFIG_XML);
         URL additional = DefaultModuleDefinitionSet.class.getResource(DEFAULT_CONFIG_XML_ADDITION);
-        Resource[] configs = additional == null ?
-                new Resource[] { new UrlResource(config) }
-                : new Resource[] { new UrlResource(config), new UrlResource(additional) };
+        Resource[] configs = additional == null ? new Resource[] { new UrlResource(config) } : new Resource[] { new UrlResource(config),
+                new UrlResource(additional) };
 
         ResourceApplicationContext context = new ResourceApplicationContext(configs);
         context.setApplicationName("/defaults");
@@ -208,14 +209,14 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         withModule(new WithModule() {
             @Override
             public void with(ModuleDefinition def, Stack<ModuleDefinition> parents) {
-                for ( Resource defaults : def.getConfigLocations() ) {
+                for (Resource defaults : def.getConfigLocations()) {
                     resources.add(defaults);
                 }
             }
         });
 
         configProperties = (Properties) context.getBean(DEFAULT_CONFIG_PROPERTIES);
-        for ( Resource resource : resources ) {
+        for (Resource resource : resources) {
             load(resource, configProperties);
         }
 
@@ -223,7 +224,7 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         newProps.putAll(configProperties);
         configProperties = newProps;
 
-        for ( Resource resource : (Resource[])context.getBean(MODULE_PROPERITES) ) {
+        for (Resource resource : (Resource[]) context.getBean(MODULE_PROPERITES)) {
             load(resource, configProperties);
         }
 
@@ -231,8 +232,8 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         configProperties.putAll(getEnvValues());
 
         String[] profiles = configProperties.getProperty(SERVER_PROFILE, "").trim().split("\\s*,\\s*");
-        if ( profiles.length > 0 ) {
-            for ( String profile : profiles ) {
+        if (profiles.length > 0) {
+            for (String profile : profiles) {
                 Resource resource = context.getResource(String.format(SERVER_PROFILE_FORMAT, profile));
                 load(resource, configProperties);
             }
@@ -244,16 +245,16 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         return context;
     }
 
-    protected static Map<String,Object> getEnvValues() {
-        Map<String,Object> values = new HashMap<String, Object>();
+    protected static Map<String, Object> getEnvValues() {
+        Map<String, Object> values = new HashMap<String, Object>();
 
-        for ( Map.Entry<String, String> entry : System.getenv().entrySet() ) {
+        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
             String key = entry.getKey();
-            if ( ! key.contains(CONTAINS) ) {
+            if (!key.contains(CONTAINS)) {
                 continue;
             }
 
-            if ( key.startsWith(PREFIX) ) {
+            if (key.startsWith(PREFIX)) {
                 key = key.substring(PREFIX.length());
             }
 
@@ -265,19 +266,18 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         return values;
     }
 
-
     protected void parseExcludes() {
-        for ( String exclude : configProperties.getProperty(MODULES_EXCLUDE, "").trim().split("\\s*,\\s*") ) {
-            if ( StringUtils.hasText(exclude) ) {
+        for (String exclude : configProperties.getProperty(MODULES_EXCLUDE, "").trim().split("\\s*,\\s*")) {
+            if (StringUtils.hasText(exclude)) {
                 excludes.add(exclude);
             }
         }
 
-        for ( String key : configProperties.stringPropertyNames() ) {
-            if ( key.startsWith(MODULES_INCLUDE_PREFIX) ) {
+        for (String key : configProperties.stringPropertyNames()) {
+            if (key.startsWith(MODULES_INCLUDE_PREFIX)) {
                 String module = key.substring(MODULES_INCLUDE_PREFIX.length());
                 boolean include = configProperties.getProperty(key).equalsIgnoreCase("true");
-                if ( ! include ) {
+                if (!include) {
                     excludes.add(module);
                 }
             }
@@ -285,30 +285,30 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
     }
 
     protected void parseProfiles() {
-        for ( String key : configProperties.stringPropertyNames() ) {
-            if ( key.startsWith(PROFILE_PREFIX) ) {
-                String profile= key.substring(PROFILE_PREFIX.length());
+        for (String key : configProperties.stringPropertyNames()) {
+            if (key.startsWith(PROFILE_PREFIX)) {
+                String profile = key.substring(PROFILE_PREFIX.length());
                 boolean include = configProperties.getProperty(key).equalsIgnoreCase("true");
-                if ( include ) {
+                if (include) {
                     profiles.add(profile);
                 }
             }
         }
 
-        if ( profiles.size() > 0 ) {
+        if (profiles.size() > 0) {
             log.info("Spring profiles to be activated {}", profiles);
         }
 
     }
 
     protected void load(Resource resource, Properties props) {
-        if ( resource == null ) {
+        if (resource == null) {
             return;
         }
 
         InputStream is = null;
         try {
-            if ( resource.exists() ) {
+            if (resource.exists()) {
                 is = resource.getInputStream();
                 props.load(is);
             }
@@ -335,10 +335,10 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
 
     protected void withModule(ModuleDefinition def, Stack<ModuleDefinition> parents, WithModule with) {
         long moduleStart = System.currentTimeMillis();
-        if ( def == null )
+        if (def == null)
             return;
 
-        if ( ! shouldLoad(def) ) {
+        if (!shouldLoad(def)) {
             log.info("Excluding context [{}] based on configuration", def.getName());
             return;
         }
@@ -347,16 +347,14 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
 
         with.with(def, parents);
 
-        if ( messagePrefix != null ) {
-            consoleLog.info("[{}/{}] [{}ms] [{}ms] {} {}", count, total,
-                    (System.currentTimeMillis() - start),
-                    (System.currentTimeMillis() - moduleStart),
+        if (messagePrefix != null) {
+            consoleLog.info("[{}/{}] [{}ms] [{}ms] {} {}", count, total, (System.currentTimeMillis() - start), (System.currentTimeMillis() - moduleStart),
                     messagePrefix, def.getName());
         }
 
         parents.push(def);
 
-        for ( ModuleDefinition child : def.getChildren() ) {
+        for (ModuleDefinition child : def.getChildren()) {
             withModule(child, parents, with);
         }
 
@@ -395,12 +393,12 @@ public class DefaultModuleDefinitionSet implements ModuleDefinitionSet {
         ModuleDefinition original = null;
         ModuleDefinition def = original = modules.get(name);
 
-        if ( def == null )
+        if (def == null)
             return new Resource[] {};
 
         resources.addAll(def.getContextLocations());
 
-        while ( def != null ) {
+        while (def != null) {
             resources.addAll(def.getInheritableContextLocations());
             def = modules.get(def.getParentName());
         }

@@ -2,7 +2,6 @@ package io.cattle.platform.engine.manager.impl;
 
 import java.util.List;
 
-
 public interface ProcessRecordDao {
 
     ProcessRecord insert(ProcessRecord record);

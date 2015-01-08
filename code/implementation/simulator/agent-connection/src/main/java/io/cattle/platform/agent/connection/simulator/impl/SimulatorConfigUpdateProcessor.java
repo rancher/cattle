@@ -35,18 +35,18 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
 
     @Override
     public Event handle(AgentConnectionSimulator simulator, Event event) throws IOException {
-        if ( ! IaasEvents.CONFIG_UPDATE.equals(event.getName()) ) {
+        if (!IaasEvents.CONFIG_UPDATE.equals(event.getName())) {
             return null;
         }
 
         ConfigUpdate update = jsonMapper.convertValue(event, ConfigUpdate.class);
         String auth = AgentUtils.getAgentAuth(simulator.getAgent(), objectManager);
 
-        if ( auth == null ) {
+        if (auth == null) {
             throw new IllegalStateException("Failed to get auth for agent [" + simulator.getAgentId() + "]");
         }
 
-        for ( ConfigUpdateItem item : update.getData().getItems() ) {
+        for (ConfigUpdateItem item : update.getData().getItems()) {
             try {
                 downloadAndPost(auth, update.getData().getConfigUrl(), item);
             } catch (IOException e) {
@@ -77,21 +77,21 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
             TarArchiveEntry entry = null;
             String version = null;
 
-            while ( (entry = tar.getNextTarEntry()) != null ) {
+            while ((entry = tar.getNextTarEntry()) != null) {
                 log.info("Simulator in [{}] file [{}]", item.getName(), entry.getName());
 
-                if ( entry.getName().endsWith("/version") ) {
+                if (entry.getName().endsWith("/version")) {
                     version = IOUtils.toString(tar).trim();
                     log.info("Simulator found version [{}] for [{}]", version, item.getName());
                 }
             }
 
-            if ( version == null ) {
+            if (version == null) {
                 throw new IllegalStateException("Failed to find verions for [" + item.getName() + "]");
             }
 
             log.info("Simulator POSTing version [{}] for [{}]", version, item.getName());
-            HttpURLConnection conn = (HttpURLConnection)getConnection(contentUrl + "?version=" + version, auth);
+            HttpURLConnection conn = (HttpURLConnection) getConnection(contentUrl + "?version=" + version, auth);
             conn.setRequestMethod("PUT");
             IOUtils.closeQuietly(is);
             is = conn.getInputStream();

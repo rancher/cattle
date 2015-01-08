@@ -49,10 +49,10 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
             ArchiveContext context = new ArchiveContext(req, taos, getVersion(req));
 
             ItemVersion current = req.getCurrentVersion();
-            if ( current != null && current.toExternalForm().equals(context.getVersion()) ) {
+            if (current != null && current.toExternalForm().equals(context.getVersion())) {
                 writeUpToDate(context);
             } else {
-                for ( ConfigItemContextFactory factory : contextFactories ) {
+                for (ConfigItemContextFactory factory : contextFactories) {
                     factory.populateContext(req, this, context);
                 }
 
@@ -67,8 +67,8 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
 
     protected void writeHashes(final ArchiveContext context) throws IOException {
         StringBuilder stringContent = new StringBuilder();
-        Map<String,String> hashes = context.getHashes();
-        for ( Map.Entry<String,String> entry : hashes.entrySet() ) {
+        Map<String, String> hashes = context.getHashes();
+        for (Map.Entry<String, String> entry : hashes.entrySet()) {
             stringContent.append(entry.getValue());
             stringContent.append(" *");
             stringContent.append(entry.getKey());
@@ -116,7 +116,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
     }
 
     protected void withEntry(ArchiveContext context, String entryName, long size, WithEntry with) throws IOException {
-        if ( size < 0 ) {
+        if (size < 0) {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             with.with(baos);
             size = baos.size();
@@ -150,7 +150,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
     protected TarArchiveEntry getDefaultEntry(ArchiveContext context, String name, long size) {
         StringBuilder entryName = new StringBuilder(context.getRequest().getItemName());
         entryName.append("-").append(context.getVersion());
-        if ( ! name.startsWith(File.separator) ) {
+        if (!name.startsWith(File.separator)) {
             entryName.append(File.separator);
         }
         entryName.append(name);
@@ -160,15 +160,14 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         entry.setGroupName("root");
         entry.setMode(0644);
         entry.setSize(size);
-        entry.setModTime(new Date(System.currentTimeMillis()-(60*60*24*1000)));
+        entry.setModTime(new Date(System.currentTimeMillis() - (60 * 60 * 24 * 1000)));
         return entry;
     }
-
 
     @Override
     public String getSourceRevision() {
         String hash = super.getSourceRevision();
-        for ( ConfigItemContextFactory factory : contextFactories ) {
+        for (ConfigItemContextFactory factory : contextFactories) {
             hash = factory.getContentHash(hash);
         }
 
