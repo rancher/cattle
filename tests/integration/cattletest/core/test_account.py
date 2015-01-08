@@ -3,7 +3,10 @@ import re
 
 
 def test_account_create(admin_client):
-    cred_count = len(admin_client.list_credential())
+    cred_count = len(admin_client.list_credential(limit=1000))
+
+    assert cred_count < 1000, "Too many credentials; cleanup the database"
+
     count = len(admin_client.list_account())
     account = admin_client.create_account()
 
@@ -18,7 +21,7 @@ def test_account_create(admin_client):
     new_count = len(admin_client.list_account())
     assert (count+1) == new_count
 
-    new_count = len(admin_client.list_credential())
+    new_count = len(admin_client.list_credential(limit=1000))
     assert (cred_count+2) == new_count
 
     creds = account.credentials()
