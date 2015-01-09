@@ -22,5 +22,9 @@ def test_instance_link_auth(admin_client, client):
 def test_token_client(token_client):
     auth_check(token_client.schema, 'token', 'cr', {
         'jwt': 'r',
-        'code': 'cr'
+        'code': 'cr',
+        'clientId': 'r',
+        'orgs': 'r',
+        'security': 'r',
+        'user': 'r'
     })
