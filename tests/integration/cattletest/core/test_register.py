@@ -56,7 +56,7 @@ def test_registration_token_create(admin_client):
     assert len(tokens) == 2 or len(tokens) == 1
 
 
-def test_registration_token_account_create(admin_client):
+def test_registration_token_account_create(admin_client, cattle_url):
     account = create_and_activate(admin_client, 'account')
 
     creds = filter(lambda x: x.kind == 'registrationToken',
@@ -68,7 +68,8 @@ def test_registration_token_account_create(admin_client):
     assert cred.state == 'active'
     assert cred.token is not None
 
-    client = cattle.from_env(access_key=cred.kind,
+    client = cattle.from_env(url=cattle_url,
+                             access_key=cred.kind,
                              secret_key=cred.token)
 
     types = set(client.schema.types.keys())
