@@ -6,6 +6,7 @@ cd $(dirname $0)
 export RUNTIME_DIR=../../../runtime/ci/
 export RUNTIME_DIR_CLEAN=true
 export CATTLE_LOGBACK_ROOT_LEVEL=error
+export CATTLE_DB_CATTLE_DATABASE=mysql
 #export CATTLE_IDEMPOTENT_CHECKS=false
 
 

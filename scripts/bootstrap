@@ -1,7 +1,33 @@
 #!/bin/bash
 set -e
 
+cd $(dirname $0)
+
 apt-get update
-apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip
+apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip 
+
+DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y mysql-server
 
 pip install --upgrade pip==6.0.3 tox==1.8.1 virtualenv==12.0.4
+
+if [ "${CATTLE_DB_CATTLE_DATABASE}" == "mysql" ]; then
+    service mysql start
+
+    set +e
+    for ((i=0;i<60;i++))
+    do
+        if mysqladmin status 2> /dev/null; then
+            break
+        else
+            sleep 1
+        fi
+    done
+    set -e
+
+    # If the for loop times out... something went wrong and this will fail
+    db_exists=$(mysql -uroot -e 'SHOW DATABASES LIKE "cattle";'|wc -l)
+    if [ $db_exists -eq 0 ]; then
+	    echo "Setting up Database"
+        mysql < ../resources/content/db/mysql/create_db_and_user_dev.sql
+    fi
+fi
