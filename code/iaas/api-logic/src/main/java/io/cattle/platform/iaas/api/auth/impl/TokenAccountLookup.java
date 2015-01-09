@@ -1,9 +1,5 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
@@ -12,6 +8,10 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.model.Schema.Method;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class TokenAccountLookup implements AccountLookup, Priority {
 
@@ -22,8 +22,8 @@ public class TokenAccountLookup implements AccountLookup, Priority {
     public Account getAccount(ApiRequest request) {
         Account account = null;
         if (StringUtils.equals("token", request.getType())) {
-            if (!Method.POST.isMethod(request.getMethod())) {
-                throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED, "only POST is allowed for /v1/token API");
+            if (!Method.POST.isMethod(request.getMethod()) && !Method.GET.isMethod(request.getMethod())) {
+                throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED, "only POST/GET is allowed for /v1/token API");
             }
             account = authDao.getAccountByUuid(TOKEN);
         }
