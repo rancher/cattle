@@ -69,7 +69,7 @@ def accounts():
     result = {}
     admin_client = _admin_client()
     for user_name in ['admin', 'agent', 'user', 'agentRegister', 'test',
-                      'readAdmin']:
+                      'readAdmin', 'token']:
         result[user_name] = create_user(admin_client,
                                         user_name,
                                         kind=user_name)
@@ -99,6 +99,11 @@ def client(accounts):
 @pytest.fixture(scope='session')
 def admin_client(accounts):
     return _client_for_user('admin', accounts)
+
+
+@pytest.fixture(scope='session')
+def token_client(accounts):
+    return _client_for_user('token', accounts)
 
 
 @pytest.fixture(scope='session')
