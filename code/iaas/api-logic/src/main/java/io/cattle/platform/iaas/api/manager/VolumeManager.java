@@ -22,13 +22,13 @@ public class VolumeManager extends AbstractJooqResourceManager {
 
     @Override
     protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
-        if ( ! ( obj instanceof Volume ) ) {
+        if (!(obj instanceof Volume)) {
             return super.deleteInternal(type, id, obj, request);
         }
 
-        Volume volume = (Volume)obj;
+        Volume volume = (Volume) obj;
 
-        if ( CommonStatesConstants.ACTIVE.equals(volume.getState()) ) {
+        if (CommonStatesConstants.ACTIVE.equals(volume.getState())) {
             scheduleProcess(StandardProcess.DEACTIVATE, obj, CollectionUtils.asMap(VolumeConstants.REMOVE_OPTION, true));
             return getObjectManager().reload(obj);
         } else {

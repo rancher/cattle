@@ -13,12 +13,11 @@ import java.lang.reflect.Method;
 
 import org.apache.commons.lang.StringUtils;
 
-
 public class EventUtils {
 
     public static String getEventNameNonProvided(EventHandler handler, AnnotatedEventListener listener, Method method) {
         String name = handler.name();
-        if ( StringUtils.isEmpty(name) ) {
+        if (StringUtils.isEmpty(name)) {
             return NamedUtils.toDotSeparated(method.getName());
         } else {
             return name;
@@ -29,7 +28,7 @@ public class EventUtils {
         return new EventProgress() {
             @Override
             public void progress(Event event) {
-                if ( event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event.getTransitioning()) ) {
+                if (event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event.getTransitioning())) {
                     return;
                 }
 
@@ -42,14 +41,11 @@ public class EventUtils {
     }
 
     public static EventCallOptions chainOptions(Event event) {
-        return new EventCallOptions()
-            .withProgressIsKeepAlive(true)
-            .withRetry(0)
-            .withTimeoutMillis(event.getTimeoutMillis());
+        return new EventCallOptions().withProgressIsKeepAlive(true).withRetry(0).withTimeoutMillis(event.getTimeoutMillis());
     }
 
     public static boolean isTransitioningEvent(Event event) {
-        if ( event == null || event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event.getTransitioning()) ) {
+        if (event == null || event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event.getTransitioning())) {
             return false;
         }
 

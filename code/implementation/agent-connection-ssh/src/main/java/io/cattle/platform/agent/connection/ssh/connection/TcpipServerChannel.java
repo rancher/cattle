@@ -75,8 +75,7 @@ public class TcpipServerChannel extends AbstractServerChannel {
     }
 
     public enum Type {
-        Direct,
-        Forwarded
+        Direct, Forwarded
     }
 
     private final Type type;
@@ -96,14 +95,17 @@ public class TcpipServerChannel extends AbstractServerChannel {
         int portToConnect = buffer.getInt();
         String originatorIpAddress = buffer.getString();
         int originatorPort = buffer.getInt();
-        log.info("Receiving request for direct tcpip: hostToConnect={}, portToConnect={}, originatorIpAddress={}, originatorPort={}",
-                new Object[] { hostToConnect, portToConnect, originatorIpAddress, originatorPort });
-
+        log.info("Receiving request for direct tcpip: hostToConnect={}, portToConnect={}, originatorIpAddress={}, originatorPort={}", new Object[] {
+                hostToConnect, portToConnect, originatorIpAddress, originatorPort });
 
         SshdSocketAddress address = null;
         switch (type) {
-            case Direct:    address = new SshdSocketAddress(hostToConnect, portToConnect); break;
-            case Forwarded: address = getSession().getTcpipForwarder().getForwardedPort(portToConnect); break;
+        case Direct:
+            address = new SshdSocketAddress(hostToConnect, portToConnect);
+            break;
+        case Forwarded:
+            address = getSession().getTcpipForwarder().getForwardedPort(portToConnect);
+            break;
         }
         final ForwardingFilter filter = getSession().getFactoryManager().getTcpipForwardingFilter();
         if (address == null || filter == null || !filter.canConnect(address, getSession())) {
@@ -125,20 +127,22 @@ public class TcpipServerChannel extends AbstractServerChannel {
                     out.flush();
                 }
             }
+
             @Override
             public void sessionCreated(IoSession session) throws Exception {
             }
+
             @Override
             public void sessionClosed(IoSession session) throws Exception {
                 close(false);
             }
+
             @Override
             public void exceptionCaught(IoSession ioSession, Throwable cause) throws Exception {
                 close(true);
             }
         };
-        connector = getSession().getFactoryManager().getIoServiceFactory()
-                .createConnector(getSession().getFactoryManager(), handler);
+        connector = getSession().getFactoryManager().getIoServiceFactory().createConnector(getSession().getFactoryManager(), handler);
         IoConnectFuture future = connector.connect(address.toInetSocketAddress());
         future.addListener(new SshFutureListener<IoConnectFuture>() {
             @Override
@@ -149,10 +153,7 @@ public class TcpipServerChannel extends AbstractServerChannel {
                 } else if (future.getException() != null) {
                     closeImmediately0();
                     if (future.getException() instanceof ConnectException) {
-                        f.setException(new OpenChannelException(
-                            SshConstants.SSH_OPEN_CONNECT_FAILED,
-                            future.getException().getMessage(),
-                            future.getException()));
+                        f.setException(new OpenChannelException(SshConstants.SSH_OPEN_CONNECT_FAILED, future.getException().getMessage(), future.getException()));
                     } else {
                         f.setException(future.getException());
                     }
@@ -165,15 +166,15 @@ public class TcpipServerChannel extends AbstractServerChannel {
     private void closeImmediately0() {
         // We need to close the channel immediately to remove it from the
         // server session's channel table and *not* send a packet to the
-        // client.  A notification was already sent by our caller, or will
+        // client. A notification was already sent by our caller, or will
         // be sent after we return.
         //
         super.close(true);
 
         // We also need to dispose of the connector, but unfortunately we
         // are being invoked by the connector thread or the connector's
-        // own processor thread.  Disposing of the connector within either
-        // causes deadlock.  Instead create a new thread to dispose of the
+        // own processor thread. Disposing of the connector within either
+        // causes deadlock. Instead create a new thread to dispose of the
         // connector in the background.
         //
         new Thread("TcpIpServerChannel-ConnectorCleanup") {

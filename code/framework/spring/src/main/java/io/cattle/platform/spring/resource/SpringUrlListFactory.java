@@ -29,16 +29,16 @@ public class SpringUrlListFactory implements FactoryBean<List<URL>>, Application
         List<URL> result = new ArrayList<URL>();
 
         try {
-            for ( String resource : resources ) {
+            for (String resource : resources) {
                 try {
-                    for ( Resource r : resolver.getResources(resource) ) {
-                        if ( r.exists() ) {
+                    for (Resource r : resolver.getResources(resource)) {
+                        if (r.exists()) {
                             result.add(r.getURL());
                         } else {
                             log.debug("Skipping resource [{}]", r);
                         }
                     }
-                } catch ( FileNotFoundException fnfe ) {
+                } catch (FileNotFoundException fnfe) {
                     log.debug("Skipping resource [{}], not found", resource);
                 }
             }

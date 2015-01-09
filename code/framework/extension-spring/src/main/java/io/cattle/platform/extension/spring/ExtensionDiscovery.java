@@ -18,10 +18,10 @@ public class ExtensionDiscovery implements BeanPostProcessor {
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if ( typeClass.isAssignableFrom(bean.getClass()) ) {
+        if (typeClass.isAssignableFrom(bean.getClass())) {
             String name = getName(bean, beanName);
-            if ( name != null && ! isInner(beanName) ) {
-                for ( String key : getKeys(bean) ) {
+            if (name != null && !isInner(beanName)) {
+                for (String key : getKeys(bean)) {
                     extensionManager.addObject(key, typeClass, bean, name);
                 }
             }
@@ -30,8 +30,8 @@ public class ExtensionDiscovery implements BeanPostProcessor {
         return bean;
     }
 
-    /* This tries to guess if this is an inner bean.  This logic is
-     * flawed
+    /*
+     * This tries to guess if this is an inner bean. This logic is flawed
      */
     protected boolean isInner(String beanName) {
         String[] parts = beanName.split("#");
@@ -39,7 +39,7 @@ public class ExtensionDiscovery implements BeanPostProcessor {
     }
 
     protected String getName(Object obj, String beanName) {
-        if ( beanName != null && beanName.length() > 0 && Character.isUpperCase(beanName.charAt(0)) ) {
+        if (beanName != null && beanName.length() > 0 && Character.isUpperCase(beanName.charAt(0))) {
             return beanName;
         }
 
@@ -52,11 +52,11 @@ public class ExtensionDiscovery implements BeanPostProcessor {
 
     @PostConstruct
     public void init() {
-        if ( key == null && typeClass != null ) {
+        if (key == null && typeClass != null) {
             key = NamedUtils.toDotSeparated(typeClass.getSimpleName());
         }
 
-        if ( key != null ) {
+        if (key != null) {
             keys = new String[] { key };
         }
     }

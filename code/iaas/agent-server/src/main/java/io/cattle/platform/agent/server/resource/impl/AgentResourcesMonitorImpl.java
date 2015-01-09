@@ -53,35 +53,33 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     ObjectManager objectManager;
     LockDelegator lockDelegator;
     LockManager lockManager;
-    Cache<String,Boolean> resourceCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(CACHE_RESOURCE.get(), TimeUnit.SECONDS)
-            .build();
+    Cache<String, Boolean> resourceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_RESOURCE.get(), TimeUnit.SECONDS).build();
 
     @Override
     public void pingReply(Ping ping) {
         String agentIdStr = ping.getResourceId();
-        if ( agentIdStr == null ) {
+        if (agentIdStr == null) {
             return;
         }
 
         long agentId = Long.parseLong(agentIdStr);
         LockDefinition lockDef = AgentConnectionUtils.getConnectionLock(agentId);
-        if ( ! lockDelegator.isLocked(lockDef) ) {
+        if (!lockDelegator.isLocked(lockDef)) {
             return;
         }
 
-        if ( ping.getData() == null ) {
+        if (ping.getData() == null) {
             return;
         }
 
         final AgentResources resources = processResources(ping);
-        if ( ! resources.hasContent() ) {
+        if (!resources.hasContent()) {
             return;
         }
 
         Boolean done = resourceCache.getIfPresent(resources.getHash());
 
-        if ( done != null && done.booleanValue() ) {
+        if (done != null && done.booleanValue()) {
             return;
         }
 
@@ -92,11 +90,11 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
             public void doWithLockNoResult() {
                 Boolean done = resourceCache.getIfPresent(resources.getHash());
 
-                if ( done != null && done.booleanValue() ) {
+                if (done != null && done.booleanValue()) {
                     return;
                 }
 
-                Map<String,Host> hosts = setHosts(agent, resources);
+                Map<String, Host> hosts = setHosts(agent, resources);
                 setStoragePools(hosts, agent, resources);
                 setIpAddresses(hosts, agent, resources);
 
@@ -105,20 +103,20 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
         });
     }
 
-    protected Map<String,StoragePool> setStoragePools(Map<String,Host> hosts, Agent agent, AgentResources resources) {
+    protected Map<String, StoragePool> setStoragePools(Map<String, Host> hosts, Agent agent, AgentResources resources) {
         Map<String, StoragePool> pools = pingDao.getStoragePools(agent.getId());
 
-        for ( Map.Entry<String,Map<String,Object>> poolData : resources.getStoragePools().entrySet() ) {
+        for (Map.Entry<String, Map<String, Object>> poolData : resources.getStoragePools().entrySet()) {
             String uuid = poolData.getKey();
-            Map<String,Object> data = poolData.getValue();
+            Map<String, Object> data = poolData.getValue();
 
-            if ( pools.containsKey(uuid) ) {
+            if (pools.containsKey(uuid)) {
                 continue;
             }
 
             Host host = hosts.get(ObjectUtils.toString(data.get(HostConstants.FIELD_HOST_UUID), null));
 
-            if ( host == null ) {
+            if (host == null) {
                 continue;
             }
 
@@ -129,22 +127,22 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
         return pools;
     }
 
-    protected void setIpAddresses(Map<String,Host> hosts, Agent agent, AgentResources resources) {
-        for ( Map.Entry<String,Map<String,Object>> ipData : resources.getIpAddresses().entrySet() ) {
+    protected void setIpAddresses(Map<String, Host> hosts, Agent agent, AgentResources resources) {
+        for (Map.Entry<String, Map<String, Object>> ipData : resources.getIpAddresses().entrySet()) {
             String address = ipData.getKey();
-            Map<String,Object> data = ipData.getValue();
+            Map<String, Object> data = ipData.getValue();
             Host host = hosts.get(ObjectUtils.toString(data.get(HostConstants.FIELD_HOST_UUID), null));
 
-            if ( host == null ) {
+            if (host == null) {
                 continue;
             }
 
             List<IpAddress> ips = objectManager.mappedChildren(host, IpAddress.class);
-            if ( ips.size() == 0 ) {
+            if (ips.size() == 0) {
                 ipAddressDao.assignAndActivateNewAddress(host, address);
             } else {
                 IpAddress ip = ips.get(0);
-                if ( ! address.equalsIgnoreCase(ip.getAddress()) ) {
+                if (!address.equalsIgnoreCase(ip.getAddress())) {
                     ip.setAddress(address);
                     objectManager.persist(ip);
                 }
@@ -152,18 +150,18 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
         }
     }
 
-    protected Map<String,Host> setHosts(Agent agent, AgentResources resources) {
+    protected Map<String, Host> setHosts(Agent agent, AgentResources resources) {
         Map<String, Host> hosts = pingDao.getHosts(agent.getId());
 
-        for ( Map.Entry<String,Map<String,Object>> hostData : resources.getHosts().entrySet() ) {
+        for (Map.Entry<String, Map<String, Object>> hostData : resources.getHosts().entrySet()) {
             String uuid = hostData.getKey();
-            Map<String,Object> data = hostData.getValue();
+            Map<String, Object> data = hostData.getValue();
             String physicalHostUuid = ObjectUtils.toString(data.get(HostConstants.FIELD_PHYSICAL_HOST_UUID), null);
-            Long physicalHostId = getPhysicalHost(agent, physicalHostUuid, new HashMap<String,Object>());
+            Long physicalHostId = getPhysicalHost(agent, physicalHostUuid, new HashMap<String, Object>());
 
-            if ( hosts.containsKey(uuid) ) {
+            if (hosts.containsKey(uuid)) {
                 Host host = hosts.get(uuid);
-                if ( physicalHostId != null && ! physicalHostId.equals(host.getPhysicalHostId()) ) {
+                if (physicalHostId != null && !physicalHostId.equals(host.getPhysicalHostId())) {
                     host.setPhysicalHostId(physicalHostId);
                     objectManager.persist(host);
                 }
@@ -180,24 +178,23 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
         return hosts;
     }
 
-    protected Long getPhysicalHost(Agent agent, String uuid, Map<String,Object> properties) {
-        if ( uuid == null ) {
+    protected Long getPhysicalHost(Agent agent, String uuid, Map<String, Object> properties) {
+        if (uuid == null) {
             return null;
         }
 
         Map<String, PhysicalHost> hosts = pingDao.getPhysicalHosts(agent.getId());
         PhysicalHost host = hosts.get(uuid);
 
-        if ( host != null ) {
+        if (host != null) {
             return host.getId();
         }
 
-        host = objectManager.findAny(PhysicalHost.class,
-                PHYSICAL_HOST.UUID, uuid);
+        host = objectManager.findAny(PhysicalHost.class, PHYSICAL_HOST.UUID, uuid);
 
-        if ( host != null && host.getRemoved() == null ) {
+        if (host != null && host.getRemoved() == null) {
             Long agentId = DataAccessor.fields(host).withKey(AgentConstants.ID_REF).as(Long.class);
-            if ( agentId != null && agentId.longValue() == agent.getId() ) {
+            if (agentId != null && agentId.longValue() == agent.getId()) {
                 host.setAgentId(agent.getId());
                 DataAccessor.fields(host).withKey(AgentConstants.ID_REF).remove();
                 objectManager.persist(host);
@@ -205,22 +202,20 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
             }
         }
 
-        Map<String,Object> data = createData(agent, uuid, properties);
+        Map<String, Object> data = createData(agent, uuid, properties);
         host = resourceDao.createAndSchedule(PhysicalHost.class, data);
 
         return host.getId();
     }
 
-    protected Map<String,Object> createData(Agent agent, String uuid, Map<String,Object> data) {
-        Map<String,Object> properties = new HashMap<>(data);
+    protected Map<String, Object> createData(Agent agent, String uuid, Map<String, Object> data) {
+        Map<String, Object> properties = new HashMap<>(data);
         properties.put(HostConstants.FIELD_REPORTED_UUID, uuid);
         properties.remove(ObjectMetaDataManager.UUID_FIELD);
 
-        Long accountId = DataAccessor.fromDataFieldOf(agent)
-                .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
-                .as(Long.class);
+        Long accountId = DataAccessor.fromDataFieldOf(agent).withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID).as(Long.class);
 
-        if ( accountId == null ) {
+        if (accountId == null) {
             accountId = agent.getAccountId();
         }
 
@@ -232,26 +227,26 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
 
     protected AgentResources processResources(Ping ping) {
         AgentResources resources = new AgentResources();
-        List<Map<String,Object>> pingData = ping.getData().getResources();
+        List<Map<String, Object>> pingData = ping.getData().getResources();
 
-        if ( pingData == null ) {
+        if (pingData == null) {
             return resources;
         }
 
-        for ( Map<String,Object> resource : pingData ) {
+        for (Map<String, Object> resource : pingData) {
             final String type = ObjectUtils.toString(resource.get(ObjectMetaDataManager.TYPE_FIELD), null);
             final String uuid = ObjectUtils.toString(resource.get(ObjectMetaDataManager.UUID_FIELD), null);
 
-            if ( type == null || uuid == null ) {
+            if (type == null || uuid == null) {
                 log.error("type [{}] or uuid [{}] is null for resource on pong from agent [{}]", type, uuid, ping.getResourceId());
                 continue;
             }
 
-            if ( type.equals(HostConstants.TYPE) ) {
+            if (type.equals(HostConstants.TYPE)) {
                 resources.getHosts().put(uuid, resource);
-            } else if ( type.equals(StoragePoolConstants.TYPE) ) {
+            } else if (type.equals(StoragePoolConstants.TYPE)) {
                 resources.getStoragePools().put(uuid, resource);
-            } else if ( type.equals(IpAddressConstants.TYPE) ) {
+            } else if (type.equals(IpAddressConstants.TYPE)) {
                 resources.getIpAddresses().put(uuid, resource);
             }
         }

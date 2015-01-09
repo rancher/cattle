@@ -28,7 +28,7 @@ public class AgentIncludeMapImpl implements AgentIncludeMap {
     }
 
     protected String sanitize(String s) {
-        if ( s == null ) {
+        if (s == null) {
             return s;
         }
 
@@ -36,25 +36,25 @@ public class AgentIncludeMapImpl implements AgentIncludeMap {
     }
 
     @Override
-    public Map<String,String> getMap(String name) {
-        Map<String,String> result = new LinkedHashMap<String, String>();
+    public Map<String, String> getMap(String name) {
+        Map<String, String> result = new LinkedHashMap<String, String>();
 
-        if ( name == null ) {
+        if (name == null) {
             return result;
         }
 
-        for ( String item : ArchaiusUtil.getList("agent.packages." + sanitize(name)).get() ) {
+        for (String item : ArchaiusUtil.getList("agent.packages." + sanitize(name)).get()) {
             String key = String.format("agent.package.%s.url", sanitize(item));
             DynamicStringProperty prop = values.get(key);
 
-            if ( prop == null ) {
+            if (prop == null) {
                 prop = ArchaiusUtil.getString(key);
                 values.put(key, prop);
             }
 
             String value = prop.get();
 
-            if ( value != null ) {
+            if (value != null) {
                 result.put(item, value);
             }
         }
@@ -67,7 +67,7 @@ public class AgentIncludeMapImpl implements AgentIncludeMap {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
 
-            for ( Map.Entry<String, String> entry : getMap(name).entrySet() ) {
+            for (Map.Entry<String, String> entry : getMap(name).entrySet()) {
                 md.update(entry.getKey().getBytes("UTF-8"));
                 md.update(entry.getValue().getBytes("UTF-8"));
             }

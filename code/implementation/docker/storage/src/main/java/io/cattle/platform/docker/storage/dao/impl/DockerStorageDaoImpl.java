@@ -18,18 +18,13 @@ public class DockerStorageDaoImpl implements DockerStorageDao {
 
     @Override
     public StoragePool getExternalStoragePool(StoragePool parentPool) {
-        return objectManager.findOne(StoragePool.class,
-                STORAGE_POOL.KIND, DockerStoragePoolDriver.DOCKER_KIND,
-                STORAGE_POOL.EXTERNAL, true);
+        return objectManager.findOne(StoragePool.class, STORAGE_POOL.KIND, DockerStoragePoolDriver.DOCKER_KIND, STORAGE_POOL.EXTERNAL, true);
     }
 
     @Override
     public StoragePool createExternalStoragePool(StoragePool parentPool) {
-        StoragePool externalPool = objectManager.create(StoragePool.class,
-                STORAGE_POOL.NAME, "Docker Index",
-                STORAGE_POOL.ACCOUNT_ID, parentPool.getAccountId(),
-                STORAGE_POOL.EXTERNAL, true,
-                STORAGE_POOL.KIND, DockerStoragePoolDriver.DOCKER_KIND);
+        StoragePool externalPool = objectManager.create(StoragePool.class, STORAGE_POOL.NAME, "Docker Index", STORAGE_POOL.ACCOUNT_ID,
+                parentPool.getAccountId(), STORAGE_POOL.EXTERNAL, true, STORAGE_POOL.KIND, DockerStoragePoolDriver.DOCKER_KIND);
 
         processManager.scheduleStandardProcess(StandardProcess.CREATE, externalPool, null);
         return objectManager.reload(externalPool);

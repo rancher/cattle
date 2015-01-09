@@ -29,14 +29,14 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
     private static final Logger log = LoggerFactory.getLogger(LockDelegatorImpl.class);
 
     LockManager lockManager;
-    Map<String,Lock> holding = new ConcurrentHashMap<String,Lock>();
+    Map<String, Lock> holding = new ConcurrentHashMap<String, Lock>();
     BlockingQueue<LockOp> ops = new LinkedBlockingQueue<LockOp>();
     ExecutorService executorService;
     boolean shutdown = false;
 
     @Override
     public boolean isLocked(LockDefinition lockDef) {
-        if ( ! acceptableLock(lockDef) ) {
+        if (!acceptableLock(lockDef)) {
             return false;
         }
 
@@ -78,21 +78,21 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
     protected void runLoop() {
         /* This loop should never end, unless it has been shutdown */
         LockOp op = null;
-        while ( true ) {
+        while (true) {
             try {
                 op = ops.take();
                 try {
-                    if ( op.lock ) {
+                    if (op.lock) {
                         lock(op);
                     } else {
                         unlock(op);
                     }
-                } catch ( Throwable t ) {
+                } catch (Throwable t) {
                     op.future.set(false);
                     log.error("Exception in lock delegator, lockdef [{}]", op.lock, t);
                 }
-            } catch (Throwable t ) {
-                if ( shutdown ) {
+            } catch (Throwable t) {
+                if (shutdown) {
                     return;
                 }
 
@@ -103,19 +103,19 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
                 }
             }
 
-            if ( shutdown ) {
+            if (shutdown) {
                 return;
             }
         }
     }
 
     protected boolean acceptableLock(LockDefinition lockDef) {
-        if ( lockDef instanceof MultiLockDefinition ) {
+        if (lockDef instanceof MultiLockDefinition) {
             log.error("Can not lock a multilock with a lock delegator");
             return false;
         }
 
-        if ( lockDef instanceof BlockingLockDefinition ) {
+        if (lockDef instanceof BlockingLockDefinition) {
             log.error("Can not lock a blocking lock with a lock delegator");
             return false;
         }
@@ -124,12 +124,12 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
     }
 
     protected void lock(LockOp op) {
-        if ( ! acceptableLock(op.def) ) {
+        if (!acceptableLock(op.def)) {
             op.future.set(false);
             return;
         }
 
-        if ( holding.containsKey(op.def.getLockId()) ) {
+        if (holding.containsKey(op.def.getLockId())) {
             op.future.set(true);
             return;
         }
@@ -139,11 +139,11 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
         Lock lock = lockProvider.getLock(op.def);
         try {
             success = lock.tryLock();
-            if ( success ) {
+            if (success) {
                 log.trace("Acquired lock [{}]", op.def.getLockId());
             }
         } finally {
-            if ( success ) {
+            if (success) {
                 holding.put(op.def.getLockId(), lock);
                 op.future.set(true);
             } else {
@@ -155,7 +155,7 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
 
     protected void unlock(LockOp op) {
         Lock lock = holding.get(op.def.getLockId());
-        if ( lock != null ) {
+        if (lock != null) {
             LockProvider lockProvider = lockManager.getLockProvider();
             lock.unlock();
             log.trace("Released lock [{}]", op.def.getLockId());

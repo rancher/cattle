@@ -14,9 +14,7 @@ public class VolumeDetach extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        return new HandlerResult(
-                VOLUME.DEVICE_NUMBER, null,
-                VOLUME.INSTANCE_ID, null);
+        return new HandlerResult(VOLUME.DEVICE_NUMBER, null, VOLUME.INSTANCE_ID, null);
     }
 
 }

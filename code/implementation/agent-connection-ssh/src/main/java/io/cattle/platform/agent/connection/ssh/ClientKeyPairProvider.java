@@ -34,7 +34,7 @@ public class ClientKeyPairProvider extends AbstractKeyPairProvider implements In
 
     @Override
     protected KeyPair[] loadKeys() {
-       if ( keys != null ) {
+        if (keys != null) {
             return keys;
         }
 
@@ -48,7 +48,7 @@ public class ClientKeyPairProvider extends AbstractKeyPairProvider implements In
 
     protected synchronized void readKeys() throws Exception {
         List<String[]> keyStrings = agentDao.getClientKeyPairs();
-        if ( keyStrings.size() == 0 ) {
+        if (keyStrings.size() == 0) {
             keyStrings = generateKeys();
         }
 
@@ -58,14 +58,13 @@ public class ClientKeyPairProvider extends AbstractKeyPairProvider implements In
     protected KeyPair[] read(List<String[]> keyStrings) throws Exception {
         List<KeyPair> keyPairs = new ArrayList<KeyPair>();
 
-        for ( String[] keyString : keyStrings ) {
+        for (String[] keyString : keyStrings) {
             KeyPair pair = SshKeyGen.readKeyPair(keyString[1]);
             keyPairs.add(pair);
         }
 
         return keyPairs.toArray(new KeyPair[keyPairs.size()]);
     }
-
 
     protected List<String[]> generateKeys() throws Exception {
         return lockManager.lock(new KeyGenLock(), new LockCallbackWithException<List<String[]>, Exception>() {
@@ -78,7 +77,7 @@ public class ClientKeyPairProvider extends AbstractKeyPairProvider implements In
 
     protected List<String[]> generateKeysWithLock() throws Exception {
         List<String[]> keyStrings = agentDao.getClientKeyPairs();
-        if ( keyStrings.size() > 0 ) {
+        if (keyStrings.size() > 0) {
             return keyStrings;
         }
 
@@ -107,7 +106,7 @@ public class ClientKeyPairProvider extends AbstractKeyPairProvider implements In
 
     @Override
     public void start() {
-        if ( GEN_ON_STARTUP.get() ) {
+        if (GEN_ON_STARTUP.get()) {
             executorService.execute(new NoExceptionRunnable() {
                 @Override
                 protected void doRun() throws Exception {

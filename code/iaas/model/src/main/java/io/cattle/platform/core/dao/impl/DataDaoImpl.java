@@ -21,22 +21,20 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
 
     @Override
     public String getOrCreate(final String key, final boolean visible, final Callable<String> generator) {
-        Data data = objectManager.findAny(Data.class,
-                DATA.NAME, key);
+        Data data = objectManager.findAny(Data.class, DATA.NAME, key);
 
-        if ( data != null && data.getVisible() != null && data.getVisible() == visible ) {
+        if (data != null && data.getVisible() != null && data.getVisible() == visible) {
             return data.getValue();
         }
 
         return lockManager.lock(new DataChangeLock(key), new LockCallback<String>() {
             @Override
             public String doWithLock() {
-                Data data = objectManager.findAny(Data.class,
-                        DATA.NAME, key);
+                Data data = objectManager.findAny(Data.class, DATA.NAME, key);
 
-                if ( data != null && data.getVisible() != null && data.getVisible() == visible ) {
+                if (data != null && data.getVisible() != null && data.getVisible() == visible) {
                     return data.getValue();
-                } else if ( data != null ) {
+                } else if (data != null) {
                     data.setVisible(visible);
                     objectManager.persist(data);
                     return data.getValue();
@@ -44,14 +42,11 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
 
                 try {
                     String value = generator.call();
-                    if ( value == null ) {
+                    if (value == null) {
                         return value;
                     }
 
-                    return objectManager.create(Data.class,
-                            DATA.NAME, key,
-                            DATA.VISIBLE, visible,
-                            DATA.VALUE, value).getValue();
+                    return objectManager.create(Data.class, DATA.NAME, key, DATA.VISIBLE, visible, DATA.VALUE, value).getValue();
                 } catch (Exception e) {
                     ExceptionUtils.rethrowRuntime(e);
                     throw new RuntimeException("Failed to generate value for [" + key + "]", e);

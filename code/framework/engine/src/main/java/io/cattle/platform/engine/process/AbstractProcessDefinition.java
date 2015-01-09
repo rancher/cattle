@@ -26,7 +26,7 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition, Ex
 
     @PostConstruct
     public void init() {
-        if ( name == null ) {
+        if (name == null) {
             throw new IllegalStateException("name is required on [" + this + "]");
         }
 
@@ -34,7 +34,6 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition, Ex
         processHandlersKey = String.format(HANDLER, getName());
         postProcessListenersKey = String.format(POST, getName());
     }
-
 
     @Override
     public List<ProcessHandler> getProcessHandlers() {
@@ -56,12 +55,10 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition, Ex
         return extensionManager.getExtensionPoint(preProcessListenersKey, ProcessPreListener.class);
     }
 
-
     @Override
     public ExtensionPoint getProcessHandlersExtensionPoint() {
         return extensionManager.getExtensionPoint(processHandlersKey, ProcessHandler.class);
     }
-
 
     @Override
     public ExtensionPoint getPostProcessListenersExtensionPoint() {

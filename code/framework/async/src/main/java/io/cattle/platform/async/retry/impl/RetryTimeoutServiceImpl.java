@@ -33,10 +33,10 @@ public class RetryTimeoutServiceImpl implements RetryTimeoutService {
 
     public void retry() {
         DelayedObject<Retry> delayed = retryQueue.poll();
-        while ( delayed != null ) {
+        while (delayed != null) {
             final Retry retry = delayed.getObject();
 
-            if ( retry.isKeepalive() ) {
+            if (retry.isKeepalive()) {
                 retry.setKeepalive(false);
                 queue(retry);
             } else {
@@ -45,23 +45,23 @@ public class RetryTimeoutServiceImpl implements RetryTimeoutService {
                     public void run() {
                         retry.increment();
 
-                        if ( retry.getRetryCount() >= retry.getRetries() ) {
+                        if (retry.getRetryCount() >= retry.getRetries()) {
                             Future<?> future = retry.getFuture();
-                            if ( future instanceof SettableFuture ) {
-                                ((SettableFuture<?>)future).setException(new TimeoutException());
+                            if (future instanceof SettableFuture) {
+                                ((SettableFuture<?>) future).setException(new TimeoutException());
                             } else {
                                 future.cancel(true);
                             }
                         } else {
                             queue(retry);
                             final Runnable run = retry.getRunnable();
-                            if ( run != null ) {
+                            if (run != null) {
                                 new NoExceptionRunnable() {
                                     @Override
                                     protected void doRun() throws Exception {
                                         try {
                                             run.run();
-                                        } catch ( CancelRetryException e) {
+                                        } catch (CancelRetryException e) {
                                             completed(retry);
                                         }
                                     }

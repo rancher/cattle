@@ -24,11 +24,10 @@ public class StandardLock implements Lock {
     public StandardLock(LockDefinition lockDefinition, java.util.concurrent.locks.Lock lock) {
         this.lockDefinition = lockDefinition;
         this.lock = lock;
-        if ( lockDefinition instanceof BlockingLockDefinition ) {
-            this.timeout = ((BlockingLockDefinition)lockDefinition).getWait();
+        if (lockDefinition instanceof BlockingLockDefinition) {
+            this.timeout = ((BlockingLockDefinition) lockDefinition).getWait();
         }
     }
-
 
     @Override
     public boolean tryLock() {
@@ -36,7 +35,7 @@ public class StandardLock implements Lock {
         boolean result = lock.tryLock();
         log.trace("Try Lock [{}] result [{}]", lockDefinition, result);
 
-        if ( result ) {
+        if (result) {
             incrementOwner();
         }
 
@@ -47,7 +46,7 @@ public class StandardLock implements Lock {
     public void lock() throws FailedToAcquireLockException {
         log.trace("Lock Attempt [{}], timeout [{}]", lockDefinition, timeout);
         try {
-            if ( ! doLock() ) {
+            if (!doLock()) {
                 log.trace("Lock [{}], timeout [{}] failed", lockDefinition, timeout);
                 throw new FailedToAcquireLockException(lockDefinition);
             }
@@ -62,7 +61,7 @@ public class StandardLock implements Lock {
 
     protected void incrementOwner() {
         ownerCount++;
-        if ( owner == null ) {
+        if (owner == null) {
             log.trace("Lock [{}] acquiring ownernship count [{}]", lockDefinition, ownerCount);
             owner = Thread.currentThread();
         } else {
@@ -72,7 +71,7 @@ public class StandardLock implements Lock {
 
     protected void decrementOwner() {
         ownerCount--;
-        if ( ownerCount <= 0 ) {
+        if (ownerCount <= 0) {
             log.trace("Lock [{}] releasing ownernship count [{}]", lockDefinition, ownerCount);
             ownerCount = 0;
             owner = null;
@@ -82,7 +81,7 @@ public class StandardLock implements Lock {
     }
 
     protected boolean doLock() throws InterruptedException {
-        if ( timeout <= 0 ) {
+        if (timeout <= 0) {
             return lock.tryLock();
         } else {
             return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
@@ -92,14 +91,14 @@ public class StandardLock implements Lock {
     @Override
     public void unlock() {
         try {
-            if ( Thread.currentThread() == owner ) {
+            if (Thread.currentThread() == owner) {
                 log.trace("Unlock [{}] owner", lockDefinition);
                 decrementOwner();
                 lock.unlock();
             } else {
                 log.trace("Unlock [{}] not owner", lockDefinition);
             }
-        } catch ( Throwable t ) {
+        } catch (Throwable t) {
             log.trace("Failed to unlock [{}], may not own lock", lockDefinition, t);
         }
     }

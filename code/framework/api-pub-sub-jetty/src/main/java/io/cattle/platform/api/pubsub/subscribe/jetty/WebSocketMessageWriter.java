@@ -28,7 +28,7 @@ public class WebSocketMessageWriter implements WebSocket, MessageWriter {
 
     @Override
     public void write(String message, Object writeLock) throws IOException {
-        if ( connection == null ) {
+        if (connection == null) {
             throw new EOFException("WebSocket is closed");
         } else {
             connection.sendMessage(message);
@@ -37,7 +37,7 @@ public class WebSocketMessageWriter implements WebSocket, MessageWriter {
 
     @Override
     public void close() {
-        if ( connection != null ) {
+        if (connection != null) {
             connection.close();
         }
     }

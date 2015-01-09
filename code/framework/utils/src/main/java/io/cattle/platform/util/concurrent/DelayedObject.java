@@ -23,11 +23,11 @@ public class DelayedObject<T> implements Delayed {
         long thisVal = getDelay(TimeUnit.MILLISECONDS);
         long anotherVal = o.getDelay(TimeUnit.MILLISECONDS);
 
-        if (thisVal < anotherVal ) {
+        if (thisVal < anotherVal) {
             return -1;
         }
 
-        return (thisVal == anotherVal ) ? 0 : 1;
+        return (thisVal == anotherVal) ? 0 : 1;
     }
 
     @Override
@@ -37,9 +37,9 @@ public class DelayedObject<T> implements Delayed {
 
     @Override
     public boolean equals(Object other) {
-        if ( other instanceof DelayedObject ) {
-            Object delayed = ((DelayedObject<?>)other).getObject();
-            if ( delayed == this.object ) {
+        if (other instanceof DelayedObject) {
+            Object delayed = ((DelayedObject<?>) other).getObject();
+            if (delayed == this.object) {
                 return true;
             }
         }

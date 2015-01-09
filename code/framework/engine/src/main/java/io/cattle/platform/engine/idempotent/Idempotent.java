@@ -26,36 +26,35 @@ public class Idempotent {
         Set<String> traces = null;
 
         try {
-            if ( abortOnChange.get() ) {
+            if (abortOnChange.get()) {
                 traces = new HashSet<String>();
 
-                if ( IDEMPOTENT.get() == null ) {
+                if (IDEMPOTENT.get() == null) {
                     IDEMPOTENT.set(traces);
                 }
             }
 
             T result = null;
 
-            outer:
-            for ( int i = 0 ; i < 3 ; i++ ) {
-                for ( int j = 0 ; j < LOOP_MAX ; j++ ) {
+            outer: for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < LOOP_MAX; j++) {
                     try {
                         T resultAgain = execution.execute();
-                        if ( i == 0 ) {
+                        if (i == 0) {
                             result = resultAgain;
                         }
-                        if ( isDisabled(traces) || isNested(traces) || ! runMultipleTimes.get() ) {
+                        if (isDisabled(traces) || isNested(traces) || !runMultipleTimes.get()) {
                             break outer;
                         }
-                        if ( ! ObjectUtils.equals(result, resultAgain) ) {
+                        if (!ObjectUtils.equals(result, resultAgain)) {
                             throw new OperationNotIdemponent("Result [" + result + "] does not match second result [" + resultAgain + "]");
                         }
                         break;
-                    } catch ( IdempotentRetryException e ) {
-                        if ( IDEMPOTENT.get() != traces )
+                    } catch (IdempotentRetryException e) {
+                        if (IDEMPOTENT.get() != traces)
                             throw e;
                         IDEMPOTENT.get().remove(IN_EXCEPTION);
-                        if ( j == LOOP_MAX - 1 ) {
+                        if (j == LOOP_MAX - 1) {
                             throw new IllegalStateException("Executed [" + execution + "] " + LOOP_MAX + " times and never completed traces [" + traces + "]");
                         }
                     }
@@ -64,7 +63,7 @@ public class Idempotent {
 
             return result;
         } finally {
-            if ( traces != null && ! isNested(traces) ) {
+            if (traces != null && !isNested(traces)) {
                 IDEMPOTENT.remove();
             }
         }
@@ -76,12 +75,12 @@ public class Idempotent {
 
     public static <T> T change(IdempotentExecution<T> execution) {
         Set<String> traces = IDEMPOTENT.get();
-        if ( traces != null && ! isDisabled(traces) ) {
+        if (traces != null && !isDisabled(traces)) {
             IdempotentRetryException e = new IdempotentRetryException();
             String trace = ExceptionUtils.toString(e);
-            if ( ! traces.contains(trace) ) {
+            if (!traces.contains(trace)) {
                 traces.add(trace);
-                if ( ! IDEMPOTENT.get().contains(IN_EXCEPTION) ) {
+                if (!IDEMPOTENT.get().contains(IN_EXCEPTION)) {
                     IDEMPOTENT.get().add(IN_EXCEPTION);
                     throw e;
                 }
@@ -99,14 +98,14 @@ public class Idempotent {
         Set<String> traces = IDEMPOTENT.get();
         boolean alreadyDisabled = traces != null && traces.contains(DISABLE);
 
-        if ( ! alreadyDisabled && traces != null ) {
+        if (!alreadyDisabled && traces != null) {
             traces.add(DISABLE);
         }
 
         try {
             runnable.run();
         } finally {
-            if ( ! alreadyDisabled && traces != null ) {
+            if (!alreadyDisabled && traces != null) {
                 traces.remove(DISABLE);
             }
         }
@@ -114,7 +113,7 @@ public class Idempotent {
 
     public static void tempDisable() {
         Set<String> traces = IDEMPOTENT.get();
-        if ( traces != null ) {
+        if (traces != null) {
             traces.add(DISABLE);
         }
     }

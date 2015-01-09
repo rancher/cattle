@@ -14,34 +14,31 @@ import com.netflix.config.DynamicBooleanProperty;
 
 public class TransitioningUtils {
 
-    public static final DynamicBooleanProperty SHOW_INTERNAL_MESSAGES =
-            ArchaiusUtil.getBoolean("api.show.transitioning.internal.message");
+    public static final DynamicBooleanProperty SHOW_INTERNAL_MESSAGES = ArchaiusUtil.getBoolean("api.show.transitioning.internal.message");
 
-    public static Map<String,Object> getTransitioningData(ExecutionException e) {
-        if ( e == null ) {
+    public static Map<String, Object> getTransitioningData(ExecutionException e) {
+        if (e == null) {
             return Collections.emptyMap();
         }
 
         return getTransitioningData(e.getTransitioningMessage(), e.getTransitioningInternalMessage());
     }
 
-    public static Map<String,Object> getTransitioningData(String message, String internalMessage) {
-        Map<String,Object> data = new HashMap<String, Object>();
+    public static Map<String, Object> getTransitioningData(String message, String internalMessage) {
+        Map<String, Object> data = new HashMap<String, Object>();
 
         String finalMessage = message == null ? "" : message;
 
-        if ( SHOW_INTERNAL_MESSAGES.get() && ! StringUtils.isBlank(internalMessage) ) {
-                finalMessage = finalMessage + " : " + internalMessage;
+        if (SHOW_INTERNAL_MESSAGES.get() && !StringUtils.isBlank(internalMessage)) {
+            finalMessage = finalMessage + " : " + internalMessage;
         }
 
-        if ( StringUtils.isBlank(finalMessage) ) {
+        if (StringUtils.isBlank(finalMessage)) {
             finalMessage = null;
         }
 
-        data.put(ObjectMetaDataManager.TRANSITIONING_FIELD,
-                finalMessage == null ? null : ObjectMetaDataManager.TRANSITIONING_ERROR);
-        data.put(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
-                finalMessage);
+        data.put(ObjectMetaDataManager.TRANSITIONING_FIELD, finalMessage == null ? null : ObjectMetaDataManager.TRANSITIONING_ERROR);
+        data.put(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, finalMessage);
 
         return data;
     }

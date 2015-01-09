@@ -22,14 +22,14 @@ public class LazyJDBCSource implements PolledConfigurationSource {
 
     @Override
     public PollResult poll(boolean initial, Object checkPoint) throws Exception {
-        if ( source == null ) {
+        if (source == null) {
             return PollResult.createFull(new HashMap<String, Object>());
         }
 
         try {
             return source.poll(initial, checkPoint);
-        } catch ( SQLException e ) {
-            if ( firstLoad ) {
+        } catch (SQLException e) {
+            if (firstLoad) {
                 return checkInitial(initial, checkPoint);
             }
             throw e;
@@ -44,11 +44,11 @@ public class LazyJDBCSource implements PolledConfigurationSource {
         boolean connectionGood = true;
 
         try {
-            for ( int i = 0 ; i < 300 ; i++ ) {
+            for (int i = 0; i < 300; i++) {
                 try {
                     conn = dataSource.getConnection();
                     break;
-                } catch ( SQLException e ) {
+                } catch (SQLException e) {
                     connectionGood = false;
                     log.error("Failed to get connection to database, will retry for 5 minutes");
                     try {
@@ -59,14 +59,15 @@ public class LazyJDBCSource implements PolledConfigurationSource {
                 }
             }
         } finally {
-            if ( conn != null ) {
+            if (conn != null) {
                 conn.close();
             }
         }
 
-        if ( connectionGood ) {
-            /* If connection was good, then we probably don't have the Settings table yet,
-             * so just continue
+        if (connectionGood) {
+            /*
+             * If connection was good, then we probably don't have the Settings
+             * table yet, so just continue
              */
             return PollResult.createFull(new HashMap<String, Object>());
         } else {

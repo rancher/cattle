@@ -24,7 +24,7 @@ public interface NetworkInfoDao {
 
     List<? extends NetworkService> networkServices(Instance instance);
 
-    Map<Long,Network> networks(Instance instance);
+    Map<Long, Network> networks(Instance instance);
 
     List<InstanceLinkData> getLinks(Instance instance);
 
@@ -36,7 +36,7 @@ public interface NetworkInfoDao {
 
     List<IpAssociationData> getHostIps(Agent agent);
 
-    Map<Nic,Subnet> getNicsAndSubnet(Instance instance);
+    Map<Nic, Subnet> getNicsAndSubnet(Instance instance);
 
     List<? extends NetworkService> networkServices(Agent agent);
 

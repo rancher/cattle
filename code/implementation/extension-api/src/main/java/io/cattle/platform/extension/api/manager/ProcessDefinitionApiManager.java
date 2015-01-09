@@ -25,7 +25,7 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
 
     public static final String PROCESS_DOT = "processDot";
 
-    private static final Map<String,String> LINKS = new HashMap<String, String>();
+    private static final Map<String, String> LINKS = new HashMap<String, String>();
     static {
         LINKS.put(PROCESS_DOT, null);
     }
@@ -50,12 +50,12 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
     @Override
     protected Object getLinkInternal(String type, String id, String link, ApiRequest request) {
         ProcessDefinition def = getById(id);
-        if ( def == null ) {
+        if (def == null) {
             return null;
         }
 
         String dot = null;
-        if ( PROCESS_DOT.equalsIgnoreCase(link) ) {
+        if (PROCESS_DOT.equalsIgnoreCase(link)) {
             dot = dotMaker.getProcessDot(def);
         }
 
@@ -75,8 +75,8 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
     }
 
     protected ProcessDefinition getById(String id) {
-        for ( ProcessDefinition def : processDefinitions ) {
-            if ( def.getName().equals(id) ) {
+        for (ProcessDefinition def : processDefinitions) {
+            if (def.getName().equals(id)) {
                 return def;
             }
         }
@@ -89,8 +89,8 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
         List<ProcessDefinitionApi> result = new ArrayList<ProcessDefinitionApi>();
         Predicate<Object> condition = ApiPredicates.filterOn(criteria, "name", "resourceType");
 
-        for ( ProcessDefinition def : processDefinitions ) {
-            if ( condition.apply(def) ) {
+        for (ProcessDefinition def : processDefinitions) {
+            if (condition.apply(def)) {
                 result.add(toApi(def));
             }
         }
@@ -99,7 +99,7 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
     }
 
     protected ProcessDefinitionApi toApi(ProcessDefinition def) {
-        if ( def == null ) {
+        if (def == null) {
             return null;
         }
 
@@ -109,11 +109,11 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
         api.setResourceType(def.getResourceType());
         api.setStateTransitions(def.getStateTransitions());
 
-        if ( def instanceof ExtensionBasedProcessDefinition ) {
+        if (def instanceof ExtensionBasedProcessDefinition) {
             api.setExtensionBased(true);
-            api.setPreProcessListeners(((ExtensionBasedProcessDefinition)def).getPreProcessListenersExtensionPoint());
-            api.setProcessHandlers(((ExtensionBasedProcessDefinition)def).getProcessHandlersExtensionPoint());
-            api.setPostProcessListeners(((ExtensionBasedProcessDefinition)def).getPostProcessListenersExtensionPoint());
+            api.setPreProcessListeners(((ExtensionBasedProcessDefinition) def).getPreProcessListenersExtensionPoint());
+            api.setProcessHandlers(((ExtensionBasedProcessDefinition) def).getProcessHandlersExtensionPoint());
+            api.setPostProcessListeners(((ExtensionBasedProcessDefinition) def).getPostProcessListenersExtensionPoint());
         }
 
         return api;

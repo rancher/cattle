@@ -49,27 +49,27 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     @Override
     protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt request) {
         List<Long> volumeIds = new ArrayList<Long>(request.getVolumes().size());
-        for ( Volume v : request.getVolumes() ) {
+        for (Volume v : request.getVolumes()) {
             volumeIds.add(v.getId());
         }
 
         QueryOptions options = new QueryOptions();
 
-        for ( Constraint constraint : request.getConstraints() ) {
-            if ( constraint instanceof KindConstraint ) {
-                options.setKind(((KindConstraint)constraint).getKind());
+        for (Constraint constraint : request.getConstraints()) {
+            if (constraint instanceof KindConstraint) {
+                options.setKind(((KindConstraint) constraint).getKind());
             }
 
-            if ( constraint instanceof ComputeContstraint ) {
-                options.setCompute(((ComputeContstraint)constraint).getComputeFree());
+            if (constraint instanceof ComputeContstraint) {
+                options.setCompute(((ComputeContstraint) constraint).getComputeFree());
             }
 
-            if ( constraint instanceof ValidHostsConstraint ) {
-                options.getHosts().addAll(((ValidHostsConstraint)constraint).getHosts());
+            if (constraint instanceof ValidHostsConstraint) {
+                options.getHosts().addAll(((ValidHostsConstraint) constraint).getHosts());
             }
         }
 
-        if ( request.getInstance() == null ) {
+        if (request.getInstance() == null) {
             return simpleAllocatorDao.iteratorPools(volumeIds, options);
         } else {
             return simpleAllocatorDao.iteratorHosts(volumeIds, options, getCallback(request));
@@ -77,20 +77,19 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     }
 
     protected AllocationCandidateCallback getCallback(AllocationAttempt request) {
-        if ( request.getInstance() == null ) {
+        if (request.getInstance() == null) {
             return null;
         }
 
         return new NetworkAllocationCandidates(getObjectManager(), request);
     }
 
-
     @Override
     protected void close(Iterator<AllocationCandidate> iter) {
         super.close(iter);
 
-        if ( iter instanceof AllocationCandidateIterator ) {
-            ((AllocationCandidateIterator)iter).close();
+        if (iter instanceof AllocationCandidateIterator) {
+            ((AllocationCandidateIterator) iter).close();
         }
     }
 

@@ -26,9 +26,8 @@ public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHan
         setSupportGet(true);
     }
 
-    public JettyWebSocketSubcriptionHandler(JsonMapper jsonMapper, EventService eventService,
-            RetryTimeoutService retryTimeout, ExecutorService executorService,
-            List<ApiPubSubEventPostProcessor> eventProcessors) {
+    public JettyWebSocketSubcriptionHandler(JsonMapper jsonMapper, EventService eventService, RetryTimeoutService retryTimeout,
+            ExecutorService executorService, List<ApiPubSubEventPostProcessor> eventProcessors) {
         super(jsonMapper, eventService, retryTimeout, executorService, eventProcessors);
         setSupportGet(true);
     }
@@ -51,7 +50,7 @@ public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHan
             }
         });
 
-        if ( factory.acceptWebSocket(req, resp) ) {
+        if (factory.acceptWebSocket(req, resp)) {
             apiRequest.commit();
             return messageWriter;
         } else {

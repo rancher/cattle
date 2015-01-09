@@ -19,15 +19,12 @@ public class ExternalHandlerDaoImpl extends AbstractJooqDao implements ExternalH
                 .select(EXTERNAL_HANDLER.fields())
                 .from(EXTERNAL_HANDLER)
                 .join(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP)
-                    .on(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_ID.eq(EXTERNAL_HANDLER.ID))
+                .on(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_ID.eq(EXTERNAL_HANDLER.ID))
                 .join(EXTERNAL_HANDLER_PROCESS)
-                    .on(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_PROCESS_ID.eq(EXTERNAL_HANDLER_PROCESS.ID))
-                .where(
-                        EXTERNAL_HANDLER_PROCESS.NAME.eq(processName)
-                        .and(EXTERNAL_HANDLER.STATE.eq(CommonStatesConstants.ACTIVE))
+                .on(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_PROCESS_ID.eq(EXTERNAL_HANDLER_PROCESS.ID))
+                .where(EXTERNAL_HANDLER_PROCESS.NAME.eq(processName).and(EXTERNAL_HANDLER.STATE.eq(CommonStatesConstants.ACTIVE))
                         .and(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.STATE.eq(CommonStatesConstants.ACTIVE))
-                        .and(EXTERNAL_HANDLER_PROCESS.STATE.eq(CommonStatesConstants.ACTIVE)))
-                .fetchInto(ExternalHandlerRecord.class);
+                        .and(EXTERNAL_HANDLER_PROCESS.STATE.eq(CommonStatesConstants.ACTIVE))).fetchInto(ExternalHandlerRecord.class);
     }
 
 }

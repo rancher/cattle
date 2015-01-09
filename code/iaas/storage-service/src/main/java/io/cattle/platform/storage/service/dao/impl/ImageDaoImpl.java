@@ -28,37 +28,34 @@ public class ImageDaoImpl extends AbstractJooqDao implements ImageDao {
 
     @Override
     public Image findImageByUuid(String uuid) {
-        return objectManager.findOne(Image.class,
-                IMAGE.UUID, uuid);
+        return objectManager.findOne(Image.class, IMAGE.UUID, uuid);
     }
 
     @Override
     public Image persistAndAssociateImage(Image image, StoragePool storagePool) {
         Long accountId = image.getAccountId();
 
-        if ( accountId == null ) {
+        if (accountId == null) {
             Account system = accountCoreDao.getSystemAccount();
-            if ( system == null ) {
+            if (system == null) {
                 throw new IllegalStateException("Failed to find system account");
             }
             accountId = system.getId();
         }
 
-        /* Make sure we set the account id through the properties because if
-         * we are in the context of the API, it might get overwritten with the
+        /*
+         * Make sure we set the account id through the properties because if we
+         * are in the context of the API, it might get overwritten with the
          * user's accountId
          */
-        image = objectManager.create(image,
-                IMAGE.ACCOUNT_ID, accountId);
+        image = objectManager.create(image, IMAGE.ACCOUNT_ID, accountId);
         processManager.scheduleStandardProcess(StandardProcess.CREATE, image, null);
 
         log.info("Registered image [{}] for pool [{}]", image.getId(), storagePool.getId());
 
-        ImageStoragePoolMap map = objectManager.create(ImageStoragePoolMap.class,
-                IMAGE_STORAGE_POOL_MAP.IMAGE_ID, image.getId(),
+        ImageStoragePoolMap map = objectManager.create(ImageStoragePoolMap.class, IMAGE_STORAGE_POOL_MAP.IMAGE_ID, image.getId(),
                 IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID, storagePool.getId());
         processManager.scheduleStandardProcess(StandardProcess.CREATE, map, null);
-
 
         return image;
     }

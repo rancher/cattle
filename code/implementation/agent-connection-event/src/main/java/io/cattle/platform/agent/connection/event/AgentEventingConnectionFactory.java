@@ -18,7 +18,7 @@ public class AgentEventingConnectionFactory implements AgentConnectionFactory {
     @Override
     public AgentConnection createConnection(Agent agent) throws IOException {
         String uri = agent.getUri();
-        if ( uri == null || ! uri.startsWith(PROTOCOL) ) {
+        if (uri == null || !uri.startsWith(PROTOCOL)) {
             return null;
         }
 

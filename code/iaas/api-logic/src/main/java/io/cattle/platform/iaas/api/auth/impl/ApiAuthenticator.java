@@ -29,19 +29,19 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ApiAuthenticator.class);
 
     AuthDao authDao;
-    List<AccountLookup > accountLookups;
+    List<AccountLookup> accountLookups;
     boolean failOnNotFound = true;
     List<AuthorizationProvider> authorizationProviders;
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        if ( ApiContext.getContext().getPolicy() != null ) {
+        if (ApiContext.getContext().getPolicy() != null) {
             return;
         }
 
         Account account = getAccount(request);
-        if ( account == null ) {
-            if ( failOnNotFound ) {
+        if (account == null) {
+            if (failOnNotFound) {
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             } else {
                 return;
@@ -49,15 +49,15 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         }
 
         Policy policy = getPolicy(account, request);
-        if ( policy == null ) {
+        if (policy == null) {
             log.error("Failed to find policy for [{}]", account.getId());
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
 
         SchemaFactory schemaFactory = getSchemaFactory(account, request);
-        if ( schemaFactory == null ) {
+        if (schemaFactory == null) {
             log.error("Failed to find a schema for account type [{}]", account.getKind());
-            if ( SECURITY.get() ) {
+            if (SECURITY.get()) {
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
         }
@@ -70,7 +70,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     }
 
     protected void saveInContext(ApiRequest request, Policy policy, SchemaFactory schemaFactory) {
-        if ( schemaFactory != null ) {
+        if (schemaFactory != null) {
             request.setSchemaFactory(schemaFactory);
         }
 
@@ -80,9 +80,9 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     protected Policy getPolicy(Account account, ApiRequest request) {
         Policy policy = null;
 
-        for ( AuthorizationProvider auth : authorizationProviders ) {
+        for (AuthorizationProvider auth : authorizationProviders) {
             policy = auth.getPolicy(account, request);
-            if ( policy != null ) {
+            if (policy != null) {
                 break;
             }
         }
@@ -93,9 +93,9 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     protected SchemaFactory getSchemaFactory(Account account, ApiRequest request) {
         SchemaFactory factory = null;
 
-        for ( AuthorizationProvider auth : authorizationProviders ) {
+        for (AuthorizationProvider auth : authorizationProviders) {
             factory = auth.getSchemaFactory(account, request);
-            if ( factory != null ) {
+            if (factory != null) {
                 break;
             }
         }
@@ -106,21 +106,21 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     protected Account getAccount(ApiRequest request) {
         Account account = null;
 
-        for ( AccountLookup lookup : accountLookups ) {
+        for (AccountLookup lookup : accountLookups) {
             account = lookup.getAccount(request);
-            if ( account != null ) {
+            if (account != null) {
                 break;
             }
         }
 
-        if ( account != null ) {
+        if (account != null) {
             return account;
         }
 
-        if ( SECURITY.get() ) {
-            if ( failOnNotFound ) {
-                for ( AccountLookup lookup : accountLookups ) {
-                    if ( lookup.challenge(request) ) {
+        if (SECURITY.get()) {
+            if (failOnNotFound) {
+                for (AccountLookup lookup : accountLookups) {
+                    if (lookup.challenge(request)) {
                         break;
                     }
                 }

@@ -53,13 +53,13 @@ public class ClasspathModuleDefinitionLocator implements ModuleDefinitionLocator
     protected Map<String, ModuleDefinition> discoverModules(String baseDir, ResourcePatternResolver resolver) throws IOException {
         Map<String, ModuleDefinition> result = new HashMap<String, ModuleDefinition>();
 
-        for ( Resource r : resolver.getResources(ModuleLocationUtils.getModulesLocation(baseDir)) ) {
+        for (Resource r : resolver.getResources(ModuleLocationUtils.getModulesLocation(baseDir))) {
             log.debug("Discovered module: [{}]", r.getURL());
 
             DefaultModuleDefinition def = new DefaultModuleDefinition(baseDir, r, resolver);
             def.init();
 
-            if ( def.isValid() )
+            if (def.isValid())
                 result.put(def.getName(), def);
         }
 

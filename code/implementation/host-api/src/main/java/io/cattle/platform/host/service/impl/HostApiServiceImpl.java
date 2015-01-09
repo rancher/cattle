@@ -32,27 +32,27 @@ public class HostApiServiceImpl implements HostApiService {
 
     @Override
     public HostApiAccess getAccess(Long hostId) {
-        return getAccess(hostId, new HashMap<String,Object>());
+        return getAccess(hostId, new HashMap<String, Object>());
     }
 
     @Override
-    public HostApiAccess getAccess(Long hostId, Map<String,Object> data) {
+    public HostApiAccess getAccess(Long hostId, Map<String, Object> data) {
         Host host = objectManager.loadResource(Host.class, hostId);
-        if ( host == null ) {
+        if (host == null) {
             return null;
         }
 
         IpAddress ip = getIpAddress(host);
-        if ( ip == null || ip.getAddress() == null ) {
+        if (ip == null || ip.getAddress() == null) {
             return null;
         }
 
         String token = getToken(host, data);
-        if ( token == null ) {
+        if (token == null) {
             return null;
         }
 
-        Map<String,String> values = new HashMap<String, String>();
+        Map<String, String> values = new HashMap<String, String>();
         values.put(HEADER_AUTH.get(), String.format(HEADER_AUTH_VALUE.get(), token));
 
         return new HostApiAccess(ip.getAddress(), token, values);
@@ -63,9 +63,8 @@ public class HostApiServiceImpl implements HostApiService {
         return keyProvider.getPublicKeys();
     }
 
-
-    protected String getToken(Host host, Map<String,Object> inputData) {
-        Map<String,Object> data = new HashMap<String,Object>(inputData);
+    protected String getToken(Host host, Map<String, Object> inputData) {
+        Map<String, Object> data = new HashMap<String, Object>(inputData);
         data.put(HOST_UUID, host.getUuid());
 
         return tokenService.generateToken(data);
@@ -74,17 +73,17 @@ public class HostApiServiceImpl implements HostApiService {
     protected IpAddress getIpAddress(Host host) {
         IpAddress choice = null;
 
-        for ( IpAddress ip : objectManager.mappedChildren(host, IpAddress.class) ) {
-            if ( ip.getAddress() == null || ! CommonStatesConstants.ACTIVE.equals(ip.getState()) ) {
+        for (IpAddress ip : objectManager.mappedChildren(host, IpAddress.class)) {
+            if (ip.getAddress() == null || !CommonStatesConstants.ACTIVE.equals(ip.getState())) {
                 continue;
             }
 
-            if ( IpAddressConstants.ROLE_PRIMARY.equals(ip.getRole()) ) {
+            if (IpAddressConstants.ROLE_PRIMARY.equals(ip.getRole())) {
                 choice = ip;
                 break;
-            } else if ( choice == null || choice.getCreated() == null ) {
+            } else if (choice == null || choice.getCreated() == null) {
                 choice = ip;
-            } else if ( ip.getCreated() != null && ip.getCreated().before(choice.getCreated()) ) {
+            } else if (ip.getCreated() != null && ip.getCreated().before(choice.getCreated())) {
                 choice = ip;
             }
         }

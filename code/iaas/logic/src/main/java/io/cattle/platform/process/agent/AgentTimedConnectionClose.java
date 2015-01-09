@@ -27,19 +27,16 @@ public class AgentTimedConnectionClose extends AgentBasedProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        DataAccessor prop = DataAccessor
-                .fromMap(state.getData())
-                .withScope(AgentTimedConnectionClose.class)
-                .withKey("lastDisconnect");
+        DataAccessor prop = DataAccessor.fromMap(state.getData()).withScope(AgentTimedConnectionClose.class).withKey("lastDisconnect");
 
         Long lastDisconnect = prop.as(Long.class);
 
-        if ( lastDisconnect == null || System.currentTimeMillis() - lastDisconnect > (TIMEOUT.get() * 1000) ) {
+        if (lastDisconnect == null || System.currentTimeMillis() - lastDisconnect > (TIMEOUT.get() * 1000)) {
             prop.set(System.currentTimeMillis());
             super.handle(state, process);
         }
 
         return null;
-   }
+    }
 
 }

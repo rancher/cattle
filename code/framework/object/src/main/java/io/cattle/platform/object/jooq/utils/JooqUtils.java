@@ -23,27 +23,24 @@ public class JooqUtils {
 
     @SuppressWarnings("unchecked")
     public static <T extends UpdatableRecord<?>> T findById(DSLContext context, Class<T> clz, Object id) {
-        if ( id == null )
+        if (id == null)
             return null;
 
         Table<?> table = getTableFromRecordClass(clz);
-        if ( table == null )
+        if (table == null)
             return null;
 
         UniqueKey<?> key = table.getPrimaryKey();
-        if ( key == null || key.getFieldsArray().length != 1 )
+        if (key == null || key.getFieldsArray().length != 1)
             return null;
 
-        TableField<?, Object> keyField = (TableField<?, Object>)key.getFieldsArray()[0];
+        TableField<?, Object> keyField = (TableField<?, Object>) key.getFieldsArray()[0];
 
         /* Convert object because we are abusing type safety here */
         Object converted = keyField.getDataType().convert(id);
 
-        return (T)context.selectFrom(table)
-                .where(keyField.eq(converted))
-                .fetchOne();
+        return (T) context.selectFrom(table).where(keyField.eq(converted)).fetchOne();
     }
-
 
     public static Table<?> getTable(SchemaFactory schemaFactory, Class<?> clz) {
         return getTableFromRecordClass(getRecordClass(schemaFactory, clz));
@@ -51,13 +48,12 @@ public class JooqUtils {
 
     @SuppressWarnings("unchecked")
     public static Table<?> getTableFromRecordClass(Class<?> clz) {
-        if ( clz == null )
+        if (clz == null)
             return null;
 
-        if ( TableRecord.class.isAssignableFrom(clz) ) {
+        if (TableRecord.class.isAssignableFrom(clz)) {
             try {
-                TableRecord<?> record =
-                        ((Class<TableRecord<?>>)clz).newInstance();
+                TableRecord<?> record = ((Class<TableRecord<?>>) clz).newInstance();
                 return record.getTable();
             } catch (InstantiationException e) {
                 log.error("Failed to determine table for [{}]", clz, e);
@@ -70,15 +66,15 @@ public class JooqUtils {
 
     @SuppressWarnings("unchecked")
     public static Class<UpdatableRecord<?>> getRecordClass(SchemaFactory factory, Class<?> clz) {
-        if ( UpdatableRecord.class.isAssignableFrom(clz) ) {
-            return (Class<UpdatableRecord<?>>)clz;
+        if (UpdatableRecord.class.isAssignableFrom(clz)) {
+            return (Class<UpdatableRecord<?>>) clz;
         }
 
-        if ( factory != null ) {
+        if (factory != null) {
             Schema schema = factory.getSchema(clz);
             Class<?> testClz = factory.getSchemaClass(schema.getId());
-            if ( clz.isAssignableFrom(testClz) ) {
-                if ( ! UpdatableRecord.class.isAssignableFrom(testClz) ) {
+            if (clz.isAssignableFrom(testClz)) {
+                if (!UpdatableRecord.class.isAssignableFrom(testClz)) {
                     throw new IllegalArgumentException("Class [" + testClz + "] is not an instanceof UpdatableRecord");
                 }
                 return (Class<UpdatableRecord<?>>) testClz;
@@ -100,11 +96,11 @@ public class JooqUtils {
 
     @SuppressWarnings("unchecked")
     public static <T extends UpdatableRecord<?>> T getRecordObject(Object obj) {
-        if ( obj == null )
+        if (obj == null)
             return null;
 
-        if ( obj instanceof UpdatableRecord<?> ) {
-            return (T)obj;
+        if (obj instanceof UpdatableRecord<?>) {
+            return (T) obj;
         }
         throw new IllegalArgumentException("Expected instance of [" + UpdatableRecord.class + "] got [" + obj.getClass() + "]");
     }
@@ -112,37 +108,36 @@ public class JooqUtils {
     public static org.jooq.Condition toConditions(ObjectMetaDataManager metaData, String type, Map<Object, Object> criteria) {
         org.jooq.Condition existingCondition = null;
 
-        for ( Map.Entry<Object, Object> entry : criteria.entrySet() ) {
+        for (Map.Entry<Object, Object> entry : criteria.entrySet()) {
             Object value = entry.getValue();
             Object key = entry.getKey();
             TableField<?, Object> field = null;
-            if ( key == org.jooq.Condition.class ) {
-                if ( ! ( value instanceof org.jooq.Condition ) ) {
-                    throw new IllegalArgumentException("If key is Condition, value must be an instanceof Condition got key [" +
-                            key + "] value [" + value + "]");
+            if (key == org.jooq.Condition.class) {
+                if (!(value instanceof org.jooq.Condition)) {
+                    throw new IllegalArgumentException("If key is Condition, value must be an instanceof Condition got key [" + key + "] value [" + value + "]");
                 }
             } else {
                 field = getTableField(metaData, type, key);
-                if ( field == null ) {
+                if (field == null) {
                     continue;
                 }
             }
 
             org.jooq.Condition newCondition = null;
 
-            if ( value instanceof org.jooq.Condition ) {
-                newCondition = (org.jooq.Condition)value;
-            } else if ( value instanceof Condition ) {
-                newCondition = toCondition(field, (Condition)value);
-            } else if ( value instanceof List ) {
-                newCondition = listToCondition(field, (List<?>)value);
-            } else if ( value == null ) {
+            if (value instanceof org.jooq.Condition) {
+                newCondition = (org.jooq.Condition) value;
+            } else if (value instanceof Condition) {
+                newCondition = toCondition(field, (Condition) value);
+            } else if (value instanceof List) {
+                newCondition = listToCondition(field, (List<?>) value);
+            } else if (value == null) {
                 newCondition = field.isNull();
             } else {
                 newCondition = field.eq(value);
             }
 
-            if ( existingCondition == null ) {
+            if (existingCondition == null) {
                 existingCondition = newCondition;
             } else {
                 existingCondition = existingCondition.and(newCondition);
@@ -155,8 +150,8 @@ public class JooqUtils {
     @SuppressWarnings("unchecked")
     public static TableField<?, Object> getTableField(ObjectMetaDataManager metaData, String type, Object key) {
         Object objField = metaData.convertFieldNameFor(type, key);
-        if ( objField instanceof TableField ) {
-            return (TableField<?, Object>)objField;
+        if (objField instanceof TableField) {
+            return (TableField<?, Object>) objField;
         } else {
             return null;
         }
@@ -164,9 +159,9 @@ public class JooqUtils {
 
     protected static org.jooq.Condition listToCondition(TableField<?, Object> field, List<?> list) {
         org.jooq.Condition condition = null;
-        for ( Object value : list ) {
-            if ( value instanceof Condition ) {
-                org.jooq.Condition newCondition = toCondition(field, (Condition)value);
+        for (Object value : list) {
+            if (value instanceof Condition) {
+                org.jooq.Condition newCondition = toCondition(field, (Condition) value);
                 condition = condition == null ? newCondition : condition.and(newCondition);
             } else {
                 condition = condition == null ? field.eq(value) : condition.and(field.eq(value));
@@ -187,7 +182,7 @@ public class JooqUtils {
             return field.ge(condition.getValue());
         case IN:
             List<Object> values = condition.getValues();
-            if ( values.size() == 1 ) {
+            if (values.size() == 1) {
                 return field.eq(values.get(0));
             } else {
                 return field.in(condition.getValues());

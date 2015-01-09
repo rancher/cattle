@@ -13,8 +13,7 @@ public class ExtensionPointImpl implements ExtensionPoint {
     String excludeSetting;
     String includeSetting;
 
-    public ExtensionPointImpl(String name, List<ExtensionImplementation> implementations, String listSetting,
-            String excludeSetting, String includeSetting) {
+    public ExtensionPointImpl(String name, List<ExtensionImplementation> implementations, String listSetting, String excludeSetting, String includeSetting) {
         super();
         this.name = name;
         this.implementations = implementations;

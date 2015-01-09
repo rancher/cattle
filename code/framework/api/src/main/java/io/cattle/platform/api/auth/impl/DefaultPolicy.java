@@ -44,9 +44,9 @@ public class DefaultPolicy implements Policy {
     @Override
     public <T> List<T> authorizeList(List<T> list) {
         List<T> result = new ArrayList<T>(list.size());
-        for ( T obj : list ) {
+        for (T obj : list) {
             T authorized = authorizeObject(obj);
-            if ( authorized != null )
+            if (authorized != null)
                 result.add(authorized);
         }
         return result;

@@ -12,10 +12,10 @@ public class ModelStrategy extends DefaultGeneratorStrategy {
 
     @Override
     public String getJavaClassName(Definition definition, Mode mode) {
-        if ( mode == Mode.INTERFACE ) {
+        if (mode == Mode.INTERFACE) {
             String result = super.getJavaClassName(definition, mode);
             return StringUtils.removeStart(result, "I");
-        } else if ( mode == Mode.DEFAULT ) {
+        } else if (mode == Mode.DEFAULT) {
             return super.getJavaClassName(definition, mode) + "Table";
         }
         return super.getJavaClassName(definition, mode);
@@ -23,7 +23,7 @@ public class ModelStrategy extends DefaultGeneratorStrategy {
 
     @Override
     public String getJavaPackageName(Definition definition, Mode mode) {
-        if ( mode == Mode.INTERFACE ) {
+        if (mode == Mode.INTERFACE) {
             String result = super.getJavaPackageName(definition, mode);
             return StringUtils.replace(result, ".tables.interfaces", "");
         }
@@ -33,11 +33,10 @@ public class ModelStrategy extends DefaultGeneratorStrategy {
     @Override
     public List<String> getJavaClassImplements(Definition definition, Mode mode) {
         List<String> result = super.getJavaClassImplements(definition, mode);
-        if ( mode == Mode.RECORD ) {
+        if (mode == Mode.RECORD) {
             result.add(TableRecordJaxb.class.getName());
         }
         return result;
     }
-
 
 }

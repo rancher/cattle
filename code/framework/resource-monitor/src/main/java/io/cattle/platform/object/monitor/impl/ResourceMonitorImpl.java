@@ -26,14 +26,14 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     private static final DynamicLongProperty DEFAULT_WAIT = ArchaiusUtil.getLong("resource.monitor.default.wait.millis");
 
     ObjectManager objectManager;
-    ConcurrentMap<String,Object> waiters = new ConcurrentHashMap<String, Object>();
+    ConcurrentMap<String, Object> waiters = new ConcurrentHashMap<String, Object>();
 
     @EventHandler
     public void resourceChange(Event event) {
         String key = key(event.getResourceType(), event.getResourceId());
         Object wait = waiters.get(key);
 
-        if ( wait != null ) {
+        if (wait != null) {
             synchronized (wait) {
                 wait.notifyAll();
             }
@@ -46,36 +46,35 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
 
     @Override
     public <T> T waitFor(T obj, long timeout, ResourcePredicate<T> predicate) {
-        if ( obj == null || predicate == null ) {
+        if (obj == null || predicate == null) {
             return obj;
         }
 
         String type = objectManager.getType(obj);
         Object id = ObjectUtils.getId(obj);
 
-        if ( type == null || id == null ) {
-            throw new IllegalArgumentException("Type and id are required got [" + type +
-                    "] [" + id + "]");
+        if (type == null || id == null) {
+            throw new IllegalArgumentException("Type and id are required got [" + type + "] [" + id + "]");
         }
 
         String key = key(type, id);
         long start = System.currentTimeMillis();
 
-        while ( start + timeout > System.currentTimeMillis() ) {
+        while (start + timeout > System.currentTimeMillis()) {
             obj = objectManager.reload(obj);
 
-            if ( predicate.evaluate(obj) ) {
+            if (predicate.evaluate(obj)) {
                 return obj;
             }
 
             Object wait = new Object();
             Object oldValue = waiters.putIfAbsent(key, wait);
-            if ( oldValue != null ) {
+            if (oldValue != null) {
                 wait = oldValue;
             }
 
             long waitTime = timeout - (System.currentTimeMillis() - start);
-            if ( waitTime <= 0 ) {
+            if (waitTime <= 0) {
                 break;
             }
             synchronized (wait) {
@@ -95,11 +94,10 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
         return waitFor(obj, DEFAULT_WAIT.get(), predicate);
     }
 
-
     @Override
     public void run() {
-        Map<String,Object> copy = new HashMap<String, Object>(waiters);
-        for ( Map.Entry<String, Object> entry : copy.entrySet() ) {
+        Map<String, Object> copy = new HashMap<String, Object>(waiters);
+        for (Map.Entry<String, Object> entry : copy.entrySet()) {
             Object value = entry.getValue();
             waiters.remove(entry.getKey(), entry.getValue());
             synchronized (value) {

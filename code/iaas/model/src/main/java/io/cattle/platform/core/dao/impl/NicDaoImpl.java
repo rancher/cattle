@@ -10,15 +10,11 @@ public class NicDaoImpl extends AbstractJooqDao implements NicDao {
 
     @Override
     public Nic getPrimaryNic(Instance instance) {
-        if ( instance == null ) {
+        if (instance == null) {
             return null;
         }
 
-        return create()
-                .selectFrom(NIC)
-                .where(NIC.INSTANCE_ID.eq(instance.getId())
-                        .and(NIC.DEVICE_NUMBER.eq(0)))
-                .fetchOne();
+        return create().selectFrom(NIC).where(NIC.INSTANCE_ID.eq(instance.getId()).and(NIC.DEVICE_NUMBER.eq(0))).fetchOne();
     }
 
 }

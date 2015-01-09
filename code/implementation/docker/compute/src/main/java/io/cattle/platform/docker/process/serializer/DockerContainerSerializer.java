@@ -20,7 +20,7 @@ public class DockerContainerSerializer implements ObjectTypeSerializerPostProces
 
     JsonMapper jsonMapper;
     ObjectManager objectManager;
-    
+
     @Override
     public String[] getTypes() {
         return new String[] { InstanceConstants.TYPE };
@@ -29,23 +29,21 @@ public class DockerContainerSerializer implements ObjectTypeSerializerPostProces
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void process(Object obj, String type, Map<String, Object> data) {
-        if ( !(obj instanceof Instance) )
+        if (!(obj instanceof Instance))
             return;
 
-        Instance instance = (Instance)obj;
-        if ( !instance.getKind().equals(InstanceConstants.TYPE_CONTAINER) )
+        Instance instance = (Instance) obj;
+        if (!instance.getKind().equals(InstanceConstants.TYPE_CONTAINER))
             return;
 
-        List volumesFromContainerIds = DataAccessor.fields(instance)
-                .withKey(DockerInstanceConstants.FIELD_VOLUMES_FROM)
-                .as(jsonMapper, List.class);
-        List<Instance>containers = null;
-        if ( volumesFromContainerIds != null && !volumesFromContainerIds.isEmpty() ) {
+        List volumesFromContainerIds = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_VOLUMES_FROM).as(jsonMapper, List.class);
+        List<Instance> containers = null;
+        if (volumesFromContainerIds != null && !volumesFromContainerIds.isEmpty()) {
             Map ids = new HashMap();
             ids.put(INSTANCE.ID, volumesFromContainerIds);
             containers = objectManager.find(Instance.class, ids);
         }
-        if ( containers == null )
+        if (containers == null)
             containers = new ArrayList<Instance>();
         data.put(DockerInstanceConstants.EVENT_FIELD_VOLUMES_FROM, containers);
     }
@@ -62,10 +60,10 @@ public class DockerContainerSerializer implements ObjectTypeSerializerPostProces
     public ObjectManager getObjectManager() {
         return objectManager;
     }
-    
+
     @Inject
     public void setObjectManager(ObjectManager objectManager) {
         this.objectManager = objectManager;
     }
-    
+
 }

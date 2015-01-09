@@ -13,20 +13,17 @@ public class PortNicLookup extends AbstractJooqDao implements InstanceNicLookup 
 
     @Override
     public List<? extends Nic> getNics(Object obj) {
-        if ( ! ( obj instanceof Port ) ) {
+        if (!(obj instanceof Port)) {
             return null;
         }
 
-        Port port = (Port)obj;
+        Port port = (Port) obj;
 
-        if ( port.getInstanceId() == null ) {
+        if (port.getInstanceId() == null) {
             return Collections.emptyList();
         }
 
-        return create()
-                .selectFrom(NIC)
-                .where(NIC.INSTANCE_ID.eq(port.getInstanceId()))
-                .fetch();
+        return create().selectFrom(NIC).where(NIC.INSTANCE_ID.eq(port.getInstanceId())).fetch();
     }
 
 }

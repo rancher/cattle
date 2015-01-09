@@ -17,7 +17,7 @@ public class DataAccessor {
 
     Object source;
     Object defaultValue;
-    Map<String,Object> sourceMap;
+    Map<String, Object> sourceMap;
     String key;
     Class<?> scope;
     String scopeKey;
@@ -49,11 +49,11 @@ public class DataAccessor {
         List<String> result = new ArrayList<String>();
         Object list = fields(obj).withKey(key).get();
 
-        if ( list == null || !(list instanceof List) ) {
+        if (list == null || !(list instanceof List)) {
             return result;
         }
 
-        for ( Object item : (List<?>)list ) {
+        for (Object item : (List<?>) list) {
             result.add(org.apache.commons.lang3.ObjectUtils.toString(item, null));
         }
 
@@ -68,15 +68,15 @@ public class DataAccessor {
         List<Long> result = new ArrayList<Long>();
         Object list = fields(obj).withKey(key).get();
 
-        if ( list == null || !(list instanceof List) ) {
+        if (list == null || !(list instanceof List)) {
             return result;
         }
 
-        for ( Object item : (List<?>)list ) {
-            if ( item == null ) {
+        for (Object item : (List<?>) list) {
+            if (item == null) {
                 result.add(null);
-            } else if ( item instanceof Number ) {
-                result.add(((Number)item).longValue());
+            } else if (item instanceof Number) {
+                result.add(((Number) item).longValue());
             } else {
                 result.add(Long.parseLong(item.toString()));
             }
@@ -98,15 +98,11 @@ public class DataAccessor {
     }
 
     public static <T> T field(Object obj, String name, JsonMapper mapper, Class<T> type) {
-        return fields(obj)
-                .withKey(name)
-                .as(mapper, type);
+        return fields(obj).withKey(name).as(mapper, type);
     }
 
     public static <T> T field(Object obj, String name, Class<T> type) {
-        return fields(obj)
-                .withKey(name)
-                .as(type);
+        return fields(obj).withKey(name).as(type);
     }
 
     public DataAccessor withScope(Class<?> scope) {
@@ -144,49 +140,49 @@ public class DataAccessor {
 
     @SuppressWarnings("unchecked")
     public <T> T as(Class<T> clz) {
-        return (T)ConvertUtils.convert(get(), clz);
+        return (T) ConvertUtils.convert(get(), clz);
     }
 
     public Object get() {
-        Map<String,Object> map = getTargetMap(false, true);
+        Map<String, Object> map = getTargetMap(false, true);
         Object result = key == null ? null : map.get(key);
         return result == null ? defaultValue : result;
     }
 
     public void set(Object value) {
-        Map<String,Object> map = getTargetMap(true, false);
-        if ( key != null ) {
+        Map<String, Object> map = getTargetMap(true, false);
+        if (key != null) {
             map.put(key, value);
         }
     }
 
     public void remove() {
-        Map<String,Object> map = getTargetMap(true, false);
-        if ( key != null ) {
+        Map<String, Object> map = getTargetMap(true, false);
+        if (key != null) {
             map.remove(key);
         }
     }
 
-    protected Map<String,Object> getTargetMap(boolean addContainer, boolean read) {
-        Map<String,Object> sourceMap = this.sourceMap;
+    protected Map<String, Object> getTargetMap(boolean addContainer, boolean read) {
+        Map<String, Object> sourceMap = this.sourceMap;
 
-        if ( sourceMap == null && source != null ) {
+        if (sourceMap == null && source != null) {
             sourceMap = getData(source, read);
         }
 
-        if ( sourceMap == null ) {
-            if ( ! addContainer ) {
+        if (sourceMap == null) {
+            if (!addContainer) {
                 throw new IllegalStateException("Can not set a value on a null target");
             }
             return null;
         }
 
-        Map<String,Object> map = sourceMap;
+        Map<String, Object> map = sourceMap;
 
-        if ( isScopeSet() ) {
+        if (isScopeSet()) {
             Object scopedMap = sourceMap.get(getScope());
-            if ( scopedMap == null && addContainer ) {
-                scopedMap = new HashMap<String,Object>();
+            if (scopedMap == null && addContainer) {
+                scopedMap = new HashMap<String, Object>();
                 sourceMap.put(getScope(), scopedMap);
             }
             map = CollectionUtils.castMap(scopedMap);
@@ -195,15 +191,15 @@ public class DataAccessor {
         return map;
     }
 
-    protected static Map<String,Object> getData(Object obj, boolean read) {
+    protected static Map<String, Object> getData(Object obj, boolean read) {
         @SuppressWarnings("unchecked")
-        Map<String,Object> map = (Map<String, Object>)ObjectUtils.getPropertyIgnoreErrors(obj, DataUtils.DATA);
+        Map<String, Object> map = (Map<String, Object>) ObjectUtils.getPropertyIgnoreErrors(obj, DataUtils.DATA);
 
-        if ( read ) {
-            return map == null ? Collections.<String,Object>emptyMap() : Collections.unmodifiableMap(map);
-        } else if ( map instanceof UnmodifiableMap<?,?> ) {
-            map = ((UnmodifiableMap<String,Object>)map).getModifiableCopy();
-        } else if ( map == null ) {
+        if (read) {
+            return map == null ? Collections.<String, Object> emptyMap() : Collections.unmodifiableMap(map);
+        } else if (map instanceof UnmodifiableMap<?, ?>) {
+            map = ((UnmodifiableMap<String, Object>) map).getModifiableCopy();
+        } else if (map == null) {
             map = new HashMap<String, Object>();
         }
 

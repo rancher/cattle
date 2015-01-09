@@ -47,10 +47,10 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
 
     @Override
     public long incrementOrApply(Client client, String itemName) {
-        if ( ! increment(client, itemName) ) {
+        if (!increment(client, itemName)) {
             RuntimeException e = apply(client, itemName);
-            if ( e != null ) {
-                if ( ! increment(client, itemName) ) {
+            if (e != null) {
+                if (!increment(client, itemName)) {
                     throw new IllegalStateException("Failed to increment [" + itemName + "] on [" + client + "]", e);
                 }
             }
@@ -61,54 +61,32 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
 
     @Override
     public Long getRequestedVersion(Client client, String itemName) {
-        return create()
-                .select(CONFIG_ITEM_STATUS.REQUESTED_VERSION)
-                .from(CONFIG_ITEM_STATUS)
-                .where(
-                        CONFIG_ITEM_STATUS.NAME.eq(itemName)
-                        .and(targetObjectCondition(client)))
-                .fetchOneInto(Long.class);
+        return create().select(CONFIG_ITEM_STATUS.REQUESTED_VERSION).from(CONFIG_ITEM_STATUS)
+                .where(CONFIG_ITEM_STATUS.NAME.eq(itemName).and(targetObjectCondition(client))).fetchOneInto(Long.class);
     }
 
     protected boolean increment(Client client, String itemName) {
-        int updated = create()
-            .update(CONFIG_ITEM_STATUS)
-                .set(CONFIG_ITEM_STATUS.REQUESTED_VERSION, CONFIG_ITEM_STATUS.REQUESTED_VERSION.plus(1))
+        int updated = create().update(CONFIG_ITEM_STATUS).set(CONFIG_ITEM_STATUS.REQUESTED_VERSION, CONFIG_ITEM_STATUS.REQUESTED_VERSION.plus(1))
                 .set(CONFIG_ITEM_STATUS.REQUESTED_UPDATED, new Timestamp(System.currentTimeMillis()))
-            .where(
-                    CONFIG_ITEM_STATUS.NAME.eq(itemName)
-                    .and(targetObjectCondition(client))).execute();
+                .where(CONFIG_ITEM_STATUS.NAME.eq(itemName).and(targetObjectCondition(client))).execute();
 
         return updated > 0;
     }
 
     protected RuntimeException apply(Client client, String itemName) {
         try {
-            create()
-                .insertInto(CONFIG_ITEM_STATUS,
-                        CONFIG_ITEM_STATUS.NAME,
-                        CONFIG_ITEM_STATUS.AGENT_ID,
-                        CONFIG_ITEM_STATUS.REQUESTED_VERSION,
-                        CONFIG_ITEM_STATUS.REQUESTED_UPDATED)
-                .values(
-                        itemName,
-                        new Long(client.getResourceId()),
-                        1L,
-                        new Timestamp(System.currentTimeMillis()))
-                .execute();
+            create().insertInto(CONFIG_ITEM_STATUS, CONFIG_ITEM_STATUS.NAME, CONFIG_ITEM_STATUS.AGENT_ID, CONFIG_ITEM_STATUS.REQUESTED_VERSION,
+                    CONFIG_ITEM_STATUS.REQUESTED_UPDATED).values(itemName, new Long(client.getResourceId()), 1L, new Timestamp(System.currentTimeMillis()))
+                    .execute();
             return null;
-        } catch ( DataAccessException e ) {
+        } catch (DataAccessException e) {
             return e;
         }
     }
 
     @Override
     public boolean isAssigned(Client client, String itemName) {
-        ConfigItemStatus status = create()
-                .selectFrom(CONFIG_ITEM_STATUS)
-                .where(
-                        CONFIG_ITEM_STATUS.NAME.eq(itemName)
-                        .and(targetObjectCondition(client)))
+        ConfigItemStatus status = create().selectFrom(CONFIG_ITEM_STATUS).where(CONFIG_ITEM_STATUS.NAME.eq(itemName).and(targetObjectCondition(client)))
                 .fetchAny();
 
         return status != null;
@@ -116,69 +94,45 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
 
     @Override
     public boolean setApplied(Client client, String itemName, ItemVersion version) {
-        int updated = update(CONFIG_ITEM_STATUS)
-            .set(CONFIG_ITEM_STATUS.APPLIED_VERSION, version.getRevision())
-            .set(CONFIG_ITEM_STATUS.SOURCE_VERSION, version.getSourceRevision())
-            .set(CONFIG_ITEM_STATUS.APPLIED_UPDATED, new Timestamp(System.currentTimeMillis()))
-            .where(
-                    CONFIG_ITEM_STATUS.NAME.eq(itemName)
-                    .and(targetObjectCondition(client)))
-            .execute();
+        int updated = update(CONFIG_ITEM_STATUS).set(CONFIG_ITEM_STATUS.APPLIED_VERSION, version.getRevision())
+                .set(CONFIG_ITEM_STATUS.SOURCE_VERSION, version.getSourceRevision())
+                .set(CONFIG_ITEM_STATUS.APPLIED_UPDATED, new Timestamp(System.currentTimeMillis()))
+                .where(CONFIG_ITEM_STATUS.NAME.eq(itemName).and(targetObjectCondition(client))).execute();
 
-        if ( updated > 1 ) {
-            log.error("Updated too many rows [{}] for client [{}] itemName [{}] itemVersion [{}]",
-                    updated, client, itemName, version);
+        if (updated > 1) {
+            log.error("Updated too many rows [{}] for client [{}] itemName [{}] itemVersion [{}]", updated, client, itemName, version);
         }
 
         return updated == 1;
     }
 
-
     @Override
     public void setLatest(Client client, String itemName, String sourceRevision) {
-        update(CONFIG_ITEM_STATUS)
-                .set(CONFIG_ITEM_STATUS.APPLIED_VERSION, CONFIG_ITEM_STATUS.REQUESTED_VERSION)
-                .set(CONFIG_ITEM_STATUS.SOURCE_VERSION, sourceRevision)
-                .where(
-                        CONFIG_ITEM_STATUS.NAME.eq(itemName)
-                        .and(targetObjectCondition(client))
-                )
+        update(CONFIG_ITEM_STATUS).set(CONFIG_ITEM_STATUS.APPLIED_VERSION, CONFIG_ITEM_STATUS.REQUESTED_VERSION)
+                .set(CONFIG_ITEM_STATUS.SOURCE_VERSION, sourceRevision).where(CONFIG_ITEM_STATUS.NAME.eq(itemName).and(targetObjectCondition(client)))
                 .execute();
     }
 
     protected Condition targetObjectCondition(Client client) {
-        if ( client.getResourceType() != Agent.class ) {
+        if (client.getResourceType() != Agent.class) {
             throw new IllegalArgumentException("Only Agent.class is supported for Client type");
         }
 
         return CONFIG_ITEM_STATUS.AGENT_ID.eq(client.getResourceId());
     }
 
-
     @Override
     public void setItemSourceVersion(String name, String sourceRevision) {
-        ConfigItem item = create()
-                    .selectFrom(CONFIG_ITEM)
-                    .where(
-                            CONFIG_ITEM.NAME.eq(name))
-                    .fetchOne();
-        if ( item != null && sourceRevision.equals(item.getSourceVersion()) ) {
+        ConfigItem item = create().selectFrom(CONFIG_ITEM).where(CONFIG_ITEM.NAME.eq(name)).fetchOne();
+        if (item != null && sourceRevision.equals(item.getSourceVersion())) {
             return;
         }
 
         log.info("Setting config [{}] to source version [{}]", name, sourceRevision);
-        int updated = create()
-                .update(CONFIG_ITEM)
-                    .set(CONFIG_ITEM.SOURCE_VERSION, sourceRevision)
-                .where(
-                        CONFIG_ITEM.NAME.eq(name))
-                .execute();
+        int updated = create().update(CONFIG_ITEM).set(CONFIG_ITEM.SOURCE_VERSION, sourceRevision).where(CONFIG_ITEM.NAME.eq(name)).execute();
 
-        if ( updated == 0 ) {
-            create()
-                .insertInto(CONFIG_ITEM, CONFIG_ITEM.NAME, CONFIG_ITEM.SOURCE_VERSION)
-                .values(name, sourceRevision)
-                .execute();
+        if (updated == 0) {
+            create().insertInto(CONFIG_ITEM, CONFIG_ITEM.NAME, CONFIG_ITEM.SOURCE_VERSION).values(name, sourceRevision).execute();
         }
     }
 
@@ -186,33 +140,21 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
     public List<? extends ConfigItemStatus> listItems(ConfigUpdateRequest request) {
         Set<String> names = new HashSet<String>();
 
-        for ( ConfigUpdateItem item : request.getItems() ) {
+        for (ConfigUpdateItem item : request.getItems()) {
             names.add(item.getName());
         }
 
-        return create()
-                .selectFrom(CONFIG_ITEM_STATUS)
-                .where(
-                        CONFIG_ITEM_STATUS.NAME.in(names)
-                        .and(targetObjectCondition(request.getClient())))
-                .fetch();
+        return create().selectFrom(CONFIG_ITEM_STATUS).where(CONFIG_ITEM_STATUS.NAME.in(names).and(targetObjectCondition(request.getClient()))).fetch();
     }
 
     @Override
     public ItemVersion getRequestedItemVersion(Client client, String itemName) {
-        Record2<Long,String> result = create()
-                .select(CONFIG_ITEM_STATUS.REQUESTED_VERSION, CONFIG_ITEM.SOURCE_VERSION)
-                .from(CONFIG_ITEM_STATUS)
-                .join(CONFIG_ITEM)
-                    .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
-                .where(
-                        CONFIG_ITEM_STATUS.NAME.eq(itemName)
-                        .and(targetObjectCondition(client)))
-                .fetchOne();
+        Record2<Long, String> result = create().select(CONFIG_ITEM_STATUS.REQUESTED_VERSION, CONFIG_ITEM.SOURCE_VERSION).from(CONFIG_ITEM_STATUS)
+                .join(CONFIG_ITEM).on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
+                .where(CONFIG_ITEM_STATUS.NAME.eq(itemName).and(targetObjectCondition(client))).fetchOne();
 
         return result == null ? null : new DefaultItemVersion(result.value1(), result.value2());
     }
-
 
     public ObjectManager getObjectManager() {
         return objectManager;
@@ -225,9 +167,9 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
 
     @Override
     public Map<Long, List<String>> findOutOfSync(boolean migration) {
-        Map<Long,List<String>> result = new HashMap<Long, List<String>>();
+        Map<Long, List<String>> result = new HashMap<Long, List<String>>();
 
-        for ( ConfigItemStatus status : (migration ? migrationItems() : outOfSyncItems()) ) {
+        for (ConfigItemStatus status : (migration ? migrationItems() : outOfSyncItems())) {
             CollectionUtils.addToMap(result, status.getAgentId(), status.getName(), ArrayList.class);
         }
 
@@ -239,12 +181,10 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .select(CONFIG_ITEM_STATUS.fields())
                 .from(CONFIG_ITEM_STATUS)
                 .join(AGENT)
-                    .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID))
-                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION)
-                        .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING)))
-                .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
-                .limit(BATCH_SIZE.get())
-                .fetchInto(ConfigItemStatusRecord.class);
+                .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID))
+                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION).and(
+                        AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING)))
+                .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc()).limit(BATCH_SIZE.get()).fetchInto(ConfigItemStatusRecord.class);
     }
 
     protected List<? extends ConfigItemStatus> migrationItems() {
@@ -252,14 +192,11 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .select(CONFIG_ITEM_STATUS.fields())
                 .from(CONFIG_ITEM_STATUS)
                 .join(AGENT)
-                    .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID))
+                .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID))
                 .join(CONFIG_ITEM)
-                    .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
-                .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
-                        .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
+                .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
+                .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull().and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
                         .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING)))
-                .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
-                .limit(BATCH_SIZE.get())
-                .fetchInto(ConfigItemStatusRecord.class);
+                .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc()).limit(BATCH_SIZE.get()).fetchInto(ConfigItemStatusRecord.class);
     }
 }

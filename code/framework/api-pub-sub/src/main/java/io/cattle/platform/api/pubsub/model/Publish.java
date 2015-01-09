@@ -25,7 +25,7 @@ public interface Publish {
     List<String> getPreviousIds();
 
     @Field(create = true, nullable = true)
-    Map<String,Object> getData();
+    Map<String, Object> getData();
 
     @Field(create = true)
     Long getTime();

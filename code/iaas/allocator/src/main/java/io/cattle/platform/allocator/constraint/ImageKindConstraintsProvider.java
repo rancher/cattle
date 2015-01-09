@@ -19,23 +19,23 @@ public class ImageKindConstraintsProvider implements AllocationConstraintsProvid
         Long instanceId = attempt.getInstanceId();
         boolean add = false;
 
-        if ( instanceId == null ) {
-            for ( long volumeId : attempt.getVolumeIds() ) {
+        if (instanceId == null) {
+            for (long volumeId : attempt.getVolumeIds()) {
                 add = allocatorDao.isVolumeInstanceImageKind(volumeId, kind);
-                if ( add ) {
+                if (add) {
                     break;
                 }
             }
 
-            if ( add ) {
+            if (add) {
                 constraints.add(new StoragePoolKindConstraint(kind));
-            } else if ( exclusive ) {
+            } else if (exclusive) {
                 constraints.add(new NegativeStoragePoolKindConstraint(kind));
             }
         } else {
-            if ( allocatorDao.isInstanceImageKind(instanceId, kind) ) {
+            if (allocatorDao.isInstanceImageKind(instanceId, kind)) {
                 constraints.add(new HostKindConstraint(kind));
-            } else if ( exclusive ) {
+            } else if (exclusive) {
                 constraints.add(new NegativeHostKindConstraint(kind));
             }
         }

@@ -24,16 +24,16 @@ public abstract class AbstractStandardLockProvider implements LockProvider {
 
     @Override
     public synchronized Lock getLock(LockDefinition lockDefinition) {
-        if ( lockDefinition == null || lockDefinition.getLockId() == null )
+        if (lockDefinition == null || lockDefinition.getLockId() == null)
             return null;
 
-        if ( ! referenceCountLocks ) {
+        if (!referenceCountLocks) {
             return createLock(lockDefinition);
         }
 
         StandardLock lock = locks.get(lockDefinition.getLockId());
 
-        if ( lock == null ) {
+        if (lock == null) {
             lock = createLock(lockDefinition);
             locks.put(lockDefinition.getLockId(), lock);
         }
@@ -46,19 +46,19 @@ public abstract class AbstractStandardLockProvider implements LockProvider {
 
     @Override
     public synchronized void releaseLock(Lock lock) {
-        if ( lock instanceof StandardLock ) {
-            StandardLock sLock = (StandardLock)lock;
+        if (lock instanceof StandardLock) {
+            StandardLock sLock = (StandardLock) lock;
 
-            if ( ! referenceCountLocks ) {
+            if (!referenceCountLocks) {
                 destroyLock(sLock);
                 return;
             }
 
             long count = sLock.decrementReference();
-            if ( count <= 0 ) {
+            if (count <= 0) {
                 destroyLock(sLock);
                 locks.remove(lock.getLockDefinition().getLockId());
-                if ( count < 0 ) {
+                if (count < 0) {
                     log.error("Reference count is not zero this should not happened and it is a bug, count [{}]", count);
                 }
             }

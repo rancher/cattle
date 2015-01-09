@@ -40,39 +40,37 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
     ObjectManager objectManager;
     LockDelegator lockDelegator;
     LockManager lockManager;
-    Cache<String, Object> cache = CacheBuilder.newBuilder()
-                                    .expireAfterWrite(AGENT_LOCK_FAILURE_CACHE_TIME.get(), TimeUnit.MILLISECONDS)
-                                    .build();
-    Map<Long,AgentConnection> connections = new ConcurrentHashMap<Long,AgentConnection>();
+    Cache<String, Object> cache = CacheBuilder.newBuilder().expireAfterWrite(AGENT_LOCK_FAILURE_CACHE_TIME.get(), TimeUnit.MILLISECONDS).build();
+    Map<Long, AgentConnection> connections = new ConcurrentHashMap<Long, AgentConnection>();
     List<AgentConnectionFactory> factories;
 
     @Override
     public void closeConnection(Agent agent) {
         AgentConnection connection = connections.get(agent.getId());
-        if ( connection != null ) {
+        if (connection != null) {
             closeConnection(agent, connection);
         }
     }
 
     @Override
     public AgentConnection getConnection(Agent agent) {
-        if ( agent == null )
+        if (agent == null)
             return null;
 
-        if ( ! groupManager.shouldHandle(agent) ) {
+        if (!groupManager.shouldHandle(agent)) {
             closeIfExists(agent);
             return null;
         }
 
         LockDefinition lockDefinition = AgentConnectionUtils.getConnectionLock(agent);
-        if ( ! haveLock(lockDefinition) ) {
+        if (!haveLock(lockDefinition)) {
             closeIfExists(agent);
             return null;
         }
 
         AgentConnection connection = connections.get(agent.getId());
-        if ( connection != null ) {
-            if ( ! connection.isOpen() || ! ObjectUtils.equals(agent.getUri(), connection.getUri()) ) {
+        if (connection != null) {
+            if (!connection.isOpen() || !ObjectUtils.equals(agent.getUri(), connection.getUri())) {
                 closeConnection(agent, connection);
                 return getConnection(agent);
             }
@@ -84,13 +82,13 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
 
     protected void closeIfExists(Agent agent) {
         AgentConnection connection = connections.get(agent.getId());
-        if ( connection != null ) {
+        if (connection != null) {
             closeConnection(agent, connection);
         }
     }
 
     protected synchronized void closeConnection(Agent agent, AgentConnection connection) {
-        if ( connection == null ) {
+        if (connection == null) {
             return;
         }
 
@@ -116,11 +114,11 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
         log.info("Creating connection to agent [{}] [{}]", agent.getId(), agent.getUri());
 
         AgentConnection connection = connections.get(agent.getId());
-        if ( connection != null ) {
+        if (connection != null) {
             return connection;
         }
 
-        for ( AgentConnectionFactory factory : factories ) {
+        for (AgentConnectionFactory factory : factories) {
             try {
                 connection = factory.createConnection(agent);
             } catch (IOException e) {
@@ -128,12 +126,12 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
                 return null;
             }
 
-            if ( connection != null ) {
+            if (connection != null) {
                 break;
             }
         }
 
-        if ( connection == null ) {
+        if (connection == null) {
             log.info("No connection factory created a connection for agent [{}] [{}]", agent.getId(), agent.getUri());
         } else {
             connections.put(agent.getId(), connection);
@@ -145,12 +143,12 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
     protected boolean haveLock(LockDefinition lockDef) {
         Object dontCheck = cache.getIfPresent(lockDef.getLockId());
 
-        if ( dontCheck != null ) {
+        if (dontCheck != null) {
             return false;
         }
 
         boolean success = lockDelegator.tryLock(lockDef);
-        if ( ! success ) {
+        if (!success) {
             cache.put(lockDef.getLockId(), new Object());
         }
 

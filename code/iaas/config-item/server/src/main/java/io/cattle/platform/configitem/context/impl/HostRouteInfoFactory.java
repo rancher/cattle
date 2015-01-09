@@ -19,14 +19,14 @@ public class HostRouteInfoFactory extends AbstractAgentBaseContextFactory {
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         boolean found = false;
-        for ( NetworkService service : networkInfo.networkServices(agent) ) {
-            if ( NetworkServiceConstants.KIND_HOST_NAT_GATEWAY.equals(service.getKind()) ) {
+        for (NetworkService service : networkInfo.networkServices(agent)) {
+            if (NetworkServiceConstants.KIND_HOST_NAT_GATEWAY.equals(service.getKind())) {
                 found = true;
                 break;
             }
         }
 
-        if ( found ) {
+        if (found) {
             context.getData().put("ipAssociations", networkInfo.getHostIps(agent));
         }
         context.getData().put("routes", networkInfo.getHostRoutes(agent));

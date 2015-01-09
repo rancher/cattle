@@ -14,10 +14,7 @@ public class InstanceRestart extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        DataAccessor.fromMap(state.getData())
-            .withScope(InstanceProcessOptions.class)
-            .withKey(InstanceProcessOptions.START)
-            .set(true);
+        DataAccessor.fromMap(state.getData()).withScope(InstanceProcessOptions.class).withKey(InstanceProcessOptions.START).set(true);
 
         return new HandlerResult().withChainProcessName(InstanceConstants.PROCESS_STOP);
     }

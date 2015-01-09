@@ -46,22 +46,20 @@ public abstract class AbstractAgentBaseContextFactory implements ConfigItemConte
     @Override
     public final void populateContext(Request req, ConfigItem item, ArchiveContext context) {
         Client client = req.getClient();
-        if ( ! Agent.class.equals(client.getResourceType()) ) {
+        if (!Agent.class.equals(client.getResourceType())) {
             return;
         }
 
         Agent agent = objectManager.loadResource(Agent.class, client.getResourceId());
-        if ( agent == null ) {
+        if (agent == null) {
             return;
         }
 
-        List<Instance> instances = objectManager.find(Instance.class,
-                INSTANCE.AGENT_ID, agent.getId(),
-                INSTANCE.REMOVED, null);
+        List<Instance> instances = objectManager.find(Instance.class, INSTANCE.AGENT_ID, agent.getId(), INSTANCE.REMOVED, null);
 
-        if ( instances.size() > 1 ) {
+        if (instances.size() > 1) {
             List<Long> ids = new ArrayList<Long>();
-            for ( Instance instance : instances ) {
+            for (Instance instance : instances) {
                 ids.add(instance.getId());
             }
 

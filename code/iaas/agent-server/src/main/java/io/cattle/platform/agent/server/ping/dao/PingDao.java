@@ -12,10 +12,10 @@ public interface PingDao {
 
     List<? extends Agent> findAgentsToPing();
 
-    Map<String,Host> getHosts(long agentId);
+    Map<String, Host> getHosts(long agentId);
 
-    Map<String,StoragePool> getStoragePools(long agentId);
+    Map<String, StoragePool> getStoragePools(long agentId);
 
-    Map<String,PhysicalHost> getPhysicalHosts(long agentId);
+    Map<String, PhysicalHost> getPhysicalHosts(long agentId);
 
 }

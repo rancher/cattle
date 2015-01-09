@@ -11,7 +11,7 @@ public class ForwardListIterator implements ListIterator<Object> {
     public ForwardListIterator(int index, Iterator<Object> iter) {
         this.iter = iter;
         this.index = index;
-        for ( int i = 0 ; i < index ; i++ ) {
+        for (int i = 0; i < index; i++) {
             iter.next();
         }
     }
@@ -39,12 +39,12 @@ public class ForwardListIterator implements ListIterator<Object> {
 
     @Override
     public int nextIndex() {
-        return index+1;
+        return index + 1;
     }
 
     @Override
     public int previousIndex() {
-        return index-1;
+        return index - 1;
     }
 
     @Override

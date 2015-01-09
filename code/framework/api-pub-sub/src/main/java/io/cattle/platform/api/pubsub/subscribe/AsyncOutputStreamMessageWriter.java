@@ -15,7 +15,7 @@ public class AsyncOutputStreamMessageWriter extends OutputStreamMessageWriter {
 
     @Override
     public void close() {
-        if ( ctx != null ) {
+        if (ctx != null) {
             ctx.complete();
         }
 

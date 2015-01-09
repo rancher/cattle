@@ -50,13 +50,13 @@ public class UIPathFilter implements Filter {
     protected void reloadIndex() {
         String url = STATIC_INDEX_HTML.get();
 
-        if ( url != null && url.startsWith("http") ) {
+        if (url != null && url.startsWith("http")) {
             InputStream is = null;
 
             try {
                 is = new URL(url).openConnection().getInputStream();
                 indexCached = IOUtils.toByteArray(is);
-            } catch ( IOException e ) {
+            } catch (IOException e) {
                 log.error("Failed to load UI from [{}]", url, e);
                 return;
             } finally {
@@ -68,17 +68,16 @@ public class UIPathFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-    ServletException {
-        if ( ((HttpServletRequest)request).getServletPath().indexOf('.') == -1 ) {
-            if ( shouldReload() ) {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        if (((HttpServletRequest) request).getServletPath().indexOf('.') == -1) {
+            if (shouldReload()) {
                 reloadIndex();
             }
 
-            if ( indexCached == null ) {
+            if (indexCached == null) {
                 request.getRequestDispatcher(STATIC_INDEX_HTML.get()).forward(request, response);
             } else {
-                serveIndex((HttpServletResponse)response);
+                serveIndex((HttpServletResponse) response);
             }
         } else {
             chain.doFilter(request, response);

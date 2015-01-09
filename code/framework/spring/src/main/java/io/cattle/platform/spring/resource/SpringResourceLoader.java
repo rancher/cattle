@@ -26,8 +26,8 @@ public class SpringResourceLoader implements ResourceLoader, ApplicationContextA
     public List<URL> getResources(String path) throws IOException {
         List<URL> result = new ArrayList<URL>();
 
-        for ( Resource r : resolver.getResources(PREFIX + path) ) {
-            if ( r.exists() ) {
+        for (Resource r : resolver.getResources(PREFIX + path)) {
+            if (r.exists()) {
                 result.add(r.getURL());
             } else {
                 log.debug("Skipping resource [{}]", r);

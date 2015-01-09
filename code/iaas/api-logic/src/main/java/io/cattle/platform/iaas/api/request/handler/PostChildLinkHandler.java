@@ -19,28 +19,28 @@ public class PostChildLinkHandler extends AbstractApiRequestHandler {
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        if ( ! Method.POST.isMethod(request.getMethod()) || request.getLink() == null ) {
+        if (!Method.POST.isMethod(request.getMethod()) || request.getLink() == null) {
             return;
         }
 
-        Map<String,Relationship> rels = metaDataManager.getLinkRelationships(request.getSchemaFactory(), request.getType());
+        Map<String, Relationship> rels = metaDataManager.getLinkRelationships(request.getSchemaFactory(), request.getType());
         Relationship rel = rels == null ? null : rels.get(request.getLink());
 
-        if ( rel == null || rel.getRelationshipType() != Relationship.RelationshipType.CHILD ) {
+        if (rel == null || rel.getRelationshipType() != Relationship.RelationshipType.CHILD) {
             return;
         }
 
         Schema childSchema = request.getSchemaFactory().getSchema(rel.getObjectType());
-        if ( childSchema == null ) {
+        if (childSchema == null) {
             return;
         }
 
-        if ( ! childSchema.getCollectionMethods().contains(Method.POST.toString()) ) {
+        if (!childSchema.getCollectionMethods().contains(Method.POST.toString())) {
             return;
         }
 
-        Map<String,Object> requestParams = request.getRequestParams();
-        if ( ! requestParams.containsKey(rel.getPropertyName()) ) {
+        Map<String, Object> requestParams = request.getRequestParams();
+        if (!requestParams.containsKey(rel.getPropertyName())) {
             requestParams = new LinkedHashMap<String, Object>(requestParams);
             requestParams.put(rel.getPropertyName(), request.getId());
             request.setRequestParams(requestParams);

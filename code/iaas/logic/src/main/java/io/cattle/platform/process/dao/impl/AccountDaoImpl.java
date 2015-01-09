@@ -9,10 +9,6 @@ public class AccountDaoImpl extends AbstractJooqDao implements AccountDao {
 
     @Override
     public Account findByUuid(String uuid) {
-        return create()
-                .selectFrom(ACCOUNT)
-                .where(ACCOUNT.UUID.eq(uuid))
-                .fetchOne();
+        return create().selectFrom(ACCOUNT).where(ACCOUNT.UUID.eq(uuid)).fetchOne();
     }
 }
-

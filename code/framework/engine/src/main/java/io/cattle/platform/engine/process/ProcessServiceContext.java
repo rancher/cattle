@@ -14,8 +14,8 @@ public class ProcessServiceContext {
     ExecutionExceptionHandler exceptionHandler;
     List<StateChangeMonitor> changeMonitors;
 
-    public ProcessServiceContext(LockManager lockManager, EventService eventService, ProcessManager processManager,
-            ExecutionExceptionHandler exceptionHandler, List<StateChangeMonitor> changeMonitors) {
+    public ProcessServiceContext(LockManager lockManager, EventService eventService, ProcessManager processManager, ExecutionExceptionHandler exceptionHandler,
+            List<StateChangeMonitor> changeMonitors) {
         super();
         this.lockManager = lockManager;
         this.eventService = eventService;

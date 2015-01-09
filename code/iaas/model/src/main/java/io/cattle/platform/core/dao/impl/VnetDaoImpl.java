@@ -19,16 +19,11 @@ public class VnetDaoImpl extends AbstractJooqDao implements VnetDao {
 
     @Override
     public Vnet findVnetFromHosts(Long hostId, Long subnetId) {
-        List<? extends HostVnetMap> vnets = create()
-                .select(HOST_VNET_MAP.fields())
-                .from(HOST_VNET_MAP)
-                .join(SUBNET_VNET_MAP)
-                    .on(SUBNET_VNET_MAP.VNET_ID.eq(HOST_VNET_MAP.VNET_ID))
-                .where(SUBNET_VNET_MAP.SUBNET_ID.eq(subnetId)
-                        .and(HOST_VNET_MAP.HOST_ID.eq(hostId)))
+        List<? extends HostVnetMap> vnets = create().select(HOST_VNET_MAP.fields()).from(HOST_VNET_MAP).join(SUBNET_VNET_MAP)
+                .on(SUBNET_VNET_MAP.VNET_ID.eq(HOST_VNET_MAP.VNET_ID)).where(SUBNET_VNET_MAP.SUBNET_ID.eq(subnetId).and(HOST_VNET_MAP.HOST_ID.eq(hostId)))
                 .fetchInto(HostVnetMapRecord.class);
 
-        if ( vnets.size() == 0 ) {
+        if (vnets.size() == 0) {
             return null;
         }
 

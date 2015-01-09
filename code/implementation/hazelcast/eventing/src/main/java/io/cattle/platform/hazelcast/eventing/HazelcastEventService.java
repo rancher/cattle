@@ -23,7 +23,7 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService {
     private static final Logger log = LoggerFactory.getLogger(HazelcastEventService.class);
 
     HazelcastInstance hazelcast;
-    Map<String,String> registrations = new ConcurrentHashMap<String,String>();
+    Map<String, String> registrations = new ConcurrentHashMap<String, String>();
 
     @Override
     protected boolean doPublish(String name, Event event, String eventString) throws IOException {
@@ -38,7 +38,7 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService {
         boolean success = false;
         Throwable t = null;
         try {
-            if ( registrations.containsKey(eventName) ) {
+            if (registrations.containsKey(eventName)) {
                 throw new IllegalStateException("Already subscribed to [" + eventName + "]");
             }
 
@@ -56,14 +56,14 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService {
             registrations.put(eventName, id);
 
             success = true;
-        } catch ( RuntimeException e ) {
+        } catch (RuntimeException e) {
             t = e;
             throw e;
         } finally {
-            if ( success ) {
+            if (success) {
                 future.set(null);
             } else {
-                if ( t == null ) {
+                if (t == null) {
                     t = new IllegalStateException("Failed to subscribe to [" + eventName + "]");
                 }
                 future.setException(t);
@@ -76,11 +76,11 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService {
         String id = registrations.remove(eventName);
         log.info("Unsubscribing from [{}] id [{}]", eventName, id);
 
-        if ( id != null ) {
+        if (id != null) {
             ITopic<String> topic = hazelcast.getTopic(eventName);
             topic.removeMessageListener(id);
             // TODO GC topics....
-//            topic.destroy();
+            // topic.destroy();
         }
     }
 

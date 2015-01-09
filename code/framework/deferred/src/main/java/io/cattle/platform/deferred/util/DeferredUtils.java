@@ -59,7 +59,10 @@ public class DeferredUtils {
             TL.set(old);
         }
 
-        /* This really isn't possible to get to due to rethrowExpectedRuntime() above */
+        /*
+         * This really isn't possible to get to due to rethrowExpectedRuntime()
+         * above
+         */
         return null;
     }
 
@@ -68,10 +71,10 @@ public class DeferredUtils {
     }
 
     public static void runDeferred() {
-        for ( Runnable runnable : TL.get() ) {
+        for (Runnable runnable : TL.get()) {
             try {
                 runnable.run();
-            } catch ( Throwable t ) {
+            } catch (Throwable t) {
                 log.error("Failed to run deferred action", t);
             }
         }

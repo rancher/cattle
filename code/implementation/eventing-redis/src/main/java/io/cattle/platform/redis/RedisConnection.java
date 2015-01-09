@@ -38,7 +38,7 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
 
     RedisEventingService eventService;
     Set<String> subscriptions = Collections.synchronizedSet(new HashSet<String>());
-    Map<String,SettableFuture<?>> futures = Collections.synchronizedMap(new HashMap<String, SettableFuture<?>>());
+    Map<String, SettableFuture<?>> futures = Collections.synchronizedMap(new HashMap<String, SettableFuture<?>>());
     Jedis jedis;
     JedisPubSub pubSub;
     JedisPool pool;
@@ -53,9 +53,7 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
         this.eventService = eventService;
 
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-        PoolConfig.setConfig(config, "redis",
-                "redis.pool.",
-                "global.pool.");
+        PoolConfig.setConfig(config, "redis", "redis.pool.", "global.pool.");
 
         pool = new JedisPool(config, host, port, REDIS_TIMEOUT.get(), getPassword());
         jedis = new Jedis(host, port, REDIS_TIMEOUT.get());
@@ -66,18 +64,18 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
         boolean connected = false;
         synchronized (CONNECTION_LOCK) {
             subscriptions.add(name);
-            if ( pubSub == null ) {
+            if (pubSub == null) {
                 subscriptions.add(name);
                 future.set(null);
                 futures.remove(name);
             } else {
-                if ( waitForConnected(name, future) ) {
+                if (waitForConnected(name, future)) {
                     connected = true;
                     pubSub.psubscribe(name);
                 }
             }
         }
-        if ( ! connected ) {
+        if (!connected) {
             tryConnect();
         }
     }
@@ -87,13 +85,13 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
         try {
             current.publish(channel, message);
             return true;
-        } catch ( Throwable t ) {
+        } catch (Throwable t) {
             log.error("Failed to publish message [{}] to [{}]", message, channel, t);
             pool.returnBrokenResource(current);
             current = null;
             return false;
         } finally {
-            if ( current != null ) {
+            if (current != null) {
                 pool.returnResource(current);
             }
         }
@@ -102,19 +100,19 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
     protected boolean waitForConnected(String name, SettableFuture<?> future) {
         long start = System.currentTimeMillis();
 
-        while ( pubSub == null || pubSub.getSubscribedChannels() == 0 ) {
+        while (pubSub == null || pubSub.getSubscribedChannels() == 0) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                if ( future != null ) {
+                if (future != null) {
                     futures.remove(name);
                     future.setException(e);
                 }
                 return false;
             }
 
-            if ( System.currentTimeMillis() - start > (REDIS_TIMEOUT.get() * 3) ) {
-                if ( future != null ) {
+            if (System.currentTimeMillis() - start > (REDIS_TIMEOUT.get() * 3)) {
+                if (future != null) {
                     futures.remove(name);
                     future.setException(new TimeoutException("Failed to connect to redis"));
                 }
@@ -129,8 +127,8 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
         synchronized (CONNECTION_LOCK) {
             subscriptions.remove(name);
             futures.remove(name);
-            if ( pubSub != null ) {
-                if ( waitForConnected(null, null) ) {
+            if (pubSub != null) {
+                if (waitForConnected(null, null)) {
                     pubSub.punsubscribe(name);
                 }
             }
@@ -139,7 +137,7 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
 
     protected void onSubscribed(String name) {
         SettableFuture<?> future = futures.remove(name);
-        if ( future != null ) {
+        if (future != null) {
             future.set(null);
         }
     }
@@ -167,14 +165,14 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
 
     @Override
     protected void runInContext() {
-        while ( ! shutdown ) {
+        while (!shutdown) {
             try {
                 synchronized (CONNECTION_LOCK) {
                     jedis.disconnect();
                     pubSub = null;
                 }
 
-                if ( subscriptions.size() > 0 ) {
+                if (subscriptions.size() > 0) {
                     log.info("Connecting to redis [{}:{}]", host, port);
                     jedis.getClient().setPassword(getPassword());
                     jedis.connect();
@@ -188,8 +186,8 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
 
                     jedis.psubscribe(pubSub, subs);
                 }
-            } catch ( Throwable t ) {
-                if ( ! shutdown )
+            } catch (Throwable t) {
+                if (!shutdown)
                     log.error("Jedis Exception", t);
             }
 

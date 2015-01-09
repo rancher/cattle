@@ -45,7 +45,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         setCreateStart(state);
 
-        Instance instance = (Instance)state.getResource();
+        Instance instance = (Instance) state.getResource();
         List<Volume> volumes = objectManager.children(instance, Volume.class);
         List<Nic> nics = objectManager.children(instance, Nic.class);
 
@@ -53,67 +53,58 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
-        if ( creds.size() == 0 ) {
+        if (creds.size() == 0) {
             creds = defaultCreds(instance, state.getData());
         }
 
-        if ( nicIds.size() == 0 ) {
+        if (nicIds.size() == 0) {
             nicIds = defaultNics(instance, nics, state.getData());
         }
 
-        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds,
-                "_creds", creds);
+        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds);
         result.shouldDelegate(shouldStart(instance));
 
         return result;
     }
 
     protected boolean shouldStart(Instance instance) {
-        Boolean doneStart = DataAccessor.fields(instance)
-                                .withKey(InstanceConstants.FIELD_START_ON_CREATE)
-                                .withDefault(true)
-                                .as(Boolean.class);
+        Boolean doneStart = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_START_ON_CREATE).withDefault(true).as(Boolean.class);
 
-        if ( doneStart != null && ! doneStart.booleanValue() ) {
+        if (doneStart != null && !doneStart.booleanValue()) {
             return false;
         } else {
             return true;
         }
     }
 
-    protected Set<Long> createVolumes(Instance instance, List<Volume> volumes, Map<String,Object> data) {
+    protected Set<Long> createVolumes(Instance instance, List<Volume> volumes, Map<String, Object> data) {
         Set<Long> volumeIds = new TreeSet<Long>();
 
         long deviceId = 0;
         Volume root = createRoot(instance, volumes, data);
-        if ( root != null ) {
+        if (root != null) {
             volumeIds.add(root.getId());
             deviceId++;
         }
 
         List<Long> volumeOfferingIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_VOLUME_OFFERING_IDS, Long.class);
-        if ( volumeOfferingIds == null ) {
+        if (volumeOfferingIds == null) {
             volumeOfferingIds = new ArrayList<Long>();
         }
 
-        for ( int i = 0 ; i < volumeOfferingIds.size() ; i++ ) {
+        for (int i = 0; i < volumeOfferingIds.size(); i++) {
             long deviceNumber = deviceId + i;
             Volume newVolume = null;
-            for ( Volume volume : volumes ) {
-                if ( volume.getDeviceNumber().intValue() == deviceNumber ) {
+            for (Volume volume : volumes) {
+                if (volume.getDeviceNumber().intValue() == deviceNumber) {
                     newVolume = volume;
                     break;
                 }
             }
 
-            if ( newVolume == null ) {
-                newVolume = objectManager.create(Volume.class,
-                        VOLUME.ACCOUNT_ID, instance.getAccountId(),
-                        VOLUME.INSTANCE_ID, instance.getId(),
-                        VOLUME.OFFERING_ID, volumeOfferingIds.get(i),
-                        VOLUME.DEVICE_NUMBER, deviceNumber,
-                        VOLUME.ATTACHED_STATE, CommonStatesConstants.ACTIVE
-                        );
+            if (newVolume == null) {
+                newVolume = objectManager.create(Volume.class, VOLUME.ACCOUNT_ID, instance.getAccountId(), VOLUME.INSTANCE_ID, instance.getId(),
+                        VOLUME.OFFERING_ID, volumeOfferingIds.get(i), VOLUME.DEVICE_NUMBER, deviceNumber, VOLUME.ATTACHED_STATE, CommonStatesConstants.ACTIVE);
             }
 
             volumeIds.add(newVolume.getId());
@@ -122,9 +113,9 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         return volumeIds;
     }
 
-    protected Volume createRoot(Instance instance, List<Volume> volumes, Map<String,Object> data) {
+    protected Volume createRoot(Instance instance, List<Volume> volumes, Map<String, Object> data) {
         Volume root = getRoot(instance, volumes);
-        if ( root == null ) {
+        if (root == null) {
             return null;
         }
         processManager.executeStandardProcess(StandardProcess.CREATE, root, data);
@@ -132,26 +123,21 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     }
 
     protected Volume getRoot(Instance instance, List<Volume> volumes) {
-        if ( instance.getImageId() == null ) {
+        if (instance.getImageId() == null) {
             return null;
         }
 
-        for ( Volume volume : volumes ) {
-            if ( volume.getDeviceNumber().intValue() == 0 ) {
+        for (Volume volume : volumes) {
+            if (volume.getDeviceNumber().intValue() == 0) {
                 return volume;
             }
         }
 
-        return objectManager.create(Volume.class,
-                VOLUME.ACCOUNT_ID, instance.getAccountId(),
-                VOLUME.INSTANCE_ID, instance.getId(),
-                VOLUME.IMAGE_ID, instance.getImageId(),
-                VOLUME.DEVICE_NUMBER, 0,
-                VOLUME.ATTACHED_STATE, CommonStatesConstants.ACTIVE
-                );
+        return objectManager.create(Volume.class, VOLUME.ACCOUNT_ID, instance.getAccountId(), VOLUME.INSTANCE_ID, instance.getId(), VOLUME.IMAGE_ID,
+                instance.getImageId(), VOLUME.DEVICE_NUMBER, 0, VOLUME.ATTACHED_STATE, CommonStatesConstants.ACTIVE);
     }
 
-    protected Set<Long> createNics(Instance instance, List<Nic> nics, Map<String,Object> data) {
+    protected Set<Long> createNics(Instance instance, List<Nic> nics, Map<String, Object> data) {
         List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_NETWORK_IDS, Long.class);
         List<Long> subnetIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_SUBNET_IDS, Long.class);
         List<Long> vnetIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_VNET_IDS, Long.class);
@@ -159,41 +145,38 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         return createNicsFromIds(instance, nics, data, networkIds, subnetIds, vnetIds);
     }
 
-    protected Set<Long> defaultNics(Instance instance, List<Nic> nics, Map<String,Object> data) {
+    protected Set<Long> defaultNics(Instance instance, List<Nic> nics, Map<String, Object> data) {
         Account account = loadResource(Account.class, instance.getAccountId());
         List<Long> networkIds = DataAccessor.fieldLongList(account, AccountConstants.FIELD_DEFAULT_NETWORK_IDS);
 
         return createNicsFromIds(instance, nics, data, networkIds, null, null);
     }
 
-    protected Set<Long> createNicsFromIds(Instance instance, List<Nic> nics, Map<String,Object> data, List<Long> networkIds,
-            List<Long> subnetIds, List<Long> vnetIds) {
+    protected Set<Long> createNicsFromIds(Instance instance, List<Nic> nics, Map<String, Object> data, List<Long> networkIds, List<Long> subnetIds,
+            List<Long> vnetIds) {
         Set<Long> nicIds = new TreeSet<Long>();
 
         int deviceId = 0;
 
-        if ( networkIds != null ) {
-            for ( int i = 0 ; i < networkIds.size() ; i++ ) {
+        if (networkIds != null) {
+            for (int i = 0; i < networkIds.size(); i++) {
                 Number createId = networkIds.get(i);
-                if ( createId == null ) {
+                if (createId == null) {
                     deviceId++;
                     continue;
                 }
 
                 Nic newNic = null;
-                for ( Nic nic : nics ) {
-                    if ( nic.getNetworkId() == createId.longValue() ) {
+                for (Nic nic : nics) {
+                    if (nic.getNetworkId() == createId.longValue()) {
                         newNic = nic;
                         break;
                     }
                 }
 
-                if ( newNic == null ) {
-                    newNic = objectManager.create(Nic.class,
-                            NIC.ACCOUNT_ID, instance.getAccountId(),
-                            NIC.NETWORK_ID, createId,
-                            NIC.INSTANCE_ID, instance.getId(),
-                            NIC.DEVICE_NUMBER, deviceId);
+                if (newNic == null) {
+                    newNic = objectManager.create(Nic.class, NIC.ACCOUNT_ID, instance.getAccountId(), NIC.NETWORK_ID, createId, NIC.INSTANCE_ID,
+                            instance.getId(), NIC.DEVICE_NUMBER, deviceId);
                 }
 
                 deviceId++;
@@ -203,30 +186,26 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
             }
         }
 
-        if ( subnetIds != null ) {
-            for ( int i = 0 ; i < subnetIds.size() ; i++ ) {
+        if (subnetIds != null) {
+            for (int i = 0; i < subnetIds.size(); i++) {
                 Number createId = subnetIds.get(i);
                 Subnet subnet = objectManager.loadResource(Subnet.class, createId.toString());
 
-                if ( subnet == null ) {
+                if (subnet == null) {
                     return null;
                 }
 
                 Nic newNic = null;
-                for ( Nic nic : nics ) {
-                    if ( nic.getSubnetId() == createId.longValue() ) {
+                for (Nic nic : nics) {
+                    if (nic.getSubnetId() == createId.longValue()) {
                         newNic = nic;
                         break;
                     }
                 }
 
-                if ( newNic == null ) {
-                    newNic = objectManager.create(Nic.class,
-                            NIC.ACCOUNT_ID, instance.getAccountId(),
-                            NIC.NETWORK_ID, subnet.getNetworkId(),
-                            NIC.SUBNET_ID, createId,
-                            NIC.INSTANCE_ID, instance.getId(),
-                            NIC.DEVICE_NUMBER, deviceId);
+                if (newNic == null) {
+                    newNic = objectManager.create(Nic.class, NIC.ACCOUNT_ID, instance.getAccountId(), NIC.NETWORK_ID, subnet.getNetworkId(), NIC.SUBNET_ID,
+                            createId, NIC.INSTANCE_ID, instance.getId(), NIC.DEVICE_NUMBER, deviceId);
 
                 }
 
@@ -237,30 +216,26 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
             }
         }
 
-        if ( vnetIds != null ) {
-            for ( int i = 0 ; i < vnetIds.size() ; i++ ) {
+        if (vnetIds != null) {
+            for (int i = 0; i < vnetIds.size(); i++) {
                 Number createId = vnetIds.get(i);
                 Vnet vnet = objectManager.loadResource(Vnet.class, createId.toString());
 
-                if ( vnet == null ) {
+                if (vnet == null) {
                     return null;
                 }
 
                 Nic newNic = null;
-                for ( Nic nic : nics ) {
-                    if ( nic.getVnetId() != null && nic.getVnetId() == createId.longValue() ) {
+                for (Nic nic : nics) {
+                    if (nic.getVnetId() != null && nic.getVnetId() == createId.longValue()) {
                         newNic = nic;
                         break;
                     }
                 }
 
-                if ( newNic == null ) {
-                    newNic = objectManager.create(Nic.class,
-                            NIC.ACCOUNT_ID, instance.getAccountId(),
-                            NIC.NETWORK_ID, vnet.getNetworkId(),
-                            NIC.VNET_ID, createId,
-                            NIC.INSTANCE_ID, instance.getId(),
-                            NIC.DEVICE_NUMBER, deviceId);
+                if (newNic == null) {
+                    newNic = objectManager.create(Nic.class, NIC.ACCOUNT_ID, instance.getAccountId(), NIC.NETWORK_ID, vnet.getNetworkId(), NIC.VNET_ID,
+                            createId, NIC.INSTANCE_ID, instance.getId(), NIC.DEVICE_NUMBER, deviceId);
 
                 }
 
@@ -288,27 +263,26 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     }
 
     protected Set<Long> createCredsFromIds(List<Long> credIds, Instance instance, Map<String, Object> data) {
-        if ( credIds == null ) {
+        if (credIds == null) {
             return Collections.emptySet();
         }
 
         Set<Long> created = new HashSet<Long>();
         List<CredentialInstanceMap> maps = new ArrayList<CredentialInstanceMap>();
 
-        for ( CredentialInstanceMap map : children(instance, CredentialInstanceMap.class) ) {
+        for (CredentialInstanceMap map : children(instance, CredentialInstanceMap.class)) {
             maps.add(map);
             created.add(map.getCredentialId());
         }
 
-        for ( Long credId : credIds ) {
-            if ( ! created.contains(credId) ) {
-                maps.add(objectManager.create(CredentialInstanceMap.class,
-                        CREDENTIAL_INSTANCE_MAP.INSTANCE_ID, instance.getId(),
+        for (Long credId : credIds) {
+            if (!created.contains(credId)) {
+                maps.add(objectManager.create(CredentialInstanceMap.class, CREDENTIAL_INSTANCE_MAP.INSTANCE_ID, instance.getId(),
                         CREDENTIAL_INSTANCE_MAP.CREDENTIAL_ID, credId));
             }
         }
 
-        for ( CredentialInstanceMap map : maps ) {
+        for (CredentialInstanceMap map : maps) {
             createThenActivate(map, data);
         }
 
@@ -316,19 +290,14 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     }
 
     public static boolean isCreateStart(ProcessState state) {
-        Boolean startOnCreate = DataAccessor.fromMap(state.getData())
-                .withScope(InstanceCreate.class)
-                .withKey(InstanceConstants.FIELD_START_ON_CREATE)
+        Boolean startOnCreate = DataAccessor.fromMap(state.getData()).withScope(InstanceCreate.class).withKey(InstanceConstants.FIELD_START_ON_CREATE)
                 .as(Boolean.class);
 
         return startOnCreate == null ? false : startOnCreate;
     }
 
     protected void setCreateStart(ProcessState state) {
-        DataAccessor.fromMap(state.getData())
-            .withScope(InstanceCreate.class)
-            .withKey(InstanceConstants.FIELD_START_ON_CREATE)
-            .set(true);
+        DataAccessor.fromMap(state.getData()).withScope(InstanceCreate.class).withKey(InstanceConstants.FIELD_START_ON_CREATE).set(true);
     }
 
     public JsonMapper getJsonMapper() {

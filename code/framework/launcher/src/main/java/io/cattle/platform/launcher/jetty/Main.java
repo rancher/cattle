@@ -19,33 +19,29 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class Main {
 
-	public static final String WEB_XML = "WEB-INF/web.xml";
-	public static final String OVERRIDE_WEB_XML = "WEB-INF/override-web.xml";
-	public static final String STATIC_WEB_XML = "WEB-INF/static-override-web.xml";
-	public static final String DEFAULT_WEB_XML = "WEB-INF/default-web.xml";
+    public static final String WEB_XML = "WEB-INF/web.xml";
+    public static final String OVERRIDE_WEB_XML = "WEB-INF/override-web.xml";
+    public static final String STATIC_WEB_XML = "WEB-INF/static-override-web.xml";
+    public static final String DEFAULT_WEB_XML = "WEB-INF/default-web.xml";
 
-//	private static final Logger log = LoggerFactory.getLogger(Main.class);
-	private static final Logger consoleLog = LoggerFactory.getLogger("ConsoleStatus");
+    // private static final Logger log = LoggerFactory.getLogger(Main.class);
+    private static final Logger consoleLog = LoggerFactory.getLogger("ConsoleStatus");
 
-	public static final String[] PREFIXES = new String[] {
-			"code/packaging/app/src/main/webapp/",
-			"src/main/webapp/",
-			"" };
+    public static final String[] PREFIXES = new String[] { "code/packaging/app/src/main/webapp/", "src/main/webapp/", "" };
 
-	protected static URL findUrl(String suffix) throws IOException {
-	    File file = findFile(suffix);
-	    if ( file != null ) {
-	        return file.toURI().toURL();
-	    }
+    protected static URL findUrl(String suffix) throws IOException {
+        File file = findFile(suffix);
+        if (file != null) {
+            return file.toURI().toURL();
+        }
 
-	    return Main.class.getResource("/" + suffix);
-	}
+        return Main.class.getResource("/" + suffix);
+    }
 
-	protected static File findFile(String suffix) {
-        for ( String prefix : PREFIXES ) {
+    protected static File findFile(String suffix) {
+        for (String prefix : PREFIXES) {
             File file = new File(prefix + suffix);
 
             if (file.exists())
@@ -53,121 +49,117 @@ public class Main {
         }
 
         URL url = Main.class.getResource("/" + suffix);
-        if ( url != null && "file".equals(url.getProtocol()) ) {
+        if (url != null && "file".equals(url.getProtocol())) {
             return new File(url.getPath());
         }
 
         return null;
-	}
+    }
 
-	protected static URL getContextRoot(URL webXml) throws IOException {
-	    if ( webXml != null ) {
-    	    URLConnection connection = webXml.openConnection();
-            if ( connection instanceof JarURLConnection ) {
-                URL war = ((JarURLConnection)connection).getJarFileURL();
+    protected static URL getContextRoot(URL webXml) throws IOException {
+        if (webXml != null) {
+            URLConnection connection = webXml.openConnection();
+            if (connection instanceof JarURLConnection) {
+                URL war = ((JarURLConnection) connection).getJarFileURL();
                 return new URL("jar", "", war.toExternalForm() + "!/WEB-INF/content");
             }
-	    }
+        }
         return Main.class.getResource("");
-	}
+    }
 
-	protected static String getHttpPort() {
-	    String port = System.getenv("CATTLE_HTTP_PORT");
-	    return port == null ? System.getProperty("cattle.http.port","8080") : port;
-	}
+    protected static String getHttpPort() {
+        String port = System.getenv("CATTLE_HTTP_PORT");
+        return port == null ? System.getProperty("cattle.http.port", "8080") : port;
+    }
 
-	public static void main(String... args) {
-		/* The world is better place without time zones.  Well, at least for computers */
-		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    public static void main(String... args) {
+        /*
+         * The world is better place without time zones. Well, at least for
+         * computers
+         */
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
-		long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
 
-		try {
-			Server s = new Server(Integer.parseInt(getHttpPort()));
-			MBeanContainer mbContainer=new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-			s.getContainer().addEventListener(mbContainer);
-			s.addBean(mbContainer);
-			mbContainer.addBean(Log.getRootLogger());
+        try {
+            Server s = new Server(Integer.parseInt(getHttpPort()));
+            MBeanContainer mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+            s.getContainer().addEventListener(mbContainer);
+            s.addBean(mbContainer);
+            mbContainer.addBean(Log.getRootLogger());
 
-			WebAppContext context = new WebAppContext();
-			context.setThrowUnavailableOnStartupException(true);
+            WebAppContext context = new WebAppContext();
+            context.setThrowUnavailableOnStartupException(true);
 
-			File webXmlFile = findFile(WEB_XML);
+            File webXmlFile = findFile(WEB_XML);
 
-			URL webXml = findUrl(WEB_XML);
-			URL contextRoot = webXmlFile == null ? getContextRoot(webXml) :
-				webXmlFile.getParentFile().getParentFile().toURI().toURL();
+            URL webXml = findUrl(WEB_XML);
+            URL contextRoot = webXmlFile == null ? getContextRoot(webXml) : webXmlFile.getParentFile().getParentFile().toURI().toURL();
 
-			URL override = findUrl(OVERRIDE_WEB_XML);
-			if ( override != null ) {
-			    context.setOverrideDescriptors(Arrays.asList(override.toExternalForm()));
-			}
+            URL override = findUrl(OVERRIDE_WEB_XML);
+            if (override != null) {
+                context.setOverrideDescriptors(Arrays.asList(override.toExternalForm()));
+            }
 
             URL defaultWebXml = findUrl(DEFAULT_WEB_XML);
-            if ( defaultWebXml != null ) {
+            if (defaultWebXml != null) {
                 context.setDefaultsDescriptor(defaultWebXml.toExternalForm());
             }
 
             URL staticOverideXml = findUrl(STATIC_WEB_XML);
-            if ( staticOverideXml != null && new File("./content").exists() ) {
+            if (staticOverideXml != null && new File("./content").exists()) {
                 List<String> overrides = new ArrayList<String>(context.getOverrideDescriptors());
                 overrides.add(staticOverideXml.toExternalForm());
                 context.setOverrideDescriptors(overrides);
             }
 
-			if ( contextRoot != null ) {
-				context.setWar(contextRoot.toExternalForm());
-			}
+            if (contextRoot != null) {
+                context.setWar(contextRoot.toExternalForm());
+            }
 
-			context.setClassLoader(new WebAppClassLoader(Main.class.getClassLoader(), context));
-			context.setContextPath("/");
+            context.setClassLoader(new WebAppClassLoader(Main.class.getClassLoader(), context));
+            context.setContextPath("/");
 
-			s.setHandler(context);
+            s.setHandler(context);
 
-			s.start();
+            s.start();
 
-			consoleLog.info("[DONE ] [{}ms] Startup Succeeded, Listening on port {}",
-			        (System.currentTimeMillis() - start),
-			        getHttpPort());
+            consoleLog.info("[DONE ] [{}ms] Startup Succeeded, Listening on port {}", (System.currentTimeMillis() - start), getHttpPort());
 
-			for ( int i = 0 ; i < args.length ; i++ ) {
-			    String arg = args[i];
+            for (int i = 0; i < args.length; i++) {
+                String arg = args[i];
 
-			    if ( "--exit".equals(arg) ) {
-			        System.exit(0);
-			    }
+                if ("--exit".equals(arg)) {
+                    System.exit(0);
+                }
 
-			    if ( "--notify".equals(arg) ) {
-                    consoleLog.info("[POST ] [{}ms] Calling notify [{}]",
-                            (System.currentTimeMillis() - start),
-                            args[i+1]);
-			        Runtime.getRuntime().exec(args[i+1]).waitFor();
-			    }
+                if ("--notify".equals(arg)) {
+                    consoleLog.info("[POST ] [{}ms] Calling notify [{}]", (System.currentTimeMillis() - start), args[i + 1]);
+                    Runtime.getRuntime().exec(args[i + 1]).waitFor();
+                }
 
-			}
+            }
 
-			s.join();
-		} catch (Exception e) {
-			e.printStackTrace();
-			consoleLog.error("Startup Failed [{}ms]", (System.currentTimeMillis() - start), e);
-			System.err.println("STARTUP FAILED [" + (System.currentTimeMillis() - start) + "] ms");
+            s.join();
+        } catch (Exception e) {
+            e.printStackTrace();
+            consoleLog.error("Startup Failed [{}ms]", (System.currentTimeMillis() - start), e);
+            System.err.println("STARTUP FAILED [" + (System.currentTimeMillis() - start) + "] ms");
 
-			for ( int i = 0 ; i < args.length ; i++ ) {
-			    String arg = args[i];
+            for (int i = 0; i < args.length; i++) {
+                String arg = args[i];
 
-			    if ( "--notify-error".equals(arg) ) {
-                    consoleLog.error("[ERROR] [{}ms] Calling notify [{}]",
-                            (System.currentTimeMillis() - start),
-                            args[i+1]);
-			        try {
-                        Runtime.getRuntime().exec(args[i+1]).waitFor();
+                if ("--notify-error".equals(arg)) {
+                    consoleLog.error("[ERROR] [{}ms] Calling notify [{}]", (System.currentTimeMillis() - start), args[i + 1]);
+                    try {
+                        Runtime.getRuntime().exec(args[i + 1]).waitFor();
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }
-			    }
-			}
+                }
+            }
 
-			System.exit(1);
-		}
-	}
+            System.exit(1);
+        }
+    }
 }

@@ -16,18 +16,9 @@ public class PingInstancesMonitorDaoImpl extends AbstractJooqDao implements Ping
 
     @Override
     public Set<String> getHosts(long agentId) {
-        List<String> result = create()
-                .select(INSTANCE.UUID)
-                .from(AGENT)
-                .join(HOST)
-                    .on(AGENT.ID.eq(HOST.AGENT_ID))
-                .join(INSTANCE_HOST_MAP)
-                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID)
-                        .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
-                .join(INSTANCE)
-                    .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .where(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING)
-                        .and(AGENT.ID.eq(agentId)))
+        List<String> result = create().select(INSTANCE.UUID).from(AGENT).join(HOST).on(AGENT.ID.eq(HOST.AGENT_ID)).join(INSTANCE_HOST_MAP)
+                .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID).and(INSTANCE_HOST_MAP.REMOVED.isNull())).join(INSTANCE)
+                .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID)).where(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING).and(AGENT.ID.eq(agentId)))
                 .fetch(INSTANCE.UUID);
 
         return new HashSet<String>(result);
@@ -35,17 +26,12 @@ public class PingInstancesMonitorDaoImpl extends AbstractJooqDao implements Ping
 
     @Override
     public Long getAgentIdForInstanceHostMap(String instanceHostMap) {
-        if ( instanceHostMap == null ) {
+        if (instanceHostMap == null) {
             return null;
         }
 
-        return create()
-                .select(HOST.AGENT_ID)
-                .from(HOST)
-                .join(INSTANCE_HOST_MAP)
-                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
-                .where(INSTANCE_HOST_MAP.ID.eq(Long.parseLong(instanceHostMap)))
-                .fetchOne(HOST.AGENT_ID);
+        return create().select(HOST.AGENT_ID).from(HOST).join(INSTANCE_HOST_MAP).on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                .where(INSTANCE_HOST_MAP.ID.eq(Long.parseLong(instanceHostMap))).fetchOne(HOST.AGENT_ID);
     }
 
 }

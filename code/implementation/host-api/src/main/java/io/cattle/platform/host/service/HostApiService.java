@@ -9,8 +9,8 @@ public interface HostApiService {
 
     HostApiAccess getAccess(Long hostId);
 
-    HostApiAccess getAccess(Long hostId, Map<String,Object> data);
+    HostApiAccess getAccess(Long hostId, Map<String, Object> data);
 
-    Map<String,PublicKey> getPublicKeys();
+    Map<String, PublicKey> getPublicKeys();
 
 }

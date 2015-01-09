@@ -12,7 +12,7 @@ public class MdcClearListener implements ManagedContextListener<Object> {
 
     @Override
     public void onLeaveContext(Object data, boolean reentry, Throwable t) {
-        if ( ! reentry ) {
+        if (!reentry) {
             MDC.clear();
         }
     }

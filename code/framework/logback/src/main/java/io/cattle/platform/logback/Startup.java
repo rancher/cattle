@@ -17,19 +17,16 @@ public class Startup {
     private static final String LOGBACK_SYSTEM_CONFIG = "logback.configurationFile";
     private static final String LOGBACK_CLASS = "ch.qos.logback.classic.LoggerContext";
     private static final String LOGBACK_XML = "logback.xml";
-    private static final String[] STANDARD_CONFIG = new String[] {
-        "logback.groovy",
-        "logback-test.xml"
-    };
+    private static final String[] STANDARD_CONFIG = new String[] { "logback.groovy", "logback-test.xml" };
 
     final static Logger log = LoggerFactory.getLogger(Startup.class);
 
     @PostConstruct
     public void init() {
-        if ( shouldConfigure() ) {
+        if (shouldConfigure()) {
             try {
                 Class<?> clz = Class.forName("io.cattle.platform.logback.LogbackStartup");
-                ((Runnable)clz.newInstance()).run();
+                ((Runnable) clz.newInstance()).run();
             } catch (Exception e) {
                 log.warn("Failed to configure logback : {}", e.getMessage());
                 log.info("Failed to configure logback", e);
@@ -46,7 +43,7 @@ public class Startup {
         }
 
         /* Standard logback config file configuration */
-        if ( System.getProperty(LOGBACK_SYSTEM_CONFIG) != null ) {
+        if (System.getProperty(LOGBACK_SYSTEM_CONFIG) != null) {
             return false;
         }
 
@@ -55,7 +52,7 @@ public class Startup {
         InputStream is = null;
         try {
             is = url.openStream();
-            if ( ! IOUtils.toString(is).contains(DEFAULT_TOKEN) ) {
+            if (!IOUtils.toString(is).contains(DEFAULT_TOKEN)) {
                 return false;
             }
         } catch (IOException e) {
@@ -65,14 +62,14 @@ public class Startup {
         }
 
         /* Look for other standard logback config files on the classpath */
-        for ( String config : STANDARD_CONFIG ) {
-            if ( this.getClass().getClassLoader().getResource(config) != null ) {
+        for (String config : STANDARD_CONFIG) {
+            if (this.getClass().getClassLoader().getResource(config) != null) {
                 return false;
             }
         }
 
         /* Hook to disable logback configuration for whatever reason */
-        if ( Boolean.getBoolean(LOGBACK_DISABLE) ) {
+        if (Boolean.getBoolean(LOGBACK_DISABLE)) {
             return false;
         }
 

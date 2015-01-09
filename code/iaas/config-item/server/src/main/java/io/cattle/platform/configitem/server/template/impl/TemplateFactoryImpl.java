@@ -19,9 +19,9 @@ public class TemplateFactoryImpl implements TemplateFactory {
         int bestMatch = TemplateLoader.NO_PRIORITY;
         TemplateLoader bestLoader = null;
 
-        for ( TemplateLoader loader : templateLoaders ) {
+        for (TemplateLoader loader : templateLoaders) {
             int result = loader.canHandle(resource);
-            if ( result < bestMatch ) {
+            if (result < bestMatch) {
                 bestMatch = result;
                 bestLoader = loader;
             }

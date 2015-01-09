@@ -16,7 +16,7 @@ public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandl
     @Override
     public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
         ApiContext apiContext = ApiContext.getContext();
-        if ( apiContext == null ) {
+        if (apiContext == null) {
             /* Back-end can do whatever it wants */
             return obj;
         }
@@ -24,11 +24,11 @@ public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandl
         Policy policy = ApiUtils.getPolicy();
         boolean overwrite = true;
 
-        if ( policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) && properties.containsKey(AccountConstants.ACCOUNT_ID) ) {
+        if (policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) && properties.containsKey(AccountConstants.ACCOUNT_ID)) {
             overwrite = false;
         }
 
-        if ( overwrite ) {
+        if (overwrite) {
             ObjectUtils.setPropertyIgnoreErrors(obj, ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
         }
 

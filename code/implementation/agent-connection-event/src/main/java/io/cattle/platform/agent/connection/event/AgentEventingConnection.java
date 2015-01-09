@@ -34,7 +34,7 @@ public class AgentEventingConnection implements AgentConnection {
 
     @Override
     public ListenableFuture<Event> execute(Event event, EventProgress progress) {
-        if ( ! open ) {
+        if (!open) {
             return AsyncUtils.error(new IOException("Agent connection is closed"));
         }
 

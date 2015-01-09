@@ -23,10 +23,10 @@ public class BootstrapScript {
 
     protected static byte[] getBootstrapSource(String... sources) throws IOException {
         ClassLoader cl = BootstrapScript.class.getClassLoader();
-        for ( String source : sources ) {
+        for (String source : sources) {
             InputStream is = cl.getResourceAsStream(source);
             try {
-                if ( is != null ) {
+                if (is != null) {
                     String content = IOUtils.toString(is);
                     content = content.replace("REQUIRED_IMAGE=", String.format("REQUIRED_IMAGE=\"%s\"", REQUIRED_IMAGE.get()));
                     return content.getBytes("UTF-8");

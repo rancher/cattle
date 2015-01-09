@@ -1,6 +1,5 @@
 package io.cattle.platform.docker.client;
 
-
 public class DockerImage {
 
     String id, repository, namespace, tag;
@@ -18,24 +17,24 @@ public class DockerImage {
         String repo = null;
         String tag = null;
 
-        if ( id == null ) {
+        if (id == null) {
             return null;
         }
 
         int i = id.indexOf(":");
-        if ( i == -1 ) {
+        if (i == -1) {
             tag = "latest";
         } else {
-            tag = id.substring(i+1);
+            tag = id.substring(i + 1);
             id = id.substring(0, i);
         }
 
         i = id.indexOf("/");
-        if ( i == -1 ) {
+        if (i == -1) {
             repo = id;
         } else {
             namespace = id.substring(0, i);
-            repo = id.substring(i+1);
+            repo = id.substring(i + 1);
         }
 
         return new DockerImage(null, repo, namespace, tag);
@@ -74,7 +73,7 @@ public class DockerImage {
     }
 
     public String getQualifiedName() {
-        if ( namespace == null ) {
+        if (namespace == null) {
             return repository;
         } else {
             return namespace + "/" + repository;

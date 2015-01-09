@@ -16,8 +16,8 @@ public class DelegateEventData {
     @SuppressWarnings("unchecked")
     public DelegateEventData(Map<String, Object> instanceData, Event event) {
         this.instanceData = instanceData;
-        if ( event instanceof EventVO<?> ) {
-            this.event = (EventVO<Object>)event;
+        if (event instanceof EventVO<?>) {
+            this.event = (EventVO<Object>) event;
         } else {
             this.event = new EventVO<Object>(event);
         }

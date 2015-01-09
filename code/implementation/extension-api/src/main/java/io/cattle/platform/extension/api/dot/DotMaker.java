@@ -34,8 +34,8 @@ public class DotMaker {
         Set<String> nodes = new HashSet<String>();
         buffer.append("digraph \"").append(resourceType).append("\" {\n");
 
-        for ( ProcessDefinition def : processDefinitions ) {
-            if ( ObjectUtils.equals(resourceType, def.getResourceType()) ) {
+        for (ProcessDefinition def : processDefinitions) {
+            if (ObjectUtils.equals(resourceType, def.getResourceType())) {
                 addTransitions(def, nodes, buffer);
             }
         }
@@ -45,7 +45,7 @@ public class DotMaker {
     }
 
     public boolean writeResponse(String dot, ApiRequest request) throws IOException {
-        if ( dot != null ) {
+        if (dot != null) {
             String content = getContent(request, dot);
             try {
                 request.getOutputStream().write(content.getBytes("UTF-8"));
@@ -59,7 +59,7 @@ public class DotMaker {
     }
 
     protected String getContent(ApiRequest request, String dot) {
-        if ( "html".equals(request.getResponseFormat()) ) {
+        if ("html".equals(request.getResponseFormat())) {
             request.setResponseContentType("text/html; charset=utf-8");
             return asHtml(dot);
         } else {
@@ -78,27 +78,22 @@ public class DotMaker {
         String link = getLink(def);
         List<StateTransition> transitions = def.getStateTransitions();
 
-        for ( StateTransition transition : transitions ) {
+        for (StateTransition transition : transitions) {
             String from = getTransitionName(transition, transition.getFromState());
             String to = getTransitionName(transition, transition.getToState());
 
-            buffer.append("  \"")
-                .append(from)
-                .append("\" -> \"")
-                .append(to)
-                .append("\"");
+            buffer.append("  \"").append(from).append("\" -> \"").append(to).append("\"");
 
-            if ( transition.getType() == Style.TRANSITIONING ) {
+            if (transition.getType() == Style.TRANSITIONING) {
                 buffer.append(" [style=\"dotted\" label=\"" + name + "\" URL=\"" + link + "\"]");
             }
 
-            if ( transition.getType() == Style.DONE ) {
+            if (transition.getType() == Style.DONE) {
                 buffer.append(" [color=\"orange\" label=\"" + doneName + "\" URL=\"" + link + "\"]");
             }
-            buffer
-                .append(";\n");
+            buffer.append(";\n");
 
-            if ( transition.getType() == Style.TRANSITIONING && ! nodes.contains(to) ) {
+            if (transition.getType() == Style.TRANSITIONING && !nodes.contains(to)) {
                 buffer.append("  \"").append(to).append("\" [color=\"orange\"];\n");
                 nodes.add(to);
             }
@@ -106,7 +101,7 @@ public class DotMaker {
     }
 
     protected String getTransitionName(StateTransition transition, String name) {
-        if ( ResourceStatesDefinition.DEFAULT_STATE_FIELD.equals(transition.getField()) ) {
+        if (ResourceStatesDefinition.DEFAULT_STATE_FIELD.equals(transition.getField())) {
             return name;
         } else {
             return transition.getField() + ":" + name;
@@ -128,20 +123,20 @@ public class DotMaker {
         StringBuilder buffer = new StringBuilder(def.getName());
         buffer.append("[");
 
-        if ( def instanceof ExtensionBasedProcessDefinition ) {
+        if (def instanceof ExtensionBasedProcessDefinition) {
             int size = buffer.length();
-            appendExtensionPoint(size, buffer, "pre", ((ExtensionBasedProcessDefinition)def).getPreProcessListenersExtensionPoint());
-            appendExtensionPoint(size, buffer, "logic", ((ExtensionBasedProcessDefinition)def).getProcessHandlersExtensionPoint());
-            appendExtensionPoint(size, buffer, "post", ((ExtensionBasedProcessDefinition)def).getPostProcessListenersExtensionPoint());
+            appendExtensionPoint(size, buffer, "pre", ((ExtensionBasedProcessDefinition) def).getPreProcessListenersExtensionPoint());
+            appendExtensionPoint(size, buffer, "logic", ((ExtensionBasedProcessDefinition) def).getProcessHandlersExtensionPoint());
+            appendExtensionPoint(size, buffer, "post", ((ExtensionBasedProcessDefinition) def).getPostProcessListenersExtensionPoint());
 
-            if ( buffer.length() == size ) {
+            if (buffer.length() == size) {
                 buffer.append("no-op");
             }
             buffer.append("]  ");
         }
 
         String result = buffer.toString();
-        if ( ! result.contains("no-op") ) {
+        if (!result.contains("no-op")) {
             result += "\" fontname=\"times-bold\" color=\"green\" style=\"bold";
         }
 
@@ -153,18 +148,18 @@ public class DotMaker {
     }
 
     protected void appendExtensionPoint(int size, StringBuilder buffer, String title, ExtensionPoint point) {
-        if ( point.getImplementations().size() == 0 ) {
+        if (point.getImplementations().size() == 0) {
             return;
         }
 
-        if ( buffer.length() > size ) {
+        if (buffer.length() > size) {
             buffer.append(",");
         }
 
         buffer.append(title).append("=");
         int count = 0;
-        for ( ExtensionImplementation impl : point.getImplementations() ) {
-            if ( count > 0 ) {
+        for (ExtensionImplementation impl : point.getImplementations()) {
+            if (count > 0) {
                 buffer.append(",");
             }
             buffer.append(impl.getName());
@@ -177,11 +172,11 @@ public class DotMaker {
         InputStream is = null;
         try {
             is = getClass().getResourceAsStream("html-override.txt");
-            if ( is == null ) {
+            if (is == null) {
                 is = getClass().getResourceAsStream("html.txt");
             }
 
-            if ( is != null ) {
+            if (is != null) {
                 this.html = IOUtils.toString(is);
             }
         } finally {

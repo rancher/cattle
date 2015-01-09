@@ -24,14 +24,13 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
     JsonMapper jsonMapper;
     ObjectManager objectManager;
     ObjectMetaDataManager metaDataManager;
-    Map<String,List<ObjectTypeSerializerPostProcessor>> postProcessorsMap = new HashMap<String, List<ObjectTypeSerializerPostProcessor>>();
+    Map<String, List<ObjectTypeSerializerPostProcessor>> postProcessorsMap = new HashMap<String, List<ObjectTypeSerializerPostProcessor>>();
     List<ObjectTypeSerializerPostProcessor> postProcessors;
 
     @Override
     public ObjectSerializer compile(String type, String expression) {
         Action action = parseAction(type, expression);
-        DefaultObjectSerializerImpl result =
-                new DefaultObjectSerializerImpl(jsonMapper, objectManager, metaDataManager, postProcessorsMap, action, expression);
+        DefaultObjectSerializerImpl result = new DefaultObjectSerializerImpl(jsonMapper, objectManager, metaDataManager, postProcessorsMap, action, expression);
         result.serialize(null);
 
         return result;
@@ -39,8 +38,8 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
 
     @Override
     public void start() {
-        for ( ObjectTypeSerializerPostProcessor postProcessor : postProcessors ) {
-            for ( String type : postProcessor.getTypes() ) {
+        for (ObjectTypeSerializerPostProcessor postProcessor : postProcessors) {
+            for (String type : postProcessor.getTypes()) {
                 CollectionUtils.addToMap(postProcessorsMap, type, postProcessor, ArrayList.class);
             }
         }
@@ -54,7 +53,7 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
         /* Should use antlr if this gets too complicated */
         Context c = new Context();
 
-        for ( int i = 0 ; i < expression.length() ; i++ ) {
+        for (int i = 0; i < expression.length(); i++) {
             char current = expression.charAt(i);
             switch (current) {
             case '|':
@@ -74,7 +73,7 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
                 c = c.pop(expression);
                 break;
             default:
-                if ( ! GOOD_CHARS.matcher(Character.toString(current)).matches() || c.done ) {
+                if (!GOOD_CHARS.matcher(Character.toString(current)).matches() || c.done) {
                     throw new IllegalArgumentException("Bad character [" + current + "] found in [" + expression + "]");
                 }
                 c.currentWord.append(current);
@@ -82,11 +81,11 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
             }
         }
 
-        if ( c.currentWord.length() > 0 ) {
+        if (c.currentWord.length() > 0) {
             c = endWord(c, ' ');
         }
 
-        if ( c.parent != null ) {
+        if (c.parent != null) {
             throw new IllegalStateException("Missing closing ']' in [" + expression + "]");
         }
 
@@ -94,7 +93,7 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
     }
 
     protected static Context endWord(Context c, char current) {
-        if ( c.currentWord.length() == 0 && c.currentAction.getName() == null ) {
+        if (c.currentWord.length() == 0 && c.currentAction.getName() == null) {
             throw new IllegalStateException("got [" + current + "] but there is no word before it");
         }
 
@@ -103,8 +102,8 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
         c.currentAction = new Action();
         c.currentWord.setLength(0);
 
-        if ( current != '.' ) {
-            if ( c.parent != null && c.parent.dotStart ) {
+        if (current != '.') {
+            if (c.parent != null && c.parent.dotStart) {
                 return endWord(c.parent, current);
             }
         }
@@ -129,7 +128,7 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
         }
 
         Context pop(String expression) {
-            if ( parent == null ) {
+            if (parent == null) {
                 throw new IllegalStateException("To many closing braces in [" + expression + "]");
             }
 
@@ -139,10 +138,10 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
         @Override
         public String toString() {
             Context current = this;
-            while ( current.parent != null ) {
+            while (current.parent != null) {
                 current = current.parent;
             }
-            if ( current.currentWord.length() > 0 ) {
+            if (current.currentWord.length() > 0) {
                 List<Action> actions = new ArrayList<Action>(current.currentActions);
                 actions.add(new Action(current.currentWord.toString() + "*", current.currentAction.getChildren()));
                 return actions.toString();

@@ -45,9 +45,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        final Instance instance = (Instance)state.getResource();
+        final Instance instance = (Instance) state.getResource();
 
-        Map<String,Object> resultData = new ConcurrentHashMap<String,Object>();
+        Map<String, Object> resultData = new ConcurrentHashMap<String, Object>();
         HandlerResult result = new HandlerResult(resultData);
 
         progress.init(state, 5, 5, 80, 5, 5);
@@ -61,7 +61,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
             progress.checkPoint("create storage");
             storage(instance, state);
-        } catch ( ExecutionException e ) {
+        } catch (ExecutionException e) {
             log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
             return stopOrRemove(state, instance, e);
         }
@@ -69,9 +69,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         try {
             progress.checkPoint("create compute");
             compute(instance, state);
-        } catch ( ExecutionException e ) {
+        } catch (ExecutionException e) {
             log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
-            if ( incrementComputeTry(state) >= getMaxComputeTries(instance) ) {
+            if (incrementComputeTry(state) >= getMaxComputeTries(instance)) {
                 return stopOrRemove(state, instance, e);
             }
             throw e;
@@ -80,7 +80,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         try {
             progress.checkPoint("post network");
             postNetwork(instance, state);
-        } catch ( ExecutionException e ) {
+        } catch (ExecutionException e) {
             log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
             return stopOrRemove(state, instance, e);
         }
@@ -90,17 +90,17 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         return result;
     }
 
-    protected void assignPrimaryIpAddress(Instance instance, Map<String,Object> resultData) {
+    protected void assignPrimaryIpAddress(Instance instance, Map<String, Object> resultData) {
         int min = Integer.MAX_VALUE;
         IpAddress ip = null;
         IpAddress fallBackIp = null;
-        for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
-            if ( nic.getDeviceNumber().intValue() < min ) {
+        for (Nic nic : getObjectManager().children(instance, Nic.class)) {
+            if (nic.getDeviceNumber().intValue() < min) {
                 min = nic.getDeviceNumber();
                 ip = ipAddressDao.getPrimaryIpAddress(nic);
-                if ( ip == null ) {
+                if (ip == null) {
                     List<IpAddress> ips = getObjectManager().mappedChildren(nic, IpAddress.class);
-                    if ( ips.size() > 0 ) {
+                    if (ips.size() > 0) {
                         fallBackIp = ips.get(0);
                     }
                 }
@@ -108,29 +108,26 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
 
         String address = null;
-        if ( ip == null ) {
+        if (ip == null) {
             address = fallBackIp == null ? null : fallBackIp.getAddress();
         } else {
             address = ip.getAddress();
         }
 
-        if ( address != null ) {
+        if (address != null) {
             resultData.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, address);
         }
 
         IpAddress assoc = ipAddressDao.getPrimaryAssociatedIpAddress(ip);
-        if ( assoc != null ) {
+        if (assoc != null) {
             resultData.put(InstanceConstants.FIELD_PRIMARY_ASSOCIATED_IP_ADDRESS, assoc.getAddress());
         }
     }
 
     protected int getMaxComputeTries(Instance instance) {
-        Integer tries = DataAccessor.fromDataFieldOf(instance)
-                .withScope(InstanceStart.class)
-                .withKey("computeTries")
-                .as(Integer.class);
+        Integer tries = DataAccessor.fromDataFieldOf(instance).withScope(InstanceStart.class).withKey("computeTries").as(Integer.class);
 
-        if ( tries != null && tries > 0 ) {
+        if (tries != null && tries > 0) {
             return tries;
         }
 
@@ -138,7 +135,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     }
 
     protected HandlerResult stopOrRemove(ProcessState state, Instance instance, ExecutionException e) {
-        if ( InstanceCreate.isCreateStart(state) ) {
+        if (InstanceCreate.isCreateStart(state)) {
             getObjectProcessManager().scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
         } else {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
@@ -149,12 +146,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     }
 
     protected int incrementComputeTry(ProcessState state) {
-        DataAccessor accessor = DataAccessor.fromMap(state.getData())
-                                    .withScope(InstanceStart.class)
-                                    .withKey("computeTry");
+        DataAccessor accessor = DataAccessor.fromMap(state.getData()).withScope(InstanceStart.class).withKey("computeTry");
 
         Integer computeTry = accessor.as(Integer.class);
-        if ( computeTry == null ) {
+        if (computeTry == null) {
             computeTry = 0;
         }
 
@@ -172,29 +167,29 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     protected void storage(Instance instance, ProcessState state) {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
 
-        for ( Volume volume : volumes ) {
+        for (Volume volume : volumes) {
             activate(volume, state.getData());
         }
     }
 
     protected void compute(Instance instance, ProcessState state) {
-        for ( InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()) ) {
+        for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
             activate(map, state.getData());
         }
     }
 
     protected void network(Instance instance, ProcessState state) {
-        for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
+        for (Nic nic : getObjectManager().children(instance, Nic.class)) {
             activate(nic, state.getData());
         }
 
-        for ( InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID) ) {
+        for (InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID)) {
             activate(link, state.getData());
         }
     }
 
     protected void postNetwork(Instance instance, ProcessState state) {
-        for ( Port port : getObjectManager().children(instance, Port.class) ) {
+        for (Port port : getObjectManager().children(instance, Port.class)) {
             activate(port, state.getData());
         }
     }

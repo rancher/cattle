@@ -15,11 +15,9 @@ public class ObjectUtils {
         try {
             BeanUtils.copyProperties(dest, src);
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("Failed to copy properties from [" + src + "] to ["
-                    + dest + "]", e);
+            throw new IllegalArgumentException("Failed to copy properties from [" + src + "] to [" + dest + "]", e);
         } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException("Failed to copy properties from [" + src + "] to ["
-                    + dest + "]", e);
+            throw new IllegalArgumentException("Failed to copy properties from [" + src + "] to [" + dest + "]", e);
         }
     }
 
@@ -38,12 +36,12 @@ public class ObjectUtils {
 
     public static Date getRemoved(Object obj) {
         Object result = getPropertyIgnoreErrors(obj, ObjectMetaDataManager.REMOVED_FIELD);
-        return result instanceof Date ? (Date)result : null;
+        return result instanceof Date ? (Date) result : null;
     }
 
     public static Date getRemoveTime(Object obj) {
         Object result = getPropertyIgnoreErrors(obj, ObjectMetaDataManager.REMOVE_TIME_FIELD);
-        return result instanceof Date ? (Date)result : null;
+        return result instanceof Date ? (Date) result : null;
     }
 
     public static String getKind(Object obj) {
@@ -52,7 +50,7 @@ public class ObjectUtils {
     }
 
     public static boolean hasWritableProperty(Object obj, String name) {
-        if ( obj == null ) {
+        if (obj == null) {
             return false;
         }
 
@@ -70,7 +68,7 @@ public class ObjectUtils {
 
     public static Object getPropertyIgnoreErrors(Object obj, String property) {
         try {
-            if ( obj == null ) {
+            if (obj == null) {
                 return null;
             }
             return PropertyUtils.getProperty(obj, property);
@@ -84,7 +82,7 @@ public class ObjectUtils {
 
     public static Object getProperty(Object obj, String property) {
         try {
-            if ( obj == null ) {
+            if (obj == null) {
                 return null;
             }
             return PropertyUtils.getProperty(obj, property);
@@ -99,7 +97,7 @@ public class ObjectUtils {
 
     public static void setProperty(Object obj, String property, Object value) {
         try {
-            if ( obj == null ) {
+            if (obj == null) {
                 return;
             }
             PropertyUtils.setProperty(obj, property, value);
@@ -114,7 +112,7 @@ public class ObjectUtils {
 
     public static void setPropertyIgnoreErrors(Object obj, String property, Object value) {
         try {
-            if ( obj == null ) {
+            if (obj == null) {
                 return;
             }
             PropertyUtils.setProperty(obj, property, value);
@@ -138,7 +136,7 @@ public class ObjectUtils {
 
         @Override
         public String toString() {
-            if ( obj == null ) {
+            if (obj == null) {
                 return "null";
             }
             return String.format("%s:%s", obj.getClass().getSimpleName(), ObjectUtils.getId(obj));

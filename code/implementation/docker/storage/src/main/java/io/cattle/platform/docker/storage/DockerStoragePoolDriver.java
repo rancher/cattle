@@ -39,20 +39,20 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
     protected boolean populateExtenalImageInternal(StoragePool pool, String uuid, Image image) throws IOException {
         DockerImage dockerImage = DockerImage.parse(stripKindPrefix(uuid));
 
-        if ( dockerImage == null ) {
+        if (dockerImage == null) {
             return false;
         }
 
         dockerImage = dockerClient.lookup(dockerImage);
 
-        if ( dockerImage == null ) {
+        if (dockerImage == null) {
             return false;
         }
 
         image.setName(dockerImage.getFullName());
 
-        Map<String,Object> data = image.getData();
-        if ( data == null ) {
+        Map<String, Object> data = image.getData();
+        if (data == null) {
             data = new HashMap<String, Object>();
             image.setData(data);
         }
@@ -66,7 +66,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
 
     public void createDockerExternalPool(final StoragePool parentPool) {
         StoragePool storagePool = storageDao.getExternalStoragePool(parentPool);
-        if ( storagePool == null ) {
+        if (storagePool == null) {
             lockManager.lock(new DockerExternalPoolCreateLock(), new LockCallbackNoReturn() {
                 @Override
                 public void doWithLockNoResult() {
@@ -78,7 +78,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
 
     protected void createDockerExternalPoolInternal(StoragePool parentPool) {
         StoragePool storagePool = storageDao.getExternalStoragePool(parentPool);
-        if ( storagePool != null ) {
+        if (storagePool != null) {
             return;
         }
 

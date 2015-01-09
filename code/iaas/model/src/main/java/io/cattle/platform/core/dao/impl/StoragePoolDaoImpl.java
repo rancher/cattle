@@ -21,20 +21,14 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
 
     @Override
     public List<? extends StoragePool> findExternalActivePools() {
-        return create()
-                .selectFrom(STORAGE_POOL)
-                .where(
-                        STORAGE_POOL.EXTERNAL.eq(true)
-                        .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
-                        ).fetch();
+        return create().selectFrom(STORAGE_POOL).where(STORAGE_POOL.EXTERNAL.eq(true).and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))).fetch();
     }
 
     @Override
     public StoragePool mapNewPool(Host host, Map<String, Object> properties) {
         StoragePool pool = resourceDao.createAndSchedule(StoragePool.class, properties);
-        resourceDao.createAndSchedule(StoragePoolHostMap.class,
-                STORAGE_POOL_HOST_MAP.HOST_ID, host.getId(),
-                STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, pool.getId());
+        resourceDao.createAndSchedule(StoragePoolHostMap.class, STORAGE_POOL_HOST_MAP.HOST_ID, host.getId(), STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID,
+                pool.getId());
 
         return pool;
     }

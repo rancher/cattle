@@ -36,12 +36,12 @@ public class ApiUtils {
     };
 
     public static Object getFirstFromList(Object obj) {
-        if ( obj instanceof Collection ) {
-            return getFirstFromList(((Collection)obj).getData());
+        if (obj instanceof Collection) {
+            return getFirstFromList(((Collection) obj).getData());
         }
 
-        if ( obj instanceof List ) {
-            List<?> list = (List<?>)obj;
+        if (obj instanceof List) {
+            List<?> list = (List<?>) obj;
             return list.size() > 0 ? list.get(0) : null;
         }
 
@@ -50,8 +50,8 @@ public class ApiUtils {
 
     public static Policy getPolicy() {
         Object policy = ApiContext.getContext().getPolicy();
-        if ( policy instanceof Policy ) {
-            return (Policy)policy;
+        if (policy instanceof Policy) {
+            return (Policy) policy;
         } else {
             return DEFAULT_POLICY;
         }
@@ -63,8 +63,8 @@ public class ApiUtils {
 
     @SuppressWarnings("unchecked")
     public static <T> T authorize(T obj) {
-        if ( obj instanceof List ) {
-            return (T) authorize((List<T>)obj);
+        if (obj instanceof List) {
+            return (T) authorize((List<T>) obj);
         }
         return getPolicy().authorizeObject(obj);
     }
@@ -74,11 +74,11 @@ public class ApiUtils {
     }
 
     public static String getAttachementKey(Object obj, Object id) {
-        if ( obj == null ) {
+        if (obj == null) {
             return null;
         }
 
-        if ( id == null ) {
+        if (id == null) {
             return null;
         }
 
@@ -88,20 +88,20 @@ public class ApiUtils {
     public static void addAttachement(Object key, String name, Object obj) {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         @SuppressWarnings("unchecked")
-        Map<String,Map<Object,Object>> attachments = (Map<String, Map<Object,Object>>) request.getAttribute(key);
+        Map<String, Map<Object, Object>> attachments = (Map<String, Map<Object, Object>>) request.getAttribute(key);
 
         Object id = ObjectUtils.getId(obj);
-        if ( id == null ) {
+        if (id == null) {
             return;
         }
 
-        if ( attachments == null ) {
-            attachments = new HashMap<String, Map<Object,Object>>();
+        if (attachments == null) {
+            attachments = new HashMap<String, Map<Object, Object>>();
             request.setAttribute(key, attachments);
         }
 
-        Map<Object,Object> attachment = attachments.get(name);
-        if ( attachment == null ) {
+        Map<Object, Object> attachment = attachments.get(name);
+        if (attachment == null) {
             attachment = new LinkedHashMap<Object, Object>();
             attachments.put(name, attachment);
         }
@@ -109,28 +109,28 @@ public class ApiUtils {
         attachment.put(id, obj);
     }
 
-    public static Map<String,Object> getAttachements(Object obj, Transformer transformer) {
-        Map<String,Object> result = new LinkedHashMap<String, Object>();
+    public static Map<String, Object> getAttachements(Object obj, Transformer transformer) {
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
         Object key = getAttachementKey(obj);
         ApiRequest request = ApiContext.getContext().getApiRequest();
         @SuppressWarnings("unchecked")
-        Map<String,Map<Object,Object>> attachments = (Map<String, Map<Object,Object>>) request.getAttribute(key);
+        Map<String, Map<Object, Object>> attachments = (Map<String, Map<Object, Object>>) request.getAttribute(key);
 
-        if ( attachments == null ) {
+        if (attachments == null) {
             return result;
         }
 
-        for ( Map.Entry<String, Map<Object,Object>> entry : attachments.entrySet() ) {
+        for (Map.Entry<String, Map<Object, Object>> entry : attachments.entrySet()) {
             String keyName = entry.getKey();
             List<Object> objects = new ArrayList<Object>();
-            for ( Object attachment : entry.getValue().values() ) {
+            for (Object attachment : entry.getValue().values()) {
                 attachment = transformer.transform(attachment);
-                if ( attachment != null ) {
+                if (attachment != null) {
                     objects.add(attachment);
                 }
             }
 
-            if ( keyName.startsWith(SINGLE_ATTACHMENT_PREFIX) ) {
+            if (keyName.startsWith(SINGLE_ATTACHMENT_PREFIX)) {
                 Object attachedObj = objects.size() > 0 ? objects.get(0) : null;
                 result.put(keyName.substring(SINGLE_ATTACHMENT_PREFIX.length()), attachedObj);
             } else {
@@ -141,27 +141,26 @@ public class ApiUtils {
         return result;
     }
 
-    public static Resource createResourceWithAttachments(final ResourceManager resourceManager, final ApiRequest request,
-            final IdFormatter idFormatter, final Schema schema, Object obj, Map<String,Object> inputAdditionalFields) {
+    public static Resource createResourceWithAttachments(final ResourceManager resourceManager, final ApiRequest request, final IdFormatter idFormatter,
+            final Schema schema, Object obj, Map<String, Object> inputAdditionalFields) {
         Integer depth = DEPTH.get();
 
         try {
             DEPTH.set(depth + 1);
-            Map<String,Object> additionalFields = new LinkedHashMap<String, Object>();
+            Map<String, Object> additionalFields = new LinkedHashMap<String, Object>();
             additionalFields.putAll(DataUtils.getFields(obj));
 
-            if ( inputAdditionalFields != null && inputAdditionalFields.size() > 0 ) {
+            if (inputAdditionalFields != null && inputAdditionalFields.size() > 0) {
                 additionalFields.putAll(inputAdditionalFields);
             }
 
-            if ( depth == 0 ) {
-                Map<String,Object> attachments = ApiUtils.getAttachements(obj, new Transformer() {
+            if (depth == 0) {
+                Map<String, Object> attachments = ApiUtils.getAttachements(obj, new Transformer() {
                     @Override
                     public Object transform(Object input) {
                         input = ApiUtils.authorize(input);
-                        if ( input == null )
+                        if (input == null)
                             return null;
-
 
                         return resourceManager.convertResponse(input, request);
                     }
@@ -179,14 +178,14 @@ public class ApiUtils {
     public static String getSchemaIdForDisplay(SchemaFactory factory, Object obj) {
         Schema schema = factory.getSchema(obj.getClass());
 
-        if ( schema == null ) {
+        if (schema == null) {
             return null;
         }
 
-        if ( schema.getChildren().size() > 0 ) {
+        if (schema.getChildren().size() > 0) {
             String kind = ObjectUtils.getKind(obj);
             Schema kindSchema = factory.getSchema(kind);
-            if ( kindSchema != null ) {
+            if (kindSchema != null) {
                 return kindSchema.getId();
             }
         }

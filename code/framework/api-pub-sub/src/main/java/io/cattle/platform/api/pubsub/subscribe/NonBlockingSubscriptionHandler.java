@@ -52,8 +52,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
     public NonBlockingSubscriptionHandler() {
     }
 
-    public NonBlockingSubscriptionHandler(JsonMapper jsonMapper, EventService eventService,
-            RetryTimeoutService retryTimeout, ExecutorService executorService,
+    public NonBlockingSubscriptionHandler(JsonMapper jsonMapper, EventService eventService, RetryTimeoutService retryTimeout, ExecutorService executorService,
             List<ApiPubSubEventPostProcessor> eventProcessors) {
         super();
         this.jsonMapper = jsonMapper;
@@ -65,7 +64,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
 
     @Override
     public boolean subscribe(Collection<String> eventNames, ApiRequest apiRequest, final boolean strip) throws IOException {
-        if ( Method.GET.isMethod(apiRequest.getMethod()) && ! supportGet ) {
+        if (Method.GET.isMethod(apiRequest.getMethod()) && !supportGet) {
             return false;
         }
 
@@ -79,7 +78,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         final IdFormatter idFormatter = apiContext.getIdFormatter();
         final Object policy = apiContext.getPolicy();
 
-        if ( writer == null ) {
+        if (writer == null) {
             return false;
         }
 
@@ -110,7 +109,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
             context.setIdFormatter(idFormatter);
             context.setPolicy(policy);
 
-            for ( ApiPubSubEventPostProcessor processor : eventProcessors ) {
+            for (ApiPubSubEventPostProcessor processor : eventProcessors) {
                 processor.processEvent(event);
             }
         } finally {
@@ -119,7 +118,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
     }
 
     protected void obfuscateIds(EventVO<?> event, IdFormatter idFormatter) {
-        if ( event.getResourceType() == null ) {
+        if (event.getResourceType() == null) {
             event.setResourceId(null);
         } else {
             Object id = idFormatter.formatId(event.getResourceType(), event.getResourceId());
@@ -133,9 +132,9 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
 
     protected void write(Event event, MessageWriter writer, Object writeLock, boolean strip) throws IOException {
         EventVO<Object> newEvent = new EventVO<Object>(event);
-        if ( strip ) {
+        if (strip) {
             String name = newEvent.getName();
-            if ( name != null ) {
+            if (name != null) {
                 newEvent.setName(StringUtils.substringBefore(name, FrameworkEvents.EVENT_SEP));
             }
         }
@@ -148,11 +147,11 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         writer.write(content, writeLock);
     }
 
-    protected Future<?> subscribe(Collection<String> eventNames, EventListener listener, MessageWriter writer, AtomicBoolean disconnect,
-            Object writeLock, boolean strip) {
+    protected Future<?> subscribe(Collection<String> eventNames, EventListener listener, MessageWriter writer, AtomicBoolean disconnect, Object writeLock,
+            boolean strip) {
         boolean unsubscribe = false;
         try {
-            for ( String eventName : eventNames ) {
+            for (String eventName : eventNames) {
                 eventService.subscribe(eventName, listener).get(API_SUB_PING_INVERVAL.get(), TimeUnit.MILLISECONDS);
             }
             write(new Ping(), writer, writeLock, strip);
@@ -160,7 +159,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         } catch (Throwable e) {
             unsubscribe = true;
         } finally {
-            if ( unsubscribe ) {
+            if (unsubscribe) {
                 unsubscribe(disconnect, writer, listener);
             }
         }
@@ -168,13 +167,13 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         return null;
     }
 
-    protected Future<?> schedulePing(final EventListener listener, final MessageWriter writer,
-            final AtomicBoolean disconnect, final Object writeLock, final boolean strip) {
+    protected Future<?> schedulePing(final EventListener listener, final MessageWriter writer, final AtomicBoolean disconnect, final Object writeLock,
+            final boolean strip) {
         final SettableFuture<?> future = SettableFuture.create();
         retryTimeout.submit(new Retry(API_MAX_PINGS.get(), API_SUB_PING_INVERVAL.get(), future, new Runnable() {
             @Override
             public void run() {
-                if ( disconnect.get() ) {
+                if (disconnect.get()) {
                     unsubscribe(disconnect, writer, listener);
                     future.setException(new CancelRetryException());
                     throw new CancelRetryException();

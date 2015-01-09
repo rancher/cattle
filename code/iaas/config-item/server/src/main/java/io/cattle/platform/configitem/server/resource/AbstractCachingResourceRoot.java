@@ -24,8 +24,8 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
     byte[] additionalRevisionData;
 
     public static boolean shouldIgnore(String path) {
-        for ( String prefix : IGNORE_PREFIX.get() ) {
-            if ( path.startsWith(prefix) ) {
+        for (String prefix : IGNORE_PREFIX.get()) {
+            if (path.startsWith(prefix)) {
                 return true;
             }
         }
@@ -44,7 +44,7 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
 
     @Override
     public synchronized final void scan() throws IOException {
-        if ( ! isDynamic() && sourceRevision != null && resources != null ) {
+        if (!isDynamic() && sourceRevision != null && resources != null) {
             return;
         }
 
@@ -54,10 +54,10 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
         try {
             outputStream = new DigestOutputStream(new NullOutputStream(), MessageDigest.getInstance("SHA-256"));
 
-            if ( additionalRevisionData != null )
+            if (additionalRevisionData != null)
                 outputStream.write(additionalRevisionData);
 
-            for ( Resource resource : resources ) {
+            for (Resource resource : resources) {
                 byte[] nameBytes = resource.getName().getBytes();
                 outputStream.write(nameBytes, 0, nameBytes.length);
 

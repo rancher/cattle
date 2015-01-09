@@ -32,16 +32,16 @@ public class DefaultObjectSerializerImplTest {
         assertEquals(3, action.getChildren().size());
 
         assertEquals("a", action.getChildren().get(0).getName());
-        assertEquals(1,   action.getChildren().get(0).getChildren().size());
+        assertEquals(1, action.getChildren().get(0).getChildren().size());
         assertEquals("x", action.getChildren().get(0).getChildren().get(0).getName());
 
-        assertEquals(1,   action.getChildren().get(1).getChildren().size());
+        assertEquals(1, action.getChildren().get(1).getChildren().size());
         assertEquals("b", action.getChildren().get(1).getName());
         assertEquals("y", action.getChildren().get(1).getChildren().get(0).getName());
-        assertEquals(1,   action.getChildren().get(1).getChildren().get(0).getChildren().size());
+        assertEquals(1, action.getChildren().get(1).getChildren().get(0).getChildren().size());
         assertEquals("z", action.getChildren().get(1).getChildren().get(0).getChildren().get(0).getName());
 
-        assertEquals(0,   action.getChildren().get(2).getChildren().size());
+        assertEquals(0, action.getChildren().get(2).getChildren().size());
         assertEquals("c", action.getChildren().get(2).getName());
     }
 

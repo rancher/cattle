@@ -10,6 +10,6 @@ public interface StoragePoolDao {
 
     List<? extends StoragePool> findExternalActivePools();
 
-    StoragePool mapNewPool(Host host, Map<String,Object> properties);
+    StoragePool mapNewPool(Host host, Map<String, Object> properties);
 
 }

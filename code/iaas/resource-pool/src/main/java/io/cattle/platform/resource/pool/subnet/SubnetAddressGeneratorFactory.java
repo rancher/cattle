@@ -13,7 +13,7 @@ public class SubnetAddressGeneratorFactory extends AbstractTypeAndQualifierPoole
 
     @Override
     protected PooledResourceItemGenerator createGenerator(Object pool, String qualifier) {
-        Subnet subnet = (Subnet)pool;
+        Subnet subnet = (Subnet) pool;
         return new SubnetAddressGenerator(subnet.getStartAddress(), subnet.getEndAddress());
     }
 

@@ -24,9 +24,9 @@ public class VolumeDeallocate extends EventBasedProcessHandler {
 
     @Override
     protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
-        Volume volume = (Volume)state.getResource();
+        Volume volume = (Volume) state.getResource();
 
-        for ( VolumeStoragePoolMap map : mapDao.findToRemove(VolumeStoragePoolMap.class, Volume.class, volume.getId()) ) {
+        for (VolumeStoragePoolMap map : mapDao.findToRemove(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
             remove(map, state.getData());
         }
 

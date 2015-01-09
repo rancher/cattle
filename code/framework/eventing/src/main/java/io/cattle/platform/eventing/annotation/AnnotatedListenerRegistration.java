@@ -25,14 +25,14 @@ public class AnnotatedListenerRegistration implements InitializationTask {
 
     @Override
     public void start() {
-        for ( AnnotatedEventListener listener : listeners ) {
+        for (AnnotatedEventListener listener : listeners) {
             register(listener);
         }
     }
 
     protected void register(AnnotatedEventListener listener) {
-        Map<String,EventListener> listeners = parseListener(listener);
-        for ( Map.Entry<String, EventListener> entry : listeners.entrySet() ) {
+        Map<String, EventListener> listeners = parseListener(listener);
+        for (Map.Entry<String, EventListener> entry : listeners.entrySet()) {
             String eventName = entry.getKey();
             EventListener annotatedListener = entry.getValue();
             eventService.subscribe(eventName, annotatedListener);
@@ -42,7 +42,7 @@ public class AnnotatedListenerRegistration implements InitializationTask {
     protected List<String> getEventNames(EventHandler handler, AnnotatedEventListener listener, Method method) {
         Class<? extends EventNameProvider> supplierClass = handler.nameProvider();
 
-        if ( supplierClass == EventNameProvider.class ) {
+        if (supplierClass == EventNameProvider.class) {
             return Arrays.asList(EventUtils.getEventNameNonProvided(handler, listener, method));
         } else {
             EventNameProvider supplier = null;
@@ -61,14 +61,14 @@ public class AnnotatedListenerRegistration implements InitializationTask {
     protected Map<String, EventListener> parseListener(AnnotatedEventListener listener) {
         Map<String, EventListener> result = new LinkedHashMap<String, EventListener>();
 
-        for ( Class<?> clz : getClasses(listener.getClass()) ) {
-            for ( Method m : clz.getMethods() ) {
+        for (Class<?> clz : getClasses(listener.getClass())) {
+            for (Method m : clz.getMethods()) {
                 EventHandler h = m.getAnnotation(EventHandler.class);
-                if ( h == null ) {
+                if (h == null) {
                     continue;
                 }
 
-                for ( String eventName : getEventNames(h, listener, m) ) {
+                for (String eventName : getEventNames(h, listener, m)) {
                     result.put(eventName, new MethodInvokingListener(lockManager, jsonMapper, h, m, listener));
                 }
             }
@@ -80,12 +80,12 @@ public class AnnotatedListenerRegistration implements InitializationTask {
     protected List<Class<?>> getClasses(Class<?> clz) {
         List<Class<?>> result = new ArrayList<Class<?>>();
 
-        if ( clz == null || clz.getPackage().getName().startsWith("java.lang") ) {
+        if (clz == null || clz.getPackage().getName().startsWith("java.lang")) {
             return result;
         }
 
         result.add(clz);
-        for ( Class<?> iface : clz.getInterfaces() ) {
+        for (Class<?> iface : clz.getInterfaces()) {
             result.addAll(getClasses(iface));
         }
 

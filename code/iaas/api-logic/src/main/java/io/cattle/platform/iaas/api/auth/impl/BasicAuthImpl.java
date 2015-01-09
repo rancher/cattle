@@ -40,10 +40,10 @@ public class BasicAuthImpl implements AccountLookup, Priority {
         HttpServletResponse response = request.getServletContext().getResponse();
         String realm = REALM.get();
 
-        if ( realm == null ) {
+        if (realm == null) {
             response.setHeader(CHALLENGE_HEADER, BASIC);
         } else {
-            response.setHeader(CHALLENGE_HEADER, String.format(BASIC_REALM,realm));
+            response.setHeader(CHALLENGE_HEADER, String.format(BASIC_REALM, realm));
         }
 
         return true;
@@ -58,26 +58,26 @@ public class BasicAuthImpl implements AccountLookup, Priority {
     }
 
     public static String[] getUsernamePassword(String auth) {
-        if ( auth == null )
+        if (auth == null)
             return null;
 
         String[] parts = StringUtils.split(auth);
 
-        if ( parts.length != 2 ) {
+        if (parts.length != 2) {
             return null;
         }
 
-        if ( ! parts[0].equalsIgnoreCase(BASIC) )
+        if (!parts[0].equalsIgnoreCase(BASIC))
             return null;
 
         try {
             String text = new String(Base64.decodeBase64(parts[1]), "UTF-8");
             int i = text.indexOf(":");
-            if ( i == -1 ) {
+            if (i == -1) {
                 return null;
             }
 
-            return new String[] { text.substring(0, i), text.substring(i+1) };
+            return new String[] { text.substring(0, i), text.substring(i + 1) };
         } catch (UnsupportedEncodingException e) {
             return null;
         }

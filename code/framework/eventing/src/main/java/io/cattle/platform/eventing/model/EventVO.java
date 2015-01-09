@@ -20,7 +20,7 @@ public class EventVO<T> implements Event {
     Long timeoutMillis;
     String listenerKey;
     Integer transitioningProgress;
-    Map<String,Object> context;
+    Map<String, Object> context;
 
     @SuppressWarnings("unchecked")
     public EventVO() {
@@ -41,7 +41,7 @@ public class EventVO<T> implements Event {
         this.name = event.getName();
         this.previousIds = event.getPreviousIds();
         this.previousNames = event.getPreviousNames();
-        this.data = (T)event.getData();
+        this.data = (T) event.getData();
         this.time = event.getTime();
         this.publisher = event.getPublisher();
         this.resourceId = event.getResourceId();
@@ -56,8 +56,8 @@ public class EventVO<T> implements Event {
 
     public static EventVO<Object> reply(Event request) {
         String[] previousIds = request.getPreviousIds();
-        if ( previousIds != null && previousIds.length > 0 ) {
-            String[] newIds = new String[previousIds.length+1];
+        if (previousIds != null && previousIds.length > 0) {
+            String[] newIds = new String[previousIds.length + 1];
             System.arraycopy(previousIds, 0, newIds, 1, previousIds.length);
             newIds[0] = request.getId();
 
@@ -77,8 +77,8 @@ public class EventVO<T> implements Event {
     }
 
     protected static String[] prepend(String[] array, String value) {
-        if ( array != null && array.length > 0 ) {
-            String[] newIds = new String[array.length+1];
+        if (array != null && array.length > 0) {
+            String[] newIds = new String[array.length + 1];
             System.arraycopy(array, 0, newIds, 1, array.length);
             newIds[0] = value;
 
@@ -294,6 +294,7 @@ public class EventVO<T> implements Event {
         this.transitioningProgress = transitioningProgress;
         return this;
     }
+
     @Override
     public String getTransitioningInternalMessage() {
         return transitioningInternalMessage;
@@ -338,12 +339,10 @@ public class EventVO<T> implements Event {
 
     @Override
     public String toString() {
-        return "EventVO [id=" + id + ", name=" + name + ", previousNames=" + Arrays.toString(previousNames)
-                + ", replyTo=" + replyTo + ", resourceId=" + resourceId + ", resourceType=" + resourceType
-                + ", publisher=" + publisher + ", transitioning=" + transitioning + ", transitioningMessage="
-                + transitioningMessage + ", transitioningInternalMessage=" + transitioningInternalMessage
-                + ", previousIds=" + Arrays.toString(previousIds) + ", data=" + data + ", time=" + time
-                + ", listenerKey=" + listenerKey + ", transitioningProgress=" + transitioningProgress + "]";
+        return "EventVO [id=" + id + ", name=" + name + ", previousNames=" + Arrays.toString(previousNames) + ", replyTo=" + replyTo + ", resourceId="
+                + resourceId + ", resourceType=" + resourceType + ", publisher=" + publisher + ", transitioning=" + transitioning + ", transitioningMessage="
+                + transitioningMessage + ", transitioningInternalMessage=" + transitioningInternalMessage + ", previousIds=" + Arrays.toString(previousIds)
+                + ", data=" + data + ", time=" + time + ", listenerKey=" + listenerKey + ", transitioningProgress=" + transitioningProgress + "]";
     }
 
 }

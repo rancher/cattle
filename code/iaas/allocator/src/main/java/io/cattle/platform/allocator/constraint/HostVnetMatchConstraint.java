@@ -18,8 +18,8 @@ public class HostVnetMatchConstraint implements Constraint {
     long nicId;
     Long vnetId;
 
-    Map<Long,Set<Long>> subnetIdHostIds = new HashMap<Long, Set<Long>>();
-    Map<Long,Set<Long>> subnetIdPhysicalHostIds = new HashMap<Long, Set<Long>>();
+    Map<Long, Set<Long>> subnetIdHostIds = new HashMap<Long, Set<Long>>();
+    Map<Long, Set<Long>> subnetIdPhysicalHostIds = new HashMap<Long, Set<Long>>();
 
     public HostVnetMatchConstraint(long nicId, Long vnetId, ObjectManager objectManager, AllocatorDao allocatorDao) {
         super();
@@ -34,36 +34,36 @@ public class HostVnetMatchConstraint implements Constraint {
         Long subnetId = candidate.getSubnetIds().get(nicId);
         Set<Long> hostIds = candidate.getHosts();
 
-        if ( subnetId != null && hostIds != null ) {
-            for ( long hostId : hostIds ) {
+        if (subnetId != null && hostIds != null) {
+            for (long hostId : hostIds) {
                 Set<Long> validHostIds = subnetIdHostIds.get(subnetId);
-                if ( validHostIds == null ) {
+                if (validHostIds == null) {
                     validHostIds = new HashSet<Long>();
                     validHostIds.addAll(allocatorDao.getHostsForSubnet(subnetId, vnetId));
 
                     subnetIdHostIds.put(subnetId, validHostIds);
                 }
 
-                if ( validHostIds.contains(hostId) ) {
+                if (validHostIds.contains(hostId)) {
                     continue;
                 }
 
                 Host host = objectManager.loadResource(Host.class, hostId);
 
-                if ( host.getPhysicalHostId() == null ) {
-                    if ( validHostIds.size() != 0 ) {
+                if (host.getPhysicalHostId() == null) {
+                    if (validHostIds.size() != 0) {
                         return false;
                     }
                 } else {
                     Set<Long> validPhysicalHosts = subnetIdPhysicalHostIds.get(subnetId);
-                    if ( validPhysicalHosts == null ) {
+                    if (validPhysicalHosts == null) {
                         validPhysicalHosts = new HashSet<Long>();
                         validPhysicalHosts.addAll(allocatorDao.getPhysicalHostsForSubnet(subnetId, vnetId));
 
                         subnetIdPhysicalHostIds.put(subnetId, validPhysicalHosts);
                     }
 
-                    if ( validPhysicalHosts.size() > 0 && ! validPhysicalHosts.contains(host.getPhysicalHostId()) ) {
+                    if (validPhysicalHosts.size() > 0 && !validPhysicalHosts.contains(host.getPhysicalHostId())) {
                         return false;
                     }
                 }

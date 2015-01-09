@@ -17,17 +17,17 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Instance instance = (Instance)state.getResource();
+        Instance instance = (Instance) state.getResource();
 
-        for ( Port port : getObjectManager().children(instance, Port.class) ) {
+        for (Port port : getObjectManager().children(instance, Port.class)) {
             deactivateThenRemove(port, state.getData());
         }
 
-        for ( InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID) ) {
+        for (InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID)) {
             deactivateThenRemove(link, state.getData());
         }
-        
-        for ( Mount mount : getObjectManager().children(instance, Mount.class) ) {
+
+        for (Mount mount : getObjectManager().children(instance, Mount.class)) {
             deactivateThenRemove(mount, state.getData());
         }
 

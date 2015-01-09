@@ -25,12 +25,12 @@ public class MetadataAttachProcessHandler extends AbstractObjectProcessLogic imp
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        InstanceHostMap map = (InstanceHostMap)state.getResource();
+        InstanceHostMap map = (InstanceHostMap) state.getResource();
         Instance instance = objectManager.loadResource(Instance.class, map.getInstanceId());
 
-        if ( metadataService.isAttachMetadata(instance) ) {
+        if (metadataService.isAttachMetadata(instance)) {
             objectManager.setFields(instance, ObjectMetaDataManager.APPEND + ObjectMetaDataManager.DATA_FIELD,
-                CollectionUtils.asMap(MetadataConstants.METADATA_ATTACH, true));
+                    CollectionUtils.asMap(MetadataConstants.METADATA_ATTACH, true));
         }
 
         return null;

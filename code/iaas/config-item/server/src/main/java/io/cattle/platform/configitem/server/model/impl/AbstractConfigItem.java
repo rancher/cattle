@@ -20,7 +20,7 @@ public abstract class AbstractConfigItem implements ConfigItem {
 
     protected String getVersion(Request req) {
         ItemVersion version = versionManager.getRequestedVersion(req.getClient(), req.getItemName());
-        if ( version == null ) {
+        if (version == null) {
             return null;
         }
 

@@ -28,7 +28,7 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
 
     private static final Logger log = LoggerFactory.getLogger(DefaultAuthorizationProvider.class);
 
-    Map<String,SchemaFactory> schemaFactories = new HashMap<String, SchemaFactory>();
+    Map<String, SchemaFactory> schemaFactories = new HashMap<String, SchemaFactory>();
     List<SchemaFactory> schemaFactoryList;
     int priority = Priority.DEFAULT;
     AchaiusPolicyOptionsFactory optionsFactory;
@@ -36,9 +36,9 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     @Override
     public SchemaFactory getSchemaFactory(Account account, ApiRequest request) {
         Object name = request.getAttribute(ACCOUNT_SCHEMA_FACTORY_NAME);
-        if ( name != null ) {
+        if (name != null) {
             SchemaFactory schemaFactory = schemaFactories.get(name.toString());
-            if ( schemaFactory == null ) {
+            if (schemaFactory == null) {
                 log.error("Failed to find schema factory [{}]", name);
             } else {
                 return schemaFactory;
@@ -53,7 +53,7 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
         PolicyOptionsWrapper options = new PolicyOptionsWrapper(optionsFactory.getOptions(account));
         AccountPolicy policy = new AccountPolicy(account, options);
 
-        if ( SubscriptionUtils.getSubscriptionStyle(policy) == SubscriptionStyle.QUALIFIED ) {
+        if (SubscriptionUtils.getSubscriptionStyle(policy) == SubscriptionStyle.QUALIFIED) {
             options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER, IaasEvents.ACCOUNT_QUALIFIER);
             options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER_VALUE, Long.toString(account.getId()));
         }
@@ -66,7 +66,6 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
         return SubscriptionUtils.getSubscriptionStyle(tempPolicy);
     }
 
-
     public List<SchemaFactory> getSchemaFactoryList() {
         return schemaFactoryList;
     }
@@ -78,9 +77,9 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
 
     @Override
     public void start() {
-        for ( SchemaFactory factory : schemaFactoryList ) {
-            if ( factory instanceof SubSchemaFactory ) {
-                ((SubSchemaFactory)factory).init();
+        for (SchemaFactory factory : schemaFactoryList) {
+            if (factory instanceof SubSchemaFactory) {
+                ((SubSchemaFactory) factory).init();
             }
             schemaFactories.put(factory.getId(), factory);
         }

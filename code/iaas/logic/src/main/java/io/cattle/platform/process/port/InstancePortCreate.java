@@ -32,37 +32,32 @@ public class InstancePortCreate extends AbstractObjectProcessLogic implements Pr
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Instance instance = (Instance)state.getResource();
+        Instance instance = (Instance) state.getResource();
         ObjectManager objectManager = getObjectManager();
 
         List<String> portDefs = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_PORTS, String.class);
-        if ( portDefs == null ) {
+        if (portDefs == null) {
             return null;
         }
 
-        Map<Integer,Port> ports = new HashMap<Integer, Port>();
-        for ( Port port : objectManager.children(instance, Port.class) ) {
+        Map<Integer, Port> ports = new HashMap<Integer, Port>();
+        for (Port port : objectManager.children(instance, Port.class)) {
             ports.put(port.getPrivatePort(), port);
         }
 
-        for ( String port : portDefs ) {
+        for (String port : portDefs) {
             PortSpec spec = new PortSpec(port);
 
-            if ( ports.containsKey(spec.getPrivatePort()) ) {
+            if (ports.containsKey(spec.getPrivatePort())) {
                 continue;
             }
 
-            Port portObj = objectManager.create(Port.class,
-                    PORT.KIND, PortConstants.KIND_USER,
-                    PORT.ACCOUNT_ID, instance.getAccountId(),
-                    PORT.INSTANCE_ID, instance.getId(),
-                    PORT.PUBLIC_PORT, spec.getPublicPort(),
-                    PORT.PRIVATE_PORT, spec.getPrivatePort(),
-                    PORT.PROTOCOL, spec.getProtocol());
+            Port portObj = objectManager.create(Port.class, PORT.KIND, PortConstants.KIND_USER, PORT.ACCOUNT_ID, instance.getAccountId(), PORT.INSTANCE_ID,
+                    instance.getId(), PORT.PUBLIC_PORT, spec.getPublicPort(), PORT.PRIVATE_PORT, spec.getPrivatePort(), PORT.PROTOCOL, spec.getProtocol());
             ports.put(portObj.getPrivatePort(), portObj);
         }
 
-        for ( Port port : ports.values() ) {
+        for (Port port : ports.values()) {
             getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, port, state.getData());
         }
 

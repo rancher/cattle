@@ -24,8 +24,8 @@ public class AgentInstanceServicesInstanceHostMapActivate extends AbstractObject
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        for ( ConfigUpdateRequest request : ConfigUpdateRequestUtils.getRequests(jsonMapper, state) ) {
-            if ( ConfigUpdateRequestUtils.shouldWaitFor(request) ) {
+        for (ConfigUpdateRequest request : ConfigUpdateRequestUtils.getRequests(jsonMapper, state)) {
+            if (ConfigUpdateRequestUtils.shouldWaitFor(request)) {
                 statusManager.waitFor(request);
             }
         }

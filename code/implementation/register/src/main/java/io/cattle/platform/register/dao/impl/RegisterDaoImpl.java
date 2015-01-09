@@ -21,19 +21,13 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
 
     @Override
     public Agent createAgentForRegistration(String key, GenericObject obj) {
-        Map<String,Object> data = CollectionUtils.asMap(
-                RegisterConstants.AGENT_DATA_REGISTRATION_KEY, key,
-                AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID, obj.getAccountId());
+        Map<String, Object> data = CollectionUtils.asMap(RegisterConstants.AGENT_DATA_REGISTRATION_KEY, key, AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID,
+                obj.getAccountId());
 
-        Agent agent = objectManager.create(Agent.class,
-                AGENT.KIND, "registeredAgent",
-                AGENT.URI, String.format("event://%s", obj.getUuid()),
-                AGENT.DATA, data,
+        Agent agent = objectManager.create(Agent.class, AGENT.KIND, "registeredAgent", AGENT.URI, String.format("event://%s", obj.getUuid()), AGENT.DATA, data,
                 AGENT.MANAGED_CONFIG, true);
 
-        DataAccessor.fromDataFieldOf(obj)
-                    .withKey(RegisterConstants.DATA_AGENT_ID)
-                    .set(agent.getId());
+        DataAccessor.fromDataFieldOf(obj).withKey(RegisterConstants.DATA_AGENT_ID).set(agent.getId());
 
         objectManager.persist(obj);
 

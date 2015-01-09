@@ -24,20 +24,20 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
 
     @Override
     public void processEvent(EventVO<Object> event) {
-        if ( event.getName() == null || ! event.getName().startsWith(IaasEvents.RESOURCE_CHANGE) ) {
+        if (event.getName() == null || !event.getName().startsWith(IaasEvents.RESOURCE_CHANGE)) {
             return;
         }
 
         String type = event.getResourceType();
         String id = event.getResourceId();
 
-        if ( type == null || id == null ) {
+        if (type == null || id == null) {
             return;
         }
 
         ResourceManager rm = locator.getResourceManagerByType(type);
 
-        if ( rm == null ) {
+        if (rm == null) {
             return;
         }
 
@@ -46,20 +46,20 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
 
             Object obj = rm.getById(type, id, new ListOptions(request));
 
-            if ( obj == null ) {
+            if (obj == null) {
                 return;
             }
 
             Resource resource = rm.convertResponse(obj, request);
-            if ( resource == null ) {
+            if (resource == null) {
                 return;
             }
 
-            Map<String,Object> data = new HashMap<String, Object>();
+            Map<String, Object> data = new HashMap<String, Object>();
             data.put("resource", jsonMapper.convertValue(resource, Map.class));
 
             event.setData(data);
-        } catch ( ClientVisibleException e ) {
+        } catch (ClientVisibleException e) {
         }
     }
 

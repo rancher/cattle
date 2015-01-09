@@ -6,7 +6,7 @@ import io.cattle.platform.iaas.event.IaasEvents;
 
 import java.util.Map;
 
-public class DelegateEvent extends EventVO<DelegateEventData>{
+public class DelegateEvent extends EventVO<DelegateEventData> {
 
     public DelegateEvent() {
         setName(IaasEvents.DELEGATE_REQUEST);

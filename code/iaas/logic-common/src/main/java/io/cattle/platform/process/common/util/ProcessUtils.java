@@ -9,8 +9,8 @@ public class ProcessUtils {
     public static String getDefaultProcessName(Object obj) {
         String name = ScopeUtils.getScopeFromName(obj);
         String[] parts = name.split("[.]");
-        if ( parts.length > 2 ) {
-            parts[parts.length-1] = "." + parts[parts.length-1];
+        if (parts.length > 2) {
+            parts[parts.length - 1] = "." + parts[parts.length - 1];
             name = StringUtils.join(parts, "");
         }
 

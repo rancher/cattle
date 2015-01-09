@@ -12,7 +12,7 @@ public interface AgentInstanceManager {
 
     List<? extends Agent> getAgents(NetworkServiceProvider provider);
 
-    Map<NetworkServiceProvider,Instance> getAgentInstances(Nic clientNic);
+    Map<NetworkServiceProvider, Instance> getAgentInstances(Nic clientNic);
 
     NetworkServiceInfo getNetworkService(Instance instance, String kind, boolean waitForStart);
 

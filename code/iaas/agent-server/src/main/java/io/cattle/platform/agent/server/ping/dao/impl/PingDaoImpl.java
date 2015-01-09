@@ -34,27 +34,22 @@ public class PingDaoImpl extends AbstractJooqDao implements PingDao {
 
     @Override
     public List<? extends Agent> findAgentsToPing() {
-        return create()
-                .selectFrom(AGENT)
-                .where(
-                        AGENT.STATE.eq(CommonStatesConstants.ACTIVE)
-                        .and(groupCondition()))
-                        .fetch();
+        return create().selectFrom(AGENT).where(AGENT.STATE.eq(CommonStatesConstants.ACTIVE).and(groupCondition())).fetch();
     }
 
     protected Condition groupCondition() {
-        if ( groupManager.shouldHandleWildcard() ) {
+        if (groupManager.shouldHandleWildcard()) {
             return DSL.trueCondition();
         }
 
         Condition condition = DSL.falseCondition();
         Set<Long> supported = groupManager.supportedGroups();
 
-        if ( supported.size() > 0 ) {
+        if (supported.size() > 0) {
             condition = AGENT.AGENT_GROUP_ID.in(supported);
         }
 
-        if ( groupManager.shouldHandleUnassigned() ) {
+        if (groupManager.shouldHandleUnassigned()) {
             condition = condition.or(AGENT.AGENT_GROUP_ID.isNull());
         }
 
@@ -72,19 +67,14 @@ public class PingDaoImpl extends AbstractJooqDao implements PingDao {
 
     @Override
     public Map<String, Host> getHosts(long agentId) {
-        Map<String,Host> hosts = new HashMap<>();
+        Map<String, Host> hosts = new HashMap<>();
 
-        List<? extends Host> hostList = create()
-                .select(HOST.fields())
-                .from(HOST)
-                .where(
-                        HOST.AGENT_ID.eq(agentId)
-                        .and(HOST.REMOVED.isNull()))
-                        .fetchInto(HostRecord.class);
+        List<? extends Host> hostList = create().select(HOST.fields()).from(HOST).where(HOST.AGENT_ID.eq(agentId).and(HOST.REMOVED.isNull()))
+                .fetchInto(HostRecord.class);
 
-        for ( Host host : hostList ) {
+        for (Host host : hostList) {
             String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
-            if ( uuid == null ) {
+            if (uuid == null) {
                 uuid = host.getUuid();
             }
 
@@ -96,19 +86,14 @@ public class PingDaoImpl extends AbstractJooqDao implements PingDao {
 
     @Override
     public Map<String, StoragePool> getStoragePools(long agentId) {
-        Map<String,StoragePool> pools = new HashMap<>();
+        Map<String, StoragePool> pools = new HashMap<>();
 
-        List<? extends StoragePool> poolList = create()
-                .select(STORAGE_POOL.fields())
-                .from(STORAGE_POOL)
-                .where(
-                        STORAGE_POOL.AGENT_ID.eq(agentId)
-                        .and(STORAGE_POOL.REMOVED.isNull()))
-                        .fetchInto(StoragePoolRecord.class);
+        List<? extends StoragePool> poolList = create().select(STORAGE_POOL.fields()).from(STORAGE_POOL)
+                .where(STORAGE_POOL.AGENT_ID.eq(agentId).and(STORAGE_POOL.REMOVED.isNull())).fetchInto(StoragePoolRecord.class);
 
-        for ( StoragePool pool : poolList ) {
+        for (StoragePool pool : poolList) {
             String uuid = DataAccessor.fields(pool).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
-            if ( uuid == null ) {
+            if (uuid == null) {
                 uuid = pool.getUuid();
             }
 
@@ -120,19 +105,14 @@ public class PingDaoImpl extends AbstractJooqDao implements PingDao {
 
     @Override
     public Map<String, PhysicalHost> getPhysicalHosts(long agentId) {
-        Map<String,PhysicalHost> hosts = new HashMap<>();
+        Map<String, PhysicalHost> hosts = new HashMap<>();
 
-        List<? extends PhysicalHost> hostList = create()
-                .select(PHYSICAL_HOST.fields())
-                .from(PHYSICAL_HOST)
-                .where(
-                        PHYSICAL_HOST.AGENT_ID.eq(agentId)
-                        .and(PHYSICAL_HOST.REMOVED.isNull()))
-                        .fetchInto(PhysicalHostRecord.class);
+        List<? extends PhysicalHost> hostList = create().select(PHYSICAL_HOST.fields()).from(PHYSICAL_HOST)
+                .where(PHYSICAL_HOST.AGENT_ID.eq(agentId).and(PHYSICAL_HOST.REMOVED.isNull())).fetchInto(PhysicalHostRecord.class);
 
-        for ( PhysicalHost host : hostList ) {
+        for (PhysicalHost host : hostList) {
             String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
-            if ( uuid == null ) {
+            if (uuid == null) {
                 uuid = host.getUuid();
             }
 

@@ -23,15 +23,15 @@ public class IpsecInfoFactory extends AbstractAgentBaseContextFactory {
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         Network network = null;
         Data data = null;
-        for ( NetworkService service : networkDao.getAgentInstanceNetworkService(instance.getId(), NetworkServiceConstants.KIND_IPSEC_TUNNEL) ) {
-            if ( network == null ) {
+        for (NetworkService service : networkDao.getAgentInstanceNetworkService(instance.getId(), NetworkServiceConstants.KIND_IPSEC_TUNNEL)) {
+            if (network == null) {
                 network = objectManager.loadResource(Network.class, service.getNetworkId());
                 data = objectManager.findAny(Data.class, DATA.NAME, String.format("%s/%s", service.getUuid(), "ipsecKey"));
                 break;
             }
         }
 
-        if ( data != null ) {
+        if (data != null) {
             context.getData().put("ipsecNetwork", network);
             context.getData().put("ipsecKey", data.getValue());
         }

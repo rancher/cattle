@@ -19,15 +19,14 @@ public class AuthorizedManager extends AbstractNoOpResourceManager {
     SshAgentDao agentDao;
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria,
-            ListOptions options) {
+    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         request.setResponseContentType("text/plain");
 
         try {
             OutputStream os = request.getOutputStream();
 
-            for ( String[] keys : agentDao.getClientKeyPairs() ) {
+            for (String[] keys : agentDao.getClientKeyPairs()) {
                 os.write(keys[0].getBytes("UTF-8"));
                 os.write('\n');
             }

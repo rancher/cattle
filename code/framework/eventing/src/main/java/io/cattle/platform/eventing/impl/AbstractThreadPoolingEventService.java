@@ -35,13 +35,13 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     String threadCountSetting = "eventing.pool.%s.count";
     String defaultPoolName = EventHandler.DEFAULT_POOL_KEY;
     List<NamedExecutorService> namedExecutorServiceList;
-    Map<String,ExecutorService> executorServices;
-    Map<String,Counter> dropped = new ConcurrentHashMap<String, Counter>();
+    Map<String, ExecutorService> executorServices;
+    Map<String, Counter> dropped = new ConcurrentHashMap<String, Counter>();
 
     protected void onEvent(String listenerKey, String eventName, byte[] bytes) {
         try {
             EventVO<?> event = jsonMapper.readValue(bytes, EventVO.class);
-            if ( eventName != null ) {
+            if (eventName != null) {
                 event.setName(eventName);
             }
             event.setListenerKey(listenerKey);
@@ -61,7 +61,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
         try {
             EventVO<?> event = jsonMapper.readValue(eventString, EventVO.class);
-            if ( eventName != null ) {
+            if (eventName != null) {
                 event.setName(eventName);
             }
             event.setListenerKey(listenerKey);
@@ -83,24 +83,24 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
     protected void onEventInContext(Event event) {
         String name = event.getName();
-        if ( name == null ) {
+        if (name == null) {
             log.debug("null event name on event [{}]", event);
             return;
         }
 
         List<EventListener> listeners = getEventListeners(event);
-        if ( listeners == null || listeners.size() == 0 ) {
+        if (listeners == null || listeners.size() == 0) {
             log.debug("No listeners found for [{}]", event.getName());
             return;
         }
 
-        for ( EventListener listener : listeners ) {
+        for (EventListener listener : listeners) {
             Executor executor = getExecutor(event, listener);
             Runnable runnable = getRunnable(event, listener);
 
             try {
                 executor.execute(runnable);
-            } catch ( RejectedExecutionException e ) {
+            } catch (RejectedExecutionException e) {
                 dropped(event);
                 log.debug("Too busy to process [{}]", event);
             }
@@ -109,12 +109,12 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
     protected void dropped(Event event) {
         String metricName = metricName(event, "dropped");
-        if ( metricName == null ) {
+        if (metricName == null) {
             return;
         }
 
         Counter counter = dropped.get(metricName);
-        if ( counter == null ) {
+        if (counter == null) {
             counter = MetricsUtil.getRegistry().counter(metricName);
             dropped.put(metricName, counter);
         }
@@ -122,19 +122,18 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
         counter.inc();
     }
 
-
     protected Runnable getRunnable(final Event event, final EventListener listener) {
         return new NoExceptionRunnable() {
             @Override
             protected void doRun() throws Exception {
                 try {
-                    Map<String,Object> context = event.getContext();
-                    if ( context != null ) {
+                    Map<String, Object> context = event.getContext();
+                    if (context != null) {
                         MDC.setContextMap(context);
                     }
 
                     listener.onEvent(event);
-                } catch ( FailedToAcquireLockException e ) {
+                } catch (FailedToAcquireLockException e) {
                     log.trace("Failed to acquire lock on event [{}], this is probably normal", event, e);
                 }
             }
@@ -143,11 +142,11 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
     protected Executor getExecutor(Event event, EventListener listener) {
         Executor executor = null;
-        if ( listener instanceof PoolSpecificListener ) {
-            executor = executorServices.get(((PoolSpecificListener)listener).getPoolKey());
+        if (listener instanceof PoolSpecificListener) {
+            executor = executorServices.get(((PoolSpecificListener) listener).getPoolKey());
         }
 
-        if ( executor == null ) {
+        if (executor == null) {
             executor = getDefaultExecutor();
         }
 
@@ -161,7 +160,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     @Override
     public void start() {
         executorServices = new HashMap<String, ExecutorService>();
-        for ( NamedExecutorService named : namedExecutorServiceList ) {
+        for (NamedExecutorService named : namedExecutorServiceList) {
             executorServices.put(named.getName(), named.getExecutorService());
         }
     }

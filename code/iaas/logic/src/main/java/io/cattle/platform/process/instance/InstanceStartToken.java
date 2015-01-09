@@ -22,10 +22,10 @@ public class InstanceStartToken extends AbstractObjectProcessLogic implements Pr
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Instance instance = (Instance)state.getResource();
+        Instance instance = (Instance) state.getResource();
         String token = instance.getToken();
 
-        if ( token == null ) {
+        if (token == null) {
             byte[] buffer = new byte[64];
             RANDOM.nextBytes(buffer);
             token = Base64.encodeBase64String(buffer).replaceAll("[/=+]", "");

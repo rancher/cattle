@@ -23,7 +23,7 @@ public class ServerProcessInstanceExecutor extends NoExceptionRunnable {
     @Override
     public void doRun() {
         ProcessInstance process = repository.loadProcess(id);
-        if ( process == null ) {
+        if (process == null) {
             log.error("Failed to find processInstance [{}]", id);
             return;
         }

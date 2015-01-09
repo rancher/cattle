@@ -30,18 +30,18 @@ public class Configuration extends DefaultConfiguration {
     public void init() {
         String prop = "db." + name + ".database";
         String database = ArchaiusUtil.getString(prop).get();
-        if ( database == null ) {
+        if (database == null) {
             throw new IllegalStateException("Failed to find config for [" + prop + "]");
         }
 
         try {
             SQLDialect dialect = SQLDialect.valueOf(database.trim().toUpperCase());
             set(dialect);
-        } catch ( IllegalArgumentException e ) {
+        } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid SQLDialect [" + database.toUpperCase() + "]", e);
         }
 
-        if ( connectionProvider == null ) {
+        if (connectionProvider == null) {
             set(new AutoCommitConnectionProvider(dataSource));
         } else {
             set(connectionProvider);
@@ -50,13 +50,13 @@ public class Configuration extends DefaultConfiguration {
         settings.setRenderSchema(false);
 
         String renderNameStyle = ArchaiusUtil.getString("db." + name + "." + database + ".render.name.style").get();
-        if ( renderNameStyle != null ) {
+        if (renderNameStyle != null) {
             settings.setRenderNameStyle(RenderNameStyle.valueOf(renderNameStyle.trim().toUpperCase()));
         }
 
         set(settings);
 
-        if ( listeners != null && listeners.size() > 0 ) {
+        if (listeners != null && listeners.size() > 0) {
             settings().setExecuteLogging(false);
             set(DefaultExecuteListenerProvider.providers(listeners.toArray(new ExecuteListener[listeners.size()])));
         }

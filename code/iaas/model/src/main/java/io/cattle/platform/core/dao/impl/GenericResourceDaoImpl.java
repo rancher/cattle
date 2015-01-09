@@ -25,7 +25,7 @@ public class GenericResourceDaoImpl implements GenericResourceDao {
 
     @Override
     public <T> T createAndSchedule(Class<T> clz, Object key, Object... values) {
-        Map<Object,Object> properties = CollectionUtils.asMap(key, values);
+        Map<Object, Object> properties = CollectionUtils.asMap(key, values);
         return createAndSchedule(clz, objectManager.convertToPropertiesFor(clz, properties));
     }
 

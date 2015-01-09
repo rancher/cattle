@@ -32,23 +32,16 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
         TableField<?, Object> removed = JooqUtils.getTableField(metaDataManager, type, ObjectMetaDataManager.REMOVED_FIELD);
         TableField<?, Object> referenceField = JooqUtils.getTableField(metaDataManager, type, reference.getPropertyName());
 
-        if ( removed == null || referenceField == null ) {
+        if (removed == null || referenceField == null) {
             throw new IllegalArgumentException("Type [" + mapType + "] is missing required removed or reference column");
         }
 
-        return (List<? extends T>)create()
-                .selectFrom(table)
-                .where(
-                        removed.isNull()
-                        .and(referenceField.eq(resourceId)))
-                .fetch();
+        return (List<? extends T>) create().selectFrom(table).where(removed.isNull().and(referenceField.eq(resourceId))).fetch();
     }
-
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T findNonRemoved(Class<T> mapType, Class<?> leftResourceType, long leftResourceId,
-            Class<?> rightResourceType, long rightResourceId) {
+    public <T> T findNonRemoved(Class<T> mapType, Class<?> leftResourceType, long leftResourceId, Class<?> rightResourceType, long rightResourceId) {
         String type = schemaFactory.getSchemaName(mapType);
 
         Table<?> table = getTable(mapType);
@@ -59,19 +52,13 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
         TableField<?, Object> leftReferenceField = JooqUtils.getTableField(metaDataManager, type, leftReference.getPropertyName());
         TableField<?, Object> rightReferenceField = JooqUtils.getTableField(metaDataManager, type, rightReference.getPropertyName());
 
-        if ( removed == null || leftReferenceField == null || rightReferenceField == null ) {
+        if (removed == null || leftReferenceField == null || rightReferenceField == null) {
             throw new IllegalArgumentException("Type [" + mapType + "] is missing required removed or references column");
         }
 
-        return (T)create()
-                .selectFrom(table)
-                .where(
-                        removed.isNull()
-                        .and(leftReferenceField.eq(leftResourceId))
-                        .and(rightReferenceField.eq(rightResourceId)))
+        return (T) create().selectFrom(table).where(removed.isNull().and(leftReferenceField.eq(leftResourceId)).and(rightReferenceField.eq(rightResourceId)))
                 .fetchOne();
     }
-
 
     @SuppressWarnings("unchecked")
     @Override
@@ -85,20 +72,13 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
         TableField<?, Object> referenceField = JooqUtils.getTableField(metaDataManager, type, reference.getPropertyName());
         TableField<?, Object> state = JooqUtils.getTableField(metaDataManager, type, ObjectMetaDataManager.STATE_FIELD);
 
-        if ( removed == null || referenceField == null || state == null ) {
+        if (removed == null || referenceField == null || state == null) {
             throw new IllegalArgumentException("Type [" + mapType + "] is missing required removed, reference, or state column");
         }
 
-        return (List<? extends T>)create()
-                .selectFrom(table)
-                .where(
-                        referenceField.eq(resourceId)
-                        .and(
-                                removed.isNull()
-                                .or(state.eq(CommonStatesConstants.REMOVING))))
-                .fetch();
+        return (List<? extends T>) create().selectFrom(table)
+                .where(referenceField.eq(resourceId).and(removed.isNull().or(state.eq(CommonStatesConstants.REMOVING)))).fetch();
     }
-
 
     protected <T> Table<?> getTable(Class<?> mapType) {
         Class<UpdatableRecord<?>> record = JooqUtils.getRecordClass(schemaFactory, mapType);
@@ -106,17 +86,17 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
     }
 
     protected Relationship getRelationship(Class<?> mapType, Class<?> resourceType) {
-        Map<String,Relationship> rels = metaDataManager.getLinkRelationships(schemaFactory, schemaFactory.getSchemaName(mapType));
+        Map<String, Relationship> rels = metaDataManager.getLinkRelationships(schemaFactory, schemaFactory.getSchemaName(mapType));
         Relationship reference = null;
-        for ( Map.Entry<String,Relationship> entry : rels.entrySet() ) {
+        for (Map.Entry<String, Relationship> entry : rels.entrySet()) {
             Relationship rel = entry.getValue();
-            if ( rel.getRelationshipType() == Relationship.RelationshipType.REFERENCE && resourceType.isAssignableFrom(rel.getObjectType())) {
+            if (rel.getRelationshipType() == Relationship.RelationshipType.REFERENCE && resourceType.isAssignableFrom(rel.getObjectType())) {
                 reference = rel;
                 break;
             }
         }
 
-        if ( reference == null ) {
+        if (reference == null) {
             throw new IllegalArgumentException("Failed to find reference relationship from [" + mapType + "] to [" + resourceType + "]");
         }
 

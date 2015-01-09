@@ -12,13 +12,13 @@ public class RegisterOutputFilter implements ResourceOutputFilter {
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if ( ! (original instanceof GenericObject) ) {
+        if (!(original instanceof GenericObject)) {
             return converted;
         }
 
         Object key = RequestUtils.makeSingularIfCan(request.getRequestParams().get(GenericObjectConstants.FIELD_KEY));
 
-        if ( key == null || ! key.equals(((GenericObject)original).getKey()) ) {
+        if (key == null || !key.equals(((GenericObject) original).getKey())) {
             converted.getFields().remove(RegisterConstants.FIELD_ACCESS_KEY);
             converted.getFields().remove(RegisterConstants.FIELD_SECRET_KEY);
             converted.getFields().remove(GenericObjectConstants.FIELD_KEY);

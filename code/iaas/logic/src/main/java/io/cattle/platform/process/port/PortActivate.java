@@ -22,39 +22,37 @@ public class PortActivate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Port port = (Port)state.getResource();
+        Port port = (Port) state.getResource();
         Instance instance = getObjectManager().loadResource(Instance.class, port.getInstanceId());
 
-        if ( instance == null ) {
+        if (instance == null) {
             return null;
         }
 
         Long privateIpAddress = port.getPrivateIpAddressId();
         Long publicIpAddress = port.getPublicIpAddressId();
 
-        for ( Nic nic : getObjectManager().children(instance, Nic.class) ) {
+        for (Nic nic : getObjectManager().children(instance, Nic.class)) {
             Integer device = nic.getDeviceNumber();
 
-            if ( device != null && device == 0 ) {
+            if (device != null && device == 0) {
                 IpAddress ipAddress = ipAddressDao.getPrimaryIpAddress(nic);
-                if ( ipAddress != null ) {
+                if (ipAddress != null) {
                     privateIpAddress = ipAddress.getId();
                 }
             }
         }
 
-        if ( publicIpAddress == null ) {
-            outer:
-            for ( Host host : getObjectManager().mappedChildren(instance, Host.class) ) {
-                for ( IpAddress ipAddress : getObjectManager().mappedChildren(host, IpAddress.class) ) {
+        if (publicIpAddress == null) {
+            outer: for (Host host : getObjectManager().mappedChildren(instance, Host.class)) {
+                for (IpAddress ipAddress : getObjectManager().mappedChildren(host, IpAddress.class)) {
                     publicIpAddress = ipAddress.getId();
                     break outer;
                 }
             }
         }
 
-        return new HandlerResult(PORT.PUBLIC_IP_ADDRESS_ID, publicIpAddress,
-                PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddress).withShouldContinue(true);
+        return new HandlerResult(PORT.PUBLIC_IP_ADDRESS_ID, publicIpAddress, PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddress).withShouldContinue(true);
     }
 
     public IpAddressDao getIpAddressDao() {

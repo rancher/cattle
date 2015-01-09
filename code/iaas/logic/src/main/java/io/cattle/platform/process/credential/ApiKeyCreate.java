@@ -28,28 +28,28 @@ public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessP
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Credential credential = (Credential)state.getResource();
+        Credential credential = (Credential) state.getResource();
 
-        if ( ! getCredentialType().equals(credential.getKind()) ) {
+        if (!getCredentialType().equals(credential.getKind())) {
             return null;
         }
 
         String publicValue = credential.getPublicValue();
         String secretValue = credential.getSecretValue();
 
-        if ( publicValue == null ) {
+        if (publicValue == null) {
             String[] keys = generateKeys();
             publicValue = keys[0];
             secretValue = keys[1];
         }
 
-        /* Don't pass back secret value because it will be logged and that's not good */
+        /*
+         * Don't pass back secret value because it will be logged and that's not
+         * good
+         */
         objectManager.setFields(credential, CREDENTIAL.SECRET_VALUE, secretValue);
 
-        return new HandlerResult(
-                CREDENTIAL.PUBLIC_VALUE, publicValue,
-                "_secretHash", secretValue.hashCode()
-            );
+        return new HandlerResult(CREDENTIAL.PUBLIC_VALUE, publicValue, "_secretHash", secretValue.hashCode());
     }
 
     protected String getCredentialType() {
@@ -66,12 +66,12 @@ public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessP
         String accessKeyString = Hex.encodeHexString(accessKey);
         String secretKeyString = Base64.encodeBase64String(secretKey).replaceAll(BAD_CHARACTERS.get(), "");
 
-        if ( secretKeyString.length() < 40 ) {
+        if (secretKeyString.length() < 40) {
             /* Wow, this is terribly bad luck */
             throw new IllegalStateException("Failed to create secretKey due to not enough good characters");
         }
 
-        return new String[] { accessKeyString.substring(0,20).toUpperCase(), secretKeyString.substring(0, 40) };
+        return new String[] { accessKeyString.substring(0, 20).toUpperCase(), secretKeyString.substring(0, 40) };
     }
 
     @Override

@@ -27,12 +27,9 @@ public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
     private static DynamicLongProperty AFTER_SECONDS = ArchaiusUtil.getLong("task.purge.after.seconds");
 
     public void purgeOld() {
-        int deleted = create()
-            .delete(TASK_INSTANCE)
-            .where(
-                    TASK_INSTANCE.START_TIME.lt(new Date(System.currentTimeMillis() - AFTER_SECONDS.get() * 1000)))
-            .execute();
-        if ( deleted > 0 ) {
+        int deleted = create().delete(TASK_INSTANCE).where(TASK_INSTANCE.START_TIME.lt(new Date(System.currentTimeMillis() - AFTER_SECONDS.get() * 1000)))
+                .execute();
+        if (deleted > 0) {
             log.info("Deleted [{}] task instance records", deleted);
         }
     }
@@ -40,14 +37,11 @@ public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
     @Override
     public void register(String name) {
         Task task = getTask(name);
-        if ( task == null ) {
+        if (task == null) {
             try {
-                create()
-                    .insertInto(TASK, TASK.NAME)
-                    .values(name)
-                    .execute();
-            } catch ( DataAccessException e ) {
-                if ( getTask(name) == null ) {
+                create().insertInto(TASK, TASK.NAME).values(name).execute();
+            } catch (DataAccessException e) {
+                if (getTask(name) == null) {
                     throw e;
                 }
             }
@@ -56,13 +50,13 @@ public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
 
     @Override
     public Object newRecord(io.cattle.platform.task.Task taskObj) {
-        if ( taskObj instanceof TaskOptions && ! ((TaskOptions)taskObj).isShouldRecord() ) {
+        if (taskObj instanceof TaskOptions && !((TaskOptions) taskObj).isShouldRecord()) {
             return null;
         }
 
         String name = taskObj.getName();
         Task task = getTask(name);
-        if ( task == null ) {
+        if (task == null) {
             throw new IllegalStateException("Unknown task [" + name + "]");
         }
 
@@ -79,25 +73,25 @@ public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
 
     @Override
     public void finish(Object record) {
-        if ( record == null ) {
+        if (record == null) {
             return;
         }
 
-        TaskInstanceRecord task = (TaskInstanceRecord)record;
+        TaskInstanceRecord task = (TaskInstanceRecord) record;
         task.setEndTime(new Timestamp(System.currentTimeMillis()));
         task.update();
     }
 
     @Override
     public void failed(Object record, Throwable t) {
-        if ( record == null ) {
+        if (record == null) {
             return;
         }
 
-        TaskInstanceRecord task = (TaskInstanceRecord)record;
+        TaskInstanceRecord task = (TaskInstanceRecord) record;
         task.setEndTime(new Timestamp(System.currentTimeMillis()));
         String exception = ExceptionUtils.toString(t);
-        if ( exception.length() > 255 ) {
+        if (exception.length() > 255) {
             exception = exception.substring(0, 255);
         }
         task.setException(exception);
@@ -105,10 +99,7 @@ public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
     }
 
     protected Task getTask(String name) {
-        return create()
-            .selectFrom(TASK)
-            .where(TASK.NAME.eq(name))
-            .fetchOne();
+        return create().selectFrom(TASK).where(TASK.NAME.eq(name)).fetchOne();
     }
 
 }

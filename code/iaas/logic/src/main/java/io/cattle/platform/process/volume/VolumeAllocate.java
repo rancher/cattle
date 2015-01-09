@@ -28,12 +28,12 @@ public class VolumeAllocate extends EventBasedProcessHandler {
 
     @Override
     protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
-        Map<String,Set<Long>> allocationData = new HashMap<String, Set<Long>>();
+        Map<String, Set<Long>> allocationData = new HashMap<String, Set<Long>>();
         result.put("_allocationData", allocationData);
 
-        Volume volume = (Volume)state.getResource();
+        Volume volume = (Volume) state.getResource();
 
-        for ( VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId()) ) {
+        for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
             CollectionUtils.addToMap(allocationData, "volume:" + volume.getId(), map.getVolumeId(), HashSet.class);
             create(map, state.getData());
         }

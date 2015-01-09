@@ -36,48 +36,47 @@ public class PortSpecTest {
         assertNull(spec.getPublicPort());
     }
 
-
     @Test
     public void testBadFormats() {
         try {
             new PortSpec("a");
             fail();
-        } catch ( ClientVisibleException e ) {
+        } catch (ClientVisibleException e) {
             assertEquals(PortSpec.WRONG_FORMAT, e.getCode());
         }
 
         try {
             new PortSpec("0");
             fail();
-        } catch ( ClientVisibleException e ) {
+        } catch (ClientVisibleException e) {
             assertEquals(PortSpec.INVALID_PRIVATE_PORT, e.getCode());
         }
 
         try {
             new PortSpec("65536");
             fail();
-        } catch ( ClientVisibleException e ) {
+        } catch (ClientVisibleException e) {
             assertEquals(PortSpec.INVALID_PRIVATE_PORT, e.getCode());
         }
 
         try {
             new PortSpec("0:65535");
             fail();
-        } catch ( ClientVisibleException e ) {
+        } catch (ClientVisibleException e) {
             assertEquals(PortSpec.INVALID_PUBLIC_PORT, e.getCode());
         }
 
         try {
             new PortSpec("65536:65535");
             fail();
-        } catch ( ClientVisibleException e ) {
+        } catch (ClientVisibleException e) {
             assertEquals(PortSpec.INVALID_PUBLIC_PORT, e.getCode());
         }
 
         try {
             new PortSpec("80/asdf");
             fail();
-        } catch ( ClientVisibleException e ) {
+        } catch (ClientVisibleException e) {
             assertEquals(PortSpec.INVALID_PROTOCOL, e.getCode());
         }
     }

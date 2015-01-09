@@ -11,13 +11,11 @@ public interface RemoteAgent {
 
     void publish(Event event);
 
-
     Event callSync(Event event);
 
     Event callSync(Event event, EventCallOptions options);
 
     Event callSync(Event event, long timeoutMillis);
-
 
     ListenableFuture<? extends Event> call(Event event);
 
@@ -25,13 +23,11 @@ public interface RemoteAgent {
 
     ListenableFuture<? extends Event> call(Event event, long timeoutMillis);
 
-
     <T extends Event> T callSync(Event event, Class<T> reply);
 
     <T extends Event> T callSync(Event event, Class<T> reply, EventCallOptions options);
 
     <T extends Event> T callSync(Event event, Class<T> reply, long timeoutMillis);
-
 
     <T extends Event> ListenableFuture<T> call(Event event, Class<T> reply);
 

@@ -8,7 +8,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
 
-
 public class URLResource extends AbstractResource {
 
     URL url;
@@ -29,7 +28,7 @@ public class URLResource extends AbstractResource {
             IOUtils.copy(is, os);
 
             size = os.getCount();
-        } catch ( IOException e ) {
+        } catch (IOException e) {
             throw new IllegalStateException("Failed to count bytes for [" + url + "]", e);
         } finally {
             IOUtils.closeQuietly(is);

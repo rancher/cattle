@@ -27,8 +27,8 @@ public class HazelcastDaoImpl extends AbstractJooqDao implements HazelcastDao {
     protected String getRandomString(String name, boolean visible, boolean uuid) {
         String value = get(name);
 
-        if ( value == null ) {
-            if ( uuid ) {
+        if (value == null) {
+            if (uuid) {
                 value = UUID.randomUUID().toString();
             } else {
                 byte[] bytes = new byte[64];
@@ -40,7 +40,7 @@ public class HazelcastDaoImpl extends AbstractJooqDao implements HazelcastDao {
                 set(name, value, visible);
             } catch (DataAccessException e) {
                 value = get(name);
-                if ( value == null ) {
+                if (value == null) {
                     throw e;
                 }
             }
@@ -50,18 +50,11 @@ public class HazelcastDaoImpl extends AbstractJooqDao implements HazelcastDao {
     }
 
     protected String get(String name) {
-        return create()
-                .select(DATA.VALUE)
-                .from(DATA)
-                .where(DATA.NAME.eq(name))
-                .fetchOne(DATA.VALUE);
+        return create().select(DATA.VALUE).from(DATA).where(DATA.NAME.eq(name)).fetchOne(DATA.VALUE);
     }
 
     protected void set(String name, String value, boolean visible) {
-        create()
-            .insertInto(DATA, DATA.NAME, DATA.VISIBLE, DATA.VALUE)
-            .values(name, visible, value)
-            .execute();
+        create().insertInto(DATA, DATA.NAME, DATA.VISIBLE, DATA.VALUE).values(name, visible, value).execute();
     }
 
 }

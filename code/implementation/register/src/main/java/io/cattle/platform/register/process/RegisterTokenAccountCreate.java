@@ -24,20 +24,19 @@ public class RegisterTokenAccountCreate extends AbstractObjectProcessLogic imple
 
     @Override
     public HandlerResult handle(final ProcessState state, ProcessInstance process) {
-        Account account = (Account)state.getResource();
+        Account account = (Account) state.getResource();
 
         boolean found = false;
-        for ( Credential cred : children(account, Credential.class) ) {
-            if ( RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN.equals(cred.getKind()) ) {
+        for (Credential cred : children(account, Credential.class)) {
+            if (RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN.equals(cred.getKind())) {
                 found = true;
                 break;
             }
         }
 
-        if ( ! found ) {
-            resourceDao.createAndSchedule(Credential.class,
-                    CREDENTIAL.ACCOUNT_ID, account.getId(),
-                    CREDENTIAL.KIND, RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
+        if (!found) {
+            resourceDao.createAndSchedule(Credential.class, CREDENTIAL.ACCOUNT_ID, account.getId(), CREDENTIAL.KIND,
+                    RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
         }
 
         return null;

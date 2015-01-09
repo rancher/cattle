@@ -30,25 +30,24 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
     ConfigItemStatusManager statusManager;
     boolean assignBase = true;
 
-    protected void assignItems(NetworkServiceProvider provider, Agent agent, Object owner,
-            ProcessState state, ProcessInstance processInstance) {
-        if ( agent == null ) {
+    protected void assignItems(NetworkServiceProvider provider, Agent agent, Object owner, ProcessState state, ProcessInstance processInstance) {
+        if (agent == null) {
             return;
         }
 
         String contextId = getContext(processInstance, owner);
 
         ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, contextId);
-        if ( request == null ) {
+        if (request == null) {
             request = new ConfigUpdateRequest(agent.getId());
             ConfigUpdateRequestUtils.setWaitFor(request);
-            if ( assignBase ) {
+            if (assignBase) {
                 assignBaseItems(provider, request, agent, processInstance);
             }
             assignServiceItems(provider, request, agent, state, processInstance);
         }
 
-        if ( request != null ) {
+        if (request != null) {
             statusManager.updateConfig(request);
             ConfigUpdateRequestUtils.setRequest(request, state, contextId);
         }
@@ -56,27 +55,27 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
 
     protected abstract String getConfigPrefix();
 
-    protected void assignServiceItems(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent,
-            ProcessState state, ProcessInstance processInstance) {
+    protected void assignServiceItems(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessState state,
+            ProcessInstance processInstance) {
         Set<String> apply = new HashSet<String>();
         Set<String> increment = new HashSet<String>();
         String prefix = String.format("%s%s.%s", getConfigPrefix(), processInstance.getName(), provider.getKind());
 
-        for ( NetworkService service : objectManager.children(provider, NetworkService.class) ) {
+        for (NetworkService service : objectManager.children(provider, NetworkService.class)) {
             apply.addAll(ArchaiusUtil.getList(String.format("%s.%s.apply", prefix, service.getKind())).get());
             increment.addAll(ArchaiusUtil.getList(String.format("%s.%s.increment", prefix, service.getKind())).get());
         }
 
         setItems(request, apply, increment);
 
-        for ( Agent otherAgent : getOtherAgents(provider, request, agent, state, processInstance) ) {
-            if ( otherAgent.getId().equals(agent.getId()) ) {
+        for (Agent otherAgent : getOtherAgents(provider, request, agent, state, processInstance)) {
+            if (otherAgent.getId().equals(agent.getId())) {
                 continue;
             }
 
             String context = getContext(processInstance, otherAgent);
             ConfigUpdateRequest otherRequest = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, context);
-            if ( otherRequest == null ) {
+            if (otherRequest == null) {
                 otherRequest = new ConfigUpdateRequest(otherAgent.getId());
                 setItems(otherRequest, apply, increment);
 
@@ -86,22 +85,16 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
         }
     }
 
-    protected abstract List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent,
-            ProcessState state, ProcessInstance processInstance);
+    protected abstract List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessState state,
+            ProcessInstance processInstance);
 
     protected void setItems(ConfigUpdateRequest request, Set<String> apply, Set<String> increment) {
-        for ( String item : apply ) {
-            request.addItem(item)
-                    .withApply(true)
-                    .withIncrement(false)
-                    .withCheckInSyncOnly(true);
+        for (String item : apply) {
+            request.addItem(item).withApply(true).withIncrement(false).withCheckInSyncOnly(true);
         }
 
-        for ( String item : increment ) {
-            request.addItem(item)
-                    .withApply(true)
-                    .withIncrement(true)
-                    .withCheckInSyncOnly(false);
+        for (String item : increment) {
+            request.addItem(item).withApply(true).withIncrement(true).withCheckInSyncOnly(false);
         }
     }
 
@@ -109,16 +102,12 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
         return String.format("%s:%s:%s", instance.getName(), objectManager.getType(obj), ObjectUtils.getId(obj));
     }
 
-    protected void assignBaseItems(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent,
-            ProcessInstance processInstance) {
+    protected void assignBaseItems(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessInstance processInstance) {
         String key = String.format("%s%s.%s.base.items", getConfigPrefix(), processInstance.getName(), provider.getKind());
 
-        if ( ArchaiusUtil.getBoolean(key).get() ) {
-            for ( String item : BASE.get() ) {
-                request.addItem(item)
-                    .withApply(true)
-                    .withIncrement(false)
-                    .withCheckInSyncOnly(true);
+        if (ArchaiusUtil.getBoolean(key).get()) {
+            for (String item : BASE.get()) {
+                request.addItem(item).withApply(true).withIncrement(false).withCheckInSyncOnly(true);
             }
         }
     }

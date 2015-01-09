@@ -16,20 +16,20 @@ public class AgentGroupEventNameSupplier implements EventNameProvider {
 
     @Override
     public List<String> events(EventHandler eventHandler, AnnotatedEventListener listener, Method method) {
-        if ( ! (listener instanceof AgentGroupManagerProvider) ) {
+        if (!(listener instanceof AgentGroupManagerProvider)) {
             throw new IllegalArgumentException("Listener [" + listener + "] must implement AgentGroupManagerProvider");
         }
 
-        AgentGroupManager manager = ((AgentGroupManagerProvider)listener).getAgentGroupManager();
+        AgentGroupManager manager = ((AgentGroupManagerProvider) listener).getAgentGroupManager();
 
         String eventName = EventUtils.getEventNameNonProvided(eventHandler, listener, method);
         List<String> events = new ArrayList<String>();
 
-        if ( manager.shouldHandleUnassigned() || manager.shouldHandleWildcard() ) {
+        if (manager.shouldHandleUnassigned() || manager.shouldHandleWildcard()) {
             events.add(eventName);
         }
 
-        for ( Long groupId : manager.supportedGroups() ) {
+        for (Long groupId : manager.supportedGroups()) {
             events.add(IaasEvents.appendAgentGroup(eventName, groupId));
         }
 

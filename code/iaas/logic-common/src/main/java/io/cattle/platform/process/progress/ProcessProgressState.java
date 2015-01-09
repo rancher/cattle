@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-
 public class ProcessProgressState {
 
     boolean inCorrectCheckPoint = false;
@@ -31,13 +30,13 @@ public class ProcessProgressState {
     }
 
     public String getMessage() {
-        String prefix = checkPoints.size() > 0 ? checkPoints.get(checkPoints.size()-1) : null;
+        String prefix = checkPoints.size() > 0 ? checkPoints.get(checkPoints.size() - 1) : null;
 
-        if ( prefix == null ) {
+        if (prefix == null) {
             return null;
         }
 
-        if ( StringUtils.isBlank(subMessage) ) {
+        if (StringUtils.isBlank(subMessage)) {
             return prefix;
         } else {
             return String.format("%s : %s", prefix, subMessage);
@@ -47,7 +46,7 @@ public class ProcessProgressState {
     public boolean checkPoint(String name) {
         currentCheckpoint = name;
 
-        if ( ! checkPoints.contains(name) ) {
+        if (!checkPoints.contains(name)) {
             checkPoints.add(name);
             intermediateProgress = null;
             subMessage = null;
@@ -55,7 +54,7 @@ public class ProcessProgressState {
 
             calculatePercentage();
             return true;
-        } else if ( name != null && checkPoints.size() > 0 && name.equals(checkPoints.get(checkPoints.size()-1)) ) {
+        } else if (name != null && checkPoints.size() > 0 && name.equals(checkPoints.get(checkPoints.size() - 1))) {
             inCorrectCheckPoint = true;
         }
 
@@ -63,7 +62,7 @@ public class ProcessProgressState {
     }
 
     public boolean setMessage(String message) {
-        if ( ! ObjectUtils.equals(this.subMessage, message) ) {
+        if (!ObjectUtils.equals(this.subMessage, message)) {
             this.subMessage = message;
             return true;
         }
@@ -74,7 +73,7 @@ public class ProcessProgressState {
     public boolean setIntermediateProgress(Integer progress) {
         this.intermediateProgress = progress;
 
-        if ( inCorrectCheckPoint ) {
+        if (inCorrectCheckPoint) {
             calculatePercentage();
             return true;
         }
@@ -83,7 +82,7 @@ public class ProcessProgressState {
     }
 
     protected void calculatePercentage() {
-        if ( checkpointWeights == null || checkpointWeights.length == 0 ) {
+        if (checkpointWeights == null || checkpointWeights.length == 0) {
             progress = null;
             return;
         }
@@ -91,21 +90,21 @@ public class ProcessProgressState {
         int percentage = 0;
         int last = 0;
 
-        for ( int i = 0 ; i < checkPoints.size() ; i++ ) {
+        for (int i = 0; i < checkPoints.size(); i++) {
             percentage += last;
 
-            if ( checkpointWeights.length > i ) {
+            if (checkpointWeights.length > i) {
                 last = checkpointWeights[i];
             } else {
                 last = 0;
             }
         }
 
-        if ( intermediateProgress != null && intermediateProgress > 0 ) {
-            percentage += ((last*Math.min(intermediateProgress, 100))/100);
+        if (intermediateProgress != null && intermediateProgress > 0) {
+            percentage += ((last * Math.min(intermediateProgress, 100)) / 100);
         }
 
-        if ( percentage > 100 ) {
+        if (percentage > 100) {
             progress = null;
         } else {
             progress = percentage;

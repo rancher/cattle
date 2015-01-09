@@ -45,13 +45,13 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         final SubscriptionStyle accountStyle = SubscriptionUtils.getSubscriptionStyle(policyOptions);
 
         /* This boolean logic could be optimized but this seems more readable. */
-        if ( accountStyle == SubscriptionStyle.RAW ) {
+        if (accountStyle == SubscriptionStyle.RAW) {
             apply = true;
-        } else if ( accountStyle == SubscriptionStyle.QUALIFIED && AccountConstants.AGENT_KIND.equals(account.getKind()) ) {
+        } else if (accountStyle == SubscriptionStyle.QUALIFIED && AccountConstants.AGENT_KIND.equals(account.getKind())) {
             apply = true;
         }
 
-        if ( ! apply ) {
+        if (!apply) {
             return null;
         }
 
@@ -69,7 +69,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         options.addCallback(SubscriptionUtils.POLICY_SUBSCRIPTION_STYLE, new OptionCallback() {
             @Override
             public String getOption() {
-                if ( accountStyle == SubscriptionStyle.RAW && getRawAgentId() != null ) {
+                if (accountStyle == SubscriptionStyle.RAW && getRawAgentId() != null) {
                     return SubscriptionStyle.QUALIFIED.toString();
                 }
 
@@ -83,7 +83,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
             public String getOption() {
                 String agentId = options.getOption(Policy.AGENT_ID);
 
-                if ( agentId == null ) {
+                if (agentId == null) {
                     log.error("Failed to determine the proper agent ID for subscription for account [{}]", account.getId());
                     throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
                 }
@@ -100,11 +100,11 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         Subscribe subscribe = request.proxyRequestObject(Subscribe.class);
         try {
             Long agentId = subscribe.getAgentId();
-            if ( agentId != null ) {
+            if (agentId != null) {
                 return agentId;
             }
-        } catch ( Throwable t ) {
-            //ignore errors;
+        } catch (Throwable t) {
+            // ignore errors;
         }
 
         return null;
@@ -113,19 +113,19 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
     protected Long getAgent() {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         Long agentId = getRawAgentId();
-        if ( agentId != null ) {
+        if (agentId != null) {
             return agentId;
         }
 
         String type = request.getSchemaFactory().getSchemaName(Agent.class);
         ResourceManager rm = getLocator().getResourceManagerByType(type);
-        List<?> agents = rm.list(type, null,Pagination.limit(2));
+        List<?> agents = rm.list(type, null, Pagination.limit(2));
 
-        if ( agents.size() > 1 ) {
+        if (agents.size() > 1) {
             throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "agentId");
         }
 
-        return agents.size() == 0 ? null : ((Agent)agents.get(0)).getId();
+        return agents.size() == 0 ? null : ((Agent) agents.get(0)).getId();
     }
 
     @Override

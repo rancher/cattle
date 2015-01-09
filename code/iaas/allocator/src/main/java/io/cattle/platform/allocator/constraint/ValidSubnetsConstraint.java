@@ -22,12 +22,12 @@ public class ValidSubnetsConstraint implements Constraint {
 
     @Override
     public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
-        if ( subnets.size() == 0 ) {
+        if (subnets.size() == 0) {
             return true;
         }
 
         Long subnetId = candidate.getSubnetIds().get(nicId);
-        if ( subnetId == null ) {
+        if (subnetId == null) {
             return false;
         }
 

@@ -6,13 +6,13 @@ import java.util.List;
 
 public interface ContainerExec {
 
-    @Field(defaultValue="true")
+    @Field(defaultValue = "true")
     boolean getAttachStdin();
 
-    @Field(defaultValue="true")
+    @Field(defaultValue = "true")
     boolean getAttachStdout();
 
-    @Field(defaultValue="true")
+    @Field(defaultValue = "true")
     boolean getTty();
 
     @Field(required = true)

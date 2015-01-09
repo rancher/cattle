@@ -13,8 +13,7 @@ public class PortRemove extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        return new HandlerResult(PORT.PUBLIC_IP_ADDRESS_ID, null,
-                PORT.PRIVATE_IP_ADDRESS_ID, null).withShouldContinue(true);
+        return new HandlerResult(PORT.PUBLIC_IP_ADDRESS_ID, null, PORT.PRIVATE_IP_ADDRESS_ID, null).withShouldContinue(true);
     }
 
 }

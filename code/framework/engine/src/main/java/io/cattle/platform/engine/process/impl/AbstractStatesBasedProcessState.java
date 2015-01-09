@@ -24,7 +24,7 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
         String oldState = getState();
         String newState = statesDefinition.getTransitioningState(oldState);
 
-        if ( ! setState(true, oldState, newState) ) {
+        if (!setState(true, oldState, newState)) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
 
@@ -38,7 +38,7 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
         String oldState = getState();
         String newState = statesDefinition.getDoneState(oldState);
 
-        if ( ! setState(false, oldState, newState) ) {
+        if (!setState(false, oldState, newState)) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
 
@@ -47,17 +47,17 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
 
     @Override
     public boolean shouldCancel(ProcessRecord record) {
-        if ( isStart(record) ) {
+        if (isStart(record)) {
             return false;
         }
-        return ! statesDefinition.isValidState(getState());
+        return !statesDefinition.isValidState(getState());
     }
 
     @Override
     public boolean isDone(boolean schedule) {
         String state = getState();
-        if ( statesDefinition.isDone(state) ) {
-            if ( schedule && statesDefinition.isStartAndDone(state) ) {
+        if (statesDefinition.isDone(state)) {
+            if (schedule && statesDefinition.isStartAndDone(state)) {
                 return false;
             } else {
                 return true;
@@ -71,15 +71,16 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
     public boolean isStart(ProcessRecord record) {
         ProcessState parent = record == null ? null : record.getParentProcessState();
 
-        if ( parent != null ) {
-            if ( parent instanceof AbstractStatesBasedProcessState ) {
-                String doneState = ((AbstractStatesBasedProcessState)parent).getStatesDefinition().getDoneState(getState());
-                if ( statesDefinition.isStart(doneState) ) {
+        if (parent != null) {
+            if (parent instanceof AbstractStatesBasedProcessState) {
+                String doneState = ((AbstractStatesBasedProcessState) parent).getStatesDefinition().getDoneState(getState());
+                if (statesDefinition.isStart(doneState)) {
                     return true;
                 }
-            } else if ( parent.isTransitioning() ){
-                /* We just trust that the transition is valid, since we don't know what
-                 * type of state it is
+            } else if (parent.isTransitioning()) {
+                /*
+                 * We just trust that the transition is valid, since we don't
+                 * know what type of state it is
                  */
                 return true;
             }
@@ -100,14 +101,14 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> convertData(Object data) {
-        if ( data instanceof Map ) {
-            return convertMap((Map<Object,Object>)data);
+        if (data instanceof Map) {
+            return convertMap((Map<Object, Object>) data);
         } else {
             return jsonMapper.convertValue(data, Map.class);
         }
     }
 
-    protected abstract Map<String, Object> convertMap(Map<Object,Object> data);
+    protected abstract Map<String, Object> convertMap(Map<Object, Object> data);
 
     public JsonMapper getJsonMapper() {
         return jsonMapper;

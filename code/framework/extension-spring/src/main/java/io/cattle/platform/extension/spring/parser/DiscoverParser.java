@@ -21,7 +21,7 @@ public class DiscoverParser extends AbstractSingleBeanDefinitionParser implement
         String key = element.getAttribute("key");
 
         builder.addPropertyValue("typeClass", clz);
-        if ( StringUtils.hasText(key) ) {
+        if (StringUtils.hasText(key)) {
             builder.addPropertyValue("key", key);
         }
 

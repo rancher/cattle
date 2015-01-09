@@ -54,10 +54,9 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         return listInternal(schemaFactory, type, criteria, options, null);
     }
 
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options,
-            Map<Table<?>,Condition> joins) {
+    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options, Map<Table<?>, Condition> joins) {
         Class<?> clz = getClass(schemaFactory, type, criteria, true);
-        if ( clz == null ) {
+        if (clz == null) {
             return null;
         }
 
@@ -66,9 +65,9 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         Table<?> table = JooqUtils.getTableFromRecordClass(clz);
         Sort sort = options == null ? null : options.getSort();
         Pagination pagination = options == null ? null : options.getPagination();
-        Include include = options ==null ? null : options.getInclude();
+        Include include = options == null ? null : options.getInclude();
 
-        if ( table == null )
+        if (table == null)
             return null;
 
         SelectQuery<?> query = create().selectQuery();
@@ -86,34 +85,34 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     }
 
     protected void addJoins(SelectQuery<?> query, Map<Table<?>, Condition> joins) {
-        if ( joins == null ) {
+        if (joins == null) {
             return;
         }
 
-        for ( Map.Entry<Table<?>, Condition> entry : joins.entrySet() ) {
+        for (Map.Entry<Table<?>, Condition> entry : joins.entrySet()) {
             query.addJoin(entry.getKey(), JoinType.LEFT_OUTER_JOIN, entry.getValue());
         }
     }
 
     protected void processPaginationResult(List<?> result, Pagination pagination, MultiTableMapper mapper) {
         Integer limit = pagination == null ? null : pagination.getLimit();
-        if ( limit == null ) {
+        if (limit == null) {
             return;
         }
 
         long offset = getOffset(pagination);
         boolean partial = false;
 
-        if ( mapper == null ) {
+        if (mapper == null) {
             partial = result.size() > limit;
-            if ( partial ) {
+            if (partial) {
                 result.remove(result.size() - 1);
             }
         } else {
             partial = mapper.getResultSize() > limit;
         }
 
-        if ( partial ) {
+        if (partial) {
             Pagination paginationResponse = new Pagination(limit);
             paginationResponse.setPartial(true);
             paginationResponse.setNext(ApiContext.getUrlBuilder().next("m" + (offset + limit)));
@@ -126,16 +125,17 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
 
     protected int getOffset(Pagination pagination) {
         Object marker = getMarker(pagination);
-        if ( marker == null ) {
+        if (marker == null) {
             return 0;
-        } else if ( marker instanceof String ) {
-            /* Important to check that marker is a string.  If you don't then
+        } else if (marker instanceof String) {
+            /*
+             * Important to check that marker is a string. If you don't then
              * somebody could use the marker functionality to deobfuscate ID's
              * and find their long value.
              */
             try {
-                return Integer.parseInt((String)marker);
-            } catch ( NumberFormatException nfe) {
+                return Integer.parseInt((String) marker);
+            } catch (NumberFormatException nfe) {
                 return 0;
             }
         }
@@ -143,22 +143,22 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         return 0;
     }
 
-    protected Class<?> getClass(SchemaFactory schemaFactory, String type, Map<Object,Object> criteria, boolean alterCriteria) {
+    protected Class<?> getClass(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, boolean alterCriteria) {
         Schema schema = schemaFactory.getSchema(type);
         Class<?> clz = schemaFactory.getSchemaClass(type);
 
         Schema clzSchema = schemaFactory.getSchema(clz);
 
-        if ( clz != null && (clzSchema == null || ! schema.getId().equals(clzSchema.getId())) && alterCriteria ) {
+        if (clz != null && (clzSchema == null || !schema.getId().equals(clzSchema.getId())) && alterCriteria) {
             criteria.put(ObjectMetaDataManager.KIND_FIELD, type);
         }
 
         return clz;
     }
 
-    protected MultiTableMapper addTables(SchemaFactory schemaFactory, SelectQuery<?> query, String type, Table<?> table,
-            Map<Object, Object> criteria, Include include, Pagination pagination, Map<Table<?>,Condition> joins) {
-        if ( ( joins == null || joins.size() == 0 ) && (include == null || include.getLinks().size() == 0) ) {
+    protected MultiTableMapper addTables(SchemaFactory schemaFactory, SelectQuery<?> query, String type, Table<?> table, Map<Object, Object> criteria,
+            Include include, Pagination pagination, Map<Table<?>, Condition> joins) {
+        if ((joins == null || joins.size() == 0) && (include == null || include.getLinks().size() == 0)) {
             query.addFrom(table);
             return null;
         }
@@ -166,7 +166,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         MultiTableMapper tableMapper = new MultiTableMapper(getMetaDataManager(), pagination);
         tableMapper.map(table);
 
-        if ( include == null ) {
+        if (include == null) {
             query.addSelect(tableMapper.getFields());
             query.addFrom(table);
             return tableMapper;
@@ -175,14 +175,13 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         List<Relationship> rels = new ArrayList<Relationship>();
         rels.add(null);
 
-        for ( Map.Entry<String, Relationship> entry : getLinkRelationships(schemaFactory, type, include).entrySet() ) {
+        for (Map.Entry<String, Relationship> entry : getLinkRelationships(schemaFactory, type, include).entrySet()) {
             Relationship rel = entry.getValue();
             Table<?> childTable = JooqUtils.getTableFromRecordClass(rel.getObjectType());
-            if ( childTable == null ) {
+            if (childTable == null) {
                 throw new IllegalStateException("Failed to find table for type [" + rel.getObjectType() + "]");
             } else {
-                String key = rel.getRelationshipType() == RelationshipType.REFERENCE ?
-                        ApiUtils.SINGLE_ATTACHMENT_PREFIX + rel.getName() : rel.getName();
+                String key = rel.getRelationshipType() == RelationshipType.REFERENCE ? ApiUtils.SINGLE_ATTACHMENT_PREFIX + rel.getName() : rel.getName();
                 tableMapper.map(key, childTable);
                 rels.add(rel);
             }
@@ -193,12 +192,12 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         query.addSelect(tableMapper.getFields());
         query.addFrom(table);
 
-        for ( int i = 0 ; i < tables.size() ; i++ ) {
+        for (int i = 0; i < tables.size(); i++) {
             Relationship rel = rels.get(i);
             Table<?> toTable = tables.get(i);
-            if ( rel != null ) {
-                if ( rel.getRelationshipType() == RelationshipType.MAP ) {
-                    addMappingJoins(query, toTable, schemaFactory, type, table, toTable.getName(), (MapRelationship)rel);
+            if (rel != null) {
+                if (rel.getRelationshipType() == RelationshipType.MAP) {
+                    addMappingJoins(query, toTable, schemaFactory, type, table, toTable.getName(), (MapRelationship) rel);
                 } else {
                     query.addJoin(toTable, JoinType.LEFT_OUTER_JOIN, getJoinCondition(schemaFactory, type, table, toTable.getName(), rel));
                 }
@@ -208,10 +207,13 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         return tableMapper;
     }
 
-    protected void addMappingJoins(SelectQuery<?> query, Table<?> toTable, SchemaFactory schemaFactory, String fromType, Table<?> from, String asName, MapRelationship rel) {
+    protected void addMappingJoins(SelectQuery<?> query, Table<?> toTable, SchemaFactory schemaFactory, String fromType, Table<?> from, String asName,
+            MapRelationship rel) {
         Table<?> mappingTable = JooqUtils.getTableFromRecordClass(rel.getMappingType());
-        /* We don't required the mapping type to be visible external, that's why we use the schemaFactory
-         * from the objectManager, because it is the superset schemaFactory.
+        /*
+         * We don't required the mapping type to be visible external, that's why
+         * we use the schemaFactory from the objectManager, because it is the
+         * superset schemaFactory.
          */
         String mappingType = getObjectManager().getSchemaFactory().getSchemaName(rel.getMappingType());
 
@@ -219,7 +221,8 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         TableField<?, Object> fieldTo = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getPropertyName());
         TableField<?, Object> fieldRemoved = JooqUtils.getTableField(getMetaDataManager(), mappingType, ObjectMetaDataManager.REMOVED_FIELD);
 
-        org.jooq.Condition cond = fieldFrom.eq(fieldTo.getTable().field(fieldTo.getName())).and(fieldRemoved == null ? DSL.trueCondition() : fieldRemoved.isNull());
+        org.jooq.Condition cond = fieldFrom.eq(fieldTo.getTable().field(fieldTo.getName())).and(
+                fieldRemoved == null ? DSL.trueCondition() : fieldRemoved.isNull());
         query.addJoin(mappingTable, JoinType.LEFT_OUTER_JOIN, cond);
 
         fieldFrom = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getOtherRelationship().getPropertyName());
@@ -233,11 +236,10 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         TableField<?, Object> fieldFrom = null;
         TableField<?, Object> fieldTo = null;
 
-        switch(rel.getRelationshipType()) {
+        switch (rel.getRelationshipType()) {
         case REFERENCE:
             fieldFrom = JooqUtils.getTableField(getMetaDataManager(), fromType, rel.getPropertyName());
-            fieldTo = JooqUtils.getTableField(getMetaDataManager(), schemaFactory.getSchemaName(rel.getObjectType()),
-                    ObjectMetaDataManager.ID_FIELD);
+            fieldTo = JooqUtils.getTableField(getMetaDataManager(), schemaFactory.getSchemaName(rel.getObjectType()), ObjectMetaDataManager.ID_FIELD);
             break;
         case CHILD:
             fieldFrom = JooqUtils.getTableField(getMetaDataManager(), fromType, ObjectMetaDataManager.ID_FIELD);
@@ -247,7 +249,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
             throw new IllegalArgumentException("Illegal Relationship type [" + rel.getRelationshipType() + "]");
         }
 
-        if ( fieldFrom == null || fieldTo == null ) {
+        if (fieldFrom == null || fieldTo == null) {
             throw new IllegalStateException("Failed to construction join query for [" + fromType + "] [" + from + "] [" + rel + "]");
         }
 
@@ -257,7 +259,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     protected void addConditions(SchemaFactory schemaFactory, SelectQuery<?> query, String type, Table<?> table, Map<Object, Object> criteria) {
         org.jooq.Condition condition = JooqUtils.toConditions(getMetaDataManager(), type, criteria);
 
-        if ( condition != null ) {
+        if (condition != null) {
             query.addConditions(condition);
         }
     }
@@ -265,15 +267,17 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     @Override
     protected Object getMapLink(String fromType, String id, MapRelationship rel, ApiRequest request) {
         SchemaFactory schemaFactory = request.getSchemaFactory();
-        /* We don't required the mapping type to be visible external, that's why we use the schemaFactory
-         * from the objectManager, because it is the superset schemaFactory.
+        /*
+         * We don't required the mapping type to be visible external, that's why
+         * we use the schemaFactory from the objectManager, because it is the
+         * superset schemaFactory.
          */
         String mappingType = getObjectManager().getSchemaFactory().getSchemaName(rel.getMappingType());
         String type = schemaFactory.getSchemaName(rel.getObjectType());
-        Map<Table<?>,Condition> joins = new LinkedHashMap<Table<?>, Condition>();
+        Map<Table<?>, Condition> joins = new LinkedHashMap<Table<?>, Condition>();
         Map<Object, Object> criteria = new LinkedHashMap<Object, Object>();
 
-        if ( mappingType == null || type == null ) {
+        if (mappingType == null || type == null) {
             return null;
         }
 
@@ -284,8 +288,8 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         TableField<?, Object> fieldRemoved = JooqUtils.getTableField(getMetaDataManager(), mappingType, ObjectMetaDataManager.REMOVED_FIELD);
         TableField<?, Object> fromTypeIdField = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getSelfRelationship().getPropertyName());
 
-        org.jooq.Condition cond = fieldFrom.eq(fieldTo.getTable().field(fieldTo.getName()))
-                                    .and(fieldRemoved == null ? DSL.trueCondition() : fieldRemoved.isNull());
+        org.jooq.Condition cond = fieldFrom.eq(fieldTo.getTable().field(fieldTo.getName())).and(
+                fieldRemoved == null ? DSL.trueCondition() : fieldRemoved.isNull());
 
         joins.put(mappingTable, cond);
         criteria.put(Condition.class, fromTypeIdField.eq(id));
@@ -294,7 +298,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     }
 
     protected void addLimit(SchemaFactory schemaFactory, String type, Pagination pagination, SelectQuery<?> query) {
-        if ( pagination == null || pagination.getLimit() == null ) {
+        if (pagination == null || pagination.getLimit() == null) {
             return;
         }
 
@@ -304,12 +308,12 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     }
 
     protected void addSort(SchemaFactory schemaFactory, String type, Sort sort, SelectQuery<?> query) {
-        if ( sort == null ) {
+        if (sort == null) {
             return;
         }
 
         TableField<?, Object> sortField = JooqUtils.getTableField(getMetaDataManager(), type, sort.getName());
-        if ( sortField == null ) {
+        if (sortField == null) {
             return;
         }
 
@@ -325,19 +329,19 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     protected void addAccountAuthorization(String type, Map<Object, Object> criteria, Policy policy) {
         super.addAccountAuthorization(type, criteria, policy);
 
-        if ( ! policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) ) {
+        if (!policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS)) {
             TableField<?, Object> accountField = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ACCOUNT_FIELD);
             TableField<?, Object> publicField = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.PUBLIC_FIELD);
             Object accountValue = criteria.get(ObjectMetaDataManager.ACCOUNT_FIELD);
 
-            if ( accountField == null || publicField == null || accountValue == null ) {
+            if (accountField == null || publicField == null || accountValue == null) {
                 return;
             }
 
             criteria.remove(ObjectMetaDataManager.ACCOUNT_FIELD);
             Condition accountCondition = null;
-            if ( accountValue instanceof io.github.ibuildthecloud.gdapi.condition.Condition ) {
-                accountCondition = accountField.in(((io.github.ibuildthecloud.gdapi.condition.Condition)accountValue).getValues());
+            if (accountValue instanceof io.github.ibuildthecloud.gdapi.condition.Condition) {
+                accountCondition = accountField.in(((io.github.ibuildthecloud.gdapi.condition.Condition) accountValue).getValues());
             } else {
                 accountCondition = accountField.eq(accountValue);
             }
@@ -351,12 +355,9 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         Table<?> table = JooqUtils.getTableFromRecordClass(JooqUtils.getRecordClass(request.getSchemaFactory(), obj.getClass()));
         TableField<?, Object> idField = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
 
-        int result = create()
-            .delete(table)
-            .where(idField.eq(id))
-            .execute();
+        int result = create().delete(table).where(idField.eq(id)).execute();
 
-        if ( result != 1 ) {
+        if (result != 1) {
             log.error("While deleting type [{}] and id [{}] got a result of [{}]", type, id, result);
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         }
@@ -366,7 +367,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
 
     @Override
     public boolean handleException(Throwable t, ApiRequest apiRequest) {
-        if ( t instanceof DataAccessException ) {
+        if (t instanceof DataAccessException) {
             log.error("Database error", t);
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         }

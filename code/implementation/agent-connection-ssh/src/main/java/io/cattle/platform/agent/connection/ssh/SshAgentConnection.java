@@ -15,8 +15,8 @@ public class SshAgentConnection extends AgentEventingConnection implements Agent
     SshAgentConnectionFactory factory;
     int callbackPort;
 
-    public SshAgentConnection(long agentId, String uri, EventService eventService, SshAgentConnectionFactory factory,
-            ClientSession session, ChannelExec exec, int callbackPort) {
+    public SshAgentConnection(long agentId, String uri, EventService eventService, SshAgentConnectionFactory factory, ClientSession session, ChannelExec exec,
+            int callbackPort) {
         super(agentId, uri, eventService);
 
         this.factory = factory;
@@ -31,10 +31,9 @@ public class SshAgentConnection extends AgentEventingConnection implements Agent
         factory.close(this);
     }
 
-
     @Override
     public boolean isOpen() {
-        if ( ! super.isOpen() ) {
+        if (!super.isOpen()) {
             return false;
         }
 

@@ -11,11 +11,11 @@ public class AgentRequest extends EventVO<Event> {
     }
 
     public AgentRequest(Long agentId, Long groupId, Event event) {
-        if ( agentId == null ) {
+        if (agentId == null) {
             throw new IllegalArgumentException("Agent id is null");
         }
 
-        if ( groupId == null ) {
+        if (groupId == null) {
             setName(IaasEvents.AGENT_REQUEST);
         } else {
             setName(IaasEvents.appendAgentGroup(IaasEvents.AGENT_REQUEST, groupId));

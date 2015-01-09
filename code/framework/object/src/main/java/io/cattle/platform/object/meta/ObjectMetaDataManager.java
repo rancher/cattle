@@ -41,13 +41,13 @@ public interface ObjectMetaDataManager {
 
     Object convertFieldNameFor(String type, Object key);
 
-    Map<String,String> getLinks(SchemaFactory schemaFactory, String type);
+    Map<String, String> getLinks(SchemaFactory schemaFactory, String type);
 
-    Map<String,Relationship> getLinkRelationships(SchemaFactory schemaFactory, String type);
+    Map<String, Relationship> getLinkRelationships(SchemaFactory schemaFactory, String type);
 
     Relationship getRelationship(String type, String linkName);
 
-    Map<String,Object> getTransitionFields(Schema schema, Object obj);
+    Map<String, Object> getTransitionFields(Schema schema, Object obj);
 
-    Map<String,ActionDefinition> getActionDefinitions(Object obj);
+    Map<String, ActionDefinition> getActionDefinitions(Object obj);
 }

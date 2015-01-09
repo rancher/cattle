@@ -14,7 +14,7 @@ public class MetricsStartup {
     public void init() {
         MetricRegistry registry = MetricsUtil.getRegistry();
 
-        reporter = JmxReporter.forRegistry(registry ).build();
+        reporter = JmxReporter.forRegistry(registry).build();
         reporter.start();
     }
 

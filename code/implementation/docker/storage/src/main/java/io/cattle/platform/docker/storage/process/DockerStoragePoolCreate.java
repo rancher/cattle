@@ -26,13 +26,13 @@ public class DockerStoragePoolCreate extends AbstractObjectProcessLogic implemen
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        if ( ! CREATE_POOL.get() ) {
+        if (!CREATE_POOL.get()) {
             return null;
         }
 
-        StoragePool storagePool = (StoragePool)state.getResource();
+        StoragePool storagePool = (StoragePool) state.getResource();
 
-        if ( DockerStoragePoolDriver.isDockerPool(storagePool) ) {
+        if (DockerStoragePoolDriver.isDockerPool(storagePool)) {
             poolDriver.createDockerExternalPool(storagePool);
         }
 

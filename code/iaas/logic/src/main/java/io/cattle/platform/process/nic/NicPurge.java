@@ -25,19 +25,18 @@ public class NicPurge extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = (Nic)state.getResource();
+        Nic nic = (Nic) state.getResource();
         Network network = loadResource(Network.class, nic.getNetworkId());
 
-        for ( IpAddressNicMap map : mapDao.findToRemove(IpAddressNicMap.class, Nic.class, nic.getId())) {
+        for (IpAddressNicMap map : mapDao.findToRemove(IpAddressNicMap.class, Nic.class, nic.getId())) {
             IpAddress ipAddress = getObjectManager().loadResource(IpAddress.class, map.getIpAddressId());
 
             deactivateThenRemove(ipAddress, state.getData());
             deactivateThenRemove(map, state.getData());
         }
 
-        if ( network != null ) {
-            poolManager.releaseResource(network, nic,
-                    new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC));
+        if (network != null) {
+            poolManager.releaseResource(network, nic, new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC));
         }
 
         return new HandlerResult(NIC.MAC_ADDRESS, new Object[] { null }).withShouldContinue(true);

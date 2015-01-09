@@ -17,7 +17,7 @@ public class AgentConnectionSimulatorFactory implements AgentConnectionFactory {
     public AgentConnection createConnection(Agent agent) throws IOException {
         String uri = agent.getUri();
 
-        if ( uri != null && uri.startsWith("sim://") ) {
+        if (uri != null && uri.startsWith("sim://")) {
             return new AgentConnectionSimulator(agent, processors);
         }
 

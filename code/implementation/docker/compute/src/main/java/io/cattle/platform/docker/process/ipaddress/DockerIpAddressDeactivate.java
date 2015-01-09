@@ -17,10 +17,10 @@ public class DockerIpAddressDeactivate extends AbstractObjectProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        IpAddress ipAddress = (IpAddress)state.getResource();
+        IpAddress ipAddress = (IpAddress) state.getResource();
 
-        if ( DockerIpAddressConstants.KIND_DOCKER.equals(ipAddress.getKind()) ) {
-            return new HandlerResult(IP_ADDRESS.ADDRESS, (Object)null).withShouldContinue(true);
+        if (DockerIpAddressConstants.KIND_DOCKER.equals(ipAddress.getKind())) {
+            return new HandlerResult(IP_ADDRESS.ADDRESS, (Object) null).withShouldContinue(true);
         }
 
         return null;

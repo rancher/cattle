@@ -27,7 +27,7 @@ public class MultiLock implements Lock {
         LockDefinition[] defs = def.getLockDefinitions();
         locks = new Lock[defs.length];
 
-        for ( int i = 0 ; i < defs.length ; i++ ) {
+        for (int i = 0; i < defs.length; i++) {
             locks[i] = provider.getLock(defs[i]);
         }
     }
@@ -38,8 +38,8 @@ public class MultiLock implements Lock {
 
     @Override
     public boolean tryLock() {
-        for ( Lock lock : locks ) {
-            if ( ! lock.tryLock() )
+        for (Lock lock : locks) {
+            if (!lock.tryLock())
                 return false;
         }
         return true;
@@ -47,18 +47,21 @@ public class MultiLock implements Lock {
 
     @Override
     public void lock() throws FailedToAcquireLockException {
-        for ( Lock lock : locks ) {
+        for (Lock lock : locks) {
             lock.lock();
         }
     }
 
     @Override
     public void unlock() {
-        for ( Lock lock : locks ) {
+        for (Lock lock : locks) {
             try {
                 lock.unlock();
-            } catch ( Throwable t ) {
-                /* This is never supposed to happen, but hey sometime people don't program the right thing */
+            } catch (Throwable t) {
+                /*
+                 * This is never supposed to happen, but hey sometime people
+                 * don't program the right thing
+                 */
                 log.error("Failed to unlock [{}], unlock() should never throw an exception", lock.getLockDefinition().getLockId(), t);
             }
         }

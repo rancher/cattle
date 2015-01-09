@@ -15,8 +15,8 @@ public class NetworkServiceInfo {
     Instance agentInstance;
     IpAddress ipAddress;
 
-    public NetworkServiceInfo(NetworkServiceProvider networkServiceProvider, NetworkService networkService, Nic clientNic,
-            Nic agentNic, IpAddress ipAddress, Instance agentInstance) {
+    public NetworkServiceInfo(NetworkServiceProvider networkServiceProvider, NetworkService networkService, Nic clientNic, Nic agentNic, IpAddress ipAddress,
+            Instance agentInstance) {
         super();
         this.networkServiceProvider = networkServiceProvider;
         this.networkService = networkService;

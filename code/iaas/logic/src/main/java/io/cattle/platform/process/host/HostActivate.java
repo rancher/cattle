@@ -14,14 +14,14 @@ public class HostActivate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(final ProcessState state, ProcessInstance process) {
-        final Host host = (Host)state.getResource();
+        final Host host = (Host) state.getResource();
 
-        if ( host.getAgentId() == null ) {
+        if (host.getAgentId() == null) {
             return null;
         }
 
         Agent agent = objectManager.loadResource(Agent.class, host.getAgentId());
-        if ( agent == null ) {
+        if (agent == null) {
             return null;
         }
 
