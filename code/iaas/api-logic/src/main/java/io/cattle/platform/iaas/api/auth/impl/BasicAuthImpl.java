@@ -23,6 +23,7 @@ public class BasicAuthImpl implements AccountLookup, Priority {
     public static final String CHALLENGE_HEADER = "WWW-Authenticate";
     public static final String BASIC = "Basic";
     public static final String BASIC_REALM = "Basic realm=\"%s\"";
+    private static final String NO_CHALLENGE_HEADER = "X-API-No-Challenge";
 
     private static final DynamicStringProperty REALM = ArchaiusUtil.getString("api.auth.realm");
 
@@ -37,13 +38,16 @@ public class BasicAuthImpl implements AccountLookup, Priority {
 
     @Override
     public boolean challenge(ApiRequest request) {
+        if (StringUtils.equals("true", request.getServletContext().getRequest().getHeader(NO_CHALLENGE_HEADER))) {
+            return false;
+        }
         HttpServletResponse response = request.getServletContext().getResponse();
         String realm = REALM.get();
 
         if ( realm == null ) {
             response.setHeader(CHALLENGE_HEADER, BASIC);
         } else {
-            response.setHeader(CHALLENGE_HEADER, String.format(BASIC_REALM,realm));
+            response.setHeader(CHALLENGE_HEADER,String.format(BASIC_REALM, realm));
         }
 
         return true;

@@ -24,8 +24,14 @@
 
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
+    <bean class="io.cattle.platform.iaas.api.auth.github.TokenResourceManager" >
+        <property name="githubTokenHandler">
+            <bean class="io.cattle.platform.iaas.api.auth.github.GithubTokenHandler"/>
+        </property>
+    </bean>
+	
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
-
+	
     <bean id="TokenAccountLookup" class="io.cattle.platform.iaas.api.auth.impl.TokenAccountLookup" />
     <bean id="BasicAuth" class="io.cattle.platform.iaas.api.auth.impl.BasicAuthImpl" />
     <bean class="io.cattle.platform.iaas.api.auth.impl.HeaderAuthLookup" >
