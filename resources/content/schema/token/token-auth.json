@@ -3,6 +3,7 @@
         ".*" : "",
         "schema.*": "r",
         "token": "cr",
-        "token.jwt": "r"
+        "token.jwt": "r",
+        "token.code": "cr"
     }
 }
