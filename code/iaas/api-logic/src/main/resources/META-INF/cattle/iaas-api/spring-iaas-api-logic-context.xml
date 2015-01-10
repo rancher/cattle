@@ -30,6 +30,8 @@
         </property>
     </bean>
 	
+	<bean class="io.cattle.platform.iaas.api.auth.config.GithubConfigManager" />
+	
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
 	
     <bean id="TokenAccountLookup" class="io.cattle.platform.iaas.api.auth.impl.TokenAccountLookup" />

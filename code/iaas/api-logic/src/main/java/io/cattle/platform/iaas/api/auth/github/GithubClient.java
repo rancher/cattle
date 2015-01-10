@@ -157,7 +157,7 @@ public class GithubClient {
         String accountName = ObjectUtils.toString(jsonData.get("login"));
         return new GithubAccountInfo(accountId, accountName);
     }
-
+    
     @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;

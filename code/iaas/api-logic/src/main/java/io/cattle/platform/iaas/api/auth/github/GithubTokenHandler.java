@@ -39,8 +39,8 @@ public class GithubTokenHandler {
     private static final Long DAY_IN_MILLISECONDS = (long) (60 * 60 * 24 * 1000);
 
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
-    private static final DynamicStringProperty WHITELISTED_ORGS = ArchaiusUtil.getString("api.github.whitelist.orgs");
-    private static final DynamicStringProperty WHITELISTED_USERS = ArchaiusUtil.getString("api.github.whitelist.users");
+    private static final DynamicStringProperty WHITELISTED_ORGS = ArchaiusUtil.getString("api.auth.github.allow.orgs");
+    private static final DynamicStringProperty WHITELISTED_USERS = ArchaiusUtil.getString("api.auth.github.allow.users");
 
     public Token getGithubAccessToken(ApiRequest request) {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
@@ -76,6 +76,7 @@ public class GithubTokenHandler {
             authDao.updateAccountByKind(null, GITHUB_ADMIN_ACCOUNT_KIND, userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
         }
 
+        jsonData.put("account_id", userAccountInfo.getAccountId());
         jsonData.put("whitelist", idList);
         Date expiry = new Date(System.currentTimeMillis() + DAY_IN_MILLISECONDS);
 
