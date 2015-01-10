@@ -7,6 +7,7 @@ import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessInstanceException;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.metrics.util.MetricsUtil;
@@ -27,6 +28,7 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
     private static final Logger log = LoggerFactory.getLogger(ProcessEventListenerImpl.class);
 
     private static Counter EVENT = MetricsUtil.getRegistry().counter("process_execution.event");
+    private static Counter CANCELED = MetricsUtil.getRegistry().counter("process_execution.cancel");
     private static Counter DONE = MetricsUtil.getRegistry().counter("process_execution.done");
     private static Counter NOT_FOUND = MetricsUtil.getRegistry().counter("process_execution.not_found");
     private static Counter EXCEPTION = MetricsUtil.getRegistry().counter("process_execution.unknown_exception");
@@ -64,6 +66,11 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
             TIMEOUT.inc();
             log.info("Communication timeout on process [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(),
                     instance.getResourceId(), e.getMessage());
+        } catch ( ProcessCancelException e ) {
+            CANCELED.inc();
+            log.info("Process canceled [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(),
+                    instance.getResourceId(), e.getMessage());
+
         } catch ( Throwable e ) {
             EXCEPTION.inc();
             log.error("Unknown exception running process [{}:{}] on [{}]", instance == null ? null : instance.getName(),
