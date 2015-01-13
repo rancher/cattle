@@ -1,12 +1,17 @@
 #!/bin/bash
 set -e
 
+echo $(hostname)
+
 cd $(dirname $0)
 
 export RUNTIME_DIR=../../../runtime/ci/
 export RUNTIME_DIR_CLEAN=true
 export CATTLE_LOGBACK_ROOT_LEVEL=error
 export CATTLE_DB_CATTLE_DATABASE=mysql
+
+: ${CATTLE_DB_CATTLE_MYSQL_PORT:=13306}
+export CATTLE_DB_CATTLE_MYSQL_PORT
 
 # Uncomment this if you're impatient
 #export CATTLE_IDEMPOTENT_CHECKS=false
