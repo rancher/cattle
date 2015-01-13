@@ -1,0 +1,20 @@
+{
+    "resourceFields": {
+        "loadBalancerHealthCheck": {
+            "type": "array[loadBalancerHealthCheck]"
+        },
+        "loadBalancerPolicy":{
+            "type": "array[loadBalancerPolicy]"
+        }
+    },
+    "resourceActions": {
+        "addlistener": {
+            "input": "addRemoveLoadBalancerListenerInput",
+            "output": "loadBalancerConfig"
+        },
+        "removelistener": {
+            "input": "addRemoveLoadBalancerListenerInput",
+            "output": "loadBalancerConfig"
+        }
+    }
+}

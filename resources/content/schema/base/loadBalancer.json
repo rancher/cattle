@@ -1,0 +1,27 @@
+{
+    "resourceFields": {
+        "loadBalancerConfigId":{
+            "type": "reference[loadBalancerConfig]",
+            "required": true,
+            "nullable": false
+        }
+    },
+    "resourceActions": {
+        "addtarget": {
+            "input": "addRemoveLoadBalancerTargetInput",
+            "output": "loadBalancer"
+        },
+        "removetarget": {
+            "input": "addRemoveLoadBalancerTargetInput",
+            "output": "loadBalancer"
+        },
+        "addhost": {
+            "input": "addRemoveLoadBalancerHostInput",
+            "output": "loadBalancer"
+        },
+        "removehost": {
+            "input": "addRemoveLoadBalancerHostInput",
+            "output": "loadBalancer"
+        }
+    }
+}

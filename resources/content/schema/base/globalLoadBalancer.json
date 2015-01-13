@@ -1,0 +1,22 @@
+{
+    "resourceFields": {
+        "globalLoadBalancerHealthCheck": {
+            "type": "array[globalLoadBalancerHealthCheck]",
+            "nullable": true
+        },
+        "globalLoadBalancerPolicy":{
+            "type": "array[globalLoadBalancerPolicy]",
+            "nullable": true
+        }
+    },
+    "resourceActions": {
+        "addloadbalancer": {
+            "input": "addLoadBalancerInput",
+            "output": "globalLoadBalancer"
+        },
+        "removeloadbalancer": {
+            "input": "removeLoadBalancerInput",
+            "output": "globalLoadBalancer"
+        }
+    }
+}

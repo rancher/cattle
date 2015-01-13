@@ -1,0 +1,11 @@
+{
+    "collectionMethods" : [],
+    "resourceFields": {
+        "instanceId": {
+            "type": "reference[instance]"
+        },
+        "ipAddress": {
+            "type": "string"
+        }
+    }
+}
