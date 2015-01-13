@@ -2,10 +2,8 @@ from common_fixtures import *  # NOQA
 import re
 
 
-def test_account_create(admin_client):
-    cred_count = len(admin_client.list_credential())
-    count = len(admin_client.list_account())
-    account = admin_client.create_account()
+def test_account_create(admin_client, random_str):
+    account = admin_client.create_account(name=random_str)
 
     assert account.state == "registering"
     assert account.transitioning == "yes"
@@ -15,11 +13,8 @@ def test_account_create(admin_client):
     assert account.transitioning == "no"
     assert account.state == "active"
 
-    new_count = len(admin_client.list_account())
-    assert (count+1) == new_count
-
-    new_count = len(admin_client.list_credential())
-    assert (cred_count+2) == new_count
+    count = len(admin_client.list_account(name=random_str))
+    assert count == 1
 
     creds = account.credentials()
 

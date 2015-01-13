@@ -57,6 +57,19 @@ def test_link_instance_stop_start(admin_client, sim_context, link_network):
     assert ports == new_ports
 
 
+def _find_agent_instance_ip(nsp, source):
+    assert source is not None
+    vnet_id = source.nics()[0].vnetId
+    assert vnet_id is not None
+
+    for agent_instance in nsp.instances():
+        if agent_instance.nics()[0].vnetId == vnet_id:
+            assert agent_instance.primaryIpAddress is not None
+            return agent_instance.primaryIpAddress
+
+    assert False, 'Failed to find agent instance for ' + source.id
+
+
 def test_link_create(admin_client, sim_context, link_network):
     target1 = create_sim_container(admin_client, sim_context,
                                    ports=['180', '122/udp'],
@@ -70,12 +83,12 @@ def test_link_create(admin_client, sim_context, link_network):
                                  'target1_link': target1.id,
                                  'target2_link': target2.id})
 
-    agent_instance = None
-    for nsp in link_network.networkServiceProviders():
-        if nsp.kind == 'agentInstanceProvider':
-            agent_instance = nsp.instances()[0]
+    nsp = None
+    for test_nsp in link_network.networkServiceProviders():
+        if test_nsp.kind == 'agentInstanceProvider':
+            nsp = test_nsp
 
-    ip_address = agent_instance.primaryIpAddress
+    assert nsp is not None
 
     assert len(c.instanceLinks()) == 2
     assert len(target1.targetInstanceLinks()) == 1
@@ -89,6 +102,7 @@ def test_link_create(admin_client, sim_context, link_network):
         assert link.state == 'active'
         assert len(resource_pool_items(admin_client, link)) == 2
         assert link.instanceId == c.id
+        ip_address = _find_agent_instance_ip(nsp, c)
 
         if link.linkName == 'target1_link':
             assert link.targetInstanceId == target1.id

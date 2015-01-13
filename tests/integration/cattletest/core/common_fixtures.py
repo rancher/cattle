@@ -195,6 +195,7 @@ def random_num():
     return random.randint(0, 1000000)
 
 
+@pytest.fixture
 def random_str():
     return 'random-{0}'.format(random_num())
 
