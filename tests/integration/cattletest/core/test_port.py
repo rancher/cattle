@@ -1,5 +1,4 @@
 from common_fixtures import *  # NOQA
-from test_virtual_machine import *  # NOQA
 
 
 def test_container_port_create_start(client, admin_client,
@@ -228,26 +227,3 @@ def test_ports_service(admin_client, sim_context, test_network):
 
     new_item = admin_client.reload(item)
     assert new_item.requestedVersion > item.requestedVersion
-
-
-def test_port_auth(admin_client, client):
-    auth_check(admin_client.schema, 'port', 'ru', {
-        'accountId': 'ru',
-        'data': 'ru',
-        'instanceId': 'r',
-        'privateIpAddressId': 'r',
-        'privatePort': 'r',
-        'protocol': 'r',
-        'publicIpAddressId': 'r',
-        'publicPort': 'ru',
-        'removeTime': 'ru',
-    })
-
-    auth_check(client.schema, 'port', 'ru', {
-        'instanceId': 'r',
-        'privateIpAddressId': 'r',
-        'privatePort': 'r',
-        'protocol': 'r',
-        'publicIpAddressId': 'r',
-        'publicPort': 'ru',
-    })

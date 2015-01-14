@@ -4,6 +4,10 @@
         "schema.*": "r",
         "token": "cr",
         "token.jwt": "r",
+        "token.user": "r",
+        "token.orgs": "r",
+        "token.security": "r",
+        "token.clientId": "r",
         "token.code": "cr"
     }
 }

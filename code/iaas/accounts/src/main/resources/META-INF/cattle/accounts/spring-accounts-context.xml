@@ -15,6 +15,22 @@
     <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="superadmin" />
         <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/super-admin/super-admin-auth.json</value>
+                                    <value>classpath*:schema/super-admin/super-admin-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
     </bean>
 
     <bean id="AdminSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
@@ -30,6 +46,8 @@
                         <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
                             <property name="resources">
                                 <list>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
                                     <value>classpath:schema/admin/admin-auth.json</value>
                                     <value>classpath*:schema/admin/admin-auth.json.d/**/*.json</value>
                                 </list>

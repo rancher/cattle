@@ -4,24 +4,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CollectionUtils {
 
-    public static <T> Set<T> set(T... objects) {
-        Set<T> set = new HashSet<T>();
-        for ( T obj : objects) {
-            set.add(obj);
-        }
-
-        return set;
-    }
-
-    public static Object get(Object map, String... keys) {
+    public static Object getNestedValue(Object map, String... keys) {
         Object value = map;
         for ( String key : keys ) {
             Map<String,Object> mapObject = CollectionUtils.toMap(value);
@@ -32,7 +21,7 @@ public class CollectionUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> void set(Map<T, Object> map, Object value, T... keys) {
+    public static <T> void setNestedValue(Map<T, Object> map, Object value, T... keys) {
         for ( int i = 0 ; i < keys.length ; i++ ) {
             T key = keys[i];
 
