@@ -180,7 +180,7 @@
             "nullable": true       
         },
         "restartPolicy":{
-            "type": "json",
+            "type": "restartPolicy",
             "nullable": true
         },
         "devices":{

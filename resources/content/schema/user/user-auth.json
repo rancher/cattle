@@ -30,6 +30,7 @@
         "container.instanceLinks" : "cr",
         "container.networkIds" : "cr",
         "container.publishAllPorts": "cr",
+        "container.restartPolicy" : "cr",
         "container.startOnCreate" : "cr",
         "container.subnetIds" : "cr",
         "container.system" : "cr",
@@ -105,6 +106,9 @@
         "publish.transitioningInternalMessage": "cr",
         "publish.transitioningMessage": "cr",
         "publish.transitioningProgress": "cr",
+
+        "restartPolicy" : "cr",
+        "restartPolicy.maximumRetryCount" : "cr",
 
         "typeDocumentation" : "r",
 

@@ -13,6 +13,14 @@
         <property name="schemaClass" value="io.cattle.platform.core.model.CattleTable" />
     </bean>
 
+    <bean id="CoreAddonTypeSet" class="io.cattle.platform.object.meta.TypeSet" >
+        <property name="typeClasses" >
+            <set>
+                <value>io.cattle.platform.core.addon.RestartPolicy</value> 
+            </set>
+        </property>
+    </bean>
+
     <bean id="CoreTypeSet" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeClasses">
             <bean factory-bean="CoreSchemaList" factory-method="getRecordTypes" />

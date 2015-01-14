@@ -556,6 +556,17 @@ def test_create_with_vnet_multiple_nics(admin_client, sim_context):
             nic.vnetId == vnet2.id
 
 
+def test_container_restart_policy(admin_client, client):
+    for c in [admin_client, client]:
+        restart_policy = c.schema.types['restartPolicy']
+        assert len(restart_policy.resourceFields) == 2
+        assert 'name' in restart_policy.resourceFields
+        assert 'maximumRetryCount' in restart_policy.resourceFields
+        container = c.schema.types['container']
+        assert 'restartPolicy' == \
+               container.resourceFields['restartPolicy'].type
+
+
 def test_container_auth(admin_client, client):
     auth_check(admin_client.schema, 'container', 'crud', {
         'accountId': 'cru',
@@ -637,6 +648,7 @@ def test_container_auth(admin_client, client):
         'primaryAssociatedIpAddress': 'r',
         'primaryIpAddress': 'r',
         'publishAllPorts': 'cr',
+        'restartPolicy': 'cr',
         'requestedHostId': 'cr',
         'startOnCreate': 'cr',
         'subnetIds': 'cr',

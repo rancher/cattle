@@ -160,6 +160,9 @@
 
         "resourceDefinition" : "r",
 
+        "restartPolicy" : "cr",
+        "restartPolicy.maximumRetryCount" : "cr",
+
         "schema" : "r",
 
         "setting.name" : "cr",
