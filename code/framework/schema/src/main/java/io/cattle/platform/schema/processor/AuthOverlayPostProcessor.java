@@ -3,6 +3,7 @@ package io.cattle.platform.schema.processor;
 import io.cattle.platform.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
+import io.github.ibuildthecloud.gdapi.model.Action;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
@@ -55,10 +56,10 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
             schema.setDeletable(perm.isDelete());
         }
 
-        Iterator<Map.Entry<String,Field>> iter = schema.getResourceFields().entrySet().iterator();
+        Iterator<Map.Entry<String, Field>> fieldIter = schema.getResourceFields().entrySet().iterator();
 
-        while ( iter.hasNext() ) {
-            Map.Entry<String,Field> entry = iter.next();
+        while (fieldIter.hasNext()) {
+            Map.Entry<String, Field> entry = fieldIter.next();
             Field field = entry.getValue();
 
             perm = getPerm(factory, schema, entry.getKey());
@@ -68,7 +69,7 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
             }
 
             if ( ! perm.isRead() ) {
-                iter.remove();
+                fieldIter.remove();
             }
 
             if ( ! ( field instanceof FieldImpl ) ) {
@@ -78,6 +79,24 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
             FieldImpl fieldImpl = (FieldImpl)field;
             fieldImpl.setCreate(perm.isCreate());
             fieldImpl.setUpdate(perm.isUpdate());
+        }
+        // TODO: Map over resource actions. This will allow you to selectively
+        // disable enable the resource actions based on the json file.
+        Iterator<Map.Entry<String, Action>> actionIter = schema.getResourceActions().entrySet().iterator();
+
+        while (actionIter.hasNext()) {
+            Map.Entry<String, Action> entry = actionIter.next();
+            Action action = entry.getValue();
+            // System.out.println(entry.getKey());
+            // System.out.println(action.getOutput());
+            perm = getPerm(factory, schema, "resourceAction."+entry.getKey());
+            if (perm == null) {
+                continue;
+            }
+            System.out.println(schema.getId() + "." + entry.getKey() + " : " + perm.isCreate());
+            if (!perm.isCreate()) {
+                actionIter.remove();
+            }
         }
 
         return schema;
