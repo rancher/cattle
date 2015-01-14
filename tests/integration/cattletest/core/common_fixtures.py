@@ -486,6 +486,14 @@ def auth_check(schema, id, access, props=None):
 
     return 1
 
+def resource_action_check(schema, id, actions):
+    keys = schema.types[id].resourceActions.keys()
+    for action in actions.keys():
+        if action in keys:
+            assert actions[action] is 'c'
+        else:
+            assert actions[action] is ''
+
 
 def wait_for(callback, timeout=DEFAULT_TIMEOUT):
     start = time.time()

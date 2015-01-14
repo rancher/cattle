@@ -3,6 +3,7 @@
 
         ".*\\.data" : "r",
         ".*\\.removeTime" : "r",
+        ".*\\.resourceAction\\..*" : "",
 
         "account" : "crud",
         "account.externalId" : "cru",

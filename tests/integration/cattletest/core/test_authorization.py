@@ -448,3 +448,13 @@ def test_stats_access_auth(admin_client, client):
         'token': 'r',
         'url': 'r',
     })
+
+
+def test_account_resource_auth(admin_client, client):
+    resource_action_check(admin_client.schema, 'account', {
+        'purge': 'c',
+        'restore': 'c',
+        'activate': 'c',
+        'update': '',
+        'remove': ''
+    })
