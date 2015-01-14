@@ -68,10 +68,18 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     @Override
     public Account createAccount(String name, String kind, String externalId, String externalType) {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(ACCOUNT.NAME.toString(), name);
-        properties.put(ACCOUNT.KIND.toString(), kind);
-        properties.put(ACCOUNT.EXTERNAL_ID.toString(), externalId);
-        properties.put(ACCOUNT.EXTERNAL_ID_TYPE.toString(), externalType);
+        if(StringUtils.isNotEmpty(name)) {
+            properties.put(ACCOUNT.NAME.toString(), name);
+        }
+        if(StringUtils.isNotEmpty(kind)) {
+            properties.put(ACCOUNT.KIND.toString(), kind);
+        }
+        if(StringUtils.isNotEmpty(externalId)) {
+            properties.put(ACCOUNT.EXTERNAL_ID.toString(), externalId);
+        }
+        if(StringUtils.isNotEmpty(externalType)) {
+            properties.put(ACCOUNT.EXTERNAL_ID_TYPE.toString(), externalType);
+        }
         return resourceDao.createAndSchedule(Account.class, properties);
     }
 
@@ -86,14 +94,30 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public int updateAccountByKind(String name, String kind, String externalId, String externalType) {
+    public int updateAccount(Account account, String name, String kind, String externalId, String externalType) {
         Map<TableField<AccountRecord, String>, String> properties = new HashMap<>();
-        if (StringUtils.isNotEmpty(name)) {
-            properties.put(ACCOUNT.NAME, name);
+        if(StringUtils.isNotEmpty(name)) {
+            properties.put(ACCOUNT.NAME, name); 
         }
-        properties.put(ACCOUNT.EXTERNAL_ID, externalId);
-        properties.put(ACCOUNT.EXTERNAL_ID_TYPE, externalType);
-        return create().update(ACCOUNT).set(properties).where(ACCOUNT.KIND.eq(kind)).execute();
+        if(StringUtils.isNotEmpty(kind)) {
+            properties.put(ACCOUNT.KIND, kind);
+        }
+        if(StringUtils.isNotEmpty(externalId)) {
+            properties.put(ACCOUNT.EXTERNAL_ID, externalId);
+        }
+        if(StringUtils.isNotEmpty(externalType)) {
+            properties.put(ACCOUNT.EXTERNAL_ID_TYPE, externalType);
+        }
+        return create()
+                .update(ACCOUNT)
+                .set(properties)
+                .where(ACCOUNT.ID
+                        .eq(account.getId())
+                        .and(ACCOUNT.NAME.eq(account.getName()))
+                        .and(ACCOUNT.EXTERNAL_ID.eq(account.getExternalId())))
+                        .and(ACCOUNT.EXTERNAL_ID_TYPE.eq(account.getExternalIdType()))
+                        .and(ACCOUNT.KIND.eq(account.getKind()))
+                        .execute();
     }
 
     public ObjectManager getObjectManager() {

@@ -95,6 +95,11 @@
         "externalHandler.timeoutMillis" : "cru",
         "externalHandler.processNames" : "cr",
 
+        "githubconfig.enabled": "cr",
+        "githubconfig.clientId": "cr",
+        "githubconfig.allowedUsers": "cr",
+        "githubconfig.allowedOrganizations": "cr",
+
         "host.computeFree" : "cru",
         "host.computeTotal" : "cru",
 

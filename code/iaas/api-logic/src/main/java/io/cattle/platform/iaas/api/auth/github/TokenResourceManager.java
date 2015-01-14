@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -32,7 +33,11 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
         if (!StringUtils.equals(TOKEN, request.getType())) {
             return null;
         }
-        return githubTokenHandler.getGithubAccessToken(request);
+        try {
+            return githubTokenHandler.getGithubAccessToken(request);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

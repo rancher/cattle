@@ -14,6 +14,6 @@ public interface AuthDao {
     
     Account createAccount(String name, String kind, String externalId, String externalType);
 
-    int updateAccountByKind(String name, String kind, String externalId, String externalType);
+    int updateAccount(Account account, String name, String kind, String externalId, String externalType);
 
 }

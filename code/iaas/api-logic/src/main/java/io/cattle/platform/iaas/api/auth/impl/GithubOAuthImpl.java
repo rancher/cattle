@@ -1,9 +1,9 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -11,22 +11,16 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-
-import com.netflix.config.DynamicStringProperty;
 
 public class GithubOAuthImpl implements AccountLookup, Priority {
 
     private static final String AUTH_HEADER = "Authorization";
-    private static final String X_GITHUB_CLIENT_ID = "X-GitHub-Client-Id";
     private static final String GITHUB_ACCOUNT_TYPE = "github";
 
     private AuthDao authDao;
     private TokenService tokenService;
-
-    private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString("api.auth.github.client.id");
 
     @Override
     public int getPriority() {
@@ -37,31 +31,41 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
     public Account getAccount(ApiRequest request) {
         String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);
         if (StringUtils.isEmpty(token)) {
-            return null;
+            token = request.getServletContext().getRequest().getParameter("token");
+            if (StringUtils.isEmpty(token)) {
+                return null;
+            }
         }
-        try {
-            String accountId = validateAndFetchAccountId(token, request.getServletContext().getResponse());
-            return authDao.getAccountByExternalId(accountId, GITHUB_ACCOUNT_TYPE);
-        } catch (Exception e) {
-            return null;
-        }
+        String accountId = validateAndFetchAccountId(token);
+        return authDao.getAccountByExternalId(accountId, GITHUB_ACCOUNT_TYPE);
+
     }
 
-    private String validateAndFetchAccountId(String token, HttpServletResponse response) {
-        try {
-            token = token.split("\\s+")[1];
-            Map<String, Object> jsonData = tokenService.getJsonPayload(token, true);
-            return (String) jsonData.get("account_id");
-        } catch (Exception e) {
+    private String validateAndFetchAccountId(String token) {
+        String toParse = null;
+        String[] tokenArr = token.split("\\s+");
+        if (tokenArr.length == 2) {
+            if(!StringUtils.equals("bearer", StringUtils.lowerCase(StringUtils.trim(tokenArr[0])))) {
+                return null;
+            }
+            toParse = tokenArr[1];
+        } else if (tokenArr.length == 1) {
+            toParse = tokenArr[0];
+        } else {
             return null;
         }
+        Map<String, Object> jsonData;
+        try {
+            jsonData = tokenService.getJsonPayload(toParse, true);
+        } catch (TokenException e) { //in case of invalid token
+            return null;
+        }
+        return (String) jsonData.get("account_id");
     }
 
     @Override
     public boolean challenge(ApiRequest request) {
-        HttpServletResponse response = request.getServletContext().getResponse();
-        response.setHeader(X_GITHUB_CLIENT_ID, GITHUB_CLIENT_ID.get());
-        return true;
+        return false;
     }
 
     @Inject

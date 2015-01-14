@@ -30,7 +30,7 @@
         </property>
     </bean>
 	
-	<bean class="io.cattle.platform.iaas.api.auth.config.GithubConfigManager" />
+	<bean class="io.cattle.platform.iaas.api.auth.github.GithubConfigManager" />
 	
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
 	

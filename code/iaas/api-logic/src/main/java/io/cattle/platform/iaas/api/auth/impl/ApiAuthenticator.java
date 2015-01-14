@@ -130,7 +130,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
                     }
                 }
             }
-        } else if(authHeader == null || !StringUtils.equals("true", authHeader)) {
+        } else if(!StringUtils.equals("true", authHeader)) {
             account = authDao.getAdminAccount();
         }
 

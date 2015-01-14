@@ -9,6 +9,7 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -42,7 +43,7 @@ public class GithubTokenHandler {
     private static final DynamicStringProperty WHITELISTED_ORGS = ArchaiusUtil.getString("api.auth.github.allow.orgs");
     private static final DynamicStringProperty WHITELISTED_USERS = ArchaiusUtil.getString("api.auth.github.allow.users");
 
-    public Token getGithubAccessToken(ApiRequest request) {
+    public Token getGithubAccessToken(ApiRequest request) throws IOException {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
         String code = ObjectUtils.toString(requestBody.get(GITHUB_REQUEST_TOKEN));
         Map<String, Object> jsonData = client.getAccessToken(code);
@@ -53,27 +54,24 @@ public class GithubTokenHandler {
         GithubAccountInfo userAccountInfo = client.getUserAccountInfo(token);
         List<GithubAccountInfo> orgAccountInfo = client.getOrgAccountInfo(token);
 
-        if (StringUtils.isNotEmpty(userAccountInfo.getAccountId())) {
-            idList.add(userAccountInfo.getAccountId());
-        }
+        idList.add(userAccountInfo.getAccountId());
 
         for (GithubAccountInfo info : orgAccountInfo) {
-            if (StringUtils.isNotEmpty(info.getAccountId())) {
-                idList.add(info.getAccountId());
-                orgNames.add(info.getAccountName());
-            }
+            idList.add(info.getAccountId());
+            orgNames.add(info.getAccountName());
         }
 
         if (SECURITY.get()) {
             if (null == getWhitelistedUser(idList)) {
-                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED, "User is not whitelisted");
+                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
             Account userAccount = authDao.getAccountByExternalId(userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
             if (null == userAccount) {
                 authDao.createAccount(userAccountInfo.getAccountName(), GITHUB_USER_ACCOUNT_KIND, userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
             }
         } else {
-            authDao.updateAccountByKind(null, GITHUB_ADMIN_ACCOUNT_KIND, userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
+            Account admin = authDao.getAdminAccount();
+            authDao.updateAccount(admin, null, GITHUB_ADMIN_ACCOUNT_KIND, userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
         }
 
         jsonData.put("account_id", userAccountInfo.getAccountId());
@@ -84,7 +82,7 @@ public class GithubTokenHandler {
     }
 
     protected String getWhitelistedUser(List<String> idList) {
-        if(idList == null) {
+        if (idList == null) {
             return null;
         }
         List<String> whitelistedValues = fromCommaSeparatedString(WHITELISTED_ORGS.get());
@@ -105,7 +103,7 @@ public class GithubTokenHandler {
     }
 
     protected List<String> fromCommaSeparatedString(String string) {
-        if(StringUtils.isEmpty(string)) {
+        if (StringUtils.isEmpty(string)) {
             return new ArrayList<>();
         }
         List<String> strings = new ArrayList<String>();
@@ -131,11 +129,11 @@ public class GithubTokenHandler {
     public void setAuthDao(AuthDao authDao) {
         this.authDao = authDao;
     }
-    
+
     class AccountInfo {
         String accountId;
         String accountName;
-        
+
         AccountInfo(String accountId, String accountName) {
             this.accountId = accountId;
             this.accountName = accountName;

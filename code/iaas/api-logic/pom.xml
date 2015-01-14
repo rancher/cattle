@@ -59,8 +59,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-        	<groupId>org.apache.httpcomponents</groupId>
-        	<artifactId>fluent-hc</artifactId>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>fluent-hc</artifactId>
         </dependency>
     </dependencies>
 </project>
