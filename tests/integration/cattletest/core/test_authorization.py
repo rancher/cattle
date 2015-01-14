@@ -455,6 +455,6 @@ def test_account_resource_auth(admin_client, client):
         'purge': 'c',
         'restore': 'c',
         'activate': 'c',
-        'update': '',
-        'remove': ''
+        'update': 'c',
+        'remove': 'c'
     })
