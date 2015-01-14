@@ -7,6 +7,8 @@ export RUNTIME_DIR=../../../runtime/ci/
 export RUNTIME_DIR_CLEAN=true
 export CATTLE_LOGBACK_ROOT_LEVEL=error
 export CATTLE_DB_CATTLE_DATABASE=mysql
+
+# Uncomment this if you're impatient
 #export CATTLE_IDEMPOTENT_CHECKS=false
 
 
@@ -15,11 +17,6 @@ if [ -x "$(which wrapdocker)" ]; then
     wrapdocker >/tmp/docker.log 2>&1
     docker info
 fi
-
-docker pull rancher/agent 
-for i in agent.instance.image bootstrap.required.image; do
-    docker pull $(grep $i ../resources/content/cattle-global.properties | cut -f2 -d=)
-done
 
 run()
 {
@@ -33,13 +30,21 @@ run()
     }
 }
 
+# Background to start the Docker pulls
+./test-warm >/dev/null &
+
 run ./bootstrap
 run ./clean
 MAVEN_ARGS='-B -q' ./build
 
+run ./run --background
+
+# Wait for completion now to ensure that images are pulled
+./test-warm
+
 DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/register.log &
 
-run ./run --background
+./wait-for-hosts
 
 ./test || {
     echo Test failed
