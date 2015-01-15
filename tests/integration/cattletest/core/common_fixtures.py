@@ -486,6 +486,7 @@ def auth_check(schema, id, access, props=None):
 
     return 1
 
+
 def resource_action_check(schema, id, actions):
     keys = schema.types[id].resourceActions.keys()
     for action in actions.keys():
