@@ -14,6 +14,8 @@ pull()
 }
 
 pull rancher/agent
+pull ibuildthecloud/helloworld
+pull cjellick/rancher-test-tools
 for i in agent.instance.image bootstrap.required.image; do
     pull $(grep $i ../resources/content/cattle-global.properties | cut -f2 -d=)
 done
