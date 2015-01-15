@@ -11,12 +11,15 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.object.ObjectManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.Result;
 import org.jooq.TableField;
 
 import com.netflix.config.DynamicStringListProperty;
@@ -38,6 +41,17 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 ).orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
     }
 
+    @Override
+    public Account getAccountById(Long id) {
+        return create()
+                .selectFrom(ACCOUNT)
+                .where(
+                        ACCOUNT.ID.eq(id)
+                        .and(ACCOUNT.STATE.eq("state")
+                        .and(ACCOUNT.REMOVED.isNull()))
+                        ).fetchOne();
+    }
+    
     @Override
     public Account getAccountByKeys(String access, String secretKey) {
         return create()
@@ -92,7 +106,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                         .and(ACCOUNT.STATE.eq("active"))
                         ).orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
     }
-
+    
     @Override
     public void updateAccount(Account account, String name, String kind, String externalId, String externalType) {
         Map<TableField<AccountRecord, String>, String> properties = new HashMap<>();
@@ -120,6 +134,45 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         }
     }
 
+    @Override
+    public List<AccountRecord> getAccessibleProjects (Long userId, List<String> orgIds, List<String> teamIds) {
+        
+        if(null == userId || null == teamIds || null == orgIds) {
+            return new ArrayList<>();
+        }
+        
+        List<AccountRecord> projects = new ArrayList<>();
+        
+        Result<AccountRecord> orgProjects = create()
+                                    .selectFrom(ACCOUNT)
+                                    .where(ACCOUNT.EXTERNAL_ID.in(orgIds)
+                                            .and(ACCOUNT.EXTERNAL_ID_TYPE.eq("project:github_org")))
+                                    .orderBy(ACCOUNT.ID.asc()).fetch();
+        
+        Result<AccountRecord> teamProjects = create()
+                                    .selectFrom(ACCOUNT)
+                                    .where(ACCOUNT.EXTERNAL_ID.in(teamIds)
+                                            .and(ACCOUNT.EXTERNAL_ID_TYPE.eq("project:github_team")))
+                                    .orderBy(ACCOUNT.ID.asc()).fetch();
+        
+        for(AccountRecord orgProject: orgProjects) {
+            projects.add(orgProject);
+        }
+        
+        for(AccountRecord teamProject: teamProjects) {
+            projects.add(teamProject);
+        }
+        
+        projects.addAll(create()
+                .selectFrom(ACCOUNT)
+                .where(ACCOUNT.EXTERNAL_ID.eq(Long.toString(userId))
+                        .and(ACCOUNT.EXTERNAL_ID_TYPE.eq("project:github_user")))
+                        .fetch());
+        
+        return projects;
+        
+    }
+    
     public ObjectManager getObjectManager() {
         return objectManager;
     }

@@ -3,12 +3,11 @@ package io.cattle.platform.iaas.api.auth.impl;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.token.TokenException;
-import io.cattle.platform.token.TokenService;
+import io.cattle.platform.iaas.api.auth.github.GithubUtils;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
-import java.util.Map;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -18,9 +17,11 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
 
     private static final String AUTH_HEADER = "Authorization";
     private static final String GITHUB_ACCOUNT_TYPE = "github";
+    private static final String PROJECT_HEADER = "X-API-Project-Id";
+    private static final String USER_SCOPE = "project:github_user";
 
     private AuthDao authDao;
-    private TokenService tokenService;
+    private GithubUtils githubUtils;
 
     @Override
     public int getPriority() {
@@ -36,31 +37,36 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
                 return null;
             }
         }
-        String accountId = validateAndFetchAccountId(token);
-        return authDao.getAccountByExternalId(accountId, GITHUB_ACCOUNT_TYPE);
+        String accountId = githubUtils.validateAndFetchAccountIdFromToken(token);
+        if(null == accountId) {
+            return null;
+        }
+        Account account = authDao.getAccountByExternalId(accountId, GITHUB_ACCOUNT_TYPE);
 
+        String projectId = request.getServletContext().getRequest().getHeader(PROJECT_HEADER);
+        if (StringUtils.isEmpty(projectId)) {
+            return account;
+        }
+
+        Account projectAccount = authDao.getAccountById(new Long(projectId));
+
+        if (validateProjectAccount(projectAccount, token)) {
+            return projectAccount;
+        }
+        return null;
     }
 
-    private String validateAndFetchAccountId(String token) {
-        String toParse = null;
-        String[] tokenArr = token.split("\\s+");
-        if (tokenArr.length == 2) {
-            if(!StringUtils.equals("bearer", StringUtils.lowerCase(StringUtils.trim(tokenArr[0])))) {
-                return null;
-            }
-            toParse = tokenArr[1];
-        } else if (tokenArr.length == 1) {
-            toParse = tokenArr[0];
-        } else {
-            return null;
+    protected boolean validateProjectAccount(Account projectAccount, String token) {
+        if (null == projectAccount) {
+            return false;
         }
-        Map<String, Object> jsonData;
-        try {
-            jsonData = tokenService.getJsonPayload(toParse, true);
-        } catch (TokenException e) { //in case of invalid token
-            return null;
+        Account account = projectAccount;
+        List<String> accesibleIds = githubUtils.validateAndFetchAccesibleIdsFromToken(token);
+        if (StringUtils.equals(USER_SCOPE, projectAccount.getExternalIdType())) {
+            account = authDao.getAccountById(new Long(projectAccount.getExternalId()));
         }
-        return (String) jsonData.get("account_id");
+
+        return accesibleIds.contains(account.getExternalId());
     }
 
     @Override
@@ -68,13 +74,13 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
         return false;
     }
 
-    @Inject
-    public void setJwtTokenService(TokenService tokenService) {
-        this.tokenService = tokenService;
-    }
-
     public AuthDao getAuthDao() {
         return authDao;
+    }
+
+    @Inject
+    public void setGithubUtils(GithubUtils githubUtils) {
+        this.githubUtils = githubUtils;
     }
 
     @Inject

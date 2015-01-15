@@ -117,6 +117,14 @@
         "port.publicIpAddressId" : "r",
         "port.publicPort" : "ru",
 
+        "project" : "crud",
+        "project.description" : "crud",
+        "project.externalId" : "crud",
+        "project.externalIdType" : "crud",
+        "project.kind" : "crud",
+        "project.name" : "crud",
+        "project.uuid" : "crud",
+
         "register": "cr",
         "register.accessKey" : "r",
         "register.key":"cr",

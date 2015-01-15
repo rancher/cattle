@@ -4,6 +4,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.github.resource.GithubAccountInfo;
+import io.cattle.platform.iaas.api.auth.github.resource.TeamAccountInfo;
 import io.cattle.platform.iaas.api.auth.github.resource.Token;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -52,6 +53,9 @@ public class GithubTokenHandler {
         String token = (String) jsonData.get("access_token");
         List<String> idList = new ArrayList<>();
         List<String> orgNames = new ArrayList<>();
+        List<String> teamIds = new ArrayList<>();
+        List<String> orgIds = new ArrayList<>();
+        List<TeamAccountInfo> teamsAccountInfo = new ArrayList<>();
 
         GithubAccountInfo userAccountInfo = client.getUserAccountInfo(token);
         List<GithubAccountInfo> orgAccountInfo = client.getOrgAccountInfo(token);
@@ -61,6 +65,13 @@ public class GithubTokenHandler {
         for (GithubAccountInfo info : orgAccountInfo) {
             idList.add(info.getAccountId());
             orgNames.add(info.getAccountName());
+            orgIds.add(info.getAccountId());
+            teamsAccountInfo.addAll(client.getOrgTeamInfo(token, info.getAccountName()));
+        }
+
+        for (TeamAccountInfo info : teamsAccountInfo) {
+            teamIds.add(info.getId());
+            idList.add(info.getId());
         }
 
         if (SECURITY.get()) {
@@ -77,10 +88,12 @@ public class GithubTokenHandler {
         }
 
         jsonData.put("account_id", userAccountInfo.getAccountId());
-        jsonData.put("whitelist", idList);
+        jsonData.put("accessible_ids", idList);
+        jsonData.put("team_ids", teamIds);
+        jsonData.put("org_ids", orgIds);
         Date expiry = new Date(System.currentTimeMillis() + DAY_IN_MILLISECONDS);
 
-        return new Token(tokenService.generateEncryptedToken(jsonData, expiry), userAccountInfo.getAccountName(), orgNames, null, null);
+        return new Token(tokenService.generateEncryptedToken(jsonData, expiry), userAccountInfo.getAccountName(), orgNames, teamsAccountInfo, null, null);
     }
 
     protected String getWhitelistedUser(List<String> idList) {

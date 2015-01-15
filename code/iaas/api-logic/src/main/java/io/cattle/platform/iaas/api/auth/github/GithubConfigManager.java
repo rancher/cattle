@@ -31,7 +31,8 @@ import com.netflix.config.DynamicStringProperty;
 public class GithubConfigManager extends AbstractNoOpResourceManager {
 
     private static final String GITHUB_CONFIG = "githubconfig";
-
+    private static final String AUTH_HEADER = "Authorization";
+    
     private static final String SECURITY_SETTING = "api.security.enabled";
     private static final String CLIENT_ID_SETTING = "api.auth.github.client.id";
     private static final String ALLOWED_USERS_SETTING = "api.auth.github.allowed.users";
@@ -45,6 +46,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private JsonMapper jsonMapper;
     private ObjectManager objectManager;
     private GithubClient client;
+    private GithubUtils githubUtils;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -57,27 +59,29 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         if (!StringUtils.equals(GITHUB_CONFIG, request.getType())) {
             return null;
         }
+        String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);
+        String access_token = githubUtils.validateAndFetchGithubToken(token);
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
         createOrUpdateSetting(SECURITY_SETTING, config.get("enabled"));
         createOrUpdateSetting(CLIENT_ID_SETTING, config.get("clientId"));
         createOrUpdateSetting("api.auth.github.client.secret", config.get("clientSecret"));
         try {
-            createOrUpdateSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get("allowedUsers")), ","));
-            createOrUpdateSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get("allowedOrganizations")), ","));
+            createOrUpdateSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get("allowedUsers"), access_token), ","));
+            createOrUpdateSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get("allowedOrganizations"), access_token), ","));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return new Object();
     }
 
-    protected List<String> appendUserIds(List<String> usernames) throws IOException {
+    protected List<String> appendUserIds(List<String> usernames, String token) throws IOException {
         if (usernames == null) {
             return null;
         }
         List<String> appendedList = new ArrayList<>();
 
         for (String username : usernames) {
-            GithubAccountInfo userInfo = client.getUserIdByName(username);
+            GithubAccountInfo userInfo = client.getUserIdByName(username, token);
             if (userInfo == null) {
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidUsername", "Invalid username: " + username, null);
             }
@@ -86,13 +90,13 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         return appendedList;
     }
 
-    protected List<String> appendOrgIds(List<String> orgs) throws IOException {
+    protected List<String> appendOrgIds(List<String> orgs, String token) throws IOException {
         if (orgs == null) {
             return null;
         }
         List<String> appendedList = new ArrayList<>();
         for (String org : orgs) {
-            GithubAccountInfo orgInfo = client.getOrgIdByName(org);
+            GithubAccountInfo orgInfo = client.getOrgIdByName(org, token);
             if (orgInfo == null) {
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidOrganization", "Invalid organization: " + org, null);
             }
@@ -170,6 +174,11 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     @Inject
     public void setGithubClient(GithubClient client) {
         this.client = client;
+    }
+    
+    @Inject
+    public void setGithubUtils(GithubUtils githubUtils) {
+        this.githubUtils = githubUtils;
     }
 
 }
