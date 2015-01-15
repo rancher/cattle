@@ -16,6 +16,9 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.TableField;
+
 import com.netflix.config.DynamicStringListProperty;
 
 public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
@@ -24,7 +27,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
 
     GenericResourceDao resourceDao;
     ObjectManager objectManager;
-    
+
     @Override
     public Account getAdminAccount() {
         return create()
@@ -61,17 +64,25 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                         .and(ACCOUNT.STATE.eq("active"))
                 ).orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
     }
-    
+
     @Override
     public Account createAccount(String name, String kind, String externalId, String externalType) {
-        Map<String, Object> properties =  new HashMap<>();
-        properties.put(ACCOUNT.NAME.toString(), name);
-        properties.put(ACCOUNT.KIND.toString(), kind);
-        properties.put(ACCOUNT.EXTERNAL_ID.toString(), externalId);
-        properties.put(ACCOUNT.EXTERNAL_ID_TYPE.toString(), externalType);
+        Map<String, Object> properties = new HashMap<>();
+        if(StringUtils.isNotEmpty(name)) {
+            properties.put(ACCOUNT.NAME.toString(), name);
+        }
+        if(StringUtils.isNotEmpty(kind)) {
+            properties.put(ACCOUNT.KIND.toString(), kind);
+        }
+        if(StringUtils.isNotEmpty(externalId)) {
+            properties.put(ACCOUNT.EXTERNAL_ID.toString(), externalId);
+        }
+        if(StringUtils.isNotEmpty(externalType)) {
+            properties.put(ACCOUNT.EXTERNAL_ID_TYPE.toString(), externalType);
+        }
         return resourceDao.createAndSchedule(Account.class, properties);
     }
-    
+
     @Override
     public Account getAccountByUuid(String uuid) {
         return create()
@@ -81,7 +92,34 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                         .and(ACCOUNT.STATE.eq("active"))
                         ).orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
     }
-    
+
+    @Override
+    public int updateAccount(Account account, String name, String kind, String externalId, String externalType) {
+        Map<TableField<AccountRecord, String>, String> properties = new HashMap<>();
+        if(StringUtils.isNotEmpty(name)) {
+            properties.put(ACCOUNT.NAME, name); 
+        }
+        if(StringUtils.isNotEmpty(kind)) {
+            properties.put(ACCOUNT.KIND, kind);
+        }
+        if(StringUtils.isNotEmpty(externalId)) {
+            properties.put(ACCOUNT.EXTERNAL_ID, externalId);
+        }
+        if(StringUtils.isNotEmpty(externalType)) {
+            properties.put(ACCOUNT.EXTERNAL_ID_TYPE, externalType);
+        }
+        return create()
+                .update(ACCOUNT)
+                .set(properties)
+                .where(ACCOUNT.ID
+                        .eq(account.getId())
+                        .and(ACCOUNT.NAME.eq(account.getName()))
+                        .and(ACCOUNT.EXTERNAL_ID.eq(account.getExternalId())))
+                        .and(ACCOUNT.EXTERNAL_ID_TYPE.eq(account.getExternalIdType()))
+                        .and(ACCOUNT.KIND.eq(account.getKind()))
+                        .execute();
+    }
+
     public ObjectManager getObjectManager() {
         return objectManager;
     }
@@ -90,11 +128,11 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     public void setObjectManager(ObjectManager objectManager) {
         this.objectManager = objectManager;
     }
-    
+
     public GenericResourceDao getGenericResourceDao() {
         return resourceDao;
     }
-    
+
     @Inject
     public void setGenericResourceDao(GenericResourceDao resourceDao) {
         this.resourceDao = resourceDao;
