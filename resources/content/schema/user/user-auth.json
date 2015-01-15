@@ -73,6 +73,7 @@
 
         "host" : "rud",
         "host.agentId" : "r",
+        "host.physicalHostId" : "r",
         "host.computeTotal" : "r",
         "host.zoneId" : "ru",
 
@@ -112,6 +113,8 @@
         "mount.volumeId" : "r",
 
         "network" : "r",
+
+        "physicalHost": "r",
 
         "port" : "ru",
         "port.instanceId" : "r",

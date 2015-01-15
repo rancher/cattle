@@ -102,6 +102,7 @@
                 <module>code/implementation/docker/api</module>
                 <module>code/implementation/docker/common</module>
                 <module>code/implementation/docker/compute</module>
+                <module>code/implementation/docker/machine</module>
                 <module>code/implementation/docker/storage</module>
                 <module>code/implementation/eventing-redis</module>
                 <module>code/implementation/extension-api</module>

@@ -1,0 +1,16 @@
+{
+    "resourceFields": {
+        "memory": {
+            "type": "string",
+            "nullable": true
+        },
+        "diskSize": {
+            "type": "string",
+            "nullable": true
+        },
+        "boot2dockerUrl": {
+            "type": "string",
+            "nullable": true
+        }
+    }
+}

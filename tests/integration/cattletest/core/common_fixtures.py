@@ -68,7 +68,7 @@ def accounts():
     result = {}
     admin_client = _admin_client()
     for user_name in ['admin', 'agent', 'user', 'agentRegister', 'test',
-                      'readAdmin', 'token', 'superadmin']:
+                      'readAdmin', 'token', 'superadmin', 'service']:
         result[user_name] = create_user(admin_client,
                                         user_name,
                                         kind=user_name)
@@ -126,6 +126,11 @@ def super_client(request, accounts):
 @pytest.fixture(scope='session')
 def token_client(accounts):
     return _client_for_user('token', accounts)
+
+
+@pytest.fixture(scope='session')
+def service_client(accounts):
+    return _client_for_user('service', accounts)
 
 
 def create_sim_context(super_client, uuid, ip=None, account=None,

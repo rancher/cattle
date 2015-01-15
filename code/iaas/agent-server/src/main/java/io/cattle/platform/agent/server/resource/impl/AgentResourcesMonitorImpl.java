@@ -197,7 +197,21 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
 
         if ( host != null && host.getRemoved() == null ) {
             Long agentId = DataAccessor.fields(host).withKey(AgentConstants.ID_REF).as(Long.class);
+            // For security purposes, ensure the agentIds match.
             if ( agentId != null && agentId.longValue() == agent.getId() ) {
+                host.setAgentId(agent.getId());
+                DataAccessor.fields(host).withKey(AgentConstants.ID_REF).remove();
+                objectManager.persist(host);
+                return host.getId();
+            }
+        } else if ( host == null ) {
+            // For physical hosts created via the Rancher docker machine API
+            // TODO Should we do a match up on account id to help prevent physical host stealing?
+            // Actually, the answer to the above depends on how go-machine-service will create agents on behalf of
+            // users.
+            host = objectManager.findAny(PhysicalHost.class, PHYSICAL_HOST.EXTERNAL_ID, uuid);
+            // For security purposes, only allow this type of assignment if the host doesn't yet have an agentId
+            if ( host != null && host.getAgentId() == null && host.getRemoved() == null ) {
                 host.setAgentId(agent.getId());
                 DataAccessor.fields(host).withKey(AgentConstants.ID_REF).remove();
                 objectManager.persist(host);

@@ -1,0 +1,21 @@
+{
+    "resourceFields": {
+        "image": {
+            "type": "string",
+            "nullable": true
+        },
+        "region": {
+            "type": "string",
+            "nullable": true
+        },
+        "size": {
+            "type": "string",
+            "nullable": true
+        },
+        "accessToken": {
+            "type": "string",
+            "nullable": false,
+            "required": true
+        }
+    }
+}

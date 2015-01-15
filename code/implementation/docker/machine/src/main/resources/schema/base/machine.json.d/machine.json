@@ -1,0 +1,28 @@
+{
+    "resourceFields": {
+        "authCertificateAuthority": {
+            "type": "string",
+            "nullable": true
+        },
+        "authKey": {
+            "type": "string",
+            "nullable": true
+        },
+        "driver": {
+            "type": "string",
+            "nullable": true
+        },
+        "extractedConfig": {
+            "type": "string",
+            "nullable": true
+        },
+        "virtualboxConfig": {
+            "type": "virtualboxConfig",
+            "nullable": true
+        },
+        "digitaloceanConfig": {
+            "type": "digitaloceanConfig",
+            "nullable": true
+        }
+    }
+}

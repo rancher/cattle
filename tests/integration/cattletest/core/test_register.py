@@ -82,3 +82,33 @@ def test_registration_token_account_create(kind, admin_client, cattle_url):
         'accessKey': 'r',
         'secretKey': 'r',
     })
+
+
+def test_registration_token_list(service_client, client):
+    # Proves the service_client has access to all tokens
+    tokens = service_client.list_registration_token(limit=1000)
+    preCount = len(tokens)
+    assert preCount < 1000, "Too many tokens. " \
+                            "Count: [%s]. Clear database." % preCount
+    t = client.create_registration_token()
+    t = client.wait_success(t)
+    assert t.state == 'active'
+    tokens = service_client.list_registration_token(limit=1000)
+    postCount = len(tokens)
+    assert postCount > preCount
+
+    token = service_client.by_id_registration_token(t.id)
+    assert token is not None
+
+
+def test_service_create_token(service_client, client, user_account):
+    # Proves the service account can create a token on behalf of another user
+    account_id = user_account.id
+
+    token = service_client.create_registration_token(accountId=account_id)
+    token = service_client.wait_success(token)
+    assert token.state == 'active'
+    assert token.accountId == account_id
+
+    # Prove client has access to it
+    assert client.reload(token) is not None

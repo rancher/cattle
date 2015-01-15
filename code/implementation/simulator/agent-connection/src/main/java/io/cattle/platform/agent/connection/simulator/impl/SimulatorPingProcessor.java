@@ -20,6 +20,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
 
     JsonMapper jsonMapper;
@@ -63,7 +65,15 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
     protected void addResources(Ping pong, Agent agent) {
         List<Map<String,Object>> resources = pong.getData().getResources();
 
-        String physicalHostUuid = agent.getUuid() + "-physical-host";
+        String physicalHostUuid = DataAccessor
+                .fromDataFieldOf(agent)
+                .withScope(AgentConnectionSimulator.class)
+                .withKey("externalId")
+                .as(jsonMapper, String.class);
+
+        if ( StringUtils.isEmpty(physicalHostUuid) ) {
+            physicalHostUuid = agent.getUuid() + "-physical-host";
+        }
 
         Map<String,Object> physicalHost = new HashMap<String, Object>();
         physicalHost.put(ObjectMetaDataManager.UUID_FIELD, physicalHostUuid);

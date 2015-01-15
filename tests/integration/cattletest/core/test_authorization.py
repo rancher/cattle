@@ -69,11 +69,13 @@ def test_host_auth(admin_client, client):
         'agentId': 'r',
         'computeTotal': 'r',
         'data': 'r',
+        'physicalHostId': 'r',
     })
 
     auth_check(client.schema, 'host', 'rud', {
         'accountId': 'r',
         'computeTotal': 'r',
+        'physicalHostId': 'r',
     })
 
 
@@ -442,13 +444,21 @@ def test_subscribe_auth(admin_client, client):
     })
 
 
-def test_registration_tokens_auth(admin_client, client):
+def test_registration_tokens_auth(admin_client, client, service_client):
     auth_check(admin_client.schema, 'registrationToken', 'cr', {
         'created': 'r',
         'data': 'r',
         'description': 'cr',
         'removeTime': 'r',
         'accountId': 'r',
+    })
+
+    auth_check(service_client.schema, 'registrationToken', 'cr', {
+        'created': 'r',
+        'data': 'r',
+        'description': 'cr',
+        'removeTime': 'r',
+        'accountId': 'cr',
     })
 
     auth_check(client.schema, 'registrationToken', 'cr', {
@@ -489,3 +499,52 @@ def test_account_resource_auth(admin_client, client):
         'purge',
         'create'
     ])
+
+
+def test_machine(admin_client, client, service_client):
+    auth_check(admin_client.schema, 'machine', 'crd', {
+        'driver': 'r',
+        'accountId': 'r',
+        'externalId': 'r',
+        'data': 'r',
+        'authCertificateAuthority': 'cr',
+        'authKey': 'cr',
+        'extractedConfig': 'r',
+        'virtualboxConfig': 'cr',
+        'digitaloceanConfig': 'cr',
+    })
+
+    auth_check(client.schema, 'machine', 'crd', {
+        'driver': 'r',
+        'accountId': 'r',
+        'externalId': 'r',
+        'authCertificateAuthority': 'cr',
+        'authKey': 'cr',
+        'extractedConfig': 'r',
+        'virtualboxConfig': 'cr',
+        'digitaloceanConfig': 'cr',
+    })
+
+    auth_check(service_client.schema, 'machine', 'crud', {
+        'driver': 'r',
+        'accountId': 'r',
+        'externalId': 'r',
+        'data': 'cru',
+        'authCertificateAuthority': 'cr',
+        'authKey': 'cr',
+        'extractedConfig': 'r',
+        'virtualboxConfig': 'cr',
+        'digitaloceanConfig': 'cr',
+    })
+
+
+def test_physical_host(admin_client, client, service_client):
+    auth_check(admin_client.schema, 'physicalHost', 'r', {
+        'accountId': 'r',
+        'data': 'r',
+
+    })
+
+    auth_check(client.schema, 'physicalHost', 'r', {
+        'accountId': 'r',
+    })
