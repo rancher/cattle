@@ -3,6 +3,8 @@ package io.cattle.platform.iaas.api.auth.github;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.iaas.api.auth.github.resource.GithubAccountInfo;
+import io.cattle.platform.iaas.api.auth.github.resource.GithubConfig;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;

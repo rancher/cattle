@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.auth.github;
+package io.cattle.platform.iaas.api.auth.github.resource;
 
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;

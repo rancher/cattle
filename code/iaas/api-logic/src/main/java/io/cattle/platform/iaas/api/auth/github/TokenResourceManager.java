@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.github;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.iaas.api.auth.github.resource.Token;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;

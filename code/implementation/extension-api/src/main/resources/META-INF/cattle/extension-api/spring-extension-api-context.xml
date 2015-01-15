@@ -16,8 +16,9 @@
                 <value>io.cattle.platform.extension.api.model.ProcessDefinitionApi</value>
                 <value>io.cattle.platform.extension.api.model.ResourceDefinition</value>
                 <value>io.cattle.platform.engine.process.StateTransition</value>
-                <value>io.cattle.platform.iaas.api.auth.github.Token</value>
-                <value>io.cattle.platform.iaas.api.auth.github.GithubConfig</value>
+                <value>io.cattle.platform.iaas.api.auth.github.resource.Token</value>
+                <value>io.cattle.platform.iaas.api.auth.github.resource.GithubConfig</value>
+				<value>io.cattle.platform.iaas.api.auth.github.resource.Project</value>
             </list>
         </property>
     </bean>
