@@ -1,9 +1,9 @@
 from common_fixtures import *  # NOQA
 
 
-def test_sample_data(admin_client, system_account):
+def test_sample_data(super_client, system_account):
 
-    network = find_one(admin_client.list_network, uuid='unmanaged')
+    network = find_one(super_client.list_network, uuid='unmanaged')
     assert network.accountId == system_account.id
     assert network.isPublic
     assert network.kind == 'network'
@@ -13,6 +13,7 @@ def test_sample_data(admin_client, system_account):
     assert 'dynamicCreateVnet' not in network
     assert 'libvirt' not in network.data
 
+    network = super_client.reload(network)
     network_services = find_count(1, network.networkServices)
     network_service_kinds = set()
 
@@ -28,12 +29,13 @@ def test_sample_data(admin_client, system_account):
 
     assert network_service_kinds == set(['metadataService'])
 
-    network = find_one(admin_client.list_network, uuid='managed-docker0')
+    network = find_one(super_client.list_network, uuid='managed-docker0')
     assert network.accountId == system_account.id
     assert network.isPublic
     assert network.kind == 'hostOnlyNetwork'
     assert network.removed is None
     assert network.state == 'active' or network.state == 'inactive'
+    network = super_client.reload(network)
     assert network.hostVnetUri == 'bridge://docker0'
     assert network.dynamicCreateVnet
     assert network.data.libvirt == {

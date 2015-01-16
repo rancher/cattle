@@ -2,13 +2,13 @@ from common_fixtures import *  # NOQA
 
 
 @pytest.fixture(scope='module')
-def link_network(admin_client, sim_context):
-    nsp = create_agent_instance_nsp(admin_client, sim_context)
-    create_and_activate(admin_client, 'linkService',
+def link_network(super_client, sim_context):
+    nsp = create_agent_instance_nsp(super_client, sim_context)
+    create_and_activate(super_client, 'linkService',
                         networkServiceProviderId=nsp.id,
                         networkId=nsp.networkId)
 
-    return admin_client.by_id_network(nsp.networkId)
+    return super_client.by_id_network(nsp.networkId)
 
 
 def test_link_instance_stop_start(admin_client, sim_context, link_network):
@@ -70,7 +70,7 @@ def _find_agent_instance_ip(nsp, source):
     assert False, 'Failed to find agent instance for ' + source.id
 
 
-def test_link_create(admin_client, sim_context, link_network):
+def test_link_create(admin_client, super_client, sim_context, link_network):
     target1 = create_sim_container(admin_client, sim_context,
                                    ports=['180', '122/udp'],
                                    networkIds=[link_network.id])
@@ -100,9 +100,10 @@ def test_link_create(admin_client, sim_context, link_network):
 
     for link in links:
         assert link.state == 'active'
-        assert len(resource_pool_items(admin_client, link)) == 2
+        assert len(resource_pool_items(super_client, link)) == 2
         assert link.instanceId == c.id
-        ip_address = _find_agent_instance_ip(nsp, c)
+        ip_address = _find_agent_instance_ip(nsp,
+                                             super_client.reload(c))
 
         if link.linkName == 'target1_link':
             assert link.targetInstanceId == target1.id
@@ -132,21 +133,21 @@ def test_link_create(admin_client, sim_context, link_network):
 
     c = admin_client.wait_success(c.stop())
     for link in c.instanceLinks():
-        assert len(resource_pool_items(admin_client, link)) == 2
+        assert len(resource_pool_items(super_client, link)) == 2
 
     c = admin_client.wait_success(c.remove())
     for link in c.instanceLinks():
-        assert len(resource_pool_items(admin_client, link)) == 2
+        assert len(resource_pool_items(super_client, link)) == 2
 
     c = admin_client.wait_success(c.purge())
     for link in c.instanceLinks():
         assert len(link.data.fields.ports) > 0
-        assert len(resource_pool_items(admin_client, link)) == 2
+        assert len(resource_pool_items(super_client, link)) == 2
 
     for link in c.instanceLinks():
         link = admin_client.wait_success(link.purge())
         assert len(link.data.fields.ports) == 0
-        assert len(resource_pool_items(admin_client, link)) == 0
+        assert len(resource_pool_items(super_client, link)) == 0
 
 
 def test_link_update(admin_client, sim_context):
