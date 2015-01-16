@@ -1,14 +1,15 @@
 from common_fixtures import *  # NOQA
 
 
-def test_subnet_ip_pool_required_fields(admin_client):
-    assert_required_fields(admin_client.create_subnet_ip_pool,
+def test_subnet_ip_pool_required_fields(internal_test_client):
+    assert_required_fields(internal_test_client.create_subnet_ip_pool,
                            networkAddress='192.168.3.1')
 
 
-def test_subnet_ip_pool_create_delete(admin_client):
-    ip_pool = admin_client.create_subnet_ip_pool(networkAddress='192.168.3.42')
-    ip_pool = admin_client.wait_success(ip_pool)
+def test_subnet_ip_pool_create_delete(internal_test_client):
+    ip_pool = internal_test_client.create_subnet_ip_pool(
+        networkAddress='192.168.3.42')
+    ip_pool = internal_test_client.wait_success(ip_pool)
 
     assert ip_pool.state == 'active'
     assert ip_pool.accountId is not None
@@ -28,25 +29,27 @@ def test_subnet_ip_pool_create_delete(admin_client):
     assert subnet.startAddress == '192.168.3.2'
     assert subnet.endAddress == '192.168.3.250'
 
-    ip_pool = admin_client.wait_success(ip_pool.deactivate())
-    admin_client.delete(ip_pool)
+    ip_pool = internal_test_client.wait_success(ip_pool.deactivate())
+    internal_test_client.delete(ip_pool)
 
-    ip_pool = admin_client.wait_success(admin_client.reload(ip_pool))
-    subnet = admin_client.wait_success(admin_client.reload(subnet))
+    ip_pool = internal_test_client.wait_success(
+        internal_test_client.reload(ip_pool))
+    subnet = internal_test_client.wait_success(
+        internal_test_client.reload(subnet))
 
     assert ip_pool.state == 'removed'
     assert subnet.state == 'removed'
     assert len(ip_pool.subnets()) == 1
 
 
-def test_ip_pool_acquire(admin_client):
-    ip_pool = create_and_activate(admin_client, 'ipPool')
+def test_ip_pool_acquire(internal_test_client):
+    ip_pool = create_and_activate(internal_test_client, 'ipPool')
     ip_address = ip_pool.acquire()
 
     assert ip_address.state == 'registering'
     assert 'associate' not in ip_address
 
-    ip_address = admin_client.wait_success(ip_address)
+    ip_address = internal_test_client.wait_success(ip_address)
 
     assert ip_address.kind == 'pooledIpAddress'
     assert ip_address.state == 'active'
@@ -54,8 +57,8 @@ def test_ip_pool_acquire(admin_client):
 
 
 @pytest.fixture(scope='session')
-def ip_pool(admin_client):
-    ip_pool = create_and_activate(admin_client, 'subnetIpPool',
+def ip_pool(internal_test_client):
+    ip_pool = create_and_activate(internal_test_client, 'subnetIpPool',
                                   networkAddress='192.168.3.42')
     assert len(ip_pool.subnets()) == 1
     return ip_pool
@@ -66,8 +69,8 @@ def subnet(ip_pool):
     return ip_pool.subnets()[0]
 
 
-def test_ip_pool_subnet_acquire(admin_client, ip_pool, subnet):
-    ip_address = admin_client.wait_success(ip_pool.acquire())
+def test_ip_pool_subnet_acquire(internal_test_client, ip_pool, subnet):
+    ip_address = internal_test_client.wait_success(ip_pool.acquire())
 
     assert ip_address.kind == 'pooledIpAddress'
     assert ip_address.state == 'active'
@@ -77,29 +80,30 @@ def test_ip_pool_subnet_acquire(admin_client, ip_pool, subnet):
     assert 'associate' in ip_address.data.fields.capabilities
 
 
-def test_ip_pool_subnet_acquire_delete_ip(admin_client, ip_pool, subnet):
-    ip_address = admin_client.wait_success(ip_pool.acquire())
-    ip_address = admin_client.wait_success(ip_address.deactivate())
+def test_ip_pool_subnet_acquire_delete_ip(internal_test_client,
+                                          ip_pool, subnet):
+    ip_address = internal_test_client.wait_success(ip_pool.acquire())
+    ip_address = internal_test_client.wait_success(ip_address.deactivate())
 
     assert ip_address.state == 'removed'
 
 
-def test_ip_address_no_associate(admin_client):
-    ip = create_and_activate(admin_client, 'ipAddress')
+def test_ip_address_no_associate(internal_test_client):
+    ip = create_and_activate(internal_test_client, 'ipAddress')
 
     assert ip.state == 'active'
     assert 'associate' not in ip
 
 
-def test_ip_pool_associate(admin_client, ip_pool):
-    ip_address_target = admin_client.wait_success(ip_pool.acquire())
-    ip_address = admin_client.wait_success(ip_pool.acquire())
+def test_ip_pool_associate(internal_test_client, ip_pool):
+    ip_address_target = internal_test_client.wait_success(ip_pool.acquire())
+    ip_address = internal_test_client.wait_success(ip_pool.acquire())
 
     ip_address = ip_address.associate(ipAddressId=ip_address_target.id)
 
     assert ip_address.state == 'associating'
 
-    ip_address = admin_client.wait_success(ip_address)
+    ip_address = internal_test_client.wait_success(ip_address)
 
     assert ip_address.state == 'associated'
 
@@ -114,13 +118,13 @@ def test_ip_pool_associate(admin_client, ip_pool):
 
     assert ip_address.state == 'disassociating'
 
-    ip_address = admin_client.wait_success(ip_address)
+    ip_address = internal_test_client.wait_success(ip_address)
 
     assert ip_address.state == 'active'
 
-    assoc = admin_client.reload(assocs[0])
+    assoc = internal_test_client.reload(assocs[0])
 
-    assoc = admin_client.wait_success(assoc)
+    assoc = internal_test_client.wait_success(assoc)
     assert assoc.state == 'removed'
 
     assocs = ip_address.ipAssociations()
@@ -130,14 +134,15 @@ def test_ip_pool_associate(admin_client, ip_pool):
     assert assocs[0].removed is not None
 
 
-def test_virtual_machine_with_public_ip(admin_client, sim_context, ip_pool,
-                                        network):
+def test_virtual_machine_with_public_ip(internal_test_client, sim_context,
+                                        ip_pool, network):
     image_uuid = sim_context['imageUuid']
-    vm = admin_client.create_virtual_machine(imageUuid=image_uuid,
-                                             networkIds=[network.id],
-                                             publicIpAddressPoolId=ip_pool.id)
+    vm = internal_test_client.create_virtual_machine(
+        imageUuid=image_uuid,
+        networkIds=[network.id],
+        publicIpAddressPoolId=ip_pool.id)
 
-    vm = admin_client.wait_success(vm)
+    vm = internal_test_client.wait_success(vm)
 
     child_ip = vm.nics()[0].ipAddresses()[0]
     assocs = child_ip.childIpAssociations()
@@ -151,45 +156,54 @@ def test_virtual_machine_with_public_ip(admin_client, sim_context, ip_pool,
     assert public_ip.kind == 'pooledIpAddress'
     assert 'disassociate' not in public_ip
 
-    admin_client.delete(vm)
-    vm = admin_client.wait_success(admin_client.reload(vm))
+    internal_test_client.delete(vm)
+    vm = internal_test_client.wait_success(internal_test_client.reload(vm))
 
-    child_ip = admin_client.wait_success(admin_client.reload(child_ip))
-    public_ip = admin_client.wait_success(admin_client.reload(public_ip))
-    assoc = admin_client.wait_success(admin_client.reload(assocs[0]))
+    child_ip = internal_test_client.wait_success(
+        internal_test_client.reload(child_ip))
+    public_ip = internal_test_client.wait_success(
+        internal_test_client.reload(public_ip))
+    assoc = internal_test_client.wait_success(
+        internal_test_client.reload(assocs[0]))
 
     assert child_ip.state == 'active'
     assert public_ip.state == 'associated'
     assert assoc.state == 'active'
 
-    vm = admin_client.wait_success(vm.purge())
-    nic = admin_client.wait_success(vm.nics()[0])
-    nic = admin_client.wait_success(nic.purge())
+    vm = internal_test_client.wait_success(vm.purge())
+    nic = internal_test_client.wait_success(vm.nics()[0])
+    nic = internal_test_client.wait_success(nic.purge())
 
-    child_ip = admin_client.wait_success(admin_client.reload(child_ip))
-    public_ip = admin_client.wait_success(admin_client.reload(public_ip))
-    assoc = admin_client.wait_success(admin_client.reload(assocs[0]))
+    child_ip = internal_test_client.wait_success(
+        internal_test_client.reload(child_ip))
+    public_ip = internal_test_client.wait_success(
+        internal_test_client.reload(public_ip))
+    assoc = internal_test_client.wait_success(
+        internal_test_client.reload(assocs[0]))
 
     assert child_ip.state == 'removed'
     assert public_ip.state == 'associated'
     assert assoc.state == 'active'
 
-    child_ip = admin_client.wait_success(child_ip.purge())
-    public_ip = admin_client.wait_success(admin_client.reload(public_ip))
-    assoc = admin_client.wait_success(admin_client.reload(assocs[0]))
+    child_ip = internal_test_client.wait_success(child_ip.purge())
+    public_ip = internal_test_client.wait_success(
+        internal_test_client.reload(public_ip))
+    assoc = internal_test_client.wait_success(
+        internal_test_client.reload(assocs[0]))
 
     assert child_ip.state == 'purged'
     assert public_ip.state == 'removed'
     assert assoc.state == 'removed'
 
 
-def test_virtual_machine_assigned_ip_field(admin_client, sim_context,
+def test_virtual_machine_assigned_ip_field(internal_test_client, sim_context,
                                            ip_pool, network):
     image_uuid = sim_context['imageUuid']
-    vm = admin_client.create_virtual_machine(imageUuid=image_uuid,
-                                             networkIds=[network.id],
-                                             publicIpAddressPoolId=ip_pool.id)
-    vm = admin_client.wait_success(vm)
+    vm = internal_test_client.create_virtual_machine(
+        imageUuid=image_uuid,
+        networkIds=[network.id],
+        publicIpAddressPoolId=ip_pool.id)
+    vm = internal_test_client.wait_success(vm)
 
     assert vm.state == 'running'
     assert vm.primaryAssociatedIpAddress is not None
@@ -201,26 +215,28 @@ def test_virtual_machine_assigned_ip_field(admin_client, sim_context,
     assert vm.primaryAssociatedIpAddress == assoc_ip.address
 
 
-def test_virtual_machine_no_assigned_ip_field(admin_client, sim_context):
+def test_virtual_machine_no_assigned_ip_field(internal_test_client,
+                                              sim_context):
     image_uuid = sim_context['imageUuid']
-    vm = admin_client.create_virtual_machine(imageUuid=image_uuid)
-    vm = admin_client.wait_success(vm)
+    vm = internal_test_client.create_virtual_machine(imageUuid=image_uuid)
+    vm = internal_test_client.wait_success(vm)
 
     assert vm.state == 'running'
     assert vm.primaryAssociatedIpAddress is None
 
 
-def test_virtual_machine_with_public_ip_restart(admin_client, sim_context,
-                                                ip_pool, network):
+def test_virtual_machine_with_public_ip_restart(internal_test_client,
+                                                sim_context, ip_pool, network):
     image_uuid = sim_context['imageUuid']
-    vm = admin_client.create_virtual_machine(imageUuid=image_uuid,
-                                             networkIds=[network.id],
-                                             publicIpAddressPoolId=ip_pool.id)
+    vm = internal_test_client.create_virtual_machine(
+        imageUuid=image_uuid,
+        networkIds=[network.id],
+        publicIpAddressPoolId=ip_pool.id)
 
-    vm = admin_client.wait_success(vm)
+    vm = internal_test_client.wait_success(vm)
 
     assert len(vm.nics()[0].ipAddresses()[0].childIpAssociations()) == 1
 
-    vm = admin_client.wait_success(vm.restart())
+    vm = internal_test_client.wait_success(vm.restart())
 
     assert len(vm.nics()[0].ipAddresses()[0].childIpAssociations()) == 1

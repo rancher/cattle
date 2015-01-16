@@ -50,9 +50,8 @@ def create_user(admin_client, user_name, kind=None):
             break
 
     if active_cred is None:
-        active_cred = admin_client.create_credential({
+        active_cred = admin_client.create_api_key({
             'accountId': account.id,
-            'kind': 'apiKey',
             'publicValue': user_name,
             'secretValue': password
         })
@@ -69,12 +68,11 @@ def accounts():
     result = {}
     admin_client = _admin_client()
     for user_name in ['admin', 'agent', 'user', 'agentRegister', 'test',
-                      'readAdmin', 'token']:
+                      'readAdmin', 'token', 'internalTest']:
         result[user_name] = create_user(admin_client,
                                         user_name,
                                         kind=user_name)
 
-    result['admin'] = create_user(admin_client, 'admin')
     system_account = admin_client.list_account(kind='system', uuid='system')[0]
     result['system'] = [None, None, system_account]
 
@@ -92,6 +90,11 @@ def admin_account(accounts):
 
 
 @pytest.fixture(scope='session')
+def internal_test_account(accounts):
+    return accounts['internalTest'][2]
+
+
+@pytest.fixture(scope='session')
 def client(accounts):
     return _client_for_user('user', accounts)
 
@@ -102,37 +105,43 @@ def admin_client(accounts):
 
 
 @pytest.fixture(scope='session')
+def internal_test_client(accounts):
+    return _client_for_user('internalTest', accounts)
+
+
+@pytest.fixture(scope='session')
 def token_client(accounts):
     return _client_for_user('token', accounts)
 
 
 @pytest.fixture(scope='session')
-def sim_context(request, admin_client):
-    context = kind_context(admin_client, 'sim', external_pool=True,
+def sim_context(request, internal_test_client):
+    context = kind_context(internal_test_client, 'sim', external_pool=True,
                            uri='sim://', uuid='simagent1', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
     host = context['host']
 
     if len(host.ipAddresses()) == 0:
-        ip = create_and_activate(admin_client, 'ipAddress',
+        ip = create_and_activate(internal_test_client, 'ipAddress',
                                  address='192.168.10.10',
                                  isPublic=True)
-        map = admin_client.create_host_ip_address_map(hostId=host.id,
-                                                      ipAddressId=ip.id)
-        map = admin_client.wait_success(map)
+        map = internal_test_client.create_host_ip_address_map(
+            hostId=host.id,
+            ipAddressId=ip.id)
+        map = internal_test_client.wait_success(map)
         assert map.state == 'active'
 
     context['hostIp'] = host.ipAddresses()[0]
 
     request.addfinalizer(
-        lambda: stop_running_sim_instances(admin_client))
+        lambda: stop_running_sim_instances(internal_test_client))
     return context
 
 
 @pytest.fixture(scope='session')
-def sim_context2(admin_client):
-    context = kind_context(admin_client, 'sim', external_pool=True,
+def sim_context2(internal_test_client):
+    context = kind_context(internal_test_client, 'sim', external_pool=True,
                            uri='sim://2', uuid='simagent2', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
@@ -140,8 +149,8 @@ def sim_context2(admin_client):
 
 
 @pytest.fixture(scope='session')
-def sim_context3(admin_client):
-    context = kind_context(admin_client, 'sim', external_pool=True,
+def sim_context3(internal_test_client):
+    context = kind_context(internal_test_client, 'sim', external_pool=True,
                            uri='sim://3', uuid='simagent3', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
@@ -498,11 +507,12 @@ def find_count(count, method, *args, **kw):
     return ret
 
 
-def create_sim_container(admin_client, sim_context, *args, **kw):
-    c = admin_client.create_container(*args,
-                                      imageUuid=sim_context['imageUuid'],
-                                      **kw)
-    c = admin_client.wait_success(c)
+def create_sim_container(internal_test_client, sim_context, *args, **kw):
+    c = internal_test_client.create_container(
+        *args,
+        imageUuid=sim_context['imageUuid'],
+        **kw)
+    c = internal_test_client.wait_success(c)
     assert c.state == 'running'
 
     return c
@@ -523,35 +533,35 @@ def create_agent_instance_nsp(admin_client, sim_context):
 
 
 @pytest.fixture(scope='session')
-def test_network(admin_client, sim_context):
-    network = create_type_by_uuid(admin_client, 'hostOnlyNetwork',
+def test_network(internal_test_client, sim_context):
+    network = create_type_by_uuid(internal_test_client, 'hostOnlyNetwork',
                                   'nsp-test-network',
                                   hostVnetUri='test:///',
                                   dynamicCreateVnet=True)
 
-    create_type_by_uuid(admin_client, 'subnet',
+    create_type_by_uuid(internal_test_client, 'subnet',
                         'nsp-test-subnet',
                         networkAddress='192.168.0.0',
                         networkId=network.id)
 
-    nsp = create_type_by_uuid(admin_client, 'agentInstanceProvider',
+    nsp = create_type_by_uuid(internal_test_client, 'agentInstanceProvider',
                               'nsp-test-nsp',
                               networkId=network.id,
                               agentInstanceImageUuid='sim:test-nsp')
 
-    create_type_by_uuid(admin_client, 'portService',
+    create_type_by_uuid(internal_test_client, 'portService',
                         'nsp-test-port-service',
                         networkId=network.id,
                         networkServiceProviderId=nsp.id)
 
     for i in nsp.instances():
-        i = admin_client.wait_success(i)
+        i = internal_test_client.wait_success(i)
         if i.state != 'running':
-            admin_client.wait_success(i.start())
+            internal_test_client.wait_success(i.start())
 
-        agent = admin_client.wait_success(i.agent())
+        agent = internal_test_client.wait_success(i.agent())
         if agent.state != 'active':
-            admin_client.wait_success(agent.activate())
+            internal_test_client.wait_success(agent.activate())
 
     return network
 
@@ -572,21 +582,24 @@ def resource_pool_items(admin_client, obj, type=None, qualifier=None):
 
 
 @pytest.fixture(scope='session')
-def network(admin_client):
-    network = create_type_by_uuid(admin_client, 'network', 'test_vm_network',
+def network(internal_test_client):
+    network = create_type_by_uuid(internal_test_client, 'network',
+                                  'test_vm_network',
                                   isPublic=True)
 
-    subnet = create_type_by_uuid(admin_client, 'subnet', 'test_vm_subnet',
+    subnet = create_type_by_uuid(internal_test_client, 'subnet',
+                                 'test_vm_subnet',
                                  isPublic=True,
                                  networkId=network.id,
                                  networkAddress='192.168.0.0',
                                  cidrSize=24)
 
-    vnet = create_type_by_uuid(admin_client, 'vnet', 'test_vm_vnet',
+    vnet = create_type_by_uuid(internal_test_client, 'vnet', 'test_vm_vnet',
                                networkId=network.id,
                                uri='fake://')
 
-    create_type_by_uuid(admin_client, 'subnetVnetMap', 'test_vm_vnet_map',
+    create_type_by_uuid(internal_test_client, 'subnetVnetMap',
+                        'test_vm_vnet_map',
                         subnetId=subnet.id,
                         vnetId=vnet.id)
 

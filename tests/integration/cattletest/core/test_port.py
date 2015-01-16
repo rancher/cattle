@@ -114,10 +114,9 @@ def test_container_port_stop(admin_client, sim_context, network):
     c = admin_client.create_container(imageUuid=image_uuid,
                                       requestedHostId=host.id,
                                       networkIds=[network.id],
-                                      ports=[
-                                          80,
-                                          '8081:81',
-                                          '8082:82/udp'])
+                                      ports=[80,
+                                             '8081:81',
+                                             '8082:82/udp'])
 
     assert c.state == 'creating'
     c = admin_client.wait_success(c)
@@ -150,10 +149,9 @@ def test_container_port_purge(admin_client, sim_context, network):
     image_uuid = sim_context['imageUuid']
     c = admin_client.create_container(imageUuid=image_uuid,
                                       networkIds=[network.id],
-                                      ports=[
-                                          80,
-                                          '8081:81',
-                                          '8082:82/udp'])
+                                      ports=[80,
+                                             '8081:81',
+                                             '8082:82/udp'])
 
     assert c.state == 'creating'
     c = admin_client.wait_success(c)
@@ -228,26 +226,3 @@ def test_ports_service(admin_client, sim_context, test_network):
 
     new_item = admin_client.reload(item)
     assert new_item.requestedVersion > item.requestedVersion
-
-
-def test_port_auth(admin_client, client):
-    auth_check(admin_client.schema, 'port', 'ru', {
-        'accountId': 'ru',
-        'data': 'ru',
-        'instanceId': 'r',
-        'privateIpAddressId': 'r',
-        'privatePort': 'r',
-        'protocol': 'r',
-        'publicIpAddressId': 'r',
-        'publicPort': 'ru',
-        'removeTime': 'ru',
-    })
-
-    auth_check(client.schema, 'port', 'ru', {
-        'instanceId': 'r',
-        'privateIpAddressId': 'r',
-        'privatePort': 'r',
-        'protocol': 'r',
-        'publicIpAddressId': 'r',
-        'publicPort': 'ru',
-    })

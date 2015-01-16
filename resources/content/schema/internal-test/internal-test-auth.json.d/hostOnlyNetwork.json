@@ -1,0 +1,8 @@
+{
+    "authorize" : {
+        "hostOnlyNetwork.dynamicCreateVnet" : "cr",
+        "hostOnlyNetwork.hostVnetUri" : "cr",
+
+        "end" : ""
+    }
+}

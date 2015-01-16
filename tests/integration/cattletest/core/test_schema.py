@@ -1,8 +1,8 @@
 from common_fixtures import *  # NOQA
 
 
-def test_account_default_fields(admin_client):
-    schema = admin_client.schema.types['account']
+def test_account_default_fields(internal_test_client):
+    schema = internal_test_client.schema.types['account']
 
     cred = schema.resourceFields.defaultCredentialIds
     network = schema.resourceFields.defaultNetworkIds
