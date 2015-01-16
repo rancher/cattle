@@ -80,20 +80,15 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
             fieldImpl.setCreate(perm.isCreate());
             fieldImpl.setUpdate(perm.isUpdate());
         }
-        // TODO: Map over resource actions. This will allow you to selectively
-        // disable enable the resource actions based on the json file.
         Iterator<Map.Entry<String, Action>> actionIter = schema.getResourceActions().entrySet().iterator();
 
         while (actionIter.hasNext()) {
             Map.Entry<String, Action> entry = actionIter.next();
             Action action = entry.getValue();
-            // System.out.println(entry.getKey());
-            // System.out.println(action.getOutput());
             perm = getPerm(factory, schema, "resourceAction."+entry.getKey());
             if (perm == null) {
                 continue;
             }
-            System.out.println(schema.getId() + "." + entry.getKey() + " : " + perm.isCreate());
             if (!perm.isCreate()) {
                 actionIter.remove();
             }
