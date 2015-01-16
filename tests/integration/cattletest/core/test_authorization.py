@@ -451,12 +451,12 @@ def test_stats_access_auth(admin_client, client):
 
 
 def test_account_resource_auth(admin_client, client):
-    resource_action_check(admin_client.schema, 'account', {
-        'update': 'c',
-        'activate': 'c',
-        'deactivate': 'c',
-        'restore': 'c',
-        'remove': 'c',
-        'purge': 'c',
-        'create': 'c'
-    })
+    resource_action_check(admin_client.schema, 'account', [
+        'update',
+        'activate',
+        'deactivate',
+        'restore',
+        'remove',
+        'purge',
+        'create'
+    ])

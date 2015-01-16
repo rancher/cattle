@@ -488,17 +488,9 @@ def auth_check(schema, id, access, props=None):
 
 
 def resource_action_check(schema, id, actions):
-    action_keys = set(actions.keys())
-    keys_recieved = set(schema.types[id].resourceActions.keys())
-    all_actions_expected = set()
-    all_actions_not_expected = set()
-    for action in action_keys:
-        if actions[action] == 'c':
-                all_actions_expected.add(action)
-        elif actions[action] == '':
-                all_actions_not_expected.add(action)
-    assert all_actions_expected == keys_recieved
-    assert all_actions_not_expected == action_keys.difference(keys_recieved)
+    action_keys = set(actions)
+    keys_received = set(schema.types[id].resourceActions.keys())
+    assert keys_received == action_keys
 
 
 def wait_for(callback, timeout=DEFAULT_TIMEOUT):
