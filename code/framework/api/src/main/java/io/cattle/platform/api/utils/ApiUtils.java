@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.apache.commons.collections.Transformer;
 
@@ -186,7 +187,7 @@ public class ApiUtils {
         if ( schema.getChildren().size() > 0 ) {
             String kind = ObjectUtils.getKind(obj);
             Schema kindSchema = factory.getSchema(kind);
-            if ( kindSchema != null ) {
+            if ( kindSchema != null && schema.getChildren().contains(kindSchema.getType()) ) {
                 return kindSchema.getId();
             }
         }
