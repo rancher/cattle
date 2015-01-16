@@ -9,7 +9,7 @@
         ".*\\.kind" : "r",
         ".*\\.name" : "cru",
         ".*\\.removed" : "r",
-        ".*\\.resourceAction\\..*" : "c",
+        ".*\\.resourceActions\\..*" : "c",
         ".*\\.state" : "r",
         ".*\\.transitioningMessage": "r",
         ".*\\.transitioningProgress": "r",
