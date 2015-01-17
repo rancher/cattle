@@ -1,14 +1,14 @@
 package io.cattle.platform.docker.api.model;
 
-public class ContainerExecOutput {
+public class HostOutput {
 
     String url;
     String token;
 
-    public ContainerExecOutput() {
+    public HostOutput() {
     }
 
-    public ContainerExecOutput(String url, String token) {
+    public HostOutput(String url, String token) {
         super();
         this.url = url;
         this.token = token;

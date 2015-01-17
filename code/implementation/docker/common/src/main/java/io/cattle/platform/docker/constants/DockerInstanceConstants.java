@@ -13,5 +13,11 @@ public class DockerInstanceConstants {
     public static final String DOCKER_TTY = "Tty";
     public static final String DOCKER_CMD = "Cmd";
     public static final String DOCKER_CONTAINER = "Container";
+    
+    public static final String CONTAINER_LOGS_FOLLOW = "follow";
+    public static final String CONTAINER_LOGS_STDOUT = "StdOut";
+    public static final String CONTAINER_LOGS_STDERR = "StdErr";
+    public static final String CONTAINER_LOGS_TIMESTAMP = "timeStamp";
+    public static final String CONTAINER_LOGS_TAIL = "lines";
 
 }
