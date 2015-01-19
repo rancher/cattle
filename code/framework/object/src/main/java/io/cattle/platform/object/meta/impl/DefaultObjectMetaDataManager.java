@@ -170,7 +170,9 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
             }
 
             for ( StateTransition transition : processDef.getStateTransitions() ) {
-                def.getValidStates().add(transition.getFromState());
+                if ( transition.getType() != StateTransition.Style.DONE ) {
+                    def.getValidStates().add(transition.getFromState());
+                }
             }
         }
     }

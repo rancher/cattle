@@ -149,9 +149,10 @@ def test_container_create_then_start(admin_client, super_client, sim_context):
     container = admin_client.create_container(imageUuid=uuid)
     container = container.start()
 
-    assert_fields(container, {
-        "state": "starting"
-    })
+    assert container.state == "starting"
+    assert 'start' not in container
+    assert 'stop' in container
+    assert 'remove' in container
 
     _assert_running(super_client.wait_success(container), sim_context)
 
