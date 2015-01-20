@@ -36,6 +36,7 @@
                 <value>instanceConsoleInput</value>
                 <value>ipAddressAssociateInput</value>
                 <value>subnetIpPool,parent=ipPool</value>
+                <value>project,parent=account</value>
             </set>
         </property>
     </bean>
