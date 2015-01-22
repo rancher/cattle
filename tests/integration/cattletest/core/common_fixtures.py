@@ -373,7 +373,8 @@ def stop_running_sim_instances(admin_client):
     to_stop.extend(admin_client.list_instance(state='starting', limit=1000))
 
     for c in to_stop:
-        if c.hosts()[0].kind == 'sim':
+        hosts = c.hosts()
+        if len(hosts) and hosts[0].kind == 'sim':
             nsps = c.networkServiceProviders()
             if len(nsps) > 0 and nsps[0].uuid == 'nsp-test-nsp':
                 continue
