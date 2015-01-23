@@ -68,6 +68,7 @@
         "githubconfig.allowedOrganizations": "cr",
         "githubconfig.allowedUsers": "cr",
         "githubconfig.clientId": "cr",
+        "githubconfig.clientSecret": "cr",
         "githubconfig.enabled": "cr",
 
         "instanceLink.ports" : "r",

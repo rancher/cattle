@@ -24,7 +24,8 @@ def test_github_auth(admin_client):
         'enabled': 'cr',
         'allowedOrganizations': 'cr',
         'allowedUsers': 'cr',
-        'clientId': 'cr'
+        'clientId': 'cr',
+        'clientSecret': 'cr'
     })
 
 
