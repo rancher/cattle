@@ -23,7 +23,7 @@ def _admin_client():
     return cattle.from_env(url=cattle_url(),
                            cache=False,
                            access_key='admin',
-                           secrect_key='adminpass')
+                           secret_key='adminpass')
 
 
 def _client_for_user(name, accounts):
