@@ -1,6 +1,6 @@
 package io.cattle.platform.sample.data;
 
-import static io.cattle.platform.core.model.tables.DataTable.*;
+import static io.cattle.platform.core.model.tables.DataTable.DATA;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
@@ -30,7 +30,7 @@ import com.netflix.config.DynamicBooleanProperty;
 
 public abstract class AbstractSampleData implements InitializationTask {
 
-    private static final Logger log = LoggerFactory.getLogger(SampleDataStartupV2.class);
+    private static final Logger log = LoggerFactory.getLogger(SampleDataStartupV3.class);
 
     private static final DynamicBooleanProperty RUN = ArchaiusUtil.getBoolean("sample.setup");
 

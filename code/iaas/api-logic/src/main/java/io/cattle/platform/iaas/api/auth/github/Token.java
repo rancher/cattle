@@ -27,6 +27,7 @@ public class Token {
         return jwt;
     }
 
+    @Field(nullable = true)
     public void setCode(String code) {
         this.code = code;
     }
@@ -36,18 +37,22 @@ public class Token {
         return code;
     }
 
+    @Field(nullable = true)
     public String getUser() {
         return user;
     }
 
+    @Field(nullable = true)
     public List<String> getOrgs() {
         return orgs;
     }
-    
+ 
+    @Field(nullable = true)
     public Boolean getSecurity() {
         return security;
     }
-    
+
+    @Field(nullable = true)
     public String getClientId() {
         return clientId;
     }

@@ -19,12 +19,24 @@ def test_instance_link_auth(admin_client, client):
     })
 
 
+def test_token_auth(token_client):
+    auth_check(token_client.schema, 'token', 'cr', {
+        'jwt': 'r',
+        'code': 'cr',
+        'user': 'r',
+        'orgs': 'r',
+        'clientId': 'r',
+        'security': 'r',
+    })
+
+
 def test_github_auth(admin_client):
     auth_check(admin_client.schema, 'githubconfig', 'cru', {
         'enabled': 'cr',
         'allowedOrganizations': 'cr',
         'allowedUsers': 'cr',
-        'clientId': 'cr'
+        'clientId': 'cr',
+        'clientSecret': 'cr'
     })
 
 
