@@ -51,7 +51,7 @@ public class GithubClient {
         HttpResponse response = Request.Post(GITHUB_URL.get()).addHeader("Accept", "application/json").bodyForm(requestData).execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            throw new ClientVisibleException(statusCode);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubUnavailable");
         }
         jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -72,7 +72,7 @@ public class GithubClient {
                 .execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            throw new ClientVisibleException(statusCode);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubUnavailable");
         }
         jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -92,7 +92,7 @@ public class GithubClient {
                 .execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            throw new ClientVisibleException(statusCode);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubUnavailable");
         }
         jsonData = jsonMapper.readCollectionValue(response.getEntity().getContent(), List.class, Map.class);
 
@@ -113,7 +113,7 @@ public class GithubClient {
         HttpResponse response = Request.Get(GITHUB_UNAUTH_USER_URL.get() + username).addHeader("Accept", "application/json").execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            throw new ClientVisibleException(statusCode);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubUnavailable");
         }
         jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
 
@@ -132,7 +132,7 @@ public class GithubClient {
         HttpResponse response = Request.Get(GITHUB_UNAUTH_ORG_URL.get() + org).addHeader("Accept", "application/json").execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            throw new ClientVisibleException(statusCode);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubUnavailable");
         }
         jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
 
