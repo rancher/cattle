@@ -4,22 +4,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CollectionUtils {
-
-    public static <T> Set<T> set(T... objects) {
-        Set<T> set = new HashSet<T>();
-        for ( T obj : objects) {
-            set.add(obj);
-        }
-
-        return set;
-    }
 
     public static Object get(Object map, String... keys) {
         Object value = map;
