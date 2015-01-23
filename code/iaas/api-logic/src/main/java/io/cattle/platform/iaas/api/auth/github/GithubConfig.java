@@ -27,6 +27,11 @@ public class GithubConfig {
     }
 
     @Field(nullable = true)
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    @Field(nullable = true)
     public String getClientId() {
         return clientId;
     }

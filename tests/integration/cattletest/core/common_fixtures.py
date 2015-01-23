@@ -19,11 +19,11 @@ def cattle_url():
     return os.environ.get('CATTLE_URL', default_url)
 
 
-def _admin_client():
+def _super_admin_client():
     return cattle.from_env(url=cattle_url(),
                            cache=False,
-                           access_key='admin',
-                           secrect_key='adminpass')
+                           access_key='superadmin',
+                           secret_key='superadminpass')
 
 
 def _client_for_user(name, accounts):
@@ -66,15 +66,15 @@ def create_user(admin_client, user_name, kind=None):
 @pytest.fixture(scope='session')
 def accounts():
     result = {}
-    admin_client = _admin_client()
+    super_admin_client = _super_admin_client()
     for user_name in ['admin', 'agent', 'user', 'agentRegister', 'test',
                       'readAdmin', 'token', 'superadmin']:
-        result[user_name] = create_user(admin_client,
+        result[user_name] = create_user(super_admin_client,
                                         user_name,
                                         kind=user_name)
 
-    result['admin'] = create_user(admin_client, 'admin')
-    system_account = admin_client.list_account(kind='system', uuid='system')[0]
+    result['superadmin'] = create_user(super_admin_client, 'superadmin')
+    system_account = super_admin_client.list_account(kind='system', uuid='system')[0]
     result['system'] = [None, None, system_account]
 
     return result

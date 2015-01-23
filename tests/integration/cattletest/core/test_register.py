@@ -1,30 +1,30 @@
 from common_fixtures import *  # NOQA
 
 
-def test_register_create(admin_client, super_client):
-    assert_required_fields(admin_client.create_register,
+def test_register_create(super_client):
+    assert_required_fields(super_client.create_register,
                            key='abc')
 
     key = random_str()
 
-    r = admin_client.create_register(key=key)
+    r = super_client.create_register(key=key)
     assert r.state == 'registering'
 
-    r = admin_client.wait_success(r)
+    r = super_client.wait_success(r)
     assert r.state == 'active'
     assert 'key' not in r
     assert 'accessKey' not in r
     assert 'secretKey' not in r
 
-    r = find_one(admin_client.list_register, key=key)
+    r = find_one(super_client.list_register, key=key)
     assert r.state == 'active'
     assert r.key == key
     assert r.accessKey is not None
     assert r.secretKey is not None
 
-    agent = get_by_plain_id(admin_client, 'agent', r.data.agentId)
+    agent = get_by_plain_id(super_client, 'agent', r.data.agentId)
 
-    raw_account_id = get_plain_id(admin_client, r.account())
+    raw_account_id = get_plain_id(super_client, r.account())
 
     agent = super_client.reload(agent)
     assert str(agent.data.agentResourcesAccountId) == raw_account_id
@@ -57,15 +57,15 @@ def test_registration_token_create(admin_client):
     assert len(tokens) == 2 or len(tokens) == 1
 
 
-def test_registration_token_account_create(admin_client, cattle_url):
-    account = create_and_activate(admin_client, 'account')
+def test_registration_token_account_create(super_client, cattle_url):
+    account = create_and_activate(super_client, 'account')
 
     creds = filter(lambda x: x.kind == 'registrationToken',
                    account.credentials())
 
     assert len(creds) == 1
 
-    cred = admin_client.wait_success(creds[0])
+    cred = super_client.wait_success(creds[0])
     assert cred.state == 'active'
     assert cred.token is not None
 

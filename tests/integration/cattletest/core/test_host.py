@@ -20,28 +20,28 @@ def new_sim_context(super_client):
     return sim_context
 
 
-def test_host_deactivate(admin_client, new_sim_context):
+def test_host_deactivate(super_client, new_sim_context):
     host = new_sim_context['host']
     agent = new_sim_context['agent']
 
     assert host.state == 'active'
-    agent = admin_client.wait_success(agent)
+    agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
-    host = admin_client.wait_success(host.deactivate())
+    host = super_client.wait_success(host.deactivate())
     assert host.state == 'inactive'
 
-    agent = admin_client.wait_success(agent)
+    agent = super_client.wait_success(agent)
     assert agent.state == 'inactive'
 
 
-def test_host_deactivate_two_hosts(admin_client, super_client,
+def test_host_deactivate_two_hosts(super_client,
                                    new_sim_context):
     host = new_sim_context['host']
     agent = new_sim_context['agent']
 
     assert host.state == 'active'
-    agent = admin_client.wait_success(agent)
+    agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
     other_host = super_client.create_host(agentId=agent.id)
@@ -49,73 +49,73 @@ def test_host_deactivate_two_hosts(admin_client, super_client,
     assert other_host.state == 'active'
     assert other_host.agentId == agent.id
 
-    host = admin_client.wait_success(host.deactivate())
+    host = super_client.wait_success(host.deactivate())
     assert host.state == 'inactive'
 
-    agent = admin_client.wait_success(agent)
+    agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
 
-def test_host_activate(admin_client, new_sim_context):
+def test_host_activate(super_client, new_sim_context):
     host = new_sim_context['host']
     agent = new_sim_context['agent']
 
     assert host.state == 'active'
-    agent = admin_client.wait_success(agent)
+    agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
-    host = admin_client.wait_success(host.deactivate())
+    host = super_client.wait_success(host.deactivate())
     assert host.state == 'inactive'
 
-    agent = admin_client.wait_success(agent)
+    agent = super_client.wait_success(agent)
     assert agent.state == 'inactive'
 
-    host = admin_client.wait_success(host.activate())
+    host = super_client.wait_success(host.activate())
     assert host.state == 'active'
-    agent = admin_client.wait_success(agent)
+    agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
 
-def test_host_purge(admin_client, new_sim_context):
+def test_host_purge(super_client, new_sim_context):
     image_uuid = 'sim:{}'.format(random_num())
     host = new_sim_context['host']
     agent = new_sim_context['agent']
 
     assert host.state == 'active'
-    agent = admin_client.wait_success(agent)
+    agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
-    c1 = admin_client.create_container(imageUuid=image_uuid,
+    c1 = super_client.create_container(imageUuid=image_uuid,
                                        requestedHostId=host.id)
-    c1 = admin_client.wait_success(c1)
+    c1 = super_client.wait_success(c1)
     assert c1.state == 'running'
 
-    c2 = admin_client.create_container(imageUuid=image_uuid,
+    c2 = super_client.create_container(imageUuid=image_uuid,
                                        requestedHostId=host.id)
-    c2 = admin_client.wait_success(c2)
+    c2 = super_client.wait_success(c2)
     assert c2.state == 'running'
 
-    host = admin_client.wait_success(host.deactivate())
-    host = admin_client.wait_success(admin_client.delete(host))
+    host = super_client.wait_success(host.deactivate())
+    host = super_client.wait_success(super_client.delete(host))
     assert host.state == 'removed'
     assert host.removed is not None
 
-    host = admin_client.wait_success(host.purge())
+    host = super_client.wait_success(host.purge())
     assert host.state == 'purged'
 
-    c1 = admin_client.reload(c1)
+    c1 = super_client.reload(c1)
     assert c1.removed is not None
     assert c1.state == 'removed'
 
-    c2 = admin_client.reload(c2)
+    c2 = super_client.reload(c2)
     assert c2.removed is not None
     assert c2.state == 'removed'
 
-    c1 = admin_client.wait_success(c1.purge())
+    c1 = super_client.wait_success(c1.purge())
     c1.state == 'purged'
 
-    volume = admin_client.wait_success(c1.volumes()[0])
+    volume = super_client.wait_success(c1.volumes()[0])
     assert volume.state == 'removed'
 
-    volume = admin_client.wait_success(volume.purge())
+    volume = super_client.wait_success(volume.purge())
     assert volume.state == 'purged'

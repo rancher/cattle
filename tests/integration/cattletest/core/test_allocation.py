@@ -228,13 +228,13 @@ def test_host_vnet_association(super_client, sim_context,
     assert host2.id in hosts
 
 
-def test_allocation_stay_associated_to_host(admin_client, sim_context):
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'])
-    c = admin_client.wait_success(c)
+def test_allocation_stay_associated_to_host(super_client, sim_context):
+    c = super_client.create_container(imageUuid=sim_context['imageUuid'])
+    c = super_client.wait_success(c)
 
     assert c.state == 'running'
 
-    c = admin_client.wait_success(c.stop())
+    c = super_client.wait_success(c.stop())
     assert c.state == 'stopped'
 
     assert len(c.hosts()) == 1

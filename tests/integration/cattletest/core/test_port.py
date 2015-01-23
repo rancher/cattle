@@ -1,7 +1,7 @@
 from common_fixtures import *  # NOQA
 
 
-def test_container_port_create_start(client, admin_client,
+def test_container_port_create_start(client, super_client,
                                      sim_context, network):
     image_uuid = sim_context['imageUuid']
     host = sim_context['host']
@@ -22,7 +22,7 @@ def test_container_port_create_start(client, admin_client,
 
     assert c.state == 'stopped'
 
-    c_admin = admin_client.update(c, requestedHostId=host.id)
+    c_admin = super_client.update(c, requestedHostId=host.id)
     assert c_admin.requestedHostId == host.id
 
     ports = c.ports()
@@ -53,7 +53,7 @@ def test_container_port_create_start(client, admin_client,
     assert count == 3
 
     c = client.wait_success(c.start())
-    assert admin_client.reload(c).hosts()[0].id == host.id
+    assert super_client.reload(c).hosts()[0].id == host.id
 
     for port in c.ports():
         assert port.state == 'active'
@@ -193,8 +193,8 @@ def test_port_validation(client, sim_context, network):
         assert e.error.code == 'PortWrongFormat'
 
 
-def test_ports_service(admin_client, sim_context, test_network):
-    c = create_sim_container(admin_client, sim_context,
+def test_ports_service(super_client, sim_context, test_network):
+    c = create_sim_container(super_client, sim_context,
                              ports=['80'],
                              networkIds=[test_network.id])
 
@@ -218,12 +218,12 @@ def test_ports_service(admin_client, sim_context, test_network):
 
     assert port.publicPort is None
 
-    port = admin_client.update(port, publicPort=12345)
+    port = super_client.update(port, publicPort=12345)
     assert port.state == 'updating-active'
     assert port.publicPort == 12345
 
-    port = admin_client.wait_success(port)
+    port = super_client.wait_success(port)
     assert port.state == 'active'
 
-    new_item = admin_client.reload(item)
+    new_item = super_client.reload(item)
     assert new_item.requestedVersion > item.requestedVersion
