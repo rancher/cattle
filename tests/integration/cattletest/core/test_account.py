@@ -2,18 +2,18 @@ from common_fixtures import *  # NOQA
 import re
 
 
-def test_account_create(admin_client, random_str):
-    account = admin_client.create_account(name=random_str)
+def test_account_create(super_client, random_str):
+    account = super_client.create_account(name=random_str)
 
     assert account.state == "registering"
     assert account.transitioning == "yes"
 
-    account = wait_success(admin_client, account)
+    account = wait_success(super_client, account)
 
     assert account.transitioning == "no"
     assert account.state == "active"
 
-    count = len(admin_client.list_account(name=random_str))
+    count = len(super_client.list_account(name=random_str))
     assert count == 1
 
     creds = account.credentials()
@@ -30,10 +30,10 @@ def test_account_create(admin_client, random_str):
     assert len(creds[0].secretValue) == 40
 
 
-def test_account_external(admin_client):
-    account = admin_client.create_account(externalId='extid',
+def test_account_external(super_client):
+    account = super_client.create_account(externalId='extid',
                                           externalIdType='extType')
-    account = admin_client.wait_success(account)
+    account = super_client.wait_success(account)
 
     assert account.state == 'active'
     assert account.externalId == 'extid'

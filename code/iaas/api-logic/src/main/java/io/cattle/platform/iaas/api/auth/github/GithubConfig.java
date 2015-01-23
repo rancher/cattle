@@ -10,6 +10,7 @@ public class GithubConfig {
 
     private Boolean enabled;
     private String clientId;
+    private String clientSecret;
     private List<String> allowedUsers;
     private List<String> allowedOrganizations;
 
@@ -23,6 +24,11 @@ public class GithubConfig {
     @Field(nullable = true)
     public Boolean getEnabled() {
         return enabled;
+    }
+
+    @Field(nullable = true)
+    public String getClientSecret() {
+        return clientSecret;
     }
 
     @Field(nullable = true)
