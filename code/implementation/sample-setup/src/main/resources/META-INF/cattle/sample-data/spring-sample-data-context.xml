@@ -12,5 +12,6 @@
 
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV1" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV2" />
+    <bean class="io.cattle.platform.sample.data.SampleDataStartupV3" />
 
 </beans>
