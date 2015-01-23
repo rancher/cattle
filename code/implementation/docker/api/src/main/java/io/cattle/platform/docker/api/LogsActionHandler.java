@@ -5,7 +5,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.api.model.ContainerLogs;
-import io.cattle.platform.docker.api.model.HostOutput;
+import io.cattle.platform.docker.api.model.HostAccess;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.util.DockerUtils;
 import io.cattle.platform.host.model.HostApiAccess;
@@ -52,10 +52,7 @@ public class LogsActionHandler implements ActionHandler {
         ContainerLogs logs = request.proxyRequestObject(ContainerLogs.class);
 
         Map<String,Object> data = CollectionUtils.asMap(
-                DockerInstanceConstants.CONTAINER_LOGS_STDOUT, logs.getStdout(),
                 DockerInstanceConstants.CONTAINER_LOGS_FOLLOW, logs.getFollow(),
-                DockerInstanceConstants.CONTAINER_LOGS_TIMESTAMP, logs.getTimeStamp(),
-                DockerInstanceConstants.CONTAINER_LOGS_STDERR, logs.getStdErr(),
                 DockerInstanceConstants.CONTAINER_LOGS_TAIL, logs.getLines(),
                 DockerInstanceConstants.DOCKER_CONTAINER, instance.getUuid());
 
@@ -70,7 +67,7 @@ public class LogsActionHandler implements ActionHandler {
         url.append("://").append(apiAccess.getHostname()).append(":").append(LOGS_CONSOLE_PORT.get());
         url.append(LOGS_CONSOLE_PATH.get());
 
-        return new HostOutput(url.toString(), apiAccess.getAuthenticationToken());
+        return new HostAccess(url.toString(), apiAccess.getAuthenticationToken());
     }
     
     public HostApiService getApiService() {
