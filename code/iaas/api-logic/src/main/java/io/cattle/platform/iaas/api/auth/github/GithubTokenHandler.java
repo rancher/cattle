@@ -40,8 +40,8 @@ public class GithubTokenHandler {
     private static final Long DAY_IN_MILLISECONDS = (long) (60 * 60 * 24 * 1000);
 
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
-    private static final DynamicStringProperty WHITELISTED_ORGS = ArchaiusUtil.getString("api.auth.github.allow.orgs");
-    private static final DynamicStringProperty WHITELISTED_USERS = ArchaiusUtil.getString("api.auth.github.allow.users");
+    private static final DynamicStringProperty WHITELISTED_ORGS = ArchaiusUtil.getString("api.auth.github.allowed.orgs");
+    private static final DynamicStringProperty WHITELISTED_USERS = ArchaiusUtil.getString("api.auth.github.allowed.users");
 
     public Token getGithubAccessToken(ApiRequest request) throws IOException {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
