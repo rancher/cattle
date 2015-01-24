@@ -24,7 +24,7 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
 
     @Override
     public int getPriority() {
-        return Priority.DEFAULT;
+        return Priority.PRE;
     }
 
     @Override

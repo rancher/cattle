@@ -35,7 +35,7 @@ public class TokenAccountLookup implements AccountLookup, Priority {
 
     @Override
     public int getPriority() {
-        return 0;
+        return Priority.PRE;
     }
 
     @Override
