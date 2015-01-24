@@ -94,7 +94,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public int updateAccount(Account account, String name, String kind, String externalId, String externalType) {
+    public void updateAccount(Account account, String name, String kind, String externalId, String externalType) {
         Map<TableField<AccountRecord, String>, String> properties = new HashMap<>();
         if(StringUtils.isNotEmpty(name)) {
             properties.put(ACCOUNT.NAME, name); 
@@ -108,16 +108,16 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         if(StringUtils.isNotEmpty(externalType)) {
             properties.put(ACCOUNT.EXTERNAL_ID_TYPE, externalType);
         }
-        return create()
+        int updateCount = create()
                 .update(ACCOUNT)
                 .set(properties)
                 .where(ACCOUNT.ID
-                        .eq(account.getId())
-                        .and(ACCOUNT.NAME.eq(account.getName()))
-                        .and(ACCOUNT.EXTERNAL_ID.eq(account.getExternalId())))
-                        .and(ACCOUNT.EXTERNAL_ID_TYPE.eq(account.getExternalIdType()))
-                        .and(ACCOUNT.KIND.eq(account.getKind()))
+                        .eq(account.getId()))
                         .execute();
+        
+        if(1 != updateCount) {
+            throw new RuntimeException("UpdateAccount failed.");
+        }
     }
 
     public ObjectManager getObjectManager() {
