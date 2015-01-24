@@ -132,10 +132,16 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         postProcessEvent(event, reply, state, process, eventResource, dataResource, agentResource);
 
-        return new HandlerResult(shouldContinue, CollectionUtils.castMap(reply.getData()));
+        return new HandlerResult(shouldContinue,
+        		getResourceDataMap(getObjectManager().getType(eventResource), reply.getData()));
     }
 
-    protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process,
+    @SuppressWarnings("unchecked")
+    protected Map<Object, Object> getResourceDataMap(String type, Object data) {
+    	return (Map<Object, Object>)CollectionUtils.toMap(data).get(type);
+    }
+
+	protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process,
             Object eventResource, Object dataResource, Object agentResource) {
     }
 

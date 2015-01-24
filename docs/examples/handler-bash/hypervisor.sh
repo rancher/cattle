@@ -130,8 +130,10 @@ event_handler_storage_image_activate()
     create_file image $pool_uuid $image_uuid
 
     reply '{
-        "image" : {
-            "format" : "touch"
+        "imageStoragePoolMap" : {
+            "image" : {
+                "format" : "touch"
+            }
         }
     }'
 }
@@ -145,8 +147,10 @@ event_handler_storage_volume_activate()
     create_file volume $pool_uuid $volume_uuid
 
     reply '{
-        "volume" : {
-            "format" : "touch"
+        "volumeStoragePoolMap" : {
+            "volume" : {
+                "format" : "touch"
+            }
         }
     }'
 }
