@@ -130,6 +130,9 @@
         "restartPolicy.maximumRetryCount" : "cr",
 
         "schema\\.*" : "r",
+        
+        "snapshot" : "crd",
+        "snapshot.volumeId" : "cr",
 
         "statsAccess" : "r",
         "statsAccess.token" : "r",

@@ -60,6 +60,7 @@
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
     <process:defaultProcesses resourceType="zone" />
     <process:defaultProcesses resourceType="mount" />
+    <process:defaultProcesses resourceType="snapshotStoragePoolMap" />
 
     <!-- IP Address -->
     <process:defaultProcesses resourceType="ipAddress" />
@@ -95,4 +96,9 @@
     <process:defaultProcesses resourceType="volume" />
     <process:process name="volume.allocate" resourceType="volume" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="volume.deallocate" resourceType="volume" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
+
+    <!-- Snapshot -->
+    <process:process name="snapshot.create" resourceType="snapshot" start="requested" transitioning="creating" done="created" />
+    <process:process name="snapshot.backup" resourceType="snapshot" start="created" transitioning="backing-up" done="backed-up" />
+    <process:process name="snapshot.remove" resourceType="snapshot" start="creating,created,backing-up,backed-up" transitioning="removing" done="removed" />
 </beans>

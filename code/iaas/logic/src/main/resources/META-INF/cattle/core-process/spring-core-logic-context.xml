@@ -108,4 +108,37 @@
         </property>
     </bean>
 
+    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+        p:name="SnapshotStoragePoolMapCreate"
+        p:commandName="storage.snapshot.create"
+        p:agentResourceRelationship="storagePool"
+        p:dataTypeClass="io.cattle.platform.core.model.SnapshotStoragePoolMap"
+        p:processNames="snapshotstoragepoolmap.create" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+        p:name="SnapshotStoragePoolMapBackup"
+        p:commandName="storage.snapshot.backup"
+        p:agentResourceRelationship="storagePool"
+        p:dataTypeClass="io.cattle.platform.core.model.SnapshotStoragePoolMap"
+        p:processNames="snapshotstoragepoolmap.activate" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+        p:name="SnapshotStoragePoolMapRemove"
+        p:commandName="storage.snapshot.remove"
+        p:agentResourceRelationship="storagePool"
+        p:dataTypeClass="io.cattle.platform.core.model.SnapshotStoragePoolMap"
+        p:processNames="snapshotstoragepoolmap.remove" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
 </beans>
