@@ -232,7 +232,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             request.setCreateDefaults(createDefaults);
         }
 
-        Map<Object,Object> criteria = getDefaultCriteria(false, otherType);
+        Map<Object,Object> criteria = getDefaultCriteria(false, true, otherType);
         criteria.put(relationship.getPropertyName(), id);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherType);
@@ -260,7 +260,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return null;
         }
 
-        Map<Object,Object> criteria = new HashMap<Object, Object>();
+        Map<Object,Object> criteria = getDefaultCriteria(false, true, otherSchema.getId());
         criteria.put(ObjectMetaDataManager.ID_FIELD, fieldValue);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherSchema.getId());
@@ -284,11 +284,11 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     @Override
-    protected Map<Object,Object> getDefaultCriteria(boolean byId, String type) {
-        Map<Object, Object> criteria = new HashMap<Object, Object>();
+    protected Map<Object,Object> getDefaultCriteria(boolean byId, boolean byLink, String type) {
+        Map<Object, Object> criteria = super.getDefaultCriteria(byId, byLink, type);
         Policy policy = ApiUtils.getPolicy();
 
-        addAccountAuthorization(type, criteria, policy);
+        addAccountAuthorization(byId, byLink, type, criteria, policy);
 
         if ( ! policy.isOption(Policy.REMOVED_VISIBLE) && ! byId ) {
             /* removed is null or removed >= (NOW() - delay) */
@@ -307,8 +307,12 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         return new Date(System.currentTimeMillis() - REMOVE_DELAY.get() * 1000);
     }
 
-    protected void addAccountAuthorization(String type, Map<Object, Object> criteria, Policy policy) {
-        if ( ! policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) ) {
+    protected void addAccountAuthorization(boolean byId, boolean byLink, String type, Map<Object, Object> criteria, Policy policy) {
+        if ( ! policy.isOption(Policy.LIST_ALL_ACCOUNTS) ) {
+            if ( policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) && (byId || byLink) ) {
+                return;
+            }
+
             List<Long> accounts = policy.getAuthorizedAccounts();
             if ( accounts.size() == 1 ) {
                 criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, accounts.get(0));

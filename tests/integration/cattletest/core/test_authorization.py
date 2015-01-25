@@ -45,14 +45,12 @@ def test_host_auth(admin_client, client):
         'accountId': 'r',
         'agentId': 'r',
         'computeTotal': 'r',
-        'zoneId': 'ru',
         'data': 'r',
     })
 
     auth_check(client.schema, 'host', 'rud', {
         'accountId': 'r',
         'computeTotal': 'r',
-        'zoneId': 'ru',
         'agentId': 'r',
     })
 
