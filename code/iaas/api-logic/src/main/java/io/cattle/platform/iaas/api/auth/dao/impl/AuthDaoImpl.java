@@ -67,20 +67,20 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
 
     @Override
     public Account createAccount(String name, String kind, String externalId, String externalType) {
-        Map<String, Object> properties = new HashMap<>();
+        Map<Object, Object> properties = new HashMap<>();
         if(StringUtils.isNotEmpty(name)) {
-            properties.put(ACCOUNT.NAME.toString(), name);
+            properties.put(ACCOUNT.NAME, name);
         }
         if(StringUtils.isNotEmpty(kind)) {
-            properties.put(ACCOUNT.KIND.toString(), kind);
+            properties.put(ACCOUNT.KIND, kind);
         }
         if(StringUtils.isNotEmpty(externalId)) {
-            properties.put(ACCOUNT.EXTERNAL_ID.toString(), externalId);
+            properties.put(ACCOUNT.EXTERNAL_ID, externalId);
         }
         if(StringUtils.isNotEmpty(externalType)) {
-            properties.put(ACCOUNT.EXTERNAL_ID_TYPE.toString(), externalType);
+            properties.put(ACCOUNT.EXTERNAL_ID_TYPE, externalType);
         }
-        return resourceDao.createAndSchedule(Account.class, properties);
+        return resourceDao.createAndSchedule(Account.class, objectManager.convertToPropertiesFor(Account.class, properties));
     }
 
     @Override
