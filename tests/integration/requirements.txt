@@ -1,4 +1,4 @@
-cattle
+git+https://github.com/ibuildthecloud/cattle-cli@timeout-test
 websocket-client==0.23.0
 
 flake8
