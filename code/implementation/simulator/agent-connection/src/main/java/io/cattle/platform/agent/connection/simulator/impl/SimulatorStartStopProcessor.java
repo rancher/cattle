@@ -37,7 +37,7 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
 
         String eventString = jsonMapper.writeValueAsString(event);
 
-        final Object uuid = CollectionUtils.get(event.getData(), "instanceHostMap","instance", "uuid");
+        final Object uuid = CollectionUtils.getNestedValue(event.getData(), "instanceHostMap","instance", "uuid");
         if ( uuid != null ) {
             if ( add && ! FORGET.matcher(eventString).matches() ) {
                 simulator.getInstances().add(uuid.toString());

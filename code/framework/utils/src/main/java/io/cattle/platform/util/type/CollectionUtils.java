@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class CollectionUtils {
 
-    public static Object get(Object map, String... keys) {
+    public static Object getNestedValue(Object map, String... keys) {
         Object value = map;
         for ( String key : keys ) {
             Map<String,Object> mapObject = CollectionUtils.toMap(value);
@@ -21,7 +21,7 @@ public class CollectionUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> void set(Map<T, Object> map, Object value, T... keys) {
+    public static <T> void setNestedValue(Map<T, Object> map, Object value, T... keys) {
         for ( int i = 0 ; i < keys.length ; i++ ) {
             T key = keys[i];
 
