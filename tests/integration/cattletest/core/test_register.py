@@ -22,7 +22,7 @@ def test_register_create(admin_client, super_client):
     assert r.accessKey is not None
     assert r.secretKey is not None
 
-    agent = get_by_plain_id(admin_client, 'agent', r.data.agentId)
+    agent = get_by_plain_id(super_client, 'agent', r.data.agentId)
 
     raw_account_id = get_plain_id(admin_client, r.account())
 

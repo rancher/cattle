@@ -204,17 +204,17 @@ def test_schema_self_link(admin_client):
     assert con_schema.links.self.startswith("http")
 
 
-def test_child_map_include(admin_client, sim_context):
+def test_child_map_include(super_client, sim_context):
     image_uuid = sim_context['imageUuid']
-    container = admin_client.create_container(imageUuid=image_uuid)
-    container = wait_success(admin_client, container)
+    container = super_client.create_container(imageUuid=image_uuid)
+    container = wait_success(super_client, container)
 
-    cs = admin_client.list_container(uuid=container.uuid, include='hosts')
+    cs = super_client.list_container(uuid=container.uuid, include='hosts')
 
     assert cs[0].hosts[0].uuid is not None
     assert len(cs[0].hosts) == 1
 
-    hs = admin_client.list_host(uuid=cs[0].hosts[0].uuid,
+    hs = super_client.list_host(uuid=cs[0].hosts[0].uuid,
                                 include='instances')
 
     found = False

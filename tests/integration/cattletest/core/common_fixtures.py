@@ -346,11 +346,11 @@ def get_plain_id(admin_client, obj):
     return ret[0].id
 
 
-def get_by_plain_id(admin_client, type, id):
-    obj = admin_client.by_id(type, id, _plainId='true')
+def get_by_plain_id(super_client, type, id):
+    obj = super_client.by_id(type, id, _plainId='true')
     if obj is None:
         return None
-    objs = admin_client.list(type, uuid=obj.uuid)
+    objs = super_client.list(type, uuid=obj.uuid)
     if len(objs) == 0:
         return None
     return objs[0]

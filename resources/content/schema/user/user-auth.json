@@ -148,8 +148,6 @@
         "volume.isHostPath" : "r",
         "volume.uri" : "r",
 
-        "zone" : "crud",
-        
         "end" : ""
     }
 }

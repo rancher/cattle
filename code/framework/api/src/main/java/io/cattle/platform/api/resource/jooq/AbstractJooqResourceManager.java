@@ -322,10 +322,14 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     }
 
     @Override
-    protected void addAccountAuthorization(String type, Map<Object, Object> criteria, Policy policy) {
-        super.addAccountAuthorization(type, criteria, policy);
+    protected void addAccountAuthorization(boolean byId, boolean byLink, String type, Map<Object, Object> criteria, Policy policy) {
+        super.addAccountAuthorization(byId, byLink, type, criteria, policy);
 
-        if ( ! policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) ) {
+        if ( ! policy.isOption(Policy.LIST_ALL_ACCOUNTS) ) {
+            if ( policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) && (byId || byLink) ) {
+                return;
+            }
+
             TableField<?, Object> accountField = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ACCOUNT_FIELD);
             TableField<?, Object> publicField = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.PUBLIC_FIELD);
             Object accountValue = criteria.get(ObjectMetaDataManager.ACCOUNT_FIELD);
