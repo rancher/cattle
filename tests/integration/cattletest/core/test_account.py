@@ -2,8 +2,10 @@ from common_fixtures import *  # NOQA
 import re
 
 
-def test_account_create(admin_client, random_str):
-    account = admin_client.create_account(name=random_str)
+@pytest.mark.parametrize('kind', ['user', 'admin'])
+def test_account_create(kind, admin_client, random_str):
+    account = admin_client.create_account(kind=kind,
+                                          name=random_str)
 
     assert account.state == "registering"
     assert account.transitioning == "yes"
@@ -38,3 +40,17 @@ def test_account_external(admin_client):
     assert account.state == 'active'
     assert account.externalId == 'extid'
     assert account.externalIdType == 'extType'
+
+
+def test_account_no_key(super_admin_client):
+    account = super_admin_client.create_account(kind='admin')
+    account = super_admin_client.wait_success(account)
+    creds = account.credentials()
+
+    assert len(creds) >= 2
+
+    account = super_admin_client.create_account(kind='unknown')
+    account = super_admin_client.wait_success(account)
+    creds = account.credentials()
+
+    assert len(creds) == 0
