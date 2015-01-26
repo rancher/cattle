@@ -93,6 +93,14 @@ public class GithubTokenHandler {
                 return arg.split("[:]")[1];
             }
         });
+        //check if its admin
+        Account adminAccount = authDao.getAdminAccount();
+        if (null != adminAccount) {
+            if (StringUtils.equals(GITHUB_EXTERNAL_TYPE, adminAccount.getExternalIdType())) {
+                whitelistedIds.add(adminAccount.getExternalId());
+            }
+        }
+        
         List<String> whitelist = Lists.newArrayList(whitelistedIds);
         for (String id : idList) {
             if (whitelist.contains(id)) {
