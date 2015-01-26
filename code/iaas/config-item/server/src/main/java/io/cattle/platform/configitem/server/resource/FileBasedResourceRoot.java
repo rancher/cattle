@@ -40,7 +40,7 @@ public class FileBasedResourceRoot extends AbstractCachingResourceRoot implement
             return;
 
         for ( String child : children ) {
-            if ( shouldIgnore(child) ) {
+            if ( shouldIgnore(current, child) ) {
                 continue;
             }
 

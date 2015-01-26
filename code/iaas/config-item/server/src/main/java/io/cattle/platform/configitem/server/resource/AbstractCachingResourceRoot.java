@@ -2,8 +2,10 @@ package io.cattle.platform.configitem.server.resource;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -23,14 +25,14 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
     String sourceRevision;
     byte[] additionalRevisionData;
 
-    public static boolean shouldIgnore(String path) {
+    public static boolean shouldIgnore(File base, String path) {
         for ( String prefix : IGNORE_PREFIX.get() ) {
             if ( path.startsWith(prefix) ) {
                 return true;
             }
         }
 
-        return false;
+        return base == null ? false : Files.isSymbolicLink(new File(base, path).toPath());
     }
 
     @Override
