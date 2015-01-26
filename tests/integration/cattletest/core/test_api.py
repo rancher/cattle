@@ -2,17 +2,17 @@ from cattle import ApiError
 from common_fixtures import *  # NOQA
 
 
-def test_agent_unique(admin_client):
-    agents = admin_client.list_agent(uri='sim://unique')
+def test_agent_unique(super_client):
+    agents = super_client.list_agent(uri='sim://unique')
 
     if len(agents) == 0:
-        agent = admin_client.create_agent(uri='sim://unique')
-        agent = admin_client.wait_success(agent)
+        agent = super_client.create_agent(uri='sim://unique')
+        agent = super_client.wait_success(agent)
         assert agent.state == 'active'
         agent.deactivate()
 
     try:
-        admin_client.create_agent(uri='sim://unique')
+        super_client.create_agent(uri='sim://unique')
         assert False
     except ApiError, e:
         assert e.error.code == 'NotUnique'
@@ -60,24 +60,24 @@ def test_pagination(admin_client, sim_context):
     assert len(collected) == 4
 
 
-def test_pagination_include(admin_client, sim_context):
+def test_pagination_include(super_client, sim_context):
     name = random_str()
     container_ids = []
     containers = []
     host = sim_context['host']
     for i in range(5):
-        c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+        c = super_client.create_container(imageUuid=sim_context['imageUuid'],
                                           name=name,
                                           requestedHostId=host.id)
         containers.append(c)
         container_ids.append(c.id)
 
     for c in containers:
-        wait_success(admin_client, c)
+        wait_success(super_client, c)
 
     assert len(containers[0].instanceHostMaps()) == 1
     assert host.id == containers[0].instanceHostMaps()[0].host().id
-    r = admin_client.list_container(name=name)
+    r = super_client.list_container(name=name)
 
     assert len(r) == 5
     for c in r:
@@ -85,7 +85,7 @@ def test_pagination_include(admin_client, sim_context):
         assert c.instanceHostMaps()[0].hostId == host.id
 
     collected = {}
-    r = admin_client.list_container(name=name, include='instanceHostMaps',
+    r = super_client.list_container(name=name, include='instanceHostMaps',
                                     limit=2)
     assert len(r) == 2
     for c in r:
@@ -113,13 +113,13 @@ def test_pagination_include(admin_client, sim_context):
 
     maps = []
     for id in container_ids:
-        maps.extend(admin_client.list_instanceHostMap(hostId=host.id,
+        maps.extend(super_client.list_instanceHostMap(hostId=host.id,
                                                       instanceId=id))
 
     assert len(maps) == 5
 
     maps_from_include = []
-    r = admin_client.list_host(include='instanceHostMaps', limit=2)
+    r = super_client.list_host(include='instanceHostMaps', limit=2)
 
     while True:
         for h in r:
@@ -149,15 +149,15 @@ def test_include_left_join(admin_client, sim_context):
     assert container.id == c.id
 
 
-def test_include(admin_client, sim_context):
+def test_include(super_client, sim_context):
     image_uuid = sim_context['imageUuid']
-    container = admin_client.create_container(imageUuid=image_uuid,
+    container = super_client.create_container(imageUuid=image_uuid,
                                               name='include_test')
-    container = wait_success(admin_client, container)
+    container = wait_success(super_client, container)
 
     for link_name in ['instanceHostMaps', 'instancehostmaps']:
         found = False
-        for c in admin_client.list_container(name_like='include_test%'):
+        for c in super_client.list_container(name_like='include_test%'):
             if c.id == container.id:
                 found = True
                 assert len(c.instanceHostMaps()) == 1
@@ -166,7 +166,7 @@ def test_include(admin_client, sim_context):
         assert found
 
         found = False
-        for c in admin_client.list_container(include=link_name,
+        for c in super_client.list_container(include=link_name,
                                              name_like='include_test%'):
             if c.id == container.id:
                 found = True
@@ -174,9 +174,9 @@ def test_include(admin_client, sim_context):
 
         assert found
 
-        c = admin_client.by_id('container', container.id)
+        c = super_client.by_id('container', container.id)
         assert callable(c.instanceHostMaps)
-        c = admin_client.by_id('container', container.id, include=link_name)
+        c = super_client.by_id('container', container.id, include=link_name)
         assert len(c.instanceHostMaps) == 1
 
 
@@ -204,17 +204,17 @@ def test_schema_self_link(admin_client):
     assert con_schema.links.self.startswith("http")
 
 
-def test_child_map_include(admin_client, sim_context):
+def test_child_map_include(super_client, sim_context):
     image_uuid = sim_context['imageUuid']
-    container = admin_client.create_container(imageUuid=image_uuid)
-    container = wait_success(admin_client, container)
+    container = super_client.create_container(imageUuid=image_uuid)
+    container = wait_success(super_client, container)
 
-    cs = admin_client.list_container(uuid=container.uuid, include='hosts')
+    cs = super_client.list_container(uuid=container.uuid, include='hosts')
 
     assert cs[0].hosts[0].uuid is not None
     assert len(cs[0].hosts) == 1
 
-    hs = admin_client.list_host(uuid=cs[0].hosts[0].uuid,
+    hs = super_client.list_host(uuid=cs[0].hosts[0].uuid,
                                 include='instances')
 
     found = False

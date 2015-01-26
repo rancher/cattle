@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,8 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final Logger log = LoggerFactory.getLogger(ApiAuthenticator.class);
 
+    private static final String ENFORCE_AUTH_HEADER = "X-ENFORCE-AUTHENTICATION";
+    
     AuthDao authDao;
     List<AccountLookup > accountLookups;
     boolean failOnNotFound = true;
@@ -116,7 +119,9 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         if ( account != null ) {
             return account;
         }
-
+        
+        String authHeader = StringUtils.trim(request.getServletContext().getRequest().getHeader(ENFORCE_AUTH_HEADER));
+        
         if ( SECURITY.get() ) {
             if ( failOnNotFound ) {
                 for ( AccountLookup lookup : accountLookups ) {
@@ -125,7 +130,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
                     }
                 }
             }
-        } else {
+        } else if(!StringUtils.equals("true", authHeader)) {
             account = authDao.getAdminAccount();
         }
 

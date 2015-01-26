@@ -23,7 +23,7 @@ def _admin_client():
     return cattle.from_env(url=cattle_url(),
                            cache=False,
                            access_key='admin',
-                           secrect_key='adminpass')
+                           secret_key='adminpass')
 
 
 def _client_for_user(name, accounts):
@@ -50,9 +50,8 @@ def create_user(admin_client, user_name, kind=None):
             break
 
     if active_cred is None:
-        active_cred = admin_client.create_credential({
+        active_cred = admin_client.create_api_key({
             'accountId': account.id,
-            'kind': 'apiKey',
             'publicValue': user_name,
             'secretValue': password
         })
@@ -69,7 +68,7 @@ def accounts():
     result = {}
     admin_client = _admin_client()
     for user_name in ['admin', 'agent', 'user', 'agentRegister', 'test',
-                      'readAdmin', 'token']:
+                      'readAdmin', 'token', 'superadmin']:
         result[user_name] = create_user(admin_client,
                                         user_name,
                                         kind=user_name)
@@ -92,6 +91,11 @@ def admin_account(accounts):
 
 
 @pytest.fixture(scope='session')
+def super_account(accounts):
+    return accounts['superadmin'][2]
+
+
+@pytest.fixture(scope='session')
 def client(accounts):
     return _client_for_user('user', accounts)
 
@@ -102,37 +106,42 @@ def admin_client(accounts):
 
 
 @pytest.fixture(scope='session')
+def super_client(accounts):
+    return _client_for_user('superadmin', accounts)
+
+
+@pytest.fixture(scope='session')
 def token_client(accounts):
     return _client_for_user('token', accounts)
 
 
 @pytest.fixture(scope='session')
-def sim_context(request, admin_client):
-    context = kind_context(admin_client, 'sim', external_pool=True,
+def sim_context(request, super_client):
+    context = kind_context(super_client, 'sim', external_pool=True,
                            uri='sim://', uuid='simagent1', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
     host = context['host']
 
     if len(host.ipAddresses()) == 0:
-        ip = create_and_activate(admin_client, 'ipAddress',
+        ip = create_and_activate(super_client, 'ipAddress',
                                  address='192.168.10.10',
                                  isPublic=True)
-        map = admin_client.create_host_ip_address_map(hostId=host.id,
+        map = super_client.create_host_ip_address_map(hostId=host.id,
                                                       ipAddressId=ip.id)
-        map = admin_client.wait_success(map)
+        map = super_client.wait_success(map)
         assert map.state == 'active'
 
     context['hostIp'] = host.ipAddresses()[0]
 
     request.addfinalizer(
-        lambda: stop_running_sim_instances(admin_client))
+        lambda: stop_running_sim_instances(super_client))
     return context
 
 
 @pytest.fixture(scope='session')
-def sim_context2(admin_client):
-    context = kind_context(admin_client, 'sim', external_pool=True,
+def sim_context2(super_client):
+    context = kind_context(super_client, 'sim', external_pool=True,
                            uri='sim://2', uuid='simagent2', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
@@ -140,8 +149,8 @@ def sim_context2(admin_client):
 
 
 @pytest.fixture(scope='session')
-def sim_context3(admin_client):
-    context = kind_context(admin_client, 'sim', external_pool=True,
+def sim_context3(super_client):
+    context = kind_context(super_client, 'sim', external_pool=True,
                            uri='sim://3', uuid='simagent3', host_public=True)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
@@ -195,6 +204,7 @@ def random_num():
     return random.randint(0, 1000000)
 
 
+@pytest.fixture
 def random_str():
     return 'random-{0}'.format(random_num())
 
@@ -336,11 +346,11 @@ def get_plain_id(admin_client, obj):
     return ret[0].id
 
 
-def get_by_plain_id(admin_client, type, id):
-    obj = admin_client.by_id(type, id, _plainId='true')
+def get_by_plain_id(super_client, type, id):
+    obj = super_client.by_id(type, id, _plainId='true')
     if obj is None:
         return None
-    objs = admin_client.list(type, uuid=obj.uuid)
+    objs = super_client.list(type, uuid=obj.uuid)
     if len(objs) == 0:
         return None
     return objs[0]
@@ -363,7 +373,8 @@ def stop_running_sim_instances(admin_client):
     to_stop.extend(admin_client.list_instance(state='starting', limit=1000))
 
     for c in to_stop:
-        if c.hosts()[0].kind == 'sim':
+        hosts = c.hosts()
+        if len(hosts) and hosts[0].kind == 'sim':
             nsps = c.networkServiceProviders()
             if len(nsps) > 0 and nsps[0].uuid == 'nsp-test-nsp':
                 continue
@@ -448,7 +459,8 @@ def auth_check(schema, id, access, props=None):
             props[i] = ''.join(acl)
 
     for i in ['created', 'removed', 'transitioning', 'transitioningProgress',
-              'transitioningMessage', 'id', 'uuid', 'kind', 'state']:
+              'removeTime', 'transitioningMessage', 'id', 'uuid', 'kind',
+              'state']:
         if i not in props and i in type.resourceFields:
             props[i] = 'r'
 
@@ -474,6 +486,12 @@ def auth_check(schema, id, access, props=None):
         assert prop_actual == prop
 
     return 1
+
+
+def resource_action_check(schema, id, actions):
+    action_keys = set(actions)
+    keys_received = set(schema.types[id].resourceActions.keys())
+    assert keys_received == action_keys
 
 
 def wait_for(callback, timeout=DEFAULT_TIMEOUT):
@@ -522,35 +540,35 @@ def create_agent_instance_nsp(admin_client, sim_context):
 
 
 @pytest.fixture(scope='session')
-def test_network(admin_client, sim_context):
-    network = create_type_by_uuid(admin_client, 'hostOnlyNetwork',
+def test_network(super_client, sim_context):
+    network = create_type_by_uuid(super_client, 'hostOnlyNetwork',
                                   'nsp-test-network',
                                   hostVnetUri='test:///',
                                   dynamicCreateVnet=True)
 
-    create_type_by_uuid(admin_client, 'subnet',
+    create_type_by_uuid(super_client, 'subnet',
                         'nsp-test-subnet',
                         networkAddress='192.168.0.0',
                         networkId=network.id)
 
-    nsp = create_type_by_uuid(admin_client, 'agentInstanceProvider',
+    nsp = create_type_by_uuid(super_client, 'agentInstanceProvider',
                               'nsp-test-nsp',
                               networkId=network.id,
                               agentInstanceImageUuid='sim:test-nsp')
 
-    create_type_by_uuid(admin_client, 'portService',
+    create_type_by_uuid(super_client, 'portService',
                         'nsp-test-port-service',
                         networkId=network.id,
                         networkServiceProviderId=nsp.id)
 
     for i in nsp.instances():
-        i = admin_client.wait_success(i)
+        i = super_client.wait_success(i)
         if i.state != 'running':
-            admin_client.wait_success(i.start())
+            super_client.wait_success(i.start())
 
-        agent = admin_client.wait_success(i.agent())
+        agent = super_client.wait_success(i.agent())
         if agent.state != 'active':
-            admin_client.wait_success(agent.activate())
+            super_client.wait_success(agent.activate())
 
     return network
 
@@ -571,21 +589,21 @@ def resource_pool_items(admin_client, obj, type=None, qualifier=None):
 
 
 @pytest.fixture(scope='session')
-def network(admin_client):
-    network = create_type_by_uuid(admin_client, 'network', 'test_vm_network',
+def network(super_client):
+    network = create_type_by_uuid(super_client, 'network', 'test_vm_network',
                                   isPublic=True)
 
-    subnet = create_type_by_uuid(admin_client, 'subnet', 'test_vm_subnet',
+    subnet = create_type_by_uuid(super_client, 'subnet', 'test_vm_subnet',
                                  isPublic=True,
                                  networkId=network.id,
                                  networkAddress='192.168.0.0',
                                  cidrSize=24)
 
-    vnet = create_type_by_uuid(admin_client, 'vnet', 'test_vm_vnet',
+    vnet = create_type_by_uuid(super_client, 'vnet', 'test_vm_vnet',
                                networkId=network.id,
                                uri='fake://')
 
-    create_type_by_uuid(admin_client, 'subnetVnetMap', 'test_vm_vnet_map',
+    create_type_by_uuid(super_client, 'subnetVnetMap', 'test_vm_vnet_map',
                         subnetId=subnet.id,
                         vnetId=vnet.id)
 

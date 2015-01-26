@@ -144,10 +144,10 @@ public class MetadataServiceImpl implements MetadataService {
         char index = (char)('a' + deviceNumber.intValue());
 
         if ( deviceNumber == 0 ) {
-            set(instanceMetadata, String.format("/dev/sd%s", index), "block-device-mapping", "ami");
-            set(instanceMetadata, String.format("/dev/sd%s1", index), "block-device-mapping", "root");
+            setNestedValue(instanceMetadata, String.format("/dev/sd%s", index), "block-device-mapping", "ami");
+            setNestedValue(instanceMetadata, String.format("/dev/sd%s1", index), "block-device-mapping", "root");
         } else {
-            set(instanceMetadata, "sd" + index, "block-device-mapping", "ebs" + (deviceNumber+1));
+            setNestedValue(instanceMetadata, "sd" + index, "block-device-mapping", "ebs" + (deviceNumber+1));
         }
 
         //TODO do something about swap and ephemeral
@@ -174,7 +174,7 @@ public class MetadataServiceImpl implements MetadataService {
         }
 
         @SuppressWarnings("unchecked")
-        Map<String,Object> nicData = (Map<String, Object>)CollectionUtils.get(instanceMetadata, "network",
+        Map<String,Object> nicData = (Map<String, Object>)CollectionUtils.getNestedValue(instanceMetadata, "network",
                 "interfaces", "macs", nic.getMacAddress());
 
         if ( nicData == null ) {
@@ -194,7 +194,7 @@ public class MetadataServiceImpl implements MetadataService {
 
         if ( publicIp != null ) {
             if ( localIpAddress != null ) {
-                set(nicData, localIpAddress, "ipv4-associations", publicIp.getAddress());
+                setNestedValue(nicData, localIpAddress, "ipv4-associations", publicIp.getAddress());
             }
 
             if ( publicHostname != null ) {
@@ -259,7 +259,7 @@ public class MetadataServiceImpl implements MetadataService {
         int count = 0;
 
         @SuppressWarnings("unchecked")
-        Map<String,Object> creds = (Map<String, Object>)get(instanceMetadata, "public-keys");
+        Map<String,Object> creds = (Map<String, Object>)getNestedValue(instanceMetadata, "public-keys");
 
         if ( creds != null ) {
             count = creds.size();
@@ -271,7 +271,7 @@ public class MetadataServiceImpl implements MetadataService {
             name = "sshkey" + count;
         }
 
-        set(instanceMetadata, credential.getPublicValue(), "public-keys", count + "=" + name, "openssh-key");
+        setNestedValue(instanceMetadata, credential.getPublicValue(), "public-keys", count + "=" + name, "openssh-key");
     }
 
     protected Map<String,Object> populateInstance(IdFormatter idFormatter, Instance instance, Network network) {
@@ -283,7 +283,7 @@ public class MetadataServiceImpl implements MetadataService {
         data.put("instance-id", "i-" + formatId(idFormatter, instance));
         data.put("instance-type", getInstanceType(instance));
         data.put("kernel-id", formatId(idFormatter, instance));
-        set(data, getZone(idFormatter, instance), "placement", "availability-zone");
+        setNestedValue(data, getZone(idFormatter, instance), "placement", "availability-zone");
 
         //TODO don't really know what values are valid here
         data.put("profile", "default-paravirtual");
@@ -303,11 +303,11 @@ public class MetadataServiceImpl implements MetadataService {
         }
 
         @SuppressWarnings("unchecked")
-        Map<String,Object> data = (Map<String, Object>)CollectionUtils.get(instanceData, "network", "interfaces", "macs", mac);
+        Map<String,Object> data = (Map<String, Object>)CollectionUtils.getNestedValue(instanceData, "network", "interfaces", "macs", mac);
 
         if ( data == null ) {
             data = new HashMap<String, Object>();
-            set(instanceData, data, "network", "interfaces", "macs", mac);
+            setNestedValue(instanceData, data, "network", "interfaces", "macs", mac);
         } else {
             return;
         }
@@ -325,7 +325,7 @@ public class MetadataServiceImpl implements MetadataService {
 
         if ( deviceNumber != null && deviceNumber.intValue() == 0 ) {
             instanceData.put("mac", nic.getMacAddress());
-            set(instanceData, HostnameGenerator.getServicesDomain(network), "services", "domain");
+            setNestedValue(instanceData, HostnameGenerator.getServicesDomain(network), "services", "domain");
         }
     }
 

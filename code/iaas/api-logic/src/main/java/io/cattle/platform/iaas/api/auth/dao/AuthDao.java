@@ -13,5 +13,7 @@ public interface AuthDao {
     Account getAccountByUuid(String uuid);
     
     Account createAccount(String name, String kind, String externalId, String externalType);
-    
+
+    void updateAccount(Account account, String name, String kind, String externalId, String externalType);
+
 }

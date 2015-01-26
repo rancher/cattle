@@ -19,8 +19,8 @@ public class DataManager extends AbstractJooqResourceManager {
     }
 
     @Override
-    protected Map<Object, Object> getDefaultCriteria(boolean byId, String type) {
-        Map<Object, Object> criteria = super.getDefaultCriteria(byId, type);
+    protected Map<Object, Object> getDefaultCriteria(boolean byId, boolean byLink, String type) {
+        Map<Object, Object> criteria = super.getDefaultCriteria(byId, byLink, type);
         criteria.put(DataTable.DATA.VISIBLE, true);
 
         return criteria;

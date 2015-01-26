@@ -18,8 +18,9 @@ import io.cattle.platform.eventing.util.EventUtils;
 import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -34,11 +35,11 @@ import com.google.common.util.concurrent.ListenableFuture;
 public class AgentServiceImpl implements AgentService {
 
     private static final Logger log = LoggerFactory.getLogger(AgentServiceImpl.class);
-    public static final Set<String> GOOD_AGENT_STATES = CollectionUtils.set(
+    public static final Set<String> GOOD_AGENT_STATES = new HashSet<String>(Arrays.asList(
             CommonStatesConstants.ACTIVATING,
             CommonStatesConstants.ACTIVE,
             AgentConstants.STATE_RECONNECTING
-        );
+            ));
 
     AgentConnectionManager connectionManager;
     ObjectManager objectManager;

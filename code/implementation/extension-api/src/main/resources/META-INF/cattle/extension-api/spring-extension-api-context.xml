@@ -17,6 +17,7 @@
                 <value>io.cattle.platform.extension.api.model.ResourceDefinition</value>
                 <value>io.cattle.platform.engine.process.StateTransition</value>
                 <value>io.cattle.platform.iaas.api.auth.github.Token</value>
+                <value>io.cattle.platform.iaas.api.auth.github.GithubConfig</value>
             </list>
         </property>
     </bean>

@@ -1,8 +1,7 @@
 package io.cattle.platform.sample.data;
 
-import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
-import static io.cattle.platform.core.model.tables.NetworkTable.*;
-import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
+import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.model.Account;
@@ -38,10 +37,6 @@ public class SampleDataStartupV2 extends AbstractSampleData {
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NetworkServiceConstants.FIELD_CONFIG_DRIVE, true,
                 NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
-        
-        toCreate.add(createByUuid(Account.class, "token",
-                ACCOUNT.KIND, "token", 
-                ACCOUNT.NAME, "token"));
         
     }
 
