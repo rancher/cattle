@@ -29,6 +29,8 @@
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerTargetValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerFilterUtils" />
 
+    <bean class="io.cattle.platform.iaas.api.cluster.HostClusterLinkFilter" />
+
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
     <!-- Start Handlers -->

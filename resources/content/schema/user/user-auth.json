@@ -22,6 +22,17 @@
         "apiKey.publicValue" : "r", 
         "apiKey.secretValue" : "r",
         
+        "addRemoveClusterHostInput" : "cr",
+        "addRemoveClusterHostInput.hostId" : "cr",
+
+        "cluster" : "crud",
+        "cluster.discoverySpec" : "cru",
+        "cluster.port" : "cru",
+        "cluster.managingHostId" : "",
+        "cluster.certificateId" : "cru",
+
+        "clusterHostMap" : "",
+
         "container" : "crud",
         "container.capAdd" : "cr",
         "container.capDrop" : "cr",
@@ -152,6 +163,11 @@
 
         "subscribe" : "cr",
         "subscribe.eventNames" : "cr",
+
+        "certificate" : "crud",
+        "certificate.certChain" : "crud",
+        "certificate.cert" : "crud",
+        "certificate.key" : "crud",
 
         "typeDocumentation" : "r",
         "typeDocumentation.resourceFields" : "r",

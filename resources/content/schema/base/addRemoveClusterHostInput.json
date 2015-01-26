@@ -1,0 +1,8 @@
+{
+    "collectionMethods" : [],
+    "resourceFields": {
+        "hostId": {
+            "type": "reference[host]"
+        }
+    }
+}
