@@ -79,7 +79,7 @@ public class ConfigItemResourceUtil {
                 }
 
                 for ( String part : path.split("[/\\\\]") ) {
-                    if ( AbstractCachingResourceRoot.shouldIgnore(part) ) {
+                    if ( AbstractCachingResourceRoot.shouldIgnore(null, part) ) {
                         continue outer;
                     }
                 }
