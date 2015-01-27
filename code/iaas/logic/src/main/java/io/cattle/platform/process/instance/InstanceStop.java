@@ -34,7 +34,7 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
 
         Map<String, Object> result = new ConcurrentHashMap<String, Object>();
 
-        compute(instance);
+        compute(instance, state);
 
         network(instance);
 
@@ -79,10 +79,10 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
         }
     }
 
-    protected void compute(Instance instance) {
+    protected void compute(Instance instance, ProcessState state) {
         for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
             if (map.getRemoved() == null) {
-                deactivate(map, null);
+                deactivate(map, state.getData());
             }
         }
     }
