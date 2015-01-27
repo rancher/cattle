@@ -12,6 +12,10 @@
         "account.uuid" : "cr",
 
         "activeSetting" : "rud",
+        "activeSetting.activeValue" : "r",
+        "activeSetting.inDb": "r",
+        "activeSetting.name": "r",
+        "activeSetting.source": "r",
         "activeSetting.value" : "ru",
 
         "agent" : "r",
@@ -120,7 +124,10 @@
         "resourceDefinition.name" : "r",
 
         "setting" : "crud",
+        "setting.activeValue" : "r",
+        "setting.inDb": "r",
         "setting.name" : "cr",
+        "setting.source": "r",
         "setting.value" : "cru",
 
         "subscribe.agentId" : "cr",
