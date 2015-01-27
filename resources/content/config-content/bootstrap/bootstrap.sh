@@ -51,15 +51,6 @@ cleanup()
     return $exit
 }
 
-cleanup_docker()
-{
-    for d in $(docker ps -a | awk '{print $1 " " $2}' | grep $DOCKER_AGENT | awk '{print $1}'); do
-        echo Cleaning up $d
-        docker kill $d 2>/dev/null | true
-        docker rm $d 2>/dev/null | true
-    done
-}
-
 download_agent()
 {
     cleanup
@@ -87,27 +78,29 @@ print_config()
     info API URL: $CATTLE_URL
     info IP: $CATTLE_AGENT_IP
     info Port: $CATTLE_AGENT_PORT
+    info Required Image: ${REQUIRED_IMAGE}
+    info Current Image: ${RANCHER_AGENT_IMAGE}
 }
 
 upgrade()
 {
-    if [ "$CATTLE_INSIDE_DOCKER" != "outside" ]; then
-        return 0
-    fi
-
     if [[ -n "${REQUIRED_IMAGE}" && "${RANCHER_AGENT_IMAGE}" != "${REQUIRED_IMAGE}" ]]; then
+        if [ -e /host/var/run/docker.sock ]; then
+            # Upgrading from old image
+            export DOCKER_HOST="unix:///host/var/run/docker.sock"
+        fi
+
         info Upgrading to image ${REQUIRED_IMAGE}
-        docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock ${REQUIRED_IMAGE} upgrade
+
+        while docker inspect rancher-agent-upgrade >/dev/null 2>&1; do
+            docker rm -f rancher-agent-upgrade
+            sleep 1
+        done
+
+        docker run --rm --privileged --name rancher-agent-upgrade -v /var/run/docker.sock:/var/run/docker.sock ${REQUIRED_IMAGE} upgrade
         exit 0
     elif [ -n "${REQUIRED_IMAGE}" ]; then
         info Using image ${REQUIRED_IMAGE}
-    fi
-}
-
-break_out_of_docker()
-{
-    if [ "$CATTLE_INSIDE_DOCKER" = "true" ] && [ -e /host/proc/1/ns/net ] && [ -e /host/proc/1/ns/uts ]; then
-        exec env CATTLE_INSIDE_DOCKER=outside /usr/sbin/nsenter --net=/host/proc/1/ns/net --uts=/host/proc/1/ns/uts -F -- "$@"
     fi
 }
 
@@ -119,8 +112,6 @@ for conf_file in "${CONF[@]}"; do
         source $conf_file
     fi
 done
-
-break_out_of_docker $0 "$@"
 
 while [ $# != 0 ]; do
     case $1 in
@@ -150,6 +141,5 @@ print_config
 
 upgrade
 
-mkdir -p $CATTLE_HOME
 download_agent
 start_agent
