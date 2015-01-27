@@ -18,10 +18,9 @@
 
         "account": "r",
 
-        "agent" : "r",
-        
         "apiKey" : "crud", 
         "apiKey.publicValue" : "r", 
+        "apiKey.secretValue" : "r",
         
         "container" : "crud",
         "container.capAdd" : "cr",
