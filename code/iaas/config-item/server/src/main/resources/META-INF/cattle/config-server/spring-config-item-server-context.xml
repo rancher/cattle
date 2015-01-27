@@ -40,7 +40,7 @@
 
     <bean class="io.cattle.platform.configitem.server.template.impl.TemplateFactoryImpl" />
 
-    <bean id="FreemarkerConfig" class="freemarker.template.Configuration">
+    <bean id="FreemarkerConfig" class="io.cattle.platform.configitem.freemarker.Configuration">
         <property name="templateLoader">
             <bean class="io.cattle.platform.configitem.server.template.impl.FreemarkerURLTemplateLoader" />
         </property>
