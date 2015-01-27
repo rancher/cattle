@@ -51,7 +51,6 @@ def test_host_auth(admin_client, client):
     auth_check(client.schema, 'host', 'rud', {
         'accountId': 'r',
         'computeTotal': 'r',
-        'agentId': 'r',
     })
 
 
@@ -383,10 +382,6 @@ def test_agent_auth(admin_client, client):
         'data': 'r',
     })
 
-    auth_check(client.schema, 'agent', 'r', {
-        'accountId': 'r',
-    })
-
 
 def test_extension_point_auth(admin_client, client):
     auth_check(admin_client.schema, 'extensionPoint', 'r', {
@@ -409,6 +404,7 @@ def test_api_key_auth(admin_client, client):
     auth_check(client.schema, 'apiKey', 'crud', {
         'publicValue': 'r',
         'accountId': 'r',
+        'secretValue': 'r',
     })
 
 
