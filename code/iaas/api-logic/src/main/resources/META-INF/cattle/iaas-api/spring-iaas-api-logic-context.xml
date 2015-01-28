@@ -44,6 +44,7 @@
     </bean>
 
     <!-- Start Handlers -->
+    <bean class="io.cattle.platform.iaas.api.request.handler.UIRedirect" />
     <bean class="io.cattle.platform.iaas.api.request.handler.Scripts" >
         <property name="handlers" value="#{extensionManager.list('scripts.handler')}" />
     </bean>
@@ -67,7 +68,6 @@
             <bean class="io.github.ibuildthecloud.gdapi.id.IdentityFormatter" />
         </property>
     </bean>
-    <bean class="io.cattle.platform.iaas.api.request.handler.UIRedirect" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.VersionHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.SchemasHandler" />
