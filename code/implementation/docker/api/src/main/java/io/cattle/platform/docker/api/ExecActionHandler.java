@@ -5,7 +5,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.api.model.ContainerExec;
-import io.cattle.platform.docker.api.model.ContainerExecOutput;
+import io.cattle.platform.docker.api.model.HostAccess;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.util.DockerUtils;
 import io.cattle.platform.host.model.HostApiAccess;
@@ -69,7 +69,7 @@ public class ExecActionHandler implements ActionHandler {
         url.append("://").append(apiAccess.getHostname()).append(":").append(CONSOLE_AGENT_PORT.get());
         url.append(CONSOLE_AGENT_PATH.get());
 
-        return new ContainerExecOutput(url.toString(), apiAccess.getAuthenticationToken());
+        return new HostAccess(url.toString(), apiAccess.getAuthenticationToken());
     }
 
     public HostApiService getApiService() {

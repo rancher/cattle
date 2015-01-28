@@ -1,0 +1,16 @@
+{
+    "collectionMethods":[],
+    "resourceFields":{
+        "follow":{
+            "type":"boolean",
+            "nullable":false,
+            "default":true
+        },
+        "lines":{
+            "type":"int",
+            "nullable":false,
+            "default":100
+
+        }
+    }
+}
