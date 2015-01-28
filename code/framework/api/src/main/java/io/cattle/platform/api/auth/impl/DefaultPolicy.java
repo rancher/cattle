@@ -1,10 +1,14 @@
 package io.cattle.platform.api.auth.impl;
 
 import io.cattle.platform.api.auth.Policy;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DefaultPolicy implements Policy {
 
@@ -65,6 +69,25 @@ public class DefaultPolicy implements Policy {
     @Override
     public String getUserName() {
         return name;
+    }
+
+    @Override
+    public <T> void grantObjectAccess(T obj) {
+        ApiRequest apiRequest = ApiContext.getContext().getApiRequest();
+        @SuppressWarnings("unchecked")
+        Set<Object> whitelist = (Set<Object>) (apiRequest.getAttribute("whitelist"));
+        if(whitelist == null) {
+            whitelist = new HashSet<>();
+        }
+        whitelist.add(obj);
+        apiRequest.setAttribute("whitelist", whitelist);
+    }
+    
+    protected <T> Boolean hasGrantedAccess(T obj) {
+        ApiRequest request = ApiContext.getContext().getApiRequest();
+        @SuppressWarnings("unchecked")
+        Set<Object> whitelist = (Set<Object>) request.getAttribute("whitelist");
+        return (null != whitelist&& whitelist.contains(obj));
     }
 
 }

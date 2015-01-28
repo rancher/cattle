@@ -25,5 +25,7 @@ public interface Policy {
     <T> List<T> authorizeList(List<T> list);
 
     <T> T authorizeObject(T obj);
+    
+    <T> void grantObjectAccess(T obj);
 
 }

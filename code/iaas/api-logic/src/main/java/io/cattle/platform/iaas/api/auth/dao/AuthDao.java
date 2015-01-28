@@ -19,7 +19,7 @@ public interface AuthDao {
     
     Account createAccount(String name, String kind, String externalId, String externalType);
 
-    int updateAccount(Account account, String name, String kind, String externalId, String externalType);
+    void updateAccount(Account account, String name, String kind, String externalId, String externalType);
     
     List<AccountRecord> getAccessibleProjects(Long userAccountId, List<String> orgIds, List<String> teamIds);
 

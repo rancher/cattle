@@ -27,6 +27,7 @@ def test_token_auth(token_client):
         'orgs': 'r',
         'clientId': 'r',
         'security': 'r',
+        'teams': 'r',
     })
 
 

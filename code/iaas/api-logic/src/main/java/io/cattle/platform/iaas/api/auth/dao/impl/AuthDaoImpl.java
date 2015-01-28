@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
 import static io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
+import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -10,6 +11,7 @@ import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.object.ObjectManager;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -168,6 +170,10 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .where(ACCOUNT.EXTERNAL_ID.eq(Long.toString(userId))
                         .and(ACCOUNT.EXTERNAL_ID_TYPE.eq("project:github_user")))
                         .fetch());
+        for(AccountRecord project: projects) {
+            Policy policy = (Policy) ApiContext.getContext().getPolicy();
+            policy.grantObjectAccess(project);
+        }
         
         return projects;
         

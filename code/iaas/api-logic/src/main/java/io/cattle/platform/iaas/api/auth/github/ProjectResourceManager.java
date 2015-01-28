@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ProjectResourceManager extends AbstractJooqResourceManager {
 
-
     private static final String GITHUB_EXTERNAL_TYPE = "github";
     private static final String TEAM_SCOPE = "project:github_team";
     private static final String ORG_SCOPE = "project:github_org";
@@ -50,14 +49,14 @@ public class ProjectResourceManager extends AbstractJooqResourceManager {
     public Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         HttpServletRequest request = ApiContext.getContext().getApiRequest().getServletContext().getRequest();
         String token = request.getHeader(AUTH);
-        if(StringUtils.isEmpty(token)) {
+        if (StringUtils.isEmpty(token)) {
             return null;
         }
         List<String> teamIds = githubUtils.validateAndFetchTeamIdsFromToken(token);
         List<String> orgIds = githubUtils.validateAndFetchOrgIdsFromToken(token);
         String userId = githubUtils.validateAndFetchAccountIdFromToken(token);
         Account userAccount = authDao.getAccountByExternalId(userId, GITHUB_EXTERNAL_TYPE);
-        if(userAccount == null) {
+        if (userAccount == null) {
             return null;
         }
         return authDao.getAccessibleProjects(userAccount.getId(), orgIds, teamIds);
@@ -71,7 +70,7 @@ public class ProjectResourceManager extends AbstractJooqResourceManager {
 
         return createProject(request);
     }
-    
+
     private Account createProject(ApiRequest apiRequest) {
         HttpServletRequest request = apiRequest.getServletContext().getRequest();
         String token = request.getHeader(AUTH);
@@ -91,10 +90,13 @@ public class ProjectResourceManager extends AbstractJooqResourceManager {
         }
         return authDao.createAccount((String) account.get("name"), "user", externalId, (String) account.get("externalIdType"));
     }
-    
+
     private String getExternalId(String externalId, String externalIdType, String jwt) throws IOException {
         String token = githubUtils.validateAndFetchGithubToken(jwt);
         if (StringUtils.equals(externalIdType, TEAM_SCOPE)) {
+            if (StringUtils.isEmpty(externalId)) {
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "MissingRequired", "externalId for TEAM scope should not be null", null);
+            }
             return externalId;
         } else if (StringUtils.equals(externalIdType, ORG_SCOPE)) {
             GithubAccountInfo accountInfo = githubClient.getOrgIdByName(externalId, token);
@@ -109,7 +111,7 @@ public class ProjectResourceManager extends AbstractJooqResourceManager {
         }
         throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "UnrecognizedScope", "Scope " + externalIdType + "is invalid", null);
     }
-    
+
     @Inject
     public void setGithubUtils(GithubUtils githubUtils) {
         this.githubUtils = githubUtils;
@@ -124,7 +126,6 @@ public class ProjectResourceManager extends AbstractJooqResourceManager {
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
     }
-    
 
     @Inject
     public void setGithubClient(GithubClient githubClient) {
