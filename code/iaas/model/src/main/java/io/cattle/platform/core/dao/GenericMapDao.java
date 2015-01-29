@@ -12,4 +12,6 @@ public interface GenericMapDao {
 
     <T> List<? extends T> findToRemove(Class<T> mapType, Class<?> resourceType, long resourceId);
 
+    <T> T findToRemove(Class<T> mapType, Class<?> leftResourceType, long leftResourceId, Class<?> rightResourceType,
+            long rightResourceId);
 }

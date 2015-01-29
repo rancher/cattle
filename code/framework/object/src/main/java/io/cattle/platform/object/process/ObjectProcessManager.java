@@ -22,4 +22,7 @@ public interface ObjectProcessManager {
     void scheduleStandardProcess(StandardProcess process, Object resource, Map<String, Object> data, Predicate predicate);
 
     ExitReason executeStandardProcess(StandardProcess process, Object resource, Map<String, Object> data);
+
+    ExitReason executeProcess(String processName, Object resource, Map<String, Object> data);
+
 }

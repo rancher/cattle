@@ -99,4 +99,9 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
         this.objectManager = objectManager;
     }
 
+    @Override
+    public ExitReason executeProcess(String processName, Object resource, Map<String, Object> data) {
+        ProcessInstance pi = createProcessInstance(processName, resource, data);
+        return pi.execute();
+    }
 }
