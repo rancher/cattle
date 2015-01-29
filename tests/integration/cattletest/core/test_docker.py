@@ -519,6 +519,91 @@ def test_docker_volumes(client, admin_client, super_client, docker_context):
 
 
 @if_docker
+def test_docker_snapshots(client, admin_client, super_client, docker_context):
+    _ = lambda x: super_client.reload(x)
+
+    uuid = TEST_IMAGE_UUID
+
+    c = admin_client.create_container(name="snapshot_test",
+                                      imageUuid=uuid,
+                                      startOnCreate=False,
+                                      dataVolumes=['/foo',
+                                                   '/bar'])
+
+    c = admin_client.wait_success(c)
+    assert len(c.dataVolumes) == 2
+    assert set(c.dataVolumes) == set(['/foo', '/bar'])
+
+    c = admin_client.wait_success(c.start())
+
+    volumes = c.volumes()
+    assert len(volumes) == 1
+
+    mounts = c.mounts()
+    assert len(mounts) == 2
+    foo_mount, bar_mount = None, None
+    foo_vol, bar_vol = None, None
+    for mount in mounts:
+        assert mount.instance().id == c.id
+        if mount.path == '/foo':
+            foo_mount = mount
+            foo_vol = mount.volume()
+        elif mount.path == '/bar':
+            bar_mount = mount
+            bar_vol = mount.volume()
+
+    assert foo_mount is not None
+    assert foo_mount.permissions == 'rw'
+    assert foo_vol is not None
+    assert foo_vol.state == 'active'
+    assert _(foo_vol).attachedState == 'inactive'
+
+    assert bar_mount is not None
+    assert bar_mount.permissions == 'rw'
+    assert bar_vol is not None
+    assert bar_vol.state == 'active'
+    assert _(bar_vol).attachedState == 'inactive'
+
+    c.stop(remove=True)
+
+    snapshot = admin_client.create_snapshot(name="snapshot_foo",
+                                            volumeId=foo_vol.id)
+    snapshot = wait_success(admin_client, snapshot)
+    assert snapshot.state == "backed-up"
+
+    snapshot = admin_client.wait_success(snapshot.remove())
+    assert snapshot.state == "removed"
+
+    snapshot = admin_client.create_snapshot(name="snapshot_bar",
+                                            volumeId=bar_vol.id)
+    snapshot = wait_success(admin_client, snapshot)
+    assert snapshot.state == "backed-up"
+
+    snapshot = admin_client.wait_success(snapshot.remove())
+    assert snapshot.state == "removed"
+
+    root_volume = c.volumes()
+    try:
+        admin_client.create_snapshot(name="snapshot_fail",
+                                     volumeId=root_volume[0].id)
+        assert False
+    except cattle.ApiError as e:
+        assert e.error.code == "InvalidAction"
+
+    _check_path(foo_vol, True, admin_client)
+    foo_vol = admin_client.wait_success(foo_vol.deactivate())
+    foo_vol = admin_client.wait_success(foo_vol.remove())
+    foo_vol = admin_client.wait_success(foo_vol.purge())
+    _check_path(foo_vol, False, admin_client)
+
+    _check_path(bar_vol, True, admin_client)
+    bar_vol = admin_client.wait_success(bar_vol.deactivate())
+    bar_vol = admin_client.wait_success(bar_vol.remove())
+    bar_vol = admin_client.wait_success(bar_vol.purge())
+    _check_path(bar_vol, False, admin_client)
+
+
+@if_docker
 def test_container_fields(client, admin_client, docker_context):
     caps = ["SYS_MODULE", "SYS_RAWIO", "SYS_PACCT", "SYS_ADMIN",
             "SYS_NICE", "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG",
