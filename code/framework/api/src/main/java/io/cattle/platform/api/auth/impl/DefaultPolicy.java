@@ -83,7 +83,7 @@ public class DefaultPolicy implements Policy {
         apiRequest.setAttribute("whitelist", whitelist);
     }
     
-    protected <T> Boolean hasGrantedAccess(T obj) {
+    protected <T> boolean hasGrantedAccess(T obj) {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         @SuppressWarnings("unchecked")
         Set<Object> whitelist = (Set<Object>) request.getAttribute("whitelist");

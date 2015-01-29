@@ -2,7 +2,6 @@ package io.cattle.platform.iaas.api.auth.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
 import static io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
-import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -11,7 +10,6 @@ import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.object.ObjectManager;
-import io.github.ibuildthecloud.gdapi.context.ApiContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,7 +47,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .selectFrom(ACCOUNT)
                 .where(
                         ACCOUNT.ID.eq(id)
-                        .and(ACCOUNT.STATE.eq("state")
+                        .and(ACCOUNT.STATE.eq("active")
                         .and(ACCOUNT.REMOVED.isNull()))
                         ).fetchOne();
     }
@@ -96,7 +94,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         if(StringUtils.isNotEmpty(externalType)) {
             properties.put(ACCOUNT.EXTERNAL_ID_TYPE, externalType);
         }
-        return resourceDao.createAndSchedule(Account.class, objectManager.convertToPropertiesFor(Account.class, properties));
+        Account account = resourceDao.createAndSchedule(Account.class, objectManager.convertToPropertiesFor(Account.class, properties));
+        return objectManager.reload(account);
     }
 
     @Override
@@ -108,7 +107,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                         .and(ACCOUNT.STATE.eq("active"))
                         ).orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
     }
-    
+ 
     @Override
     public void updateAccount(Account account, String name, String kind, String externalId, String externalType) {
         Map<TableField<AccountRecord, String>, String> properties = new HashMap<>();
@@ -137,7 +136,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public List<AccountRecord> getAccessibleProjects (Long userId, List<String> orgIds, List<String> teamIds) {
+    public List<? extends Account> getAccessibleProjects (String userId, List<String> orgIds, List<String> teamIds) {
         
         if(null == userId || null == teamIds || null == orgIds) {
             return new ArrayList<>();
@@ -167,13 +166,9 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         
         projects.addAll(create()
                 .selectFrom(ACCOUNT)
-                .where(ACCOUNT.EXTERNAL_ID.eq(Long.toString(userId))
+                .where(ACCOUNT.EXTERNAL_ID.eq(userId)
                         .and(ACCOUNT.EXTERNAL_ID_TYPE.eq("project:github_user")))
                         .fetch());
-        for(AccountRecord project: projects) {
-            Policy policy = (Policy) ApiContext.getContext().getPolicy();
-            policy.grantObjectAccess(project);
-        }
         
         return projects;
         

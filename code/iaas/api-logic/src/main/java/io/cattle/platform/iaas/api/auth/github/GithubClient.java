@@ -128,7 +128,7 @@ public class GithubClient {
         for (Map<String, Object> orgObject : jsonData) {
             String accountId = ObjectUtils.toString(orgObject.get("id"));
             String accountName = ObjectUtils.toString(orgObject.get("name"));
-            if (!StringUtils.equals("Owners", accountName)) {
+            if (!StringUtils.equalsIgnoreCase("Owners", accountName)) {
                 teamInfoList.add(new TeamAccountInfo(org, accountName, accountId));
             }
         }

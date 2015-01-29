@@ -121,9 +121,9 @@
         "project.description" : "crud",
         "project.externalId" : "crud",
         "project.externalIdType" : "crud",
-        "project.kind" : "crud",
+        "project.kind" : "r",
         "project.name" : "crud",
-        "project.uuid" : "crud",
+        "project.uuid" : "r",
 
         "register": "cr",
         "register.accessKey" : "r",

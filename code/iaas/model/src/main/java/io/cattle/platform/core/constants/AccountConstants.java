@@ -16,6 +16,6 @@ public class AccountConstants {
     public static final String FIELD_DEFAULT_CREDENTIAL_IDS = "defaultCredentialIds";
     public static final String FIELD_DEFAULT_NETWORK_IDS = "defaultNetworkIds";
     
-    public static final String PROJECT = "project"; 
+    public static final String TYPE_PROJECT = "project"; 
 
 }

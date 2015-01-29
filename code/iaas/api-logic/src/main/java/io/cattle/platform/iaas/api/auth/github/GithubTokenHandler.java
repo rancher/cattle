@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,13 +57,15 @@ public class GithubTokenHandler {
         List<String> teamIds = new ArrayList<>();
         List<String> orgIds = new ArrayList<>();
         List<TeamAccountInfo> teamsAccountInfo = new ArrayList<>();
-
+        Map<String, String> orgsMap = new HashMap<>();
         GithubAccountInfo userAccountInfo = client.getUserAccountInfo(token);
         List<GithubAccountInfo> orgAccountInfo = client.getOrgAccountInfo(token);
+        Map<String, String> teamsMap = new HashMap<>();
 
         idList.add(userAccountInfo.getAccountId());
 
         for (GithubAccountInfo info : orgAccountInfo) {
+            orgsMap.put(info.getAccountId(), info.getAccountName());
             idList.add(info.getAccountId());
             orgNames.add(info.getAccountName());
             orgIds.add(info.getAccountId());
@@ -72,6 +75,7 @@ public class GithubTokenHandler {
         for (TeamAccountInfo info : teamsAccountInfo) {
             teamIds.add(info.getId());
             idList.add(info.getId());
+            teamsMap.put(info.getId(), info.getName());
         }
 
         if (SECURITY.get()) {
@@ -88,7 +92,9 @@ public class GithubTokenHandler {
         }
 
         jsonData.put("account_id", userAccountInfo.getAccountId());
-        jsonData.put("accessible_ids", idList);
+        jsonData.put("orgs_reverse_mapping", orgsMap);
+        jsonData.put("teams_reverse_mapping", teamsMap);
+        jsonData.put("username", userAccountInfo.getAccountName());
         jsonData.put("team_ids", teamIds);
         jsonData.put("org_ids", orgIds);
         Date expiry = new Date(System.currentTimeMillis() + DAY_IN_MILLISECONDS);

@@ -1,0 +1,13 @@
+{
+    "resourceFields" : {
+    	"externalIdType": {
+    		"type": "enum",
+    		"nullable": false,
+    		"options": [
+    			"project:github_user",
+    			"project:github_team",
+    			"project:github_org"
+    		]
+    	}
+    }
+}
