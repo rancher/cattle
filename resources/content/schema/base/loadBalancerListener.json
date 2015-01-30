@@ -1,0 +1,27 @@
+{
+    "resourceFields": {
+        "sourceProtocol": {
+            "type": "enum",
+            "options": [ "tcp", "http" ],
+            "required": true,
+            "nullable": false
+        },
+        "targetProtocol": {
+            "type": "enum",
+            "options" : [ "tcp", "http" ]
+        },
+        "sourcePort": {
+            "type": "int",
+            "min": 1,
+            "max": 65535,
+            "required": true,
+            "nullable": false
+        },
+        "targetPort": {
+            "type": "int",
+            "min": 1,
+            "max": 65535
+        }
+
+    }
+}

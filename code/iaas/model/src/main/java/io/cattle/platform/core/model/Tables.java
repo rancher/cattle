@@ -84,6 +84,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.GenericObjectTable GENERIC_OBJECT = io.cattle.platform.core.model.tables.GenericObjectTable.GENERIC_OBJECT;
 
 	/**
+	 * The table cattle.global_load_balancer
+	 */
+	public static final io.cattle.platform.core.model.tables.GlobalLoadBalancerTable GLOBAL_LOAD_BALANCER = io.cattle.platform.core.model.tables.GlobalLoadBalancerTable.GLOBAL_LOAD_BALANCER;
+
+	/**
 	 * The table cattle.host
 	 */
 	public static final io.cattle.platform.core.model.tables.HostTable HOST = io.cattle.platform.core.model.tables.HostTable.HOST;
@@ -142,6 +147,36 @@ public class Tables {
 	 * The table cattle.ip_pool
 	 */
 	public static final io.cattle.platform.core.model.tables.IpPoolTable IP_POOL = io.cattle.platform.core.model.tables.IpPoolTable.IP_POOL;
+
+	/**
+	 * The table cattle.load_balancer
+	 */
+	public static final io.cattle.platform.core.model.tables.LoadBalancerTable LOAD_BALANCER = io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
+
+	/**
+	 * The table cattle.load_balancer_config
+	 */
+	public static final io.cattle.platform.core.model.tables.LoadBalancerConfigTable LOAD_BALANCER_CONFIG = io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG;
+
+	/**
+	 * The table cattle.load_balancer_config_listener_map
+	 */
+	public static final io.cattle.platform.core.model.tables.LoadBalancerConfigListenerMapTable LOAD_BALANCER_CONFIG_LISTENER_MAP = io.cattle.platform.core.model.tables.LoadBalancerConfigListenerMapTable.LOAD_BALANCER_CONFIG_LISTENER_MAP;
+
+	/**
+	 * The table cattle.load_balancer_host_map
+	 */
+	public static final io.cattle.platform.core.model.tables.LoadBalancerHostMapTable LOAD_BALANCER_HOST_MAP = io.cattle.platform.core.model.tables.LoadBalancerHostMapTable.LOAD_BALANCER_HOST_MAP;
+
+	/**
+	 * The table cattle.load_balancer_listener
+	 */
+	public static final io.cattle.platform.core.model.tables.LoadBalancerListenerTable LOAD_BALANCER_LISTENER = io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
+
+	/**
+	 * The table cattle.load_balancer_target
+	 */
+	public static final io.cattle.platform.core.model.tables.LoadBalancerTargetTable LOAD_BALANCER_TARGET = io.cattle.platform.core.model.tables.LoadBalancerTargetTable.LOAD_BALANCER_TARGET;
 
 	/**
 	 * The table cattle.mount

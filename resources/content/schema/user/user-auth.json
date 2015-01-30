@@ -147,6 +147,55 @@
         "volume.isHostPath" : "r",
         "volume.uri" : "r",
 
+        "loadBalancerListener" : "crud",
+        "loadBalancerListener.sourcePort" : "cr",
+        "loadBalancerListener.targetPort" : "cr",
+        "loadBalancerListener.sourceProtocol" : "cr",
+        "loadBalancerListener.targetProtocol" : "cr",
+
+        "loadBalancerConfig" : "crud",
+        "loadBalancerConfig.loadBalancerHealthCheck" : "cr",
+        "loadBalancerConfig.loadBalancerPolicy" : "cr",
+        "loadBalancerHealthCheck" : "cr",
+        "loadBalancerPolicy" : "cr",
+        "loadBalancerConfig.addListener" : "r",
+        "loadBalancerConfig.removeListener" : "r",
+        "addRemoveLoadBalancerListenerInput" : "cr",
+        "addRemoveLoadBalancerListenerInput.loadBalancerListenerId" : "cr",
+
+        "globalLoadBalancer" : "crud",
+        "globalLoadBalancer.globalLoadBalancerHealthCheck" : "cr",
+        "globalLoadBalancer.globalLoadBalancerPolicy" : "cr",
+        "globalLoadBalancerHealthCheck" : "cr",
+        "globalLoadBalancerPolicy" : "cr",
+        "globalLoadBalancer.addLoadBalancer" : "r",
+        "globalLoadBalancer.removeLoadBalancer" : "r",
+        "addLoadBalancerInput" : "cr",
+        "addLoadBalancerInput.loadBalancerId" : "cr",
+        "addLoadBalancerInput.weight" : "cr",
+        "removeLoadBalancerInput" : "cr",
+        "removeLoadBalancerInput.loadBalancerId" : "cr",
+
+        "loadBalancer" : "crud",
+        "loadBalancer.loadBalancerConfigId" : "cr",
+        "loadBalancer.globalLoadBalancerId" : "r",
+        "loadBalancer.weight" : "r",
+
+        "loadBalancer.addTarget" : "r",
+        "loadBalancer.removeTarget" : "r",
+        "addRemoveLoadBalancerTargetInput" : "cr",
+        "addRemoveLoadBalancerTargetInput.instanceId" : "cr",
+        "addRemoveLoadBalancerTargetInput.ipAddress" : "cr",
+        "loadBalancer.addHost" : "r",
+        "loadBalancer.removeHost" : "r",
+        "addRemoveLoadBalancerHostInput" : "cr",
+        "addRemoveLoadBalancerHostInput.hostId" : "cr",
+
+        "loadBalancerTarget" : "r",
+        "loadBalancerTarget.instanceId" : "r",
+        "loadBalancerTarget.loadBalancerId" : "r",
+        "loadBalancerTarget.ipAddress" : "r",
+
         "end" : ""
     }
 }

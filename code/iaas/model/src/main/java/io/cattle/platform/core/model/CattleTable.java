@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 1278614430;
+	private static final long serialVersionUID = -242025042;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -48,6 +48,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP,
 			io.cattle.platform.core.model.tables.ExternalHandlerProcessTable.EXTERNAL_HANDLER_PROCESS,
 			io.cattle.platform.core.model.tables.GenericObjectTable.GENERIC_OBJECT,
+			io.cattle.platform.core.model.tables.GlobalLoadBalancerTable.GLOBAL_LOAD_BALANCER,
 			io.cattle.platform.core.model.tables.HostTable.HOST,
 			io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP,
 			io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP,
@@ -60,6 +61,12 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP,
 			io.cattle.platform.core.model.tables.IpAssociationTable.IP_ASSOCIATION,
 			io.cattle.platform.core.model.tables.IpPoolTable.IP_POOL,
+			io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER,
+			io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG,
+			io.cattle.platform.core.model.tables.LoadBalancerConfigListenerMapTable.LOAD_BALANCER_CONFIG_LISTENER_MAP,
+			io.cattle.platform.core.model.tables.LoadBalancerHostMapTable.LOAD_BALANCER_HOST_MAP,
+			io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER,
+			io.cattle.platform.core.model.tables.LoadBalancerTargetTable.LOAD_BALANCER_TARGET,
 			io.cattle.platform.core.model.tables.MountTable.MOUNT,
 			io.cattle.platform.core.model.tables.NetworkTable.NETWORK,
 			io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE,

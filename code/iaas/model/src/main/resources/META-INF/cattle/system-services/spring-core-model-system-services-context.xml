@@ -19,6 +19,8 @@
     <bean class="io.cattle.platform.core.dao.impl.NetworkDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.StoragePoolDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.VnetDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.LoadBalancerDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.LoadBalancerTargetDaoImpl" />
 
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
