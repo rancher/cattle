@@ -70,7 +70,7 @@ public class HostApiServiceImpl implements HostApiService {
         Map<String,Object> data = new HashMap<String,Object>(inputData);
         String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
         if(uuid != null){
-            data.put(HostConstants.FIELD_REPORTED_UUID,uuid);
+            data.put(HOST_UUID,uuid);
         }
         else{
             data.put(HOST_UUID, host.getUuid());
