@@ -45,8 +45,11 @@
         "credential.publicValue" : "cr",
         "credential.secretValue" : "cr",
 
-        "databasechangeloglock" : "rd",
         "databasechangelog" : "rd",
+        "databasechangelog\\..*" : "rd",
+
+        "databasechangeloglock" : "rd",
+        "databasechangeloglock\\..*" : "rd",
 
         "extensionImplementation" : "r",
         "extensionImplementation\\..*" : "r",
