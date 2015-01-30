@@ -1,13 +1,11 @@
 package io.cattle.platform.host.stats.api;
 
 import io.cattle.platform.api.link.LinkHandler;
-import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.docker.constants.DockerHostConstants;
 import io.cattle.platform.docker.util.DockerUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;

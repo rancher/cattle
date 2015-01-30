@@ -270,7 +270,6 @@ public class SshAgentConnectionFactory implements AgentConnectionFactory {
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     protected synchronized SshClient getClient() {
         if ( client != null ) {
             return client;
