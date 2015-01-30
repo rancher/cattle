@@ -8,7 +8,7 @@
         "account" : "crud",
         "account.externalId" : "cru",
         "account.externalIdType" : "cru",
-        "account.kind" : "cr",
+        "account.kind" : "cru",
         "account.uuid" : "cr",
 
         "activeSetting" : "rud",
