@@ -101,6 +101,11 @@ def client(accounts):
 
 
 @pytest.fixture(scope='session')
+def super_admin_client(accounts):
+    return _client_for_user('superadmin', accounts)
+
+
+@pytest.fixture(scope='session')
 def admin_client(accounts):
     return _client_for_user('admin', accounts)
 

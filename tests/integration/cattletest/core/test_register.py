@@ -57,8 +57,9 @@ def test_registration_token_create(admin_client):
     assert len(tokens) == 2 or len(tokens) == 1
 
 
-def test_registration_token_account_create(admin_client, cattle_url):
-    account = create_and_activate(admin_client, 'account')
+@pytest.mark.parametrize('kind', ['user', 'admin'])
+def test_registration_token_account_create(kind, admin_client, cattle_url):
+    account = create_and_activate(admin_client, 'account', kind=kind)
 
     creds = filter(lambda x: x.kind == 'registrationToken',
                    account.credentials())

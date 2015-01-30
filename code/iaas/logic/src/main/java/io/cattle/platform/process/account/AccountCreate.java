@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicStringListProperty;
 import com.netflix.config.DynamicStringProperty;
 
 @Named
@@ -31,6 +32,9 @@ public class AccountCreate extends AbstractDefaultProcessHandler {
 
     public static final DynamicStringProperty CREDENTIAL_TYPE = ArchaiusUtil
             .getString("process.account.create.create.credential.default.kind");
+
+    public static final DynamicStringListProperty ACCOUNT_KIND_CREDENTIALS = ArchaiusUtil
+            .getList("process.account.create.create.credential.account.kinds");
 
     ObjectProcessManager processManager;
 
@@ -50,17 +54,23 @@ public class AccountCreate extends AbstractDefaultProcessHandler {
                                         .withDefault(CREDENTIAL_TYPE.get())
                                         .as(String.class);
 
-        if ( createApiKey || CREATE_CREDENTIAL.get() ) {
-            List<Credential> creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class,
-                    CREDENTIAL.ACCOUNT_ID, account.getId(),
-                    CREDENTIAL.KIND, apiKeyKind);
+        if ( shouldCreateCredentials(account) ) {
+            if ( createApiKey || CREATE_CREDENTIAL.get() ) {
+                List<Credential> creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class,
+                        CREDENTIAL.ACCOUNT_ID, account.getId(),
+                        CREDENTIAL.KIND, apiKeyKind);
 
-            for (Credential cred : creds) {
-                result.put("_createdCredential" + cred.getId(), true);
+                for (Credential cred : creds) {
+                    result.put("_createdCredential" + cred.getId(), true);
+                }
             }
         }
 
         return new HandlerResult(result);
+    }
+
+    public boolean shouldCreateCredentials(Account account) {
+        return ACCOUNT_KIND_CREDENTIALS.get().contains(account.getKind());
     }
 
     public ObjectProcessManager getProcessManager() {

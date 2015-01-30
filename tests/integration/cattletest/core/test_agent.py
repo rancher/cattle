@@ -22,7 +22,7 @@ def test_agent_create(super_client, sim_context):
     assert agent.account() is not None
 
     count = len(agent.account().credentials())
-    assert count == 2
+    assert count == 1
 
     account = agent.account()
     assert account.uuid.startswith("agentAccount")
