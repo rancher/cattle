@@ -663,7 +663,13 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
             return null;
         }
 
-        Schema schema = schemaFactory.getSchema(obj.getClass());
+        Schema schema = null;
+        if ( obj instanceof Class<?> ) {
+            schema = schemaFactory.getSchema((Class<?>)obj);
+        } else {
+            schema = schemaFactory.getSchema(obj.getClass());
+        }
+
         if ( schema == null ) {
             return null;
         }
