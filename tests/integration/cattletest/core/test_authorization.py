@@ -366,7 +366,7 @@ def test_account_auth(admin_client, client):
         'externalIdType': 'cru',
         'removeTime': 'r',
         'data': 'r',
-        'kind': 'cr',
+        'kind': 'cru',
         'uuid': 'cr',
     })
 
