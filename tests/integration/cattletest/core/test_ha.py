@@ -33,12 +33,15 @@ def test_container_ha_stop(super_client, sim_context):
                                       instanceTriggeredStop='stop',
                                       data={'simForgetImmediately': True})
     c = super_client.wait_success(c)
-    ping = one(super_client.list_task, name='agent.ping')
-    ping.execute()
+
+    def do_ping():
+        ping = one(super_client.list_task, name='agent.ping')
+        ping.execute()
 
     def callback():
         processes = process_instances(super_client, c, type='instance')
         if 'instance.stop' not in _process_names(processes):
+            do_ping()
             return None
         return processes
 
