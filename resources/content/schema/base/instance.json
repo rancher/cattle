@@ -35,9 +35,6 @@
                 "restart"
             ]
         },
-        "memoryMb" : {
-            "default" : 256
-        },
         "ports": {
             "type": "array[string]",
             "create": true,
