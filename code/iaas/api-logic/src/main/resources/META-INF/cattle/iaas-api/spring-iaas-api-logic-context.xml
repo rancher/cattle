@@ -23,7 +23,8 @@
     <bean class="io.cattle.platform.iaas.api.credential.SshKeyOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerListenerValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerConfigValidationFilter" />
-
+    <bean class="io.cattle.platform.iaas.api.summary.HostSummaryManager" />
+    <bean class="io.cattle.platform.iaas.api.summary.HostSummaryFilter" />
 
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 

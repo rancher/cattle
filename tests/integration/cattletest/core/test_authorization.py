@@ -1,6 +1,101 @@
 from common_fixtures import *  # NOQA
 
 
+def test_auth_type_list(admin_client, client):
+    admin_expected = set(['apiKey',
+                          'account',
+                          'activeSetting',
+                          'agent',
+                          'configItem',
+                          'configItemStatus',
+                          'container',
+                          'containerExec',
+                          'containerExecOutput',
+                          'credential',
+                          'databasechangelog',
+                          'databasechangeloglock',
+                          'extensionImplementation',
+                          'extensionPoint',
+                          'externalHandler',
+                          'externalHandlerExternalHandlerProcessMap',
+                          'externalHandlerProcess',
+                          'githubconfig',
+                          'host',
+                          'hostSummary',
+                          'image',
+                          'instance',
+                          'instanceConsole',
+                          'instanceConsoleInput',
+                          'instanceLink',
+                          'instanceStop',
+                          'ipAddress',
+                          'ipAddressAssociateInput',
+                          'mount',
+                          'network',
+                          'port',
+                          'processDefinition',
+                          'processExecution',
+                          'processInstance',
+                          'publish',
+                          'register',
+                          'registrationToken',
+                          'resourceDefinition',
+                          'restartPolicy',
+                          'schema',
+                          'setting',
+                          'statsAccess',
+                          'subscribe',
+                          'task',
+                          'taskInstance',
+                          'typeDocumentation',
+                          'volume'])
+
+    assert set(admin_client.schema.types.keys()) == admin_expected
+
+    user_expected = set(['apiKey',
+                         'account',
+                         'container',
+                         'containerExec',
+                         'containerExecOutput',
+                         'credential',
+                         'host',
+                         'hostSummary',
+                         'image',
+                         'instance',
+                         'instanceConsole',
+                         'instanceConsoleInput',
+                         'instanceLink',
+                         'instanceStop',
+                         'ipAddress',
+                         'ipAddressAssociateInput',
+                         'mount',
+                         'network',
+                         'port',
+                         'register',
+                         'registrationToken',
+                         'restartPolicy',
+                         'schema',
+                         'statsAccess',
+                         'subscribe',
+                         'typeDocumentation',
+                         'volume'])
+
+    assert set(client.schema.types.keys()) == user_expected
+
+
+def test_host_summary(admin_client, client):
+    for c in [admin_client, client]:
+        auth_check(c.schema, 'hostSummary', 'r', {
+            'clusterSize': 'r',
+            'hostId': 'r',
+            'accountId': 'r',
+            'ipAddress': 'r',
+            'state': 'r',
+            'instanceStates': 'r',
+        })
+
+
+
 def test_instance_link_auth(admin_client, client):
     auth_check(admin_client.schema, 'instanceLink', 'ru', {
         'accountId': 'r',

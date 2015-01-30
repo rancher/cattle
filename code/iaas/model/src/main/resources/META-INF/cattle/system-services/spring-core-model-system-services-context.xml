@@ -13,6 +13,7 @@
     <bean class="io.cattle.platform.core.dao.impl.DataDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.GenericMapDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.GenericResourceDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.HostDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.InstanceDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.IpAddressDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.NicDaoImpl" />
