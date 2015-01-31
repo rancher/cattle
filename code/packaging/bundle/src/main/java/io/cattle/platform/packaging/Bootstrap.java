@@ -380,10 +380,11 @@ public class Bootstrap implements Closeable {
             determineClasspath();
 
             System.out.println("[BOOTSTRAP] Launching Cattle from " + Arrays.toString(classpath));
-            URLClassLoader cl = new URLClassLoader(classpath, Bootstrap.class.getClassLoader());
-            Class<?> mainClass = cl.loadClass(MAIN);
-            Method m = mainClass.getMethod("main", String[].class);
-            m.invoke(mainClass, new Object[] { args });
+            try (URLClassLoader cl = new URLClassLoader(classpath, Bootstrap.class.getClassLoader())) {
+                Class<?> mainClass = cl.loadClass(MAIN);
+                Method m = mainClass.getMethod("main", String[].class);
+                m.invoke(mainClass, new Object[] { args });
+            }
         } finally {
             closeQuietly(is);
         }

@@ -84,7 +84,6 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
 
         while (actionIter.hasNext()) {
             Map.Entry<String, Action> entry = actionIter.next();
-            Action action = entry.getValue();
             perm = getPerm(factory, schema, "resourceActions."+entry.getKey());
             if (perm == null) {
                 continue;
