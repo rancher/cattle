@@ -14,7 +14,7 @@ fi
 mkdir -p $RUNTIME_DIR
 
 CMD="java
-    -Dcattle.http.port=8081
+    -Dcattle.http.port=${CATTLE_TEST_HTTP_PORT:-8081}
     -Dlogback.log.dir=$RUNTIME_DIR/logs/
     -Ddb.cattle.home=${RUNTIME_DIR}/db/
     -Xmx512m -jar target/*.war"

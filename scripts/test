@@ -34,4 +34,4 @@ if [ -e .tox ] && [ ! -e .tox/py27/include/python2.7 ]; then
     rm -rf .tox
 fi
 
-tox
+tox "$@"
