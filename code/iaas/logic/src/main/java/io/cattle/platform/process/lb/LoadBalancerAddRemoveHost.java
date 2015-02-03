@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 
@@ -19,22 +18,22 @@ import javax.inject.Named;
 @Named
 public class LoadBalancerAddRemoveHost extends AbstractObjectProcessHandler {
 
-    JsonMapper jsonMapper;
+    @Inject
     GenericMapDao mapDao;
 
     @Override
     public String[] getProcessNames() {
         return new String[] { LoadBalancerConstants.PROCESS_LB_ADD_HOST, LoadBalancerConstants.PROCESS_LB_REMOVE_HOST };
-
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         LoadBalancer lb = (LoadBalancer) state.getResource();
-        Long hostId = DataAccessor.fromMap(state.getData()).
+        long hostId = DataAccessor.fromMap(state.getData()).
                 withKey(LoadBalancerConstants.FIELD_LB_HOST_ID).as(Long.class);
         if (process.getName().equals(LoadBalancerConstants.PROCESS_LB_ADD_HOST)) {
             createLbHostMap(lb.getId(), hostId);
+
         } else if (process.getName().equals(LoadBalancerConstants.PROCESS_LB_REMOVE_HOST)) {
             removeLbHostMap(lb.getId(), hostId);
         }
@@ -61,16 +60,6 @@ public class LoadBalancerAddRemoveHost extends AbstractObjectProcessHandler {
                     LOAD_BALANCER_HOST_MAP.LOAD_BALANCER_ID, lbId,
                     LOAD_BALANCER_HOST_MAP.HOST_ID, hostId);
         }
-        getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_HOST_MAP_CREATE, lbHostMap, null);
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    @Inject
-    public void setMapDao(GenericMapDao mapDao) {
-        this.mapDao = mapDao;
+        objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_HOST_MAP_CREATE, lbHostMap, null);
     }
 }

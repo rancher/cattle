@@ -1,5 +1,7 @@
 package io.cattle.platform.agent.instance.factory;
 
+import java.util.Map;
+
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 
@@ -30,6 +32,10 @@ public interface AgentInstanceBuilder {
     AgentInstanceBuilder withInstanceTriggeredStop(String instanceTriggeredStop);
 
     AgentInstanceBuilder withName(String name);
+
+    AgentInstanceBuilder withUri(String uri);
+
+    AgentInstanceBuilder withParameters(Map<String, Object> params);
 
     public Instance build();
 

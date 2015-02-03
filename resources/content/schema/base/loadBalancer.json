@@ -4,6 +4,12 @@
             "type": "reference[loadBalancerConfig]",
             "required": true,
             "nullable": false
+        },
+        "loadBalancerInstanceImageUuid": {
+            "type" : "string"
+        },
+        "loadBalancerInstanceUriPredicate": {
+            "type" : "string"
         }
     },
     "resourceActions": {

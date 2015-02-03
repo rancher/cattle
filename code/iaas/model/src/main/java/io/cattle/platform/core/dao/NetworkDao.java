@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao;
 
+import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.Nic;
 
@@ -13,4 +14,5 @@ public interface NetworkDao {
 
     Nic getPrimaryNic(long instanceId);
 
+    List<? extends Network> getNetworksForAccount(long accountId, String kind);
 }
