@@ -117,12 +117,12 @@
         "port.publicIpAddressId" : "r",
         "port.publicPort" : "ru",
 
-        "project" : "crud",
-        "project.description" : "crud",
-        "project.externalId" : "crud",
-        "project.externalIdType" : "crud",
+        "project" : "cru",
+        "project.description" : "cru",
+        "project.externalId" : "cru",
+        "project.externalIdType" : "cru",
         "project.kind" : "r",
-        "project.name" : "crud",
+        "project.name" : "cru",
         "project.uuid" : "r",
 
         "register": "cr",
