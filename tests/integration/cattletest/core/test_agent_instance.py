@@ -54,7 +54,6 @@ def test_agent_instance_create(super_client, sim_context):
 
     assert set(['configscripts',
                 'monit',
-                'node-services',
                 'services',
                 'agent-instance-startup',
                 'agent-instance-scripts']) == items
