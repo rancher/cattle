@@ -12,7 +12,7 @@
         <property name="typeClasses">
             <list>
                 <value>io.cattle.platform.docker.api.model.ContainerExec</value>
-                <value>io.cattle.platform.docker.api.model.ContainerExecOutput</value>
+                <value>io.cattle.platform.docker.api.model.HostAccess</value>
             </list>
         </property>
     </bean>
