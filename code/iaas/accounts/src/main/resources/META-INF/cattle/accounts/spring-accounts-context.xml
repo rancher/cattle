@@ -121,6 +121,11 @@
             </list>
         </property>
     </bean>
+    
+    <bean id="Project" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
+        <property name="id" value="project" />
+        <property name="schemaFactory" ref="User" />
+    </bean>
 
     <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="agentRegister" />

@@ -3,24 +3,32 @@ package io.cattle.platform.iaas.api.auth.impl;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.token.TokenException;
-import io.cattle.platform.token.TokenService;
+import io.cattle.platform.iaas.api.auth.github.GithubUtils;
 import io.cattle.platform.util.type.Priority;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import java.util.Map;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.collect.ImmutableList;
+
 public class GithubOAuthImpl implements AccountLookup, Priority {
 
     private static final String AUTH_HEADER = "Authorization";
     private static final String GITHUB_ACCOUNT_TYPE = "github";
+    private static final String PROJECT_HEADER = "X-API-Project-Id";
+    private static final String USER_SCOPE = "project:github_user";
+    private static final String ORG_SCOPE = "project:github_org";
+    private static final String TEAM_SCOPE = "project:github_team";
 
     private AuthDao authDao;
-    private TokenService tokenService;
+    private GithubUtils githubUtils;
 
     @Override
     public int getPriority() {
@@ -29,6 +37,9 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
 
     @Override
     public Account getAccount(ApiRequest request) {
+        if(StringUtils.equals("token", request.getType())) {
+            return null;
+        }
         String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);
         if (StringUtils.isEmpty(token)) {
             token = request.getServletContext().getRequest().getParameter("token");
@@ -36,31 +47,58 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
                 return null;
             }
         }
-        String accountId = validateAndFetchAccountId(token);
-        return authDao.getAccountByExternalId(accountId, GITHUB_ACCOUNT_TYPE);
+        String accountId = githubUtils.validateAndFetchAccountIdFromToken(token);
+        if (null == accountId) {
+            return null;
+        }
+        Account account = authDao.getAccountByExternalId(accountId, GITHUB_ACCOUNT_TYPE);
 
+        String projectId = request.getServletContext().getRequest().getHeader(PROJECT_HEADER);
+        if (StringUtils.isEmpty(projectId)) {
+            projectId = request.getServletContext().getRequest().getParameter("projectId");
+            if (StringUtils.isEmpty(projectId)) {
+                return account;
+            }
+        }
+
+        String unobfuscatedId = null;
+
+        try {
+            unobfuscatedId = ApiContext.getContext().getIdFormatter().parseId(projectId);
+        } catch (NumberFormatException e) {
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "projectId header format is incorrect " + projectId, null);
+        }
+
+        if (StringUtils.isEmpty(unobfuscatedId)) {
+            return null;
+        }
+
+        Account projectAccount = authDao.getAccountById(new Long(unobfuscatedId));
+
+        if (validateProjectAccount(projectAccount, token)) {
+            return projectAccount;
+        }
+        return null;
     }
 
-    private String validateAndFetchAccountId(String token) {
-        String toParse = null;
-        String[] tokenArr = token.split("\\s+");
-        if (tokenArr.length == 2) {
-            if(!StringUtils.equals("bearer", StringUtils.lowerCase(StringUtils.trim(tokenArr[0])))) {
-                return null;
-            }
-            toParse = tokenArr[1];
-        } else if (tokenArr.length == 1) {
-            toParse = tokenArr[0];
-        } else {
-            return null;
+    protected boolean validateProjectAccount(Account projectAccount, String token) {
+        if (null == projectAccount) {
+            return false;
         }
-        Map<String, Object> jsonData;
-        try {
-            jsonData = tokenService.getJsonPayload(toParse, true);
-        } catch (TokenException e) { //in case of invalid token
-            return null;
+        Account account = projectAccount;
+        List<String> accesibleIds = null;
+        if (StringUtils.equals(TEAM_SCOPE, account.getExternalIdType())) {
+            accesibleIds = githubUtils.validateAndFetchTeamIdsFromToken(token);
+        } else if (StringUtils.equals(ORG_SCOPE, account.getExternalIdType())) {
+            accesibleIds = githubUtils.validateAndFetchOrgIdsFromToken(token);
         }
-        return (String) jsonData.get("account_id");
+        if (StringUtils.equals(USER_SCOPE, projectAccount.getExternalIdType())) {
+            account = authDao.getAccountByExternalId(projectAccount.getExternalId(), GITHUB_ACCOUNT_TYPE);
+
+            accesibleIds = ImmutableList.of(githubUtils.validateAndFetchAccountIdFromToken(token));
+        }
+
+        return accesibleIds.contains(account.getExternalId());
     }
 
     @Override
@@ -68,13 +106,13 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
         return false;
     }
 
-    @Inject
-    public void setJwtTokenService(TokenService tokenService) {
-        this.tokenService = tokenService;
-    }
-
     public AuthDao getAuthDao() {
         return authDao;
+    }
+
+    @Inject
+    public void setGithubUtils(GithubUtils githubUtils) {
+        this.githubUtils = githubUtils;
     }
 
     @Inject

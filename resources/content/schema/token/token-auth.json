@@ -6,6 +6,7 @@
         "token.jwt": "r",
         "token.user": "r",
         "token.orgs": "r",
+        "token.teams": "r",
         "token.security": "r",
         "token.clientId": "r",
         "token.code": "cr"

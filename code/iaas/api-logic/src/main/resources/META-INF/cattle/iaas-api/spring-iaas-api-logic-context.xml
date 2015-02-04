@@ -33,6 +33,9 @@
         </property>
     </bean>
 	
+	<bean class="io.cattle.platform.iaas.api.auth.github.ProjectResourceManager"/>
+	
+	<bean class="io.cattle.platform.iaas.api.auth.github.GithubUtils"/>
 	<bean class="io.cattle.platform.iaas.api.auth.github.GithubConfigManager" />
 	
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />

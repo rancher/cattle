@@ -23,6 +23,9 @@ public class AccountPolicy extends DefaultPolicy {
 
     @Override
     public <T> T authorizeObject(T obj) {
+        if(hasGrantedAccess(obj)) {
+            return obj;
+        }
         if ( isOption(AUTHORIZED_FOR_ALL_ACCOUNTS) || obj == null ) {
             return obj;
         } else {

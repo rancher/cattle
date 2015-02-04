@@ -3,6 +3,9 @@ package io.cattle.platform.iaas.api.auth.github;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.iaas.api.auth.github.resource.GithubAccountInfo;
+import io.cattle.platform.iaas.api.auth.github.resource.TeamAccountInfo;
+import io.cattle.platform.iaas.api.auth.github.resource.Token;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,15 +54,28 @@ public class GithubTokenHandler {
         String token = (String) jsonData.get("access_token");
         List<String> idList = new ArrayList<>();
         List<String> orgNames = new ArrayList<>();
-
+        List<String> teamIds = new ArrayList<>();
+        List<String> orgIds = new ArrayList<>();
+        List<TeamAccountInfo> teamsAccountInfo = new ArrayList<>();
+        Map<String, String> orgsMap = new HashMap<>();
         GithubAccountInfo userAccountInfo = client.getUserAccountInfo(token);
         List<GithubAccountInfo> orgAccountInfo = client.getOrgAccountInfo(token);
+        Map<String, String> teamsMap = new HashMap<>();
 
         idList.add(userAccountInfo.getAccountId());
 
         for (GithubAccountInfo info : orgAccountInfo) {
+            orgsMap.put(info.getAccountId(), info.getAccountName());
             idList.add(info.getAccountId());
             orgNames.add(info.getAccountName());
+            orgIds.add(info.getAccountId());
+            teamsAccountInfo.addAll(client.getOrgTeamInfo(token, info.getAccountName()));
+        }
+
+        for (TeamAccountInfo info : teamsAccountInfo) {
+            teamIds.add(info.getId());
+            idList.add(info.getId());
+            teamsMap.put(info.getId(), info.getName());
         }
 
         if (SECURITY.get()) {
@@ -75,10 +92,14 @@ public class GithubTokenHandler {
         }
 
         jsonData.put("account_id", userAccountInfo.getAccountId());
-        jsonData.put("whitelist", idList);
+        jsonData.put("orgs_reverse_mapping", orgsMap);
+        jsonData.put("teams_reverse_mapping", teamsMap);
+        jsonData.put("username", userAccountInfo.getAccountName());
+        jsonData.put("team_ids", teamIds);
+        jsonData.put("org_ids", orgIds);
         Date expiry = new Date(System.currentTimeMillis() + DAY_IN_MILLISECONDS);
 
-        return new Token(tokenService.generateEncryptedToken(jsonData, expiry), userAccountInfo.getAccountName(), orgNames, null, null);
+        return new Token(tokenService.generateEncryptedToken(jsonData, expiry), userAccountInfo.getAccountName(), orgNames, teamsAccountInfo, null, null);
     }
 
     protected String getWhitelistedUser(List<String> idList) {

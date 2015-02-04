@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.github;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.iaas.api.auth.github.resource.Token;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -42,7 +43,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return new Token(null, null, null, SECURITY.get(), GITHUB_CLIENT_ID.get());
+        return new Token(null, null, null, null, SECURITY.get(), GITHUB_CLIENT_ID.get());
     }
 
     @Inject

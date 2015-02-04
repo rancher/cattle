@@ -27,6 +27,7 @@ def test_token_auth(token_client):
         'orgs': 'r',
         'clientId': 'r',
         'security': 'r',
+        'teams': 'r',
     })
 
 
@@ -37,6 +38,27 @@ def test_github_auth(admin_client):
         'allowedUsers': 'cr',
         'clientId': 'cr',
         'clientSecret': 'cr'
+    })
+
+
+def test_project_auth(admin_client, client):
+    auth_check(admin_client.schema, 'project', 'cru', {
+        'description': 'cru',
+        'externalId': 'cru',
+        'externalIdType': 'cru',
+        'kind': 'r',
+        'name': 'cru',
+        'uuid': 'r',
+        'data': 'r',
+    })
+
+    auth_check(client.schema, 'project', 'cru', {
+        'description': 'cru',
+        'externalId': 'cru',
+        'externalIdType': 'cru',
+        'kind': 'r',
+        'name': 'cru',
+        'uuid': 'r',
     })
 
 

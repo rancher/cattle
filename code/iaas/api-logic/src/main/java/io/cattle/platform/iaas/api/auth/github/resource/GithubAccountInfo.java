@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.auth.github;
+package io.cattle.platform.iaas.api.auth.github.resource;
 
 public class GithubAccountInfo {
     private final String accountId;
