@@ -29,6 +29,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicLongProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class GithubTokenHandler {
@@ -41,8 +42,8 @@ public class GithubTokenHandler {
     private static final String GITHUB_USER_ACCOUNT_KIND = "user";
     private static final String GITHUB_ADMIN_ACCOUNT_KIND = "admin";
     private static final String GITHUB_EXTERNAL_TYPE = "github";
-    private static final Long DAY_IN_MILLISECONDS = (long) (60 * 60 * 24 * 1000);
-
+    
+    private static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final DynamicStringProperty WHITELISTED_ORGS = ArchaiusUtil.getString("api.auth.github.allowed.orgs");
     private static final DynamicStringProperty WHITELISTED_USERS = ArchaiusUtil.getString("api.auth.github.allowed.users");
@@ -97,7 +98,7 @@ public class GithubTokenHandler {
         jsonData.put("username", userAccountInfo.getAccountName());
         jsonData.put("team_ids", teamIds);
         jsonData.put("org_ids", orgIds);
-        Date expiry = new Date(System.currentTimeMillis() + DAY_IN_MILLISECONDS);
+        Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
 
         return new Token(tokenService.generateEncryptedToken(jsonData, expiry), userAccountInfo.getAccountName(), orgNames, teamsAccountInfo, null, null);
     }
