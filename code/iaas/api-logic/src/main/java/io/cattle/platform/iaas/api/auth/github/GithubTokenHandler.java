@@ -17,8 +17,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -27,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
@@ -106,6 +107,9 @@ public class GithubTokenHandler {
         if (idList == null) {
             return null;
         }
+        if (StringUtils.equals(WHITELISTED_USERS.get(), "*")) {
+            return "*";
+        }
         List<String> whitelistedValues = fromCommaSeparatedString(WHITELISTED_ORGS.get());
         whitelistedValues.addAll(fromCommaSeparatedString(WHITELISTED_USERS.get()));
         Collection<String> whitelistedIds = Collections2.transform(whitelistedValues, new Function<String, String>() {
@@ -114,7 +118,7 @@ public class GithubTokenHandler {
                 return arg.split("[:]")[1];
             }
         });
-        List<String> whitelist = Lists.newArrayList(whitelistedIds);
+        Set<String> whitelist = new HashSet<>(whitelistedIds);
         for (String id : idList) {
             if (whitelist.contains(id)) {
                 return id;
