@@ -73,7 +73,6 @@ public class ProjectResourceManager extends AbstractJooqResourceManager {
         }
 
         GithubUtils.ReverseMappings reverseMappings = githubUtils.validateAndFetchReverseMappings(token);
-        Map<String, String> teamsMap = reverseMappings.getTeamsMap();
         Map<String, String> orgsMap = reverseMappings.getOrgMap();
         String username = reverseMappings.getUsername();
 
@@ -84,7 +83,7 @@ public class ProjectResourceManager extends AbstractJooqResourceManager {
             } else if (StringUtils.equals(project.getExternalIdType(), USER_SCOPE)) {
                 transformedProjects.add(copyProjectWithExternalId(project, username));
             } else {
-                transformedProjects.add(copyProjectWithExternalId(project, teamsMap.get(project.getExternalId())));
+                transformedProjects.add(project);
             }
         }
         for(Account project: transformedProjects) {
