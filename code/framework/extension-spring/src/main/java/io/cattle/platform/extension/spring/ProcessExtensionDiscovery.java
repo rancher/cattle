@@ -31,7 +31,7 @@ public class ProcessExtensionDiscovery extends ExtensionDiscovery {
                             + "ProcessPreListener, or ProcessPostListener, got [" + obj.getClass() + "]");
                 }
 
-                result[i] = "process." + names[i] + suffix;
+                result[i] = "process." + names[i].toLowerCase() + suffix;
             }
 
             return result;
