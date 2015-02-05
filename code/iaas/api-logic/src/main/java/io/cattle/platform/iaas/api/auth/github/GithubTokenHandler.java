@@ -77,7 +77,7 @@ public class GithubTokenHandler {
         for (TeamAccountInfo info : teamsAccountInfo) {
             teamIds.add(info.getId());
             idList.add(info.getId());
-            teamsMap.put(info.getId(), info.getName());
+            teamsMap.put(info.getId(), info.getOrg() + "/" + info.getName());
         }
 
         if (SECURITY.get()) {
