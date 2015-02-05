@@ -91,6 +91,11 @@ def admin_account(accounts):
 
 
 @pytest.fixture(scope='session')
+def user_account(accounts):
+    return accounts['user'][2]
+
+
+@pytest.fixture(scope='session')
 def super_account(accounts):
     return accounts['superadmin'][2]
 
@@ -111,8 +116,11 @@ def admin_client(accounts):
 
 
 @pytest.fixture(scope='session')
-def super_client(accounts):
-    return _client_for_user('superadmin', accounts)
+def super_client(request, accounts):
+    ret = _client_for_user('superadmin', accounts)
+    request.addfinalizer(
+        lambda: delete_sim_instances(ret))
+    return ret
 
 
 @pytest.fixture(scope='session')
@@ -120,46 +128,70 @@ def token_client(accounts):
     return _client_for_user('token', accounts)
 
 
-@pytest.fixture(scope='session')
-def sim_context(request, super_client):
-    context = kind_context(super_client, 'sim', external_pool=True,
-                           uri='sim://', uuid='simagent1', host_public=True)
+def create_sim_context(super_client, uuid, ip=None, account=None,
+                       public=False):
+    context = kind_context(super_client,
+                           'sim',
+                           external_pool=True,
+                           account=account,
+                           uri='sim://' + uuid,
+                           uuid=uuid,
+                           host_public=public)
     context['imageUuid'] = 'sim:{}'.format(random_num())
 
     host = context['host']
 
-    if len(host.ipAddresses()) == 0:
+    if len(host.ipAddresses()) == 0 and ip is not None:
         ip = create_and_activate(super_client, 'ipAddress',
-                                 address='192.168.10.10',
-                                 isPublic=True)
+                                 address=ip,
+                                 isPublic=public)
         map = super_client.create_host_ip_address_map(hostId=host.id,
                                                       ipAddressId=ip.id)
         map = super_client.wait_success(map)
         assert map.state == 'active'
 
-    context['hostIp'] = host.ipAddresses()[0]
+    if len(host.ipAddresses()):
+        context['hostIp'] = host.ipAddresses()[0]
 
-    request.addfinalizer(
-        lambda: stop_running_sim_instances(super_client))
+    return context
+
+
+@pytest.fixture(scope='session')
+def sim_context(request, super_client):
+    context = create_sim_context(super_client, 'simagent1', ip='192.168.10.10',
+                                 public=True)
+
     return context
 
 
 @pytest.fixture(scope='session')
 def sim_context2(super_client):
-    context = kind_context(super_client, 'sim', external_pool=True,
-                           uri='sim://2', uuid='simagent2', host_public=True)
-    context['imageUuid'] = 'sim:{}'.format(random_num())
-
-    return context
+    return create_sim_context(super_client, 'simagent2', ip='192.168.10.11',
+                              public=True)
 
 
 @pytest.fixture(scope='session')
 def sim_context3(super_client):
-    context = kind_context(super_client, 'sim', external_pool=True,
-                           uri='sim://3', uuid='simagent3', host_public=True)
-    context['imageUuid'] = 'sim:{}'.format(random_num())
+    return create_sim_context(super_client, 'simagent3', ip='192.168.10.12',
+                              public=True)
 
-    return context
+
+@pytest.fixture(scope='session')
+def user_sim_context(super_client, user_account):
+    return create_sim_context(super_client, 'usersimagent', ip='192.168.11.1',
+                              account=user_account)
+
+
+@pytest.fixture(scope='session')
+def user_sim_context2(super_client, user_account):
+    return create_sim_context(super_client, 'usersimagent2', ip='192.168.11.2',
+                              account=user_account)
+
+
+@pytest.fixture(scope='session')
+def user_sim_context3(super_client, user_account):
+    return create_sim_context(super_client, 'usersimagent3', ip='192.168.11.3',
+                              account=user_account)
 
 
 def activate_resource(admin_client, obj):
@@ -264,7 +296,7 @@ def format_time(time):
 
 
 def get_agent(admin_client, name, default_uri=DEFAULT_AGENT_URI,
-              default_agent_uuid=DEFAULT_AGENT_UUID):
+              default_agent_uuid=DEFAULT_AGENT_UUID, account=None):
     name = name.upper()
     uri_name = '{0}_URI'.format(name.upper())
     uuid_name = '{0}_AGENT_UUID'.format(name.upper())
@@ -272,8 +304,16 @@ def get_agent(admin_client, name, default_uri=DEFAULT_AGENT_URI,
     uri = os.getenv(uri_name, default_uri)
     uuid = os.getenv(uuid_name, default_agent_uuid)
 
+    data = {}
+    if account is not None:
+        account_id = get_plain_id(admin_client, account)
+        data['agentResourcesAccountId'] = account_id
+
     agent = create_type_by_uuid(admin_client, 'agent', uuid, validate=False,
-                                uri=uri)
+                                uri=uri, data=data)
+
+    if account is not None:
+        assert agent.data.agentResourcesAccountId == account_id
 
     while len(agent.hosts()) == 0:
         time.sleep(SLEEP_DELAY)
@@ -285,10 +325,11 @@ def kind_context(admin_client, kind, external_pool=False,
                  uri=DEFAULT_AGENT_URI,
                  uuid=DEFAULT_AGENT_UUID,
                  host_public=False,
-                 agent=None):
+                 agent=None,
+                 account=None):
     if agent is None:
         kind_agent = get_agent(admin_client, kind, default_agent_uuid=uuid,
-                               default_uri=uri)
+                               default_uri=uri, account=account)
     else:
         kind_agent = agent
 
@@ -372,12 +413,13 @@ def create_and_activate(client, type, **kw):
     return obj
 
 
-def stop_running_sim_instances(admin_client):
-    to_stop = []
-    to_stop.extend(admin_client.list_instance(state='running', limit=1000))
-    to_stop.extend(admin_client.list_instance(state='starting', limit=1000))
+def delete_sim_instances(admin_client):
+    to_delete = []
+    to_delete.extend(admin_client.list_instance(state='running', limit=1000))
+    to_delete.extend(admin_client.list_instance(state='starting', limit=1000))
+    to_delete.extend(admin_client.list_instance(state='stopped', limit=1000))
 
-    for c in to_stop:
+    for c in to_delete:
         hosts = c.hosts()
         if len(hosts) and hosts[0].kind == 'sim':
             nsps = c.networkServiceProviders()
@@ -385,7 +427,7 @@ def stop_running_sim_instances(admin_client):
                 continue
 
             try:
-                c.stop()
+                admin_client.delete(c)
             except:
                 pass
 
