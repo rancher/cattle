@@ -76,6 +76,13 @@
         "host.computeTotal" : "r",
         "host.zoneId" : "ru",
 
+        "hostSummary" : "r",
+        "hostSummary.id" : "r",
+        "hostSummary.clusterSize" : "r",
+        "hostSummary.hostId" : "r",
+        "hostSummary.ipAddress" : "r",
+        "hostSummary.instanceStates" : "r",
+
         "image" : "r",
 
         "instanceConsoleInput" : "r",

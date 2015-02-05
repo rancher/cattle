@@ -2,17 +2,22 @@ package io.cattle.platform.api.utils;
 
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.auth.impl.DefaultPolicy;
+import io.cattle.platform.object.meta.ActionDefinition;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.model.Action;
 import io.github.ibuildthecloud.gdapi.model.Collection;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +27,7 @@ import java.util.Map;
 
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang3.StringUtils;
 
 public class ApiUtils {
 
@@ -195,4 +201,50 @@ public class ApiUtils {
         return schema.getId();
     }
 
+    public static void addActions(Object state, Map<String,ActionDefinition> defs, Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
+        Map<String,Action> actions = schema.getResourceActions();
+
+        if ( actions == null || actions.size() == 0 ) {
+            return;
+        }
+
+        UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
+
+        for ( Map.Entry<String,Action> entry : actions.entrySet() ) {
+            String name = entry.getKey();
+            Action action = entry.getValue();
+
+            if ( ! isValidAction(obj, action) ) {
+                continue;
+            }
+
+            ActionDefinition def = defs.get(name);
+            if ( def == null || def.getValidStates().contains(state) ) {
+                resource.getActions().put(name, urlBuilder.actionLink(resource, name));
+            }
+        }
+    }
+
+    public static boolean isValidAction(Object obj, Action action) {
+        Map<String,Object> attributes = action.getAttributes();
+
+        if ( attributes == null || attributes.size() == 0 ) {
+            return true;
+        }
+
+        String capability = org.apache.commons.lang3.ObjectUtils.toString(attributes.get("capability"), null);
+        String state = org.apache.commons.lang3.ObjectUtils.toString(attributes.get(ObjectMetaDataManager.STATE_FIELD), null);
+
+        if ( ! StringUtils.isBlank(capability) &&
+                ! DataAccessor.fieldStringList(obj, ObjectMetaDataManager.CAPABILITIES_FIELD).contains(capability) ) {
+            return false;
+        }
+
+        if ( ! StringUtils.isBlank(state) &&
+                ! state.equals(io.cattle.platform.object.util.ObjectUtils.getState(obj)) ) {
+            return false;
+        }
+
+        return true;
+    }
 }
