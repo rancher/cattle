@@ -138,8 +138,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     protected Map<Object, Object> getResourceDataMap(String type, Object data) {
     	Object result = CollectionUtils.toMap(data).get(type);
-    	//TODO CollectionUtils.toMap(data) is only for temporarily backward compatibility, would be removed later
-    	return result == null ? CollectionUtils.toMap(data) : CollectionUtils.toMap(result);
+    	return result == null ? null: CollectionUtils.toMap(result);
     }
 
 	protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process,
