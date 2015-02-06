@@ -64,10 +64,10 @@
         "containerExec.attachStdout" : "cr",
         "containerExec.command" : "cr",
         "containerExec.tty" : "cr",
-
-        "containerExecOutput" : "r",
-        "containerExecOutput.token" : "r",
-        "containerExecOutput.url" : "r",
+        
+        "containerLogs":"cr",
+        "containerLogs.follow":"cr",
+        "containerLogs.lines":"cr",
 
         "credential" : "r",
 
@@ -75,6 +75,10 @@
         "host.agentId" : "r",
         "host.computeTotal" : "r",
         "host.zoneId" : "ru",
+
+        "hostAccess" : "r",
+        "hostAccess.token" : "r",
+        "hostAccess.url" : "r",
 
         "image" : "r",
 

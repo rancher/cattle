@@ -22,7 +22,7 @@
     "resourceActions": {
         "execute": {
             "input": "containerExec",
-            "output": "containerExecOutput",
+            "output": "hostAccess",
             "attributes" : {
                 "state" : "running"
             }

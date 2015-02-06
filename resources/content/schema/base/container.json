@@ -187,5 +187,11 @@
             "type":"array[string]",
             "nullable": true
         }
+    },
+    "resourceActions": {
+        "logs":{
+            "input":"containerLogs",
+            "output":"hostAccess"
+        }
     }
 }

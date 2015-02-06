@@ -629,6 +629,40 @@ def test_container_exec(admin_client, sim_context):
     admin_client.delete(c)
 
 
+def test_container_logs(admin_client, sim_context):
+    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
+                                      requestedHostId=sim_context['host'].id)
+    c = admin_client.wait_success(c)
+
+    assert callable(c.logs)
+
+    resp = c.logs(follow=True, lines=300)
+
+    assert resp.url is not None
+    assert resp.token is not None
+
+    jwt = _get_jwt(resp.token)
+
+    assert jwt['logs']['Container'] == c.uuid
+    assert jwt['logs']['Lines'] == 300
+    assert jwt['logs']['Follow'] is True
+    assert jwt['exp'] is not None
+
+    resp = c.logs()
+
+    assert resp.url is not None
+    assert resp.token is not None
+
+    jwt = _get_jwt(resp.token)
+
+    assert jwt['logs']['Container'] == c.uuid
+    assert jwt['logs']['Lines'] == 100
+    assert jwt['logs']['Follow'] is True
+    assert jwt['exp'] is not None
+
+    admin_client.delete(c)
+
+
 def _get_jwt(token):
     text = token.split('.')[1]
     missing_padding = 4 - len(text) % 4
