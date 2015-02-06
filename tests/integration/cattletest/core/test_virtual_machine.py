@@ -24,7 +24,7 @@ def test_virtual_machine_create(super_client, sim_context):
     assert vm.state == 'running'
 
     assert vm.vcpu is None
-    assert vm.memoryMb == 256
+    assert vm.memoryMb is None
 
 
 def test_virtual_machine_create_null_network_id(super_client, sim_context):
