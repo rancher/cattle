@@ -392,8 +392,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             }
 
             if (currentPhase == ProcessPhase.POST_LISTENERS && chainProcess == null
-                    && state.getData().containsKey(ProcessLogic.CHAIN_PROCESS)) {
-                chainProcess = state.getData().get(ProcessLogic.CHAIN_PROCESS).toString();
+                    && state.getData().containsKey(processDefinition.getName() + ProcessLogic.CHAIN_PROCESS)) {
+                chainProcess = state.getData().get(processDefinition.getName() + ProcessLogic.CHAIN_PROCESS).toString();
             }
 
             instanceContext.setPhase(phase);
