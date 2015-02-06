@@ -30,8 +30,6 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
 
     private static final String WILDCARD = "regexp:";
 
-//    private static final Logger log = LoggerFactory.getLogger(ExtensionManagerImpl.class);
-
     Map<String,List<Object>> byKeyRegistry = new HashMap<String, List<Object>>();
     Map<String,ExtensionList<Object>> extensionLists = new HashMap<String, ExtensionList<Object>>();
     Map<String,List<Object>> byName = new HashMap<String, List<Object>>();
@@ -191,7 +189,11 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
                 }
                 String leftName = objectToName.get(o1);
                 String rightName = objectToName.get(o2);
-                return leftName.compareTo(rightName);
+                int comparisonResult = leftName.compareTo(rightName);
+                if (comparisonResult == 0 && !o1.equals(o2)) {
+                    throw new RuntimeException("Trying to add 2 objects with the same name: " + leftName + ".  Second object is ignored!");
+                }
+                return comparisonResult;
             }
         });
 
