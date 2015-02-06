@@ -360,6 +360,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         final ProcessDefinition processDefinition = instanceContext.getProcessDefinition();
         final ProcessState state = instanceContext.getState();
         final String previousState = state.getState();
+        ProcessPhase currentPhase = instanceContext.getPhase();
 
         if ( instanceContext.getPhase().ordinal() < phase.ordinal() ) {
             final EngineContext context = EngineContext.getEngineContext();
@@ -388,6 +389,11 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                         break;
                     }
                 }
+            }
+
+            if (currentPhase == ProcessPhase.POST_LISTENERS && chainProcess == null
+                    && state.getData().containsKey(ProcessLogic.CHAIN_PROCESS)) {
+                chainProcess = state.getData().get(ProcessLogic.CHAIN_PROCESS).toString();
             }
 
             instanceContext.setPhase(phase);

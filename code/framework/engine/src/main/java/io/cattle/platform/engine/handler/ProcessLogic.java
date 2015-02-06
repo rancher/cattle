@@ -6,6 +6,8 @@ import io.cattle.platform.util.type.Named;
 
 public interface ProcessLogic extends Named {
 
+    public static final String CHAIN_PROCESS = "chainProcess";
+
     String[] getProcessNames();
 
     HandlerResult handle(ProcessState state, ProcessInstance process);
