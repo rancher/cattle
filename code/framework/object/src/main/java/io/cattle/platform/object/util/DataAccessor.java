@@ -30,7 +30,7 @@ public class DataAccessor {
 
     public static DataAccessor fromMap(Object obj) {
         DataAccessor accessor = new DataAccessor();
-        accessor.sourceMap = CollectionUtils.castMap(obj);
+        accessor.sourceMap = CollectionUtils.toMap(obj);
         return accessor;
     }
 
@@ -189,7 +189,7 @@ public class DataAccessor {
                 scopedMap = new HashMap<String,Object>();
                 sourceMap.put(getScope(), scopedMap);
             }
-            map = CollectionUtils.castMap(scopedMap);
+            map = CollectionUtils.toMap(scopedMap);
         }
 
         return map;
