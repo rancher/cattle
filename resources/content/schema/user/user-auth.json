@@ -121,7 +121,7 @@
         "port.publicIpAddressId" : "r",
         "port.publicPort" : "ru",
 
-        "project" : "cru",
+        "project" : "crud",
         "project.description" : "cru",
         "project.externalId" : "cru",
         "project.externalIdType" : "cru",

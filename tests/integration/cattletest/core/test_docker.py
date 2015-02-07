@@ -238,7 +238,11 @@ def test_docker_ports_from_container_no_publish(client, admin_client,
 @if_docker
 def test_docker_ports_from_container(client, admin_client,
                                      super_client, docker_context):
-    _ = lambda x: super_client.reload(x)
+
+    def reload(x):
+        return super_client.reload(x)
+
+    _ = reload
 
     network = super_client.create_network(isPublic=True)
     network = super_client.wait_success(network)
@@ -402,7 +406,11 @@ def test_no_port_override(admin_client, docker_context):
 
 @if_docker
 def test_docker_volumes(client, admin_client, super_client, docker_context):
-    _ = lambda x: super_client.reload(x)
+
+    def reload(x):
+        return super_client.reload(x)
+
+    _ = reload
 
     uuid = TEST_IMAGE_UUID
     bind_mount_uuid = py_uuid.uuid4().hex

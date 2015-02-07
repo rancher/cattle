@@ -17,5 +17,8 @@ public class AccountConstants {
     public static final String FIELD_DEFAULT_NETWORK_IDS = "defaultNetworkIds";
     
     public static final String TYPE_PROJECT = "project"; 
+    
+    public static final String ACCOUNT_DEACTIVATE = "account.deactivate";
+    public static final String ACCOUNT_REMOVE = "account.remove";
 
 }

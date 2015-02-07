@@ -42,7 +42,7 @@ def test_github_auth(admin_client):
 
 
 def test_project_auth(admin_client, client):
-    auth_check(admin_client.schema, 'project', 'cru', {
+    auth_check(admin_client.schema, 'project', 'crud', {
         'description': 'cru',
         'externalId': 'cru',
         'externalIdType': 'cru',
@@ -52,7 +52,7 @@ def test_project_auth(admin_client, client):
         'data': 'r',
     })
 
-    auth_check(client.schema, 'project', 'cru', {
+    auth_check(client.schema, 'project', 'crud', {
         'description': 'cru',
         'externalId': 'cru',
         'externalIdType': 'cru',
