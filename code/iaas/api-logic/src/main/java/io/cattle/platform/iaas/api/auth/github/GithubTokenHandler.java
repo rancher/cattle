@@ -43,7 +43,7 @@ public class GithubTokenHandler {
     private static final String GITHUB_USER_ACCOUNT_KIND = "user";
     private static final String GITHUB_ADMIN_ACCOUNT_KIND = "admin";
     private static final String GITHUB_EXTERNAL_TYPE = "github";
-    
+
     private static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final DynamicStringProperty WHITELISTED_ORGS = ArchaiusUtil.getString("api.auth.github.allowed.orgs");
@@ -80,17 +80,20 @@ public class GithubTokenHandler {
             teamsMap.put(info.getId(), info.getOrg() + "/" + info.getName());
         }
 
+        Account account = null;
+
         if (SECURITY.get()) {
             if (null == getWhitelistedUser(idList)) {
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
-            Account userAccount = authDao.getAccountByExternalId(userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
-            if (null == userAccount) {
-                authDao.createAccount(userAccountInfo.getAccountName(), GITHUB_USER_ACCOUNT_KIND, userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
+            account = authDao.getAccountByExternalId(userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
+            if (null == account) {
+                account = authDao.createAccount(userAccountInfo.getAccountName(), GITHUB_USER_ACCOUNT_KIND, userAccountInfo.getAccountId(),
+                        GITHUB_EXTERNAL_TYPE);
             }
         } else {
-            Account admin = authDao.getAdminAccount();
-            authDao.updateAccount(admin, null, GITHUB_ADMIN_ACCOUNT_KIND, userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
+            account = authDao.getAdminAccount();
+            authDao.updateAccount(account, null, GITHUB_ADMIN_ACCOUNT_KIND, userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
         }
 
         jsonData.put("account_id", userAccountInfo.getAccountId());
@@ -101,7 +104,8 @@ public class GithubTokenHandler {
         jsonData.put("org_ids", orgIds);
         Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
 
-        return new Token(tokenService.generateEncryptedToken(jsonData, expiry), userAccountInfo.getAccountName(), orgNames, teamsAccountInfo, null, null);
+        return new Token(tokenService.generateEncryptedToken(jsonData, expiry), userAccountInfo.getAccountName(), orgNames, teamsAccountInfo, null, null,
+                account.getKind());
     }
 
     protected String getWhitelistedUser(List<String> idList) {

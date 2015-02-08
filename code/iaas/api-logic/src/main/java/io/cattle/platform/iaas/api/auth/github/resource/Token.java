@@ -15,14 +15,16 @@ public class Token {
     private final List<TeamAccountInfo> teams;
     private final Boolean security;
     private final String clientId;
+    private final String userType;
 
-    public Token(String jwt, String username, List<String> orgs, List<TeamAccountInfo> teams, Boolean security, String clientId) {
+    public Token(String jwt, String username, List<String> orgs, List<TeamAccountInfo> teams, Boolean security, String clientId, String userType) {
         this.jwt = jwt;
         this.user = username;
         this.orgs = orgs;
         this.teams = teams;
         this.security = security;
         this.clientId = clientId;
+        this.userType = userType;
     }
 
     @Field(nullable = true)
@@ -63,6 +65,11 @@ public class Token {
     @Field(nullable = true)
     public String getClientId() {
         return clientId;
+    }
+
+    @Field(nullable=true)
+    public String getUserType() {
+        return userType;
     }
 
 }

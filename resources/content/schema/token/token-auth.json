@@ -9,6 +9,7 @@
         "token.teams": "r",
         "token.security": "r",
         "token.clientId": "r",
-        "token.code": "cr"
+        "token.code": "cr",
+        "token.userType": "r"
     }
 }
