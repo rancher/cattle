@@ -28,6 +28,7 @@ def test_token_auth(token_client):
         'clientId': 'r',
         'security': 'r',
         'teams': 'r',
+        'userType': 'r'
     })
 
 
