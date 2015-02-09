@@ -20,18 +20,24 @@ public class LoadBalancerConstants {
     public static final String ACTION_ADD_HOST = "addhost";
     public static final String ACTION_REMOVE_HOST = "removehost";
 
+    public static final String ACTION_LB_CONFIG_ADD_LISTENER = "addlistener";
+    public static final String ACTION_LB_CONFIG_REMOVE_LISTENER = "removelistener";
+    public static final String ACTION_LB_ADD_TARGET = "addtarget";
+    public static final String ACTION_LB_REMOVE_TARGET = "removetarget";
+
     public static final String PROCESS_LB_CONFIG_LISTENER_MAP_CREATE = "loadbalancerconfiglistenermap.create";
     public static final String PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE = "loadbalancerconfiglistenermap.remove";
-    public static final String PROCESS_LB_CONFIG_ADD_LISTENER = "loadbalancerconfig.addlistener";
-    public static final String PROCESS_LB_CONFIG_REMOVE_LISTENER = "loadbalancerconfig.removelistener";
-    public static final String PROCESS_LB_CONFIG_SET_LISTENERS = "loadbalancerconfig.setlisteners";
     public static final String PROCESS_LB_CREATE = "loadbalancer.create";
     public static final String PROCESS_LB_UPDATE = "loadbalancer.update";
-    public static final String PROCESS_LB_ADD_TARGET = "loadbalancer.addtarget";
-    public static final String PROCESS_LB_REMOVE_TARGET = "loadbalancer.removetarget";
     public static final String PROCESS_LB_SET_TARGETS = "loadbalancer.settargets";
+    public static final String PROCESS_LB_CONFIG_ADD_LISTENER = "loadbalancerconfig." + ACTION_LB_CONFIG_ADD_LISTENER;
+    public static final String PROCESS_LB_CONFIG_REMOVE_LISTENER = "loadbalancerconfig."
+            + ACTION_LB_CONFIG_REMOVE_LISTENER;
+    public static final String PROCESS_LB_CONFIG_SET_LISTENERS = "loadbalancerconfig.setlisteners";
     public static final String PROCESS_LB_ADD_HOST = "loadbalancer." + ACTION_ADD_HOST;
     public static final String PROCESS_LB_REMOVE_HOST = "loadbalancer." + ACTION_REMOVE_HOST;
+    public static final String PROCESS_LB_ADD_TARGET = "loadbalancer." + ACTION_LB_ADD_TARGET;
+    public static final String PROCESS_LB_REMOVE_TARGET = "loadbalancer." + ACTION_LB_REMOVE_TARGET;
     public static final String PROCESS_LB_TARGET_MAP_CREATE = "loadbalancertarget.create";
     public static final String PROCESS_LB_TARGET_MAP_REMOVE = "loadbalancertarget.remove";
     public static final String PROCESS_LB_LISTENER_REMOVE = "loadbalancerlistener.remove";
