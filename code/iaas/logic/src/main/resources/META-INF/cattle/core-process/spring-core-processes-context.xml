@@ -105,6 +105,7 @@
     <process:process name="loadbalancerconfig.remove" resourceType="loadBalancerConfig" start="active,activating,updating-active" transitioning="removing" done="removed" />
     <process:process name="loadbalancerconfig.addlistener" resourceType="loadBalancerConfig" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancerconfig.removelistener" resourceType="loadBalancerConfig" start="active" transitioning="updating-active" done="active" />
+    <process:process name="loadbalancerconfig.setlisteners" resourceType="loadBalancerConfig" start="active" transitioning="updating-active" done="active" />
 
     <!-- Load Balancer Config Listener Map -->
     <process:process name="loadbalancerconfiglistenermap.create" resourceType="loadBalancerConfigListeneMap" start="requested" transitioning="activating" done="active" />
@@ -121,6 +122,7 @@
     <process:process name="loadbalancer.remove" resourceType="loadBalancer" start="active, activating" transitioning="removing" done="removed" />
     <process:process name="loadbalancer.addtarget" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancer.removetarget" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
+    <process:process name="loadbalancer.settargets" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancer.addhost" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancer.removehost" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
 
