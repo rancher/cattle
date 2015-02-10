@@ -62,6 +62,7 @@
                 <module>code/iaas/allocator</module>
                 <module>code/iaas/api-logic</module>
                 <module>code/iaas/archaius-management</module>
+                <module>code/iaas/auth-logic</module>
                 <module>code/iaas/bootstrap</module>
                 <module>code/iaas/config</module>
                 <module>code/iaas/config-item/api</module>

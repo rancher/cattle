@@ -12,6 +12,8 @@
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
+	<import resource="classpath:META-INF/cattle/auth-logic/spring-iaas-auth-logic-context.xml"/>
+
     <bean class="io.cattle.platform.iaas.api.manager.DataManager" />
     <bean class="io.cattle.platform.iaas.api.manager.InstanceManager" />
     <bean class="io.cattle.platform.iaas.api.manager.VolumeManager" />
@@ -26,34 +28,10 @@
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerHostValidationFilter" />
 
 
-
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
-
-    <bean class="io.cattle.platform.iaas.api.auth.github.TokenResourceManager" >
-        <property name="githubTokenHandler">
-            <bean class="io.cattle.platform.iaas.api.auth.github.GithubTokenHandler"/>
-        </property>
-    </bean>
-	
-	<bean class="io.cattle.platform.iaas.api.auth.github.ProjectResourceManager"/>
-	
-	<bean class="io.cattle.platform.iaas.api.auth.github.GithubUtils"/>
-	<bean class="io.cattle.platform.iaas.api.auth.github.GithubConfigManager" />
-	
-    <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
-	
-    <bean id="TokenAccountLookup" class="io.cattle.platform.iaas.api.auth.impl.TokenAccountLookup" />
-    <bean id="GithubAuth" class="io.cattle.platform.iaas.api.auth.impl.GithubOAuthImpl" />
-    <bean class="io.cattle.platform.iaas.api.auth.github.GithubClient"/>
-    <bean id="BasicAuth" class="io.cattle.platform.iaas.api.auth.impl.BasicAuthImpl" />
-    <bean class="io.cattle.platform.iaas.api.auth.impl.HeaderAuthLookup" >
-        <property name="adminLookup" ref="BasicAuth" />
-        <property name="adminAuthProvider" ref="DefaultAuthorizationProvider" />
-    </bean>
 
     <!-- Start Handlers -->
     <bean class="io.cattle.platform.iaas.api.request.handler.UIRedirect" />
-    <bean class="io.cattle.platform.iaas.api.request.handler.GithubProxy" />
     <bean class="io.cattle.platform.iaas.api.request.handler.Scripts" >
         <property name="handlers" value="#{extensionManager.list('scripts.handler')}" />
     </bean>
@@ -161,9 +139,7 @@
         <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
     </aop:config>
 
-    <extension:discover class="io.cattle.platform.iaas.api.auth.AccountLookup"/>
     <extension:discover class="io.github.ibuildthecloud.gdapi.factory.SchemaFactory"/>
-    <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.api.pubsub.subscribe.ApiPubSubEventPostProcessor"/>
     <extension:discover class="io.cattle.platform.iaas.api.request.handler.ScriptsHandler"/>
 
