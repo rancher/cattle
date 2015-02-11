@@ -195,6 +195,11 @@
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-iaas-lb-instance</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <profiles>
         <profile>

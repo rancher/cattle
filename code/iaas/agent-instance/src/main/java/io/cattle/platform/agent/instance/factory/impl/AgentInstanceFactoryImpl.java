@@ -1,7 +1,7 @@
 package io.cattle.platform.agent.instance.factory.impl;
 
-import static io.cattle.platform.core.model.tables.AgentTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
@@ -24,7 +24,10 @@ import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.storage.service.StorageService;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -88,6 +91,9 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(InstanceConstants.FIELD_INSTANCE_TRIGGERED_STOP, builder.getInstanceTriggeredStop());
         properties.put(InstanceConstants.FIELD_PRIVILEGED, builder.isPrivileged());
         properties.put(InstanceConstants.FIELD_VNET_IDS, getVnetIds(agent, builder));
+        properties.put(InstanceConstants.FIELD_NETWORK_IDS, getNetworkIds(agent, builder));
+        properties.put(InstanceConstants.FIELD_REQUESTED_HOST_ID,
+                builder.getParams().get(InstanceConstants.FIELD_REQUESTED_HOST_ID));
 
         addAdditionalProperties(properties, agent, builder);
 
@@ -184,6 +190,10 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     protected String getUri(AgentInstanceBuilderImpl builder) {
+        if (builder.getUri() != null) {
+            return builder.getUri();
+        }
+
         Long networkServiceProviderId = builder.getNetworkServiceProvider() == null ? null :
             builder.getNetworkServiceProvider().getId();
 
@@ -261,6 +271,15 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     @Inject
     public void setResourceMonitor(ResourceMonitor resourceMonitor) {
         this.resourceMonitor = resourceMonitor;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected List<Long> getNetworkIds(Agent agent, AgentInstanceBuilderImpl builder) {
+        List<Long> networkIds = new ArrayList<>();
+        if (builder.getParams().get(InstanceConstants.FIELD_NETWORK_IDS) != null) {
+            networkIds = (List<Long>) builder.getParams().get(InstanceConstants.FIELD_NETWORK_IDS);
+        }
+        return networkIds;
     }
 
 }

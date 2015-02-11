@@ -14,6 +14,7 @@ import javax.inject.Inject;
 
 public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBalancerTargetDao {
 
+    @Inject
     ObjectManager objectManager;
 
     @Override
@@ -41,8 +42,13 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
                 .fetchInto(LoadBalancerTargetRecord.class);
     }
 
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
+    @Override
+    public List<? extends LoadBalancerTarget> listByLbId(long lbId) {
+        return create()
+                .selectFrom(LOAD_BALANCER_TARGET)
+                .where(
+                        LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId)
+                                .and(LOAD_BALANCER_TARGET.REMOVED.isNull()))
+                .fetchInto(LoadBalancerTargetRecord.class);
     }
 }

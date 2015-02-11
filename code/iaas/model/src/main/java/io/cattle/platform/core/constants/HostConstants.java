@@ -9,4 +9,6 @@ public class HostConstants {
     public static final String FIELD_PHYSICAL_HOST_UUID = "physicalHostUuid";
     public static final String FIELD_HOST_UUID = "hostUuid";
 
+    public static final String PROCESS_REMOVE = "host.remove";
+
 }

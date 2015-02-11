@@ -81,6 +81,7 @@
                 <module>code/iaas/storage-service</module>
                 <module>code/iaas/system</module>
                 <module>code/iaas/task-jooq</module>
+                <module>code/iaas/lb-instance</module>
             </modules>
         </profile>
         <profile>

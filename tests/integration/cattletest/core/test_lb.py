@@ -58,49 +58,6 @@ def test_lb_update(admin_client, config_id):
     assert lb.name == 'newName'
 
 
-def test_add_host_to_lb(admin_client, super_client, sim_context,
-                        config_id):
-    host1 = super_client.create_host()
-    host1 = super_client.wait_success(host1)
-
-    lb = create_valid_lb(admin_client, config_id)
-
-    lb = lb.addhost(hostId=host1.id)
-    lb = admin_client.wait_success(lb)
-
-    host_map = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host1.id)
-
-    assert len(host_map) == 1
-    assert host_map[0].state == "active"
-    assert host_map[0].hostId == host1.id
-
-
-def test_delete_host_from_lb(admin_client, super_client, config_id):
-    # add host
-    host1 = super_client.create_host()
-    host1 = super_client.wait_success(host1)
-
-    # create lb
-    lb = create_valid_lb(admin_client, config_id)
-
-    # add host to lb
-    lb = lb.addhost(hostId=host1.id)
-    lb = admin_client.wait_success(lb)
-
-    # remove the host from lb
-    lb = lb.removehost(hostId=host1.id)
-    lb = admin_client.wait_success(lb)
-
-    host_map = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host1.id)
-
-    assert len(host_map) == 1
-    assert host_map[0].state == "removed"
-
-
 def test_lb_add_target_instance(admin_client, sim_context, config_id):
     container, lb = create_lb_and_container(admin_client, sim_context,
                                             config_id)

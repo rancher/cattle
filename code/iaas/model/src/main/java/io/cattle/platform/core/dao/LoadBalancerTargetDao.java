@@ -12,4 +12,6 @@ public interface LoadBalancerTargetDao {
 
     List<? extends LoadBalancerTarget> listByLbIdToRemove(long lbId);
 
+    List<? extends LoadBalancerTarget> listByLbId(long lbId);
+
 }

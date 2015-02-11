@@ -8,6 +8,9 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.netflix.config.DynamicStringProperty;
 
 public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
@@ -28,6 +31,8 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     boolean managedConfig = false;
     boolean privileged = false;
     AgentInstanceFactoryImpl factory;
+    String uri;
+    Map<String, Object> params = new HashMap<>();
 
     public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory) {
         super();
@@ -194,5 +199,25 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public AgentInstanceBuilder withUri(String uri) {
+        this.uri = uri;
+        return this;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    @Override
+    public AgentInstanceBuilder withParameters(Map<String, Object> params) {
+        this.params = params;
+        return this;
+    }
+
+    public Map<String, Object> getParams() {
+        return params;
     }
 }
