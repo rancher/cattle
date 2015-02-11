@@ -47,8 +47,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .selectFrom(ACCOUNT)
                 .where(
                         ACCOUNT.ID.eq(id)
-                        .and(ACCOUNT.STATE.eq("active")
-                        .and(ACCOUNT.REMOVED.isNull()))
+                        .and(ACCOUNT.STATE.eq("active"))
+                        .and(ACCOUNT.REMOVED.isNull())
                         ).fetchOne();
     }
     
@@ -148,14 +148,14 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                                     .selectFrom(ACCOUNT)
                                     .where(ACCOUNT.EXTERNAL_ID.in(orgIds)
                                             .and(ACCOUNT.EXTERNAL_ID_TYPE.eq("project:github_org")))
-                                            .and(ACCOUNT.STATE.eq("active"))
+                                            .and(ACCOUNT.STATE.ne("purged"))
                                     .orderBy(ACCOUNT.ID.asc()).fetch();
         
         Result<AccountRecord> teamProjects = create()
                                     .selectFrom(ACCOUNT)
                                     .where(ACCOUNT.EXTERNAL_ID.in(teamIds)
                                             .and(ACCOUNT.EXTERNAL_ID_TYPE.eq("project:github_team")))
-                                            .and(ACCOUNT.STATE.eq("active"))
+                                            .and(ACCOUNT.STATE.ne("purged"))
                                     .orderBy(ACCOUNT.ID.asc()).fetch();
         
         for(AccountRecord orgProject: orgProjects) {
@@ -170,7 +170,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .selectFrom(ACCOUNT)
                 .where(ACCOUNT.EXTERNAL_ID.eq(userId)
                         .and(ACCOUNT.EXTERNAL_ID_TYPE.eq("project:github_user")))
-                        .and(ACCOUNT.STATE.eq("active"))
+                        .and(ACCOUNT.STATE.ne("purged"))
                         .fetch());
         
         return projects;

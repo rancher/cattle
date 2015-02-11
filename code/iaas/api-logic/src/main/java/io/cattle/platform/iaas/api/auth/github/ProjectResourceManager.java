@@ -1,14 +1,14 @@
 package io.cattle.platform.iaas.api.auth.github;
 
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.resource.AbstractObjectResourceManager;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.impl.AccountPolicy;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -17,7 +17,6 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
@@ -33,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class ProjectResourceManager extends AbstractNoOpResourceManager {
+public class ProjectResourceManager extends AbstractObjectResourceManager {
 
     private static final String TEAM_SCOPE = "project:github_team";
     private static final String ORG_SCOPE = "project:github_org";
@@ -45,8 +44,6 @@ public class ProjectResourceManager extends AbstractNoOpResourceManager {
     JsonMapper jsonMapper;
     GithubUtils githubUtils;
     GithubClient githubClient;
-    ObjectManager objectManager;
-    ObjectProcessManager objectProcessManager;
     AuthDao authDao;
 
     @Override
@@ -66,7 +63,7 @@ public class ProjectResourceManager extends AbstractNoOpResourceManager {
         GithubUtils.AccesibleIds ids = githubUtils.validateAndFetchAccesibleIdsFromToken(token);
         String id = (String) criteria.get("id");
         if (StringUtils.isNotEmpty(id)) {
-            Account account = authDao.getAccountById(Long.parseLong(id));
+            Account account = getObjectManager().loadResource(Account.class, id);
             if (null == account) {
                 return null;
             }
@@ -198,14 +195,23 @@ public class ProjectResourceManager extends AbstractNoOpResourceManager {
             return new Object();
         }
         String token = getTokenFromRequest(apiRequest);
-        objectProcessManager.executeStandardProcess(StandardProcess.DEACTIVATE, obj,
-                ProcessUtils.chainInData(new HashMap<String, Object>(), AccountConstants.ACCOUNT_DEACTIVATE, AccountConstants.ACCOUNT_REMOVE));
-        Account deletedAccount = (Account) objectManager.reload(obj);
+        try {
+            getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, obj, null);
+        } catch (ProcessCancelException e) {
+            getObjectProcessManager().executeStandardProcess(StandardProcess.DEACTIVATE, obj,
+                    ProcessUtils.chainInData(new HashMap<String, Object>(), AccountConstants.ACCOUNT_DEACTIVATE, AccountConstants.ACCOUNT_REMOVE));
+        }
+        Account deletedAccount = (Account) getObjectManager().reload(obj);
         GithubUtils.ReverseMappings reverseMappings = githubUtils.validateAndFetchReverseMappings(token);
         AccountPolicy policy = (AccountPolicy) ApiContext.getContext().getPolicy();
         Account modifiedAccount = transformProject(deletedAccount, reverseMappings);
         policy.grantObjectAccess(modifiedAccount);
         return Arrays.asList(modifiedAccount);
+    }
+
+    @Override
+    protected Object removeFromStore(String type, String id, Object obj, ApiRequest apiRequest) {
+        throw new UnsupportedOperationException();
     }
 
     private boolean hasAccess(Account account, GithubUtils.AccesibleIds ids) {
@@ -232,9 +238,9 @@ public class ProjectResourceManager extends AbstractNoOpResourceManager {
             account.put("externalId", externalId);
         }
 
-        Account updatedAccount = (Account) objectManager.setFields(obj, account);
-        objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, account);
-        updatedAccount = objectManager.reload(updatedAccount);
+        Account updatedAccount = (Account) getObjectManager().setFields(obj, account);
+        getObjectProcessManager().scheduleStandardProcess(StandardProcess.UPDATE, obj, account);
+        updatedAccount = getObjectManager().reload(updatedAccount);
 
         GithubUtils.ReverseMappings reverseMappings = githubUtils.validateAndFetchReverseMappings(token);
         Account modifiedAccount = transformProject(updatedAccount, reverseMappings);
@@ -242,16 +248,6 @@ public class ProjectResourceManager extends AbstractNoOpResourceManager {
         policy.grantObjectAccess(modifiedAccount);
 
         return Arrays.asList(modifiedAccount);
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    @Inject
-    public void setObjectProcessManager(ObjectProcessManager objectProcessManager) {
-        this.objectProcessManager = objectProcessManager;
     }
 
     @Inject
