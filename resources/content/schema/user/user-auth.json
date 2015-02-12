@@ -62,6 +62,7 @@
         "container.primaryIpAddress" : "r",
         "container.privileged" : "cr",
         "container.publishAllPorts": "cr",
+        "container.registryCredentialId" : "cr",
         "container.requestedHostId" : "cr",
         "container.restartPolicy" : "cr",
         "container.startOnCreate" : "cr",
@@ -82,6 +83,8 @@
         "containerLogs.lines":"cr",
 
         "credential" : "r",
+        "credential.publicValue" : "r",
+        "credential.secretValue" : "r",
 
         "host" : "rud",
         "host.agentId" : "r",
@@ -150,6 +153,15 @@
         "register.key":"cr",
         "register.secretKey" : "r",
 
+        "registry": "cr",
+        "registry.serverAddress": "cr",
+
+        "registryCredential": "cru",
+        "registryCredential.publicValue": "cr",
+        "registryCredential.secretValue": "cr",
+        "registryCredential.storagePoolId": "cr",
+        "registryCredential.email": "cr",
+
         "registrationToken" : "cr",
         "registrationToken.registrationUrl" : "r",
         "registrationToken.state":"r",
@@ -162,6 +174,8 @@
         "statsAccess" : "r",
         "statsAccess.token" : "r",
         "statsAccess.url" : "r",
+
+        "storagePool": "r",
 
         "subscribe" : "cr",
         "subscribe.eventNames" : "cr",

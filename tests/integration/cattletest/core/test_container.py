@@ -76,11 +76,11 @@ def test_container_create_only(admin_client, super_client,
     # assert len(nics) == 0
 
     image = wait_success(super_client,
-                         super_client.list_image(uuid=uuid)[0])
+                         super_client.list_image(name=uuid)[0])
     assert_fields(image, {
         "state": "active",
-        "uuid": uuid,
-        "isPublic": True,
+        "name": uuid,
+        "isPublic": False,
     })
     image_mappings = image.imageStoragePoolMaps()
 

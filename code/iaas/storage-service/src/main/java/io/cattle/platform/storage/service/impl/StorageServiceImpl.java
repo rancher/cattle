@@ -3,13 +3,11 @@ package io.cattle.platform.storage.service.impl;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.storage.pool.StoragePoolDriver;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.storage.service.dao.ImageDao;
-import io.cattle.platform.storage.service.lock.ExternalTemplateRegister;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,19 +27,11 @@ public class StorageServiceImpl implements StorageService {
         if ( uuid == null ) {
             return null;
         }
-
-        Image existing = imageDao.findImageByUuid(uuid);
-        if ( existing != null ) {
-            return existing;
-        }
-
         return populateNewRecord(uuid);
     }
 
     protected Image populateNewRecord(String uuid) throws IOException {
         Image image = objectManager.newRecord(Image.class);
-        image.setUuid(uuid);
-        image.setIsPublic(true);
 
         StoragePool foundPool = null;
 
@@ -64,17 +54,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     protected Image persistAndCreate(final String uuid, final Image image, final StoragePool pool) {
-        return lockManager.lock(new ExternalTemplateRegister(uuid), new LockCallback<Image>() {
-            @Override
-            public Image doWithLock() {
-                Image existing = imageDao.findImageByUuid(uuid);
-                if ( existing != null ) {
-                    return existing;
-                }
-
-                return imageDao.persistAndAssociateImage(image, pool);
-            }
-        });
+        return imageDao.persistAndAssociateImage(image, pool);
     }
 
     public StoragePoolDao getStoragePoolDao() {
