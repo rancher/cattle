@@ -2,10 +2,12 @@
     "collectionMethods" : [],
     "resourceFields": {
         "instanceId": {
-            "type": "reference[instance]"
+            "type": "reference[instance]",
+            "nullable": true
         },
         "ipAddress": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
         }
     }
 }

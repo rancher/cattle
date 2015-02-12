@@ -102,9 +102,9 @@ def _create_lb_w_host(super_client, admin_client, docker_context):
 
 def _create_valid_listener(super_client, admin_client, docker_context):
     listener = admin_client.create_loadBalancerListener(name=random_str(),
-                                                        sourcePort='8080',
+                                                        sourcePort='80',
                                                         targetPort='80',
                                                         sourceProtocol='http',
-                                                        targetProtocol='tcp')
+                                                        targetProtocol='http')
     listener = admin_client.wait_success(listener)
     return listener

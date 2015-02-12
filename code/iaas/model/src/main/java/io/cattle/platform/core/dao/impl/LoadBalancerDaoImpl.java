@@ -1,8 +1,14 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.LoadBalancerConfigListenerMapTable.LOAD_BALANCER_CONFIG_LISTENER_MAP;
+import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.LoadBalancerDao;
 import io.cattle.platform.core.model.LoadBalancer;
+import io.cattle.platform.core.model.LoadBalancerListener;
+import io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord;
 import io.cattle.platform.core.model.tables.records.LoadBalancerRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
@@ -31,4 +37,17 @@ public class LoadBalancerDaoImpl extends AbstractJooqDao implements LoadBalancer
                                 .and(LOAD_BALANCER.REMOVED.isNull())).fetchInto(LoadBalancerRecord.class);
     }
 
+    @Override
+    public List<? extends LoadBalancerListener> listActiveListenersForConfig(long configId) {
+        return create()
+                .select(LOAD_BALANCER_LISTENER.fields())
+                .from(LOAD_BALANCER_LISTENER)
+                .join(LOAD_BALANCER_CONFIG_LISTENER_MAP)
+                    .on(LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_LISTENER_ID.eq(LOAD_BALANCER_LISTENER.ID)
+                        .and(LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_CONFIG_ID.eq(configId))
+                        .and(LOAD_BALANCER_CONFIG_LISTENER_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE)))
+                .where(LOAD_BALANCER_LISTENER.REMOVED.isNull())
+                .fetchInto(LoadBalancerListenerRecord.class);
+    }
 }

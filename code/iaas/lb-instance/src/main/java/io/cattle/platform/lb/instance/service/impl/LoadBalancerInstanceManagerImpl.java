@@ -1,18 +1,20 @@
 package io.cattle.platform.lb.instance.service.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.LoadBalancerTargetDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.Network;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.lb.instance.dao.LoadBalancerInstanceDao;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.object.ObjectManager;
@@ -54,6 +56,9 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     @Inject
     LoadBalancerTargetDao lbTargetDao;
 
+    @Inject
+    IpAddressDao ipAddressDao;
+
     @Override
     public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer, Long... hostIds) {
         List<Instance> result = new ArrayList<Instance>();
@@ -64,7 +69,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostId);
 
             if (lbInstance == null) {
-                Host host = objectManager.findOne(Host.class, HOST.ID, hostId);
+                Host host = objectManager.loadResource(Host.class, hostId);
 
                 String imageUUID = DataAccessor
                         .fields(loadBalancer)
@@ -100,7 +105,8 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         return result;
     }
 
-    protected Instance getLoadBalancerInstance(LoadBalancer loadBalancer, long hostId) {
+    @Override
+    public Instance getLoadBalancerInstance(LoadBalancer loadBalancer, long hostId) {
         Agent lbAgent = getLoadBalancerAgent(loadBalancer, hostId);
         Instance lbInstance = null;
         if (lbAgent != null) {
@@ -148,5 +154,31 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         }
         return instance.getName().equalsIgnoreCase(LB_INSTANCE_NAME.get()) ? true
                 : false;
+    }
+
+    @Override
+    public LoadBalancer getLoadBalancerForInstance(Instance lbInstance) {
+        if (!isLbInstance(lbInstance)) {
+            return null;
+        }
+        Agent agent = objectManager.loadResource(Agent.class, lbInstance.getAgentId());
+
+        // get lb id from agent uri
+        String uri = agent.getUri();
+        String[] result = uri.split("lbId|&");
+        Long lbId = Long.valueOf(result[1].substring(result[1].indexOf("=") + 1));
+        return objectManager.loadResource(LoadBalancer.class, lbId);
+    }
+
+    @Override
+    public IpAddress getLoadBalancerInstanceIp(Instance lbInstance) {
+        IpAddress ip = null;
+        for (Nic nic : objectManager.children(lbInstance, Nic.class)) {
+            ip = ipAddressDao.getPrimaryIpAddress(nic);
+            if (ip != null) {
+                break;
+            }
+        }
+        return ip;
     }
 }
