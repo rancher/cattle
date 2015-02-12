@@ -3,7 +3,6 @@ package io.cattle.platform.storage.service.dao.impl;
 import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageTable.*;
 import io.cattle.platform.core.dao.AccountDao;
-import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.ImageStoragePoolMap;
 import io.cattle.platform.core.model.StoragePool;
@@ -28,28 +27,12 @@ public class ImageDaoImpl extends AbstractJooqDao implements ImageDao {
 
     @Override
     public Image findImageByUuid(String uuid) {
-        return objectManager.findOne(Image.class,
-                IMAGE.UUID, uuid);
+        return objectManager.findOne(Image.class, IMAGE.NAME, uuid);
     }
 
     @Override
     public Image persistAndAssociateImage(Image image, StoragePool storagePool) {
-        Long accountId = image.getAccountId();
-
-        if ( accountId == null ) {
-            Account system = accountCoreDao.getSystemAccount();
-            if ( system == null ) {
-                throw new IllegalStateException("Failed to find system account");
-            }
-            accountId = system.getId();
-        }
-
-        /* Make sure we set the account id through the properties because if
-         * we are in the context of the API, it might get overwritten with the
-         * user's accountId
-         */
-        image = objectManager.create(image,
-                IMAGE.ACCOUNT_ID, accountId);
+        image = objectManager.create(image);
         processManager.scheduleStandardProcess(StandardProcess.CREATE, image, null);
 
         log.info("Registered image [{}] for pool [{}]", image.getId(), storagePool.getId());

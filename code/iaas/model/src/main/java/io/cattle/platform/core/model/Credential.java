@@ -157,6 +157,17 @@ public interface Credential extends java.io.Serializable {
 	@javax.persistence.Column(name = "secret_value", length = 4096)
 	public java.lang.String getSecretValue();
 
+	/**
+	 * Setter for <code>cattle.credential.storage_pool_id</code>.
+	 */
+	public void setStoragePoolId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.credential.storage_pool_id</code>.
+	 */
+	@javax.persistence.Column(name = "storage_pool_id", precision = 19)
+	public java.lang.Long getStoragePoolId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

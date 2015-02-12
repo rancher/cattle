@@ -1,9 +1,9 @@
 package io.cattle.platform.storage.pool;
 
-import java.io.IOException;
-
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.StoragePool;
+
+import java.io.IOException;
 
 public interface StoragePoolDriver {
 

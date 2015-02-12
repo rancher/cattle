@@ -8,7 +8,7 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <bean id="DockerKindConstraint" class="io.cattle.platform.allocator.constraint.ImageKindConstraintsProvider" >
+     <bean id="DockerKindConstraint" class="io.cattle.platform.allocator.constraint.ImageKindConstraintsProvider" >
         <property name="kind" value="docker" />
     </bean>
 

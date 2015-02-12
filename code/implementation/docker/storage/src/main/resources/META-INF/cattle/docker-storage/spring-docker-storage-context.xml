@@ -9,9 +9,8 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-
-
-    <bean class="io.cattle.platform.docker.client.DockerClient" />
+    
+    
     <bean class="io.cattle.platform.docker.storage.DockerStoragePoolDriver" />
     <bean class="io.cattle.platform.docker.storage.process.DockerStoragePoolCreate" />
     <bean class="io.cattle.platform.docker.storage.dao.impl.DockerStorageDaoImpl" />

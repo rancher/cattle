@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CredentialTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.CredentialRecord> {
 
-	private static final long serialVersionUID = 1365408096;
+	private static final long serialVersionUID = -312503387;
 
 	/**
 	 * The singleton instance of <code>cattle.credential</code>
@@ -92,6 +92,11 @@ public class CredentialTable extends org.jooq.impl.TableImpl<io.cattle.platform.
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.CredentialRecord, java.lang.String> SECRET_VALUE = createField("secret_value", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
 
 	/**
+	 * The column <code>cattle.credential.storage_pool_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.CredentialRecord, java.lang.Long> STORAGE_POOL_ID = createField("storage_pool_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.credential</code> table reference
 	 */
 	public CredentialTable() {
@@ -142,7 +147,7 @@ public class CredentialTable extends org.jooq.impl.TableImpl<io.cattle.platform.
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.CredentialRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.CredentialRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_CREDENTIAL__ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.CredentialRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_CREDENTIAL__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_CREDENTIAL__STORAGE_POOL_ID);
 	}
 
 	/**

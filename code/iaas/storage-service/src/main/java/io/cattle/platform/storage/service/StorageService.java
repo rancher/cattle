@@ -1,8 +1,8 @@
 package io.cattle.platform.storage.service;
 
-import java.io.IOException;
-
 import io.cattle.platform.core.model.Image;
+
+import java.io.IOException;
 
 public interface StorageService {
 
