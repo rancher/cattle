@@ -1,0 +1,10 @@
+{
+    "collectionMethods" : [],
+    "resourceFields" : {
+        "loadBalancerListenerIds" : {
+            "type": "array[reference[loadBalancerListener]]",
+            "required": false,
+            "nullable": true
+        }
+    }
+}

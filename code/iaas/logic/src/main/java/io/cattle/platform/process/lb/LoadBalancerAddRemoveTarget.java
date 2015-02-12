@@ -17,6 +17,7 @@ import javax.inject.Named;
 @Named
 public class LoadBalancerAddRemoveTarget extends AbstractObjectProcessHandler {
 
+    @Inject
     LoadBalancerTargetDao lbTargetDao;
 
     @Override
@@ -73,8 +74,4 @@ public class LoadBalancerAddRemoveTarget extends AbstractObjectProcessHandler {
         getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE, target, null);
     }
 
-    @Inject
-    public void setLoadBalancerTargetDao(LoadBalancerTargetDao LoadBalancerTargetDao) {
-        this.lbTargetDao = LoadBalancerTargetDao;
-    }
 }

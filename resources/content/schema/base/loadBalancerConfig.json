@@ -15,6 +15,10 @@
         "removelistener": {
             "input": "addRemoveLoadBalancerListenerInput",
             "output": "loadBalancerConfig"
+        },
+        "setlisteners": {
+            "input": "setLoadBalancerListenersInput",
+            "output": "loadBalancerConfig"
         }
     }
 }

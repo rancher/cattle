@@ -1,0 +1,13 @@
+{
+    "collectionMethods" : [],
+    "resourceFields": {
+        "instanceIds": {
+            "type": "array[reference[instance]]",
+            "nullable": true
+        },
+        "ipAddresses": {
+            "type": "array[string]",
+            "nullable": true
+        }
+    }
+}

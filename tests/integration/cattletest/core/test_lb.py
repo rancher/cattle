@@ -4,7 +4,7 @@ from cattle import ApiError
 
 @pytest.fixture(scope='module')
 def config_id(admin_client):
-    default_lb_config = admin_client.\
+    default_lb_config = admin_client. \
         create_loadBalancerConfig(name=random_str())
     default_lb_config = admin_client.wait_success(default_lb_config)
     return default_lb_config.id
@@ -100,24 +100,21 @@ def test_lb_remove_target_instance(admin_client, sim_context, config_id):
 
 
 def test_lb_add_target_ip_address(admin_client, sim_context, config_id):
-    container, lb = create_lb_and_container(admin_client, sim_context,
-                                            config_id)
-
+    lb = create_valid_lb(admin_client, config_id)
     lb = lb.addtarget(ipAddress="10.1.1.1")
     lb = admin_client.wait_success(lb)
 
-    targetMap = admin_client. \
+    target_map = admin_client. \
         list_loadBalancerTarget(loadBalancerId=lb.id,
                                 ipAddress="10.1.1.1")
 
-    assert len(targetMap) == 1
-    assert targetMap[0].state == "active"
-    assert targetMap[0].ipAddress == "10.1.1.1"
+    assert len(target_map) == 1
+    assert target_map[0].state == "active"
+    assert target_map[0].ipAddress == "10.1.1.1"
 
 
 def test_lb_remove_target_ip_address(admin_client, sim_context, config_id):
-    container, lb = create_lb_and_container(admin_client, sim_context,
-                                            config_id)
+    lb = create_valid_lb(admin_client, config_id)
 
     # add target to a load balancer and verify that it got created
     lb = lb.addtarget(ipAddress="10.1.1.1")
@@ -192,3 +189,134 @@ def test_lb_remove_w_host(admin_client, super_client, sim_context,
 
     assert len(host_map) == 1
     assert host_map[0].state == "removed"
+
+
+def test_set_target_instance(admin_client, sim_context, config_id):
+    container1, lb = create_lb_and_container(admin_client,
+                                             sim_context, config_id)
+
+    container2 = admin_client. \
+        create_container(imageUuid=sim_context['imageUuid'],
+                         startOnCreate=False)
+    container2 = admin_client.wait_success(container2)
+
+    # set 2 targets
+    lb = lb.settargets(instanceIds=[container1.id, container2.id])
+    lb = admin_client.wait_success(lb)
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                instanceId=container1.id)
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "active"
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                instanceId=container2.id)
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "active"
+
+    # set 1 target
+    lb = lb.settargets(instanceIds=[container1.id])
+    lb = admin_client.wait_success(lb)
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                instanceId=container1.id)
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "active"
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                instanceId=container2.id)
+    assert len(target_map) == 1
+    assert target_map[0].state == "removed"
+
+    # set 0 targets
+    lb = lb.settargets(instanceIds=[])
+    lb = admin_client.wait_success(lb)
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                instanceId=container1.id)
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "removed"
+
+
+def test_lb_set_target_ip_address(admin_client, sim_context, config_id):
+    lb = create_valid_lb(admin_client, config_id)
+
+    # set 2 targets
+    lb = lb.settargets(ipAddresses=["10.1.1.1", "10.1.1.2"])
+    lb = admin_client.wait_success(lb)
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                ipAddress="10.1.1.1")
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "active"
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                ipAddress="10.1.1.2")
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "active"
+
+    # set 1 target
+    lb = lb.settargets(ipAddresses=["10.1.1.1"])
+    lb = admin_client.wait_success(lb)
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                ipAddress="10.1.1.1")
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "active"
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                ipAddress="10.1.1.2")
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "removed"
+
+    # set 0 targets
+    lb = lb.settargets(ipAddresses=[])
+    lb = admin_client.wait_success(lb)
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                ipAddress="10.1.1.1")
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "removed"
+
+
+def test_set_target_instance_and_ip(admin_client, sim_context, config_id):
+    container1, lb = create_lb_and_container(admin_client, sim_context,
+                                             config_id)
+
+    # set 2 targets - one ip and one instanceId
+    lb = lb.settargets(instanceIds=[container1.id],
+                       ipAddresses="10.1.1.1")
+    lb = admin_client.wait_success(lb)
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                instanceId=container1.id)
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "active"
+
+    target_map = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                ipAddress="10.1.1.1")
+
+    assert len(target_map) == 1
+    assert target_map[0].state == "active"

@@ -18,6 +18,7 @@ import javax.inject.Named;
 @Named
 public class LoadBalancerConfigAddRemoveListener extends AbstractObjectProcessHandler {
 
+    @Inject
     GenericMapDao mapDao;
 
     @Override
@@ -46,7 +47,7 @@ public class LoadBalancerConfigAddRemoveListener extends AbstractObjectProcessHa
                 LoadBalancerConfig.class, configId, LoadBalancerListener.class, listenerId);
 
         if (lbConfigListenerMap != null) {
-            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE,
+            objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE,
                     lbConfigListenerMap, null);
         }
     }
@@ -60,13 +61,8 @@ public class LoadBalancerConfigAddRemoveListener extends AbstractObjectProcessHa
                     LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_CONFIG_ID, configId,
                     LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_LISTENER_ID, listenerId);
         }
-        getObjectProcessManager().executeProcess(
+        objectProcessManager.executeProcess(
                 LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_CREATE,
                 lbConfigListenerMap, null);
-    }
-
-    @Inject
-    public void setMapDao(GenericMapDao mapDao) {
-        this.mapDao = mapDao;
     }
 }
