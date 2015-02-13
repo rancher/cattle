@@ -131,14 +131,14 @@ def test_lb_listener_remove(admin_client, super_client):
     config1 = admin_client. \
         create_loadBalancerConfig(name=random_str())
     config1 = admin_client.wait_success(config1)
-    config1 = config1.\
+    config1 = config1. \
         addlistener(loadBalancerListenerId=listener.id)
     config1 = admin_client.wait_success(config1)
 
     config2 = admin_client. \
         create_loadBalancerConfig(name=random_str())
     config2 = admin_client.wait_success(config2)
-    config2 = config2.\
+    config2 = config2. \
         addlistener(loadBalancerListenerId=listener.id)
     config2 = admin_client.wait_success(config2)
 
@@ -168,14 +168,14 @@ def test_lb_config_remove_w_listeners(admin_client, super_client):
     config1 = admin_client. \
         create_loadBalancerConfig(name=random_str())
     config1 = admin_client.wait_success(config1)
-    config1 = config1.\
+    config1 = config1. \
         addlistener(loadBalancerListenerId=listener.id)
     config1 = admin_client.wait_success(config1)
 
     config2 = admin_client. \
         create_loadBalancerConfig(name=random_str())
     config2 = admin_client.wait_success(config2)
-    config2 = config2.\
+    config2 = config2. \
         addlistener(loadBalancerListenerId=listener.id)
     config2 = admin_client.wait_success(config2)
 
@@ -291,3 +291,31 @@ def _create_config_and_listener(admin_client):
     config = admin_client.create_loadBalancerConfig(name=random_str())
     config = admin_client.wait_success(config)
     return config, listener
+
+
+def test_lb_config_add_listener_twice(admin_client, super_client):
+    config, listener = _create_config_and_listener(admin_client)
+
+    # add listener to the config
+    config = config.addlistener(loadBalancerListenerId=listener.id)
+    config = admin_client.wait_success(config)
+
+    with pytest.raises(ApiError) as e:
+        config.addlistener(loadBalancerListenerId=listener.id)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'loadBalancerListenerId'
+
+
+def test_lb_config_remove_invalid_listener(admin_client, super_client):
+    config, listener = _create_config_and_listener(admin_client)
+
+    # remove non-existing listener
+    with pytest.raises(ApiError) as e:
+        config = config. \
+            removelistener(loadBalancerListenerId=listener.id)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+    assert e.value.error.fieldName == 'loadBalancerListenerId'

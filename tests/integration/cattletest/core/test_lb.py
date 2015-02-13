@@ -320,3 +320,87 @@ def test_set_target_instance_and_ip(admin_client, sim_context, config_id):
 
     assert len(target_map) == 1
     assert target_map[0].state == "active"
+
+
+def test_lb_add_target_instance_twice(admin_client, sim_context, config_id):
+    container, lb = create_lb_and_container(admin_client, sim_context,
+                                            config_id)
+
+    # add target to a load balancer
+    lb = lb.addtarget(instanceId=container.id)
+    lb = admin_client.wait_success(lb)
+
+    with pytest.raises(ApiError) as e:
+        lb.addtarget(instanceId=container.id)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'instanceId'
+
+
+def test_lb_remove_non_existing_target_instance(admin_client, sim_context,
+                                                config_id):
+    container, lb = create_lb_and_container(admin_client, sim_context,
+                                            config_id)
+    # remove non-existing target
+    with pytest.raises(ApiError) as e:
+        lb.removetarget(instanceId=container.id)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+    assert e.value.error.fieldName == 'instanceId'
+
+
+def test_lb_add_target_ip_address_and_instance(admin_client, sim_context,
+                                               config_id):
+    container, lb = create_lb_and_container(admin_client, sim_context,
+                                            config_id)
+
+    with pytest.raises(ApiError) as e:
+        lb.addtarget(ipAddress="10.1.1.1",
+                     instanceId=container.id)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+    assert e.value.error.fieldName == 'ipAddress'
+
+
+def test_lb_add_target_w_no_option(admin_client, sim_context, config_id):
+    container, lb = create_lb_and_container(admin_client, sim_context,
+                                            config_id)
+
+    with pytest.raises(ApiError) as e:
+        lb.addtarget()
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MissingRequired'
+    assert e.value.error.fieldName == 'instanceId'
+
+
+def test_lb_add_target_ip_twice(admin_client, sim_context, config_id):
+    container, lb = create_lb_and_container(admin_client, sim_context,
+                                            config_id)
+
+    # add target to a load balancer
+    lb = lb.addtarget(ipAddress="10.1.1.1")
+    lb = admin_client.wait_success(lb)
+
+    with pytest.raises(ApiError) as e:
+        lb.addtarget(ipAddress="10.1.1.1")
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'ipAddress'
+
+
+def test_lb_remove_non_existing_target_ip(admin_client, sim_context,
+                                          config_id):
+    container, lb = create_lb_and_container(admin_client, sim_context,
+                                            config_id)
+    # remove non-existing target
+    with pytest.raises(ApiError) as e:
+        lb.removetarget(ipAddress="10.1.1.1")
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+    assert e.value.error.fieldName == 'ipAddress'
