@@ -57,7 +57,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
 
-        SchemaFactory schemaFactory = getSchemaFactory(account, request);
+        SchemaFactory schemaFactory = getSchemaFactory(account, policy, request);
         if ( schemaFactory == null ) {
             log.error("Failed to find a schema for account type [{}]", account.getKind());
             if ( SECURITY.get() ) {
@@ -93,11 +93,11 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         return policy;
     }
 
-    protected SchemaFactory getSchemaFactory(Account account, ApiRequest request) {
+    protected SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
         SchemaFactory factory = null;
 
         for ( AuthorizationProvider auth : authorizationProviders ) {
-            factory = auth.getSchemaFactory(account, request);
+            factory = auth.getSchemaFactory(account, policy, request);
             if ( factory != null ) {
                 break;
             }

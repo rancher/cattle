@@ -7,7 +7,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 public interface AuthorizationProvider {
 
-    SchemaFactory getSchemaFactory(Account account, ApiRequest request);
+    SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request);
 
     Policy getPolicy(Account account, ApiRequest request);
 

@@ -10,6 +10,7 @@ public interface Policy {
     public static final String REMOVED_VISIBLE = "removed.visible";
     public static final String PLAIN_ID = "plain.id";
     public static final String PLAIN_ID_OPTION = "plain.id.option";
+    public static final String ROLE_OPTION = "role.option";
     public static final long NO_ACCOUNT = -1L;
 
     boolean isOption(String optionName);
