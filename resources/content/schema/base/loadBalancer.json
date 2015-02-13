@@ -32,6 +32,10 @@
         "removehost": {
             "input": "addRemoveLoadBalancerHostInput",
             "output": "loadBalancer"
+        },
+        "sethosts": {
+            "input": "setLoadBalancerHostsInput",
+            "output": "loadBalancer"
         }
     }
 }

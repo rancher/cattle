@@ -14,6 +14,7 @@ public class LoadBalancerConstants {
     public static final String FIELD_LB_TARGET_INSTANCE_IDS = "instanceIds";
     public static final String FIELD_LB_TARGET_IPADDRESSES = "ipAddresses";
     public static final String FIELD_LB_HOST_ID = "hostId";
+    public static final String FIELD_LB_HOST_IDS = "hostIds";
     public static final String FIELD_LB_INSTANCE_IMAGE_UUID = "loadBalancerInstanceImageUuid";
     public static final String FIELD_LB_INSTANCE_URI_PREDICATE = "loadBalancerInstanceUriPredicate";
 
@@ -36,6 +37,7 @@ public class LoadBalancerConstants {
     public static final String PROCESS_LB_CONFIG_SET_LISTENERS = "loadbalancerconfig.setlisteners";
     public static final String PROCESS_LB_ADD_HOST = "loadbalancer." + ACTION_ADD_HOST;
     public static final String PROCESS_LB_REMOVE_HOST = "loadbalancer." + ACTION_REMOVE_HOST;
+    public static final String PROCESS_LB_SET_HOSTS = "loadbalancer.sethosts";
     public static final String PROCESS_LB_ADD_TARGET = "loadbalancer." + ACTION_LB_ADD_TARGET;
     public static final String PROCESS_LB_REMOVE_TARGET = "loadbalancer." + ACTION_LB_REMOVE_TARGET;
     public static final String PROCESS_LB_TARGET_MAP_CREATE = "loadbalancertarget.create";

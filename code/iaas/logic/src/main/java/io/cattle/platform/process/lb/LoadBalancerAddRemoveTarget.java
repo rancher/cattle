@@ -45,7 +45,7 @@ public class LoadBalancerAddRemoveTarget extends AbstractObjectProcessHandler {
     }
 
     protected void removeLbTarget(LoadBalancer lb, Long instanceId, String ipAddress) {
-        LoadBalancerTarget target = getLbTarget(lb, instanceId, ipAddress);
+        LoadBalancerTarget target = getLbTargetToRemove(lb, instanceId, ipAddress);
         if (target != null) {
             getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
                     target, null);
@@ -58,6 +58,16 @@ public class LoadBalancerAddRemoveTarget extends AbstractObjectProcessHandler {
             target = lbTargetDao.getLbIpAddressTarget(lb.getId(), ipAddress);
         } else {
             target = lbTargetDao.getLbInstanceTarget(lb.getId(), instanceId);
+        }
+        return target;
+    }
+
+    private LoadBalancerTarget getLbTargetToRemove(LoadBalancer lb, Long instanceId, String ipAddress) {
+        LoadBalancerTarget target = null;
+        if (ipAddress != null) {
+            target = lbTargetDao.getLbIpAddressTargetToRemove(lb.getId(), ipAddress);
+        } else {
+            target = lbTargetDao.getLbInstanceTargetToRemove(lb.getId(), instanceId);
         }
         return target;
     }

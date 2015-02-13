@@ -209,6 +209,9 @@
         "loadBalancer.removeHost" : "r",
         "addRemoveLoadBalancerHostInput" : "cr",
         "addRemoveLoadBalancerHostInput.hostId" : "cr",
+        "loadBalancer.setHosts" : "r",
+        "setLoadBalancerHostsInput" : "cr",
+        "setLoadBalancerHostsInput.hostIds" : "cr",
 
         "loadBalancerTarget" : "r",
         "loadBalancerTarget.instanceId" : "r",
