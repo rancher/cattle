@@ -50,7 +50,6 @@
     <process:defaultProcesses resourceType="networkServiceProvider" />
     <process:defaultProcesses resourceType="networkServiceProviderInstanceMap" />
     <process:defaultProcesses resourceType="nic" />
-    <process:defaultProcesses resourceType="physicalHost" />
     <process:defaultProcesses resourceType="port" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="storagePoolHostMap" />
@@ -134,4 +133,9 @@
     <process:process name="loadbalancerhostmap.create" resourceType="LoadBalancerHostMap" start="requested" transitioning="activating" done="active" />
     <process:process name="loadbalancerhostmap.remove" resourceType="LoadBalancerHostMap" start="active,activating" transitioning="removing" done="removed" />
 
+    <!-- Physical Host -->  
+    <process:process name="physicalhost.create" resourceType="physicalHost" start="requested" transitioning="creating" done="created" delegate="physicalhost.bootstrap" />
+    <process:process name="physicalhost.bootstrap" resourceType="physicalHost" start="created,creating" transitioning="bootstrapping" done="active" />
+    <process:process name="physicalhost.remove" resourceType="physicalHost" start="active,requested,bootstrapping,creating,updating" transitioning="removing" done="removed" />
+    <process:process name="physicalhost.update" resourceType="physicalHost" start="active" transitioning="updating" done="active" />
 </beans>

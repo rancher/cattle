@@ -1,0 +1,10 @@
+{
+    "authorize" : {
+        
+        "machine" : "crud",
+        "machine.data" : "cru",
+
+
+        "end" : ""
+    }
+}

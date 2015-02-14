@@ -1,0 +1,25 @@
+{
+    "authorize" : {
+        "machine" : "crd",
+        "machine.externalId" : "r",
+        "machine.driver" : "r",
+        "machine.authCertificateAuthority" : "cr",
+        "machine.authKey" : "cr",
+        "machine.extractedConfig" : "r",
+        "machine.virtualboxConfig" : "cr",
+        "machine.digitaloceanConfig" : "cr",
+
+        "virtualboxConfig" : "cr",
+        "virtualboxConfig.memory" : "cr",
+        "virtualboxConfig.diskSize" : "cr",
+        "virtualboxConfig.boot2dockerUrl" : "cr",
+
+        "digitaloceanConfig" : "cr",
+        "digitaloceanConfig.image" : "cr",
+        "digitaloceanConfig.region" : "cr",
+        "digitaloceanConfig.size" : "cr",
+        "digitaloceanConfig.accessToken" : "cr",
+
+        "end" : ""
+    }
+}
