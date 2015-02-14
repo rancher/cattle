@@ -48,6 +48,7 @@
                 <value>addRemoveLoadBalancerHostInput</value>
                 <value>setLoadBalancerListenersInput</value>
                 <value>setLoadBalancerTargetsInput</value>
+                <value>setLoadBalancerHostsInput</value>
             </set>
         </property>
     </bean>

@@ -21,14 +21,40 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
     public LoadBalancerTarget getLbInstanceTarget(long lbId, long instanceId) {
         return objectManager.findOne(LoadBalancerTarget.class,
                 LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lbId,
-                LOAD_BALANCER_TARGET.INSTANCE_ID, instanceId);
+                LOAD_BALANCER_TARGET.INSTANCE_ID, instanceId,
+                LOAD_BALANCER_TARGET.REMOVED, null);
+    }
+
+    @Override
+    public LoadBalancerTarget getLbInstanceTargetToRemove(long lbId, long instanceId) {
+        return create()
+                .selectFrom(LOAD_BALANCER_TARGET)
+                .where(
+                        LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId)
+                                .and(LOAD_BALANCER_TARGET.INSTANCE_ID.eq(instanceId))
+                                .and(LOAD_BALANCER_TARGET.REMOVED.isNull().
+                                        or(LOAD_BALANCER_TARGET.STATE.eq(CommonStatesConstants.REMOVING))))
+                .fetchOne();
+    }
+
+    @Override
+    public LoadBalancerTarget getLbIpAddressTargetToRemove(long lbId, String ipAddress) {
+        return create()
+                .selectFrom(LOAD_BALANCER_TARGET)
+                .where(
+                        LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId)
+                                .and(LOAD_BALANCER_TARGET.IP_ADDRESS.eq(ipAddress))
+                                .and(LOAD_BALANCER_TARGET.REMOVED.isNull().
+                                        or(LOAD_BALANCER_TARGET.STATE.eq(CommonStatesConstants.REMOVING))))
+                .fetchOne();
     }
 
     @Override
     public LoadBalancerTarget getLbIpAddressTarget(long lbId, String ipAddress) {
         return objectManager.findOne(LoadBalancerTarget.class,
                 LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lbId,
-                LOAD_BALANCER_TARGET.IP_ADDRESS, ipAddress);
+                LOAD_BALANCER_TARGET.IP_ADDRESS, ipAddress,
+                LOAD_BALANCER_TARGET.REMOVED, null);
     }
 
     @Override

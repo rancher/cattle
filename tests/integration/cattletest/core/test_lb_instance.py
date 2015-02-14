@@ -236,6 +236,62 @@ def test_delete_host(admin_client, super_client, new_sim_context, sim_context,
                              super_client, uri, agent)
 
 
+def test_set_hosts(admin_client,
+                   super_client,
+                   sim_context,
+                   new_sim_context,
+                   config_id):
+    host1 = new_sim_context['host']
+    host2 = sim_context['host']
+
+    lb = _create_valid_lb(super_client, sim_context, config_id)
+
+    # 1. Set hosts with 2 lbs
+    lb = lb.sethosts(hostIds=[host1.id, host2.id])
+    lb = admin_client.wait_success(lb)
+
+    # VERIFICATION FOR HOST1
+    # verify the mapping
+    host_map = super_client. \
+        list_loadBalancerHostMap(loadBalancerId=lb.id,
+                                 hostId=host1.id)
+
+    assert len(host_map) == 1
+    assert host_map[0].state == "active"
+    assert host_map[0].hostId == host1.id
+
+    # VERIFICATION FOR HOST2
+    # verify the mapping
+    host_map = super_client. \
+        list_loadBalancerHostMap(loadBalancerId=lb.id,
+                                 hostId=host2.id)
+
+    assert len(host_map) == 1
+    assert host_map[0].state == "active"
+    assert host_map[0].hostId == host2.id
+
+    # 2. Remove the host
+    # remove the host from lb
+    lb = lb.removehost(hostId=host1.id)
+    lb = admin_client.wait_success(lb)
+
+    # verify the cleanup was executed
+    host_map = super_client. \
+        list_loadBalancerHostMap(loadBalancerId=lb.id,
+                                 hostId=host1.id)
+    assert len(host_map) == 1
+    assert host_map[0].state == "removed"
+    assert host_map[0].hostId == host1.id
+
+    # 3. Re-add the host again
+    lb = lb.sethosts(hostIds=[host1.id, host2.id])
+    lb = admin_client.wait_success(lb)
+    host_map = super_client. \
+        list_loadBalancerHostMap(loadBalancerId=lb.id,
+                                 hostId=host1.id)
+    assert len(host_map) == 2
+
+
 def _create_valid_lb(super_client, sim_context, config_id):
     default_lb_config = super_client. \
         create_loadBalancerConfig(name=random_str())
