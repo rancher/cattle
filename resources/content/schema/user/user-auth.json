@@ -183,6 +183,7 @@
         "loadBalancerListener.targetPort" : "cr",
         "loadBalancerListener.sourceProtocol" : "cr",
         "loadBalancerListener.targetProtocol" : "cr",
+        "loadBalancerListener.algorithm" : "cr",
 
         "loadBalancerConfig" : "crud",
         "loadBalancerConfig.loadBalancerHealthCheck" : "cr",

@@ -25,8 +25,8 @@ public class LoadBalancerListenerValidationFilter extends AbstractDefaultResourc
         if (targetPort == null) {
             long sourcePort = listener.getSourcePort();
             listener.setTargetPort(sourcePort);
-            ;
         }
+
         String targetProtocol = listener.getTargetProtocol();
         if (targetProtocol == null) {
             String sourceProtocol = listener.getSourceProtocol();

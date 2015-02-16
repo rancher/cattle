@@ -7,7 +7,8 @@ def test_lb_listener_create(admin_client):
                                                         sourcePort='8080',
                                                         targetPort='80',
                                                         sourceProtocol='http',
-                                                        targetProtocol='tcp')
+                                                        targetProtocol='tcp',
+                                                        algorithm='leastconn')
     listener = admin_client.wait_success(listener)
 
     assert listener.state == 'active'
@@ -15,6 +16,16 @@ def test_lb_listener_create(admin_client):
     assert listener.sourceProtocol == 'http'
     assert listener.targetPort == 80
     assert listener.targetProtocol == 'tcp'
+    assert listener.algorithm == 'leastconn'
+
+
+def test_lb_listener_create_wo_algorithm(admin_client):
+    listener = admin_client.create_loadBalancerListener(name=random_str(),
+                                                        sourcePort='80',
+                                                        sourceProtocol='tcp')
+    listener = admin_client.wait_success(listener)
+
+    assert listener.algorithm == 'roundrobin'
 
 
 def test_lb_listener_protocol_validation(admin_client):
