@@ -49,6 +49,8 @@
                 <value>setLoadBalancerListenersInput</value>
                 <value>setLoadBalancerTargetsInput</value>
                 <value>setLoadBalancerHostsInput</value>
+                <value>cluster,parent=host</value>
+                <value>addRemoveClusterHostInput</value>
             </set>
         </property>
     </bean>

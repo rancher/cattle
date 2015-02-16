@@ -139,4 +139,8 @@
     <process:process name="physicalhost.bootstrap" resourceType="physicalHost" start="created,creating" transitioning="bootstrapping" done="active" />
     <process:process name="physicalhost.remove" resourceType="physicalHost" start="active,requested,bootstrapping,creating,updating" transitioning="removing" done="removed" />
     <process:process name="physicalhost.update" resourceType="physicalHost" start="active" transitioning="updating" done="active" />
+
+    <!-- Cluster host map -->
+    <process:process name="clusterhostmap.create" resourceType="clusterHostMap" start="requested" transitioning="creating" done="created" />
+    <process:process name="clusterhostmap.remove" resourceType="clusterHostMap" start="created,creating" transitioning="removing" done="removed" />
 </beans>

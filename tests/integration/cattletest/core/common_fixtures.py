@@ -268,6 +268,24 @@ def wait_transitioning(client, obj, timeout=DEFAULT_TIMEOUT):
     return client.wait_transitioning(obj, timeout=timeout)
 
 
+@pytest.fixture
+def wait_until_expected_state(client, resource, expected_state,
+                              timeout=DEFAULT_TIMEOUT):
+    start = time.time()
+    resource = client.reload(resource)
+    while resource.state != expected_state:
+        if time.time() - start > timeout:
+            raise Exception(
+                'Timeout waiting for ' + resource.kind + ' to be in state=' +
+                expected_state + '; current state=' + resource.state
+                )
+
+        time.sleep(.5)
+        resource = client.reload(resource)
+
+    return resource
+
+
 def assert_fields(obj, fields):
     assert obj is not None
     for k, v in fields.items():

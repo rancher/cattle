@@ -6,6 +6,7 @@ import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.StateTransition;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.meta.ActionDefinition;
+import io.cattle.platform.object.meta.MapRelationship;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.meta.TypeSet;
@@ -52,17 +53,15 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.ForeignKey;
 import org.jooq.Table;
 import org.jooq.TableField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, SchemaPostProcessor, InitializationTask, Priority {
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultObjectMetaDataManager.class);
-
     SchemaFactory schemaFactory;
     List<TypeSet> typeSets;
-    Map<Class<?>,Map<String,Relationship>> relationships = new HashMap<Class<?>, Map<String,Relationship>>();
-    Map<Class<?>,Map<String,Relationship>> relationshipsBothCase = new HashMap<Class<?>, Map<String,Relationship>>();
+    Map<Class<?>,Map<String,List<Relationship>>> relationships = new HashMap<Class<?>, Map<String,List<Relationship>>>();
+    Map<Class<?>,Map<String,List<Relationship>>> relationshipsBothCase = new HashMap<Class<?>, Map<String,List<Relationship>>>();
     List<ProcessDefinition> processDefinitions;
 
     Map<String,Set<String>> validStates = new HashMap<String, Set<String>>();
@@ -198,15 +197,17 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     protected void findMappings() {
         Map<Class<?>, List<Pair<Class<?>, Relationship>>> foundRelationship = new HashMap<Class<?>, List<Pair<Class<?>, Relationship>>>();
 
-        for ( Map.Entry<Class<?>,Map<String,Relationship>> entry : relationships.entrySet() ) {
-            for ( Map.Entry<String, Relationship> relEntry : entry.getValue().entrySet() ) {
-                Relationship rel = relEntry.getValue();
-                if ( rel.getRelationshipType() == Relationship.RelationshipType.CHILD ) {
-                    Schema schema = schemaFactory.getSchema(rel.getObjectType());
-                    if ( schema != null && schema.getId().endsWith(ObjectMetaDataManager.MAP_SUFFIX)) {
-                        CollectionUtils.addToMap(foundRelationship, rel.getObjectType(),
-                                (Pair<Class<?>, Relationship>)new ImmutablePair<Class<?>, Relationship>(entry.getKey(), rel),
-                                ArrayList.class);
+        for ( Map.Entry<Class<?>,Map<String, List<Relationship>>> entry : relationships.entrySet() ) {
+            for ( Map.Entry<String, List<Relationship>> relEntry : entry.getValue().entrySet() ) {
+                List<Relationship> relList = relEntry.getValue();
+                for (Relationship rel : relList) {
+                    if ( rel.getRelationshipType() == Relationship.RelationshipType.CHILD ) {
+                        Schema schema = schemaFactory.getSchema(rel.getObjectType());
+                        if ( schema != null && schema.getId().endsWith(ObjectMetaDataManager.MAP_SUFFIX)) {
+                            CollectionUtils.addToMap(foundRelationship, rel.getObjectType(),
+                                    (Pair<Class<?>, Relationship>)new ImmutablePair<Class<?>, Relationship>(entry.getKey(), rel),
+                                    ArrayList.class);
+                        }
                     }
                 }
             }
@@ -221,14 +222,33 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
             Pair<Class<?>, Relationship> left = rels.get(0);
             Pair<Class<?>, Relationship> right = rels.get(1);
 
-            register(entry.getKey(), left, right);
-            register(entry.getKey(), right, left);
+            if (left.getLeft().equals(right.getLeft())) {
+                // This basically looks like a junction map to itself.
+                // Inspect the column names for extra info and use the link override
+                // to obtain a more meaningful link name
+                String mapRightToLeftName = right.getRight().getPropertyName();
+                register(getLinkNameOverride(entry.getKey().getSimpleName(), mapRightToLeftName, mapRightToLeftName),
+                        entry.getKey(), left, right);
+
+                String mapLeftToRightName = left.getRight().getPropertyName();
+                register(getLinkNameOverride(entry.getKey().getSimpleName(), mapLeftToRightName, mapLeftToRightName),
+                        entry.getKey(), right, left);
+            } else {
+                register(schemaFactory.getSchema(right.getLeft()).getPluralName(), entry.getKey(), left, right);
+                register(schemaFactory.getSchema(left.getLeft()).getPluralName(), entry.getKey(), right, left);
+            }
         }
     }
 
-    protected void register(Class<?> mappingType, Pair<Class<?>, Relationship> left, Pair<Class<?>, Relationship> right) {
-        register(left.getLeft(), new MapRelationshipImpl(schemaFactory.getSchema(right.getLeft()).getPluralName(),
-                mappingType, right.getLeft(), left.getRight(), right.getRight()));
+    private String getLinkNameOverride(String objectName, String property, String defaultName) {
+        String mapNameOverride = ArchaiusUtil.getString(
+                String.format("object.link.name.%s.%s.override", objectName, property).toLowerCase()).get();
+        return mapNameOverride == null ? defaultName : mapNameOverride;
+    }
+
+    protected void register(String mappingName, Class<?> mappingType, Pair<Class<?>, Relationship> left, Pair<Class<?>, Relationship> right) {
+        register(left.getLeft(),
+                new MapRelationshipImpl(mappingName, mappingType, right.getLeft(), left.getRight(), right.getRight()));
     }
 
     protected void registerTableFields(Table<?> table) {
@@ -330,31 +350,28 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         register(this.relationshipsBothCase, type, relationship, true);
     }
 
-    protected void register(Map<Class<?>,Map<String,Relationship>> relationshipsMap, Class<?> type, Relationship relationship,
+    protected void register(Map<Class<?>,Map<String,List<Relationship>>> relationshipsMap, Class<?> type, Relationship relationship,
             boolean bothCase) {
-        Map<String,Relationship> relationships = relationshipsMap.get(type);
+        Map<String, List<Relationship>> relationships = relationshipsMap.get(type);
         if ( relationships == null ) {
-            relationships = new HashMap<String, Relationship>();
+            relationships = new HashMap<String, List<Relationship>>();
             relationshipsMap.put(type, relationships);
         }
 
         String name = relationship.getName().toLowerCase();
-        Relationship existing = relationships.get(name);
+        List<Relationship> existing = relationships.get(name);
 
         if ( existing != null ) {
-            if ( existing.getPropertyName().length() <= relationship.getPropertyName().length() ) {
-                log.warn("Not registering link [{}] on class [{}] for property [{}], [{}] already exists", name, type.getSimpleName(),
-                        relationship.getPropertyName(), existing.getPropertyName());
-                return;
-            } else {
-                log.warn("Overriding link [{}] on class [{}] for property [{}] with [{}]", name, type.getSimpleName(),
-                        existing.getPropertyName(), relationship.getPropertyName());
+            existing.add(relationship);
+            if ( bothCase ) {
+                relationships.get(relationship.getName()).add(relationship);
             }
+            return;
         }
 
-        relationships.put(relationship.getName().toLowerCase(), relationship);
+        relationships.put(relationship.getName().toLowerCase(), Lists.newArrayList(relationship));
         if ( bothCase ) {
-            relationships.put(relationship.getName(), relationship);
+            relationships.put(relationship.getName(), Lists.newArrayList(relationship));
         }
     }
 
@@ -490,10 +507,14 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         addActions(schema, factory);
         addTransitioningFields(schema, factory);
 
-        Map<String,Relationship> relationships = this.relationships.get(factory.getSchemaClass(schema.getId()));
+        Map<String, List<Relationship>> relationships = this.relationships.get(factory.getSchemaClass(schema.getId()));
 
         if ( relationships != null ) {
-            for ( Relationship relationship : relationships.values() ) {
+            List<Relationship> allRelationships = new ArrayList<Relationship>();
+            for ( List<Relationship> relationshipList : relationships.values() ) {
+                allRelationships.addAll(relationshipList);
+            }
+            for ( Relationship relationship : allRelationships ) {
                 String linkName = relationship.getName();
 
                 if ( relationship.getRelationshipType() != REFERENCE ) {
@@ -567,16 +588,24 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         Map<String,Relationship> result = new HashMap<String, Relationship>();
         Schema schema = schemaFactory.getSchema(type);
 
-        Map<String,Relationship> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId()));
+        Map<String, List<Relationship>> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId()));
         if ( relationships == null ) {
             return result;
         }
 
         for ( String link : getLinks(schemaFactory, type).keySet() ) {
             link = link.toLowerCase();
-            Relationship rel = relationships.get(link);
-            if ( rel != null ) {
-                result.put(link, rel);
+            List<Relationship> relList = relationships.get(link);
+            if ( relList != null ) {
+                if (relList.size() > 1) {
+                    for (Relationship rel : relList) {
+                        if (rel.getName().toLowerCase().equals(link)) {
+                            result.put(link, rel);
+                        }
+                    }
+                } else {
+                    result.put(link, relList.get(0));
+                }
             }
         }
 
@@ -596,13 +625,16 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         links = new TreeMap<String,String>();
         Schema schema = schemaFactory.getSchema(type);
 
-        Map<String,Relationship> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId(), true));
+        Map<String, List<Relationship>> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId(), true));
         if ( relationships == null || relationships.size() == 0 ) {
             linksCache.put(key, links);
             return links;
         }
-
-        for ( Relationship relationship : relationships.values() ) {
+        List<Relationship> allRelationships = new ArrayList<Relationship>();
+        for ( List<Relationship> relationshipList : relationships.values() ) {
+            allRelationships.addAll(relationshipList);
+        }
+        for ( Relationship relationship : allRelationships ) {
             if ( relationship.isListResult() ) {
                 Schema other = schemaFactory.getSchema(relationship.getObjectType());
                 if ( other != null )
@@ -621,8 +653,21 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     @Override
     public Relationship getRelationship(String type, String linkName) {
         Class<?> clz = schemaFactory.getSchemaClass(type, true);
-        Map<String,Relationship> relationship = relationshipsBothCase.get(clz);
-        return relationship == null ? null : relationship.get(linkName);
+        Map<String, List<Relationship>> relationship = relationshipsBothCase.get(clz);
+        List<Relationship> relationshipList = relationship.get(linkName);
+        if (relationshipList == null || relationshipList.size() == 0) {
+            return null;
+        }
+        if (relationshipList.size() > 1) {
+            for (Relationship rel : relationshipList) {
+                if (rel instanceof MapRelationship &&
+                        rel.getName() != null && rel.getName().equals(linkName)) {
+                    return rel;
+                }
+            }
+            return null;
+        }
+        return relationshipList.get(0);
     }
 
     @Override

@@ -29,6 +29,16 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.AgentGroupTable AGENT_GROUP = io.cattle.platform.core.model.tables.AgentGroupTable.AGENT_GROUP;
 
 	/**
+	 * The table cattle.certificate
+	 */
+	public static final io.cattle.platform.core.model.tables.CertificateTable CERTIFICATE = io.cattle.platform.core.model.tables.CertificateTable.CERTIFICATE;
+
+	/**
+	 * The table cattle.cluster_host_map
+	 */
+	public static final io.cattle.platform.core.model.tables.ClusterHostMapTable CLUSTER_HOST_MAP = io.cattle.platform.core.model.tables.ClusterHostMapTable.CLUSTER_HOST_MAP;
+
+	/**
 	 * The table cattle.config_item
 	 */
 	public static final io.cattle.platform.core.model.tables.ConfigItemTable CONFIG_ITEM = io.cattle.platform.core.model.tables.ConfigItemTable.CONFIG_ITEM;
