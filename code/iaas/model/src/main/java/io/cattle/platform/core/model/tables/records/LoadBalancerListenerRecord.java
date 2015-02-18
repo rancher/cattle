@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "load_balancer_listener", schema = "cattle")
-public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.LoadBalancerListener {
+public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.Integer, java.lang.String>, io.cattle.platform.core.model.LoadBalancerListener {
 
-	private static final long serialVersionUID = 1688728288;
+	private static final long serialVersionUID = -495855384;
 
 	/**
 	 * Setter for <code>cattle.load_balancer_listener.id</code>.
@@ -207,17 +207,17 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * Setter for <code>cattle.load_balancer_listener.source_port</code>.
 	 */
 	@Override
-	public void setSourcePort(java.lang.Long value) {
+	public void setSourcePort(java.lang.Integer value) {
 		setValue(11, value);
 	}
 
 	/**
 	 * Getter for <code>cattle.load_balancer_listener.source_port</code>.
 	 */
-	@javax.persistence.Column(name = "source_port", precision = 19)
+	@javax.persistence.Column(name = "source_port", precision = 10)
 	@Override
-	public java.lang.Long getSourcePort() {
-		return (java.lang.Long) getValue(11);
+	public java.lang.Integer getSourcePort() {
+		return (java.lang.Integer) getValue(11);
 	}
 
 	/**
@@ -241,17 +241,17 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * Setter for <code>cattle.load_balancer_listener.target_port</code>.
 	 */
 	@Override
-	public void setTargetPort(java.lang.Long value) {
+	public void setTargetPort(java.lang.Integer value) {
 		setValue(13, value);
 	}
 
 	/**
 	 * Getter for <code>cattle.load_balancer_listener.target_port</code>.
 	 */
-	@javax.persistence.Column(name = "target_port", precision = 19)
+	@javax.persistence.Column(name = "target_port", precision = 10)
 	@Override
-	public java.lang.Long getTargetPort() {
-		return (java.lang.Long) getValue(13);
+	public java.lang.Integer getTargetPort() {
+		return (java.lang.Integer) getValue(13);
 	}
 
 	/**
@@ -291,7 +291,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String> fieldsRow() {
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.Integer, java.lang.String> fieldsRow() {
 		return (org.jooq.Row15) super.fieldsRow();
 	}
 
@@ -299,7 +299,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String> valuesRow() {
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.Integer, java.lang.String> valuesRow() {
 		return (org.jooq.Row15) super.valuesRow();
 	}
 
@@ -395,7 +395,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field12() {
+	public org.jooq.Field<java.lang.Integer> field12() {
 		return io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER.SOURCE_PORT;
 	}
 
@@ -411,7 +411,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field14() {
+	public org.jooq.Field<java.lang.Integer> field14() {
 		return io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER.TARGET_PORT;
 	}
 
@@ -515,7 +515,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value12() {
+	public java.lang.Integer value12() {
 		return getSourcePort();
 	}
 
@@ -531,7 +531,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value14() {
+	public java.lang.Integer value14() {
 		return getTargetPort();
 	}
 
@@ -646,7 +646,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public LoadBalancerListenerRecord value12(java.lang.Long value) {
+	public LoadBalancerListenerRecord value12(java.lang.Integer value) {
 		setSourcePort(value);
 		return this;
 	}
@@ -664,7 +664,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public LoadBalancerListenerRecord value14(java.lang.Long value) {
+	public LoadBalancerListenerRecord value14(java.lang.Integer value) {
 		setTargetPort(value);
 		return this;
 	}
@@ -682,7 +682,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public LoadBalancerListenerRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13, java.lang.Long value14, java.lang.String value15) {
+	public LoadBalancerListenerRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Integer value12, java.lang.String value13, java.lang.Integer value14, java.lang.String value15) {
 		return this;
 	}
 
@@ -735,7 +735,7 @@ public class LoadBalancerListenerRecord extends org.jooq.impl.UpdatableRecordImp
 	/**
 	 * Create a detached, initialised LoadBalancerListenerRecord
 	 */
-	public LoadBalancerListenerRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long sourcePort, java.lang.String sourceProtocol, java.lang.Long targetPort, java.lang.String targetProtocol) {
+	public LoadBalancerListenerRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Integer sourcePort, java.lang.String sourceProtocol, java.lang.Integer targetPort, java.lang.String targetProtocol) {
 		super(io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER);
 
 		setValue(0, id);

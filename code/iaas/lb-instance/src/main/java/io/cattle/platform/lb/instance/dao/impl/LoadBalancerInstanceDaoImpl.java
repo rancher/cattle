@@ -1,5 +1,6 @@
 package io.cattle.platform.lb.instance.dao.impl;
 
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -10,6 +11,7 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.lb.instance.dao.LoadBalancerInstanceDao;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +43,14 @@ public class LoadBalancerInstanceDaoImpl extends AbstractJooqDao implements Load
 
     @Override
     public Network getLoadBalancerInstanceNetwork(LoadBalancer loadBalancer) {
+        // in the future we will add support for adding networkId to the createLoadBalancerCall
+        Long networkId = DataAccessor
+                .fields(loadBalancer)
+                .withKey(LoadBalancerConstants.FIELD_LB_NETWORK_ID)
+                .as(Long.class);
+        if (networkId != null) {
+            return objectManager.loadResource(Network.class, networkId);
+        }
         List<? extends Network> accountNetworks = ntwkDao.getNetworksForAccount(loadBalancer.getAccountId(),
                 NetworkConstants.KIND_HOSTONLY);
         if (accountNetworks.isEmpty()) {

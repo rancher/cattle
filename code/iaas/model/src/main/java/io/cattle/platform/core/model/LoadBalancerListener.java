@@ -138,13 +138,13 @@ public interface LoadBalancerListener extends java.io.Serializable {
 	/**
 	 * Setter for <code>cattle.load_balancer_listener.source_port</code>.
 	 */
-	public void setSourcePort(java.lang.Long value);
+	public void setSourcePort(java.lang.Integer value);
 
 	/**
 	 * Getter for <code>cattle.load_balancer_listener.source_port</code>.
 	 */
-	@javax.persistence.Column(name = "source_port", precision = 19)
-	public java.lang.Long getSourcePort();
+	@javax.persistence.Column(name = "source_port", precision = 10)
+	public java.lang.Integer getSourcePort();
 
 	/**
 	 * Setter for <code>cattle.load_balancer_listener.source_protocol</code>.
@@ -160,13 +160,13 @@ public interface LoadBalancerListener extends java.io.Serializable {
 	/**
 	 * Setter for <code>cattle.load_balancer_listener.target_port</code>.
 	 */
-	public void setTargetPort(java.lang.Long value);
+	public void setTargetPort(java.lang.Integer value);
 
 	/**
 	 * Getter for <code>cattle.load_balancer_listener.target_port</code>.
 	 */
-	@javax.persistence.Column(name = "target_port", precision = 19)
-	public java.lang.Long getTargetPort();
+	@javax.persistence.Column(name = "target_port", precision = 10)
+	public java.lang.Integer getTargetPort();
 
 	/**
 	 * Setter for <code>cattle.load_balancer_listener.target_protocol</code>.

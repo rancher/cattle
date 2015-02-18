@@ -10,6 +10,9 @@
         },
         "loadBalancerInstanceUriPredicate": {
             "type" : "string"
+        },
+        "networkId":{
+            "type": "reference[network]"
         }
     },
     "resourceActions": {

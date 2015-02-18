@@ -17,6 +17,8 @@ public class LoadBalancerConstants {
     public static final String FIELD_LB_HOST_IDS = "hostIds";
     public static final String FIELD_LB_INSTANCE_IMAGE_UUID = "loadBalancerInstanceImageUuid";
     public static final String FIELD_LB_INSTANCE_URI_PREDICATE = "loadBalancerInstanceUriPredicate";
+    public static final String FIELD_LB_NETWORK_ID = "networkId";
+    public static final String FIELD_LB_SOURCE_PORT = "sourcePort";
 
     public static final String ACTION_ADD_HOST = "addhost";
     public static final String ACTION_REMOVE_HOST = "removehost";

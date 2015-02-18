@@ -48,8 +48,16 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
 
         Instance instance = objectManager.loadResource(Instance.class, nic.getInstanceId());
 
-        if ( instance == null || instance.getAgentId() != null ) {
+        if (instance == null) {
             return result;
+        }
+
+        if (instance.getAgentId() != null) {
+            String type = instance.getSystemContainer();
+            if (type == null
+                    || type.equalsIgnoreCase(SystemContainer.NetworkAgent.name())) {
+                return result;
+            }
         }
 
         for ( NetworkServiceProvider provider : agentInstanceDao.getProviders(nic.getNetworkId()) ) {

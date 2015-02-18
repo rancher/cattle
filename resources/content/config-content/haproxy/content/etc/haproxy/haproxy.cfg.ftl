@@ -41,6 +41,7 @@ backend ${listener.name}_backend
         <#list targets as target >
         server ${target.name} ${target.ipAddress}:${listener.targetPort}
         </#list>
+
 </#list>
 <#else>
 listen web 0.0.0.0:9

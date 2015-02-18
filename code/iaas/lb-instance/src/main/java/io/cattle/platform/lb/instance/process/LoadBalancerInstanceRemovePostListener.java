@@ -2,8 +2,10 @@ package io.cattle.platform.lb.instance.process;
 
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.LoadBalancerTarget;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -16,6 +18,7 @@ import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.HashMap;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -35,10 +38,26 @@ public class LoadBalancerInstanceRemovePostListener extends AbstractObjectProces
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance) state.getResource();
-        if (!lbInstanceManager.isLbInstance(instance)) {
-            return null;
+        if (lbInstanceManager.isLbInstance(instance)) {
+            deleteLoadBalancerInstance(instance);
+        } else {
+            deleteInstanceTargets(instance);
         }
 
+        return null;
+    }
+
+    private void deleteInstanceTargets(Instance instance) {
+        List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(
+                objectManager.loadResource(Instance.class, instance.getId()),
+                LoadBalancerTarget.class);
+        for (LoadBalancerTarget target : targets) {
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
+                    target, null);
+        }
+    }
+
+    private void deleteLoadBalancerInstance(Instance instance) {
         Agent lbAgent = objectManager.loadResource(Agent.class, instance.getAgentId());
 
         // try to remove first
@@ -51,8 +70,6 @@ public class LoadBalancerInstanceRemovePostListener extends AbstractObjectProces
                     ProcessUtils.chainInData(new HashMap<String, Object>(), AgentConstants.PROCESS_DEACTIVATE,
                             AgentConstants.PROCESS_REMOVE));
         }
-
-        return null;
     }
 
     @Override

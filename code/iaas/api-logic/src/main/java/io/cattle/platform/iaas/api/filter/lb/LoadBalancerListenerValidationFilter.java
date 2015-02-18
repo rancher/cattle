@@ -21,9 +21,9 @@ public class LoadBalancerListenerValidationFilter extends AbstractDefaultResourc
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         LoadBalancerListener listener = request.proxyRequestObject(LoadBalancerListener.class);
-        Long targetPort = listener.getTargetPort();
+        Integer targetPort = listener.getTargetPort();
         if (targetPort == null) {
-            long sourcePort = listener.getSourcePort();
+            int sourcePort = listener.getSourcePort();
             listener.setTargetPort(sourcePort);
         }
 
