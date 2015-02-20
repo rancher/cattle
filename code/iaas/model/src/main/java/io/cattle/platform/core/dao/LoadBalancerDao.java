@@ -1,6 +1,7 @@
 package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.LoadBalancer;
+import io.cattle.platform.core.model.LoadBalancerListener;
 
 import java.util.List;
 
@@ -10,4 +11,5 @@ public interface LoadBalancerDao {
 
     List<? extends LoadBalancer> listByConfigId(long configId);
 
+    List<? extends LoadBalancerListener> listActiveListenersForConfig(long configId);
 }

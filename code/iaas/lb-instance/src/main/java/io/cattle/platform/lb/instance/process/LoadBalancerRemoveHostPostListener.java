@@ -16,13 +16,12 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Priority;
 
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
+public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
+        Priority {
 
     @Inject
     LoadBalancerInstanceManager lbInstanceManager;
@@ -47,17 +46,16 @@ public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLog
     }
 
     protected void removeLoadBalancerInstance(LoadBalancer loadBalancer, long hostId) {
-        List<? extends Instance> lbInstances = lbInstanceManager.createLoadBalancerInstances(loadBalancer, hostId);
-        if (!lbInstances.isEmpty()) {
+        Instance lbInstance = lbInstanceManager.getLoadBalancerInstance(loadBalancer, hostId);
+        if (lbInstance != null) {
             // try to remove first
             try {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbInstances.get(0),
+                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbInstance,
                         null);
             } catch (ProcessCancelException e) {
-                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, lbInstances.get(0),
+                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, lbInstance,
                         CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
             }
         }
     }
-
 }
