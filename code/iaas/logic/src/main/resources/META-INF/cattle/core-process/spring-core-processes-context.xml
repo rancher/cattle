@@ -105,6 +105,7 @@
     <process:process name="loadbalancerconfig.addlistener" resourceType="loadBalancerConfig" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancerconfig.removelistener" resourceType="loadBalancerConfig" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancerconfig.setlisteners" resourceType="loadBalancerConfig" start="active" transitioning="updating-active" done="active" />
+    <process:process name="loadbalancerconfig.update" resourceType="loadBalancerConfig" start="active" transitioning="updating-active" done="active" />
 
     <!-- Load Balancer Config Listener Map -->
     <process:process name="loadbalancerconfiglistenermap.create" resourceType="loadBalancerConfigListeneMap" start="requested" transitioning="activating" done="active" />

@@ -343,3 +343,108 @@ def test_lb_config_add_conflicting_listener(admin_client, super_client):
     assert e.value.error.status == 422
     assert e.value.error.code == 'NotUnique'
     assert e.value.error.fieldName == 'sourcePort'
+
+
+def test_lb_config_create_w_healthCheck(admin_client):
+    health_check = {"name": "check1", "responseTimeout": 3,
+                    "interval": 4, "healthyThreshold": 5,
+                    "unhealthyThreshold": 6, "uri": "index.html"}
+    config = admin_client.create_loadBalancerConfig(name=random_str(),
+                                                    healthCheck=health_check)
+    config = admin_client.wait_success(config)
+
+    assert config.state == 'active'
+    assert config.healthCheck.name == "check1"
+    assert config.healthCheck.responseTimeout == 3
+    assert config.healthCheck.interval == 4
+    assert config.healthCheck.healthyThreshold == 5
+    assert config.healthCheck.unhealthyThreshold == 6
+    assert config.healthCheck.uri == "index.html"
+
+
+def test_lb_config_create_disable_health_check(admin_client):
+    health_check = {"name": "policy1", "responseTimeout": 3,
+                    "interval": 4, "healthyThreshold": 5,
+                    "unhealthyThreshold": 6, "uri": "index.html"}
+    config = admin_client.create_loadBalancerConfig(name=random_str(),
+                                                    healthCheck=health_check)
+    config = admin_client.wait_success(config)
+    assert config.healthCheck is not None
+
+    config = admin_client.update(config, healthCheck=None)
+    config = admin_client.wait_success(config)
+    assert config.healthCheck is None
+
+
+def test_lb_config_create_update_health_check(admin_client):
+    health_check = {"name": "check1", "responseTimeout": 3,
+                    "interval": 4, "healthyThreshold": 5,
+                    "unhealthyThreshold": 6, "uri": "index.html"}
+    config = admin_client.create_loadBalancerConfig(name=random_str(),
+                                                    healthCheck=health_check)
+    config = admin_client.wait_success(config)
+    assert config.healthCheck.name == "check1"
+
+    health_check = {"name": "check2", "responseTimeout": 3,
+                    "interval": 4, "healthyThreshold": 5,
+                    "unhealthyThreshold": 6, "uri": "index.html"}
+
+    config = admin_client.update(config, healthCheck=health_check)
+    config = admin_client.wait_success(config)
+    assert config.healthCheck.name == "check2"
+
+
+def test_lb_config_create_w_app_policy(admin_client):
+    app_policy = {"name": "policy1", "cookie": "cookie1",
+                  "length": 4, "prefix": "true",
+                  "requestLearn": "false", "timeout": 10,
+                  "mode": "query_string"}
+
+    config = admin_client.\
+        create_loadBalancerConfig(name=random_str(),
+                                  appCookieStickinessPolicy=app_policy)
+    config = admin_client.wait_success(config)
+
+    assert config.state == 'active'
+    assert config.appCookieStickinessPolicy.name == "policy1"
+    assert config.appCookieStickinessPolicy.cookie == "cookie1"
+    assert config.appCookieStickinessPolicy.length == 4
+    assert config.appCookieStickinessPolicy.prefix is True
+    assert config.appCookieStickinessPolicy.requestLearn is False
+    assert config.appCookieStickinessPolicy.timeout == 10
+    assert config.appCookieStickinessPolicy.mode == "query_string"
+
+    # disable policy
+    config = admin_client.\
+        create_loadBalancerConfig(name=random_str(),
+                                  appCookieStickinessPolicy=None)
+    config = admin_client.wait_success(config)
+    assert config.appCookieStickinessPolicy is None
+
+
+def test_lb_config_create_w_lb_olicy(admin_client):
+    lb_policy = {"name": "policy2", "cookie": "cookie1",
+                 "domain": ".test.com", "indirect": "true",
+                 "nocache": "true", "postonly": "true",
+                 "mode": "insert"}
+
+    config = admin_client.\
+        create_loadBalancerConfig(name=random_str(),
+                                  lbCookieStickinessPolicy=lb_policy)
+    config = admin_client.wait_success(config)
+
+    assert config.state == 'active'
+    assert config.lbCookieStickinessPolicy.name == "policy2"
+    assert config.lbCookieStickinessPolicy.cookie == "cookie1"
+    assert config.lbCookieStickinessPolicy.domain == ".test.com"
+    assert config.lbCookieStickinessPolicy.indirect is True
+    assert config.lbCookieStickinessPolicy.nocache is True
+    assert config.lbCookieStickinessPolicy.postonly is True
+    assert config.lbCookieStickinessPolicy.mode == "insert"
+
+    # disable policy
+    config = admin_client.\
+        create_loadBalancerConfig(name=random_str(),
+                                  lbCookieStickinessPolicy=None)
+    config = admin_client.wait_success(config)
+    assert config.lbCookieStickinessPolicy is None
