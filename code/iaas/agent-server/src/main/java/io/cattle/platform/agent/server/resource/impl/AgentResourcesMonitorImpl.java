@@ -53,10 +53,24 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     ObjectManager objectManager;
     LockDelegator lockDelegator;
     LockManager lockManager;
-    Cache<String,Boolean> resourceCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(CACHE_RESOURCE.get(), TimeUnit.SECONDS)
-            .build();
+    Cache<String,Boolean> resourceCache;
 
+    public AgentResourcesMonitorImpl() {
+        super();
+        buildCache();
+        CACHE_RESOURCE.addCallback(new Runnable() {
+            @Override
+            public void run() {
+                buildCache();
+            }
+        });
+    }
+    
+    protected void buildCache() {
+        resourceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_RESOURCE.get(), TimeUnit.SECONDS)
+                .build();
+    }
+    
     @Override
     public void pingReply(Ping ping) {
         String agentIdStr = ping.getResourceId();
