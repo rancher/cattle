@@ -94,6 +94,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(InstanceConstants.FIELD_NETWORK_IDS, getNetworkIds(agent, builder));
         properties.put(InstanceConstants.FIELD_REQUESTED_HOST_ID,
                 builder.getParams().get(InstanceConstants.FIELD_REQUESTED_HOST_ID));
+        properties.put(InstanceConstants.FIELD_SYSTEM_CONTAINER, builder.getSystemContainerType());
 
         addAdditionalProperties(properties, agent, builder);
 

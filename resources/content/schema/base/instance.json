@@ -67,6 +67,10 @@
             "create" : true,
             "update" : true,
             "nullable" : true
+        },
+        "systemContainer" : {
+            "type": "enum",
+            "options": [ "NetworkAgent", "LoadBalancerAgent"]
         }
     },
     "resourceActions" : {

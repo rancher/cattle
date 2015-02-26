@@ -2,6 +2,11 @@ package io.cattle.platform.core.constants;
 
 public class InstanceConstants {
 
+    public enum SystemContainer {
+        NetworkAgent,
+        LoadBalancerAgent;
+    }
+
     public static final String TYPE = "instance";
     public static final String TYPE_CONTAINER = "container";
 
@@ -26,6 +31,7 @@ public class InstanceConstants {
     public static final String FIELD_VCPU = "vcpu";
     public static final String FIELD_VNET_IDS = "vnetIds";
     public static final String FIELD_VOLUME_OFFERING_IDS = "volumeOfferingIds";
+    public static final String FIELD_SYSTEM_CONTAINER = "systemContainer";
 
     public static final String REMOVE_OPTION = "remove";
     public static final String DEALLOCATE_OPTION = "deallocateFromHost";

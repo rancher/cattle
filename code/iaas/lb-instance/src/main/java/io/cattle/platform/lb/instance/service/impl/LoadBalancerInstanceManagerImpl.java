@@ -4,6 +4,7 @@ import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
@@ -92,6 +93,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                         .withName(LB_INSTANCE_NAME.get())
                         .withImageUuid(imageUUID)
                         .withParameters(params)
+                        .withSystemContainerType(SystemContainer.LoadBalancerAgent)
                         .build();
             } else {
                 start(lbInstance);

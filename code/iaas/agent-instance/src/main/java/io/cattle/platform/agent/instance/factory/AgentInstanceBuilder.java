@@ -1,9 +1,10 @@
 package io.cattle.platform.agent.instance.factory;
 
-import java.util.Map;
-
+import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
+
+import java.util.Map;
 
 public interface AgentInstanceBuilder {
 
@@ -36,6 +37,8 @@ public interface AgentInstanceBuilder {
     AgentInstanceBuilder withUri(String uri);
 
     AgentInstanceBuilder withParameters(Map<String, Object> params);
+
+    AgentInstanceBuilder withSystemContainerType(SystemContainer systemContainerType);
 
     public Instance build();
 

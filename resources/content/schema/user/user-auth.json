@@ -69,6 +69,7 @@
         "container.subnetIds" : "cr",
         "container.tty" : "cr",
         "container.user" : "cr",
+        "container.systemContainer" : "r",
 
         "containerExec" : "cr",
         "containerExec.attachStdin" : "cr",
