@@ -25,6 +25,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
 
@@ -131,8 +132,13 @@ public class PingDaoImpl extends AbstractJooqDao implements PingDao {
                         .fetchInto(PhysicalHostRecord.class);
 
         for ( PhysicalHost host : hostList ) {
-            String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
-            if ( uuid == null ) {
+            String uuid = host.getExternalId();
+            
+            if (StringUtils.isEmpty(uuid)) {
+                uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
+            }
+             
+            if (StringUtils.isEmpty(uuid)) {
                 uuid = host.getUuid();
             }
 

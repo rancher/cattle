@@ -3,8 +3,36 @@ from cattle import ApiError
 from test_physical_host import disable_go_machine_service  # NOQA
 
 
-def test_machine_lifecycle(super_client, admin_client):
-    name = "test-%s" % random_str()
+@pytest.fixture(scope='module')
+def update_ping_settings(request, super_client):
+    # These settings need changed because they control how the logic of the
+    # ping handlers behave in cattle. We need to update them so that we can
+    # ensure the ping logic will fully run.
+    settings = super_client.list_setting()
+    originals = []
+
+    def update_setting(new_value, s):
+        originals.append((setting, {'value': s.value}))
+        s = super_client.update(s, {'value': new_value})
+        _wait_setting_active(super_client, s)
+
+    for setting in settings:
+        if setting.name == 'agent.ping.resources.every' and setting.value != 1:
+            update_setting('1', setting)
+        if setting.name == 'agent.resource.monitor.cache.resource.seconds' \
+                and setting.value != 0:
+            update_setting('0', setting)
+
+    def revert_settings():
+        for s in originals:
+            super_client.update(s[0], s[1])
+
+    request.addfinalizer(revert_settings)
+
+
+def test_machine_lifecycle(super_client, admin_client, admin_account,
+                           update_ping_settings):
+    name = random_str()
     machine = admin_client.create_machine(name=name,
                                           virtualboxConfig={})
 
@@ -24,6 +52,10 @@ def test_machine_lifecycle(super_client, admin_client):
     data = {scope: {}}
     data[scope]['addPhysicalHost'] = True
     data[scope]['externalId'] = external_id
+    account_id = get_plain_id(super_client, admin_account)
+    data[scope]['agentResourcesAccountId'] = account_id
+    data['agentResourcesAccountId'] = account_id
+
     agent = super_client.create_agent(uri=uri, data=data)
     agent = super_client.wait_success(agent)
     hosts = agent.hosts()
@@ -31,12 +63,20 @@ def test_machine_lifecycle(super_client, admin_client):
     assert len(hosts) == 1
     host = hosts[0]
     assert host.physicalHostId == machine.id
+    assert machine.accountId == host.accountId
 
-    # TODO When https://github.com/rancherio/cattle/pull/191 is merged,
-    # make use of the refactored user contexts that create account
-    # specific hosts. These asserts should then pass:
-    # assert machine.accountId == host.accountId
-    # assert machine.accountId == agent.accountId
+    # Need to force a ping because they cause physical hosts to be created
+    # under non-machine use cases. Ensures the machine isnt overridden
+    ping = one(super_client.list_task, name='agent.ping')
+    ping.execute()
+    time.sleep(.1)  # The ping needs time to execute
+
+    agent = super_client.reload(agent)
+    hosts = agent.hosts()
+    assert len(hosts) == 1
+    host = hosts[0]
+    physical_hosts = host.physicalHost()
+    assert physical_hosts.id == machine.id
 
     machine = admin_client.wait_success(machine.remove())
     assert machine.state == 'removed'
@@ -122,3 +162,16 @@ def test_digitalocean_config_validation(admin_client):
         assert e.error.code == 'MissingRequired'
     else:
         assert False, 'Should have got MissingRequired for accessToken'
+
+
+def _wait_setting_active(api_client, setting, timeout=45):
+    start = time.time()
+    setting = api_client.by_id('setting', setting.id)
+    while setting.value != setting.activeValue:
+        time.sleep(.5)
+        setting = api_client.by_id('setting', setting.id)
+        if time.time() - start > timeout:
+            msg = 'Timeout waiting for [{0}] to be done'.format(setting)
+            raise Exception(msg)
+
+    return setting
