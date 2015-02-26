@@ -129,7 +129,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
     }
 
     @Override
-    public SchemaFactory getSchemaFactory(Account account, ApiRequest request) {
+    public SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
         return null;
     }
 

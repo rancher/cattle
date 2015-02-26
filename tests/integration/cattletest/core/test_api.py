@@ -303,3 +303,21 @@ def test_map_user_not_auth_map(client, sim_context):
 
     assert c.state == 'running'
     assert len(c.hosts()) == 1
+
+
+def test_role_option(admin_client, client, random_str, token_account):
+    c = admin_client.create_api_key(name=random_str,
+                                    accountId=token_account.id)
+
+    c = admin_client.wait_success(c)
+
+    assert c.state == 'active'
+
+    creds = admin_client.list_credential(name=random_str)
+    assert len(creds) == 0
+
+    creds = admin_client.list_credential(name=random_str, _role='superadmin')
+    assert len(creds) == 1
+
+    creds = client.list_credential(name=random_str, _role='superadmin')
+    assert len(creds) == 0

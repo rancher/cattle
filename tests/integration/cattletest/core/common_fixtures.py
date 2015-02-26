@@ -96,6 +96,11 @@ def user_account(accounts):
 
 
 @pytest.fixture(scope='session')
+def token_account(accounts):
+    return accounts['token'][2]
+
+
+@pytest.fixture(scope='session')
 def super_account(accounts):
     return accounts['superadmin'][2]
 

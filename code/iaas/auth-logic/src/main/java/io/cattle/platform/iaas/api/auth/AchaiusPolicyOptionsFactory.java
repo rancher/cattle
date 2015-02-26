@@ -11,8 +11,10 @@ public class AchaiusPolicyOptionsFactory {
     Map<String,ArchaiusPolicyOptions> options = new ConcurrentHashMap<String, ArchaiusPolicyOptions>();
 
     public ArchaiusPolicyOptions getOptions(Account account) {
-        String kind = account.getKind();
+        return getOptions(account.getKind());
+    }
 
+    public ArchaiusPolicyOptions getOptions(String kind) {
         ArchaiusPolicyOptions opts = options.get(kind);
         if ( opts != null ) {
             return opts;
