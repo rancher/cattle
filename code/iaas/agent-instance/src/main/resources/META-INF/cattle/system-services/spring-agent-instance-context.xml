@@ -34,7 +34,6 @@
                 <value>ipsecTunnelService,parent=networkService</value>
                 <value>linkService,parent=networkService</value>
                 <value>portService,parent=networkService</value>
-                <value>metadataService,parent=networkService</value>
                 <value>gatewayService,parent=networkService</value>
                 <value>hostNatGatewayService,parent=networkService</value>
             </list>
