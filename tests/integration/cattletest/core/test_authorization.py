@@ -191,6 +191,7 @@ def test_container_auth(admin_client, client):
         'token': 'r',
         'tty': 'cr',
         'user': 'cr',
+        'systemContainer': 'r',
     })
 
     auth_check(client.schema, 'container', 'crud', {
@@ -232,6 +233,7 @@ def test_container_auth(admin_client, client):
         'stdinOpen': 'cr',
         'tty': 'cr',
         'user': 'cr',
+        'systemContainer': 'r',
     })
 
 

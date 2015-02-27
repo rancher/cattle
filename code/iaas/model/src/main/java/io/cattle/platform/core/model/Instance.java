@@ -278,6 +278,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "userdata", length = 65535)
 	public java.lang.String getUserdata();
 
+	/**
+	 * Setter for <code>cattle.instance.system_container</code>.
+	 */
+	public void setSystemContainer(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.instance.system_container</code>.
+	 */
+	@javax.persistence.Column(name = "system_container", length = 128)
+	public java.lang.String getSystemContainer();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
