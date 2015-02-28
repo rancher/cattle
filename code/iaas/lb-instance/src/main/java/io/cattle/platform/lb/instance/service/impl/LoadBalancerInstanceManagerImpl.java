@@ -16,6 +16,7 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.lb.instance.dao.LoadBalancerInstanceDao;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.object.ObjectManager;
@@ -27,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
@@ -123,9 +125,30 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         return lbAgent;
     }
 
+    @Override
+    public List<Agent> getLoadBalancerAgents(LoadBalancer loadBalancer) {
+        List<Agent> agents = new ArrayList<>();
+        List<Long> hostIds = lbInstanceDao.getLoadBalancerHosts(loadBalancer.getId());
+        for (Long hostId : hostIds) {
+            agents.add(getLoadBalancerAgent(loadBalancer, hostId));
+        }
+        return agents;
+    }
+
+    @Override
+    public List<Instance> getLoadBalancerInstances(LoadBalancer loadBalancer) {
+        List<Instance> instances = new ArrayList<>();
+        List<Long> hosts = populateHosts(loadBalancer);
+        for (long hostId : hosts) {
+            Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostId);
+            instances.add(lbInstance);
+        }
+        return instances;
+    }
+
     private List<Long> populateHosts(LoadBalancer loadBalancer, Long... hostIds) {
         List<Long> hosts = new ArrayList<Long>();
-        if (hostIds == null) {
+        if (hostIds.length == 0) {
             hosts = lbInstanceDao.getLoadBalancerHosts(loadBalancer.getId());
         } else {
             hosts.addAll(Arrays.asList(hostIds));
@@ -133,9 +156,15 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         return hosts;
     }
 
-    protected void start(final Instance lbInstance) {
-        if (InstanceConstants.STATE_STOPPED.equals(lbInstance.getState())) {
-            processManager.executeProcess(InstanceConstants.PROCESS_START, lbInstance, null);
+    protected void start(final Instance agentInstance) {
+        if (InstanceConstants.STATE_STOPPED.equals(agentInstance.getState())) {
+            DeferredUtils.nest(new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    processManager.executeProcess(InstanceConstants.PROCESS_START, agentInstance, null);
+                    return null;
+                }
+            });
         }
     }
 
@@ -151,11 +180,12 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
 
     @Override
     public boolean isLbInstance(Instance instance) {
-        if (instance.getName() == null || instance.getAgentId() == null) {
+        if (instance.getAgentId() == null) {
             return false;
         }
-        return instance.getName().equalsIgnoreCase(LB_INSTANCE_NAME.get()) ? true
-                : false;
+        String type = instance.getSystemContainer();
+        return (type != null && type
+                .equalsIgnoreCase(SystemContainer.LoadBalancerAgent.name()));
     }
 
     @Override

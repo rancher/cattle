@@ -8,11 +8,13 @@ import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerConfigListenerMap;
 import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
@@ -40,6 +42,9 @@ public class LoadBalancerConfigValidationFilter extends AbstractDefaultResourceM
     @Inject
     GenericMapDao mapDao;
 
+    @Inject
+    ObjectManager objectManager;
+
     @Override
     public String[] getTypes() {
         return new String[0];
@@ -63,21 +68,45 @@ public class LoadBalancerConfigValidationFilter extends AbstractDefaultResourceM
     @Override
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
         if (actions.containsKey(request.getAction())) {
-            Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-            Long listenerId = (Long) data.get(LoadBalancerConstants.FIELD_LB_LISTENER_ID);
-
-            lbFilterUtils.validateGenericMapAction(
-                    mapDao,
-                    LoadBalancerConfigListenerMap.class,
-                    LoadBalancerListener.class,
-                    listenerId,
-                    LoadBalancerConfig.class,
-                    Long.valueOf(request.getId()),
-                    new SimpleEntry<String, Boolean>(LoadBalancerConstants.FIELD_LB_LISTENER_ID, actions.get(request
-                            .getAction())));
-
+            validateMapAction(request);
+            validateForPortConflicts(request);
         }
 
         return super.resourceAction(type, request, next);
+    }
+
+    private void validateForPortConflicts(ApiRequest request) {
+        if (actions.get(request.getAction())) {
+            Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+            Long listenerId = (Long) data.get(LoadBalancerConstants.FIELD_LB_LISTENER_ID);
+            LoadBalancerListener listener = objectManager.loadResource(LoadBalancerListener.class, listenerId);
+
+            Integer sourcePort = listener.getSourcePort();
+            List<? extends LoadBalancerListener> listeners = objectManager.mappedChildren(
+                    objectManager.loadResource(LoadBalancerConfig.class, request.getId()),
+                    LoadBalancerListener.class);
+
+            for (LoadBalancerListener existingListener : listeners) {
+                if (existingListener.getSourcePort().equals(sourcePort)) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
+                            LoadBalancerConstants.FIELD_LB_SOURCE_PORT);
+                }
+            }
+        }
+    }
+
+    private void validateMapAction(ApiRequest request) {
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        Long listenerId = (Long) data.get(LoadBalancerConstants.FIELD_LB_LISTENER_ID);
+
+        lbFilterUtils.validateGenericMapAction(
+                mapDao,
+                LoadBalancerConfigListenerMap.class,
+                LoadBalancerListener.class,
+                listenerId,
+                LoadBalancerConfig.class,
+                Long.valueOf(request.getId()),
+                new SimpleEntry<String, Boolean>(LoadBalancerConstants.FIELD_LB_LISTENER_ID, actions.get(request
+                        .getAction())));
     }
 }

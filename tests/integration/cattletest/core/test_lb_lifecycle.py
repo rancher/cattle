@@ -1,72 +1,126 @@
 from common_fixtures import *  # NOQA
 
 
-@pytest.fixture(scope='session')
-def docker_context(super_client):
-    for host in super_client.list_host(state='active', remove_null=True,
-                                       kind='docker'):
-        return kind_context(super_client, 'docker', external_pool=True,
-                            agent=host.agent())
+@pytest.fixture(scope='module')
+def nsp(super_client, sim_context):
+    nsp = create_agent_instance_nsp(super_client, sim_context)
+    create_and_activate(super_client, 'networkService',
+                        networkServiceProviderId=nsp.id,
+                        networkId=nsp.networkId)
 
-    raise Exception('Failed to find docker host, please register one')
+    return nsp
 
 
-def test_add_lb_w_host_and_target(super_client, admin_client, docker_context):
-
+def test_add_lb_w_host_and_target(super_client, admin_client, sim_context,
+                                  nsp):
+    port = 88
+    port1 = 101
     # add host
-    agent, lb, uri, instance = _create_lb_w_host(super_client,
-                                                 admin_client,
-                                                 docker_context)
+    agent, lb, uri, instance, config = _create_lb_w_host(super_client,
+                                                         admin_client,
+                                                         sim_context,
+                                                         port,
+                                                         nsp)
+
     # add target to a load balancer
-    lb = lb.addtarget(instanceId=instance.id)
+    image_uuid = sim_context['imageUuid']
+    container = admin_client.create_container(imageUuid=image_uuid,
+                                              startOnCreate=False)
+    container = admin_client.wait_success(container)
+    lb = lb.addtarget(instanceId=container.id)
     admin_client.wait_success(lb)
 
-    # TODO - test config items once the code is in
+    # check the port
+    ports = super_client.list_port(publicPort=port, instanceId=instance.id)
+    assert len(ports) == 1
+    assert ports[0].state == 'active'
+    assert ports[0].publicPort == port
+    assert ports[0].privatePort == port
+
+    # wait till the instance is up and running
+    # instance = admin_client.wait_success(instance)
+    # assert instance.state == 'running'
+
+    # add listener to the config
+    listener = _create_valid_listener(super_client,
+                                      admin_client,
+                                      sim_context,
+                                      port1)
+    # add listener to config
+    config = config.addlistener(loadBalancerListenerId=listener.id)
+    admin_client.wait_success(config)
+    # check the port
+    ports = super_client.list_port(publicPort=port1, instanceId=instance.id)
+    assert len(ports) == 1
+    assert ports[0].state == 'active'
+    assert ports[0].publicPort == port1
+    assert ports[0].privatePort == port1
 
 
-def test_add_removed_target_again(super_client, admin_client, docker_context):
-
+def test_destroy_lb_instance(super_client, admin_client, sim_context, nsp):
+    port = 77
     # add host
-    agent, lb, uri, instance = _create_lb_w_host(super_client,
-                                                 admin_client, docker_context)
-
+    agent, lb, uri, instance, config = _create_lb_w_host(super_client,
+                                                         admin_client,
+                                                         sim_context,
+                                                         port, nsp)
     # add target to a load balancer
-    lb = lb.addtarget(instanceId=instance.id)
-    lb = admin_client.wait_success(lb)
+    image_uuid = sim_context['imageUuid']
+    container = admin_client.create_container(imageUuid=image_uuid,
+                                              startOnCreate=False)
+    container = admin_client.wait_success(container)
+    lb = lb.addtarget(instanceId=container.id)
+    admin_client.wait_success(lb)
 
-    # remove the target
-    lb = lb.removetarget(instanceId=instance.id)
-    lb = admin_client.wait_success(lb)
+    # destroy the lb instance
+    # stop the lb instance
+    if instance.state == 'running':
+        instance = wait_success(super_client, instance)
+        instance = wait_success(super_client, instance.stop())
+        assert instance.state == 'stopped'
 
-    # add the target - should be allowed
-    lb = lb.addtarget(instanceId=instance.id)
-    lb = admin_client.wait_success(lb)
+    # remove the lb instance
+    instance = wait_success(super_client, instance.remove())
+    assert instance.state == 'removed'
 
-    # TODO - test config items once the code is in
+    # check that the port is deactivated
+    ports = super_client.list_port(publicPort=port, instanceId=instance.id)
+    ports = super_client.list_port(publicPort=port, instanceId=instance.id)
+    assert len(ports) == 1
+    assert ports[0].state == 'inactive'
+    assert ports[0].publicPort == port
+    assert ports[0].privatePort == port
 
 
-def _create_valid_lb(super_client, admin_client, docker_context):
-    config = _create_config(super_client, admin_client, docker_context)
+def _create_valid_lb(super_client, admin_client, sim_context, listenerPort,
+                     nsp):
+    config = _create_config(super_client, admin_client, sim_context,
+                            listenerPort)
     default_lb_config = super_client. \
         create_loadBalancerConfig(name=random_str())
     super_client.wait_success(default_lb_config)
 
+    im_id = sim_context['imageUuid']
     test_lb = super_client. \
         create_loadBalancer(name=random_str(),
-                            loadBalancerConfigId=config.id)
+                            loadBalancerConfigId=config.id,
+                            loadBalancerInstanceImageUuid=im_id,
+                            loadBalancerInstanceUriPredicate='sim://',
+                            networkId=nsp.networkId)
     test_lb = super_client.wait_success(test_lb)
-    return test_lb
+    return test_lb, config
 
 
-def _create_config(super_client, admin_client, docker_context):
+def _create_config(super_client, admin_client, sim_context, listenerPort):
     # create config
     config = super_client. \
         create_loadBalancerConfig(name=random_str())
     config = super_client.wait_success(config)
     # create listener
     listener = _create_valid_listener(super_client,
-                                      admin_client, docker_context)
-    listener = super_client.wait_success(listener)
+                                      admin_client,
+                                      sim_context,
+                                      listenerPort)
     # add listener to config
     config = config.addlistener(loadBalancerListenerId=listener.id)
     config = admin_client.wait_success(config)
@@ -74,18 +128,20 @@ def _create_config(super_client, admin_client, docker_context):
     return config
 
 
-def _create_lb_w_host(super_client, admin_client, docker_context):
-    host = docker_context['host']
+def _create_lb_w_host(super_client, admin_client,
+                      sim_context, listenerPort, nsp):
+    host = sim_context['host']
 
     # create lb
-    lb = _create_valid_lb(super_client, admin_client, docker_context)
+    lb, config = _create_valid_lb(super_client, admin_client,
+                                  sim_context, listenerPort, nsp)
 
     # add host to lb
     lb.addhost(hostId=host.id)
     admin_client.wait_success(lb)
 
     # verify that the agent got created
-    uri = 'delegate:///?lbId={}&hostId={}'. \
+    uri = 'sim://?lbId={}&hostId={}'. \
         format(get_plain_id(super_client, lb),
                get_plain_id(super_client, host))
     agents = super_client.list_agent(uri=uri)
@@ -97,14 +153,31 @@ def _create_lb_w_host(super_client, admin_client, docker_context):
 
     agent = agents[0]
     instance = agent_instances[0]
-    return agent, lb, uri, instance
+    return agent, lb, uri, instance, config
 
 
-def _create_valid_listener(super_client, admin_client, docker_context):
+def _create_valid_listener(super_client, admin_client,
+                           sim_context, sourcePort):
     listener = admin_client.create_loadBalancerListener(name=random_str(),
-                                                        sourcePort='80',
-                                                        targetPort='80',
+                                                        sourcePort=sourcePort,
                                                         sourceProtocol='http',
                                                         targetProtocol='http')
     listener = admin_client.wait_success(listener)
     return listener
+
+
+def _wait_until_listener_map_active(listener, config,
+                                    super_client, timeout=30):
+    # need this function wait_success doesn't work for map object
+    start = time.time()
+    lb_config_maps = super_client. \
+        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
+                                           loadBalancerConfigId=config.id)
+    listener_map = lb_config_maps[0]
+    while listener_map.state != 'active':
+        time.sleep(.5)
+        listener_map = super_client.reload(listener_map)
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for hostmap to be active.'
+
+    return listener_map

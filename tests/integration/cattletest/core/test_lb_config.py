@@ -319,3 +319,27 @@ def test_lb_config_remove_invalid_listener(admin_client, super_client):
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidOption'
     assert e.value.error.fieldName == 'loadBalancerListenerId'
+
+
+def test_lb_config_add_conflicting_listener(admin_client, super_client):
+    config, listener = _create_config_and_listener(admin_client)
+
+    # add listener to the config
+    config = config.addlistener(loadBalancerListenerId=listener.id)
+    config = admin_client.wait_success(config)
+
+    assert config.state == 'active'
+    lbconfigmap = super_client. \
+        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
+                                           loadBalancerConfigId=config.id)
+
+    assert len(lbconfigmap) == 1
+    assert lbconfigmap[0].state == 'active'
+
+    # create duplicated listener, and try to add it to the config
+    listener = _create_valid_listener(admin_client)
+    with pytest.raises(ApiError) as e:
+        config.addlistener(loadBalancerListenerId=listener.id)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'sourcePort'

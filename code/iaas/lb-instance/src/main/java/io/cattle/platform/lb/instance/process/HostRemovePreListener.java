@@ -1,6 +1,7 @@
 package io.cattle.platform.lb.instance.process;
 
 import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
@@ -35,7 +36,7 @@ public class HostRemovePreListener extends AbstractObjectProcessLogic implements
                 host.getId());
 
         for (LoadBalancerHostMap lbHostMap : lbHostMaps) {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE,
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
                     lbHostMap, null);
         }
         return null;
