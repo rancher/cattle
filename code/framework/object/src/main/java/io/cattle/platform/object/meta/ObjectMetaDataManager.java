@@ -25,6 +25,7 @@ public interface ObjectMetaDataManager {
     public static final String DATA_FIELD = "data";
     public static final String KIND_FIELD = "kind";
     public static final String ID_FIELD = TypeUtils.ID_FIELD;
+    public static final String NAME_FIELD = "name";
     public static final String PUBLIC_FIELD = "isPublic";
     public static final String REMOVED_FIELD = "removed";
     public static final String REMOVE_TIME_FIELD = "removeTime";

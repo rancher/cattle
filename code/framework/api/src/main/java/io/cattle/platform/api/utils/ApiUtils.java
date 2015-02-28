@@ -2,6 +2,7 @@ package io.cattle.platform.api.utils;
 
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.auth.impl.DefaultPolicy;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -15,10 +16,13 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.apache.commons.collections.Transformer;
@@ -28,6 +32,9 @@ public class ApiUtils {
     public static final String SINGLE_ATTACHMENT_PREFIX = "s__";
 
     private static final Policy DEFAULT_POLICY = new DefaultPolicy();
+
+    private static final Set<String> PRIORITY_FIELDS = new LinkedHashSet<>(Arrays.asList(ObjectMetaDataManager.NAME_FIELD,
+            ObjectMetaDataManager.STATE_FIELD));
 
     private static final ManagedThreadLocal<Integer> DEPTH = new ManagedThreadLocal<Integer>() {
         @Override
@@ -171,7 +178,7 @@ public class ApiUtils {
                 additionalFields.putAll(attachments);
             }
 
-            return new WrappedResource(idFormatter, schema, obj, additionalFields);
+            return new WrappedResource(idFormatter, schema, obj, additionalFields, PRIORITY_FIELDS);
         } finally {
             DEPTH.set(depth);
         }
