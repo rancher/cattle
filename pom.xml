@@ -74,6 +74,7 @@
                 <module>code/iaas/ha</module>
                 <module>code/iaas/logic</module>
                 <module>code/iaas/logic-common</module>
+                <module>code/iaas/metadata</module>
                 <module>code/iaas/model</module>
                 <module>code/iaas/resource-pool</module>
                 <module>code/iaas/ssh-common</module>

@@ -13,6 +13,22 @@ def test_sample_data(super_client, system_account):
     assert 'dynamicCreateVnet' not in network
     assert 'libvirt' not in network.data
 
+    network = super_client.reload(network)
+    network_services = find_count(1, network.networkServices)
+    network_service_kinds = set()
+
+    for service in network_services:
+        network_service_kinds.add(service.kind)
+
+        assert service.accountId == system_account.id
+        assert service.networkId == network.id
+        assert service.removed is None
+
+        if service.kind == 'metadataService':
+            assert service.uuid == 'unmanaged-docker0-metadata-service'
+
+    assert network_service_kinds == set(['metadataService'])
+
     network = find_one(super_client.list_network, uuid='managed-docker0')
     assert network.accountId == system_account.id
     assert network.isPublic
@@ -55,7 +71,7 @@ def test_sample_data(super_client, system_account):
     assert network_service_provider.state == 'active'
     assert network_service_provider.agentInstanceImageUuid is None
 
-    network_services = find_count(6, network.networkServices)
+    network_services = find_count(7, network.networkServices)
     network_service_kinds = set()
 
     for service in network_services:
@@ -78,10 +94,13 @@ def test_sample_data(super_client, system_account):
             assert service.uuid == 'docker0-port-service'
         if service.kind == 'hostNatGatewayService':
             assert service.uuid == 'docker0-host-nat-gateway-service'
+        if service.kind == 'metadataService':
+            assert service.uuid == 'docker0-metadata-service'
 
     assert network_service_kinds == set(['dnsService',
                                          'dhcpService',
                                          'hostNatGatewayService',
                                          'ipsecTunnelService',
+                                         'metadataService',
                                          'portService',
                                          'linkService'])

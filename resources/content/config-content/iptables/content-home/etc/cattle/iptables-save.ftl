@@ -23,6 +23,9 @@
 # loopback
 -A INPUT -i lo -j ACCEPT
 
+# Node Services
+-A INPUT -p tcp --dport 8080 -j ACCEPT
+
 COMMIT
 
 *nat
@@ -45,6 +48,19 @@ COMMIT
 </#list>
 
 -A POSTROUTING -o ${primaryNic} -m mark --mark 100 -j MASQUERADE
+
+<#if serviceSet?seq_contains("metadataService") >
+    <#list services["metadataService"].nicNames as nic >
+-A PREROUTING -p tcp -m addrtype --dst-type LOCAL --dport 80 -i ${nic} -j DNAT --to :8080
+        <#list vnetClients as vnetClient >
+            <#if (vnetClient.ipAddress)?? && (vnetClient.macAddress)?? >
+# Metadata mapping
+-A INPUT -m mac --mac-source ${vnetClient.macAddress} -p tcp -m addrtype --dst-type LOCAL -i ${nic} -j SNAT --to-source ${vnetClient.ipAddress}
+            </#if>
+
+        </#list>
+    </#list>
+</#if>
 
 COMMIT
 

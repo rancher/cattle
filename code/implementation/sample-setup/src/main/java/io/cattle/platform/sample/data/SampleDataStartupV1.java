@@ -120,6 +120,14 @@ public class SampleDataStartupV1 extends AbstractSampleData {
                 NETWORK_SERVICE.NETWORK_ID, network.getId(),
                 NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
                 NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
+
+        toCreate.add(createByUuid(NetworkService.class, "docker0-metadata-service",
+                NETWORK_SERVICE.ACCOUNT_ID, system.getId(),
+                NETWORK_SERVICE.KIND, NetworkServiceConstants.KIND_METADATA,
+                NETWORK_SERVICE.NAME, "Meta data service for managed docker0",
+                NETWORK_SERVICE.NETWORK_ID, network.getId(),
+                NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, networkServiceProvider.getId(),
+                NETWORK_SERVICE.STATE, CommonStatesConstants.REQUESTED));
     }
 
 }
