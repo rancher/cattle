@@ -25,7 +25,6 @@ import io.cattle.platform.storage.service.StorageService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,13 +87,13 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(INSTANCE.NAME, builder.getName());
         properties.put(INSTANCE.ZONE_ID, agent.getZoneId());
         properties.put(INSTANCE.KIND, builder.getInstanceKind());
+        properties.put(INSTANCE.SYSTEM_CONTAINER, builder.getSystemContainerType());
         properties.put(InstanceConstants.FIELD_INSTANCE_TRIGGERED_STOP, builder.getInstanceTriggeredStop());
         properties.put(InstanceConstants.FIELD_PRIVILEGED, builder.isPrivileged());
         properties.put(InstanceConstants.FIELD_VNET_IDS, getVnetIds(agent, builder));
         properties.put(InstanceConstants.FIELD_NETWORK_IDS, getNetworkIds(agent, builder));
         properties.put(InstanceConstants.FIELD_REQUESTED_HOST_ID,
                 builder.getParams().get(InstanceConstants.FIELD_REQUESTED_HOST_ID));
-        properties.put(InstanceConstants.FIELD_SYSTEM_CONTAINER, builder.getSystemContainerType());
 
         addAdditionalProperties(properties, agent, builder);
 

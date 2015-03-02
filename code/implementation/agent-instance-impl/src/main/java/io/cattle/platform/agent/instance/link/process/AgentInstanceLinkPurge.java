@@ -37,7 +37,7 @@ public class AgentInstanceLinkPurge extends AbstractObjectProcessHandler {
             return null;
         }
 
-        NetworkServiceInfo info = agentInstanceManager.getNetworkService(instance, NetworkServiceConstants.KIND_LINK, true);
+        NetworkServiceInfo info = agentInstanceManager.getNetworkService(instance, NetworkServiceConstants.KIND_LINK, false);
 
         if ( info == null ) {
             return null;
