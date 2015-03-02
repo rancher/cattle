@@ -117,6 +117,10 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
             }
         }
 
+        if ( info.getAgentInstance() == null ) {
+            return info;
+        }
+
         if ( waitForStart ) {
             start(info.getAgentInstance());
             instance = resourceMonitor.waitFor(info.getAgentInstance(), new ResourcePredicate<Instance>() {
