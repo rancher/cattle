@@ -18,7 +18,8 @@
             <set>
                 <value>io.cattle.platform.core.addon.RestartPolicy</value>
                 <value>io.cattle.platform.core.addon.LoadBalancerHealthCheck</value>
-                <value>io.cattle.platform.core.addon.LoadBalancerPolicy</value>
+                <value>io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy</value>
+                <value>io.cattle.platform.core.addon.LoadBalancerAppCookieStickinessPolicy</value>
                 <value>io.cattle.platform.core.addon.GlobalLoadBalancerPolicy</value>
                 <value>io.cattle.platform.core.addon.GlobalLoadBalancerHealthCheck</value>
             </set>

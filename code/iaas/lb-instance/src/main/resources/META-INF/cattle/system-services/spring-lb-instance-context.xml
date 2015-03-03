@@ -23,5 +23,6 @@
     <bean class="io.cattle.platform.lb.instance.service.impl.UpdateListenerLoadBalancerLookup" />
     <bean class="io.cattle.platform.lb.instance.service.impl.UpdateTargetLoadBalancerLookup" />
     <bean class="io.cattle.platform.lb.instance.service.impl.UpdateInstanceLoadBalancerLookup" />
+    <bean class="io.cattle.platform.lb.instance.service.impl.UpdateConfigLoadBalancerLookup" />
 
 </beans>

@@ -19,6 +19,9 @@ public class LoadBalancerConstants {
     public static final String FIELD_LB_INSTANCE_URI_PREDICATE = "loadBalancerInstanceUriPredicate";
     public static final String FIELD_LB_NETWORK_ID = "networkId";
     public static final String FIELD_LB_SOURCE_PORT = "sourcePort";
+    public static final String FIELD_LB_HEALTH_CHECK = "healthCheck";
+    public static final String FIELD_LB_APP_COOKIE_POLICY = "appCookieStickinessPolicy";
+    public static final String FIELD_LB_COOKIE_POLICY = "lbCookieStickinessPolicy";
 
     public static final String ACTION_ADD_HOST = "addhost";
     public static final String ACTION_REMOVE_HOST = "removehost";
@@ -51,5 +54,4 @@ public class LoadBalancerConstants {
     public static final String PROCESS_LB_CONFIG_REMOVE = "loadbalancerconfig.remove";
     public static final String PROCESS_GLB_ADD_LB = "globalloadbalancer.addloadbalancer";
     public static final String PROCESS_GLB_REMOVE_LB = "globalloadbalancer.removeloadbalancer";
-
 }

@@ -3,11 +3,13 @@ package io.cattle.platform.configitem.context.data;
 public class LoadBalancerTargetInfo {
     private String name;
     private String ipAddress;
+    private String cookie;
 
-    public LoadBalancerTargetInfo(String ipAddress, String name) {
+    public LoadBalancerTargetInfo(String ipAddress, String name, String cookie) {
         super();
         this.ipAddress = ipAddress;
         this.name = name;
+        this.cookie = cookie;
     }
 
     public String getName() {
@@ -26,4 +28,11 @@ public class LoadBalancerTargetInfo {
         this.ipAddress = ipAddress;
     }
 
+    public String getCookie() {
+        return cookie;
+    }
+
+    public void setCookie(String cookie) {
+        this.cookie = cookie;
+    }
 }
