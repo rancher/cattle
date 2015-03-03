@@ -15,6 +15,7 @@
     <bean class="io.cattle.platform.lb.instance.service.impl.LoadBalancerInstanceManagerImpl" />
     <bean class="io.cattle.platform.lb.instance.process.LoadBalancerInstanceRemovePostListener" />
     <bean class="io.cattle.platform.lb.instance.process.LoadBalancerRemoveHostPostListener" />
+    <bean class="io.cattle.platform.lb.instance.process.LoadBalancerRestart" />
     <bean class="io.cattle.platform.lb.instance.process.HostRemovePreListener" />
     <bean class="io.cattle.platform.lb.instance.process.LoadBalancerUpdateConfig" />
     <bean class="io.cattle.platform.lb.instance.dao.impl.LoadBalancerInstanceDaoImpl" />

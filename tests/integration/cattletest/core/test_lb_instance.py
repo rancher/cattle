@@ -24,6 +24,16 @@ def nsp(super_client, sim_context):
     return nsp
 
 
+@pytest.fixture(scope='module')
+def nsp_sim2(super_client, sim_context2):
+    nsp = create_agent_instance_nsp(super_client, sim_context2)
+    create_and_activate(super_client, 'networkService',
+                        networkServiceProviderId=nsp.id,
+                        networkId=nsp.networkId)
+
+    return nsp
+
+
 def test_add_host_to_lb(admin_client, super_client, sim_context,
                         config_id, nsp):
     host = sim_context['host']
@@ -239,9 +249,9 @@ def test_delete_lb(admin_client, super_client, sim_context,
                              super_client, uri, agent)
 
 
-def test_delete_host_alena(admin_client, super_client, new_sim_context,
-                           sim_context,
-                           config_id, nsp):
+def test_delete_host(admin_client, super_client, new_sim_context,
+                     sim_context,
+                     config_id, nsp):
     host = new_sim_context['host']
 
     agent, lb, uri, instance = _create_lb_w_host(admin_client,
@@ -318,6 +328,40 @@ def test_set_hosts(admin_client,
                                  hostId=host1.id)
 
 
+def test_restart_lb(admin_client, super_client, sim_context,
+                    config_id, nsp, sim_context2, nsp_sim2):
+    host = sim_context['host']
+    host2 = sim_context2['host']
+
+    agent, lb, uri, instance = _create_lb_w_host(admin_client,
+                                                 config_id, host,
+                                                 sim_context,
+                                                 super_client,
+                                                 nsp)
+
+    # add one more host
+    agent2, instance2, uri2 = _add_host_to_lb(admin_client,
+                                              host2, lb, super_client)
+
+    instance = wait_success(super_client, instance)
+    assert instance.state == "running"
+
+    instance2 = wait_success(super_client, instance2)
+    assert instance2.state == "running"
+
+    # restart the lb
+    lb = lb.restart()
+
+    lb = admin_client.wait_success(lb, 120)
+
+    # verify lb instances state
+    instance = wait_success(super_client, instance)
+    assert instance.state == "running"
+
+    instance2 = wait_success(super_client, instance)
+    assert instance2.state == "running"
+
+
 def _create_valid_lb(super_client, sim_context, config_id, nsp):
     default_lb_config = super_client. \
         create_loadBalancerConfig(name=random_str())
@@ -334,28 +378,31 @@ def _create_valid_lb(super_client, sim_context, config_id, nsp):
     return test_lb
 
 
-def _create_lb_w_host(admin_client, config_id, host,
-                      sim_context, super_client, nsp):
-    # create lb
-    lb = _create_valid_lb(super_client, sim_context, config_id, nsp)
-
+def _add_host_to_lb(admin_client, host, lb, super_client):
     # add host to lb
     lb.addhost(hostId=host.id)
     admin_client.wait_success(lb)
-
     # verify that the agent got created
     uri = 'sim://?lbId={}&hostId={}'. \
         format(get_plain_id(super_client, lb),
                get_plain_id(super_client, host))
     agents = super_client.list_agent(uri=uri)
     assert len(agents) == 1
-
     # verify that the agent instance got created
     agent_instances = super_client.list_instance(agentId=agents[0].id)
     assert len(agent_instances) == 1
-
     agent = agents[0]
     instance = agent_instances[0]
+    return agent, instance, uri
+
+
+def _create_lb_w_host(admin_client, config_id, host,
+                      sim_context, super_client, nsp):
+    # create lb
+    lb = _create_valid_lb(super_client, sim_context, config_id, nsp)
+
+    agent, instance, uri = _add_host_to_lb(admin_client,
+                                           host, lb, super_client)
     return agent, lb, uri, instance
 
 

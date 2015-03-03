@@ -23,4 +23,6 @@ public interface LoadBalancerInstanceManager {
 
     List<Instance> getLoadBalancerInstances(LoadBalancer loadBalancer);
 
+    void restartLoadBalancer(LoadBalancer lb);
+
 }

@@ -126,6 +126,7 @@
     <process:process name="loadbalancer.addhost" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancer.removehost" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancer.sethosts" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
+    <process:process name="loadbalancer.restart" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
 
     <!-- Load Balancer Target -->
     <process:process name="loadbalancertarget.create" resourceType="loadBalancerTarget" start="requested" transitioning="activating" done="active" />
