@@ -186,6 +186,9 @@
         "devices":{
             "type":"array[string]",
             "nullable": true
+        },
+        "registryCredentialId":{
+            "type":"reference[registryCredential]"
         }
     },
     "resourceActions": {

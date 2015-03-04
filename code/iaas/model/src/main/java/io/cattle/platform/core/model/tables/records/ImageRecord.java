@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "image", schema = "cattle")
-public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ImageRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Image {
+public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ImageRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.Image {
 
-	private static final long serialVersionUID = 1611441462;
+	private static final long serialVersionUID = 1616796108;
 
 	/**
 	 * Setter for <code>cattle.image.id</code>.
@@ -322,6 +322,23 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		return (java.lang.String) getValue(17);
 	}
 
+	/**
+	 * Setter for <code>cattle.image.registry_credential_id</code>.
+	 */
+	@Override
+	public void setRegistryCredentialId(java.lang.Long value) {
+		setValue(18, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.image.registry_credential_id</code>.
+	 */
+	@javax.persistence.Column(name = "registry_credential_id", precision = 19)
+	@Override
+	public java.lang.Long getRegistryCredentialId() {
+		return (java.lang.Long) getValue(18);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -335,23 +352,23 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	}
 
 	// -------------------------------------------------------------------------
-	// Record18 type implementation
+	// Record19 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row18) super.fieldsRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row19) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row18) super.valuesRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long> valuesRow() {
+		return (org.jooq.Row19) super.valuesRow();
 	}
 
 	/**
@@ -502,6 +519,14 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field19() {
+		return io.cattle.platform.core.model.tables.ImageTable.IMAGE.REGISTRY_CREDENTIAL_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -640,6 +665,14 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	@Override
 	public java.lang.String value18() {
 		return getInstanceKind();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value19() {
+		return getRegistryCredentialId();
 	}
 
 	/**
@@ -808,7 +841,16 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ImageRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Boolean value13, java.lang.Long value14, java.lang.Long value15, java.lang.String value16, java.lang.String value17, java.lang.String value18) {
+	public ImageRecord value19(java.lang.Long value) {
+		setRegistryCredentialId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ImageRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Boolean value13, java.lang.Long value14, java.lang.Long value15, java.lang.String value16, java.lang.String value17, java.lang.String value18, java.lang.Long value19) {
 		return this;
 	}
 
@@ -839,6 +881,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setChecksum(from.getChecksum());
 		setFormat(from.getFormat());
 		setInstanceKind(from.getInstanceKind());
+		setRegistryCredentialId(from.getRegistryCredentialId());
 	}
 
 	/**
@@ -864,7 +907,7 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	/**
 	 * Create a detached, initialised ImageRecord
 	 */
-	public ImageRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String url, java.lang.Boolean isPublic, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.String checksum, java.lang.String format, java.lang.String instanceKind) {
+	public ImageRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String url, java.lang.Boolean isPublic, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.String checksum, java.lang.String format, java.lang.String instanceKind, java.lang.Long registryCredentialId) {
 		super(io.cattle.platform.core.model.tables.ImageTable.IMAGE);
 
 		setValue(0, id);
@@ -885,5 +928,6 @@ public class ImageRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setValue(15, checksum);
 		setValue(16, format);
 		setValue(17, instanceKind);
+		setValue(18, registryCredentialId);
 	}
 }

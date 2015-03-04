@@ -49,7 +49,7 @@ def test_delegate_agent_create(client, super_client, sim_context,
     assert instance.state == 'running'
     assert instance.kind == 'container'
     assert instance.accountId == system_account.id
-    assert instance.image().uuid == _IMAGE_UUID
+    assert instance.image().name == _IMAGE_UUID
     assert len(instance.nics()) == 1
     assert instance.nics()[0].vnetId == vnets[0].id
     assert instance.hosts()[0].id == c.hosts()[0].id
