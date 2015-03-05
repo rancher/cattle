@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e -x
 
 DEV_HOST=${DEV_HOST:-10.0.2.2:8080}
 AGENT_IMAGE=${AGENT_IMAGE:-rancher/agent}

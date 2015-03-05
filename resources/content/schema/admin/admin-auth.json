@@ -79,6 +79,8 @@
         "githubconfig.clientSecret": "cr",
         "githubconfig.enabled": "cr",
 
+        "host.apiProxy" : "ru",
+
         "instanceLink.ports" : "r",
 
         "instanceStop.deallocateFromHost" : "cr",

@@ -1,6 +1,7 @@
 package io.cattle.platform.agent.server.resource.impl;
 
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.agent.server.resource.AgentResourcesEventListener;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
@@ -25,7 +26,6 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +46,9 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     private static final Logger log = LoggerFactory.getLogger(AgentResourcesMonitorImpl.class);
     private static final DynamicLongProperty CACHE_RESOURCE = ArchaiusUtil.getLong("agent.resource.monitor.cache.resource.seconds");
 
+    private static final String[] UPDATABLE_HOST_FIELDS = new String[] { HostConstants.FIELD_API_PROXY,
+            HostConstants.FIELD_INFO };
+
     PingDao pingDao;
     GenericResourceDao resourceDao;
     StoragePoolDao storagePoolDao;
@@ -65,12 +68,12 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
             }
         });
     }
-    
+
     protected void buildCache() {
         resourceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_RESOURCE.get(), TimeUnit.SECONDS)
                 .build();
     }
-    
+
     @Override
     public void pingReply(Ping ping) {
         String agentIdStr = ping.getResourceId();
@@ -176,19 +179,29 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
             Long physicalHostId = getPhysicalHost(agent, physicalHostUuid, new HashMap<String,Object>());
 
             if ( hosts.containsKey(uuid) ) {
+                Map<Object,Object> updates = new HashMap<>();
                 Host host = hosts.get(uuid);
                 if ( physicalHostId != null && ! physicalHostId.equals(host.getPhysicalHostId()) ) {
-                    host.setPhysicalHostId(physicalHostId);
-                    objectManager.persist(host);
+                    updates.put(HOST.PHYSICAL_HOST_ID, physicalHostId);
                 }
 
-                continue;
+                for ( String key : UPDATABLE_HOST_FIELDS ) {
+                    Object value = data.get(key);
+                    if ( value != null ) {
+                        updates.put(key, value);
+                    }
+                }
+
+                if ( updates.size() > 0 ) {
+                    Map<String,Object> updateFields = objectManager.convertToPropertiesFor(host, updates);
+                    objectManager.setFields(host, updateFields);
+                }
+            } else {
+                data = createData(agent, uuid, data);
+                data.put(HostConstants.FIELD_PHYSICAL_HOST_ID, physicalHostId);
+
+                hosts.put(uuid, resourceDao.createAndSchedule(Host.class, data));
             }
-
-            data = createData(agent, uuid, data);
-            data.put(HostConstants.FIELD_PHYSICAL_HOST_ID, physicalHostId);
-
-            hosts.put(uuid, resourceDao.createAndSchedule(Host.class, data));
         }
 
         return hosts;

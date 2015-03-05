@@ -24,6 +24,8 @@ import com.netflix.config.DynamicStringProperty;
 public class HostApiServiceImpl implements HostApiService {
 
     private static final String HOST_UUID = "hostUuid";
+    private static final String IP_ADDRESS = "ipAddress";
+    private static final String PORT = "port";
 
     private static final DynamicStringProperty HEADER_AUTH = ArchaiusUtil.getString("host.api.auth.header");
     private static final DynamicStringProperty HEADER_AUTH_VALUE = ArchaiusUtil.getString("host.api.auth.header.value");
@@ -33,12 +35,7 @@ public class HostApiServiceImpl implements HostApiService {
     HostApiRSAKeyProvider keyProvider;
 
     @Override
-    public HostApiAccess getAccess(Long hostId) {
-        return getAccess(hostId, new HashMap<String,Object>());
-    }
-
-    @Override
-    public HostApiAccess getAccess(Long hostId, Map<String,Object> data) {
+    public HostApiAccess getAccess(Long hostId, int port, Map<String,Object> data) {
         Host host = objectManager.loadResource(Host.class, hostId);
         if ( host == null ) {
             return null;
@@ -49,7 +46,7 @@ public class HostApiServiceImpl implements HostApiService {
             return null;
         }
 
-        String token = getToken(host, data);
+        String token = getToken(ip, port, host, data);
         if ( token == null ) {
             return null;
         }
@@ -57,7 +54,12 @@ public class HostApiServiceImpl implements HostApiService {
         Map<String,String> values = new HashMap<String, String>();
         values.put(HEADER_AUTH.get(), String.format(HEADER_AUTH_VALUE.get(), token));
 
-        return new HostApiAccess(ip.getAddress(), token, values);
+        return new HostApiAccess(getHostAddress(ip, port, host), token, values);
+    }
+
+    protected String getHostAddress(IpAddress ip, int port, Host host) {
+        String proxy = DataAccessor.fieldString(host, HostConstants.FIELD_API_PROXY);
+        return proxy == null ? String.format("%s:%d", ip.getAddress(), port) : proxy;
     }
 
     @Override
@@ -66,14 +68,18 @@ public class HostApiServiceImpl implements HostApiService {
     }
 
 
-    protected String getToken(Host host, Map<String,Object> inputData) {
+    protected String getToken(IpAddress ip, int port, Host host, Map<String,Object> inputData) {
         Map<String,Object> data = new HashMap<String,Object>(inputData);
         String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
         if(uuid != null){
             data.put(HOST_UUID,uuid);
-        }
-        else{
+        } else {
             data.put(HOST_UUID, host.getUuid());
+        }
+
+        data.put(IP_ADDRESS, ip.getAddress());
+        if ( port > 0 ) {
+            data.put(PORT, port);
         }
 
         return tokenService.generateToken(data);

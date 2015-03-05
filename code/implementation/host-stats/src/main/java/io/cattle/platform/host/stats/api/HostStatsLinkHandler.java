@@ -14,15 +14,17 @@ import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import javax.inject.Inject;
 
+import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class HostStatsLinkHandler implements LinkHandler {
 
     private static final DynamicStringProperty HOST_STATS_SCHEME = ArchaiusUtil.getString("host.stats.scheme");
-    private static final DynamicStringProperty HOST_STATS_PORT = ArchaiusUtil.getString("host.stats.port");
+    private static final DynamicIntProperty HOST_STATS_PORT = ArchaiusUtil.getInt("host.stats.port");
     private static final DynamicStringProperty HOST_STATS_PATH = ArchaiusUtil.getString("host.stats.path");
 
     HostApiService hostApiService;
@@ -54,13 +56,13 @@ public class HostStatsLinkHandler implements LinkHandler {
             return null;
         }
 
-        HostApiAccess apiAccess = hostApiService.getAccess(host.getId());
+        HostApiAccess apiAccess = hostApiService.getAccess(host.getId(), HOST_STATS_PORT.get(), Collections.<String,Object>emptyMap());
         if ( apiAccess == null ) {
             return null;
         }
 
         StringBuilder url = new StringBuilder(HOST_STATS_SCHEME.get());
-        url.append("://").append(apiAccess.getHostname()).append(":").append(HOST_STATS_PORT.get());
+        url.append("://").append(apiAccess.getHostAndPort());
         url.append(HOST_STATS_PATH.get());
 
         if ( instance != null ) {

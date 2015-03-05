@@ -1,0 +1,11 @@
+{
+    "resourceFields": {
+        "info": {
+            "type" : "json"
+        },
+        "apiProxy": {
+            "type" : "string",
+            "nullable" : true
+        }
+    }
+}

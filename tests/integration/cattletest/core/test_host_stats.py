@@ -1,6 +1,8 @@
 from common_fixtures import *  # NOQA
 from test_docker import docker_context, TEST_IMAGE_UUID, if_docker
 
+import requests
+
 # work around flake8 issue
 docker_context
 
@@ -54,3 +56,13 @@ def test_stats_container(admin_client, docker_context):
     assert stats_access.token.index('.') > 0
     assert stats_access.url == \
         'ws://{}:9345/v1/stats/{}'.format(found_ip.address, container.uuid)
+
+
+def test_host_api_key_download(client):
+    url = client._url.split('v1', 1)[0] + 'v1/scripts/api.crt'
+    assert url is not None
+
+    cert = requests.get(url).text
+
+    assert cert is not None
+    assert cert.startswith('-----BEGIN PUBLIC KEY-')
