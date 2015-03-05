@@ -574,3 +574,16 @@ def test_registry_credentials(admin_client, client):
         'secretValue': 'cr',
         'storagePoolId': 'cr',
     })
+
+
+def test_registry(admin_client, client):
+    auth_check(admin_client.schema, 'registry', 'cru', {
+        'accountId': 'r',
+        'data': 'r',
+        'serverAddress': 'cr',
+    })
+
+    auth_check(client.schema, 'registry', 'cru', {
+        'accountId': 'r',
+        'serverAddress': 'cr',
+    })

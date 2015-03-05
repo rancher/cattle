@@ -128,4 +128,3 @@ def test_create_container_with_real_registry_credential(client, super_client,
     container = client.wait_success(container)
 
     assert container.state == 'running'
-
