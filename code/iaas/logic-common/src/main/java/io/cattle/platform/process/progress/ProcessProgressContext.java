@@ -11,6 +11,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import javax.inject.Inject;
 
@@ -80,11 +81,14 @@ public class ProcessProgressContext implements ProcessProgressInstance {
             public void run() {
                 String type = objectManager.getType(resource);
                 Object id = ObjectUtils.getId(resource);
+                Object accountId = ObjectUtils.getAccountId(resource);
                 if ( id != null ) {
                     Event event = EventVO
                             .newEvent(FrameworkEvents.RESOURCE_PROGRESS)
                             .withResourceType(type)
-                            .withResourceId(id.toString());
+                            .withResourceId(id.toString())
+                            .withData(CollectionUtils.asMap(ObjectMetaDataManager.ACCOUNT_FIELD, accountId));
+
                     eventService.publish(event);
                 }
             }

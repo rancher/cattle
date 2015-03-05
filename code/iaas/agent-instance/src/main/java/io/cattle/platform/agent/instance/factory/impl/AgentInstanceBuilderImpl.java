@@ -28,7 +28,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     String imageUuid;
     String name = DEFAULT_NAME.get();
     String instanceTriggeredStop = InstanceConstants.ON_STOP_RESTART;
-    boolean accountOwned = false;
+    boolean accountOwned = true;
     boolean managedConfig = false;
     boolean privileged = false;
     AgentInstanceFactoryImpl factory;
