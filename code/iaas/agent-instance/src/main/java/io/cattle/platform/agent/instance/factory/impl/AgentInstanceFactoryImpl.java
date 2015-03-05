@@ -1,7 +1,7 @@
 package io.cattle.platform.agent.instance.factory.impl;
 
-import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
@@ -83,6 +83,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
 
         properties.put(INSTANCE.ACCOUNT_ID, getAccountId(builder));
         properties.put(INSTANCE.AGENT_ID, agent.getId());
+        properties.put(InstanceConstants.FIELD_IMAGE_UUID, builder.getImageUuid());
         properties.put(INSTANCE.IMAGE_ID, getImage(agent, builder));
         properties.put(INSTANCE.NAME, builder.getName());
         properties.put(INSTANCE.ZONE_ID, agent.getZoneId());

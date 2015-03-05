@@ -187,6 +187,7 @@ def test_container_auth(admin_client, client):
         'privileged': 'cr',
         'publishAllPorts': 'cr',
         'removeTime': 'r',
+        'registryCredentialId': 'cr',
         'requestedHostId': 'cr',
         'restartPolicy': 'cr',
         'startOnCreate': 'cr',
@@ -230,6 +231,7 @@ def test_container_auth(admin_client, client):
         'primaryIpAddress': 'r',
         'privileged': 'cr',
         'publishAllPorts': 'cr',
+        'registryCredentialId': 'cr',
         'requestedHostId': 'cr',
         'restartPolicy': 'cr',
         'startOnCreate': 'cr',
@@ -552,4 +554,36 @@ def test_physical_host(admin_client, client, service_client):
 
     auth_check(client.schema, 'physicalHost', 'r', {
         'accountId': 'r',
+    })
+
+
+def test_registry_credentials(admin_client, client):
+    auth_check(admin_client.schema, 'registryCredential', 'cru', {
+        'accountId': 'r',
+        'data': 'r',
+        'email': 'cr',
+        'publicValue': 'cr',
+        'secretValue': 'cr',
+        'storagePoolId': 'cr',
+    })
+
+    auth_check(client.schema, 'registryCredential', 'cru', {
+        'accountId': 'r',
+        'email': 'cr',
+        'publicValue': 'cr',
+        'secretValue': 'cr',
+        'storagePoolId': 'cr',
+    })
+
+
+def test_registry(admin_client, client):
+    auth_check(admin_client.schema, 'registry', 'cru', {
+        'accountId': 'r',
+        'data': 'r',
+        'serverAddress': 'cr',
+    })
+
+    auth_check(client.schema, 'registry', 'cru', {
+        'accountId': 'r',
+        'serverAddress': 'cr',
     })

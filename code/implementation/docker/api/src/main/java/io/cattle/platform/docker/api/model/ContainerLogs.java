@@ -1,7 +1,7 @@
 package io.cattle.platform.docker.api.model;
 
-import io.github.ibuildthecloud.gdapi.annotation.Field;
-import io.github.ibuildthecloud.gdapi.annotation.Type;
+        import io.github.ibuildthecloud.gdapi.annotation.Field;
+        import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(list = false, name = "containerLogs")
 public interface ContainerLogs {

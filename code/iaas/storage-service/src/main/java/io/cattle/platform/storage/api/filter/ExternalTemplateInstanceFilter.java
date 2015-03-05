@@ -1,8 +1,10 @@
 package io.cattle.platform.storage.api.filter;
 
+import static io.cattle.platform.core.model.tables.ImageTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -29,6 +31,8 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
 
     private static final Logger log = LoggerFactory.getLogger(ExternalTemplateInstanceFilter.class);
 
+    @Inject
+    ObjectManager objectManager;
     SchemaFactory schemaFactory;
     StorageService storageService;
     ResourceManagerLocator locator;
@@ -37,30 +41,33 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Map<String,Object> data = CollectionUtils.toMap(request.getRequestObject());
         Object imageUuid = data.get(InstanceConstants.FIELD_IMAGE_UUID);
+        Instance instance = request.proxyRequestObject(Instance.class);
+        Long registryCredentialId = instance.getRegistryCredentialId();
 
         if ( imageUuid != null ) {
-            Image image = validateImageUuid(request.getSchemaFactory(), imageUuid.toString());
+            Image image = validateImageUuid(request.getSchemaFactory(), imageUuid.toString(), registryCredentialId);
             if ( image == null ) {
                 throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, InstanceConstants.FIELD_IMAGE_UUID);
             }
-
-            Instance instance = request.proxyRequestObject(Instance.class);
             instance.setImageId(image.getId());
         }
 
         return super.create(type, request, next);
     }
 
-    protected Image validateImageUuid(SchemaFactory schemaFactory, String uuid) {
+
+    protected Image validateImageUuid(SchemaFactory schemaFactory, String uuid, Long registryCredentialId) {
         try {
             Image image = storageService.registerRemoteImage(uuid);
             if ( image == null ) {
                 return null;
             }
+            if ( registryCredentialId != null ) {
+                objectManager.setFields(image, IMAGE.REGISTRY_CREDENTIAL_ID, registryCredentialId);
+            }
 
             String type = schemaFactory.getSchemaName(Image.class);
             ResourceManager rm = locator.getResourceManagerByType(type);
-
             return (Image)rm.getById(type, image.getId().toString(), new ListOptions());
         } catch ( IOException e ) {
             log.error("Failed to contact external registry", e);

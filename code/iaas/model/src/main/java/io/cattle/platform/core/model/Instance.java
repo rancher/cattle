@@ -289,6 +289,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "system_container", length = 128)
 	public java.lang.String getSystemContainer();
 
+	/**
+	 * Setter for <code>cattle.instance.registry_credential_id</code>.
+	 */
+	public void setRegistryCredentialId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.registry_credential_id</code>.
+	 */
+	@javax.persistence.Column(name = "registry_credential_id", precision = 19)
+	public java.lang.Long getRegistryCredentialId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

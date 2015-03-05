@@ -212,6 +212,17 @@ public interface Image extends java.io.Serializable {
 	@javax.persistence.Column(name = "instance_kind", length = 255)
 	public java.lang.String getInstanceKind();
 
+	/**
+	 * Setter for <code>cattle.image.registry_credential_id</code>.
+	 */
+	public void setRegistryCredentialId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.image.registry_credential_id</code>.
+	 */
+	@javax.persistence.Column(name = "registry_credential_id", precision = 19)
+	public java.lang.Long getRegistryCredentialId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

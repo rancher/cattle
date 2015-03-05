@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ImageTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ImageRecord> {
 
-	private static final long serialVersionUID = 1597183362;
+	private static final long serialVersionUID = -1698349698;
 
 	/**
 	 * The singleton instance of <code>cattle.image</code>
@@ -117,6 +117,11 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ImageRecord, java.lang.String> INSTANCE_KIND = createField("instance_kind", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
+	 * The column <code>cattle.image.registry_credential_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ImageRecord, java.lang.Long> REGISTRY_CREDENTIAL_ID = createField("registry_credential_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.image</code> table reference
 	 */
 	public ImageTable() {
@@ -167,7 +172,7 @@ public class ImageTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ImageRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ImageRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_IMAGE__ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ImageRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_IMAGE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_IMAGE_REGISTRY_CREDENTIAL_ID);
 	}
 
 	/**

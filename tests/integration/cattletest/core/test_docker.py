@@ -54,7 +54,6 @@ def test_docker_create_only(admin_client, super_client, docker_context):
     image = super_client.reload(container).image()
     assert image.instanceKind == 'container'
 
-    image = super_client.list_image(uuid=uuid)[0]
     image_mapping = filter(
         lambda m: m.storagePool().external,
         image.imageStoragePoolMaps()
@@ -64,14 +63,13 @@ def test_docker_create_only(admin_client, super_client, docker_context):
     assert image_mapping[0].imageId == image.id
     assert image_mapping[0].storagePoolId == docker_context['external_pool'].id
 
-    assert image.isPublic
+    assert not image.isPublic
     assert image.name == '{}'.format(image.data.dockerImage.fullName,
                                      image.data.dockerImage.id)
-    assert image.uuid == uuid
+    assert image.name == TEST_IMAGE_LATEST
     assert image.data.dockerImage.repository == 'helloworld'
     assert image.data.dockerImage.namespace == 'ibuildthecloud'
     assert image.data.dockerImage.tag == 'latest'
-    assert image.data.dockerImage.id is not None
 
     return container
 
@@ -89,7 +87,9 @@ def test_docker_create_with_start(admin_client, super_client, docker_context):
 
     assert container.data.dockerContainer.Image == TEST_IMAGE_LATEST
 
-    image = admin_client.list_image(uuid=uuid)[0]
+    assert len(container.volumes()) == 1
+
+    image = container.volumes()[0].image()
     image = super_client.reload(image)
     image_mapping = filter(
         lambda m: not m.storagePool().external,

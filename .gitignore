@@ -21,7 +21,7 @@ tests/integration/.tox/
 tests/integration/MANIFEST
 .venv
 .idea
-
+*.iml
 *.egg-info
 *.launch
 *.pyc

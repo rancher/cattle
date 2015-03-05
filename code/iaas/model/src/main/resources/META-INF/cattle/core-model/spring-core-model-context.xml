@@ -52,6 +52,8 @@
                 <value>setLoadBalancerHostsInput</value>
                 <value>cluster,parent=host</value>
                 <value>addRemoveClusterHostInput</value>
+                <value>registryCredential,parent=credential</value>
+                <value>registry,parent=storagePool</value>
             </set>
         </property>
     </bean>

@@ -1,5 +1,15 @@
 package io.cattle.platform.docker.storage;
 
+import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Image;
+import io.cattle.platform.core.model.StoragePool;
+import io.cattle.platform.docker.client.DockerImage;
+import io.cattle.platform.docker.storage.dao.DockerStorageDao;
+import io.cattle.platform.lock.LockCallbackNoReturn;
+import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.storage.pool.AbstractKindBasedStoragePoolDriver;
+import io.cattle.platform.storage.pool.StoragePoolDriver;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,17 +19,6 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Image;
-import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.docker.client.DockerClient;
-import io.cattle.platform.docker.client.DockerImage;
-import io.cattle.platform.docker.storage.dao.DockerStorageDao;
-import io.cattle.platform.lock.LockCallbackNoReturn;
-import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.storage.pool.AbstractKindBasedStoragePoolDriver;
-import io.cattle.platform.storage.pool.StoragePoolDriver;
-
 public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver implements StoragePoolDriver {
 
     public static final String DOCKER_KIND = "docker";
@@ -27,7 +26,6 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
 
     private static final Logger log = LoggerFactory.getLogger(DockerStoragePoolDriver.class);
 
-    DockerClient dockerClient;
     LockManager lockManager;
     DockerStorageDao storageDao;
 
@@ -38,12 +36,6 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
     @Override
     protected boolean populateExtenalImageInternal(StoragePool pool, String uuid, Image image) throws IOException {
         DockerImage dockerImage = DockerImage.parse(stripKindPrefix(uuid));
-
-        if ( dockerImage == null ) {
-            return false;
-        }
-
-        dockerImage = dockerClient.lookup(dockerImage);
 
         if ( dockerImage == null ) {
             return false;
@@ -88,15 +80,6 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
 
     public static boolean isDockerPool(StoragePool pool) {
         return pool == null ? false : DOCKER_KIND.equals(pool.getKind());
-    }
-
-    public DockerClient getDockerClient() {
-        return dockerClient;
-    }
-
-    @Inject
-    public void setDockerClient(DockerClient dockerClient) {
-        this.dockerClient = dockerClient;
     }
 
     public LockManager getLockManager() {
