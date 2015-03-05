@@ -109,6 +109,16 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     }
 
     @Override
+    public <T> T waitForState(T obj, final String desiredState) {
+        return waitFor(obj, new ResourcePredicate<T>() {
+            @Override
+            public boolean evaluate(T obj) {
+                return desiredState.equals(ObjectUtils.getState(obj));
+            }
+        });
+    }
+
+    @Override
     public String getName() {
         return "resource.change.monitor";
     }

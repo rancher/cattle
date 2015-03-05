@@ -6,4 +6,6 @@ public interface ResourceMonitor {
 
     <T> T waitFor(T obj, ResourcePredicate<T> predicate);
 
+    <T> T waitForState(T obj, String state);
+
 }
