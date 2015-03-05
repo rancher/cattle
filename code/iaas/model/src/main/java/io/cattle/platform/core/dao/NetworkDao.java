@@ -15,4 +15,7 @@ public interface NetworkDao {
     Nic getPrimaryNic(long instanceId);
 
     List<? extends Network> getNetworksForAccount(long accountId, String kind);
+
+    Network getNetworkForObject(Object object);
+
 }

@@ -1,0 +1,17 @@
+{
+    "resourceFields": {
+        "name":{
+            "required": true
+        }
+    },
+    "resourceActions" : {
+        "exportconfig" : {
+            "input" : "composeConfigInput",
+            "output" : "composeConfig"
+        },
+        "activateservices" : {
+        },
+        "deactivateservices" : {
+        }
+    }
+}

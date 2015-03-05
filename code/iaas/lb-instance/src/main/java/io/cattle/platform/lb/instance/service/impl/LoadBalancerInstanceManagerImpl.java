@@ -9,6 +9,7 @@ import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.LoadBalancerTargetDao;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -62,11 +63,18 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     @Inject
     IpAddressDao ipAddressDao;
 
+    @Inject
+    NetworkDao ntwkDao;
+
     @Override
     public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer, Long... hostIds) {
         List<Instance> result = new ArrayList<Instance>();
         List<Long> hosts = populateHosts(loadBalancer, hostIds);
-        Network network = lbInstanceDao.getLoadBalancerInstanceNetwork(loadBalancer);
+        Network network = ntwkDao.getNetworkForObject(loadBalancer);
+        if (network == null) {
+            throw new RuntimeException(
+                    "Unable to find a network to start a load balancer " + loadBalancer);
+        }
 
         for (long hostId : hosts) {
             Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostId);

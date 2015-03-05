@@ -6,7 +6,9 @@ import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.N
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
 import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
 import static io.cattle.platform.core.model.tables.NicTable.NIC;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
@@ -14,10 +16,21 @@ import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
 import io.cattle.platform.core.model.tables.records.NetworkServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.ObjectUtils;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
+
+    @Inject
+    ObjectManager objectManager;
+
+    @Inject
+    AccountDao accountDao;
 
     @Override
     public List<? extends NetworkService> getAgentInstanceNetworkService(long instanceId, String serviceKind) {
@@ -71,5 +84,38 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                         .and(NETWORK.KIND.equalIgnoreCase(kind))
                         .and(NETWORK.REMOVED.isNull()))
                 .fetchInto(NetworkRecord.class);
+    }
+
+    @Override
+    public Network getNetworkForObject(Object object) {
+        Long networkId = DataAccessor
+                .fields(object)
+                .withKey("networkId")
+                .as(Long.class);
+        if (networkId != null) {
+            return objectManager.loadResource(Network.class, networkId);
+        }
+
+        Long accountId = (Long) ObjectUtils.getAccountId(object);
+        if (accountId == null) {
+            return null;
+        }
+
+        List<? extends Network> accountNetworks = getNetworksForAccount(accountId,
+                NetworkConstants.KIND_HOSTONLY);
+
+        if (!accountNetworks.isEmpty()) {
+            return accountNetworks.get(0);
+
+        }
+
+        // pass system network if account doesn't own any
+        List<? extends Network> systemNetworks = getNetworksForAccount(accountDao.getSystemAccount()
+                .getId(),
+                NetworkConstants.KIND_HOSTONLY);
+        if (systemNetworks.isEmpty()) {
+            return null;
+        }
+        return systemNetworks.get(0);
     }
 }

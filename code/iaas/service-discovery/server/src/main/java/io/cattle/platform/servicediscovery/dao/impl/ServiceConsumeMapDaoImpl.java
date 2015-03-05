@@ -1,0 +1,49 @@
+package io.cattle.platform.servicediscovery.dao.impl;
+
+import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.model.ServiceConsumeMap;
+import io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord;
+import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements ServiceConsumeMapDao {
+
+    @Inject
+    ObjectManager objectManager;
+
+    @Override
+    public ServiceConsumeMap findMapToRemove(long serviceId, long consumedServiceId) {
+        ServiceConsumeMap map = objectManager.findOne(ServiceConsumeMap.class,
+                SERVICE_CONSUME_MAP.SERVICE_ID,
+                serviceId, SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId);
+        if (map != null && (map.getRemoved() == null || map.getState().equals(CommonStatesConstants.REMOVING))) {
+            return map;
+        }
+        return null;
+    }
+
+    @Override
+    public ServiceConsumeMap findNonRemovedMap(long serviceId, long consumedServiceId) {
+        ServiceConsumeMap map = objectManager.findOne(ServiceConsumeMap.class,
+                SERVICE_CONSUME_MAP.SERVICE_ID,
+                serviceId, SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId, SERVICE_CONSUME_MAP.REMOVED,
+                null);
+        return map;
+    }
+
+    @Override
+    public List<? extends ServiceConsumeMap> findConsumedServices(long serviceId) {
+        return create()
+                .selectFrom(SERVICE_CONSUME_MAP)
+                .where(
+                        SERVICE_CONSUME_MAP.SERVICE_ID.eq(serviceId)
+                                .and(SERVICE_CONSUME_MAP.REMOVED.isNull())).fetchInto(ServiceConsumeMapRecord.class);
+    }
+
+}
