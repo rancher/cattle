@@ -464,8 +464,10 @@ def delete_sim_instances(admin_client):
                                          uri_like='delegate%'):
             if not callable(a.instances):
                 for i in a.instances:
-                    if i.state != 'running':
+                    if i.state != 'running' and len(i.hosts()) > 0 and \
+                            i.hosts()[0].agent().uri.startswith('sim://'):
                         a.deactivate()
+                        break
 
 
 def one(method, *args, **kw):
@@ -572,7 +574,7 @@ def resource_action_check(schema, id, actions):
 def wait_for(callback, timeout=DEFAULT_TIMEOUT):
     start = time.time()
     ret = callback()
-    while ret is None:
+    while ret is None or ret is False:
         time.sleep(.5)
         if time.time() - start > timeout:
             raise Exception('Timeout waiting for condition')

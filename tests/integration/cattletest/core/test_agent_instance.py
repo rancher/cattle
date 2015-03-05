@@ -42,6 +42,8 @@ def test_agent_instance_create(super_client, sim_context):
     agent_instance2 = super_client.wait_success(maps2[0].instance())
 
     assert agent_instance.id != agent_instance2.id
+    assert agent_instance.accountId == c.accountId
+    assert agent_instance.accountId == agent_instance2.accountId
 
     assert agent_instance.agentId is not None
     assert agent_instance.privileged

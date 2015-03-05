@@ -1,4 +1,0 @@
-flake8
-pytest==2.3.5
-
-cattle
