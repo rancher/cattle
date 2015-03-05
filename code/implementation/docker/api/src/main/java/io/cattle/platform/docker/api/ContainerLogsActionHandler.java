@@ -18,12 +18,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class ContainerLogsActionHandler implements ActionHandler {
 
     private static final DynamicStringProperty HOST_LOGS_SCHEME = ArchaiusUtil.getString("host.logs.scheme");
-    private static final DynamicStringProperty HOST_LOGS_PORT = ArchaiusUtil.getString("host.logs.port");
+    private static final DynamicIntProperty HOST_LOGS_PORT = ArchaiusUtil.getInt("host.logs.port");
     private static final DynamicStringProperty HOST_LOGS_PATH = ArchaiusUtil.getString("host.logs.path");
 
     HostApiService apiService;
@@ -54,14 +55,14 @@ public class ContainerLogsActionHandler implements ActionHandler {
         Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_CONTAINER, container.getUuid(), "Lines", logs.getLines(), "Follow",
                 logs.getFollow());
 
-        HostApiAccess apiAccess = apiService.getAccess(host.getId(), CollectionUtils.asMap("logs", data));
+        HostApiAccess apiAccess = apiService.getAccess(host.getId(), HOST_LOGS_PORT.get(), CollectionUtils.asMap("logs", data));
 
         if (apiAccess == null) {
             return null;
         }
 
         StringBuilder url = new StringBuilder((HOST_LOGS_SCHEME).get());
-        url.append("://").append(apiAccess.getHostname()).append(":").append(HOST_LOGS_PORT.get());
+        url.append("://").append(apiAccess.getHostAndPort());
         url.append(HOST_LOGS_PATH.get());
         HostAccess access = new HostAccess(url.toString(), apiAccess.getAuthenticationToken());
         return access;

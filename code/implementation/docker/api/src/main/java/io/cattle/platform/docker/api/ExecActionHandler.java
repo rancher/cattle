@@ -18,12 +18,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class ExecActionHandler implements ActionHandler {
 
     private static final DynamicStringProperty CONSOLE_AGENT_SCHEME = ArchaiusUtil.getString("console.agent.scheme");
-    private static final DynamicStringProperty CONSOLE_AGENT_PORT = ArchaiusUtil.getString("console.agent.port");
+    private static final DynamicIntProperty CONSOLE_AGENT_PORT = ArchaiusUtil.getInt("console.agent.port");
     private static final DynamicStringProperty CONSOLE_AGENT_PATH = ArchaiusUtil.getString("console.agent.path");
 
     HostApiService apiService;
@@ -58,7 +59,7 @@ public class ExecActionHandler implements ActionHandler {
                 DockerInstanceConstants.DOCKER_CMD, exec.getCommand(),
                 DockerInstanceConstants.DOCKER_CONTAINER, instance.getUuid());
 
-        HostApiAccess apiAccess = apiService.getAccess(host.getId(),
+        HostApiAccess apiAccess = apiService.getAccess(host.getId(), CONSOLE_AGENT_PORT.get(),
                 CollectionUtils.asMap("exec", data));
 
         if ( apiAccess == null ) {
@@ -66,7 +67,7 @@ public class ExecActionHandler implements ActionHandler {
         }
 
         StringBuilder url = new StringBuilder(CONSOLE_AGENT_SCHEME.get());
-        url.append("://").append(apiAccess.getHostname()).append(":").append(CONSOLE_AGENT_PORT.get());
+        url.append("://").append(apiAccess.getHostAndPort());
         url.append(CONSOLE_AGENT_PATH.get());
 
         return new HostAccess(url.toString(), apiAccess.getAuthenticationToken());

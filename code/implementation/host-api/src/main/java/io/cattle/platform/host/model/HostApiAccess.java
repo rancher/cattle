@@ -7,6 +7,7 @@ public class HostApiAccess {
 
     String hostname;
     String authenticationToken;
+    int port;
 
     Map<String, String> headers = new HashMap<>();
 
@@ -24,7 +25,7 @@ public class HostApiAccess {
         return headers;
     }
 
-    public String getHostname() {
+    public String getHostAndPort() {
         return hostname;
     }
 

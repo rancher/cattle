@@ -66,16 +66,19 @@ def test_project_auth(admin_client, client):
 def test_host_auth(admin_client, client):
     auth_check(admin_client.schema, 'host', 'rud', {
         'accountId': 'r',
+        'apiProxy': 'ru',
         'agentId': 'r',
         'computeTotal': 'r',
         'data': 'r',
         'physicalHostId': 'r',
+        'info': 'r',
     })
 
     auth_check(client.schema, 'host', 'rud', {
         'accountId': 'r',
         'computeTotal': 'r',
         'physicalHostId': 'r',
+        'info': 'r',
     })
 
 
