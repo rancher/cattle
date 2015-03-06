@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "credential", schema = "cattle")
 public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.CredentialRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.Credential {
 
-	private static final long serialVersionUID = 1722281044;
+	private static final long serialVersionUID = -1833553748;
 
 	/**
 	 * Setter for <code>cattle.credential.id</code>.
@@ -238,19 +238,19 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	}
 
 	/**
-	 * Setter for <code>cattle.credential.storage_pool_id</code>.
+	 * Setter for <code>cattle.credential.registry_id</code>.
 	 */
 	@Override
-	public void setStoragePoolId(java.lang.Long value) {
+	public void setRegistryId(java.lang.Long value) {
 		setValue(13, value);
 	}
 
 	/**
-	 * Getter for <code>cattle.credential.storage_pool_id</code>.
+	 * Getter for <code>cattle.credential.registry_id</code>.
 	 */
-	@javax.persistence.Column(name = "storage_pool_id", precision = 19)
+	@javax.persistence.Column(name = "registry_id", precision = 19)
 	@Override
-	public java.lang.Long getStoragePoolId() {
+	public java.lang.Long getRegistryId() {
 		return (java.lang.Long) getValue(13);
 	}
 
@@ -395,7 +395,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field14() {
-		return io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL.STORAGE_POOL_ID;
+		return io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL.REGISTRY_ID;
 	}
 
 	/**
@@ -507,7 +507,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	 */
 	@Override
 	public java.lang.Long value14() {
-		return getStoragePoolId();
+		return getRegistryId();
 	}
 
 	/**
@@ -632,7 +632,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	 */
 	@Override
 	public CredentialRecord value14(java.lang.Long value) {
-		setStoragePoolId(value);
+		setRegistryId(value);
 		return this;
 	}
 
@@ -666,7 +666,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 		setData(from.getData());
 		setPublicValue(from.getPublicValue());
 		setSecretValue(from.getSecretValue());
-		setStoragePoolId(from.getStoragePoolId());
+		setRegistryId(from.getRegistryId());
 	}
 
 	/**
@@ -692,7 +692,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	/**
 	 * Create a detached, initialised CredentialRecord
 	 */
-	public CredentialRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String publicValue, java.lang.String secretValue, java.lang.Long storagePoolId) {
+	public CredentialRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String publicValue, java.lang.String secretValue, java.lang.Long registryId) {
 		super(io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL);
 
 		setValue(0, id);
@@ -708,6 +708,6 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 		setValue(10, data);
 		setValue(11, publicValue);
 		setValue(12, secretValue);
-		setValue(13, storagePoolId);
+		setValue(13, registryId);
 	}
 }

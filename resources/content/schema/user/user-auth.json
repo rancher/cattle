@@ -154,14 +154,14 @@
         "register.key":"cr",
         "register.secretKey" : "r",
 
-        "registry": "cru",
+        "registry": "crud",
         "registry.serverAddress": "cr",
 
-        "registryCredential": "cru",
-        "registryCredential.publicValue": "cr",
-        "registryCredential.secretValue": "cr",
-        "registryCredential.storagePoolId": "cr",
-        "registryCredential.email": "cr",
+        "registryCredential": "crud",
+        "registryCredential.publicValue": "cru",
+        "registryCredential.secretValue": "cru",
+        "registryCredential.registryId": "cr",
+        "registryCredential.email": "cru",
 
         "registrationToken" : "cr",
         "registrationToken.registrationUrl" : "r",

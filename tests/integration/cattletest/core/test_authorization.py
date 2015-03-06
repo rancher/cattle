@@ -556,32 +556,32 @@ def test_physical_host(admin_client, client, service_client):
 
 
 def test_registry_credentials(admin_client, client):
-    auth_check(admin_client.schema, 'registryCredential', 'cru', {
+    auth_check(admin_client.schema, 'registryCredential', 'crud', {
         'accountId': 'r',
         'data': 'r',
-        'email': 'cr',
-        'publicValue': 'cr',
-        'secretValue': 'cr',
-        'storagePoolId': 'cr',
+        'email': 'cru',
+        'publicValue': 'cru',
+        'secretValue': 'cru',
+        'registryId': 'cr',
     })
 
-    auth_check(client.schema, 'registryCredential', 'cru', {
+    auth_check(client.schema, 'registryCredential', 'crud', {
         'accountId': 'r',
-        'email': 'cr',
-        'publicValue': 'cr',
-        'secretValue': 'cr',
-        'storagePoolId': 'cr',
+        'email': 'cru',
+        'publicValue': 'cru',
+        'secretValue': 'cru',
+        'registryId': 'cr',
     })
 
 
 def test_registry(admin_client, client):
-    auth_check(admin_client.schema, 'registry', 'cru', {
+    auth_check(admin_client.schema, 'registry', 'crud', {
         'accountId': 'r',
         'data': 'r',
         'serverAddress': 'cr',
     })
 
-    auth_check(client.schema, 'registry', 'cru', {
+    auth_check(client.schema, 'registry', 'crud', {
         'accountId': 'r',
         'serverAddress': 'cr',
     })
