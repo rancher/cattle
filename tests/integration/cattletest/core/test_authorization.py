@@ -539,7 +539,7 @@ def test_machine(admin_client, client, service_client):
         'data': 'cru',
         'authCertificateAuthority': 'cr',
         'authKey': 'cr',
-        'extractedConfig': 'r',
+        'extractedConfig': 'ru',
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
     })
