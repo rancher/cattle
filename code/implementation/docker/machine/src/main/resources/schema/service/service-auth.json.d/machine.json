@@ -3,7 +3,7 @@
         
         "machine" : "crud",
         "machine.data" : "cru",
-
+        "machine.extractedConfig" : "ru",
 
         "end" : ""
     }
