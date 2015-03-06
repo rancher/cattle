@@ -31,4 +31,5 @@
     </bean>
 
     <bean class="io.cattle.platform.docker.machine.api.filter.MachineValidationFilter" />
+    <bean class="io.cattle.platform.docker.machine.api.MachineLinkFilter" />
 </beans>

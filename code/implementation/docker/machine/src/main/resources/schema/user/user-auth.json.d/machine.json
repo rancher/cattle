@@ -5,7 +5,7 @@
         "machine.driver" : "r",
         "machine.authCertificateAuthority" : "cr",
         "machine.authKey" : "cr",
-        "machine.extractedConfig" : "r",
+        "machine.extractedConfig" : "",
         "machine.virtualboxConfig" : "cr",
         "machine.digitaloceanConfig" : "cr",
 

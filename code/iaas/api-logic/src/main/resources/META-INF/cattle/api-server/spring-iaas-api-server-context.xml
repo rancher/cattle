@@ -16,6 +16,7 @@
          not properly managed and rely on Spring auto wiring and not the ExtensionManager -->
     <bean class="io.cattle.platform.iaas.api.credential.SshKeyPemDownloadLinkHandler" />
     <bean class="io.cattle.platform.iaas.api.ippool.IpPoolAcquireActionHandler" />
+    <bean class="io.cattle.platform.docker.machine.api.MachineConfigLinkHandler" />
 
     <bean class="io.cattle.platform.iaas.api.cluster.ClusterAddHostActionHandler" />
     <bean class="io.cattle.platform.iaas.api.cluster.ClusterRemoveHostActionHandler" />
