@@ -141,7 +141,9 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         List<Long> hosts = populateHosts(loadBalancer);
         for (long hostId : hosts) {
             Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostId);
-            instances.add(lbInstance);
+            if (lbInstance != null) {
+                instances.add(lbInstance);
+            }
         }
         return instances;
     }

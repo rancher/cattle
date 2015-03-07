@@ -113,13 +113,13 @@
 
     <!-- Global Load Balancer -->
     <process:process name="globalloadbalancer.create" resourceType="globalLoadBalancer" start="requested" transitioning="activating" done="active" />
-    <process:process name="globalloadbalancer.remove" resourceType="globalLoadBalancer" start="active, activating" transitioning="removing" done="removed" />
+    <process:process name="globalloadbalancer.remove" resourceType="globalLoadBalancer" start="active, activating, updating-active" transitioning="removing" done="removed" />
     <process:process name="globalloadbalancer.addloadbalancer" resourceType="globalLoadBalancer" start="active" transitioning="updating-active" done="active" />
     <process:process name="globalloadbalancer.removeloadbalancer" resourceType="globalLoadBalancer" start="active" transitioning="updating-active" done="active" />
 
     <!-- Load Balancer -->
     <process:process name="loadbalancer.create" resourceType="loadBalancer" start="requested" transitioning="activating" done="active" />
-    <process:process name="loadbalancer.remove" resourceType="loadBalancer" start="active, activating" transitioning="removing" done="removed" />
+    <process:process name="loadbalancer.remove" resourceType="loadBalancer" start="active, activating, updating-active" transitioning="removing" done="removed" />
     <process:process name="loadbalancer.addtarget" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancer.removetarget" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
     <process:process name="loadbalancer.settargets" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
