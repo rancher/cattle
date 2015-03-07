@@ -1,5 +1,6 @@
 package io.cattle.platform.register.api;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.iaas.config.ScopedConfig;
 import io.cattle.platform.register.util.RegisterConstants;
@@ -12,13 +13,18 @@ import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.netflix.config.DynamicStringProperty;
+
 public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
 
-    @Inject
-    ScopedConfig scopedConfig;
+    private static final DynamicStringProperty DOCKER_CMD = ArchaiusUtil.getString("docker.register.command");
+    private static final DynamicStringProperty REQUIRED_IMAGE = ArchaiusUtil.getString("bootstrap.required.image");
+
+    @Inject ScopedConfig scopedConfig;
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
@@ -44,9 +50,13 @@ public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
                 url = ApiContext.getUrlBuilder().resourceReferenceLink("scripts", token);
             }
 
-            converted.getFields().put("token", token);
-            converted.getFields().put("registrationUrl", url.toExternalForm());
-            converted.getLinks().put("registrationUrl", url);
+            Map<String, Object> fields = converted.getFields();
+            Map<String, URL> links = converted.getLinks();
+
+            fields.put("command", String.format(DOCKER_CMD.get(), REQUIRED_IMAGE.get(), url.toExternalForm()));
+            fields.put("token", token);
+            fields.put("registrationUrl", url.toExternalForm());
+            links.put("registrationUrl", url);
         }
 
         return converted;
