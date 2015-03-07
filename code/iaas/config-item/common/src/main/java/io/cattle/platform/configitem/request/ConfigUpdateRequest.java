@@ -21,7 +21,7 @@ public class ConfigUpdateRequest {
     long agentId;
     Client client;
     List<ConfigUpdateItem> items = new ArrayList<ConfigUpdateItem>();
-    Map<String,Object> attributes = new HashMap<String, Object>();
+    Map<String, Object> attributes = new HashMap<String, Object>();
     ListenableFuture<? extends Event> updateFuture;
 
     public ConfigUpdateRequest() {
@@ -108,8 +108,8 @@ public class ConfigUpdateRequest {
         StringBuilder message = new StringBuilder("update [");
 
         boolean first = true;
-        for ( ConfigUpdateItem item : items ) {
-            if ( ! first ) {
+        for (ConfigUpdateItem item : items) {
+            if (!first) {
                 message.append(", ");
             }
 

@@ -44,25 +44,25 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
     }
 
     protected void addNetworkConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
-        for ( Nic nic : attempt.getNics() ) {
+        for (Nic nic : attempt.getNics()) {
             Long vnetId = nic.getVnetId();
             Long subnetId = nic.getSubnetId();
 
             ValidSubnetsConstraint constraint = new ValidSubnetsConstraint(nic.getId());
-            if ( subnetId != null ) {
+            if (subnetId != null) {
                 constraint.addSubnet(subnetId);
             }
 
-            if ( vnetId != null ) {
+            if (vnetId != null) {
                 Vnet vnet = objectManager.loadResource(Vnet.class, vnetId);
-                if ( vnet != null ) {
-                    for ( Subnet subnet : objectManager.mappedChildren(vnet, Subnet.class) ) {
+                if (vnet != null) {
+                    for (Subnet subnet : objectManager.mappedChildren(vnet, Subnet.class)) {
                         constraint.addSubnet(subnet.getId());
                     }
                 }
             }
 
-            if ( constraint.getSubnets().size() > 0 ) {
+            if (constraint.getSubnets().size() > 0) {
                 constraints.add(constraint);
             }
         }
@@ -70,56 +70,56 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
 
     protected void addComputeConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
         ValidHostsConstraint hostSet = new ValidHostsConstraint();
-        for ( Host host : attempt.getHosts() ) {
+        for (Host host : attempt.getHosts()) {
             hostSet.addHost(host.getId());
         }
 
         Instance instance = attempt.getInstance();
-        if ( instance != null ) {
+        if (instance != null) {
             Long requestedHostId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_REQUESTED_HOST_ID);
-            if ( requestedHostId != null ) {
+            if (requestedHostId != null) {
                 hostSet.addHost(requestedHostId);
             }
 
             List<Long> validHosts = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_VALID_HOST_IDS, Long.class);
-            if ( validHosts != null ) {
-                for ( Long id : validHosts ) {
-                    if ( id != null ) {
+            if (validHosts != null) {
+                for (Long id : validHosts) {
+                    if (id != null) {
                         hostSet.addHost(id);
                     }
                 }
             }
         }
 
-        if ( hostSet.getHosts().size() > 0 ) {
+        if (hostSet.getHosts().size() > 0) {
             constraints.add(hostSet);
         }
     }
 
     protected void addStorageConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
-        for ( Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet() ) {
+        for (Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet()) {
             Volume volume = entry.getKey();
             VolumeValidStoragePoolConstraint volumeToPoolConstraint = new VolumeValidStoragePoolConstraint(volume);
 
-            for ( StoragePool pool : entry.getValue() ) {
+            for (StoragePool pool : entry.getValue()) {
                 volumeToPoolConstraint.getStoragePools().add(pool.getId());
                 ValidHostsConstraint hostSet = new ValidHostsConstraint();
-                for ( Host host : allocatorDao.getHosts(pool) ) {
+                for (Host host : allocatorDao.getHosts(pool)) {
                     hostSet.addHost(host.getId());
                 }
                 constraints.add(hostSet);
             }
 
             Instance instance = objectManager.loadResource(Instance.class, volume.getInstanceId());
-            if ( instance != null ) {
-                for ( Host host : allocatorDao.getHosts(instance) ) {
-                    for ( StoragePool pool : allocatorDao.getAssociatedPools(host) ) {
+            if (instance != null) {
+                for (Host host : allocatorDao.getHosts(instance)) {
+                    for (StoragePool pool : allocatorDao.getAssociatedPools(host)) {
                         volumeToPoolConstraint.getStoragePools().add(pool.getId());
                     }
                 }
             }
 
-            if ( volumeToPoolConstraint.getStoragePools().size() > 0 ) {
+            if (volumeToPoolConstraint.getStoragePools().size() > 0) {
                 constraints.add(volumeToPoolConstraint);
             }
         }

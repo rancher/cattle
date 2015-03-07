@@ -1,13 +1,5 @@
 package io.cattle.platform.configitem.context.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.context.ConfigItemContextFactory;
@@ -18,6 +10,14 @@ import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.ObjectManager;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractAgentBaseContextFactory implements ConfigItemContextFactory {
 
@@ -46,22 +46,20 @@ public abstract class AbstractAgentBaseContextFactory implements ConfigItemConte
     @Override
     public final void populateContext(Request req, ConfigItem item, ArchiveContext context) {
         Client client = req.getClient();
-        if ( ! Agent.class.equals(client.getResourceType()) ) {
+        if (!Agent.class.equals(client.getResourceType())) {
             return;
         }
 
         Agent agent = objectManager.loadResource(Agent.class, client.getResourceId());
-        if ( agent == null ) {
+        if (agent == null) {
             return;
         }
 
-        List<Instance> instances = objectManager.find(Instance.class,
-                INSTANCE.AGENT_ID, agent.getId(),
-                INSTANCE.REMOVED, null);
+        List<Instance> instances = objectManager.find(Instance.class, INSTANCE.AGENT_ID, agent.getId(), INSTANCE.REMOVED, null);
 
-        if ( instances.size() > 1 ) {
+        if (instances.size() > 1) {
             List<Long> ids = new ArrayList<Long>();
-            for ( Instance instance : instances ) {
+            for (Instance instance : instances) {
                 ids.add(instance.getId());
             }
 

@@ -31,24 +31,21 @@ public class AgentInstanceIpsecNicDeactivate extends AbstractObjectProcessLogic 
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = (Nic)state.getResource();
+        Nic nic = (Nic) state.getResource();
         Instance instance = loadResource(Instance.class, nic.getInstanceId());
 
-        if ( nic.getDeviceNumber() == null || nic.getDeviceNumber() != 0 ||
-                instance == null || instance.getAgentId() == null ) {
+        if (nic.getDeviceNumber() == null || nic.getDeviceNumber() != 0 || instance == null || instance.getAgentId() == null) {
             return null;
         }
 
-        List<? extends NetworkService> service = networkDao.getAgentInstanceNetworkService(instance.getId(),
-                NetworkServiceConstants.KIND_IPSEC_TUNNEL);
+        List<? extends NetworkService> service = networkDao.getAgentInstanceNetworkService(instance.getId(), NetworkServiceConstants.KIND_IPSEC_TUNNEL);
 
-        if ( service.size() == 0 ) {
+        if (service.size() == 0) {
             return null;
         }
 
-        for ( Host host : mappedChildren(instance, Host.class) ) {
-            poolManager.releaseResource(host, instance, new PooledResourceOptions()
-                    .withQualifier(ResourcePoolConstants.HOST_PORT));
+        for (Host host : mappedChildren(instance, Host.class)) {
+            poolManager.releaseResource(host, instance, new PooledResourceOptions().withQualifier(ResourcePoolConstants.HOST_PORT));
         }
 
         return null;

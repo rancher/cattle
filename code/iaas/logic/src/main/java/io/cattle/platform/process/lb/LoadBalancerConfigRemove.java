@@ -28,12 +28,10 @@ public class LoadBalancerConfigRemove extends AbstractObjectProcessHandler {
         LoadBalancerConfig config = (LoadBalancerConfig) state.getResource();
 
         // remove all config/listener maps
-        List<? extends LoadBalancerConfigListenerMap> maps =
-                mapDao.findToRemove(LoadBalancerConfigListenerMap.class, LoadBalancerConfig.class, config.getId());
+        List<? extends LoadBalancerConfigListenerMap> maps = mapDao.findToRemove(LoadBalancerConfigListenerMap.class, LoadBalancerConfig.class, config.getId());
 
         for (LoadBalancerConfigListenerMap map : maps) {
-            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE,
-                    map, null);
+            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE, map, null);
         }
 
         return null;

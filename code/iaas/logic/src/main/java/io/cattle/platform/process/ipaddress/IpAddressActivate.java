@@ -25,34 +25,33 @@ public class IpAddressActivate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        IpAddress ipAddress = (IpAddress)state.getResource();
+        IpAddress ipAddress = (IpAddress) state.getResource();
         Subnet subnet = getObjectManager().loadResource(Subnet.class, ipAddress.getSubnetId());
 
-        if ( subnet == null ) {
+        if (subnet == null) {
             return null;
         }
 
-        if ( ! CommonStatesConstants.ACTIVE.equals(subnet.getState()) ) {
+        if (!CommonStatesConstants.ACTIVE.equals(subnet.getState())) {
             getObjectProcessManager().scheduleStandardProcess(StandardProcess.DEACTIVATE, ipAddress, null);
             throw new ExecutionException("IP allocation error", "Subnet not active", ipAddress);
         }
 
         PooledResource resource = poolManager.allocateResource(subnet, ipAddress);
 
-        if ( resource == null ) {
+        if (resource == null) {
             getObjectProcessManager().scheduleStandardProcess(StandardProcess.DEACTIVATE, ipAddress, null);
             throw new ExecutionException("IP allocation error", "Failed to allocate IP from subnet", ipAddress);
         }
 
         Long networkId = ipAddress.getNetworkId();
 
-        if ( networkId == null && subnet != null ) {
+        if (networkId == null && subnet != null) {
             networkId = subnet.getNetworkId();
         }
 
-        return new HandlerResult(IP_ADDRESS.ADDRESS, resource.getName(),
-                IP_ADDRESS.NAME, StringUtils.isBlank(ipAddress.getName()) ? resource.getName() : ipAddress.getName(),
-                IP_ADDRESS.NETWORK_ID, networkId);
+        return new HandlerResult(IP_ADDRESS.ADDRESS, resource.getName(), IP_ADDRESS.NAME, StringUtils.isBlank(ipAddress.getName()) ? resource.getName()
+                : ipAddress.getName(), IP_ADDRESS.NETWORK_ID, networkId);
     }
 
     public ResourcePoolManager getPoolManager() {

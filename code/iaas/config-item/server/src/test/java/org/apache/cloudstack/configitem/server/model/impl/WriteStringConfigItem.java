@@ -36,7 +36,7 @@ public class WriteStringConfigItem implements ConfigItem, ConfigItemFactory {
 
     @Override
     public Collection<ConfigItem> getConfigItems() {
-        return Arrays.asList((ConfigItem)this);
+        return Arrays.asList((ConfigItem) this);
     }
 
     @Override

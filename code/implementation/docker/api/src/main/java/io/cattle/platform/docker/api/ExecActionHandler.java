@@ -46,23 +46,19 @@ public class ExecActionHandler implements ActionHandler {
             host = DockerUtils.getHostFromContainer(objectManager, instance, null);
         }
 
-        if ( host == null ) {
+        if (host == null) {
             return null;
         }
 
         ContainerExec exec = request.proxyRequestObject(ContainerExec.class);
 
-        Map<String,Object> data = CollectionUtils.asMap(
-                DockerInstanceConstants.DOCKER_ATTACH_STDIN, exec.getAttachStdin(),
-                DockerInstanceConstants.DOCKER_ATTACH_STDOUT, exec.getAttachStdout(),
-                DockerInstanceConstants.DOCKER_TTY, exec.getTty(),
-                DockerInstanceConstants.DOCKER_CMD, exec.getCommand(),
-                DockerInstanceConstants.DOCKER_CONTAINER, instance.getUuid());
+        Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_ATTACH_STDIN, exec.getAttachStdin(),
+                DockerInstanceConstants.DOCKER_ATTACH_STDOUT, exec.getAttachStdout(), DockerInstanceConstants.DOCKER_TTY, exec.getTty(),
+                DockerInstanceConstants.DOCKER_CMD, exec.getCommand(), DockerInstanceConstants.DOCKER_CONTAINER, instance.getUuid());
 
-        HostApiAccess apiAccess = apiService.getAccess(host.getId(), CONSOLE_AGENT_PORT.get(),
-                CollectionUtils.asMap("exec", data));
+        HostApiAccess apiAccess = apiService.getAccess(host.getId(), CONSOLE_AGENT_PORT.get(), CollectionUtils.asMap("exec", data));
 
-        if ( apiAccess == null ) {
+        if (apiAccess == null) {
             return null;
         }
 

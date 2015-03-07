@@ -29,7 +29,7 @@ public class ProcessRecord extends LaunchConfiguration {
         this.startProcessServerId = startProcessServerId;
         this.startTime = new Date();
 
-        if ( this.startProcessServerId == null ) {
+        if (this.startProcessServerId == null) {
             this.startProcessServerId = EngineContext.getProcessServerId();
         }
     }

@@ -21,10 +21,10 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
     private static final Logger log = LoggerFactory.getLogger(ObjectDefaultsPostInstantiationHandler.class);
 
     List<ObjectDefaultsProvider> defaultProviders;
-    Map<Class<?>,Map<String,Object>> defaults = new HashMap<Class<?>, Map<String,Object>>();
+    Map<Class<?>, Map<String, Object>> defaults = new HashMap<Class<?>, Map<String, Object>>();
 
     @Override
-    public <T> T postProcess(T obj, Class<T> clz, Map<String,Object> properties) {
+    public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
         try {
             applyDefaults(clz, obj);
         } catch (IllegalAccessException e) {
@@ -36,9 +36,9 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
     }
 
     protected void applyDefaults(Class<?> clz, Object instance) throws IllegalAccessException, InvocationTargetException {
-        Map<String,Object> defaultValues = defaults.get(instance.getClass());
+        Map<String, Object> defaultValues = defaults.get(instance.getClass());
 
-        if ( defaultValues == null ) {
+        if (defaultValues == null) {
             return;
         }
 
@@ -53,7 +53,7 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
 
     @Override
     public void start() {
-        for ( ObjectDefaultsProvider provider : defaultProviders ) {
+        for (ObjectDefaultsProvider provider : defaultProviders) {
             defaults.putAll(provider.getDefaults());
         }
     }
@@ -70,6 +70,5 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
     public void setDefaultProviders(List<ObjectDefaultsProvider> defaultProviders) {
         this.defaultProviders = defaultProviders;
     }
-
 
 }

@@ -1,5 +1,9 @@
 package io.cattle.platform.deferred.util;
 
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.util.exception.ExceptionUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -7,10 +11,6 @@ import java.util.concurrent.Callable;
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.eventing.model.Event;
-import io.cattle.platform.util.exception.ExceptionUtils;
 
 public class DeferredUtils {
 
@@ -59,7 +59,10 @@ public class DeferredUtils {
             TL.set(old);
         }
 
-        /* This really isn't possible to get to due to rethrowExpectedRuntime() above */
+        /*
+         * This really isn't possible to get to due to rethrowExpectedRuntime()
+         * above
+         */
         return null;
     }
 
@@ -68,10 +71,10 @@ public class DeferredUtils {
     }
 
     public static void runDeferred() {
-        for ( Runnable runnable : TL.get() ) {
+        for (Runnable runnable : TL.get()) {
             try {
                 runnable.run();
-            } catch ( Throwable t ) {
+            } catch (Throwable t) {
                 log.error("Failed to run deferred action", t);
             }
         }

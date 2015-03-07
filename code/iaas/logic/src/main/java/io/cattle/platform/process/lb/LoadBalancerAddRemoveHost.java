@@ -29,8 +29,7 @@ public class LoadBalancerAddRemoveHost extends AbstractObjectProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         LoadBalancer lb = (LoadBalancer) state.getResource();
-        long hostId = DataAccessor.fromMap(state.getData()).
-                withKey(LoadBalancerConstants.FIELD_LB_HOST_ID).as(Long.class);
+        long hostId = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_LB_HOST_ID).as(Long.class);
         if (process.getName().equals(LoadBalancerConstants.PROCESS_LB_ADD_HOST)) {
             createLbHostMap(lb.getId(), hostId);
 
@@ -42,23 +41,18 @@ public class LoadBalancerAddRemoveHost extends AbstractObjectProcessHandler {
     }
 
     protected void removeLbHostMap(long lbId, long hostId) {
-        LoadBalancerHostMap lbHostMap = mapDao.findToRemove(LoadBalancerHostMap.class,
-                LoadBalancer.class, lbId, Host.class, hostId);
+        LoadBalancerHostMap lbHostMap = mapDao.findToRemove(LoadBalancerHostMap.class, LoadBalancer.class, lbId, Host.class, hostId);
 
         if (lbHostMap != null) {
-            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
-                    lbHostMap, null);
+            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE, lbHostMap, null);
         }
     }
 
     protected void createLbHostMap(long lbId, long hostId) {
-        LoadBalancerHostMap lbHostMap = mapDao.findNonRemoved(LoadBalancerHostMap.class,
-                LoadBalancer.class, lbId, Host.class, hostId);
+        LoadBalancerHostMap lbHostMap = mapDao.findNonRemoved(LoadBalancerHostMap.class, LoadBalancer.class, lbId, Host.class, hostId);
 
         if (lbHostMap == null) {
-            lbHostMap = objectManager.create(LoadBalancerHostMap.class,
-                    LOAD_BALANCER_HOST_MAP.LOAD_BALANCER_ID, lbId,
-                    LOAD_BALANCER_HOST_MAP.HOST_ID, hostId);
+            lbHostMap = objectManager.create(LoadBalancerHostMap.class, LOAD_BALANCER_HOST_MAP.LOAD_BALANCER_ID, lbId, LOAD_BALANCER_HOST_MAP.HOST_ID, hostId);
         }
         objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_HOST_MAP_CREATE, lbHostMap, null);
     }

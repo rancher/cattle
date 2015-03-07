@@ -27,11 +27,11 @@ public class Ping extends EventVO<PingData> {
 
     public boolean getOption(String name) {
         PingData data = getData();
-        if ( data == null ) {
+        if (data == null) {
             return false;
         }
 
-        Map<String,Boolean> options = data.getOptions();
+        Map<String, Boolean> options = data.getOptions();
         Boolean value = options.get(name);
         return value == null ? false : value;
     }

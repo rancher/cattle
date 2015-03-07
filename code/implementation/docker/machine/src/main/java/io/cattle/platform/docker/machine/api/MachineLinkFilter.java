@@ -14,9 +14,9 @@ public class MachineLinkFilter implements ResourceOutputFilter {
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if ( original instanceof PhysicalHost ) {
-            PhysicalHost host = (PhysicalHost)original;
-            if (StringUtils.isNotEmpty((String)DataUtils.getFields(host).get(EXTRACTED_CONFIG_FIELD))) {
+        if (original instanceof PhysicalHost) {
+            PhysicalHost host = (PhysicalHost) original;
+            if (StringUtils.isNotEmpty((String) DataUtils.getFields(host).get(EXTRACTED_CONFIG_FIELD))) {
                 converted.getLinks().put(CONFIG_LINK, ApiContext.getUrlBuilder().resourceLink(converted, CONFIG_LINK));
             }
         }

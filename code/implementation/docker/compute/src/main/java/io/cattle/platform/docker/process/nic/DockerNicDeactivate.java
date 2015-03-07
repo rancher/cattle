@@ -25,14 +25,14 @@ public class DockerNicDeactivate extends AbstractObjectProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = (Nic)state.getResource();
+        Nic nic = (Nic) state.getResource();
         Instance instance = getObjectManager().loadResource(Instance.class, nic.getInstanceId());
 
-        if ( instance != null && InstanceConstants.KIND_CONTAINER.equals(instance.getKind()) ) {
+        if (instance != null && InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
             String ip = DockerProcessUtils.getDockerIp(instance);
             IpAddress ipAddress = computeDao.getDockerIp(ip, instance);
 
-            if ( ipAddress != null ) {
+            if (ipAddress != null) {
                 getObjectProcessManager().executeStandardProcess(StandardProcess.DEACTIVATE, ipAddress, null);
             }
         }

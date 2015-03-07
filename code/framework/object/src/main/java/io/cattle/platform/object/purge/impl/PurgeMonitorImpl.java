@@ -38,7 +38,6 @@ public class PurgeMonitorImpl implements PurgeMonitor, Task {
     String removedState = "removed";
     ProcessManager processManager;
 
-
     @Override
     public String getName() {
         return "purge.resources";
@@ -46,44 +45,42 @@ public class PurgeMonitorImpl implements PurgeMonitor, Task {
 
     @Override
     public void run() {
-        for ( String type : findPurgableTypes() ) {
+        for (String type : findPurgableTypes()) {
             Class<?> schemaClass = schemaFactory.getSchemaClass(type);
-            if ( schemaClass == null ) {
+            if (schemaClass == null) {
                 continue;
             }
 
-            List<?> objects = objectManager.find(schemaClass,
-                    ObjectMetaDataManager.STATE_FIELD, removedState,
-                    ObjectMetaDataManager.REMOVED_FIELD, new Condition(ConditionType.NOTNULL),
-                    ObjectMetaDataManager.REMOVE_TIME_FIELD, new Condition(ConditionType.LT, new Date()));
+            List<?> objects = objectManager.find(schemaClass, ObjectMetaDataManager.STATE_FIELD, removedState, ObjectMetaDataManager.REMOVED_FIELD,
+                    new Condition(ConditionType.NOTNULL), ObjectMetaDataManager.REMOVE_TIME_FIELD, new Condition(ConditionType.LT, new Date()));
 
-            for ( Object obj : objects ) {
+            for (Object obj : objects) {
                 try {
                     objectProcessManager.scheduleStandardProcess(StandardProcess.PURGE, obj, null);
                     log.info("Scheduling purge for [{}] id [{}]", type, ObjectUtils.getId(obj));
-                } catch ( ProcessNotFoundException e ) {
-                } catch ( ProcessInstanceException e ) {
+                } catch (ProcessNotFoundException e) {
+                } catch (ProcessInstanceException e) {
                     log.info("Failed to scheduling purge for [{}] id [{}]", type, ObjectUtils.getId(obj), e);
                 }
             }
-         }
+        }
     }
 
     protected synchronized Set<String> findPurgableTypes() {
         Set<String> types = new HashSet<String>();
-        for ( Schema schema : schemaFactory.listSchemas() ) {
-            while ( schema.getParent() != null ) {
+        for (Schema schema : schemaFactory.listSchemas()) {
+            while (schema.getParent() != null) {
                 schema = schemaFactory.getSchema(schema.getParent());
             }
 
             String type = schema.getId();
 
-            if ( types.contains(type) ) {
+            if (types.contains(type)) {
                 continue;
             }
 
             Object fieldObj = objectMetaDataManager.convertFieldNameFor(type, ObjectMetaDataManager.REMOVED_FIELD);
-            if ( fieldObj == null ) {
+            if (fieldObj == null) {
                 /* This means there is no DB table with a removed field */
                 continue;
             }
@@ -91,7 +88,7 @@ public class PurgeMonitorImpl implements PurgeMonitor, Task {
             String processName = objectProcessManager.getStandardProcessName(StandardProcess.PURGE, type);
             ProcessDefinition def = processManager.getProcessDefinition(processName);
 
-            if ( def != null ) {
+            if (def != null) {
                 types.add(type);
             }
         }

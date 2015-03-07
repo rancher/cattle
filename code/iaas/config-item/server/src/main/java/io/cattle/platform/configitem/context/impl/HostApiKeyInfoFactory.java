@@ -1,18 +1,18 @@
 package io.cattle.platform.configitem.context.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.util.Map;
-import java.util.TreeMap;
-
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.ssh.common.SshKeyGen;
+
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -33,10 +33,10 @@ public class HostApiKeyInfoFactory extends AbstractAgentBaseContextFactory {
         context.getData().putAll(getKeys());
     }
 
-    protected Map<String,String> getKeys() {
-        Map<String,String> result = new TreeMap<>();
+    protected Map<String, String> getKeys() {
+        Map<String, String> result = new TreeMap<>();
 
-        for ( Map.Entry<String, PublicKey> entry : hostApiService.getPublicKeys().entrySet() ) {
+        for (Map.Entry<String, PublicKey> entry : hostApiService.getPublicKeys().entrySet()) {
             String key = entry.getKey();
             String pem;
             try {
@@ -50,14 +50,13 @@ public class HostApiKeyInfoFactory extends AbstractAgentBaseContextFactory {
         return result;
     }
 
-
     @Override
     public String getContentHash(String hash) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(hash.getBytes("UTF-8"));
 
-            for ( Map.Entry<String, String> entry : getKeys().entrySet() ) {
+            for (Map.Entry<String, String> entry : getKeys().entrySet()) {
                 md.update(entry.getKey().getBytes("UTF-8"));
                 md.update(entry.getValue().getBytes("UTF-8"));
             }

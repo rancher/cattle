@@ -17,13 +17,11 @@ public class ClearRemovedFields extends AbstractObjectProcessLogic implements Pr
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Object resource = state.getResource();
-        if ( ! ObjectUtils.hasWritableProperty(resource, ObjectMetaDataManager.REMOVED_FIELD) ) {
+        if (!ObjectUtils.hasWritableProperty(resource, ObjectMetaDataManager.REMOVED_FIELD)) {
             return null;
         }
 
-        return new HandlerResult(
-                ObjectMetaDataManager.REMOVED_FIELD, null,
-                ObjectMetaDataManager.REMOVE_TIME_FIELD, null);
+        return new HandlerResult(ObjectMetaDataManager.REMOVED_FIELD, null, ObjectMetaDataManager.REMOVE_TIME_FIELD, null);
     }
 
     @Override
@@ -37,4 +35,3 @@ public class ClearRemovedFields extends AbstractObjectProcessLogic implements Pr
     }
 
 }
-

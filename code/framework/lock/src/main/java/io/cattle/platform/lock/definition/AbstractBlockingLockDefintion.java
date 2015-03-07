@@ -1,8 +1,8 @@
 package io.cattle.platform.lock.definition;
 
-import com.netflix.config.DynamicLongProperty;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+
+import com.netflix.config.DynamicLongProperty;
 
 public abstract class AbstractBlockingLockDefintion extends AbstractLockDefinition implements BlockingLockDefinition {
 
@@ -15,7 +15,7 @@ public abstract class AbstractBlockingLockDefintion extends AbstractLockDefiniti
     @Override
     public long getWait() {
         String lockId = getLockId();
-        if ( lockId == null ) {
+        if (lockId == null) {
             return DEFAULT_WAIT.get();
         } else {
             long wait = ArchaiusUtil.getLong(lockId + ".wait").get();

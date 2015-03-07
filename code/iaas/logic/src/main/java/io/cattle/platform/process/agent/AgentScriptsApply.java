@@ -30,13 +30,13 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
 
     @Override
     public String[] getProcessNames() {
-       return new String[] { AgentConstants.PROCESS_ACTIVATE, AgentConstants.PROCESS_RECONNECT };
+        return new String[] { AgentConstants.PROCESS_ACTIVATE, AgentConstants.PROCESS_RECONNECT };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Agent agent = (Agent)state.getResource();
-        if ( ! agent.getManagedConfig() ) {
+        Agent agent = (Agent) state.getResource();
+        if (!agent.getManagedConfig()) {
             return null;
         }
 
@@ -57,13 +57,11 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
         return null;
     }
 
-    protected ConfigUpdateRequest before(ConfigUpdateRequest request, Agent agent){
-        if ( request == null ) {
+    protected ConfigUpdateRequest before(ConfigUpdateRequest request, Agent agent) {
+        if (request == null) {
             request = new ConfigUpdateRequest(agent.getId());
-            for ( String item : ITEMS.get() ) {
-                request.addItem(item)
-                    .withIncrement(false)
-                    .setCheckInSyncOnly(true);
+            for (String item : ITEMS.get()) {
+                request.addItem(item).withIncrement(false).setCheckInSyncOnly(true);
             }
         }
 
@@ -72,8 +70,8 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
         return request;
     }
 
-    protected void after(ConfigUpdateRequest request, Agent agent){
-        if ( request == null ) {
+    protected void after(ConfigUpdateRequest request, Agent agent) {
+        if (request == null) {
             return;
         }
 

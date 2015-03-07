@@ -23,10 +23,8 @@ public class SimulatorFailedProcessor implements AgentSimulatorEventProcessor, P
         String name = event.getName();
         String eventString = jsonMapper.writeValueAsString(event);
 
-        if ( eventString.contains(name + "::fail") ) {
-            return EventVO.reply(event)
-                    .withTransitioningMessage("Failing [" + name + "]")
-                    .withTransitioning(Event.TRANSITIONING_ERROR);
+        if (eventString.contains(name + "::fail")) {
+            return EventVO.reply(event).withTransitioningMessage("Failing [" + name + "]").withTransitioning(Event.TRANSITIONING_ERROR);
         }
 
         return null;

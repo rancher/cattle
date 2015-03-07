@@ -33,7 +33,7 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
     public static final String PROCESSES = "processes";
     public static final String RESOURCE_DOT = "resourceDot";
 
-    private static final Map<String,String> LINKS = new HashMap<String, String>();
+    private static final Map<String, String> LINKS = new HashMap<String, String>();
     static {
         LINKS.put(PROCESSES, null);
         LINKS.put(RESOURCE_DOT, null);
@@ -54,8 +54,8 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object getByIdInternal(String type, String id, ListOptions options) {
-        for ( ProcessDefinition def : processDefinitions ) {
-            if ( id.equalsIgnoreCase(def.getResourceType()) ) {
+        for (ProcessDefinition def : processDefinitions) {
+            if (id.equalsIgnoreCase(def.getResourceType())) {
                 return newResource(def.getResourceType(), options.getInclude());
             }
         }
@@ -67,10 +67,10 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         Set<String> found = new HashSet<String>();
         List<ResourceDefinition> result = new ArrayList<ResourceDefinition>();
-        for ( ProcessDefinition def : processDefinitions ) {
+        for (ProcessDefinition def : processDefinitions) {
             String resourceType = def.getResourceType();
 
-            if ( found.contains(resourceType) ) {
+            if (found.contains(resourceType)) {
                 continue;
             }
 
@@ -83,9 +83,9 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
 
     protected ResourceDefinition newResource(String name, Include include) {
         ResourceDefinition def = new ResourceDefinition(name);
-        if ( include != null ) {
-            for ( String link : include.getLinks() ) {
-                for ( Object obj : getLinkInternal(def, link, null) ) {
+        if (include != null) {
+            for (String link : include.getLinks()) {
+                for (Object obj : getLinkInternal(def, link, null)) {
                     ApiUtils.addAttachement(def, link, obj);
                 }
             }
@@ -94,10 +94,8 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
         return def;
     }
 
-
     @Override
-    protected Resource constructResource(final IdFormatter idFormatter, SchemaFactory schemaFactory, final Schema schema, Object obj,
-            ApiRequest apiRequest) {
+    protected Resource constructResource(final IdFormatter idFormatter, SchemaFactory schemaFactory, final Schema schema, Object obj, ApiRequest apiRequest) {
         return ApiUtils.createResourceWithAttachments(this, apiRequest, idFormatter, schema, obj, new HashMap<String, Object>());
     }
 
@@ -105,10 +103,10 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
         String type = request.getSchemaFactory().getSchemaName(ProcessDefinitionApi.class);
         ResourceManager rm = getLocator().getResourceManagerByType(type);
 
-        if ( link.equalsIgnoreCase(PROCESSES) ) {
-            Map<Object,Object> criteria = CollectionUtils.asMap((Object)"resourceType", def.getId());
+        if (link.equalsIgnoreCase(PROCESSES)) {
+            Map<Object, Object> criteria = CollectionUtils.asMap((Object) "resourceType", def.getId());
             return CollectionUtils.toList(rm.list(type, criteria, new ListOptions()));
-        } else if ( request != null && link.equalsIgnoreCase(RESOURCE_DOT) ) {
+        } else if (request != null && link.equalsIgnoreCase(RESOURCE_DOT)) {
             String dot = dotMaker.getResourceDot(def.getName());
 
             boolean written = false;
@@ -126,16 +124,14 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object getLinkInternal(String type, String id, String link, ApiRequest request) {
-        ResourceDefinition def = (ResourceDefinition)getById(type, id, new ListOptions());
+        ResourceDefinition def = (ResourceDefinition) getById(type, id, new ListOptions());
         return def == null ? null : getLinkInternal(def, link, request);
     }
-
 
     @Override
     protected Map<String, String> getLinks(SchemaFactory schemaFactory, Resource resource) {
         return LINKS;
     }
-
 
     public ProcessManager getProcessManager() {
         return processManager;

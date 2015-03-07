@@ -32,22 +32,21 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
 
     ApiRequestFilterDelegate delegate;
-    Map<String,Timer> timers = new ConcurrentHashMap<String, Timer>();
+    Map<String, Timer> timers = new ConcurrentHashMap<String, Timer>();
 
     @Override
-    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException,
-            ServletException {
-        String path = ((HttpServletRequest)request).getServletPath();
+    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
+        String path = ((HttpServletRequest) request).getServletPath();
 
         boolean ignore = false;
-        for ( String prefix : IGNORE.get() ) {
-            if ( path.startsWith(prefix)) {
+        for (String prefix : IGNORE.get()) {
+            if (path.startsWith(prefix)) {
                 ignore = true;
                 break;
             }
         }
 
-        if ( ignore ) {
+        if (ignore) {
             chain.doFilter(request, response);
         } else {
             try {
@@ -69,7 +68,7 @@ public class ApiRequestFilter extends ModuleBasedFilter {
                         }
                     }
                 }.run();
-            } catch ( WrappedException e ) {
+            } catch (WrappedException e) {
                 Throwable t = e.getCause();
                 ExceptionUtils.rethrow(t, IOException.class);
                 ExceptionUtils.rethrow(t, ServletException.class);
@@ -79,29 +78,25 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     }
 
     protected void done(ApiContext context, long start, boolean success) {
-        if ( context == null ) {
+        if (context == null) {
             return;
         }
 
         ApiRequest request = context.getApiRequest();
-        if ( request == null ) {
+        if (request == null) {
             return;
         }
 
-        if ( request.getResponseCode() >= 400 ) {
+        if (request.getResponseCode() >= 400) {
             success = false;
         }
 
         long duration = System.currentTimeMillis() - start;
-        if ( request != null ) {
-            String key = String.format(
-                    "api.%s.%s.%s",
-                    success ? "success" : "failed",
-                    request.getType(),
-                    request.getMethod().toLowerCase());
+        if (request != null) {
+            String key = String.format("api.%s.%s.%s", success ? "success" : "failed", request.getType(), request.getMethod().toLowerCase());
 
             Timer timer = timers.get(key);
-            if ( timer == null ) {
+            if (timer == null) {
                 timer = MetricsUtil.getRegistry().timer(key);
                 timers.put(key, timer);
             }

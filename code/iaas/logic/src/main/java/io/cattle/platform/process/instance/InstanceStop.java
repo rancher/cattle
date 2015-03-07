@@ -30,9 +30,9 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        final Instance instance = (Instance)state.getResource();
+        final Instance instance = (Instance) state.getResource();
 
-        Map<String,Object> result = new ConcurrentHashMap<String,Object>();
+        Map<String, Object> result = new ConcurrentHashMap<String, Object>();
 
         compute(instance);
 
@@ -40,7 +40,7 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
 
         storage(instance);
 
-        if ( shouldDeallocate(instance, state) ) {
+        if (shouldDeallocate(instance, state)) {
             deallocate(instance);
         }
 
@@ -48,8 +48,7 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
     }
 
     protected boolean shouldDeallocate(Instance instance, ProcessState state) {
-        return Boolean.TRUE.equals(state.getData().get(InstanceConstants.DEALLOCATE_OPTION)) ||
-                instanceDao.isOnSharedStorage(instance);
+        return Boolean.TRUE.equals(state.getData().get(InstanceConstants.DEALLOCATE_OPTION)) || instanceDao.isOnSharedStorage(instance);
     }
 
     protected void deallocate(Instance instance) {
@@ -59,7 +58,7 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
     protected void storage(Instance instance) {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
 
-        for ( Volume volume : volumes ) {
+        for (Volume volume : volumes) {
             deactivate(volume, null);
         }
     }
@@ -67,22 +66,22 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
     protected void network(Instance instance) {
         List<Nic> nics = getObjectManager().children(instance, Nic.class);
 
-        for ( Nic nic : nics ) {
+        for (Nic nic : nics) {
             deactivate(nic, null);
         }
 
-        for ( Port port : getObjectManager().children(instance, Port.class) ) {
+        for (Port port : getObjectManager().children(instance, Port.class)) {
             deactivate(port, null);
         }
 
-        for ( InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID) ) {
+        for (InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID)) {
             deactivate(link, null);
         }
     }
 
     protected void compute(Instance instance) {
-        for ( InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()) ) {
-            if ( map.getRemoved() == null ) {
+        for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
+            if (map.getRemoved() == null) {
                 deactivate(map, null);
             }
         }

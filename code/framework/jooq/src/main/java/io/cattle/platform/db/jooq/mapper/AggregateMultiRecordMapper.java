@@ -13,13 +13,16 @@ public class AggregateMultiRecordMapper<T> extends MultiRecordMapper<T> {
 
     public AggregateMultiRecordMapper(Class<T> resultType) {
         super();
-        /* I could probably find this out with reflection magic, too lazy, maybe slow? */
+        /*
+         * I could probably find this out with reflection magic, too lazy, maybe
+         * slow?
+         */
         this.resultType = resultType;
     }
 
     @Override
     protected T map(List<Object> input) {
-        if ( ctor == null ) {
+        if (ctor == null) {
             try {
                 ctor = ConstructorUtils.getMatchingAccessibleConstructor(resultType, classes.toArray(new Class<?>[classes.size()]));
             } catch (SecurityException e) {

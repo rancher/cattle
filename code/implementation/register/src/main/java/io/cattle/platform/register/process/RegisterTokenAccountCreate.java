@@ -18,8 +18,7 @@ import com.netflix.config.DynamicStringListProperty;
 
 public class RegisterTokenAccountCreate extends AbstractObjectProcessLogic implements ProcessPostListener {
 
-    public static final DynamicStringListProperty ACCOUNT_KINDS = ArchaiusUtil
-            .getList("process.account.create.register.token.account.kinds");
+    public static final DynamicStringListProperty ACCOUNT_KINDS = ArchaiusUtil.getList("process.account.create.register.token.account.kinds");
 
     GenericResourceDao resourceDao;
 
@@ -30,24 +29,23 @@ public class RegisterTokenAccountCreate extends AbstractObjectProcessLogic imple
 
     @Override
     public HandlerResult handle(final ProcessState state, ProcessInstance process) {
-        Account account = (Account)state.getResource();
+        Account account = (Account) state.getResource();
 
-        if ( ! ACCOUNT_KINDS.get().contains(account.getKind()) ) {
+        if (!ACCOUNT_KINDS.get().contains(account.getKind())) {
             return null;
         }
 
         boolean found = false;
-        for ( Credential cred : children(account, Credential.class) ) {
-            if ( RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN.equals(cred.getKind()) ) {
+        for (Credential cred : children(account, Credential.class)) {
+            if (RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN.equals(cred.getKind())) {
                 found = true;
                 break;
             }
         }
 
-        if ( ! found ) {
-            resourceDao.createAndSchedule(Credential.class,
-                    CREDENTIAL.ACCOUNT_ID, account.getId(),
-                    CREDENTIAL.KIND, RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
+        if (!found) {
+            resourceDao.createAndSchedule(Credential.class, CREDENTIAL.ACCOUNT_ID, account.getId(), CREDENTIAL.KIND,
+                    RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
         }
 
         return null;

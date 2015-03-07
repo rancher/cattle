@@ -9,9 +9,8 @@ import java.util.Map;
 public class PolicyOptionsWrapper implements PolicyOptions {
 
     PolicyOptions options;
-    Map<String,String> values = new HashMap<String, String>();
-    Map<String,OptionCallback> callbacks = new HashMap<String, OptionCallback>();
-
+    Map<String, String> values = new HashMap<String, String>();
+    Map<String, OptionCallback> callbacks = new HashMap<String, OptionCallback>();
 
     public PolicyOptionsWrapper(PolicyOptions options) {
         super();
@@ -26,7 +25,7 @@ public class PolicyOptionsWrapper implements PolicyOptions {
     @Override
     public String getOption(String optionName) {
         OptionCallback callback = callbacks.get(optionName);
-        if ( callback != null ) {
+        if (callback != null) {
             return callback.getOption();
         }
         String value = values.get(optionName);

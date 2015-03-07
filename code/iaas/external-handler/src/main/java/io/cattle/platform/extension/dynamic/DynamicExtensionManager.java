@@ -15,18 +15,18 @@ public class DynamicExtensionManager extends ExtensionManagerImpl {
     @Override
     public <T> List<T> getExtensionList(String key, Class<T> type) {
         List<T> extensions = super.getExtensionList(key, type);
-        if ( type == null ) {
-            type = (Class<T>)getExpectedType(key);
+        if (type == null) {
+            type = (Class<T>) getExpectedType(key);
         }
 
-        if ( DYNAMIC_HANDLER_KEY.equals(key) || DynamicExtensionHandler.class == type ) {
+        if (DYNAMIC_HANDLER_KEY.equals(key) || DynamicExtensionHandler.class == type) {
             return extensions;
         }
 
-        for ( DynamicExtensionHandler handler : getExtensionList(DynamicExtensionHandler.class) ) {
+        for (DynamicExtensionHandler handler : getExtensionList(DynamicExtensionHandler.class)) {
             List<T> additional = handler.getExtensionList(key, type);
 
-            if ( additional.size() == 0 ) {
+            if (additional.size() == 0) {
                 continue;
             }
 
@@ -34,10 +34,10 @@ public class DynamicExtensionManager extends ExtensionManagerImpl {
             Iterator<T> iter = additional.iterator();
             T current = iter.next();
 
-            for ( Object obj : extensions ) {
-                while ( current != null && PriorityUtils.getPriority(obj) > PriorityUtils.getPriority(current) ) {
+            for (Object obj : extensions) {
+                while (current != null && PriorityUtils.getPriority(obj) > PriorityUtils.getPriority(current)) {
                     merged.add(current);
-                    if ( iter.hasNext() ) {
+                    if (iter.hasNext()) {
                         current = iter.next();
                     } else {
                         current = null;
@@ -46,15 +46,15 @@ public class DynamicExtensionManager extends ExtensionManagerImpl {
                 merged.add(obj);
             }
 
-            if ( current != null ) {
+            if (current != null) {
                 merged.add(current);
             }
 
-            while ( iter.hasNext() ) {
+            while (iter.hasNext()) {
                 merged.add(iter.next());
             }
 
-            return (List<T>)merged;
+            return (List<T>) merged;
         }
 
         return extensions;

@@ -31,7 +31,7 @@ public class HostPurge extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(final ProcessState state, ProcessInstance process) {
-        final Host host = (Host)state.getResource();
+        final Host host = (Host) state.getResource();
 
         // TODO: Implement some bulk operation
         List<ClusterHostMapRecord> clusterHostMaps = Collections.emptyList();
@@ -44,28 +44,28 @@ public class HostPurge extends AbstractDefaultProcessHandler {
             objectProcessManager.scheduleProcessInstance(ClusterConstants.CLUSTER_HOST_MAP_REMOVE_PROCESS, mapping, null);
         }
 
-        if ( host.getAgentId() == null ) {
+        if (host.getAgentId() == null) {
             return null;
         }
 
         List<StoragePool> pools = objectManager.mappedChildren(host, StoragePool.class);
-        if ( pools.size() == 1 ) {
+        if (pools.size() == 1) {
             StoragePool pool = pools.get(0);
 
             try {
                 deactivateThenRemove(pool, state.getData());
-            } catch ( ProcessCancelException e ) {
+            } catch (ProcessCancelException e) {
                 // ignore
             }
 
             purge(pool, state.getData());
         }
 
-        for ( Instance instance : instanceDao.getNonRemovedInstanceOn(host) ) {
+        for (Instance instance : instanceDao.getNonRemovedInstanceOn(host)) {
             try {
                 execute(InstanceConstants.PROCESS_STOP, instance, state.getData());
-            } catch ( ProcessCancelException e ) {
-                //ignore
+            } catch (ProcessCancelException e) {
+                // ignore
             }
             remove(instance, state.getData());
         }

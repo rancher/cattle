@@ -14,7 +14,7 @@ public class SubnetAddressGeneratorTest {
         Iterator<String> iter = new SubnetAddressGenerator(start, end);
         Set<String> ips = new LinkedHashSet<String>();
 
-        while ( iter.hasNext() ) {
+        while (iter.hasNext()) {
             ips.add(iter.next());
         }
 

@@ -16,8 +16,8 @@ public class SimulatorStoragePoolDriver extends AbstractKindBasedStoragePoolDriv
 
     @Override
     protected boolean populateExtenalImageInternal(StoragePool pool, String uuid, Image image) {
-//        image.setUuid(uuid);
-//        image.setIsPublic(true);
+        // image.setUuid(uuid);
+        // image.setIsPublic(true);
         image.setName(uuid);
         image.setFormat(SIM_FORMAT);
 

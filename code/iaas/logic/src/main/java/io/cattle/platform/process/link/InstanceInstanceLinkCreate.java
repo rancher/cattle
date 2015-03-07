@@ -35,50 +35,44 @@ public class InstanceInstanceLinkCreate extends AbstractObjectProcessLogic imple
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Instance instance = (Instance)state.getResource();
+        Instance instance = (Instance) state.getResource();
         ObjectManager objectManager = getObjectManager();
 
-        Object linkObjs = DataAccessor.fields(instance)
-                                .withKey(InstanceConstants.FIELD_INSTANCE_LINKS)
-                                .withDefault(new HashMap<String,Object>())
-                                .get();
+        Object linkObjs = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_INSTANCE_LINKS).withDefault(new HashMap<String, Object>()).get();
 
-        if ( ! (linkObjs instanceof Map<?, ?>) ) {
+        if (!(linkObjs instanceof Map<?, ?>)) {
             return null;
         }
 
-        Map<String,InstanceLink> links = new HashMap<String, InstanceLink>();
-        for ( InstanceLink link : objectManager.children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID) ) {
+        Map<String, InstanceLink> links = new HashMap<String, InstanceLink>();
+        for (InstanceLink link : objectManager.children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID)) {
             links.put(link.getLinkName(), link);
         }
 
-        for ( Map.Entry<?,?> entry : ((Map<?,?>)linkObjs).entrySet() ) {
+        for (Map.Entry<?, ?> entry : ((Map<?, ?>) linkObjs).entrySet()) {
             String name = entry.getKey().toString();
             Long targetInstanceId = null;
 
             try {
-                if ( entry.getValue() != null ) {
+                if (entry.getValue() != null) {
                     targetInstanceId = Long.parseLong(entry.getValue().toString());
                 }
-            } catch ( NumberFormatException nfe ) {
+            } catch (NumberFormatException nfe) {
                 log.error("Invalid instance [{}] for link [{}], skipping", entry.getValue(), entry.getKey());
                 continue;
             }
 
-            if ( links.containsKey(name) ) {
+            if (links.containsKey(name)) {
                 continue;
             }
 
-            InstanceLink linkObj = objectManager.create(InstanceLink.class,
-                    INSTANCE_LINK.ACCOUNT_ID, instance.getAccountId(),
-                    INSTANCE_LINK.LINK_NAME, name,
-                    INSTANCE_LINK.INSTANCE_ID, instance.getId(),
-                    INSTANCE_LINK.TARGET_INSTANCE_ID, targetInstanceId);
+            InstanceLink linkObj = objectManager.create(InstanceLink.class, INSTANCE_LINK.ACCOUNT_ID, instance.getAccountId(), INSTANCE_LINK.LINK_NAME, name,
+                    INSTANCE_LINK.INSTANCE_ID, instance.getId(), INSTANCE_LINK.TARGET_INSTANCE_ID, targetInstanceId);
 
             links.put(name, linkObj);
         }
 
-        for ( InstanceLink link : links.values() ) {
+        for (InstanceLink link : links.values()) {
             getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, link, state.getData());
         }
 

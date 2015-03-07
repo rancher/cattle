@@ -37,23 +37,25 @@ public class ResourceApplicationContext extends ClassPathXmlApplicationContext {
         this.configResources = configResources;
     }
 
-//    @Override
-//    protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
-//        // Create a new XmlBeanDefinitionReader for the given BeanFactory.
-//        XmlBeanDefinitionReader beanDefinitionReader = new TimedXmlBeanDefinitionReader(beanFactory);
-//
-//        // Configure the bean definition reader with this context's
-//        // resource loading environment.
-//        beanDefinitionReader.setEnvironment(this.getEnvironment());
-//        beanDefinitionReader.setResourceLoader(this);
-//        beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
-//        beanDefinitionReader.setDocumentLoader(new TimedDocumentLoader());
-//
-//        // Allow a subclass to provide custom initialization of the reader,
-//        // then proceed with actually loading the bean definitions.
-//        initBeanDefinitionReader(beanDefinitionReader);
-//        loadBeanDefinitions(beanDefinitionReader);
-//    }
+    // @Override
+    // protected void loadBeanDefinitions(DefaultListableBeanFactory
+    // beanFactory) throws BeansException, IOException {
+    // // Create a new XmlBeanDefinitionReader for the given BeanFactory.
+    // XmlBeanDefinitionReader beanDefinitionReader = new
+    // TimedXmlBeanDefinitionReader(beanFactory);
+    //
+    // // Configure the bean definition reader with this context's
+    // // resource loading environment.
+    // beanDefinitionReader.setEnvironment(this.getEnvironment());
+    // beanDefinitionReader.setResourceLoader(this);
+    // beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
+    // beanDefinitionReader.setDocumentLoader(new TimedDocumentLoader());
+    //
+    // // Allow a subclass to provide custom initialization of the reader,
+    // // then proceed with actually loading the bean definitions.
+    // initBeanDefinitionReader(beanDefinitionReader);
+    // loadBeanDefinitions(beanDefinitionReader);
+    // }
 
     @Override
     protected Resource[] getConfigResources() {
@@ -75,8 +77,7 @@ public class ResourceApplicationContext extends ClassPathXmlApplicationContext {
 
     @Override
     public String toString() {
-        return "ResourceApplicationContext [applicationName=" + applicationName + ", configResources="
-                + Arrays.toString(configResources) + "]";
+        return "ResourceApplicationContext [applicationName=" + applicationName + ", configResources=" + Arrays.toString(configResources) + "]";
     }
 
     @Override
@@ -88,7 +89,5 @@ public class ResourceApplicationContext extends ClassPathXmlApplicationContext {
     public Resource[] getResources(String resource) throws IOException {
         return super.getResources(resource);
     }
-
-
 
 }

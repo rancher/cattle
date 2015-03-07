@@ -11,8 +11,8 @@ import java.util.List;
 
 public class ProcessHelpers {
 
-    public static <T> List<T> createOneChild(ObjectManager objectManager, ObjectProcessManager processManager, Object parent,
-            Class<T> childClass, Object key, Object... values) {
+    public static <T> List<T> createOneChild(ObjectManager objectManager, ObjectProcessManager processManager, Object parent, Class<T> childClass, Object key,
+            Object... values) {
 
         List<T> children = objectManager.children(parent, childClass);
         if (children.size() == 0) {
@@ -29,8 +29,8 @@ public class ProcessHelpers {
     public static <T> List<T> getNonRemovedChildren(ObjectManager objectManager, Object obj, Class<T> type) {
         List<T> result = new ArrayList<>();
 
-        for ( T child : objectManager.children(obj, type) ) {
-            if ( ObjectUtils.getRemoved(child) == null ) {
+        for (T child : objectManager.children(obj, type)) {
+            if (ObjectUtils.getRemoved(child) == null) {
                 result.add(child);
             }
         }

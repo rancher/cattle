@@ -21,17 +21,16 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
     JsonMapper jsonMapper;
 
     @Override
-    public <T> T postProcess(T obj, Class<T> clz, Map<String,Object> properties) {
-        if ( ! hasDataField(obj) )
+    public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
+        if (!hasDataField(obj))
             return obj;
 
         try {
-            Map<String,Object> data = getData(obj, properties);
+            Map<String, Object> data = getData(obj, properties);
             setData(obj, data);
             return obj;
-        } catch ( IOException e ) {
-            throw new IllegalStateException("Failed to handle object data for [" + obj +
-                    "] and properties [" + properties + "]", e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to handle object data for [" + obj + "] and properties [" + properties + "]", e);
         }
     }
 
@@ -47,14 +46,14 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
             return false;
         }
 
-        if ( desc == null || desc.getReadMethod() == null || desc.getPropertyType() != Map.class ) {
+        if (desc == null || desc.getReadMethod() == null || desc.getPropertyType() != Map.class) {
             return false;
         }
 
         return true;
     }
 
-    protected void setData(Object instance, Map<String,Object> data) throws IOException {
+    protected void setData(Object instance, Map<String, Object> data) throws IOException {
         try {
             BeanUtils.setProperty(instance, DATA, data);
         } catch (IllegalAccessException e) {
@@ -65,9 +64,9 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String,Object> getData(Object instance, Map<String,Object> properties) throws IOException {
-        Map<String,Object> objectData = null;
-        Map<String,Object> inputData = getMap(properties.get(DATA));
+    protected Map<String, Object> getData(Object instance, Map<String, Object> properties) throws IOException {
+        Map<String, Object> objectData = null;
+        Map<String, Object> inputData = getMap(properties.get(DATA));
 
         try {
             objectData = (Map<String, Object>) PropertyUtils.getProperty(instance, DATA);
@@ -76,9 +75,9 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
         } catch (NoSuchMethodException e) {
         }
 
-        Map<String,Object> finalData = new TreeMap<String, Object>();
+        Map<String, Object> finalData = new TreeMap<String, Object>();
 
-        if ( objectData != null ) {
+        if (objectData != null) {
             finalData.putAll(objectData);
         }
         finalData.putAll(inputData);
@@ -89,11 +88,11 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
         return finalData;
     }
 
-    protected Map<String,Object> getFieldData(Object instance, Map<String,Object> properties) {
-        Map<String,Object> fields = new HashMap<String, Object>();
-        for ( String name : properties.keySet() ) {
+    protected Map<String, Object> getFieldData(Object instance, Map<String, Object> properties) {
+        Map<String, Object> fields = new HashMap<String, Object>();
+        for (String name : properties.keySet()) {
             try {
-                if ( PropertyUtils.getPropertyDescriptor(instance, name) != null )
+                if (PropertyUtils.getPropertyDescriptor(instance, name) != null)
                     continue;
             } catch (IllegalAccessException e) {
                 continue;
@@ -109,10 +108,10 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
         return fields;
     }
 
-    protected void overlay(Map<String,Object> data, String key, Map<String,Object> overlay) {
-        Map<String,Object> existing = getMap(data.get(key));
+    protected void overlay(Map<String, Object> data, String key, Map<String, Object> overlay) {
+        Map<String, Object> existing = getMap(data.get(key));
         existing.putAll(overlay);
-        if ( existing.size() == 0 ) {
+        if (existing.size() == 0) {
             data.remove(key);
         } else {
             data.put(key, existing);
@@ -120,9 +119,9 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String,Object> getMap(Object obj) {
-        if ( obj instanceof Map ) {
-            return (Map<String,Object>)obj;
+    protected Map<String, Object> getMap(Object obj) {
+        if (obj instanceof Map) {
+            return (Map<String, Object>) obj;
         }
         return new HashMap<String, Object>();
     }

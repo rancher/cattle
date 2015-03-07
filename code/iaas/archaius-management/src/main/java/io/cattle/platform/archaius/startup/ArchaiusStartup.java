@@ -43,7 +43,7 @@ public class ArchaiusStartup implements InitializationTask {
 
     @PostConstruct
     public void init() {
-        if ( GLOBAL_DEFAULT == null ) {
+        if (GLOBAL_DEFAULT == null) {
             throw new IllegalStateException("setGlobalDefaults() must be set before init() is called");
         }
 
@@ -54,8 +54,8 @@ public class ArchaiusStartup implements InitializationTask {
         DynamicPropertyFactory.initWithConfigurationSource(baseConfig);
     }
 
-    protected Map<String,Object> getOverride() {
-        Map<String,Object> override = new HashMap<String, Object>();
+    protected Map<String, Object> getOverride() {
+        Map<String, Object> override = new HashMap<String, Object>();
         override.put(CONFIG_KEY + ".exclude", DB_CONFIG);
 
         return override;
@@ -71,23 +71,23 @@ public class ArchaiusStartup implements InitializationTask {
     protected void load(boolean refresh) {
         List<AbstractConfiguration> configs = extensionManager.getExtensionList(CONFIG_KEY, AbstractConfiguration.class);
 
-        for ( AbstractConfiguration config : configs ) {
+        for (AbstractConfiguration config : configs) {
             config.setDelimiterParsingDisabled(true);
         }
 
-        if ( refresh ) {
-            for ( AbstractConfiguration config : configs ) {
+        if (refresh) {
+            for (AbstractConfiguration config : configs) {
                 refresh(config);
             }
         }
 
         baseConfig.clear();
-        for ( AbstractConfiguration config : configs ) {
+        for (AbstractConfiguration config : configs) {
             baseConfig.addConfiguration(config);
         }
 
-        if ( refresh ) {
-            for ( RefreshableFixedDelayPollingScheduler scheduler : schedulers ) {
+        if (refresh) {
+            for (RefreshableFixedDelayPollingScheduler scheduler : schedulers) {
                 scheduler.refresh();
             }
 
@@ -96,10 +96,10 @@ public class ArchaiusStartup implements InitializationTask {
     }
 
     protected void refresh(AbstractConfiguration config) {
-        if ( config instanceof DynamicConfiguration && ((DynamicConfiguration)config).getSource() instanceof LazyJDBCSource ) {
-            LazyJDBCSource source = (LazyJDBCSource) ((DynamicConfiguration)config).getSource();
+        if (config instanceof DynamicConfiguration && ((DynamicConfiguration) config).getSource() instanceof LazyJDBCSource) {
+            LazyJDBCSource source = (LazyJDBCSource) ((DynamicConfiguration) config).getSource();
 
-            if ( configDataSource == null ) {
+            if (configDataSource == null) {
                 configDataSource = dataSourceFactory.createDataSource(dataSourceName);
             }
 

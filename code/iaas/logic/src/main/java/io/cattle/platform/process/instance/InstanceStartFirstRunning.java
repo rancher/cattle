@@ -23,7 +23,7 @@ public class InstanceStartFirstRunning extends AbstractObjectProcessLogic implem
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Date running = ((Instance)state.getResource()).getFirstRunning();
+        Date running = ((Instance) state.getResource()).getFirstRunning();
         return new HandlerResult(INSTANCE.FIRST_RUNNING, running == null ? new Date() : running);
     }
 

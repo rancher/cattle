@@ -20,9 +20,9 @@ public class InstanceRestore extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        final Instance instance = (Instance)state.getResource();
+        final Instance instance = (Instance) state.getResource();
 
-        Map<String,Object> result = new ConcurrentHashMap<String,Object>();
+        Map<String, Object> result = new ConcurrentHashMap<String, Object>();
 
         network(instance, state.getData());
 
@@ -31,23 +31,23 @@ public class InstanceRestore extends AbstractDefaultProcessHandler {
         return new HandlerResult(result);
     }
 
-    protected void storage(Instance instance, Map<String,Object> data) {
+    protected void storage(Instance instance, Map<String, Object> data) {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
 
-        for ( Volume volume : volumes ) {
+        for (Volume volume : volumes) {
             restore(volume, data);
         }
 
         List<Mount> mounts = getObjectManager().children(instance, Mount.class);
-        for ( Mount mount : mounts ) {
+        for (Mount mount : mounts) {
             restore(mount, data);
         }
     }
 
-    protected void network(Instance instance, Map<String,Object> data) {
+    protected void network(Instance instance, Map<String, Object> data) {
         List<Nic> nics = getObjectManager().children(instance, Nic.class);
 
-        for ( Nic nic : nics ) {
+        for (Nic nic : nics) {
             restore(nic, data);
         }
     }

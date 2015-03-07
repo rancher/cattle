@@ -18,20 +18,20 @@ public class RegistrationTokenAccountLookup implements AccountLookup {
     public Account getAccount(ApiRequest request) {
         String[] auth = BasicAuthImpl.getUsernamePassword(request);
 
-        if ( auth == null ) {
+        if (auth == null) {
             return null;
         }
 
         String username = auth[0];
         String password = auth[1];
 
-        if ( ! RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN.equals(username) ) {
+        if (!RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN.equals(username)) {
             return null;
         }
 
         Account account = tokenManager.validateToken(password);
 
-        if ( account == null ) {
+        if (account == null) {
             return null;
         }
 

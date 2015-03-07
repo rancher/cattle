@@ -28,7 +28,7 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
 
     private static final Logger log = LoggerFactory.getLogger(DefaultAuthorizationProvider.class);
 
-    Map<String,SchemaFactory> schemaFactories = new HashMap<String, SchemaFactory>();
+    Map<String, SchemaFactory> schemaFactories = new HashMap<String, SchemaFactory>();
     List<SchemaFactory> schemaFactoryList;
     int priority = Priority.DEFAULT;
     AchaiusPolicyOptionsFactory optionsFactory;
@@ -37,13 +37,13 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     public SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
         Object name = request.getAttribute(ACCOUNT_SCHEMA_FACTORY_NAME);
 
-        if ( name == null ) {
+        if (name == null) {
             name = getRole(policy, request);
         }
 
-        if ( name != null ) {
+        if (name != null) {
             SchemaFactory schemaFactory = schemaFactories.get(name.toString());
-            if ( schemaFactory == null ) {
+            if (schemaFactory == null) {
                 log.error("Failed to find schema factory [{}]", name);
             } else {
                 return schemaFactory;
@@ -59,12 +59,12 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
         AccountPolicy policy = new AccountPolicy(account, options);
 
         String kind = getRole(policy, request);
-        if ( kind != null ) {
+        if (kind != null) {
             options = new PolicyOptionsWrapper(optionsFactory.getOptions(kind));
             policy = new AccountPolicy(account, options);
         }
 
-        if ( SubscriptionUtils.getSubscriptionStyle(policy) == SubscriptionStyle.QUALIFIED ) {
+        if (SubscriptionUtils.getSubscriptionStyle(policy) == SubscriptionStyle.QUALIFIED) {
             options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER, IaasEvents.ACCOUNT_QUALIFIER);
             options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER_VALUE, Long.toString(account.getId()));
         }
@@ -73,9 +73,9 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     }
 
     protected String getRole(Policy policy, ApiRequest request) {
-        if ( policy.isOption(Policy.ROLE_OPTION) ) {
+        if (policy.isOption(Policy.ROLE_OPTION)) {
             Object role = request.getOptions().get("_role");
-            if ( role != null && schemaFactories.containsKey(role) ) {
+            if (role != null && schemaFactories.containsKey(role)) {
                 return role.toString();
             }
         }
@@ -88,7 +88,6 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
         return SubscriptionUtils.getSubscriptionStyle(tempPolicy);
     }
 
-
     public List<SchemaFactory> getSchemaFactoryList() {
         return schemaFactoryList;
     }
@@ -100,9 +99,9 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
 
     @Override
     public void start() {
-        for ( SchemaFactory factory : schemaFactoryList ) {
-            if ( factory instanceof SubSchemaFactory ) {
-                ((SubSchemaFactory)factory).init();
+        for (SchemaFactory factory : schemaFactoryList) {
+            if (factory instanceof SubSchemaFactory) {
+                ((SubSchemaFactory) factory).init();
             }
             schemaFactories.put(factory.getId(), factory);
         }

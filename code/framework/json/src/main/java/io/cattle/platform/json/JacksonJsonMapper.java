@@ -22,7 +22,6 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 /**
  * Default implementation of JsonMapper that uses Jackson for marshaling and
  * supports JAXB annotations.
- *
  */
 public class JacksonJsonMapper implements JsonMapper {
 
@@ -31,7 +30,7 @@ public class JacksonJsonMapper implements JsonMapper {
 
     public JacksonJsonMapper() {
         mapper = new ObjectMapper();
-//        mapper.setSerializationInclusion(Include.NON_NULL);
+        // mapper.setSerializationInclusion(Include.NON_NULL);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         AnnotationIntrospector primary = new JacksonAnnotationIntrospector();
@@ -43,8 +42,8 @@ public class JacksonJsonMapper implements JsonMapper {
 
     @PostConstruct
     public void init() {
-        if ( modules != null ) {
-            for ( Module module : modules ) {
+        if (modules != null) {
+            for (Module module : modules) {
                 mapper.registerModule(module);
             }
         }
@@ -92,8 +91,7 @@ public class JacksonJsonMapper implements JsonMapper {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public <T> T readCollectionValue(String content, Class<? extends Collection> collectionClass, Class<?> elementsClass)
-            throws IOException {
+    public <T> T readCollectionValue(String content, Class<? extends Collection> collectionClass, Class<?> elementsClass) throws IOException {
         CollectionType type = mapper.getTypeFactory().constructCollectionType(collectionClass, elementsClass);
         return (T) mapper.readValue(content, type);
     }
@@ -113,8 +111,7 @@ public class JacksonJsonMapper implements JsonMapper {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public <T> T convertCollectionValue(Object fromValue, Class<? extends Collection> collectionClass,
-            Class<?> elementsClass) {
+    public <T> T convertCollectionValue(Object fromValue, Class<? extends Collection> collectionClass, Class<?> elementsClass) {
         CollectionType type = mapper.getTypeFactory().constructCollectionType(collectionClass, elementsClass);
         return (T) mapper.convertValue(fromValue, type);
     }
@@ -151,8 +148,7 @@ public class JacksonJsonMapper implements JsonMapper {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public <T> T readCollectionValue(InputStream is, Class<? extends Collection> collectionClass, Class<?> elementsClass)
-            throws IOException {
+    public <T> T readCollectionValue(InputStream is, Class<? extends Collection> collectionClass, Class<?> elementsClass) throws IOException {
         CollectionType type = mapper.getTypeFactory().constructCollectionType(collectionClass, elementsClass);
         return (T) mapper.readValue(is, type);
     }

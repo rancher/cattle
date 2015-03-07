@@ -7,7 +7,7 @@ public interface AgentIncludeMap {
 
     List<String> getNamedMaps();
 
-    Map<String,String> getMap(String name);
+    Map<String, String> getMap(String name);
 
     String getSourceRevision(String name);
 

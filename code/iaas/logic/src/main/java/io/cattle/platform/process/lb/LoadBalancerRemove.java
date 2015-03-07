@@ -32,18 +32,15 @@ public class LoadBalancerRemove extends AbstractObjectProcessHandler {
         LoadBalancer lb = (LoadBalancer) state.getResource();
 
         // remove target mappings
-        List<? extends LoadBalancerTarget> targets =
-                lbTargetDao.listByLbIdToRemove(lb.getId());
+        List<? extends LoadBalancerTarget> targets = lbTargetDao.listByLbIdToRemove(lb.getId());
 
         for (LoadBalancerTarget target : targets) {
-            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
-                    target, null);
+            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE, target, null);
         }
 
         // remove host mappings
         for (LoadBalancerHostMap map : mapDao.findToRemove(LoadBalancerHostMap.class, LoadBalancer.class, lb.getId())) {
-            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
-                    map, null);
+            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE, map, null);
         }
 
         return null;

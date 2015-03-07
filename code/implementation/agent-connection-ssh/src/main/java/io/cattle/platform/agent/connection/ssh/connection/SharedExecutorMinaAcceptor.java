@@ -32,7 +32,7 @@ public class SharedExecutorMinaAcceptor extends MinaAcceptor {
 
         // MINA itself forces our socket receive buffer to 1024 bytes
         // by default, despite what the operating system defaults to.
-        // This limits us to about 3 MB/s incoming data transfer.  By
+        // This limits us to about 3 MB/s incoming data transfer. By
         // forcing back to the operating system default we can get a
         // decent transfer rate again.
         //

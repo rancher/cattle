@@ -1,6 +1,5 @@
 package io.cattle.platform.engine.handler;
 
-
 public abstract class AbstractProcessLogic implements ProcessLogic {
 
     String name = getClass().getSimpleName();

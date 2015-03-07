@@ -12,9 +12,6 @@ public class IdempotentRetryException extends RuntimeException {
         Throwable t = new Throwable();
         t.fillInStackTrace();
         StackTraceElement element = t.getStackTrace()[3];
-        return String.format("Idempotent Retry from [%s.%s():%s]",
-                element.getClassName(),
-                element.getMethodName(),
-                element.getLineNumber());
+        return String.format("Idempotent Retry from [%s.%s():%s]", element.getClassName(), element.getMethodName(), element.getLineNumber());
     }
 }

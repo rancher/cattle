@@ -37,7 +37,7 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
 
     @Override
     public Account getAccount(ApiRequest request) {
-        if(StringUtils.equals("token", request.getType())) {
+        if (StringUtils.equals("token", request.getType())) {
             return null;
         }
         String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);

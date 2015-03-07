@@ -34,7 +34,7 @@ public class AgentInstanceInstanceStart extends AbstractObjectProcessLogic imple
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         ConfigUpdateRequest request = getRequest(state, process);
 
-        if ( request == null ) {
+        if (request == null) {
             return null;
         }
 
@@ -46,30 +46,24 @@ public class AgentInstanceInstanceStart extends AbstractObjectProcessLogic imple
     }
 
     protected ConfigUpdateRequest getRequest(ProcessState state, ProcessInstance process) {
-        Instance instance = (Instance)state.getResource();
+        Instance instance = (Instance) state.getResource();
         Agent agent = loadResource(Agent.class, instance.getAgentId());
 
-        if ( agent == null ) {
+        if (agent == null) {
             return null;
         }
 
         ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, this);
 
-        if ( request == null ) {
+        if (request == null) {
             request = new ConfigUpdateRequest(agent.getId());
 
-            for ( String item : APPLY.get() ) {
-                request.addItem(item)
-                    .withApply(true)
-                    .withIncrement(false)
-                    .withCheckInSyncOnly(true);
+            for (String item : APPLY.get()) {
+                request.addItem(item).withApply(true).withIncrement(false).withCheckInSyncOnly(true);
             }
 
-            for ( String item : INCREMENT.get() ) {
-                request.addItem(item)
-                    .withApply(true)
-                    .withIncrement(true)
-                    .withCheckInSyncOnly(false);
+            for (String item : INCREMENT.get()) {
+                request.addItem(item).withApply(true).withIncrement(true).withCheckInSyncOnly(false);
             }
         }
 

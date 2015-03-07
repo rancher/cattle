@@ -16,7 +16,7 @@ import org.apache.commons.codec.binary.Base64;
 public class AgentUtils {
 
     public static Ping newPing(Agent agent) {
-        if ( agent == null ) {
+        if (agent == null) {
             return null;
         }
         return newPing(agent.getId());
@@ -32,12 +32,12 @@ public class AgentUtils {
 
     public static String getAgentAuth(Agent agent, ObjectManager objectManager) {
         Account account = objectManager.loadResource(Account.class, agent.getAccountId());
-        if ( account == null ) {
+        if (account == null) {
             return null;
         }
 
-        for ( Credential cred : objectManager.children(account, Credential.class) ) {
-            if ( CredentialConstants.KIND_AGENT_API_KEY.equals(cred.getKind()) && CommonStatesConstants.ACTIVE.equals(cred.getState()) ) {
+        for (Credential cred : objectManager.children(account, Credential.class)) {
+            if (CredentialConstants.KIND_AGENT_API_KEY.equals(cred.getKind()) && CommonStatesConstants.ACTIVE.equals(cred.getState())) {
                 try {
                     return "Basic " + Base64.encodeBase64String((cred.getPublicValue() + ":" + cred.getSecretValue()).getBytes("UTF-8"));
                 } catch (UnsupportedEncodingException e) {

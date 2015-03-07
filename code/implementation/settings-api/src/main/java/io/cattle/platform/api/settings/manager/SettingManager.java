@@ -44,19 +44,18 @@ public class SettingManager extends AbstractJooqResourceManager {
 
         Object result = null;
 
-        if ( obj instanceof ActiveSetting ) {
-            Setting setting = ((ActiveSetting)obj).getSetting();
-            if ( setting == null ) {
+        if (obj instanceof ActiveSetting) {
+            Setting setting = ((ActiveSetting) obj).getSetting();
+            if (setting == null) {
                 String settingType = request.getSchemaFactory().getSchemaName(Setting.class);
-                result = doCreate(settingType, Setting.class, CollectionUtils.asMap(
-                        (Object)SETTING.NAME, ((ActiveSetting)obj).getName(),
-                        SETTING.VALUE, request.proxyRequestObject(Setting.class).getValue()));
+                result = doCreate(settingType, Setting.class, CollectionUtils.asMap((Object) SETTING.NAME, ((ActiveSetting) obj).getName(), SETTING.VALUE,
+                        request.proxyRequestObject(Setting.class).getValue()));
             } else {
                 obj = setting;
             }
         }
 
-        if ( result == null ) {
+        if (result == null) {
             result = super.updateInternal(type, id, obj, request);
         }
 
@@ -67,14 +66,14 @@ public class SettingManager extends AbstractJooqResourceManager {
     protected Object getByIdInternal(String type, String id, ListOptions options) {
         type = ApiContext.getSchemaFactory().getSchemaName(Setting.class);
 
-        Setting setting = (Setting)super.getByIdInternal(type, id, options);
+        Setting setting = (Setting) super.getByIdInternal(type, id, options);
         Configuration config = lookupConfiguration();
 
-        if ( config == null ) {
+        if (config == null) {
             return setting;
         }
 
-        if ( setting == null ) {
+        if (setting == null) {
             return getSettingByName(id, config);
         } else {
             ActiveSetting activeSetting = getSettingByName(setting.getName(), config);
@@ -85,18 +84,15 @@ public class SettingManager extends AbstractJooqResourceManager {
 
     @Override
     protected Object removeFromStore(String type, String id, Object obj, ApiRequest request) {
-        int result = create()
-            .delete(SETTING)
-            .where(SETTING.ID.eq(new Long(id)))
-            .execute();
+        int result = create().delete(SETTING).where(SETTING.ID.eq(new Long(id))).execute();
 
-        if ( result != 1 ) {
+        if (result != 1) {
             log.error("While deleting type [{}] and id [{}] got a result of [{}]", type, id, result);
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         }
 
-        if ( obj instanceof ActiveSetting ) {
-            return getByIdInternal(type, ((ActiveSetting)obj).getName(), new ListOptions());
+        if (obj instanceof ActiveSetting) {
+            return getByIdInternal(type, ((ActiveSetting) obj).getName(), new ListOptions());
         } else {
             return obj;
         }
@@ -108,12 +104,12 @@ public class SettingManager extends AbstractJooqResourceManager {
         type = schemaFactory.getSchemaName(Setting.class);
 
         Configuration config = lookupConfiguration();
-        if ( config == null ) {
+        if (config == null) {
             return super.listInternal(schemaFactory, type, criteria, options);
         }
 
         Object list = super.listInternal(schemaFactory, type, criteria, options);
-        if ( criteria.containsKey(TypeUtils.ID_FIELD) ) {
+        if (criteria.containsKey(TypeUtils.ID_FIELD)) {
             return list;
         }
 
@@ -121,10 +117,10 @@ public class SettingManager extends AbstractJooqResourceManager {
         String value = null;
         List<ActiveSetting> result = new ArrayList<ActiveSetting>();
 
-        for ( ActiveSetting setting : getSettings((List<Setting>)CollectionUtils.toList(list), config) ) {
-            if ( value == null ) {
+        for (ActiveSetting setting : getSettings((List<Setting>) CollectionUtils.toList(list), config)) {
+            if (value == null) {
                 result.add(setting);
-            } else if ( value.equals(setting.getName()) ) {
+            } else if (value.equals(setting.getName())) {
                 result.add(setting);
             }
         }
@@ -134,27 +130,28 @@ public class SettingManager extends AbstractJooqResourceManager {
 
     protected List<ActiveSetting> getSettings(List<Setting> settings, Configuration config) {
 
-        Map<String,ActiveSetting> result = new TreeMap<String, ActiveSetting>();
+        Map<String, ActiveSetting> result = new TreeMap<String, ActiveSetting>();
 
-        for ( Setting setting : settings ) {
+        for (Setting setting : settings) {
             ActiveSetting activeSetting = getSettingByName(setting.getName(), config);
             activeSetting.setSetting(setting);
             result.put(activeSetting.getName(), activeSetting);
         }
 
         Iterator<String> iter = config.getKeys();
-        while ( iter.hasNext() ) {
+        while (iter.hasNext()) {
             String key = iter.next();
 
-            if ( result.containsKey(key) || ! key.matches("^[a-z].*") ) {
-                /* The regexp check is specifically to avoid showing environment variables.
-                 * Those tend to have sensitive info in them
+            if (result.containsKey(key) || !key.matches("^[a-z].*")) {
+                /*
+                 * The regexp check is specifically to avoid showing environment
+                 * variables. Those tend to have sensitive info in them
                  */
                 continue;
             }
 
             ActiveSetting activeSetting = getSettingByName(key, config);
-            if ( activeSetting != null ) {
+            if (activeSetting != null) {
                 result.put(activeSetting.getName(), activeSetting);
             }
         }
@@ -163,22 +160,22 @@ public class SettingManager extends AbstractJooqResourceManager {
     }
 
     protected ActiveSetting getSettingByName(String name, Configuration config) {
-        if ( name == null ) {
+        if (name == null) {
             return null;
         }
 
         Object value = config.getProperty(name);
         Configuration source = null;
-        if ( config instanceof ConcurrentCompositeConfiguration ) {
-            source = ((ConcurrentCompositeConfiguration)config).getSource(name);
-        } else if ( config instanceof CompositeConfiguration ) {
-            source = ((CompositeConfiguration)config).getSource(name);
+        if (config instanceof ConcurrentCompositeConfiguration) {
+            source = ((ConcurrentCompositeConfiguration) config).getSource(name);
+        } else if (config instanceof CompositeConfiguration) {
+            source = ((CompositeConfiguration) config).getSource(name);
         }
 
         ActiveSetting activeSetting = new ActiveSetting(name, value, toString(source));
 
         Setting setting = create().selectFrom(SETTING).where(SETTING.NAME.eq(name)).fetchAny();
-        if ( setting != null ) {
+        if (setting != null) {
             activeSetting.setSetting(setting);
         }
 
@@ -186,25 +183,25 @@ public class SettingManager extends AbstractJooqResourceManager {
     }
 
     protected String toString(Configuration config) {
-        if ( config instanceof NamedConfigurationSource ) {
-            return ((NamedConfigurationSource)config).getSourceName();
+        if (config instanceof NamedConfigurationSource) {
+            return ((NamedConfigurationSource) config).getSourceName();
         }
 
-        if ( config instanceof DynamicConfiguration ) {
-            return ((DynamicConfiguration)config).getSource().getClass().getName();
+        if (config instanceof DynamicConfiguration) {
+            return ((DynamicConfiguration) config).getSource().getClass().getName();
         }
 
         return config == null ? null : config.getClass().getName();
     }
 
     protected Configuration lookupConfiguration() {
-      Object obj = DynamicPropertyFactory.getBackingConfigurationSource();
+        Object obj = DynamicPropertyFactory.getBackingConfigurationSource();
 
-      if ( obj instanceof Configuration ) {
-          return (Configuration)obj;
-      }
+        if (obj instanceof Configuration) {
+            return (Configuration) obj;
+        }
 
-      return null;
+        return null;
     }
 
     @Override

@@ -27,9 +27,9 @@ public class MultiTableMapper extends AbstractSequentialList<Object> implements 
     ObjectMetaDataManager metaDataManager;
     List<Table<?>> tables = new ArrayList<Table<?>>();
     Map<String, TableMapping> mappings = new HashMap<String, MultiTableMapper.TableMapping>();
-    Map<String,TableMapping> fieldsMapping = new HashMap<String,TableMapping>();
+    Map<String, TableMapping> fieldsMapping = new HashMap<String, TableMapping>();
     List<Field<?>> fields = new ArrayList<Field<?>>();
-    Map<Object,Object> result = new LinkedHashMap<Object, Object>();
+    Map<Object, Object> result = new LinkedHashMap<Object, Object>();
     int resultSize;
     Pagination pagination;
     Integer limit;
@@ -60,7 +60,7 @@ public class MultiTableMapper extends AbstractSequentialList<Object> implements 
 
         Field<?>[] unaliasedFields = mapping.aliasedTable.fields();
 
-        for ( int i = 0 ; i < mapping.aliasedFields.length ; i++ ) {
+        for (int i = 0; i < mapping.aliasedFields.length; i++) {
             Field<?> field = unaliasedFields[i];
             Field<?> alias = emptyPrefix ? field : field.as(prefix + field.getName());
             mapping.aliasedFields[i] = alias;
@@ -87,27 +87,27 @@ public class MultiTableMapper extends AbstractSequentialList<Object> implements 
     public void next(Record record) {
         resultSize++;
 
-        if ( limit != null && resultSize > limit ) {
+        if (limit != null && resultSize > limit) {
             return;
         }
 
-        Map<String,Object> objects = new HashMap<String, Object>();
+        Map<String, Object> objects = new HashMap<String, Object>();
 
-        for ( Field<?> field : record.fields() ) {
+        for (Field<?> field : record.fields()) {
             TableMapping mapping = fieldsMapping.get(field.getName());
-            if ( mapping == null ) {
+            if (mapping == null) {
                 continue;
             }
 
             Object obj = objects.get(mapping.keyName);
-            if ( obj == null ) {
+            if (obj == null) {
                 obj = newObject(mapping);
                 objects.put(mapping.keyName, obj);
             }
 
             String fieldName = StringUtils.removeStart(field.getName(), mapping.prefix);
             String propertyName = metaDataManager.lookupPropertyNameFromFieldName(mapping.originalTable.getRecordType(), fieldName);
-            if ( propertyName != null ) {
+            if (propertyName != null) {
                 setProperty(obj, propertyName, record, field);
             }
         }
@@ -115,13 +115,13 @@ public class MultiTableMapper extends AbstractSequentialList<Object> implements 
         Object rootObject = objects.remove("");
         Object id = ObjectUtils.getId(rootObject);
         String key = ApiUtils.getAttachementKey(rootObject, id);
-        if ( key == null ) {
+        if (key == null) {
             return;
         }
 
         result.put(id, rootObject);
 
-        for ( Map.Entry<String, Object> entry : objects.entrySet() ) {
+        for (Map.Entry<String, Object> entry : objects.entrySet()) {
             ApiUtils.addAttachement(key, entry.getKey(), entry.getValue());
         }
     }
@@ -129,7 +129,7 @@ public class MultiTableMapper extends AbstractSequentialList<Object> implements 
     protected void setProperty(Object obj, String prop, Record record, Field<?> field) {
         try {
             PropertyDescriptor desc = PropertyUtils.getPropertyDescriptor(obj, prop);
-            if ( desc != null && desc.getWriteMethod() != null ) {
+            if (desc != null && desc.getWriteMethod() != null) {
                 Object value = record.getValue(field, desc.getWriteMethod().getParameterTypes()[0]);
                 PropertyUtils.setProperty(obj, prop, value);
             }

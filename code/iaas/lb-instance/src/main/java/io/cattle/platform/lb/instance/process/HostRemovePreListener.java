@@ -9,7 +9,6 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
@@ -32,12 +31,10 @@ public class HostRemovePreListener extends AbstractObjectProcessLogic implements
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Host host = (Host) state.getResource();
-        List<? extends LoadBalancerHostMap> lbHostMaps = mapDao.findToRemove(LoadBalancerHostMap.class, Host.class,
-                host.getId());
+        List<? extends LoadBalancerHostMap> lbHostMaps = mapDao.findToRemove(LoadBalancerHostMap.class, Host.class, host.getId());
 
         for (LoadBalancerHostMap lbHostMap : lbHostMaps) {
-            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
-                    lbHostMap, null);
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE, lbHostMap, null);
         }
         return null;
     }

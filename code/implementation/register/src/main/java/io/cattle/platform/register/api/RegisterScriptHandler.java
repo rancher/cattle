@@ -33,23 +33,24 @@ public class RegisterScriptHandler implements ScriptsHandler {
     private static final DynamicStringProperty URL = ArchaiusUtil.getString("agent.instance.register.url");
 
     RegistrationAuthTokenManager tokenManager;
-    @Inject ScopedConfig scopedConfig;
+    @Inject
+    ScopedConfig scopedConfig;
 
     @Override
     public boolean handle(ApiRequest request) throws IOException {
         String id = request.getId();
 
-        if ( StringUtils.isBlank(id) ) {
+        if (StringUtils.isBlank(id)) {
             return false;
         }
 
         Account account = tokenManager.validateToken(id);
 
-        if ( account == null ) {
+        if (account == null) {
             return false;
         }
 
-        Map<String,String> tokens = new HashMap<String,String>();
+        Map<String, String> tokens = new HashMap<String, String>();
         tokens.put("CATTLE_URL", getUrl(request));
         tokens.put("CATTLE_REGISTRATION_ACCESS_KEY", RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
         tokens.put("CATTLE_REGISTRATION_SECRET_KEY", id);
@@ -58,7 +59,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
         String script = getScript();
 
-        if ( script == null ) {
+        if (script == null) {
             return false;
         }
 
@@ -71,11 +72,11 @@ public class RegisterScriptHandler implements ScriptsHandler {
     protected String getUrl(ApiRequest request) {
         String url = URL.get();
 
-        if ( ! StringUtils.isBlank(url) ) {
+        if (!StringUtils.isBlank(url)) {
             return url;
         }
 
-        if ( ServerContext.isCustomApiHost() ) {
+        if (ServerContext.isCustomApiHost()) {
             return scopedConfig.getApiUrl(null);
         }
 
@@ -87,12 +88,12 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
         try {
             is = getClass().getClassLoader().getResourceAsStream(SCRIPT.get());
-            if ( is == null ) {
+            if (is == null) {
                 return null;
             }
 
             return IOUtils.toString(is, "UTF-8");
-        } catch ( IOException e ) {
+        } catch (IOException e) {
             log.error("Failed to read [{}]", SCRIPT.get(), e);
             return null;
         } finally {

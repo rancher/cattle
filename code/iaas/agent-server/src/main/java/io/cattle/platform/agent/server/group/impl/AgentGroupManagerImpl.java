@@ -29,25 +29,23 @@ public class AgentGroupManagerImpl implements AgentGroupManager {
         return agent == null ? false : shouldHandleGroup(agent.getAgentGroupId());
     }
 
-
     @Override
     public boolean shouldHandle(long agentId) {
         return shouldHandle(objectManager.loadResource(Agent.class, agentId));
     }
 
-
     @Override
     public boolean shouldHandleGroup(AgentGroup group) {
-        return group == null ? shouldHandleGroup((Long)null) : shouldHandle(group.getId());
+        return group == null ? shouldHandleGroup((Long) null) : shouldHandle(group.getId());
     }
 
     @Override
     public boolean shouldHandleGroup(Long agentGroupId) {
-        if ( shouldHandleWildcard() ) {
+        if (shouldHandleWildcard()) {
             return true;
         }
 
-        if ( agentGroupId == null ) {
+        if (agentGroupId == null) {
             return shouldHandleUnassigned();
         } else {
             return groups.contains(agentGroupId.toString());
@@ -77,18 +75,18 @@ public class AgentGroupManagerImpl implements AgentGroupManager {
     protected void load(boolean initial) {
         Set<String> groups = new HashSet<String>();
         Set<Long> groupLongs = new HashSet<Long>();
-        for ( String group : AGENT_GROUPS.get().trim().split("\\s*,\\s*") ) {
+        for (String group : AGENT_GROUPS.get().trim().split("\\s*,\\s*")) {
             groups.add(group);
             try {
                 groupLongs.add(new Long(group));
-            } catch ( NumberFormatException nfe ) {
+            } catch (NumberFormatException nfe) {
             }
         }
 
         this.groups = groups;
         this.groupLongs = groupLongs;
 
-        if ( initial ) {
+        if (initial) {
             AGENT_GROUPS.addCallback(new Runnable() {
                 @Override
                 public void run() {
@@ -98,7 +96,6 @@ public class AgentGroupManagerImpl implements AgentGroupManager {
         }
     }
 
-
     public ObjectManager getObjectManager() {
         return objectManager;
     }
@@ -107,6 +104,5 @@ public class AgentGroupManagerImpl implements AgentGroupManager {
     public void setObjectManager(ObjectManager objectManager) {
         this.objectManager = objectManager;
     }
-
 
 }

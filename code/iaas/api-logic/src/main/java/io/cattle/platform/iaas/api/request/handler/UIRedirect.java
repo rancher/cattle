@@ -17,9 +17,7 @@ public class UIRedirect extends AbstractResponseGenerator {
 
     @Override
     protected void generate(ApiRequest request) throws IOException {
-        if ( request.getRequestVersion() != null ||
-                ! DO_REDIRECT.get() ||
-                ! DefaultApiRequestParser.HTML.equals(request.getResponseFormat()) )
+        if (request.getRequestVersion() != null || !DO_REDIRECT.get() || !DefaultApiRequestParser.HTML.equals(request.getResponseFormat()))
             return;
 
         request.getServletContext().getResponse().sendRedirect(UI_REDIRECT.get());

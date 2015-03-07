@@ -1,10 +1,10 @@
 package io.cattle.platform.configitem.server.impl;
 
-import com.netflix.config.DynamicLongProperty;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.lock.definition.AbstractLockDefinition;
 import io.cattle.platform.lock.definition.BlockingLockDefinition;
+
+import com.netflix.config.DynamicLongProperty;
 
 public class SyncSourceVersionLock extends AbstractLockDefinition implements BlockingLockDefinition {
 

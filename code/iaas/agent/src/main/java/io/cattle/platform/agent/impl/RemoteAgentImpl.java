@@ -29,8 +29,7 @@ public class RemoteAgentImpl implements RemoteAgent {
     Long agentId;
     Long groupId;
 
-    public RemoteAgentImpl(JsonMapper jsonMapper, EventService eventService,
-            Long agentId, Long groupId) {
+    public RemoteAgentImpl(JsonMapper jsonMapper, EventService eventService, Long agentId, Long groupId) {
         this.jsonMapper = jsonMapper;
         this.eventService = eventService;
         this.agentId = agentId;
@@ -58,13 +57,17 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public <T extends Event> T callSync(Event event, Class<T> reply, EventCallOptions options) {
-        /* NOTE: Forever blocking get() used only because underlying future will always timeout */
+        /*
+         * NOTE: Forever blocking get() used only because underlying future will
+         * always timeout
+         */
         try {
             return AsyncUtils.get(call(event, reply, options));
-        } catch ( EventExecutionException e ) {
-            /* This is done so that the exception will have a better stack trace.
-             * Normally the exceptions from a future will have a pretty sparse stack
-             * not giving too much context
+        } catch (EventExecutionException e) {
+            /*
+             * This is done so that the exception will have a better stack
+             * trace. Normally the exceptions from a future will have a pretty
+             * sparse stack not giving too much context
              */
             throw new EventExecutionException(e);
         }
@@ -80,13 +83,13 @@ public class RemoteAgentImpl implements RemoteAgent {
         Event request = createRequest(event);
         final EventProgress progress = options.getProgress();
 
-        if ( progress != null ) {
+        if (progress != null) {
             EventProgress newProgress = new EventProgress() {
                 @Override
                 public void progress(Event progressEvent) {
                     T result = getReply(event, progressEvent, reply);
 
-                    if ( result instanceof Event ) {
+                    if (result instanceof Event) {
                         progress.progress(result);
                     }
                 }
@@ -97,14 +100,14 @@ public class RemoteAgentImpl implements RemoteAgent {
 
         final RetryCallback retryCallback = options.getRetryCallback();
 
-        if ( retryCallback != null ) {
+        if (retryCallback != null) {
             RetryCallback newCallback = new RetryCallback() {
                 @Override
                 public Event beforeRetry(Event event) {
                     Object data = event.getData();
 
-                    if ( data instanceof Event ) {
-                        data = retryCallback.beforeRetry((Event)data);
+                    if (data instanceof Event) {
+                        data = retryCallback.beforeRetry((Event) data);
                         EventVO<Object> newEvent = new EventVO<Object>(event);
                         newEvent.setData(data);
                         event = newEvent;
@@ -117,7 +120,6 @@ public class RemoteAgentImpl implements RemoteAgent {
             options.setRetryCallback(newCallback);
         }
 
-
         ListenableFuture<Event> future = eventService.call(request, options);
         return Futures.transform(future, new Function<Event, T>() {
             @Override
@@ -128,14 +130,14 @@ public class RemoteAgentImpl implements RemoteAgent {
     }
 
     protected <T> T getReply(Event inputEvent, Event resultEvent, Class<T> reply) {
-        if ( resultEvent.getData() == null ) {
+        if (resultEvent.getData() == null) {
             return null;
         }
 
         T commandReply = jsonMapper.convertValue(resultEvent.getData(), reply);
         EventVO<?> publishEvent = null;
-        if ( commandReply instanceof EventVO ) {
-            publishEvent = (EventVO<?>)commandReply;
+        if (commandReply instanceof EventVO) {
+            publishEvent = (EventVO<?>) commandReply;
         } else {
             publishEvent = jsonMapper.convertValue(resultEvent.getData(), EventVO.class);
         }

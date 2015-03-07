@@ -16,10 +16,10 @@ public class AllocatorUtils {
     private static final Logger log = LoggerFactory.getLogger(AllocatorUtils.class);
 
     public static Boolean checkAllocateState(long resourceId, String state, String logType) {
-        if ( CommonStatesConstants.ACTIVE.equals(state) ) {
+        if (CommonStatesConstants.ACTIVE.equals(state)) {
             log.info("{} [{}] is already allocated", logType, resourceId);
             return true;
-        } else if ( ! CommonStatesConstants.ACTIVATING.equals(state) ) {
+        } else if (!CommonStatesConstants.ACTIVATING.equals(state)) {
             log.error("Can not allocate {} [{}] in allocation state [{}]", logType, resourceId, state);
             return false;
         }
@@ -28,12 +28,12 @@ public class AllocatorUtils {
     }
 
     public static Boolean checkDeallocateState(long resourceId, String state, String logType) {
-        if ( CommonStatesConstants.INACTIVE.equals(state) ) {
+        if (CommonStatesConstants.INACTIVE.equals(state)) {
             log.info("{} [{}] is already deallocated", logType, resourceId);
             return true;
         }
 
-        if ( ! CommonStatesConstants.DEACTIVATING.equals(state) ) {
+        if (!CommonStatesConstants.DEACTIVATING.equals(state)) {
             log.info("Can not deallocate {} [{}], is not in an deactivating allocation state", logType, resourceId);
             return false;
         }
@@ -42,7 +42,7 @@ public class AllocatorUtils {
     }
 
     public static long getCompute(Instance instance) {
-        if ( instance == null ) {
+        if (instance == null) {
             return 0;
         }
 

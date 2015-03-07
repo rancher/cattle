@@ -39,7 +39,7 @@ public class ChildReferenceCacheKey {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ChildReferenceCacheKey other = (ChildReferenceCacheKey)obj;
+        ChildReferenceCacheKey other = (ChildReferenceCacheKey) obj;
         if (child == null) {
             if (other.child != null)
                 return false;

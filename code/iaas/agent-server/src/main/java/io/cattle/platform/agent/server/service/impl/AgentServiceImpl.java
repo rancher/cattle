@@ -35,11 +35,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 public class AgentServiceImpl implements AgentService {
 
     private static final Logger log = LoggerFactory.getLogger(AgentServiceImpl.class);
-    public static final Set<String> GOOD_AGENT_STATES = new HashSet<String>(Arrays.asList(
-            CommonStatesConstants.ACTIVATING,
-            CommonStatesConstants.ACTIVE,
-            AgentConstants.STATE_RECONNECTING
-            ));
+    public static final Set<String> GOOD_AGENT_STATES = new HashSet<String>(Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
+            AgentConstants.STATE_RECONNECTING));
 
     AgentConnectionManager connectionManager;
     ObjectManager objectManager;
@@ -51,27 +48,26 @@ public class AgentServiceImpl implements AgentService {
     @Override
     public void execute(final Event event) {
         Agent agent = getAgent(event);
-        if ( agent == null ) {
+        if (agent == null) {
             return;
         }
 
         final Event agentEvent = getAgentEvent(event);
-        if ( agentEvent == null ) {
+        if (agentEvent == null) {
             return;
         }
 
-        if ( IaasEvents.AGENT_CLOSE.equals(agentEvent.getName()) ) {
+        if (IaasEvents.AGENT_CLOSE.equals(agentEvent.getName())) {
             connectionManager.closeConnection(agent);
             handleResponse(event, EventVO.reply(agentEvent));
         } else {
-            if ( ! GOOD_AGENT_STATES.contains(agent.getState()) ) {
-                log.info("Dropping event [{}] [{}] for agent [{}] in state [{}]", event.getName(), event.getId(),
-                        agent.getId(), agent.getState());
+            if (!GOOD_AGENT_STATES.contains(agent.getState())) {
+                log.info("Dropping event [{}] [{}] for agent [{}] in state [{}]", event.getName(), event.getId(), agent.getId(), agent.getState());
                 return;
             }
 
             AgentConnection connection = connectionManager.getConnection(agent);
-            if ( connection != null ) {
+            if (connection != null) {
                 eventService.publish(agentEvent);
                 final ListenableFuture<Event> future = connection.execute(agentEvent, new EventProgress() {
                     @Override
@@ -85,14 +81,14 @@ public class AgentServiceImpl implements AgentService {
                     protected void doRun() throws Exception {
                         try {
                             Event agentEventResponse = AsyncUtils.get(future);
-                            if ( Event.TRANSITIONING_ERROR.equals(agentEventResponse.getTransitioning()) ) {
+                            if (Event.TRANSITIONING_ERROR.equals(agentEventResponse.getTransitioning())) {
                                 throw new EventExecutionException(agentEventResponse);
                             }
 
                             handleResponse(event, agentEventResponse);
-                        } catch ( EventExecutionException e ) {
+                        } catch (EventExecutionException e) {
                             handleError(event, e.getEvent());
-                        } catch ( TimeoutException t ) {
+                        } catch (TimeoutException t) {
                             log.info("Timeout waiting for response to [{}] id [{}]", agentEvent.getName(), agentEvent.getId());
                         }
                     }
@@ -102,7 +98,7 @@ public class AgentServiceImpl implements AgentService {
     }
 
     protected void handleResponse(Event request, Event agentResponse) {
-        if ( request.getReplyTo() != null ) {
+        if (request.getReplyTo() != null) {
             EventVO<Object> response = EventVO.reply(request);
             response.setData(agentResponse);
             EventUtils.copyTransitioning(agentResponse, response);
@@ -113,7 +109,7 @@ public class AgentServiceImpl implements AgentService {
 
     protected void handleError(Event request, Event agentResponse) {
         EventVO<Object> response = EventVO.reply(request);
-        if ( response.getName() == null ) {
+        if (response.getName() == null) {
             return;
         }
 
@@ -127,13 +123,13 @@ public class AgentServiceImpl implements AgentService {
     }
 
     protected Event getAgentEvent(Event event) {
-        if ( event.getData() == null ) {
+        if (event.getData() == null) {
             return null;
         }
 
         EventVO<?> agentEvent = jsonMapper.convertValue(event.getData(), EventVO.class);
         agentEvent.setReplyTo(agentEvent.getName() + Event.REPLY_SUFFIX);
-        if ( agentEvent.getTimeoutMillis() == null ) {
+        if (agentEvent.getTimeoutMillis() == null) {
             agentEvent.setTimeoutMillis(event.getTimeoutMillis());
         }
 

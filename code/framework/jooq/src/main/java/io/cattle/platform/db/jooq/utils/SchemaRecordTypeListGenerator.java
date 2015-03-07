@@ -18,20 +18,20 @@ public class SchemaRecordTypeListGenerator {
 
         Schema schema = null;
         try {
-            for ( Field field : schemaClass.getFields() ) {
-                if ( field.getType() == schemaClass ) {
-                    schema = (Schema)field.get(schemaClass);
+            for (Field field : schemaClass.getFields()) {
+                if (field.getType() == schemaClass) {
+                    schema = (Schema) field.get(schemaClass);
                 }
             }
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException(e);
         }
 
-        if ( schema == null ) {
+        if (schema == null) {
             throw new IllegalArgumentException("Failed to find TABLE field on [" + schemaClass + "]");
         }
 
-        for ( Table<?> table : schema.getTables() ) {
+        for (Table<?> table : schema.getTables()) {
             result.add(table.getRecordType());
         }
 

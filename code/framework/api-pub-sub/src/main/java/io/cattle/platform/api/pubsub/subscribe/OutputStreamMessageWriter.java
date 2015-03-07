@@ -22,7 +22,7 @@ public class OutputStreamMessageWriter implements MessageWriter {
 
     @Override
     public void write(String content, Object writeLock) throws IOException {
-        if ( os == null ) {
+        if (os == null) {
             throw new EOFException("OutputStream is closed");
         }
 
@@ -31,15 +31,17 @@ public class OutputStreamMessageWriter implements MessageWriter {
                 byte[] bytes = content.getBytes("UTF-8");
                 os.write(bytes);
 
-                /* Why would we do such a stupid and wasteful thing?  Because I couldn't
-                 * figure out how to stream lines in Python requests.  The builtin
-                 * iter_lines() method will chunk on 512 bytes.  But it will block until it
-                 * gets 512.  So it can not get the \n because the buffer isn't full yet.  So
-                 * we send garbage to make the buffer full.  I tried setting the chunk size
-                 * to 1, but caused bad performance issues.
+                /*
+                 * Why would we do such a stupid and wasteful thing? Because I
+                 * couldn't figure out how to stream lines in Python requests.
+                 * The builtin iter_lines() method will chunk on 512 bytes. But
+                 * it will block until it gets 512. So it can not get the \n
+                 * because the buffer isn't full yet. So we send garbage to make
+                 * the buffer full. I tried setting the chunk size to 1, but
+                 * caused bad performance issues.
                  */
                 byte[] fill = new byte[512];
-                Arrays.fill(fill, (byte)' ');
+                Arrays.fill(fill, (byte) ' ');
                 fill[0] = '\n';
                 fill[511] = '\n';
                 os.write(fill);
@@ -53,7 +55,7 @@ public class OutputStreamMessageWriter implements MessageWriter {
 
     @Override
     public void close() {
-        if ( os != null ) {
+        if (os != null) {
             try {
                 os.close();
             } catch (IOException e) {

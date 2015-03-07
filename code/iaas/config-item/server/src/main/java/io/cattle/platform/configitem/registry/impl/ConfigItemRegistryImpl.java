@@ -26,7 +26,7 @@ public class ConfigItemRegistryImpl implements ConfigItemRegistry, Initializatio
 
     @Override
     public void start() {
-        for ( ConfigItemFactory factory : factories ) {
+        for (ConfigItemFactory factory : factories) {
             register(factory);
         }
     }
@@ -37,8 +37,8 @@ public class ConfigItemRegistryImpl implements ConfigItemRegistry, Initializatio
 
     public boolean register(ConfigItemFactory type) {
         try {
-            for ( ConfigItem item : type.getConfigItems() ) {
-                if ( items.containsKey(item.getName()) )
+            for (ConfigItem item : type.getConfigItems()) {
+                if (items.containsKey(item.getName()))
                     continue;
 
                 log.info("Registering Config Item [{}]", item.getName());
@@ -50,7 +50,6 @@ public class ConfigItemRegistryImpl implements ConfigItemRegistry, Initializatio
 
         return true;
     }
-
 
     @Override
     public ConfigItem getConfigItem(String name) {

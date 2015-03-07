@@ -12,8 +12,7 @@ public class ForeignKeyRelationship implements Relationship {
     RelationshipType relationshipType;
     String name;
 
-    public ForeignKeyRelationship(RelationshipType relationshipType, String name, String propertyName,
-            Class<?> objectType, ForeignKey<?, ?> foreignKey) {
+    public ForeignKeyRelationship(RelationshipType relationshipType, String name, String propertyName, Class<?> objectType, ForeignKey<?, ?> foreignKey) {
         super();
         this.name = name;
         this.relationshipType = relationshipType;

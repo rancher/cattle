@@ -9,15 +9,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-public class JsonUnmodifiableMap<K,V> implements UnmodifiableMap<K, V> {
+public class JsonUnmodifiableMap<K, V> implements UnmodifiableMap<K, V> {
 
-    Map<K,V> map;
+    Map<K, V> map;
     JsonMapper jsonMapper;
     String text;
 
     @SuppressWarnings("unchecked")
     public JsonUnmodifiableMap(JsonMapper mapper, String text) throws IOException {
-        this.map = (Map<K, V>)Collections.unmodifiableMap(mapper.readValue(text));
+        this.map = (Map<K, V>) Collections.unmodifiableMap(mapper.readValue(text));
         this.jsonMapper = mapper;
         this.text = text;
     }
@@ -101,7 +101,7 @@ public class JsonUnmodifiableMap<K,V> implements UnmodifiableMap<K, V> {
     @Override
     public Map<K, V> getModifiableCopy() {
         try {
-            return (Map<K, V>)jsonMapper.readValue(text);
+            return (Map<K, V>) jsonMapper.readValue(text);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

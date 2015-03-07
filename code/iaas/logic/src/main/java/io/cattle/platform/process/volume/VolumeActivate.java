@@ -30,10 +30,10 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Volume volume = (Volume)state.getResource();
+        Volume volume = (Volume) state.getResource();
 
         Set<Long> pools = new HashSet<Long>();
-        for ( VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId()) ) {
+        for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
             activatePool(volume, map, state.getData());
             pools.add(map.getStoragePoolId());
         }
@@ -41,22 +41,22 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
         return new HandlerResult("_activatedPools", pools);
     }
 
-    protected void activatePool(Volume volume, VolumeStoragePoolMap map, Map<String,Object> data) {
+    protected void activatePool(Volume volume, VolumeStoragePoolMap map, Map<String, Object> data) {
         Image image = getObjectManager().loadResource(Image.class, volume.getImageId());
 
         activateImageInPool(volume, image, map.getStoragePoolId(), data);
         activate(map, data);
     }
 
-    protected void activateImageInPool(Volume volume, final Image image, final long poolId, Map<String,Object> data) {
-        if ( image == null ) {
+    protected void activateImageInPool(Volume volume, final Image image, final long poolId, Map<String, Object> data) {
+        if (image == null) {
             return;
         }
 
         activate(image, data);
 
         ImageStoragePoolMap map = getMap(image, poolId);
-        if ( map == null ) {
+        if (map == null) {
             map = lockManager.lock(new ImageAssociateLock(image.getId(), poolId), new LockCallback<ImageStoragePoolMap>() {
                 @Override
                 public ImageStoragePoolMap doWithLock() {
@@ -71,19 +71,16 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
 
     protected ImageStoragePoolMap associate(Image image, long poolId) {
         ImageStoragePoolMap map = getMap(image, poolId);
-        if ( map == null ) {
-            map = getObjectManager().create(ImageStoragePoolMap.class,
-                    IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId,
-                    IMAGE_STORAGE_POOL_MAP.IMAGE_ID, image.getId());
+        if (map == null) {
+            map = getObjectManager().create(ImageStoragePoolMap.class, IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId, IMAGE_STORAGE_POOL_MAP.IMAGE_ID,
+                    image.getId());
         }
 
         return map;
     }
 
     protected ImageStoragePoolMap getMap(Image image, long poolId) {
-        return mapDao.findNonRemoved(ImageStoragePoolMap.class,
-                Image.class, image.getId(),
-                StoragePool.class, poolId);
+        return mapDao.findNonRemoved(ImageStoragePoolMap.class, Image.class, image.getId(), StoragePool.class, poolId);
     }
 
     public GenericMapDao getMapDao() {

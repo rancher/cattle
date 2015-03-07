@@ -21,7 +21,7 @@ public class RegistrationAuthTokenManagerImpl implements RegistrationAuthTokenMa
     public Account validateToken(String password) {
         String[] parts = password.split(":");
 
-        if ( parts.length != 3 ) {
+        if (parts.length != 3) {
             return null;
         }
 
@@ -30,30 +30,30 @@ public class RegistrationAuthTokenManagerImpl implements RegistrationAuthTokenMa
         try {
             long time = Long.parseLong(parts[1]);
 
-            if ( System.currentTimeMillis() > (time + RegistrationToken.getAllowedTime()) ) {
+            if (System.currentTimeMillis() > (time + RegistrationToken.getAllowedTime())) {
                 return null;
             }
 
             date = new Date(time);
-        } catch ( NumberFormatException e ) {
+        } catch (NumberFormatException e) {
             return null;
         }
 
         Credential cred = authDao.getCredential(parts[0]);
 
-        if ( cred == null ) {
+        if (cred == null) {
             return null;
         }
 
         String token = RegistrationToken.createToken(cred.getPublicValue(), cred.getSecretValue(), date);
 
-        if ( ! password.equals(token) ) {
+        if (!password.equals(token)) {
             return null;
         }
 
         Account account = objectManager.loadResource(Account.class, cred.getAccountId());
 
-        if ( account == null || ! account.getState().equals(CommonStatesConstants.ACTIVE) || account.getRemoved() != null ) {
+        if (account == null || !account.getState().equals(CommonStatesConstants.ACTIVE) || account.getRemoved() != null) {
             return null;
         }
 

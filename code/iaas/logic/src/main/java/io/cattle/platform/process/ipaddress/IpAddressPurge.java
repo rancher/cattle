@@ -17,23 +17,21 @@ public class IpAddressPurge extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        IpAddress ipAddress = (IpAddress)state.getResource();
+        IpAddress ipAddress = (IpAddress) state.getResource();
 
-        for ( IpAssociation assoc : objectManager.children(ipAddress, IpAssociation.class, IpAddressConstants.FIELD_CHILD_IP_ADDRESS_ID) ) {
+        for (IpAssociation assoc : objectManager.children(ipAddress, IpAssociation.class, IpAddressConstants.FIELD_CHILD_IP_ADDRESS_ID)) {
             IpAddress parentIp = loadResource(IpAddress.class, assoc.getIpAddressId());
-            if ( ! IpAddressConstants.KIND_POOLED_IP_ADDRESS.equals(parentIp.getKind()) ) {
+            if (!IpAddressConstants.KIND_POOLED_IP_ADDRESS.equals(parentIp.getKind())) {
                 continue;
             }
 
-            Boolean release = DataAccessor.fromDataFieldOf(parentIp)
-                                .withKey(IpAddressConstants.OPTION_RELEASE_ON_CHILD_PURGE)
-                                .as(Boolean.class);
+            Boolean release = DataAccessor.fromDataFieldOf(parentIp).withKey(IpAddressConstants.OPTION_RELEASE_ON_CHILD_PURGE).as(Boolean.class);
 
-            if ( release != null && release.booleanValue() ) {
+            if (release != null && release.booleanValue()) {
                 try {
                     objectProcessManager.createProcessInstance(IpAddressConstants.PROCESS_IP_DISASSOCIATE, parentIp, state.getData()).execute();
-                } catch ( ProcessCancelException e ) {
-                    //ignore
+                } catch (ProcessCancelException e) {
+                    // ignore
                 }
                 parentIp = objectManager.reload(parentIp);
                 deactivateThenRemove(parentIp, state.getData());

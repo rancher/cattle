@@ -22,18 +22,15 @@ public class LoadBalancerAddRemoveTarget extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { LoadBalancerConstants.PROCESS_LB_ADD_TARGET,
-                LoadBalancerConstants.PROCESS_LB_REMOVE_TARGET };
+        return new String[] { LoadBalancerConstants.PROCESS_LB_ADD_TARGET, LoadBalancerConstants.PROCESS_LB_REMOVE_TARGET };
 
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         LoadBalancer lb = (LoadBalancer) state.getResource();
-        Long instanceId = DataAccessor.fromMap(state.getData())
-                .withKey(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_ID).as(Long.class);
-        String ipAddress = DataAccessor.fromMap(state.getData())
-                .withKey(LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS).as(String.class);
+        Long instanceId = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_ID).as(Long.class);
+        String ipAddress = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS).as(String.class);
 
         if (process.getName().equals(LoadBalancerConstants.PROCESS_LB_ADD_TARGET)) {
             createLbTarget(lb, instanceId, ipAddress);
@@ -47,8 +44,7 @@ public class LoadBalancerAddRemoveTarget extends AbstractObjectProcessHandler {
     protected void removeLbTarget(LoadBalancer lb, Long instanceId, String ipAddress) {
         LoadBalancerTarget target = getLbTargetToRemove(lb, instanceId, ipAddress);
         if (target != null) {
-            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
-                    target, null);
+            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE, target, null);
         }
     }
 
@@ -75,10 +71,8 @@ public class LoadBalancerAddRemoveTarget extends AbstractObjectProcessHandler {
     protected void createLbTarget(LoadBalancer lb, Long instanceId, String ipAddress) {
         LoadBalancerTarget target = getLbTarget(lb, instanceId, ipAddress);
         if (target == null) {
-            target = objectManager.create(LoadBalancerTarget.class,
-                    LOAD_BALANCER_TARGET.INSTANCE_ID, instanceId,
-                    LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lb.getId(),
-                    LOAD_BALANCER_TARGET.IP_ADDRESS, ipAddress);
+            target = objectManager.create(LoadBalancerTarget.class, LOAD_BALANCER_TARGET.INSTANCE_ID, instanceId, LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lb
+                    .getId(), LOAD_BALANCER_TARGET.IP_ADDRESS, ipAddress);
         }
 
         getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE, target, null);

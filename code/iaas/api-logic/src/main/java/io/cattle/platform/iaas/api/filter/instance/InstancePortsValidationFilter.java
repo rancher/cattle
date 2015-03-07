@@ -27,9 +27,9 @@ public class InstancePortsValidationFilter extends AbstractDefaultResourceManage
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         List<?> ports = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_PORTS, List.class);
-        if ( ports != null ) {
-            for ( Object port : ports ) {
-                if ( port == null ) {
+        if (ports != null) {
+            for (Object port : ports) {
+                if (port == null) {
                     throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, InstanceConstants.FIELD_PORTS);
                 }
 

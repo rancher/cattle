@@ -15,8 +15,8 @@ public class TimedDocumentLoader extends DefaultDocumentLoader {
     private static long time = 0;
 
     @Override
-    public Document loadDocument(InputSource inputSource, EntityResolver entityResolver, ErrorHandler errorHandler,
-            int validationMode, boolean namespaceAware) throws Exception {
+    public Document loadDocument(InputSource inputSource, EntityResolver entityResolver, ErrorHandler errorHandler, int validationMode, boolean namespaceAware)
+            throws Exception {
         long start = System.currentTimeMillis();
         try {
             return super.loadDocument(inputSource, entityResolver, errorHandler, validationMode, namespaceAware);

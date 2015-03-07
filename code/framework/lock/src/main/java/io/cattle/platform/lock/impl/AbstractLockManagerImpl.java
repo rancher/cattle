@@ -9,11 +9,11 @@ import io.cattle.platform.lock.definition.LockDefinition;
 public abstract class AbstractLockManagerImpl implements LockManager {
 
     @Override
-    public <T,E extends Throwable> T lock(LockDefinition lockDef, LockCallbackWithException<T,E> callback, Class<E> clz) throws E {
+    public <T, E extends Throwable> T lock(LockDefinition lockDef, LockCallbackWithException<T, E> callback, Class<E> clz) throws E {
         return doLock(lockDef, callback, new WithLock() {
             @Override
             public boolean withLock(Lock lock) {
-                if ( lock != null )
+                if (lock != null)
                     lock.lock();
                 return true;
             }
@@ -21,11 +21,11 @@ public abstract class AbstractLockManagerImpl implements LockManager {
     }
 
     @Override
-    public <T,E extends Throwable> T tryLock(LockDefinition lockDef, LockCallbackWithException<T,E> callback, Class<E> clz) throws E {
+    public <T, E extends Throwable> T tryLock(LockDefinition lockDef, LockCallbackWithException<T, E> callback, Class<E> clz) throws E {
         return doLock(lockDef, callback, new WithLock() {
             @Override
             public boolean withLock(Lock lock) {
-                if ( lock != null )
+                if (lock != null)
                     return lock.tryLock();
                 return true;
             }
@@ -52,8 +52,7 @@ public abstract class AbstractLockManagerImpl implements LockManager {
         }, RuntimeException.class);
     }
 
-    protected abstract <T,E extends Throwable> T doLock(LockDefinition lockDef, 
-            LockCallbackWithException<T,E> callback, WithLock with) throws E;
+    protected abstract <T, E extends Throwable> T doLock(LockDefinition lockDef, LockCallbackWithException<T, E> callback, WithLock with) throws E;
 
     protected static interface WithLock {
         boolean withLock(Lock lock);

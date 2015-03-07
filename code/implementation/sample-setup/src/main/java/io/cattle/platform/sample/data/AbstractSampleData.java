@@ -42,7 +42,7 @@ public abstract class AbstractSampleData implements InitializationTask {
 
     @Override
     public final void start() {
-        if ( ! RUN.get() ) {
+        if (!RUN.get()) {
             return;
         }
 
@@ -55,19 +55,19 @@ public abstract class AbstractSampleData implements InitializationTask {
     }
 
     protected final void startWithLock() {
-        if ( ! RUN.get() ) {
+        if (!RUN.get()) {
             return;
         }
         String name = getName();
 
         Data data = objectManager.findAny(Data.class, DATA.NAME, name);
 
-        if ( data != null ) {
+        if (data != null) {
             return;
         }
 
         Account system = accountDao.getSystemAccount();
-        if ( system == null ) {
+        if (system == null) {
             log.warn("Failed to find system account, not populating system data");
             return;
         }
@@ -76,16 +76,14 @@ public abstract class AbstractSampleData implements InitializationTask {
 
         populatedData(system, toCreate);
 
-        for ( Object object : toCreate ) {
+        for (Object object : toCreate) {
             try {
                 processManager.executeStandardProcess(StandardProcess.CREATE, object, null);
-            } catch ( ProcessCancelException e ) {
+            } catch (ProcessCancelException e) {
             }
         }
 
-        objectManager.create(Data.class,
-                DATA.NAME, name,
-                DATA.VALUE, "true");
+        objectManager.create(Data.class, DATA.NAME, name, DATA.VALUE, "true");
     }
 
     protected abstract String getName();
@@ -93,12 +91,12 @@ public abstract class AbstractSampleData implements InitializationTask {
     protected abstract void populatedData(Account system, List<Object> toCreate);
 
     protected <T> T createByUuid(Class<T> type, String uuid, Object key, Object... values) {
-        Map<Object,Object> inputProperties = CollectionUtils.asMap(key, values);
+        Map<Object, Object> inputProperties = CollectionUtils.asMap(key, values);
         inputProperties.put(ObjectMetaDataManager.UUID_FIELD, uuid);
-        Map<String,Object> properties = objectManager.convertToPropertiesFor(type, inputProperties);
+        Map<String, Object> properties = objectManager.convertToPropertiesFor(type, inputProperties);
 
         T existing = objectManager.findAny(type, ObjectMetaDataManager.UUID_FIELD, uuid);
-        if ( existing != null ) {
+        if (existing != null) {
             objectManager.setFields(existing, properties);
             return existing;
         }

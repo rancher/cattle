@@ -1,10 +1,10 @@
 package io.cattle.platform.api.pubsub.model;
 
-import java.util.List;
-import java.util.Map;
-
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
+
+import java.util.List;
+import java.util.Map;
 
 @Type(pluralName = "publish", create = true, list = false)
 public interface Publish {
@@ -25,7 +25,7 @@ public interface Publish {
     List<String> getPreviousIds();
 
     @Field(create = true, nullable = true)
-    Map<String,Object> getData();
+    Map<String, Object> getData();
 
     @Field(create = true)
     Long getTime();

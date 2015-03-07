@@ -25,21 +25,21 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
     public Event handle(final AgentConnectionSimulator simulator, Event event) throws Exception {
         Boolean add = null;
 
-        if ( "compute.instance.activate".equals(event.getName()) ) {
+        if ("compute.instance.activate".equals(event.getName())) {
             add = true;
-        } else if ( "compute.instance.deactivate".equals(event.getName()) ) {
+        } else if ("compute.instance.deactivate".equals(event.getName())) {
             add = false;
         }
 
-        if ( add == null ) {
+        if (add == null) {
             return null;
         }
 
         String eventString = jsonMapper.writeValueAsString(event);
 
-        final Object uuid = CollectionUtils.getNestedValue(event.getData(), "instanceHostMap","instance", "uuid");
-        if ( uuid != null ) {
-            if ( add && ! FORGET.matcher(eventString).matches() ) {
+        final Object uuid = CollectionUtils.getNestedValue(event.getData(), "instanceHostMap", "instance", "uuid");
+        if (uuid != null) {
+            if (add && !FORGET.matcher(eventString).matches()) {
                 simulator.getInstances().add(uuid.toString());
             } else {
                 simulator.getInstances().remove(uuid.toString());
@@ -47,7 +47,7 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
         }
 
         Matcher m = SHUTDOWN.matcher(eventString);
-        if ( m.matches() ) {
+        if (m.matches()) {
             scheduleExecutorService.schedule(new Runnable() {
                 @Override
                 public void run() {

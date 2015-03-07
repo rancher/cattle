@@ -38,30 +38,26 @@ public class AgentInstanceIpsecNetworkServiceCreate extends AbstractObjectProces
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        NetworkService networkService = (NetworkService)state.getResource();
+        NetworkService networkService = (NetworkService) state.getResource();
 
-        if ( ! NetworkServiceConstants.KIND_IPSEC_TUNNEL.equals(networkService.getKind()) ) {
+        if (!NetworkServiceConstants.KIND_IPSEC_TUNNEL.equals(networkService.getKind())) {
             return null;
         }
 
         NetworkServiceProvider provider = loadResource(NetworkServiceProvider.class, networkService.getNetworkServiceProviderId());
 
-        if ( provider == null || ! provider.getKind().equals(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE) ) {
+        if (provider == null || !provider.getKind().equals(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE)) {
             return null;
         }
 
         String key = String.format("%s/%s", networkService.getUuid(), "ipsecKey");
         Data data = objectManager.findAny(Data.class, DATA.NAME, key);
 
-        if ( data == null ) {
-            objectManager.create(Data.class,
-                    DATA.NAME, key,
-                    DATA.VALUE, randomKey(),
-                    DATA.VISIBLE, false);
+        if (data == null) {
+            objectManager.create(Data.class, DATA.NAME, key, DATA.VALUE, randomKey(), DATA.VISIBLE, false);
         }
 
         return null;
     }
-
 
 }

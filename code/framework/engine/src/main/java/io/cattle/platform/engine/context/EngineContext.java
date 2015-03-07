@@ -36,39 +36,39 @@ public class EngineContext {
 
     protected void setupMdc() {
         Long processId = null;
-        String logicName = null, processUuid = null, processName = null, topProcessName = null,
-                resourceId = null, resourceType = null, topResourceId = null, topResourceType = null;
+        String logicName = null, processUuid = null, processName = null, topProcessName = null, resourceId = null;
+        String resourceType = null, topResourceId = null, topResourceType = null;
 
         StringBuilder fullPath = new StringBuilder();
 
-        for ( ParentLog log : currentLog ) {
-            if ( fullPath.length() > 0 ) {
+        for (ParentLog log : currentLog) {
+            if (fullPath.length() > 0) {
                 fullPath.append("->");
             }
 
-            if ( log instanceof ProcessExecutionLog ) {
+            if (log instanceof ProcessExecutionLog) {
                 fullPath.append(log.getName());
 
-                if ( processUuid == null ) {
-                    processUuid = ((ProcessExecutionLog)log).getId();
+                if (processUuid == null) {
+                    processUuid = ((ProcessExecutionLog) log).getId();
                 }
-                if ( processId == null ) {
-                    processId = ((ProcessExecutionLog)log).getProcessId();
+                if (processId == null) {
+                    processId = ((ProcessExecutionLog) log).getProcessId();
                 }
-                if ( topProcessName == null ) {
+                if (topProcessName == null) {
                     topProcessName = log.getName();
                 }
-                if ( topResourceType == null ) {
-                    topResourceType = ((ProcessExecutionLog)log).getResourceType();
+                if (topResourceType == null) {
+                    topResourceType = ((ProcessExecutionLog) log).getResourceType();
                 }
-                if ( topResourceId == null ) {
-                    topResourceId = ((ProcessExecutionLog)log).getResourceId();
+                if (topResourceId == null) {
+                    topResourceId = ((ProcessExecutionLog) log).getResourceId();
                 }
 
                 processName = log.getName();
-                resourceType = ((ProcessExecutionLog)log).getResourceType();
-                resourceId = ((ProcessExecutionLog)log).getResourceId();
-            } else if ( log instanceof ProcessLogicExecutionLog ) {
+                resourceType = ((ProcessExecutionLog) log).getResourceType();
+                resourceId = ((ProcessExecutionLog) log).getResourceId();
+            } else if (log instanceof ProcessLogicExecutionLog) {
                 fullPath.append("(").append(log.getName()).append(")");
                 logicName = log.getName();
             }
@@ -77,19 +77,18 @@ public class EngineContext {
         String prettyResource = null;
         String prettyProcess = null;
         StringBuilder buffer = new StringBuilder();
-        if ( topResourceType != null ) {
+        if (topResourceType != null) {
             buffer.append(topResourceType).append(":").append(topResourceId);
-            if ( ! ObjectUtils.equals(resourceId, topResourceId)
-                    || ! ObjectUtils.equals(resourceType, topResourceType) ) {
+            if (!ObjectUtils.equals(resourceId, topResourceId) || !ObjectUtils.equals(resourceType, topResourceType)) {
                 buffer.append("->").append(resourceType).append(":").append(resourceId);
             }
             prettyResource = buffer.toString();
         }
 
         buffer.setLength(0);
-        if ( topProcessName != null ) {
+        if (topProcessName != null) {
             buffer.append(topProcessName);
-            if ( ! ObjectUtils.equals(topProcessName, processName) ) {
+            if (!ObjectUtils.equals(topProcessName, processName)) {
                 buffer.append("->").append(processName);
             }
             prettyProcess = buffer.toString();
@@ -109,12 +108,10 @@ public class EngineContext {
         MDC.put(LOGIC_PATH, fullPath.toString());
     }
 
-
-
     public ParentLog peekLog() {
         try {
             return currentLog.peek();
-        } catch ( EmptyStackException e ) {
+        } catch (EmptyStackException e) {
             return null;
         }
     }

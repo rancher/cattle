@@ -13,4 +13,3 @@ public class NoCloseOutputStream extends FilterOutputStream {
     public void close() throws IOException {
     }
 }
-

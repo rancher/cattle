@@ -22,7 +22,7 @@ public class MultiLockTest {
         verify(good2, times(0)).tryLock();
         verify(good2, times(1)).lock();
     }
-    
+
     @Test
     public void test_good_tryLock() {
         Lock good = LockTestUtils.goodLock(null);
@@ -59,14 +59,14 @@ public class MultiLockTest {
             MultiLock multiLock = new MultiLock(null, good, bad, good2);
             multiLock.lock();
             fail();
-        } catch ( FailedToAcquireLockException e ) {
+        } catch (FailedToAcquireLockException e) {
         }
 
         verify(good, times(1)).lock();
         verify(bad, times(1)).lock();
         verify(good2, times(0)).lock();
     }
-    
+
     @Test
     public void test_bad_trylock() {
         Lock good = LockTestUtils.goodLock(null);

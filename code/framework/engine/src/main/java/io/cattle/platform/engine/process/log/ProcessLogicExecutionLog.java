@@ -12,9 +12,9 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
     boolean shouldContinue;
     boolean shouldDelegate;
     String chainProcessName;
-    Map<String,Object> resultData;
-    Map<String,Object> resourceValueBefore;
-    Map<String,Object> resourceValueAfter;
+    Map<String, Object> resultData;
+    Map<String, Object> resourceValueBefore;
+    Map<String, Object> resourceValueAfter;
     Set<String> missingRequiredFields;
 
     public long getStartTime() {

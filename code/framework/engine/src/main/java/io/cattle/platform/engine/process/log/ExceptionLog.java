@@ -18,7 +18,7 @@ public class ExceptionLog {
         this.clz = t.getClass().getName();
         this.stackTrace = t instanceof IdempotentRetryException ? null : ExceptionUtils.toString(t);
         Throwable cause = t.getCause();
-        if ( cause != null ) {
+        if (cause != null) {
             this.cause = cause.getClass().getName();
         }
     }

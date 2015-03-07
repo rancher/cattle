@@ -43,7 +43,7 @@ public class EofClosingTcpipServerChannel extends TcpipServerChannel {
         super.handleEof();
 
         IoSession ioSession = getIoSession();
-        if ( ioSession != null ) {
+        if (ioSession != null) {
             ioSession.close(true);
         }
     }

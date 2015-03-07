@@ -24,28 +24,23 @@ public class AgentInstanceAuthObjectPostProcessor implements ObjectTypeSerialize
 
     @Override
     public void process(Object obj, String type, Map<String, Object> data) {
-        if ( ! ( obj instanceof Instance ) ) {
+        if (!(obj instanceof Instance)) {
             return;
         }
 
-        Instance instance = (Instance)obj;
+        Instance instance = (Instance) obj;
 
         Agent agent = objectManager.loadResource(Agent.class, instance.getAgentId());
-        if ( agent == null ) {
+        if (agent == null) {
             return;
         }
 
         String auth = AgentUtils.getAgentAuth(agent, objectManager);
-        if ( auth != null ) {
-            DataAccessor.fromDataFieldOf(data)
-                .withKey("agentInstanceAuth")
-                .set(auth);
+        if (auth != null) {
+            DataAccessor.fromDataFieldOf(data).withKey("agentInstanceAuth").set(auth);
 
-            Map<String,Object> fields = DataUtils.getWritableFields(data);
-            DataAccessor.fromMap(fields)
-                .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
-                .withKey("CATTLE_AGENT_INSTANCE_AUTH")
-                .set(auth);
+            Map<String, Object> fields = DataUtils.getWritableFields(data);
+            DataAccessor.fromMap(fields).withScopeKey(InstanceConstants.FIELD_ENVIRONMENT).withKey("CATTLE_AGENT_INSTANCE_AUTH").set(auth);
         }
     }
 

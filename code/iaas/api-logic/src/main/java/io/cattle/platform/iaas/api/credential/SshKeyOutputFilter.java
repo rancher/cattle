@@ -11,9 +11,10 @@ public class SshKeyOutputFilter implements ResourceOutputFilter {
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if ( original instanceof Credential ) {
-            if ( ((Credential)original).getSecretValue() != null ) {
-                converted.getLinks().put(CredentialConstants.LINK_PEM_FILE, ApiContext.getUrlBuilder().resourceLink(converted, CredentialConstants.LINK_PEM_FILE));
+        if (original instanceof Credential) {
+            if (((Credential) original).getSecretValue() != null) {
+                converted.getLinks().put(CredentialConstants.LINK_PEM_FILE,
+                        ApiContext.getUrlBuilder().resourceLink(converted, CredentialConstants.LINK_PEM_FILE));
             }
         }
 

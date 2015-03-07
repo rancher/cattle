@@ -55,19 +55,16 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     LockDelegator lockDelegator;
     AgentLocator agentLocator;
     ListeningExecutorService executorService;
-    LoadingCache<Long, PingStatus> status = CacheBuilder
-            .newBuilder()
-            .expireAfterAccess(PING_SCHEDULE.get() * 3, TimeUnit.SECONDS)
-            .build(new CacheLoader<Long, PingStatus>() {
+    LoadingCache<Long, PingStatus> status = CacheBuilder.newBuilder().expireAfterAccess(PING_SCHEDULE.get() * 3, TimeUnit.SECONDS).build(
+            new CacheLoader<Long, PingStatus>() {
                 @Override
                 public PingStatus load(Long key) throws Exception {
                     return new PingStatus(key);
                 }
             });
 
-
     protected void handleUnowned(Agent agent) {
-        if ( isInterval(PING_UNMANAGED_EVERY.get()) ) {
+        if (isInterval(PING_UNMANAGED_EVERY.get())) {
             RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
             remoteAgent.publish(AgentUtils.newPing(agent));
         }
@@ -76,15 +73,15 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     protected void handleOwned(Agent agent) {
         Ping ping = AgentUtils.newPing(agent);
 
-        if ( isInterval(PING_STATS_EVERY.get()) ) {
+        if (isInterval(PING_STATS_EVERY.get())) {
             ping.setOption(Ping.STATS, true);
         }
 
-        if ( isInterval(PING_RESOURCES_EVERY.get()) ) {
+        if (isInterval(PING_RESOURCES_EVERY.get())) {
             ping.setOption(Ping.RESOURCES, true);
         }
 
-        if ( isInterval(PING_INSTANCES_EVERY.get()) ) {
+        if (isInterval(PING_INSTANCES_EVERY.get())) {
             ping.setOption(Ping.INSTANCES, true);
         }
 
@@ -97,7 +94,7 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     protected void ping(Agent agent) {
         LockDefinition lockDef = AgentConnectionUtils.getConnectionLock(agent);
-        if ( lockDelegator.isLocked(lockDef) ) {
+        if (lockDelegator.isLocked(lockDef)) {
             handleOwned(agent);
         } else {
             handleUnowned(agent);
@@ -128,15 +125,15 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     protected void pingFailure(Agent agent) {
         long count = status.getUnchecked(agent.getId()).failed();
         log.error("Failed to get ping from agent [{}] count [{}]", agent.getId(), count);
-        if ( count >= BAD_PINGS.get() ) {
+        if (count >= BAD_PINGS.get()) {
             try {
                 agent = objectManager.reload(agent);
-                if ( CommonStatesConstants.ACTIVE.equals(agent.getState()) ) {
+                if (CommonStatesConstants.ACTIVE.equals(agent.getState())) {
                     log.error("Scheduling reconnect for [{}]", agent.getId());
                     processManager.scheduleProcessInstance(AgentConstants.PROCESS_RECONNECT, agent, null);
                 }
-            } catch ( ProcessInstanceException e ) {
-                if ( e.getExitReason() != ExitReason.CANCELED ) {
+            } catch (ProcessInstanceException e) {
+                if (e.getExitReason() != ExitReason.CANCELED) {
                     throw e;
                 }
             }
@@ -145,7 +142,7 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     @Override
     public void run() {
-        for ( Agent agent : pingDao.findAgentsToPing() ) {
+        for (Agent agent : pingDao.findAgentsToPing()) {
             ping(agent);
         }
         interation++;

@@ -14,7 +14,7 @@ public class ProcessServerImpl implements ProcessServer {
 
     @Override
     public void runOutstandingJobs() {
-        for ( Long id : repository.pendingTasks() ) {
+        for (Long id : repository.pendingTasks()) {
             dispatcher.execute(id);
         }
     }
@@ -22,7 +22,7 @@ public class ProcessServerImpl implements ProcessServer {
     @Override
     public void runRemainingTasks(long processId) {
         final Long nextId = repository.getRemainingTask(processId);
-        if ( nextId != null ) {
+        if (nextId != null) {
             DeferredUtils.defer(new Runnable() {
                 @Override
                 public void run() {

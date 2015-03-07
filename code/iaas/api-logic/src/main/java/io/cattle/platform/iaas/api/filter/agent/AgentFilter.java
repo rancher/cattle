@@ -43,19 +43,21 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
     public Object create(String type, ApiRequest request, ResourceManager next) {
         String ip = request.getClientIp();
         Agent agent = request.proxyRequestObject(Agent.class);
-        /* This ensures that the accountId is always set from the request and
-         * never overwritten by the default accountId setting logic.  In the
-         * situation in which the client doesn't have access to the accountId field,
-         * the result will be null, which is correct.  You want it to be null so
-         * that the AgentCreate logic will create an account for this Agent
+        /*
+         * This ensures that the accountId is always set from the request and
+         * never overwritten by the default accountId setting logic. In the
+         * situation in which the client doesn't have access to the accountId
+         * field, the result will be null, which is correct. You want it to be
+         * null so that the AgentCreate logic will create an account for this
+         * Agent
          */
         agent.setAccountId(agent.getAccountId());
         String uri = agent.getUri();
         String user = DataUtils.getFieldFromRequest(request, AgentConstants.USER, String.class);
 
-        if ( uri == null ) {
+        if (uri == null) {
             uri = getUri(user, ip);
-            if ( uri != null ) {
+            if (uri != null) {
                 isUnique(uri);
                 agent.setUri(uri);
             }
@@ -66,25 +68,25 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
 
     protected void isUnique(String uri) {
         Agent existing = agentDao.findNonRemovedByUri(uri);
-        if ( existing != null ) {
+        if (existing != null) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE, "uri");
         }
     }
 
     protected String getUri(String user, String ip) {
-        if ( ip == null ) {
+        if (ip == null) {
             return null;
         }
 
-        if ( user == null ) {
+        if (user == null) {
             user = USER.get();
         }
 
-        if ( ! ASSIGN_AGENT_URI.get() ) {
+        if (!ASSIGN_AGENT_URI.get()) {
             return null;
         }
 
-        if ( TRY_DNS.get() ) {
+        if (TRY_DNS.get()) {
             try {
                 InetAddress addr = InetAddress.getByName(ip);
                 ip = addr.getCanonicalHostName();

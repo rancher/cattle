@@ -11,7 +11,7 @@ public class LoggerListener extends org.jooq.tools.LoggerListener {
 
     private static final long serialVersionUID = 1991892878733157263L;
 
-    private static final JooqLogger log   = JooqLogger.getLogger(org.jooq.tools.LoggerListener.class);
+    private static final JooqLogger log = JooqLogger.getLogger(org.jooq.tools.LoggerListener.class);
 
     long maxLength = 1000;
 
@@ -29,20 +29,18 @@ public class LoggerListener extends org.jooq.tools.LoggerListener {
                 // that is not the same as the actual SQL passed to JDBC
                 String inlined = ctx.query().getSQL(INLINED);
                 if (!ctx.sql().equals(inlined)) {
-                    if ( inlined.length() > maxLength ) {
+                    if (inlined.length() > maxLength) {
                         log.debug("-> with bind values : too long");
                     } else {
                         log.debug("-> with bind values", inlined);
                     }
                 }
-            }
-            else if (!StringUtils.isBlank(ctx.sql())) {
+            } else if (!StringUtils.isBlank(ctx.sql())) {
 
                 // [#1529] Batch queries should be logged specially
                 if (ctx.type() == ExecuteType.BATCH) {
                     log.debug("Executing batch query", ctx.sql());
-                }
-                else {
+                } else {
                     log.debug("Executing query", ctx.sql());
                 }
             }

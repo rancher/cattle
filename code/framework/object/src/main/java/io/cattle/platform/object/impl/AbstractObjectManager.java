@@ -28,7 +28,6 @@ public abstract class AbstractObjectManager implements ObjectManager {
     List<ObjectLifeCycleHandler> lifeCycleHandlers;
     ObjectMetaDataManager metaDataManager;
 
-
     @Override
     public <T> T create(T instance) {
         return create(instance, new HashMap<String, Object>());
@@ -36,16 +35,16 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
     @Override
     public <T> T create(T instance, Object key, Object... valueKeyValue) {
-        Map<Object,Object> properties = CollectionUtils.asMap(key, valueKeyValue);
+        Map<Object, Object> properties = CollectionUtils.asMap(key, valueKeyValue);
         return create(instance, convertToPropertiesFor(instance, properties));
     }
 
     @Override
-    public <T> T create(T instance, Map<String,Object> properties) {
+    public <T> T create(T instance, Map<String, Object> properties) {
         @SuppressWarnings("unchecked")
         Class<T> clz = (Class<T>) instance.getClass();
 
-        for ( ObjectPostInstantiationHandler handler : postInitHandlers ) {
+        for (ObjectPostInstantiationHandler handler : postInitHandlers) {
             instance = handler.postProcess(instance, clz, properties);
         }
 
@@ -57,7 +56,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
     }
 
     @Override
-    public <T> T create(Class<T> clz, Map<String,Object> properties) {
+    public <T> T create(Class<T> clz, Map<String, Object> properties) {
         T instance = construct(clz, properties);
 
         instance = insert(instance, clz, properties);
@@ -67,62 +66,61 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return instance;
     }
 
-
     @Override
     public <T> T create(Class<T> clz, Object key, Object... valueKeyValue) {
-        Map<Object,Object> properties = CollectionUtils.asMap(key, valueKeyValue);
+        Map<Object, Object> properties = CollectionUtils.asMap(key, valueKeyValue);
         return create(clz, convertToPropertiesFor(clz, properties));
     }
 
-    protected <T> T construct(Class<T> clz, Map<String,Object> properties) {
+    protected <T> T construct(Class<T> clz, Map<String, Object> properties) {
         T instance = instantiate(clz, properties);
 
-        for ( ObjectPostInstantiationHandler handler : postInitHandlers ) {
+        for (ObjectPostInstantiationHandler handler : postInitHandlers) {
             instance = handler.postProcess(instance, clz, properties);
         }
 
         return instance;
     }
 
-    protected <T> T callLifeCycleHandlers(LifeCycleEvent event, T instance, Class<T> clz, Map<String,Object> properties) {
-        for ( ObjectLifeCycleHandler handler : lifeCycleHandlers ) {
+    protected <T> T callLifeCycleHandlers(LifeCycleEvent event, T instance, Class<T> clz, Map<String, Object> properties) {
+        for (ObjectLifeCycleHandler handler : lifeCycleHandlers) {
             instance = handler.onEvent(event, instance, clz, properties);
         }
         return instance;
     }
 
-    protected abstract <T> T instantiate(Class<T> clz, Map<String,Object> properties);
+    protected abstract <T> T instantiate(Class<T> clz, Map<String, Object> properties);
 
-    protected abstract <T> T insert(T instance, Class<T> clz, Map<String,Object> properties);
+    protected abstract <T> T insert(T instance, Class<T> clz, Map<String, Object> properties);
 
     @Override
     public String getType(Object obj) {
-        if ( obj == null ) {
+        if (obj == null) {
             return null;
         }
 
         Schema schema = null;
-        if ( obj instanceof Class<?> ) {
-            schema = schemaFactory.getSchema((Class<?>)obj);
+        if (obj instanceof Class<?>) {
+            schema = schemaFactory.getSchema((Class<?>) obj);
         } else {
             schema = schemaFactory.getSchema(obj.getClass());
         }
-        if ( schema == null ) {
+        if (schema == null) {
             return null;
         }
 
-        return schema.getParent() == null ? schema.getId () : schemaFactory.getBaseType(schema.getId());
+        return schema.getParent() == null ? schema.getId() : schemaFactory.getBaseType(schema.getId());
     }
 
     protected String getPossibleSubType(Object obj) {
         Object kind = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.KIND_FIELD);
 
-        if ( kind != null ) {
+        if (kind != null) {
             String kindString = kind.toString();
             String baseType = schemaFactory.getBaseType(kindString);
             Class<?> clz = schemaFactory.getSchemaClass(baseType);
 
-            if ( kind != null && clz != null && clz.isAssignableFrom(obj.getClass()) ) {
+            if (kind != null && clz != null && clz.isAssignableFrom(obj.getClass())) {
                 return kindString;
             }
         }
@@ -132,33 +130,33 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
     @Override
     public <T> T setFields(Object obj, Object key, Object... valueKeyValue) {
-        Map<Object,Object> values = CollectionUtils.asMap(key, valueKeyValue);
+        Map<Object, Object> values = CollectionUtils.asMap(key, valueKeyValue);
 
         return setFields(obj, convertToPropertiesFor(obj, values));
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<Object,Object> toObjectsToWrite(Object obj, Map<String, Object> values) {
+    protected Map<Object, Object> toObjectsToWrite(Object obj, Map<String, Object> values) {
         String type = getType(obj);
-        Map<String,Relationship> relationships = null;
-        Map<Object,Object> objValues = new LinkedHashMap<Object, Object>();
+        Map<String, Relationship> relationships = null;
+        Map<Object, Object> objValues = new LinkedHashMap<Object, Object>();
 
-        for ( Map.Entry<String, Object> entry : values.entrySet() ) {
+        for (Map.Entry<String, Object> entry : values.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            if ( value instanceof Map<?, ?> ) {
-                if ( relationships == null ) {
+            if (value instanceof Map<?, ?>) {
+                if (relationships == null) {
                     relationships = metaDataManager.getLinkRelationships(schemaFactory, type);
                 }
                 Relationship rel = relationships.get(key.toLowerCase());
-                if ( rel != null && rel.getRelationshipType() != Relationship.RelationshipType.REFERENCE ) {
+                if (rel != null && rel.getRelationshipType() != Relationship.RelationshipType.REFERENCE) {
                     rel = null;
                 }
 
-                if ( rel == null ) {
+                if (rel == null) {
                     objValues.put(key, value);
                 } else {
-                    value = toObjectsToWrite(rel.getObjectType(), (Map<String,Object>)value);
+                    value = toObjectsToWrite(rel.getObjectType(), (Map<String, Object>) value);
                     objValues.put(rel, value);
                 }
             } else {
@@ -169,22 +167,21 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return objValues;
     }
 
-
     @SuppressWarnings("unchecked")
     @Override
     public <T> List<T> getListByRelationship(Object obj, Relationship rel) {
-        if ( rel == null || obj == null ) {
+        if (rel == null || obj == null) {
             return Collections.emptyList();
         }
 
-        if ( ! rel.isListResult() ) {
+        if (!rel.isListResult()) {
             throw new IllegalArgumentException("Relationation arguement is not a list result");
         }
 
-        if (  rel.getRelationshipType() == RelationshipType.CHILD ) {
-            return (List<T>)children(obj, rel.getObjectType(), rel.getPropertyName());
-        } else if ( rel.getRelationshipType() == RelationshipType.MAP ) {
-            return getListByRelationshipMap(obj, (MapRelationship)rel);
+        if (rel.getRelationshipType() == RelationshipType.CHILD) {
+            return (List<T>) children(obj, rel.getObjectType(), rel.getPropertyName());
+        } else if (rel.getRelationshipType() == RelationshipType.MAP) {
+            return getListByRelationshipMap(obj, (MapRelationship) rel);
         }
 
         return Collections.emptyList();
@@ -195,22 +192,22 @@ public abstract class AbstractObjectManager implements ObjectManager {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getObjectByRelationship(Object obj, Relationship rel) {
-        if ( rel == null || obj == null ) {
+        if (rel == null || obj == null) {
             return null;
         }
 
-        if ( rel.isListResult() ) {
+        if (rel.isListResult()) {
             throw new IllegalArgumentException("Relationation arguement is not a singular result");
         }
 
         Object id = ObjectUtils.getProperty(obj, rel.getPropertyName());
 
-        return id == null ? null : (T)loadResource(rel.getObjectType(), id.toString());
+        return id == null ? null : (T) loadResource(rel.getObjectType(), id.toString());
     }
 
     @Override
     public boolean isKind(Object obj, String kind) {
-        if ( obj == null ) {
+        if (obj == null) {
             return false;
         }
 
@@ -228,7 +225,6 @@ public abstract class AbstractObjectManager implements ObjectManager {
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }
-
 
     public List<ObjectPostInstantiationHandler> getPostInitHandlers() {
         return postInitHandlers;

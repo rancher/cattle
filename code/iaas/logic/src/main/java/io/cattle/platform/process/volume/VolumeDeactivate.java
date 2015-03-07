@@ -17,11 +17,11 @@ public class VolumeDeactivate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Volume volume = (Volume)state.getResource();
+        Volume volume = (Volume) state.getResource();
 
         Set<Long> pools = new HashSet<Long>();
-        for ( VolumeStoragePoolMap map : getObjectManager().children(volume, VolumeStoragePoolMap.class) ) {
-            if ( map.getRemoved() == null ) {
+        for (VolumeStoragePoolMap map : getObjectManager().children(volume, VolumeStoragePoolMap.class)) {
+            if (map.getRemoved() == null) {
                 deactivate(map, state.getData());
                 pools.add(map.getStoragePoolId());
             }

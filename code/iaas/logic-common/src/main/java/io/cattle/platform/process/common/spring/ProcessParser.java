@@ -35,17 +35,17 @@ public class ProcessParser implements BeanDefinitionParser {
         String delegate = element.getAttribute("delegate");
         String resourceType = element.getAttribute("resourceType");
 
-        if ( StringUtils.isBlank(delegate) ) {
+        if (StringUtils.isBlank(delegate)) {
             delegate = null;
         }
 
         return parse(id, stateField, name, start, transitioning, done, resourceType, delegate, new HashMap<String, String>(), parserContext);
     }
 
-    protected BeanDefinition parse(String id, String stateField, String name, String start, String transitioning,
-            String done, String resourceType, String delegate, Map<String,String> renames, ParserContext parserContext) {
-        if ( StringUtils.isBlank(id) ) {
-            if ( StringUtils.isBlank(name) ) {
+    protected BeanDefinition parse(String id, String stateField, String name, String start, String transitioning, String done, String resourceType,
+            String delegate, Map<String, String> renames, ParserContext parserContext) {
+        if (StringUtils.isBlank(id)) {
+            if (StringUtils.isBlank(name)) {
                 id = "generated$" + GenericResourceProcessDefinition.class.getSimpleName() + "$" + COUNTER.incrementAndGet();
             } else {
                 id = "generated$" + name;
@@ -54,7 +54,7 @@ public class ProcessParser implements BeanDefinitionParser {
 
         BeanDefinitionBuilder statesBuilder = BeanDefinitionBuilder.genericBeanDefinition(ResourceStatesDefinition.class);
 
-        if ( ! StringUtils.isBlank(stateField) ) {
+        if (!StringUtils.isBlank(stateField)) {
             statesBuilder.addPropertyValue("stateField", stateField);
         }
 
@@ -82,13 +82,13 @@ public class ProcessParser implements BeanDefinitionParser {
         return def;
     }
 
-    protected Set<String> getSet(String values, Map<String,String> renames) {
-        if ( StringUtils.isBlank(values) ) {
+    protected Set<String> getSet(String values, Map<String, String> renames) {
+        if (StringUtils.isBlank(values)) {
             return Collections.emptySet();
         }
 
         Set<String> result = new LinkedHashSet<String>();
-        for ( String value : values.trim().split("\\s*,\\s*") ) {
+        for (String value : values.trim().split("\\s*,\\s*")) {
             String translated = renames.get(value);
             result.add(translated == null ? value : translated);
         }
@@ -96,17 +96,17 @@ public class ProcessParser implements BeanDefinitionParser {
         return result;
     }
 
-    protected Map<String,String> getMap(String values, Map<String,String> renames) {
-        if ( StringUtils.isBlank(values) ) {
+    protected Map<String, String> getMap(String values, Map<String, String> renames) {
+        if (StringUtils.isBlank(values)) {
             return Collections.emptyMap();
         }
 
-        Map<String,String> result = new LinkedHashMap<String, String>();
-        if ( values.indexOf("=") == -1 && values.indexOf(",") == -1 ) {
+        Map<String, String> result = new LinkedHashMap<String, String>();
+        if (values.indexOf("=") == -1 && values.indexOf(",") == -1) {
             result.put(null, values.trim());
         } else {
-            for ( String value : values.trim().split("\\s*,\\s*") ) {
-                if ( value.indexOf('=') == -1 ) {
+            for (String value : values.trim().split("\\s*,\\s*")) {
+                if (value.indexOf('=') == -1) {
                     throw new IllegalArgumentException("Setting must be a single value or a list of key/values in the form from1=to1,from2=to2");
                 } else {
                     String[] parts = value.split("=");
@@ -118,14 +118,14 @@ public class ProcessParser implements BeanDefinitionParser {
         return translate(result, renames);
     }
 
-    protected Map<String,String> translate(Map<String, String> values, Map<String,String> renames) {
-        Map<String,String> result = new LinkedHashMap<String, String>();
+    protected Map<String, String> translate(Map<String, String> values, Map<String, String> renames) {
+        Map<String, String> result = new LinkedHashMap<String, String>();
 
-        for ( Map.Entry<String, String> entry : values.entrySet() ) {
+        for (Map.Entry<String, String> entry : values.entrySet()) {
             String key = renames.get(entry.getKey());
             String value = renames.get(entry.getValue());
 
-            result.put( (key == null ? entry.getKey() : key), (value == null ? entry.getValue() : value));
+            result.put((key == null ? entry.getKey() : key), (value == null ? entry.getValue() : value));
         }
 
         return result;

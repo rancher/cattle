@@ -9,7 +9,6 @@ import javax.inject.Inject;
 
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 
-
 public class ProcessProgressImpl implements ProcessProgress {
 
     private static final ManagedThreadLocal<ProcessProgressContext> TL = new ManagedThreadLocal<ProcessProgressContext>();
@@ -27,7 +26,7 @@ public class ProcessProgressImpl implements ProcessProgress {
     public void init(ProcessState state, int... checkpointWeights) {
         ProcessProgressContext context = TL.get();
 
-        if ( context != null ) {
+        if (context != null) {
             return;
         }
 
@@ -41,7 +40,7 @@ public class ProcessProgressImpl implements ProcessProgress {
     public void checkPoint(String name) {
         ProcessProgressContext context = TL.get();
 
-        if ( context == null ) {
+        if (context == null) {
             return;
         }
 
@@ -52,7 +51,7 @@ public class ProcessProgressImpl implements ProcessProgress {
     public void progress(Integer progress) {
         ProcessProgressContext context = TL.get();
 
-        if ( context == null ) {
+        if (context == null) {
             return;
         }
 
@@ -63,7 +62,7 @@ public class ProcessProgressImpl implements ProcessProgress {
     public String getCurrentCheckpoint() {
         ProcessProgressContext context = TL.get();
 
-        if ( context == null ) {
+        if (context == null) {
             return null;
         }
 

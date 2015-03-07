@@ -18,12 +18,11 @@ public class WebContextLoaderListener extends CloudStackContextLoaderListener {
     @Override
     protected Class<?> determineContextClass(ServletContext servletContext) {
         String contextClassName = servletContext.getInitParameter(CONTEXT_CLASS_PARAM);
-        if ( contextClassName == null ) {
+        if (contextClassName == null) {
             return DefaultedXmlWebApplicationContext.class;
         } else {
             return super.determineContextClass(servletContext);
         }
     }
-
 
 }

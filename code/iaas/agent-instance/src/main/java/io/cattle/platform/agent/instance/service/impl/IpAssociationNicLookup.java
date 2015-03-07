@@ -15,21 +15,14 @@ public class IpAssociationNicLookup extends AbstractJooqDao implements InstanceN
 
     @Override
     public List<? extends Nic> getNics(Object obj) {
-        if ( ! ( obj instanceof IpAssociation ) ) {
+        if (!(obj instanceof IpAssociation)) {
             return null;
         }
 
-        IpAssociation assoc = (IpAssociation)obj;
+        IpAssociation assoc = (IpAssociation) obj;
 
-        return create()
-                .select(NIC.fields())
-                .from(NIC)
-                .join(INSTANCE)
-                    .on(INSTANCE.ID.eq(NIC.INSTANCE_ID))
-                .join(IP_ADDRESS_NIC_MAP)
-                    .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
-                .where(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(assoc.getChildIpAddressId()))
-                .fetchInto(NicRecord.class);
+        return create().select(NIC.fields()).from(NIC).join(INSTANCE).on(INSTANCE.ID.eq(NIC.INSTANCE_ID)).join(IP_ADDRESS_NIC_MAP).on(
+                IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID)).where(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(assoc.getChildIpAddressId())).fetchInto(NicRecord.class);
 
     }
 

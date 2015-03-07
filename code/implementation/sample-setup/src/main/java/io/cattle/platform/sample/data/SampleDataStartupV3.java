@@ -20,10 +20,8 @@ public class SampleDataStartupV3 extends AbstractSampleData {
     protected void populatedData(Account system, List<Object> toCreate) {
         v2.start();
 
-        toCreate.add(createByUuid(Account.class, "token",
-                ACCOUNT.KIND, "token", 
-                ACCOUNT.NAME, "token"));
-        
+        toCreate.add(createByUuid(Account.class, "token", ACCOUNT.KIND, "token", ACCOUNT.NAME, "token"));
+
     }
 
     public SampleDataStartupV2 getV2() {

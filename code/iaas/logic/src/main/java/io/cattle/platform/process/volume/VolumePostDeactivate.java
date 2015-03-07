@@ -22,9 +22,9 @@ public class VolumePostDeactivate extends AbstractObjectProcessLogic implements 
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Volume volume = (Volume)state.getResource();
+        Volume volume = (Volume) state.getResource();
 
-        if ( Boolean.TRUE.equals(state.getData().get(VolumeConstants.REMOVE_OPTION)) ) {
+        if (Boolean.TRUE.equals(state.getData().get(VolumeConstants.REMOVE_OPTION))) {
             String chainProcess = objectProcessManager.getStandardProcessName(StandardProcess.REMOVE, volume);
             return new HandlerResult().withChainProcessName(chainProcess);
         }

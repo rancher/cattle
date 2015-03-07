@@ -1,8 +1,8 @@
 package io.cattle.platform.simple.allocator;
 
-import java.util.List;
-
 import io.cattle.platform.allocator.service.AllocationCandidate;
+
+import java.util.List;
 
 public interface AllocationCandidateCallback {
 

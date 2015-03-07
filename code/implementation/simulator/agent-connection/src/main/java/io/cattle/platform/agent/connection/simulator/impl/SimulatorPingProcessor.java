@@ -29,19 +29,18 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
 
     @Override
     public Event handle(AgentConnectionSimulator simulator, Event event) throws Exception {
-        if ( ! FrameworkEvents.PING.equals(event.getName()) )
+        if (!FrameworkEvents.PING.equals(event.getName()))
             return null;
 
         Agent agent = simulator.getAgent();
         Ping ping = jsonMapper.convertValue(event, Ping.class);
-        Ping pong = jsonMapper.convertValue(EventVO.reply(event).withData(ping.getData()),
-                Ping.class);
+        Ping pong = jsonMapper.convertValue(EventVO.reply(event).withData(ping.getData()), Ping.class);
 
-        if ( ping.getOption(Ping.RESOURCES) && ! agent.getUri().startsWith("delegate://") ) {
+        if (ping.getOption(Ping.RESOURCES) && !agent.getUri().startsWith("delegate://")) {
             addResources(pong, agent);
         }
 
-        if ( ping.getOption(Ping.INSTANCES) && ! agent.getUri().startsWith("delegate://") ) {
+        if (ping.getOption(Ping.INSTANCES) && !agent.getUri().startsWith("delegate://")) {
             addInstances(simulator, pong, agent);
         }
 
@@ -49,13 +48,11 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
     }
 
     protected void addInstances(AgentConnectionSimulator simulator, Ping pong, Agent agent) {
-        List<Map<String,Object>> resources = pong.getData().getResources();
+        List<Map<String, Object>> resources = pong.getData().getResources();
 
-        for ( String instance : simulator.getInstances() ) {
-            Map<String,Object> instanceMap = CollectionUtils.asMap(
-                    ObjectMetaDataManager.TYPE_FIELD, InstanceConstants.TYPE,
-                    ObjectMetaDataManager.UUID_FIELD, instance,
-                    ObjectMetaDataManager.STATE_FIELD, InstanceConstants.STATE_RUNNING);
+        for (String instance : simulator.getInstances()) {
+            Map<String, Object> instanceMap = CollectionUtils.asMap(ObjectMetaDataManager.TYPE_FIELD, InstanceConstants.TYPE, ObjectMetaDataManager.UUID_FIELD,
+                    instance, ObjectMetaDataManager.STATE_FIELD, InstanceConstants.STATE_RUNNING);
             resources.add(instanceMap);
         }
 
@@ -63,60 +60,44 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
     }
 
     protected void addResources(Ping pong, Agent agent) {
-        List<Map<String,Object>> resources = pong.getData().getResources();
+        List<Map<String, Object>> resources = pong.getData().getResources();
 
-        String physicalHostUuid = DataAccessor
-                .fromDataFieldOf(agent)
-                .withScope(AgentConnectionSimulator.class)
-                .withKey("externalId")
-                .as(jsonMapper, String.class);
+        String physicalHostUuid = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("externalId").as(jsonMapper,
+                String.class);
 
-        if ( StringUtils.isEmpty(physicalHostUuid) ) {
+        if (StringUtils.isEmpty(physicalHostUuid)) {
             physicalHostUuid = agent.getUuid() + "-physical-host";
         }
 
-        Map<String,Object> physicalHost = new HashMap<String, Object>();
+        Map<String, Object> physicalHost = new HashMap<String, Object>();
         physicalHost.put(ObjectMetaDataManager.UUID_FIELD, physicalHostUuid);
         physicalHost.put(ObjectMetaDataManager.KIND_FIELD, "sim");
         physicalHost.put(ObjectMetaDataManager.TYPE_FIELD, "physicalHost");
 
-        Boolean addPhysicalHost = DataAccessor
-                .fromDataFieldOf(agent)
-                .withScope(AgentConnectionSimulator.class)
-                .withKey("addPhysicalHost")
-                .withDefault(true)
+        Boolean addPhysicalHost = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("addPhysicalHost").withDefault(true)
                 .as(jsonMapper, Boolean.class);
 
-        long hosts = DataAccessor
-            .fromDataFieldOf(agent)
-            .withScope(AgentConnectionSimulator.class)
-            .withKey("hosts")
-            .withDefault(1L)
-            .as(jsonMapper, Long.class);
+        long hosts = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("hosts").withDefault(1L).as(jsonMapper, Long.class);
 
-        long poolsPerHost = DataAccessor
-                .fromDataFieldOf(agent)
-                .withScope(AgentConnectionSimulator.class)
-                .withKey("storagePoolsPerHost")
-                .withDefault(1L)
-                .as(jsonMapper, Long.class);
+        long poolsPerHost = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("storagePoolsPerHost").withDefault(1L).as(
+                jsonMapper, Long.class);
 
-        for ( long i = 0 ; i < hosts ; i++ ) {
+        for (long i = 0; i < hosts; i++) {
             String hostUuid = agent.getUuid() + "-" + i;
 
-            Map<String,Object> host = new HashMap<String, Object>();
+            Map<String, Object> host = new HashMap<String, Object>();
             host.put(ObjectMetaDataManager.UUID_FIELD, hostUuid);
             host.put(ObjectMetaDataManager.KIND_FIELD, "sim");
             host.put(ObjectMetaDataManager.TYPE_FIELD, "host");
 
-            if ( addPhysicalHost ) {
+            if (addPhysicalHost) {
                 host.put("physicalHostUuid", physicalHostUuid);
             }
 
-            for ( long j = 0 ; j < poolsPerHost ; j++ ) {
+            for (long j = 0; j < poolsPerHost; j++) {
                 String poolUuid = hostUuid + "-" + j;
 
-                Map<String,Object> pool = new HashMap<String, Object>();
+                Map<String, Object> pool = new HashMap<String, Object>();
                 pool.put(ObjectMetaDataManager.UUID_FIELD, poolUuid);
                 pool.put(ObjectMetaDataManager.KIND_FIELD, "sim");
                 pool.put(ObjectMetaDataManager.TYPE_FIELD, "storagePool");
@@ -125,15 +106,17 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
                 resources.add(pool);
             }
 
-            /* Purposely put host after storagePool so that AgentResourceManager
+            /*
+             * Purposely put host after storagePool so that AgentResourceManager
              * will have to reorder then on insert
              */
             resources.add(host);
         }
 
-        if ( addPhysicalHost ) {
-            /* Purposely put physical host after host so that AgentResourceManager
-             * will have to reorder then on insert
+        if (addPhysicalHost) {
+            /*
+             * Purposely put physical host after host so that
+             * AgentResourceManager will have to reorder then on insert
              */
             resources.add(physicalHost);
         }

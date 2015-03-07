@@ -32,7 +32,7 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     @Override
     public PooledResource allocateResource(Object pool, Object owner) {
         List<PooledResource> result = allocateResource(pool, owner, new PooledResourceOptions());
-        if ( result == null || result.size() == 0 ) {
+        if (result == null || result.size() == 0) {
             return null;
         }
         return result.get(0);
@@ -48,36 +48,30 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         String ownerType = getResourceType(owner);
         long ownerId = getResourceId(owner);
 
-        Map<Object,Object> keys = CollectionUtils.asMap(
-                (Object)RESOURCE_POOL.POOL_TYPE, poolType,
-                (Object)RESOURCE_POOL.POOL_ID, poolId,
-                RESOURCE_POOL.QUALIFIER, qualifier,
-                RESOURCE_POOL.OWNER_TYPE, ownerType,
-                RESOURCE_POOL.OWNER_ID, ownerId);
+        Map<Object, Object> keys = CollectionUtils.asMap((Object) RESOURCE_POOL.POOL_TYPE, poolType, (Object) RESOURCE_POOL.POOL_ID, poolId,
+                RESOURCE_POOL.QUALIFIER, qualifier, RESOURCE_POOL.OWNER_TYPE, ownerType, RESOURCE_POOL.OWNER_ID, ownerId);
 
         List<ResourcePool> resourcePools = new ArrayList<ResourcePool>(objectManager.find(ResourcePool.class, keys));
         List<PooledResource> result = new ArrayList<PooledResource>();
 
-        for ( ResourcePool resourcePool : resourcePools ) {
+        for (ResourcePool resourcePool : resourcePools) {
             result.add(new DefaultPooledResource(resourcePool.getItem()));
         }
 
-        while ( result.size() < count ) {
+        while (result.size() < count) {
             String item = getItem(keys, pool, qualifier);
 
-            if ( item == null ) {
+            if (item == null) {
                 break;
             } else {
-                log.info("Assigning [{}] from pool [{}:{}] to owner [{}:{}]", item,
-                        poolType, poolId, ownerType, ownerId);
+                log.info("Assigning [{}] from pool [{}:{}] to owner [{}:{}]", item, poolType, poolId, ownerType, ownerId);
             }
 
             result.add(new DefaultPooledResource(item));
         }
 
-        if ( result.size() != count ) {
-            log.info("Failed to find [{}] items for pool [{}:{}] and owner [{}:{}]", count,
-                    poolType, poolId, ownerType, ownerId);
+        if (result.size() != count) {
+            log.info("Failed to find [{}] items for pool [{}:{}] and owner [{}:{}]", count, poolType, poolId, ownerType, ownerId);
 
             releaseResource(pool, owner, options);
             return null;
@@ -98,16 +92,11 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         String ownerType = getResourceType(owner);
         long ownerId = getResourceId(owner);
 
-        Map<Object,Object> keys = CollectionUtils.asMap(
-                (Object)RESOURCE_POOL.POOL_TYPE, poolType,
-                (Object)RESOURCE_POOL.POOL_ID, poolId,
-                RESOURCE_POOL.QUALIFIER, options.getQualifier(),
-                RESOURCE_POOL.OWNER_TYPE, ownerType,
-                RESOURCE_POOL.OWNER_ID, ownerId);
+        Map<Object, Object> keys = CollectionUtils.asMap((Object) RESOURCE_POOL.POOL_TYPE, poolType, (Object) RESOURCE_POOL.POOL_ID, poolId,
+                RESOURCE_POOL.QUALIFIER, options.getQualifier(), RESOURCE_POOL.OWNER_TYPE, ownerType, RESOURCE_POOL.OWNER_ID, ownerId);
 
-        for ( ResourcePool resource : objectManager.find(ResourcePool.class, keys) ) {
-            log.info("Releasing [{}] id [{}] to pool [{}:{}] from owner [{}:{}]", resource.getItem(),
-                    resource.getId(), poolType, poolId, ownerType, ownerId);
+        for (ResourcePool resource : objectManager.find(ResourcePool.class, keys)) {
+            log.info("Releasing [{}] id [{}] to pool [{}:{}] from owner [{}:{}]", resource.getItem(), resource.getId(), poolType, poolId, ownerType, ownerId);
             objectManager.delete(resource);
         }
     }
@@ -118,31 +107,31 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         return resources.size() == 0 ? null : resources.get(0);
     }
 
-    protected String getItem(Map<Object,Object> keys, Object pool, String qualifier) {
+    protected String getItem(Map<Object, Object> keys, Object pool, String qualifier) {
         PooledResourceItemGenerator generator = null;
 
-        for ( PooledResourceItemGeneratorFactory factory : factories ) {
+        for (PooledResourceItemGeneratorFactory factory : factories) {
             generator = factory.getGenerator(pool, qualifier);
 
-            if ( generator != null ) {
+            if (generator != null) {
                 break;
             }
         }
 
-        if ( generator == null ) {
+        if (generator == null) {
             log.error("Failed to find generator for pool [{}]", pool);
             return null;
         }
 
-        while ( generator.hasNext() ) {
+        while (generator.hasNext()) {
             String item = generator.next();
-            Map<Object,Object> newKeys = new HashMap<Object, Object>(keys);
+            Map<Object, Object> newKeys = new HashMap<Object, Object>(keys);
             newKeys.put(RESOURCE_POOL.ITEM, item);
 
-            Map<String,Object> props = objectManager.convertToPropertiesFor(ResourcePool.class, newKeys);
+            Map<String, Object> props = objectManager.convertToPropertiesFor(ResourcePool.class, newKeys);
             try {
                 return objectManager.create(ResourcePool.class, props).getItem();
-            } catch ( DataAccessException e ) {
+            } catch (DataAccessException e) {
                 log.debug("Failed to create item [{}]", item);
             }
         }
@@ -151,13 +140,13 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     }
 
     protected String getResourceType(Object obj) {
-        if ( GLOBAL.equals(obj) ) {
+        if (GLOBAL.equals(obj)) {
             return GLOBAL;
         }
 
         String type = objectManager.getType(obj);
 
-        if ( type == null ) {
+        if (type == null) {
             throw new IllegalStateException("Failed to find resource type for [" + obj + "]");
         }
 
@@ -165,14 +154,14 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     }
 
     protected long getResourceId(Object obj) {
-        if ( GLOBAL.equals(obj) ) {
+        if (GLOBAL.equals(obj)) {
             return 1;
         }
 
         Object id = ObjectUtils.getId(obj);
 
-        if ( id instanceof Number ) {
-            return ((Number)id).longValue();
+        if (id instanceof Number) {
+            return ((Number) id).longValue();
         }
 
         throw new IllegalStateException("Failed to find resource id for [" + obj + "]");

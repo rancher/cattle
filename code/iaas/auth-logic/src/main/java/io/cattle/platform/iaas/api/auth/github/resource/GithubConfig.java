@@ -30,7 +30,7 @@ public class GithubConfig {
     public String getClientId() {
         return clientId;
     }
-    
+
     @Field(nullable = true)
     public String getClientSecret() {
         return clientSecret;

@@ -18,7 +18,7 @@ import com.netflix.config.DynamicLongProperty;
 
 public class RegistrationToken {
 
-    public static final String HMAC_SHA1_ALGORITHM  = "HmacSHA1";
+    public static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     private static final DynamicLongProperty TOKEN_PERIOD = ArchaiusUtil.getLong("registration.token.period.millis");
 
     public static long getAllowedTime() {

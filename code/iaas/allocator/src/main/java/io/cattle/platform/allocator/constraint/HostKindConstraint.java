@@ -4,7 +4,6 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.model.Host;
 
-
 public class HostKindConstraint implements Constraint, KindConstraint {
 
     String kind;
@@ -16,10 +15,10 @@ public class HostKindConstraint implements Constraint, KindConstraint {
 
     @Override
     public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
-        for ( Long id : candidate.getHosts() ) {
+        for (Long id : candidate.getHosts()) {
             Host host = candidate.loadResource(Host.class, id);
 
-            if ( ! kind.equals(host.getKind()) ) {
+            if (!kind.equals(host.getKind())) {
                 return false;
             }
         }

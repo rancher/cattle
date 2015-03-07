@@ -2,7 +2,9 @@ package io.cattle.platform.engine.process;
 
 public class StateTransition {
 
-    public enum Style { TRANSITIONING, DONE };
+    public enum Style {
+        TRANSITIONING, DONE
+    };
 
     String fromState, toState, field;
     Style type;

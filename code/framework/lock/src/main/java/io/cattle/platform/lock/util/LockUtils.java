@@ -7,13 +7,13 @@ import io.cattle.platform.lock.definition.MultiLockDefinition;
 public class LockUtils {
 
     public static String serializeLock(LockDefinition lockDef) {
-        if ( lockDef == null )
+        if (lockDef == null)
             return null;
 
-        if ( lockDef instanceof MultiLockDefinition ) {
+        if (lockDef instanceof MultiLockDefinition) {
             StringBuilder buffer = new StringBuilder();
-            for ( LockDefinition child : ((MultiLockDefinition)lockDef).getLockDefinitions() ) {
-                if ( buffer.length() > 0 ) {
+            for (LockDefinition child : ((MultiLockDefinition) lockDef).getLockDefinitions()) {
+                if (buffer.length() > 0) {
                     buffer.append(",");
                 }
                 buffer.append(serializeLock(child));
@@ -27,8 +27,8 @@ public class LockUtils {
     protected static String serializeSingleLock(LockDefinition lockDef) {
         long blocking = 0;
         String id = lockDef.getLockId();
-        if ( lockDef instanceof BlockingLockDefinition ) {
-            blocking = ((BlockingLockDefinition)lockDef).getWait();
+        if (lockDef instanceof BlockingLockDefinition) {
+            blocking = ((BlockingLockDefinition) lockDef).getWait();
         }
 
         return String.format("%s:%d", id, blocking);

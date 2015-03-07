@@ -26,29 +26,29 @@ public class MachinePreCreate extends AbstractObjectProcessLogic implements Proc
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        PhysicalHost physHost = (PhysicalHost)state.getResource();
+        PhysicalHost physHost = (PhysicalHost) state.getResource();
 
-        if ( !StringUtils.equalsIgnoreCase(physHost.getKind(), MACHINE_KIND) ) {
+        if (!StringUtils.equalsIgnoreCase(physHost.getKind(), MACHINE_KIND)) {
             return null;
         }
 
         Map<Object, Object> newFields = new HashMap<Object, Object>();
 
-        if ( StringUtils.isEmpty(physHost.getExternalId()) ) {
+        if (StringUtils.isEmpty(physHost.getExternalId())) {
             String externalId = UUID.randomUUID().toString();
             newFields.put(PHYSICAL_HOST.EXTERNAL_ID, externalId);
         }
 
         Map<String, Object> fields = DataUtils.getFields(physHost);
-        for ( Map.Entry<String, Object> field : fields.entrySet() ) {
-            if ( StringUtils.endsWithIgnoreCase(field.getKey(), CONFIG_FIELD_SUFFIX) && field.getValue() != null ) {
+        for (Map.Entry<String, Object> field : fields.entrySet()) {
+            if (StringUtils.endsWithIgnoreCase(field.getKey(), CONFIG_FIELD_SUFFIX) && field.getValue() != null) {
                 String driver = StringUtils.removeEndIgnoreCase(field.getKey(), CONFIG_FIELD_SUFFIX);
                 newFields.put(DRIVER_FIELD, driver);
                 break;
             }
         }
 
-        if ( !newFields.isEmpty() ) {
+        if (!newFields.isEmpty()) {
             return new HandlerResult(newFields);
         }
 

@@ -1,5 +1,8 @@
 package io.cattle.platform.zookeeper.lock;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.task.Task;
+
 import javax.inject.Inject;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -8,9 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicLongProperty;
-
-import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.task.Task;
 
 public class ZookeeperCleanTask implements Task {
 
@@ -22,15 +22,14 @@ public class ZookeeperCleanTask implements Task {
     @Override
     public void run() {
         log.debug("ZooKeeper Cleanup");
-        recurce(ZookeeperLockProvider.BASE_PATH.get(),
-                System.currentTimeMillis() - DELAY.get() * 1000);
+        recurce(ZookeeperLockProvider.BASE_PATH.get(), System.currentTimeMillis() - DELAY.get() * 1000);
     }
 
     protected boolean recurce(String path, long deleteBefore) {
         boolean hasChildren = false;
 
         try {
-            for ( String child : client.getChildren().forPath(path) ) {
+            for (String child : client.getChildren().forPath(path)) {
                 String childPath = path + "/" + child;
 
                 Stat stat;
@@ -40,7 +39,7 @@ public class ZookeeperCleanTask implements Task {
                     continue;
                 }
 
-                if ( stat == null ) {
+                if (stat == null) {
                     continue;
                 }
 
@@ -50,15 +49,14 @@ public class ZookeeperCleanTask implements Task {
             return true;
         }
 
-        if ( hasChildren ) {
+        if (hasChildren) {
             return hasChildren;
         }
 
         try {
             Stat stat = client.checkExists().forPath(path);
 
-            if ( stat.getEphemeralOwner() <= 0 && stat.getNumChildren() == 0
-                    && stat.getMtime() < deleteBefore ) {
+            if (stat.getEphemeralOwner() <= 0 && stat.getNumChildren() == 0 && stat.getMtime() < deleteBefore) {
                 client.delete().forPath(path);
                 log.debug("Deleted ZooKeeper path [{}]", path);
                 return false;

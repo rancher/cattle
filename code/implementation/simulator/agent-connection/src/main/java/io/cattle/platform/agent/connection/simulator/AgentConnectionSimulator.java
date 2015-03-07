@@ -38,18 +38,18 @@ public class AgentConnectionSimulator implements AgentConnection {
 
     @Override
     public ListenableFuture<Event> execute(Event event, EventProgress process) {
-        for ( AgentSimulatorEventProcessor processor : processors ) {
+        for (AgentSimulatorEventProcessor processor : processors) {
             Event response;
             try {
                 response = processor.handle(this, event);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
-            if ( response != null ) {
+            if (response != null) {
                 return AsyncUtils.done(response);
             }
         }
-        return AsyncUtils.done((Event)EventVO.reply(event));
+        return AsyncUtils.done((Event) EventVO.reply(event));
     }
 
     @Override

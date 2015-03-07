@@ -48,9 +48,9 @@ public class DefaultPolicy implements Policy {
     @Override
     public <T> List<T> authorizeList(List<T> list) {
         List<T> result = new ArrayList<T>(list.size());
-        for ( T obj : list ) {
+        for (T obj : list) {
             T authorized = authorizeObject(obj);
-            if ( authorized != null )
+            if (authorized != null)
                 result.add(authorized);
         }
         return result;
@@ -76,18 +76,18 @@ public class DefaultPolicy implements Policy {
         ApiRequest apiRequest = ApiContext.getContext().getApiRequest();
         @SuppressWarnings("unchecked")
         Set<Object> whitelist = (Set<Object>) (apiRequest.getAttribute("whitelist"));
-        if(whitelist == null) {
+        if (whitelist == null) {
             whitelist = new HashSet<>();
         }
         whitelist.add(obj);
         apiRequest.setAttribute("whitelist", whitelist);
     }
-    
+
     protected <T> boolean hasGrantedAccess(T obj) {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         @SuppressWarnings("unchecked")
         Set<Object> whitelist = (Set<Object>) request.getAttribute("whitelist");
-        return (null != whitelist&& whitelist.contains(obj));
+        return (null != whitelist && whitelist.contains(obj));
     }
 
 }

@@ -36,7 +36,7 @@ public class AsyncUtils {
             throw new IllegalStateException(e);
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
-            if ( t instanceof TimeoutException ) {
+            if (t instanceof TimeoutException) {
                 throw new io.cattle.platform.async.utils.TimeoutException(t);
             }
             ExceptionUtils.rethrowExpectedRuntime(t);

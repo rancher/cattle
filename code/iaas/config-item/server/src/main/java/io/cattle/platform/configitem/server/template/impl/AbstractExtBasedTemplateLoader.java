@@ -10,7 +10,7 @@ public abstract class AbstractExtBasedTemplateLoader implements TemplateLoader {
 
     @Override
     public int canHandle(Resource resource) {
-        if ( resource.getName().endsWith(getExt()) ) {
+        if (resource.getName().endsWith(getExt())) {
             return getPriority();
         }
         return TemplateLoader.NO_PRIORITY;

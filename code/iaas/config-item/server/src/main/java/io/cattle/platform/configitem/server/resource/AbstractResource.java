@@ -5,7 +5,7 @@ import java.util.Map;
 
 public abstract class AbstractResource implements Resource {
 
-    Map<String,Object> attributes = new LinkedHashMap<String, Object>();
+    Map<String, Object> attributes = new LinkedHashMap<String, Object>();
     String name;
 
     public AbstractResource(String name) {

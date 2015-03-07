@@ -19,7 +19,8 @@ public class MetadataEntry {
     Network network;
     Subnet subnet;
 
-    public MetadataEntry(Instance instance, Nic nic, IpAddress localIp, IpAddress publicIp, Volume volume, Credential credential, Network network, Subnet subnet) {
+    public MetadataEntry(Instance instance, Nic nic, IpAddress localIp, IpAddress publicIp, Volume volume, Credential credential,
+            Network network, Subnet subnet) {
         super();
         this.instance = instance;
         this.nic = nic;

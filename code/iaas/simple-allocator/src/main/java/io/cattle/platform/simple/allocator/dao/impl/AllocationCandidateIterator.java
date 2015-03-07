@@ -23,20 +23,19 @@ import org.jooq.Record2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class AllocationCandidateIterator implements Iterator<AllocationCandidate> {
 
     private static final Logger log = LoggerFactory.getLogger(AllocationCandidateIterator.class);
 
     List<Long> volumeIds;
-    Cursor<Record2<Long,Long>> cursor;
-    Record2<Long,Long> last;
+    Cursor<Record2<Long, Long>> cursor;
+    Record2<Long, Long> last;
     Stack<AllocationCandidate> candidates = new Stack<AllocationCandidate>();
     ObjectManager objectManager;
     boolean hosts;
     AllocationCandidateCallback callback;
 
-    public AllocationCandidateIterator(ObjectManager objectManager, Cursor<Record2<Long,Long>> cursor, List<Long> volumeIds, boolean hosts,
+    public AllocationCandidateIterator(ObjectManager objectManager, Cursor<Record2<Long, Long>> cursor, List<Long> volumeIds, boolean hosts,
             AllocationCandidateCallback callback) {
         super();
         this.objectManager = objectManager;
@@ -48,7 +47,7 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
 
     @Override
     public boolean hasNext() {
-        if ( candidates.size() > 0 ) {
+        if (candidates.size() > 0) {
             return true;
         }
 
@@ -58,22 +57,22 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     protected boolean readNext() {
         Long hostId = last == null ? null : last.getValue(HOST.ID);
         Set<Long> pools = new HashSet<Long>();
-        if ( last != null ) {
+        if (last != null) {
             Long poolId = last.getValue(STORAGE_POOL.ID);
-            if ( poolId != null ) {
+            if (poolId != null) {
                 pools.add(poolId);
             }
             last = null;
         }
 
-        while ( cursor.hasNext() ) {
-            Record2<Long,Long> record = cursor.fetchOne();
+        while (cursor.hasNext()) {
+            Record2<Long, Long> record = cursor.fetchOne();
             long nextHostId = record.getValue(HOST.ID);
             Long poolId = record.getValue(STORAGE_POOL.ID);
-            if ( hostId == null || hostId.longValue() == nextHostId) {
+            if (hostId == null || hostId.longValue() == nextHostId) {
                 hostId = nextHostId;
                 pools.add(poolId);
-            } else if ( hostId.longValue() != nextHostId ) {
+            } else if (hostId.longValue() != nextHostId) {
                 last = record;
                 break;
             }
@@ -87,22 +86,21 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     protected void enumerate(Long hostId, Set<Long> pools) {
         log.debug("Enumerating canditates hostId [{}] pools {}", hostId, pools);
 
-        if ( hostId == null ) {
+        if (hostId == null) {
             return;
         }
 
         Long candidateHostId = this.hosts ? hostId : null;
 
-        Map<Pair<Class<?>, Long>, Object> cache = new HashMap<Pair<Class<?>,Long>, Object>();
+        Map<Pair<Class<?>, Long>, Object> cache = new HashMap<Pair<Class<?>, Long>, Object>();
 
-        if ( volumeIds.size() == 0 ) {
-            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId,
-                    Collections.<Long, Long>emptyMap()));
+        if (volumeIds.size() == 0) {
+            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, Collections.<Long, Long> emptyMap()));
         }
 
-        for ( List<Pair<Long, Long>> pairs : traverse(volumeIds, pools) ) {
-            Map<Long,Long> volumeToPool = new HashMap<Long, Long>();
-            for ( Pair<Long, Long> pair : pairs ) {
+        for (List<Pair<Long, Long>> pairs : traverse(volumeIds, pools)) {
+            Map<Long, Long> volumeToPool = new HashMap<Long, Long>();
+            for (Pair<Long, Long> pair : pairs) {
                 volumeToPool.put(pair.getLeft(), pair.getRight());
             }
 
@@ -111,35 +109,36 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     }
 
     protected void pushCandidate(AllocationCandidate candidate) {
-        if ( callback == null ) {
+        if (callback == null) {
             candidates.push(candidate);
         } else {
-            for ( AllocationCandidate c : callback.withCandidate(candidate) ) {
+            for (AllocationCandidate c : callback.withCandidate(candidate)) {
                 candidates.push(c);
             }
         }
     }
 
-    public static <L,R> List<List<Pair<L,R>>> traverse(List<L> lefts, Set<R> rights) {
-        Stack<Pair<L,R>> pairSet = new Stack<Pair<L,R>>();
-        List<List<Pair<L,R>>> pairSets = new ArrayList<List<Pair<L,R>>>();
+    public static <L, R> List<List<Pair<L, R>>> traverse(List<L> lefts, Set<R> rights) {
+        Stack<Pair<L, R>> pairSet = new Stack<Pair<L, R>>();
+        List<List<Pair<L, R>>> pairSets = new ArrayList<List<Pair<L, R>>>();
 
         traverse(lefts, rights, 0, pairSet, pairSets);
 
         return pairSets;
     }
 
-    // Writing this code made me feel very stupid.  There has got be a simpler way of doing this.
-    public static <L,R> void traverse(List<L> lefts, Set<R> rights, int i, Stack<Pair<L,R>> pairSet, List<List<Pair<L,R>>> pairSets) {
-        if ( i == lefts.size() ) {
-            pairSets.add(new ArrayList<Pair<L,R>>(pairSet));
+    // Writing this code made me feel very stupid. There has got be a simpler
+    // way of doing this.
+    public static <L, R> void traverse(List<L> lefts, Set<R> rights, int i, Stack<Pair<L, R>> pairSet, List<List<Pair<L, R>>> pairSets) {
+        if (i == lefts.size()) {
+            pairSets.add(new ArrayList<Pair<L, R>>(pairSet));
             return;
         }
 
         L left = lefts.get(i);
-        for ( R right : rights ) {
+        for (R right : rights) {
             pairSet.push(new ImmutablePair<L, R>(left, right));
-            traverse(lefts, rights, i+1, pairSet, pairSets);
+            traverse(lefts, rights, i + 1, pairSet, pairSets);
             pairSet.pop();
         }
     }

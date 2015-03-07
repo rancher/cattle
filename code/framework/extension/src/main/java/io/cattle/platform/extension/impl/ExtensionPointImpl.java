@@ -1,9 +1,9 @@
 package io.cattle.platform.extension.impl;
 
-import java.util.List;
-
 import io.cattle.platform.extension.ExtensionImplementation;
 import io.cattle.platform.extension.ExtensionPoint;
+
+import java.util.List;
 
 public class ExtensionPointImpl implements ExtensionPoint {
 
@@ -13,8 +13,7 @@ public class ExtensionPointImpl implements ExtensionPoint {
     String excludeSetting;
     String includeSetting;
 
-    public ExtensionPointImpl(String name, List<ExtensionImplementation> implementations, String listSetting,
-            String excludeSetting, String includeSetting) {
+    public ExtensionPointImpl(String name, List<ExtensionImplementation> implementations, String listSetting, String excludeSetting, String includeSetting) {
         super();
         this.name = name;
         this.implementations = implementations;

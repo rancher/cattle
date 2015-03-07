@@ -1,11 +1,11 @@
 package io.cattle.platform.engine.server.impl;
 
-import javax.inject.Inject;
-
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.engine.server.lock.ProcessReplayLock;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.task.Task;
+
+import javax.inject.Inject;
 
 public class ProcessReplayTask implements Task {
 
@@ -14,7 +14,7 @@ public class ProcessReplayTask implements Task {
 
     @Override
     public void run() {
-        if ( lockDelegator.tryLock(new ProcessReplayLock()) ) {
+        if (lockDelegator.tryLock(new ProcessReplayLock())) {
             processServer.runOutstandingJobs();
         }
     }

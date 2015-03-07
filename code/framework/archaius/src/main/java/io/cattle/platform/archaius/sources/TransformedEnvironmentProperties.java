@@ -15,22 +15,22 @@ public class TransformedEnvironmentProperties extends MapConfiguration implement
         super(getValues());
     }
 
-    protected static Map<String,Object> getValues() {
-        Map<String,Object> values = new HashMap<String, Object>();
+    protected static Map<String, Object> getValues() {
+        Map<String, Object> values = new HashMap<String, Object>();
 
-        for ( Map.Entry<String, String> entry : System.getenv().entrySet() ) {
+        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
             String key = entry.getKey();
-            if ( ! key.contains(CONTAINS) ) {
+            if (!key.contains(CONTAINS)) {
                 continue;
             }
 
-            if ( key.startsWith(PREFIX) ) {
+            if (key.startsWith(PREFIX)) {
                 key = key.substring(PREFIX.length());
             }
 
             key = key.replace('_', '.').toLowerCase();
 
-            if ( ! StringUtils.isBlank(entry.getValue()) ) {
+            if (!StringUtils.isBlank(entry.getValue())) {
                 values.put(key, entry.getValue());
             }
         }

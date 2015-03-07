@@ -27,23 +27,21 @@ public class SetRemovedFields extends AbstractObjectProcessLogic implements Proc
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Object resource = state.getResource();
-        if ( ! ObjectUtils.hasWritableProperty(resource, ObjectMetaDataManager.REMOVED_FIELD) ) {
+        if (!ObjectUtils.hasWritableProperty(resource, ObjectMetaDataManager.REMOVED_FIELD)) {
             return null;
         }
 
         Date removed = ObjectUtils.getRemoved(resource);
-        if ( removed == null ) {
+        if (removed == null) {
             removed = new Date();
         }
 
         Date removeTime = ObjectUtils.getRemoveTime(resource);
-        if ( removeTime == null ) {
+        if (removeTime == null) {
             removeTime = new Date(getRemoveTime(resource));
         }
 
-        return new HandlerResult(
-                ObjectMetaDataManager.REMOVED_FIELD, removed,
-                ObjectMetaDataManager.REMOVE_TIME_FIELD, removeTime);
+        return new HandlerResult(ObjectMetaDataManager.REMOVED_FIELD, removed, ObjectMetaDataManager.REMOVE_TIME_FIELD, removeTime);
     }
 
     protected Long getRemoveTime(Object obj) {
@@ -53,7 +51,7 @@ public class SetRemovedFields extends AbstractObjectProcessLogic implements Proc
 
         /* Look up by string to detect null */
         String delayString = ArchaiusUtil.getString(String.format(REMOVE_DELAY_FORMAT, type)).get();
-        if ( StringUtils.isBlank(delayString) ) {
+        if (StringUtils.isBlank(delayString)) {
             delay = DEFAULT_REMOVE_DELAY.get();
         } else {
             delay = Long.parseLong(delayString);
@@ -73,4 +71,3 @@ public class SetRemovedFields extends AbstractObjectProcessLogic implements Proc
     }
 
 }
-

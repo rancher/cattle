@@ -31,13 +31,13 @@ public class SubscriptionUtils {
     }
 
     public static SubscriptionStyle getSubscriptionStyleFromString(String style) {
-        if ( style == null ) {
+        if (style == null) {
             return SubscriptionStyle.QUALIFIED;
         }
 
         try {
             return SubscriptionStyle.valueOf(style.toUpperCase());
-        } catch ( IllegalArgumentException e ) {
+        } catch (IllegalArgumentException e) {
             return SubscriptionStyle.QUALIFIED;
         }
     }

@@ -24,9 +24,8 @@ public class UpdateListenerLoadBalancerLookup implements LoadBalancerLookup {
         }
         LoadBalancerConfigListenerMapRecord lbConfigMap = (LoadBalancerConfigListenerMapRecord) obj;
 
-        List<? extends LoadBalancer> lbs = objectManager.mappedChildren(
-                objectManager.loadResource(LoadBalancerConfig.class, lbConfigMap.getLoadBalancerConfigId()),
-                LoadBalancer.class);
+        List<? extends LoadBalancer> lbs = objectManager.mappedChildren(objectManager.loadResource(LoadBalancerConfig.class, lbConfigMap
+                .getLoadBalancerConfigId()), LoadBalancer.class);
 
         for (LoadBalancer lb : lbs) {
             lbIds.add(lb.getId());

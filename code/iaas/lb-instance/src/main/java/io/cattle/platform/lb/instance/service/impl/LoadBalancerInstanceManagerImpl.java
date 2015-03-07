@@ -74,10 +74,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             if (lbInstance == null) {
                 Host host = objectManager.loadResource(Host.class, hostId);
 
-                String imageUUID = DataAccessor
-                        .fields(loadBalancer)
-                        .withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID)
-                        .as(String.class);
+                String imageUUID = DataAccessor.fields(loadBalancer).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID).as(String.class);
 
                 Map<String, Object> params = new HashMap<>();
                 List<Long> networkIds = new ArrayList<>();
@@ -86,17 +83,9 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                 params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, hostId);
 
                 // create lb agent (instance will be created along)
-                lbInstance = agentInstanceFactory
-                        .newBuilder()
-                        .withAccountId(loadBalancer.getAccountId())
-                        .withZoneId(host.getZoneId())
-                        .withPrivileged(true)
-                        .withUri(getUri(loadBalancer, hostId))
-                        .withName(LB_INSTANCE_NAME.get())
-                        .withImageUuid(imageUUID)
-                        .withParameters(params)
-                        .withSystemContainerType(SystemContainer.LoadBalancerAgent)
-                        .build();
+                lbInstance = agentInstanceFactory.newBuilder().withAccountId(loadBalancer.getAccountId()).withZoneId(host.getZoneId()).withPrivileged(true)
+                        .withUri(getUri(loadBalancer, hostId)).withName(LB_INSTANCE_NAME.get()).withImageUuid(imageUUID).withParameters(params)
+                        .withSystemContainerType(SystemContainer.LoadBalancerAgent).build();
             } else {
                 start(lbInstance);
             }
@@ -171,13 +160,9 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     }
 
     protected String getUri(LoadBalancer lb, long hostId) {
-        String uriPredicate = DataAccessor
-                .fields(lb)
-                .withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_URI_PREDICATE)
-                .withDefault("delegate:///")
-                .as(String.class);
-        return String.format("%s?lbId=%d&hostId=%d", uriPredicate, lb.getId(),
-                hostId);
+        String uriPredicate = DataAccessor.fields(lb).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_URI_PREDICATE).withDefault("delegate:///").as(
+                String.class);
+        return String.format("%s?lbId=%d&hostId=%d", uriPredicate, lb.getId(), hostId);
     }
 
     @Override
@@ -186,8 +171,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             return false;
         }
         String type = instance.getSystemContainer();
-        return (type != null && type
-                .equalsIgnoreCase(SystemContainer.LoadBalancerAgent.name()));
+        return (type != null && type.equalsIgnoreCase(SystemContainer.LoadBalancerAgent.name()));
     }
 
     @Override

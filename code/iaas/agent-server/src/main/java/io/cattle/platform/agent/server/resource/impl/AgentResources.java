@@ -20,7 +20,7 @@ public class AgentResources {
     String hash = null;
 
     public String getHash() {
-        if ( hash != null ) {
+        if (hash != null) {
             return hash;
         }
 
@@ -42,13 +42,13 @@ public class AgentResources {
         return hosts.size() > 0;
     }
 
-    protected void hashMap(MessageDigest md, Map<String,Map<String,Object>> data) {
-        for ( Map<String,Object> value : data.values() ) {
-            for ( Map.Entry<String, Object> entry : value.entrySet() ) {
+    protected void hashMap(MessageDigest md, Map<String, Map<String, Object>> data) {
+        for (Map<String, Object> value : data.values()) {
+            for (Map.Entry<String, Object> entry : value.entrySet()) {
                 try {
                     md.update(entry.getKey().getBytes("UTF-8"));
                     Object obj = entry.getValue();
-                    if ( obj != null ) {
+                    if (obj != null) {
                         md.update(obj.toString().getBytes("UTF-8"));
                     }
                 } catch (UnsupportedEncodingException e) {
@@ -58,8 +58,7 @@ public class AgentResources {
         }
     }
 
-
-    public void setHost(String uuid, Map<String,Object> data) {
+    public void setHost(String uuid, Map<String, Object> data) {
         hosts.put(uuid, new TreeMap<>(data));
     }
 
@@ -71,7 +70,7 @@ public class AgentResources {
         return storagePools;
     }
 
-    public void setStoragePool(String uuid, Map<String,Object> data) {
+    public void setStoragePool(String uuid, Map<String, Object> data) {
         storagePools.put(uuid, new TreeMap<>(data));
     }
 
@@ -79,7 +78,7 @@ public class AgentResources {
         return ipAddresses;
     }
 
-    public void setIpAddress(String uuid, Map<String,Object> data) {
+    public void setIpAddress(String uuid, Map<String, Object> data) {
         ipAddresses.put(uuid, new TreeMap<>(data));
     }
 }

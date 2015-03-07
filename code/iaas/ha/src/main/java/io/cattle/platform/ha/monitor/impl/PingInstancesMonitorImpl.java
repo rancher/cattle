@@ -46,27 +46,26 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     PingInstancesMonitorDao monitorDao;
     ObjectManager objectManager;
     ObjectProcessManager processManager;
-    LoadingCache<Long, Set<String>> instanceCache = CacheBuilder.newBuilder()
-                                                        .expireAfterWrite(CACHE_TIME.get(), TimeUnit.MILLISECONDS)
-                                                        .build(new CacheLoader<Long, Set<String>>() {
-                                                            @Override
-                                                            public Set<String> load(Long key) throws Exception {
-                                                                return PingInstancesMonitorImpl.this.load(key);
-                                                            }
-                                                        });
+    LoadingCache<Long, Set<String>> instanceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_TIME.get(), TimeUnit.MILLISECONDS).build(
+            new CacheLoader<Long, Set<String>>() {
+                @Override
+                public Set<String> load(Long key) throws Exception {
+                    return PingInstancesMonitorImpl.this.load(key);
+                }
+            });
 
     @Override
     public void pingReply(Ping ping) {
         Set<String> instances = getInstances(ping);
 
-        if ( instances == null ) {
+        if (instances == null) {
             return;
         }
 
         long agentId = Long.parseLong(ping.getResourceId());
         Set<String> knownInstances = instanceCache.getUnchecked(agentId);
 
-        if ( different(agentId, knownInstances, instances, true) ) {
+        if (different(agentId, knownInstances, instances, true)) {
             knownInstances = load(agentId);
             instanceCache.put(agentId, knownInstances);
             different(agentId, knownInstances, instances, false);
@@ -76,18 +75,16 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     @Override
     public void computeInstanceActivateReply(Event event) {
         Long agentId = monitorDao.getAgentIdForInstanceHostMap(event.getResourceId());
-        if ( agentId != null ) {
+        if (agentId != null) {
             instanceCache.invalidate(agentId);
         }
     }
 
-
-
     protected boolean different(long agentId, Set<String> knownInstances, Set<String> instances, boolean check) {
         instances = new HashSet<String>(instances);
-        for ( String instance : knownInstances ) {
-            if ( ! instances.remove(instance) ) {
-                if ( check ) {
+        for (String instance : knownInstances) {
+            if (!instances.remove(instance)) {
+                if (check) {
                     return true;
                 } else {
                     restart(instance);
@@ -95,8 +92,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             }
         }
 
-        if ( ! check && COMPLAIN.get() ) {
-            for ( String instance : instances ) {
+        if (!check && COMPLAIN.get()) {
+            for (String instance : instances) {
                 log.error("Unknown instance [{}] reported from agent [{}]", instance, agentId);
             }
         }
@@ -106,11 +103,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
     protected void restart(final String uuid) {
         Instance instance = objectManager.findOne(Instance.class, ObjectMetaDataManager.UUID_FIELD, uuid);
-        Map<String,Object> data = new HashMap<String, Object>();
-        DataAccessor.fromMap(data)
-            .withScope(InstanceProcessOptions.class)
-            .withKey(InstanceProcessOptions.HA_RESTART)
-            .set(true);
+        Map<String, Object> data = new HashMap<String, Object>();
+        DataAccessor.fromMap(data).withScope(InstanceProcessOptions.class).withKey(InstanceProcessOptions.HA_RESTART).set(true);
 
         processManager.scheduleProcessInstance(InstanceConstants.PROCESS_RESTART, instance, data, new Predicate() {
             @Override
@@ -123,23 +117,23 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
     protected Set<String> getInstances(Ping ping) {
         PingData data = ping.getData();
-        if ( data == null || ping.getResourceId() == null ) {
+        if (data == null || ping.getResourceId() == null) {
             return null;
         }
 
-        List<Map<String,Object>> resources = data.getResources();
-        if ( resources == null || ! ping.getOption(Ping.INSTANCES) ) {
+        List<Map<String, Object>> resources = data.getResources();
+        if (resources == null || !ping.getOption(Ping.INSTANCES)) {
             return null;
         }
 
         Set<String> instances = new HashSet<String>();
 
-        for ( Map<String, Object> resource : resources ) {
+        for (Map<String, Object> resource : resources) {
             Object state = resource.get(ObjectMetaDataManager.STATE_FIELD);
             Object type = resource.get(ObjectMetaDataManager.TYPE_FIELD);
             Object uuid = resource.get(ObjectMetaDataManager.UUID_FIELD);
 
-            if ( ! InstanceConstants.TYPE.equals(type) || ! InstanceConstants.STATE_RUNNING.equals(state) || uuid == null ) {
+            if (!InstanceConstants.TYPE.equals(type) || !InstanceConstants.STATE_RUNNING.equals(state) || uuid == null) {
                 continue;
             }
 

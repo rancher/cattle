@@ -25,11 +25,11 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        final Instance instance = (Instance)state.getResource();
+        final Instance instance = (Instance) state.getResource();
 
         instanceStop.handle(state, process);
 
-        Map<String,Object> result = new HashMap<String,Object>();
+        Map<String, Object> result = new HashMap<String, Object>();
 
         network(instance, state.getData());
 
@@ -38,11 +38,11 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
         return new HandlerResult(result);
     }
 
-    protected void storage(Instance instance, Map<String,Object> data) {
+    protected void storage(Instance instance, Map<String, Object> data) {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
 
-        for ( Volume volume : volumes ) {
-            if ( volume.getDeviceNumber() == 0 ) {
+        for (Volume volume : volumes) {
+            if (volume.getDeviceNumber() == 0) {
                 remove(volume, data);
             } else {
                 execute("volume.detach", volume, null);
@@ -50,15 +50,15 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
         }
 
         List<Mount> mounts = getObjectManager().children(instance, Mount.class);
-        for ( Mount mount : mounts ) {
+        for (Mount mount : mounts) {
             execute("mount.deactivate", mount, data);
         }
     }
 
-    protected void network(Instance instance, Map<String,Object> data) {
+    protected void network(Instance instance, Map<String, Object> data) {
         List<Nic> nics = getObjectManager().children(instance, Nic.class);
 
-        for ( Nic nic : nics ) {
+        for (Nic nic : nics) {
             remove(nic, data);
         }
     }

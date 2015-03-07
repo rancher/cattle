@@ -18,11 +18,11 @@ public class VolumePurge extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Volume volume = (Volume)state.getResource();
+        Volume volume = (Volume) state.getResource();
 
         deallocate(volume, state.getData());
 
-        for ( VolumeStoragePoolMap map : mapDao.findToRemove(VolumeStoragePoolMap.class, Volume.class, volume.getId()) ) {
+        for (VolumeStoragePoolMap map : mapDao.findToRemove(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
             remove(map, state.getData());
         }
 

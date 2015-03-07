@@ -32,7 +32,7 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
     }
 
     protected String getMetadata(Instance agentInstance) {
-        Map<String,Object> metadata = metadataService.getMetadata(agentInstance, idFormatter);
+        Map<String, Object> metadata = metadataService.getMetadata(agentInstance, idFormatter);
 
         try {
             return jsonMapper.writeValueAsString(metadata);
@@ -41,7 +41,6 @@ public class MetadataInfoFactory extends AbstractAgentBaseContextFactory {
             return "{}";
         }
     }
-
 
     public JsonMapper getJsonMapper() {
         return jsonMapper;

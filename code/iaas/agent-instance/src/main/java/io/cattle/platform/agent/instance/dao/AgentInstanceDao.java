@@ -20,7 +20,7 @@ public interface AgentInstanceDao {
 
     Instance getAgentInstance(NetworkServiceProvider provider, Nic nic);
 
-    Instance createInstanceForProvider(NetworkServiceProvider provider, Map<String,Object> properties);
+    Instance createInstanceForProvider(NetworkServiceProvider provider, Map<String, Object> properties);
 
     List<? extends Agent> getAgents(NetworkServiceProvider provider);
 

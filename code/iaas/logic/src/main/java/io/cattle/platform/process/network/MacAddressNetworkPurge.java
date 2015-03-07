@@ -22,10 +22,9 @@ public class MacAddressNetworkPurge extends AbstractObjectProcessLogic implement
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Network network = (Network)state.getResource();
+        Network network = (Network) state.getResource();
 
-        resourcePoolManager.releaseResource(ResourcePoolManager.GLOBAL, network,
-                new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC_PREFIX));
+        resourcePoolManager.releaseResource(ResourcePoolManager.GLOBAL, network, new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC_PREFIX));
 
         return new HandlerResult(NetworkConstants.FIELD_MAC_PREFIX, new Object[] { null }).withShouldContinue(true);
     }

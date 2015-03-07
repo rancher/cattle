@@ -30,8 +30,8 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
     Long timeoutMillis;
     int priority = Priority.SPECIFIC;
 
-    public EventBasedProcessHandler(EventService eventService, ObjectManager objectManager,
-            ObjectProcessManager objectProcessManager, ObjectMetaDataManager objectMetaDataManager) {
+    public EventBasedProcessHandler(EventService eventService, ObjectManager objectManager, ObjectProcessManager objectProcessManager,
+            ObjectMetaDataManager objectMetaDataManager) {
         this();
         this.eventService = eventService;
         this.objectManager = objectManager;
@@ -40,17 +40,17 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
     }
 
     public EventBasedProcessHandler() {
-        if ( this.getClass() == EventBasedProcessHandler.class ) {
+        if (this.getClass() == EventBasedProcessHandler.class) {
             setName(DEFAULT_NAME);
         }
     }
 
     @Override
     public String[] getProcessNames() {
-        if ( DEFAULT_NAME.equals(getName()) ) {
+        if (DEFAULT_NAME.equals(getName())) {
             return new String[0];
         }
-        if ( processNames == null ) {
+        if (processNames == null) {
             return new String[] { NamedUtils.toDotSeparated(getName()) };
         }
         return processNames;
@@ -60,31 +60,27 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Object resource = state.getResource();
         String type = objectManager.getType(resource);
-        if ( type == null ) {
+        if (type == null) {
             type = resource.getClass().getName();
         }
 
         String idString = null;
         Object id = ObjectUtils.getId(resource);
 
-        if ( id != null ) {
+        if (id != null) {
             idString = id.toString();
         }
 
         String eventName = getEventName() == null ? process.getName() : getEventName();
 
-        Event request = EventVO
-                            .newEvent(eventName)
-                            .withResourceId(idString)
-                            .withResourceType(type)
-                            .withData(state.getData());
+        Event request = EventVO.newEvent(eventName).withResourceId(idString).withResourceType(type).withData(state.getData());
 
         Event response = eventService.callSync(request, new EventCallOptions(retry, timeoutMillis));
 
         return postEvent(state, process, CollectionUtils.toMap(response.getData()));
     }
 
-    protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object,Object> data) {
+    protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> data) {
         return new HandlerResult(data);
     }
 

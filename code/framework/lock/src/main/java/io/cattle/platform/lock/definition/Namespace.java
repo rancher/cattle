@@ -9,14 +9,14 @@ public class Namespace {
     }
 
     public LockDefinition getLockDefinition(LockDefinition lockDef) {
-        if ( lockDef == null ) {
+        if (lockDef == null) {
             return null;
         }
 
-        if ( lockDef instanceof MultiLockDefinition ) {
-            return getMultiLockDefinition((MultiLockDefinition)lockDef);
-        } else if ( lockDef instanceof BlockingLockDefinition ) {
-            return new DefaultBlockingLockDefinition(lockId(lockDef.getLockId()), ((BlockingLockDefinition)lockDef).getWait());
+        if (lockDef instanceof MultiLockDefinition) {
+            return getMultiLockDefinition((MultiLockDefinition) lockDef);
+        } else if (lockDef instanceof BlockingLockDefinition) {
+            return new DefaultBlockingLockDefinition(lockId(lockDef.getLockId()), ((BlockingLockDefinition) lockDef).getWait());
         } else {
             return new DefaultLockDefinition(lockId(lockDef.getLockId()));
         }
@@ -27,7 +27,7 @@ public class Namespace {
         LockDefinition[] defs = lockDef.getLockDefinitions();
         LockDefinition[] resultDefs = new LockDefinition[defs.length];
 
-        for ( int i = 0 ; i < defs.length ; i++ ) {
+        for (int i = 0; i < defs.length; i++) {
             resultDefs[i] = getLockDefinition(getLockDefinition(defs[i]));
         }
 

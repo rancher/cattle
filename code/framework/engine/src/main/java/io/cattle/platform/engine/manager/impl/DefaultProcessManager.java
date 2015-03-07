@@ -58,8 +58,8 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         ProcessInstance pi = createProcessInstance(new ProcessRecord(config, null, null), true);
         try {
             pi.execute();
-        } catch ( ProcessInstanceException e ) {
-            if ( e.getExitReason() == SCHEDULED ) {
+        } catch (ProcessInstanceException e) {
+            if (e.getExitReason() == SCHEDULED) {
                 return;
             } else {
                 throw e;
@@ -68,42 +68,41 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     }
 
     protected ProcessInstance createProcessInstance(ProcessRecord record, boolean schedule) {
-        if ( record == null )
+        if (record == null)
             return null;
 
         ProcessDefinition processDef = definitions.get(record.getProcessName());
 
-        if ( processDef == null )
+        if (processDef == null)
             throw new ProcessNotFoundException("Failed to find ProcessDefinition for [" + record.getProcessName() + "]");
 
         ProcessState state = processDef.constructProcessState(record);
-        if ( state == null )
+        if (state == null)
             throw new ProcessNotFoundException("Failed to construct ProcessState for [" + record.getProcessName() + "]");
 
-        if ( record.getId() == null && (schedule || ! EngineContext.hasParentProcess()) )
+        if (record.getId() == null && (schedule || !EngineContext.hasParentProcess()))
             record = processRecordDao.insert(record);
 
         ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, exceptionHandler, changeMonitors);
         DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(context, record, processDef, state, schedule);
 
-        if ( record.getId() != null )
+        if (record.getId() != null)
             queue(process);
 
         return process;
     }
 
-
     @Override
     public ProcessDefinition getProcessDelegate(ProcessDefinition def) {
         String delegate = def.getProcessDelegateName();
 
-        if ( delegate == null ) {
+        if (delegate == null) {
             return null;
         }
 
         ProcessDefinition processDef = definitions.get(delegate);
 
-        if ( processDef == null )
+        if (processDef == null)
             throw new ProcessNotFoundException("Failed to find ProcessDefinition for [" + delegate + "]");
 
         return processDef;
@@ -111,15 +110,15 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
 
     @Override
     public void persistState(ProcessInstance process, boolean schedule) {
-        if ( ! ( process instanceof DefaultProcessInstanceImpl ) ) {
+        if (!(process instanceof DefaultProcessInstanceImpl)) {
             throw new IllegalArgumentException("Can only persist ProcessInstances that are created by this repository");
         }
 
-        DefaultProcessInstanceImpl processImpl = (DefaultProcessInstanceImpl)process;
+        DefaultProcessInstanceImpl processImpl = (DefaultProcessInstanceImpl) process;
 
         synchronized (processImpl) {
             ProcessRecord record = processImpl.getProcessRecord();
-            if ( record.getId() != null )
+            if (record.getId() != null)
                 processRecordDao.update(record, schedule);
         }
     }
@@ -132,7 +131,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     @Override
     public Long getRemainingTask(long processId) {
         ProcessRecord record = processRecordDao.getRecord(processId);
-        if ( record == null ) {
+        if (record == null) {
             return null;
         }
 
@@ -143,24 +142,24 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     @Override
     public ProcessInstance loadProcess(Long id) {
         ProcessRecord record = processRecordDao.getRecord(id);
-        if ( record == null ) {
+        if (record == null) {
             throw new ProcessNotFoundException("Failed to find ProcessRecord for [" + id + "]");
         }
         return createProcessInstance(record, false);
     }
 
     protected void persistInProgress() throws InterruptedException {
-        while ( true ) {
+        while (true) {
             ProcessInstance process = toPersist.take().getObject().get();
-            if ( process == null ) {
+            if (process == null) {
                 return;
             }
 
             synchronized (process) {
-                if ( process.isRunningLogic() ) {
+                if (process.isRunningLogic()) {
                     persistState(process, false);
                 }
-                if ( process.getExitReason() == null ) {
+                if (process.getExitReason() == null) {
                     queue(process);
                 }
             }
@@ -184,7 +183,10 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         executor.scheduleAtFixedRate(new NoExceptionRunnable() {
             @Override
             public void doRun() throws Exception {
-                /* This really blocks forever, but just in case it fails we restart */
+                /*
+                 * This really blocks forever, but just in case it fails we
+                 * restart
+                 */
                 persistInProgress();
             }
         }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);

@@ -19,12 +19,13 @@ import java.util.Map;
 import javax.inject.Inject;
 
 public class LoadBalancerTargetValidationFilter extends AbstractDefaultResourceManagerFilter {
-    private static final Map<String, Boolean> actions;
-    static
-    {
-        actions = new HashMap<>();
-        actions.put(LoadBalancerConstants.ACTION_LB_ADD_TARGET, true);
-        actions.put(LoadBalancerConstants.ACTION_LB_REMOVE_TARGET, false);
+
+    private static final Map<String, Boolean> ACTIONS;
+
+    static {
+        ACTIONS = new HashMap<>();
+        ACTIONS.put(LoadBalancerConstants.ACTION_LB_ADD_TARGET, true);
+        ACTIONS.put(LoadBalancerConstants.ACTION_LB_REMOVE_TARGET, false);
     }
 
     @Inject
@@ -48,7 +49,7 @@ public class LoadBalancerTargetValidationFilter extends AbstractDefaultResourceM
 
     @Override
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
-        if (actions.containsKey(request.getAction())) {
+        if (ACTIONS.containsKey(request.getAction())) {
             Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
             Long instanceId = (Long) data.get(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_ID);
             String ipAddress = (String) data.get(LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS);
@@ -56,28 +57,19 @@ public class LoadBalancerTargetValidationFilter extends AbstractDefaultResourceM
             boolean isInstance = (instanceId != null);
             boolean isIp = (ipAddress != null);
 
-            // InstanceId and ipAddress are mutually exclusive; one of them have to be specified
+            // InstanceId and ipAddress are mutually exclusive; one of them have
+            // to be specified
             if (isInstance == isIp) {
                 if (isInstance) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
-                            LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS);
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION, LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS);
                 } else {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MISSING_REQUIRED,
-                            LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_ID);
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MISSING_REQUIRED, LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_ID);
                 }
             }
 
             if (isInstance) {
-                lbFilterUtils.validateGenericMapAction(
-                        mapDao,
-                        LoadBalancerTarget.class,
-                        Instance.class,
-                        instanceId,
-                        LoadBalancer.class,
-                        Long.valueOf(request.getId()),
-                        new SimpleEntry<String, Boolean>(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_ID, actions
-                                .get(request
-                                        .getAction())));
+                lbFilterUtils.validateGenericMapAction(mapDao, LoadBalancerTarget.class, Instance.class, instanceId, LoadBalancer.class, Long.valueOf(request
+                        .getId()), new SimpleEntry<String, Boolean>(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_ID, ACTIONS.get(request.getAction())));
             } else {
                 validateIpMapAction(request, ipAddress);
             }
@@ -88,15 +80,13 @@ public class LoadBalancerTargetValidationFilter extends AbstractDefaultResourceM
 
     private void validateIpMapAction(ApiRequest request, String ipAddress) {
         LoadBalancerTarget target = lbTargetDao.getLbIpAddressTarget(Long.valueOf(request.getId()), ipAddress);
-        if (actions.get(request.getAction())) {
+        if (ACTIONS.get(request.getAction())) {
             if (target != null) {
-                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
-                        LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS);
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE, LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS);
             }
         } else {
             if (target == null) {
-                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
-                        LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS);
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION, LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS);
             }
         }
     }

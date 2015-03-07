@@ -22,18 +22,18 @@ public class ResourceStatesDefinition {
     String stateField = DEFAULT_STATE_FIELD;
     Set<String> startStates = new HashSet<String>();
     Set<String> requiredFields = new HashSet<String>();
-    Map<String,String> transitioningStatesMap = new HashMap<String, String>();
-    Map<String,String> doneStatesMap = new HashMap<String, String>();
+    Map<String, String> transitioningStatesMap = new HashMap<String, String>();
+    Map<String, String> doneStatesMap = new HashMap<String, String>();
 
     public List<StateTransition> getStateTransitions() {
         List<StateTransition> result = new ArrayList<StateTransition>();
 
-        for ( Map.Entry<String, String> entry : transitioningStatesMap.entrySet() ) {
+        for (Map.Entry<String, String> entry : transitioningStatesMap.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
 
-            if ( key == null ) {
-                for ( String start : startStates ) {
+            if (key == null) {
+                for (String start : startStates) {
                     result.add(new StateTransition(start, value, stateField, Style.TRANSITIONING));
                 }
             } else {
@@ -41,12 +41,12 @@ public class ResourceStatesDefinition {
             }
         }
 
-        for ( Map.Entry<String, String> entry : doneStatesMap.entrySet() ) {
+        for (Map.Entry<String, String> entry : doneStatesMap.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
 
-            if ( key == null ) {
-                for ( String start : transitioningStatesMap.values()) {
+            if (key == null) {
+                for (String start : transitioningStatesMap.values()) {
                     result.add(new StateTransition(start, value, stateField, Style.DONE));
                 }
             } else {
@@ -59,26 +59,24 @@ public class ResourceStatesDefinition {
 
     public String getTransitioningState(String currentState) {
         String newState = transitioningStatesMap.get(currentState);
-        if ( newState == null && transitioningStatesMap.size() == 1) {
+        if (newState == null && transitioningStatesMap.size() == 1) {
             return transitioningStatesMap.get(null);
         }
 
-        if ( newState == null )
-            throw new IllegalStateException("Failed to find state to transition from [" + currentState +
-                    "] to \"transitioning\"");
+        if (newState == null)
+            throw new IllegalStateException("Failed to find state to transition from [" + currentState + "] to \"transitioning\"");
 
         return newState;
     }
 
     public String getDoneState(String currentState) {
         String newState = doneStatesMap.get(currentState);
-        if ( newState == null && doneStatesMap.size() == 1) {
+        if (newState == null && doneStatesMap.size() == 1) {
             return doneStatesMap.get(null);
         }
 
-        if ( newState == null )
-            throw new IllegalStateException("Failed to find state to transition from [" + currentState +
-                    "] to \"done\"");
+        if (newState == null)
+            throw new IllegalStateException("Failed to find state to transition from [" + currentState + "] to \"done\"");
 
         return newState;
     }
@@ -88,8 +86,7 @@ public class ResourceStatesDefinition {
     }
 
     public boolean isTransitioning(String currentState) {
-        return transitioningStatesMap.containsValue(currentState) ||
-                doneStatesMap.containsKey(currentState);
+        return transitioningStatesMap.containsValue(currentState) || doneStatesMap.containsKey(currentState);
     }
 
     public boolean isStart(String currentState) {
@@ -102,7 +99,7 @@ public class ResourceStatesDefinition {
 
     public boolean isValidState(String currentState) {
         boolean result = isStart(currentState) || isTransitioning(currentState) || isDone(currentState);
-        if ( ! result ) {
+        if (!result) {
             log.info("State [{}] is not a valid state", currentState);
         }
 

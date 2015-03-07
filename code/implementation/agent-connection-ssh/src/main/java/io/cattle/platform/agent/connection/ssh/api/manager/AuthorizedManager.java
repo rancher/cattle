@@ -1,11 +1,5 @@
 package io.cattle.platform.agent.connection.ssh.api.manager;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Map;
-
-import javax.inject.Inject;
-
 import io.cattle.platform.agent.connection.ssh.api.model.Authorized;
 import io.cattle.platform.agent.connection.ssh.dao.SshAgentDao;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -14,20 +8,25 @@ import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+
+import javax.inject.Inject;
+
 public class AuthorizedManager extends AbstractNoOpResourceManager {
 
     SshAgentDao agentDao;
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria,
-            ListOptions options) {
+    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         request.setResponseContentType("text/plain");
 
         try {
             OutputStream os = request.getOutputStream();
 
-            for ( String[] keys : agentDao.getClientKeyPairs() ) {
+            for (String[] keys : agentDao.getClientKeyPairs()) {
                 os.write(keys[0].getBytes("UTF-8"));
                 os.write('\n');
             }

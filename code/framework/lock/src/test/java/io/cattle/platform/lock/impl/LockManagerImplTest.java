@@ -51,7 +51,7 @@ public class LockManagerImplTest {
                     fail();
                 }
             });
-        } catch ( FailedToAcquireLockException e ) {
+        } catch (FailedToAcquireLockException e) {
             assertEquals(badLockDef, e.getLockDefition());
         }
 
@@ -108,7 +108,7 @@ public class LockManagerImplTest {
                     throw new RuntimeException("42");
                 }
             });
-        } catch ( RuntimeException e ) {
+        } catch (RuntimeException e) {
             assertEquals("42", e.getMessage());
         }
 
@@ -127,7 +127,7 @@ public class LockManagerImplTest {
                     throw new FileNotFoundException("42");
                 }
             }, FileNotFoundException.class);
-        } catch ( FileNotFoundException e ) {
+        } catch (FileNotFoundException e) {
             assertEquals("42", e.getMessage());
         }
 

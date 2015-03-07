@@ -20,8 +20,8 @@ public class ObjectBasedSubSchemaFactory extends SubSchemaFactory implements Nam
 
         schema.getIncludeableLinks().clear();
 
-        Map<String,Relationship> rels = metaDataManager.getLinkRelationships(this, schema.getId());
-        if ( rels == null || rels.size() == 0 ) {
+        Map<String, Relationship> rels = metaDataManager.getLinkRelationships(this, schema.getId());
+        if (rels == null || rels.size() == 0) {
             return;
         } else {
             schema.getIncludeableLinks().addAll(rels.keySet());

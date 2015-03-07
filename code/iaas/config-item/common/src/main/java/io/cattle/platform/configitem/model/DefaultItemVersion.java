@@ -48,7 +48,7 @@ public class DefaultItemVersion implements ItemVersion {
     public static DefaultItemVersion fromString(String str) {
         DefaultItemVersion result = new DefaultItemVersion();
 
-        if ( str == null )
+        if (str == null)
             return null;
 
         if (LATEST.equals(str)) {
@@ -58,11 +58,11 @@ public class DefaultItemVersion implements ItemVersion {
 
         String[] parts = str.split("-");
 
-        if ( parts.length > 2 ) {
-            parts = new String[] { parts[parts.length-2], parts[parts.length-1] };
+        if (parts.length > 2) {
+            parts = new String[] { parts[parts.length - 2], parts[parts.length - 1] };
         }
 
-        if ( parts.length != 2 )
+        if (parts.length != 2)
             return null;
 
         try {
@@ -77,7 +77,7 @@ public class DefaultItemVersion implements ItemVersion {
 
     @Override
     public String toExternalForm() {
-        if ( latest ) {
+        if (latest) {
             return LATEST;
         }
         return String.format("%s-%s", revision, sourceRevision);

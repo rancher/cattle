@@ -16,7 +16,7 @@ public class PingStatus {
     }
 
     public void success() {
-        if ( failures > 0 ) {
+        if (failures > 0) {
             log.info("Recieved ping for [{}]", agentId);
         }
         failures = 0;

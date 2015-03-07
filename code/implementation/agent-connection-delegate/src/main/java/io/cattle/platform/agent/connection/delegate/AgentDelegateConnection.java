@@ -30,12 +30,12 @@ public class AgentDelegateConnection implements AgentConnection {
     long agentId;
     boolean open = true;
     RemoteAgent remoteAgent;
-    Map<String,Object> instanceData;
+    Map<String, Object> instanceData;
     JsonMapper jsonMapper;
     EventService eventService;
 
-    public AgentDelegateConnection(RemoteAgent remoteAgent, long agentId, String uri, Map<String,Object> instanceData,
-            JsonMapper jsonMapper, EventService eventService) {
+    public AgentDelegateConnection(RemoteAgent remoteAgent, long agentId, String uri, Map<String, Object> instanceData, JsonMapper jsonMapper,
+            EventService eventService) {
         super();
         this.remoteAgent = remoteAgent;
         this.agentId = agentId;
@@ -52,20 +52,19 @@ public class AgentDelegateConnection implements AgentConnection {
 
     @Override
     public ListenableFuture<Event> execute(final Event event, final EventProgress progress) {
-        if ( ! open ) {
+        if (!open) {
             return AsyncUtils.error(new IOException("Agent connection is closed"));
         }
 
         final DelegateEvent delegateEvent = new DelegateEvent(instanceData, event);
 
-        log.trace("Delegating [{}] [{}] inner [{}] [{}]", event.getName(), event.getId(), delegateEvent.getName(),
-                delegateEvent.getId());
+        log.trace("Delegating [{}] [{}] inner [{}] [{}]", event.getName(), event.getId(), delegateEvent.getName(), delegateEvent.getId());
 
         EventCallOptions options = EventUtils.chainOptions(event).withProgress(new EventProgress() {
             @Override
             public void progress(Event delegateResponse) {
                 Event reply = createResponse(delegateEvent, delegateResponse);
-                if ( EventUtils.isTransitioningEvent(reply) ) {
+                if (EventUtils.isTransitioningEvent(reply)) {
                     progress.progress(reply);
                 }
             }
@@ -74,19 +73,19 @@ public class AgentDelegateConnection implements AgentConnection {
         return Futures.transform(remoteAgent.call(delegateEvent, options), new AsyncFunction<Event, Event>() {
             @Override
             public ListenableFuture<Event> apply(final Event delegateResponse) throws Exception {
-                return AsyncUtils.done((Event)createResponse(delegateEvent, delegateResponse));
+                return AsyncUtils.done((Event) createResponse(delegateEvent, delegateResponse));
             }
         });
     }
 
     protected EventVO<Object> createResponse(Event delegateRequest, Event delegateResponse) {
-        if ( delegateResponse == null ) {
+        if (delegateResponse == null) {
             return null;
         }
 
         Object data = delegateResponse.getData();
 
-        if ( data == null ) {
+        if (data == null) {
             return null;
         }
 

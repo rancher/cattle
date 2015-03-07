@@ -51,13 +51,13 @@ public class AddLibvirtDefaultImages extends AbstractObjectProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        StoragePool storagePool = (StoragePool)state.getResource();
+        StoragePool storagePool = (StoragePool) state.getResource();
 
-        if ( ! storagePool.getKind().equals(LIBVIRT_KIND) ) {
+        if (!storagePool.getKind().equals(LIBVIRT_KIND)) {
             return null;
         }
 
-        if ( ! upToDate(getStamp()) ) {
+        if (!upToDate(getStamp())) {
             lockManager.lock(new LibvirtDefaultImageLock(), new LockCallbackNoReturn() {
                 @Override
                 public void doWithLockNoResult() {
@@ -77,26 +77,25 @@ public class AddLibvirtDefaultImages extends AbstractObjectProcessHandler {
         Data stamp = getStamp();
         ObjectManager objectManager = getObjectManager();
 
-        if ( upToDate(stamp) ) {
+        if (upToDate(stamp)) {
             return;
         }
 
-        for ( URL image : images ) {
+        for (URL image : images) {
             InputStream is = null;
             try {
                 is = image.openStream();
-                Map<String,Object> data = jsonMapper.readValue(is);
+                Map<String, Object> data = jsonMapper.readValue(is);
 
                 Object uuid = data.get(ObjectMetaDataManager.UUID_FIELD);
 
-                if ( uuid == null ) {
+                if (uuid == null) {
                     throw new IllegalStateException("[" + image + "] is missing the uuid field");
                 }
 
-                Image existing = getObjectManager().findOne(Image.class,
-                        ObjectMetaDataManager.UUID_FIELD, uuid);
+                Image existing = getObjectManager().findOne(Image.class, ObjectMetaDataManager.UUID_FIELD, uuid);
 
-                if ( existing != null && ! existing.getState().equals(CommonStatesConstants.REQUESTED) ) {
+                if (existing != null && !existing.getState().equals(CommonStatesConstants.REQUESTED)) {
                     continue;
                 }
 
@@ -107,7 +106,7 @@ public class AddLibvirtDefaultImages extends AbstractObjectProcessHandler {
                 proxy.setIsPublic(true);
                 proxy.setAccountId(accountDao.getSystemAccount().getId());
 
-                if ( existing == null ) {
+                if (existing == null) {
                     existing = objectManager.create(Image.class, data);
                 }
 
@@ -117,7 +116,7 @@ public class AddLibvirtDefaultImages extends AbstractObjectProcessHandler {
             }
         }
 
-        if ( stamp == null ) {
+        if (stamp == null) {
             stamp = objectManager.newRecord(Data.class);
             stamp.setName(DATA_NAME_VALUE);
             stamp.setValue(hash);
@@ -141,7 +140,7 @@ public class AddLibvirtDefaultImages extends AbstractObjectProcessHandler {
     public void init() throws IOException, NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
 
-        for ( URL url : images ) {
+        for (URL url : images) {
             InputStream is = null;
             try {
                 is = url.openStream();
@@ -149,7 +148,7 @@ public class AddLibvirtDefaultImages extends AbstractObjectProcessHandler {
                 byte[] buffer = new byte[8192];
                 int count = 0;
 
-                while ( ( count = is.read(buffer) ) > 0 ) {
+                while ((count = is.read(buffer)) > 0) {
                     md.update(buffer, 0, count);
                 }
             } finally {

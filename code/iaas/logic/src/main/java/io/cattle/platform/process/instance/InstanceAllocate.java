@@ -31,25 +31,25 @@ public class InstanceAllocate extends EventBasedProcessHandler {
 
     @Override
     protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
-        Map<String,Set<Long>> allocationData = new HashMap<String, Set<Long>>();
+        Map<String, Set<Long>> allocationData = new HashMap<String, Set<Long>>();
         result.put("_allocationData", allocationData);
 
-        Instance instance = (Instance)state.getResource();
+        Instance instance = (Instance) state.getResource();
 
-        for ( InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()) ) {
+        for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
             CollectionUtils.addToMap(allocationData, "instance:" + instance.getId(), map.getHostId(), HashSet.class);
             create(map, state.getData());
         }
 
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
 
-        for ( Volume v : volumes ) {
+        for (Volume v : volumes) {
             allocate(v, state.getData());
         }
 
         volumes = getObjectManager().children(instance, Volume.class);
-        for ( Volume v : volumes ) {
-            for ( VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, v.getId()) ) {
+        for (Volume v : volumes) {
+            for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, v.getId())) {
                 CollectionUtils.addToMap(allocationData, "volume:" + v.getId(), map.getVolumeId(), HashSet.class);
                 create(map, state.getData());
             }

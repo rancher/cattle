@@ -33,38 +33,38 @@ public class AgentDelegateConnectionFactory implements AgentConnectionFactory {
     @Override
     public AgentConnection createConnection(Agent agent) throws IOException {
         String uri = agent.getUri();
-        if ( uri == null || ! uri.startsWith(PROTOCOL) ) {
+        if (uri == null || !uri.startsWith(PROTOCOL)) {
             return null;
         }
 
         Instance instance = delegateDao.getInstance(agent);
 
-        if ( instance == null ) {
+        if (instance == null) {
             log.info("Failed to find instance to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
             return null;
         }
 
-        if ( ! InstanceConstants.STATE_RUNNING.equals(instance.getState()) ) {
+        if (!InstanceConstants.STATE_RUNNING.equals(instance.getState())) {
             log.info("Instance [{}] is not running, actual state [{}]", instance.getId(), instance.getState());
             return null;
         }
 
         Host host = delegateDao.getHost(agent);
 
-        if ( host == null ) {
+        if (host == null) {
             log.error("Failed to find host to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
             return null;
         }
 
         RemoteAgent remoteAgent = agentLocator.lookupAgent(host);
 
-        if ( remoteAgent == null ) {
+        if (remoteAgent == null) {
             log.error("Failed to find remote agent to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
             return null;
         }
 
         @SuppressWarnings("unchecked")
-        Map<String,Object> instanceData = jsonMapper.convertValue(instance, Map.class);
+        Map<String, Object> instanceData = jsonMapper.convertValue(instance, Map.class);
 
         return new AgentDelegateConnection(remoteAgent, agent.getId(), agent.getUri(), instanceData, jsonMapper, eventService);
     }

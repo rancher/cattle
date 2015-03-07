@@ -38,22 +38,19 @@ public class RegisterCreate extends AbstractGenericObjectProcessLogic implements
 
     @Override
     protected HandlerResult handleKind(final ProcessState state, ProcessInstance process) {
-        GenericObject resource = (GenericObject)state.getResource();
+        GenericObject resource = (GenericObject) state.getResource();
         String key = resource.getKey();
 
-        if ( key == null ) {
+        if (key == null) {
             return null;
         }
 
         Agent agent;
-        Long agentId = DataAccessor
-                           .fromDataFieldOf(resource)
-                           .withKey(RegisterConstants.DATA_AGENT_ID)
-                           .as(Long.class);
+        Long agentId = DataAccessor.fromDataFieldOf(resource).withKey(RegisterConstants.DATA_AGENT_ID).as(Long.class);
 
         agent = loadResource(Agent.class, agentId);
 
-        if ( agent == null ) {
+        if (agent == null) {
             agent = registerDao.createAgentForRegistration(key, resource);
         }
 
@@ -74,17 +71,14 @@ public class RegisterCreate extends AbstractGenericObjectProcessLogic implements
 
         Credential cred = getCredential(agent);
 
-        return new HandlerResult(
-                RegisterConstants.FIELD_ACCESS_KEY, cred.getPublicValue(),
-                RegisterConstants.FIELD_SECRET_KEY, cred.getSecretValue());
+        return new HandlerResult(RegisterConstants.FIELD_ACCESS_KEY, cred.getPublicValue(), RegisterConstants.FIELD_SECRET_KEY, cred.getSecretValue());
     }
 
     protected Credential getCredential(Agent agent) {
         Account account = loadResource(Account.class, agent.getAccountId());
 
-        for ( Credential cred : children(account, Credential.class) ) {
-            if ( cred.getKind().equals(CredentialConstants.KIND_AGENT_API_KEY) &&
-                    CommonStatesConstants.ACTIVE.equals(cred.getState()) ) {
+        for (Credential cred : children(account, Credential.class)) {
+            if (cred.getKind().equals(CredentialConstants.KIND_AGENT_API_KEY) && CommonStatesConstants.ACTIVE.equals(cred.getState())) {
                 return cred;
             }
         }

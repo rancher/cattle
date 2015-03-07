@@ -150,7 +150,7 @@ public class DefaultManagedContextTest {
             }).intValue();
 
             fail();
-        } catch ( Throwable t ) {
+        } catch (Throwable t) {
             assertTrue(t instanceof RuntimeException);
             assertEquals("I'm a failure", t.getMessage());
         }
@@ -202,7 +202,7 @@ public class DefaultManagedContextTest {
             }).intValue();
 
             fail();
-        } catch ( Throwable t ) {
+        } catch (Throwable t) {
             assertTrue(t.getMessage(), t instanceof RuntimeException);
             assertEquals("I'm a failure", t.getMessage());
         }
@@ -256,7 +256,7 @@ public class DefaultManagedContextTest {
             }).intValue();
 
             fail();
-        } catch ( Throwable t ) {
+        } catch (Throwable t) {
             assertTrue(t.getMessage(), t instanceof RuntimeException);
             assertEquals("I'm a failure", t.getMessage());
         }
