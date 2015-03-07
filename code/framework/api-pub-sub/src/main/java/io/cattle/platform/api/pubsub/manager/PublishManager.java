@@ -34,8 +34,7 @@ public class PublishManager extends AbstractNoOpResourceManager {
 
         Event event = createEvent(publish);
 
-        if ( SubscriptionUtils.getSubscriptionStyle(ApiUtils.getPolicy()) != SubscriptionStyle.RAW &&
-                ! event.getName().startsWith(Event.REPLY_PREFIX) ) {
+        if (SubscriptionUtils.getSubscriptionStyle(ApiUtils.getPolicy()) != SubscriptionStyle.RAW && !event.getName().startsWith(Event.REPLY_PREFIX)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
 
@@ -47,7 +46,7 @@ public class PublishManager extends AbstractNoOpResourceManager {
     protected Event createEvent(Publish publish) {
         EventVO<Object> event = new EventVO<Object>();
 
-        if ( publish.getId() != null ) {
+        if (publish.getId() != null) {
             event.setId(publish.getId());
         }
 
@@ -62,12 +61,12 @@ public class PublishManager extends AbstractNoOpResourceManager {
         event.setTransitioningMessage(publish.getTransitioningMessage());
         event.setTransitioningProgress(publish.getTransitioningProgress());
 
-        if ( publish.getTime() != null ) {
+        if (publish.getTime() != null) {
             event.setTime(new Date(publish.getTime()));
         }
 
         List<String> previous = publish.getPreviousIds();
-        if ( previous != null ) {
+        if (previous != null) {
             event.setPreviousIds(previous.toArray(new String[previous.size()]));
         }
 

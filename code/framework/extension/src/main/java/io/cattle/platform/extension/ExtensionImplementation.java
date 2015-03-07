@@ -8,6 +8,6 @@ public interface ExtensionImplementation {
 
     String getClassName();
 
-    Map<String,String> getProperties();
+    Map<String, String> getProperties();
 
 }

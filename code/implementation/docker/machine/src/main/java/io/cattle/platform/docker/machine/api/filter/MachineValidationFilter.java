@@ -26,17 +26,16 @@ public class MachineValidationFilter extends AbstractDefaultResourceManagerFilte
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         boolean alreadyFound = false;
 
-        for ( Map.Entry<String, Object> field : data.entrySet() ) {
-            if ( StringUtils.endsWithIgnoreCase(field.getKey(), CONFIG_FIELD_SUFFIX) && field.getValue() != null ) {
-                if ( alreadyFound ) {
-                    throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY,
-                            DRIVER_CONFIG_EXACTLY_ONE_REQUIRED);
+        for (Map.Entry<String, Object> field : data.entrySet()) {
+            if (StringUtils.endsWithIgnoreCase(field.getKey(), CONFIG_FIELD_SUFFIX) && field.getValue() != null) {
+                if (alreadyFound) {
+                    throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, DRIVER_CONFIG_EXACTLY_ONE_REQUIRED);
                 }
                 alreadyFound = true;
             }
         }
 
-        if ( !alreadyFound ) {
+        if (!alreadyFound) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, DRIVER_CONFIG_EXACTLY_ONE_REQUIRED);
         }
         return super.create(type, request, next);

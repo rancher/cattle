@@ -7,8 +7,8 @@ import java.util.Map;
 
 public interface HostApiService {
 
-    HostApiAccess getAccess(Long hostId, int port, Map<String,Object> data);
+    HostApiAccess getAccess(Long hostId, int port, Map<String, Object> data);
 
-    Map<String,PublicKey> getPublicKeys();
+    Map<String, PublicKey> getPublicKeys();
 
 }

@@ -52,12 +52,12 @@ public class HostStatsLinkHandler implements LinkHandler {
             host = (Host) obj;
         }
 
-        if ( host == null ) {
+        if (host == null) {
             return null;
         }
 
-        HostApiAccess apiAccess = hostApiService.getAccess(host.getId(), HOST_STATS_PORT.get(), Collections.<String,Object>emptyMap());
-        if ( apiAccess == null ) {
+        HostApiAccess apiAccess = hostApiService.getAccess(host.getId(), HOST_STATS_PORT.get(), Collections.<String, Object> emptyMap());
+        if (apiAccess == null) {
             return null;
         }
 
@@ -65,7 +65,7 @@ public class HostStatsLinkHandler implements LinkHandler {
         url.append("://").append(apiAccess.getHostAndPort());
         url.append(HOST_STATS_PATH.get());
 
-        if ( instance != null ) {
+        if (instance != null) {
             url.append("/").append(instance.getUuid());
         }
 

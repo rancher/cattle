@@ -16,7 +16,7 @@ public class HostPortGeneratorFactory implements PooledResourceItemGeneratorFact
 
     @Override
     public PooledResourceItemGenerator getGenerator(Object pool, String qualifier) {
-        if ( ( pool instanceof Host ) && ResourcePoolConstants.HOST_PORT.equals(qualifier) ) {
+        if ((pool instanceof Host) && ResourcePoolConstants.HOST_PORT.equals(qualifier)) {
             return new StringRangeGenerator(HOST_PORT_START.get(), HOST_PORT_END.get());
         }
 

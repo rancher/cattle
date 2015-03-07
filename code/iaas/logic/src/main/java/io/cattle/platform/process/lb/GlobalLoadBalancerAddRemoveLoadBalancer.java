@@ -19,17 +19,14 @@ public class GlobalLoadBalancerAddRemoveLoadBalancer extends AbstractObjectProce
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { LoadBalancerConstants.PROCESS_GLB_ADD_LB,
-                LoadBalancerConstants.PROCESS_GLB_REMOVE_LB };
+        return new String[] { LoadBalancerConstants.PROCESS_GLB_ADD_LB, LoadBalancerConstants.PROCESS_GLB_REMOVE_LB };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         GlobalLoadBalancer glb = (GlobalLoadBalancer) state.getResource();
-        long lbId = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_LB_ID)
-                .as(Long.class);
-        Long weight = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_WEIGHT)
-                .as(Long.class);
+        long lbId = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_LB_ID).as(Long.class);
+        Long weight = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_WEIGHT).as(Long.class);
 
         if (process.getName().equals(LoadBalancerConstants.PROCESS_GLB_ADD_LB)) {
             updateLoadBalancer(lbId, glb.getId(), weight);

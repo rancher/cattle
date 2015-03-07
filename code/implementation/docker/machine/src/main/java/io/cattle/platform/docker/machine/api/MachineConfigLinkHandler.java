@@ -28,10 +28,10 @@ public class MachineConfigLinkHandler implements LinkHandler {
 
     @Override
     public Object link(String name, Object obj, ApiRequest request) throws IOException {
-        if ( obj instanceof PhysicalHost ) {
-            PhysicalHost host = (PhysicalHost)obj;
-            String extractedConfig = (String)DataUtils.getFields(host).get(EXTRACTED_CONFIG_FIELD);
-            if ( StringUtils.isNotEmpty(extractedConfig) ) {
+        if (obj instanceof PhysicalHost) {
+            PhysicalHost host = (PhysicalHost) obj;
+            String extractedConfig = (String) DataUtils.getFields(host).get(EXTRACTED_CONFIG_FIELD);
+            if (StringUtils.isNotEmpty(extractedConfig)) {
                 byte[] content = Base64.decodeBase64(extractedConfig.getBytes());
                 HttpServletResponse response = request.getServletContext().getResponse();
                 response.setContentLength(content.length);

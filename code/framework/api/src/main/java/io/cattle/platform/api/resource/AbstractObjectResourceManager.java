@@ -68,9 +68,9 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     ObjectManager objectManager;
     ObjectProcessManager objectProcessManager;
     ObjectMetaDataManager metaDataManager;
-    Map<String,ActionHandler> actionHandlersMap;
+    Map<String, ActionHandler> actionHandlersMap;
     List<ActionHandler> actionHandlers;
-    Map<String,List<LinkHandler>> linkHandlersMap;
+    Map<String, List<LinkHandler>> linkHandlersMap;
     List<LinkHandler> linkHandlers;
 
     @Override
@@ -81,16 +81,16 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     protected Object createInternal(String type, ApiRequest request) {
         Class<?> clz = getClassForType(request.getSchemaFactory(), type);
-        if ( clz == null ) {
+        if (clz == null) {
             return null;
         }
 
         return doCreate(type, clz, CollectionUtils.toMap(request.getRequestObject()));
     }
 
-    protected <T> T doCreate(String type, Class<T> clz, Map<Object,Object> data) {
-        Map<String,Object> properties = getObjectManager().convertToPropertiesFor(clz, data);
-        if ( ! properties.containsKey(ObjectMetaDataManager.KIND_FIELD) ) {
+    protected <T> T doCreate(String type, Class<T> clz, Map<Object, Object> data) {
+        Map<String, Object> properties = getObjectManager().convertToPropertiesFor(clz, data);
+        if (!properties.containsKey(ObjectMetaDataManager.KIND_FIELD)) {
             properties.put(ObjectMetaDataManager.KIND_FIELD, type);
         }
 
@@ -98,22 +98,22 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T createAndScheduleObject(Class<T> clz, Map<String,Object> properties) {
+    protected <T> T createAndScheduleObject(Class<T> clz, Map<String, Object> properties) {
         Object result = objectManager.create(clz, properties);
         try {
             scheduleProcess(StandardProcess.CREATE, result, properties);
             result = objectManager.reload(result);
-        } catch ( ProcessNotFoundException e ) {
+        } catch (ProcessNotFoundException e) {
         }
 
-        return (T)result;
+        return (T) result;
     }
 
     protected Class<?> getClassForType(SchemaFactory schemaFactory, String type) {
         Class<?> clz = schemaFactory.getSchemaClass(type);
-        if ( clz == null ) {
+        if (clz == null) {
             Schema schema = schemaFactory.getSchema(type);
-            if ( schema != null && schema.getParent() != null ) {
+            if (schema != null && schema.getParent() != null) {
                 return getClassForType(schemaFactory, schema.getParent());
             }
         }
@@ -126,7 +126,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         try {
             scheduleProcess(StandardProcess.REMOVE, obj, null);
             return objectManager.reload(obj);
-        } catch ( ProcessNotFoundException e ) {
+        } catch (ProcessNotFoundException e) {
             return removeFromStore(type, id, obj, request);
         }
     }
@@ -135,21 +135,21 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Object updateInternal(String type, String id, Object obj, ApiRequest request) {
-        Map<String,Object> updates = CollectionUtils.toMap(request.getRequestObject());
-        Map<String,Object> filteredUpdates = new HashMap<String, Object>();
-        Map<String,Object> existing = createResource(obj, IDENTITY_FORMATTER, request).getFields();
+        Map<String, Object> updates = CollectionUtils.toMap(request.getRequestObject());
+        Map<String, Object> filteredUpdates = new HashMap<String, Object>();
+        Map<String, Object> existing = createResource(obj, IDENTITY_FORMATTER, request).getFields();
         Schema schema = request.getSchemaFactory().getSchema(type);
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         boolean schedule = false;
-        for ( Map.Entry<String, Object> entry : updates.entrySet() ) {
+        for (Map.Entry<String, Object> entry : updates.entrySet()) {
             String key = entry.getKey();
             Object existingValue = existing.get(key);
-            if ( ! ObjectUtils.equals(existingValue, entry.getValue()) ) {
+            if (!ObjectUtils.equals(existingValue, entry.getValue())) {
                 filteredUpdates.put(key, entry.getValue());
 
                 Field field = fields.get(key);
-                if ( field != null ) {
+                if (field != null) {
                     schedule |= Boolean.TRUE.equals(field.getAttributes().get(SCHEDULE_UPDATE));
                 }
             }
@@ -157,7 +157,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         }
 
         Object result = objectManager.setFields(obj, filteredUpdates);
-        if ( schedule ) {
+        if (schedule) {
             objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, filteredUpdates);
             result = objectManager.reload(result);
         }
@@ -168,11 +168,11 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     protected Object getLinkInternal(String type, String id, String link, ApiRequest request) {
         List<LinkHandler> linkHandlers = linkHandlersMap.get(type);
-        if ( linkHandlers != null ) {
-            for ( LinkHandler linkHandler : linkHandlers ) {
-                if ( linkHandler.handles(type, id, link, request) ) {
+        if (linkHandlers != null) {
+            for (LinkHandler linkHandler : linkHandlers) {
+                if (linkHandler.handles(type, id, link, request)) {
                     Object currentObject = getById(type, id, new ListOptions(request));
-                    if ( currentObject == null ) {
+                    if (currentObject == null) {
                         return null;
                     }
 
@@ -188,7 +188,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         Relationship relationship = metaDataManager.getRelationship(type, link);
 
-        if ( relationship == null ) {
+        if (relationship == null) {
             return null;
         }
 
@@ -198,7 +198,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         case REFERENCE:
             return getReferenceLink(type, id, relationship, request);
         case MAP:
-            return getMapLink(type, id, (MapRelationship)relationship, request);
+            return getMapLink(type, id, (MapRelationship) relationship, request);
         }
 
         return null;
@@ -210,29 +210,29 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     protected Object getChildLink(String type, String id, Relationship relationship, ApiRequest request) {
         Schema otherSchema = request.getSchemaFactory().getSchema(relationship.getObjectType());
-        if ( otherSchema == null ) {
+        if (otherSchema == null) {
             return Collections.EMPTY_LIST;
         }
 
         Object currentObject = getById(type, id, new ListOptions(request));
-        if ( currentObject == null ) {
+        if (currentObject == null) {
             return null;
         }
 
         String otherType = otherSchema.getId();
         Field field = otherSchema.getResourceFields().get(relationship.getPropertyName());
-        if ( field == null ) {
+        if (field == null) {
             return Collections.EMPTY_LIST;
         }
 
-        if ( otherSchema.getCollectionMethods().contains(Method.POST.toString()) ) {
-            Map<String,Object> createDefaults = new HashMap<String, Object>();
+        if (otherSchema.getCollectionMethods().contains(Method.POST.toString())) {
+            Map<String, Object> createDefaults = new HashMap<String, Object>();
             IdFormatter idFormatter = ApiContext.getContext().getIdFormatter();
             createDefaults.put(relationship.getPropertyName(), idFormatter.formatId(type, id));
             request.setCreateDefaults(createDefaults);
         }
 
-        Map<Object,Object> criteria = getDefaultCriteria(false, true, otherType);
+        Map<Object, Object> criteria = getDefaultCriteria(false, true, otherType);
         criteria.put(relationship.getPropertyName(), id);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherType);
@@ -244,38 +244,38 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         Schema schema = schemaFactory.getSchema(type);
         Schema otherSchema = schemaFactory.getSchema(relationship.getObjectType());
         Field field = schema.getResourceFields().get(relationship.getPropertyName());
-        if ( field == null || otherSchema == null ) {
+        if (field == null || otherSchema == null) {
             return null;
         }
 
         ListOptions options = new ListOptions(request);
         Object currentObject = getById(type, id, options);
-        if ( currentObject == null ) {
+        if (currentObject == null) {
             return null;
         }
 
         Object fieldValue = field.getValue(currentObject);
 
-        if ( fieldValue == null ) {
+        if (fieldValue == null) {
             return null;
         }
 
-        Map<Object,Object> criteria = getDefaultCriteria(false, true, otherSchema.getId());
+        Map<Object, Object> criteria = getDefaultCriteria(false, true, otherSchema.getId());
         criteria.put(ObjectMetaDataManager.ID_FIELD, fieldValue);
 
         ResourceManager resourceManager = locator.getResourceManagerByType(otherSchema.getId());
         return ApiUtils.getFirstFromList(resourceManager.list(otherSchema.getId(), criteria, options));
     }
 
-    protected Map<String,Relationship> getLinkRelationships(SchemaFactory schemaFactory, String type, Include include) {
-        if ( include == null )
+    protected Map<String, Relationship> getLinkRelationships(SchemaFactory schemaFactory, String type, Include include) {
+        if (include == null)
             return Collections.emptyMap();
 
-        Map<String,Relationship> result = new HashMap<String, Relationship>();
-        Map<String,Relationship> links = metaDataManager.getLinkRelationships(schemaFactory, type);
-        for ( String link : include.getLinks() ) {
+        Map<String, Relationship> result = new HashMap<String, Relationship>();
+        Map<String, Relationship> links = metaDataManager.getLinkRelationships(schemaFactory, type);
+        for (String link : include.getLinks()) {
             link = link.toLowerCase();
-            if ( links.containsKey(link) ) {
+            if (links.containsKey(link)) {
                 result.put(link, links.get(link));
             }
         }
@@ -284,13 +284,13 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     @Override
-    protected Map<Object,Object> getDefaultCriteria(boolean byId, boolean byLink, String type) {
+    protected Map<Object, Object> getDefaultCriteria(boolean byId, boolean byLink, String type) {
         Map<Object, Object> criteria = super.getDefaultCriteria(byId, byLink, type);
         Policy policy = ApiUtils.getPolicy();
 
         addAccountAuthorization(byId, byLink, type, criteria, policy);
 
-        if ( ! policy.isOption(Policy.REMOVED_VISIBLE) && ! byId ) {
+        if (!policy.isOption(Policy.REMOVED_VISIBLE) && !byId) {
             /* removed is null or removed >= (NOW() - delay) */
             Condition or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GTE, removedTime()));
             criteria.put(ObjectMetaDataManager.REMOVED_FIELD, or);
@@ -308,15 +308,15 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     protected void addAccountAuthorization(boolean byId, boolean byLink, String type, Map<Object, Object> criteria, Policy policy) {
-        if ( ! policy.isOption(Policy.LIST_ALL_ACCOUNTS) ) {
-            if ( policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) && (byId || byLink) ) {
+        if (!policy.isOption(Policy.LIST_ALL_ACCOUNTS)) {
+            if (policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) && (byId || byLink)) {
                 return;
             }
 
             List<Long> accounts = policy.getAuthorizedAccounts();
-            if ( accounts.size() == 1 ) {
+            if (accounts.size() == 1) {
                 criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, accounts.get(0));
-            } else if ( accounts.size() == 0 ) {
+            } else if (accounts.size() == 0) {
                 criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
             } else {
                 criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, new Condition(ConditionType.IN, accounts));
@@ -327,7 +327,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     protected String getCollectionType(List<?> list, ApiRequest request) {
         String link = request.getLink();
-        if ( link == null ) {
+        if (link == null) {
             return request.getType();
         } else {
             Relationship relationship = metaDataManager.getRelationship(request.getType(), link);
@@ -343,9 +343,10 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         /* Still get schema from request's schemaFactory */
         Schema schema = schemaFactory.getSchema(schemaId);
 
-        if ( schema == null ) {
-            /* If schema is null, the child may not be authorized, so try again with the
-             * user's schemaFactory
+        if (schema == null) {
+            /*
+             * If schema is null, the child may not be authorized, so try again
+             * with the user's schemaFactory
              */
             schemaId = ApiUtils.getSchemaIdForDisplay(schemaFactory, obj);
             return schemaFactory.getSchema(schemaId);
@@ -355,9 +356,8 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     @Override
-    protected Resource constructResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj,
-            ApiRequest apiRequest) {
-        Map<String,Object> transitioningFields = metaDataManager.getTransitionFields(schema, obj);
+    protected Resource constructResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj, ApiRequest apiRequest) {
+        Map<String, Object> transitioningFields = metaDataManager.getTransitionFields(schema, obj);
         return ApiUtils.createResourceWithAttachments(this, apiRequest, idFormatter, schema, obj, transitioningFields);
     }
 
@@ -365,15 +365,15 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     protected Object resourceActionInternal(Object obj, ApiRequest request) {
         String processName = getProcessName(obj, request);
         ActionHandler handler = actionHandlersMap.get(processName);
-        if ( handler != null ) {
+        if (handler != null) {
             return handler.perform(processName, obj, request);
         }
 
-        Map<String,Object> data = CollectionUtils.toMap(request.getRequestObject());
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
 
         try {
             scheduleProcess(getProcessName(obj, request), obj, data);
-        } catch ( ProcessNotFoundException e ) {
+        } catch (ProcessNotFoundException e) {
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
         }
 
@@ -407,8 +407,8 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     protected void scheduleProcess(Runnable run) {
         try {
             run.run();
-        } catch ( ProcessInstanceException e ) {
-            if ( e.getExitReason() == ExitReason.RESOURCE_BUSY || e.getExitReason() == ExitReason.CANCELED ) {
+        } catch (ProcessInstanceException e) {
+            if (e.getExitReason() == ExitReason.RESOURCE_BUSY || e.getExitReason() == ExitReason.CANCELED) {
                 throw new ClientVisibleException(ResponseCodes.CONFLICT);
             } else {
                 throw e;
@@ -419,53 +419,51 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     protected void addActions(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
         Object state = resource.getFields().get(ObjectMetaDataManager.STATE_FIELD);
-        Map<String,ActionDefinition> defs = metaDataManager.getActionDefinitions(obj);
+        Map<String, ActionDefinition> defs = metaDataManager.getActionDefinitions(obj);
 
-        if ( state == null || defs == null ) {
+        if (state == null || defs == null) {
             super.addActions(obj, schemaFactory, schema, resource);
             return;
         }
 
-        Map<String,Action> actions = schema.getResourceActions();
+        Map<String, Action> actions = schema.getResourceActions();
 
-        if ( actions == null || actions.size() == 0 ) {
+        if (actions == null || actions.size() == 0) {
             return;
         }
 
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
 
-        for ( Map.Entry<String,Action> entry : actions.entrySet() ) {
+        for (Map.Entry<String, Action> entry : actions.entrySet()) {
             String name = entry.getKey();
             Action action = entry.getValue();
 
-            if ( ! isValidAction(obj, action) ) {
+            if (!isValidAction(obj, action)) {
                 continue;
             }
 
             ActionDefinition def = defs.get(name);
-            if ( def == null || def.getValidStates().contains(state) ) {
+            if (def == null || def.getValidStates().contains(state)) {
                 resource.getActions().put(name, urlBuilder.actionLink(resource, name));
             }
         }
     }
 
     protected boolean isValidAction(Object obj, Action action) {
-        Map<String,Object> attributes = action.getAttributes();
+        Map<String, Object> attributes = action.getAttributes();
 
-        if ( attributes == null || attributes.size() == 0 ) {
+        if (attributes == null || attributes.size() == 0) {
             return true;
         }
 
         String capability = ObjectUtils.toString(attributes.get("capability"), null);
         String state = ObjectUtils.toString(attributes.get(ObjectMetaDataManager.STATE_FIELD), null);
 
-        if ( ! StringUtils.isBlank(capability) &&
-                ! DataAccessor.fieldStringList(obj, ObjectMetaDataManager.CAPABILITIES_FIELD).contains(capability) ) {
+        if (!StringUtils.isBlank(capability) && !DataAccessor.fieldStringList(obj, ObjectMetaDataManager.CAPABILITIES_FIELD).contains(capability)) {
             return false;
         }
 
-        if ( ! StringUtils.isBlank(state) &&
-                ! state.equals(io.cattle.platform.object.util.ObjectUtils.getState(obj)) ) {
+        if (!StringUtils.isBlank(state) && !state.equals(io.cattle.platform.object.util.ObjectUtils.getState(obj))) {
             return false;
         }
 
@@ -477,8 +475,8 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         actionHandlersMap = NamedUtils.createMapByName(actionHandlers);
         linkHandlersMap = new HashMap<String, List<LinkHandler>>();
 
-        for ( LinkHandler handler : linkHandlers ) {
-            for ( String type : handler.getTypes() ) {
+        for (LinkHandler handler : linkHandlers) {
+            for (String type : handler.getTypes()) {
                 CollectionUtils.addToMap(linkHandlersMap, type, handler, ArrayList.class);
             }
         }

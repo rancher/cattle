@@ -1,11 +1,11 @@
 package io.cattle.platform.storage.pool;
 
+import io.cattle.platform.core.model.Image;
+import io.cattle.platform.core.model.StoragePool;
+
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-
-import io.cattle.platform.core.model.Image;
-import io.cattle.platform.core.model.StoragePool;
 
 public abstract class AbstractKindBasedStoragePoolDriver implements StoragePoolDriver {
 
@@ -25,7 +25,7 @@ public abstract class AbstractKindBasedStoragePoolDriver implements StoragePoolD
 
     @Override
     public boolean populateExtenalImage(StoragePool pool, String uuid, Image image) throws IOException {
-        if ( ! uuid.startsWith(kindPrefix) )
+        if (!uuid.startsWith(kindPrefix))
             return false;
 
         return populateExtenalImageInternal(pool, uuid, image);
@@ -37,10 +37,8 @@ public abstract class AbstractKindBasedStoragePoolDriver implements StoragePoolD
 
     protected abstract boolean populateExtenalImageInternal(StoragePool pool, String uuid, Image image) throws IOException;
 
-
     public String getKind() {
         return kind;
     }
-
 
 }

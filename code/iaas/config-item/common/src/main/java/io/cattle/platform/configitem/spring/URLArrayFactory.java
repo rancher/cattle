@@ -19,8 +19,8 @@ public class URLArrayFactory implements FactoryBean<URL[]>, ApplicationContextAw
     public URL[] getObject() throws Exception {
         List<URL> resources = new ArrayList<URL>();
 
-        for ( String location : locations ) {
-            for ( Resource resource : applicationContext.getResources(location) ) {
+        for (String location : locations) {
+            for (Resource resource : applicationContext.getResources(location)) {
                 resources.add(resource.getURL());
             }
         }

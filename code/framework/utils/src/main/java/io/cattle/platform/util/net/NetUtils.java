@@ -16,15 +16,12 @@ public class NetUtils {
     }
 
     public static String long2Ip(long ip) {
-        return ((ip >> 24) & 0xFF) + "."
-                + ((ip >> 16) & 0xFF) + "."
-                + ((ip >> 8) & 0xFF) + "."
-                + (ip & 0xFF);
+        return ((ip >> 24) & 0xFF) + "." + ((ip >> 16) & 0xFF) + "." + ((ip >> 8) & 0xFF) + "." + (ip & 0xFF);
     }
 
     public static String getDefaultGateway(String ipAddress, int cidrSize) {
         long ip = ip2Long(ipAddress);
-        long mask = (long)Math.pow(2, 32-cidrSize) - 1;
+        long mask = (long) Math.pow(2, 32 - cidrSize) - 1;
 
         long gateway = (ip & ~mask) + 1;
 
@@ -33,7 +30,7 @@ public class NetUtils {
 
     public static String getDefaultStartAddress(String ipAddress, int cidrSize) {
         long ip = ip2Long(ipAddress);
-        long mask = (long)Math.pow(2, 32-cidrSize) - 1;
+        long mask = (long) Math.pow(2, 32 - cidrSize) - 1;
 
         long start = (ip & ~mask) + 2;
 
@@ -42,9 +39,9 @@ public class NetUtils {
 
     public static String getDefaultEndAddress(String ipAddress, int cidrSize) {
         long ip = ip2Long(ipAddress);
-        long mask = (long)Math.pow(2, 32-cidrSize) - 1;
+        long mask = (long) Math.pow(2, 32 - cidrSize) - 1;
 
-        long end = (ip & ~mask) + (long)Math.pow(2, 32-cidrSize) - 6;
+        long end = (ip & ~mask) + (long) Math.pow(2, 32 - cidrSize) - 6;
 
         return long2Ip(end);
     }

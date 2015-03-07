@@ -1,7 +1,5 @@
 package io.cattle.platform.iaas.api.filter.instance;
 
-import javax.inject.Inject;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
@@ -17,6 +15,8 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+
+import javax.inject.Inject;
 
 import com.netflix.config.DynamicBooleanProperty;
 
@@ -42,11 +42,11 @@ public class InstanceImageValidationFilter extends AbstractDefaultResourceManage
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Instance container = request.proxyRequestObject(Instance.class);
 
-        if ( REQUIRE_INSTANCE_IMAGE.get() ) {
+        if (REQUIRE_INSTANCE_IMAGE.get()) {
             Long imageId = container.getImageId();
             String imageUuid = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_IMAGE_UUID, String.class);
 
-            if ( imageId == null && imageUuid == null ) {
+            if (imageId == null && imageUuid == null) {
                 throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, InstanceConstants.FIELD_IMAGE_UUID);
             }
         }
@@ -54,8 +54,8 @@ public class InstanceImageValidationFilter extends AbstractDefaultResourceManage
         Long imageId = container.getImageId();
         Image image = getObjectManager().loadResource(Image.class, imageId);
 
-        if ( image != null && image.getInstanceKind() != null ) {
-            if ( ! image.getInstanceKind().equals(type) ) {
+        if (image != null && image.getInstanceKind() != null) {
+            if (!image.getInstanceKind().equals(type)) {
                 throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, "InvalidImageInstanceKind");
             }
         }

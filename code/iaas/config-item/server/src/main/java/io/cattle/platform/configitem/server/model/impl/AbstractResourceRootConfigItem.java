@@ -1,10 +1,10 @@
 package io.cattle.platform.configitem.server.model.impl;
 
-import java.io.IOException;
-
 import io.cattle.platform.configitem.server.model.RefreshableConfigItem;
 import io.cattle.platform.configitem.server.resource.ResourceRoot;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+
+import java.io.IOException;
 
 public abstract class AbstractResourceRootConfigItem extends AbstractConfigItem implements RefreshableConfigItem {
 

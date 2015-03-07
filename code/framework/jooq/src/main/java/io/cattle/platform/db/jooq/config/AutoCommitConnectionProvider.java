@@ -22,8 +22,7 @@ public class AutoCommitConnectionProvider implements ConnectionProvider {
             Connection connection = dataSource.getConnection();
             connection.setAutoCommit(true);
             return connection;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataAccessException("Error getting connection from data source " + dataSource, e);
         }
     }
@@ -32,8 +31,7 @@ public class AutoCommitConnectionProvider implements ConnectionProvider {
     public void release(Connection released) {
         try {
             released.close();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataAccessException("Error closing connection " + released, e);
         }
     }

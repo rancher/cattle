@@ -3,8 +3,8 @@ package io.cattle.platform.util.type;
 public class ScopeUtils {
 
     public static final String getDefaultScope(Object obj) {
-        if ( obj instanceof Scope ) {
-            return ((Scope)obj).getTargetScope();
+        if (obj instanceof Scope) {
+            return ((Scope) obj).getTargetScope();
         }
 
         return "";

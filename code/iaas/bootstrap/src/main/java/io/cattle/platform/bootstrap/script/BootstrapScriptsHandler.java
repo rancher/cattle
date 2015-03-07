@@ -14,12 +14,12 @@ public class BootstrapScriptsHandler implements ScriptsHandler {
 
     @Override
     public boolean handle(ApiRequest request) throws IOException {
-        if ( ! BOOTSTRAP.equals(request.getId()) ) {
+        if (!BOOTSTRAP.equals(request.getId())) {
             return false;
         }
 
         byte[] content = BootstrapScript.getBootStrapSource();
-        IOUtils.copy(new ByteArrayInputStream(content),request.getServletContext().getResponse().getOutputStream());
+        IOUtils.copy(new ByteArrayInputStream(content), request.getServletContext().getResponse().getOutputStream());
 
         return true;
     }

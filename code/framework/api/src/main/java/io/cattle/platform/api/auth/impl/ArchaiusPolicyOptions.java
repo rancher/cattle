@@ -13,9 +13,9 @@ public class ArchaiusPolicyOptions implements PolicyOptions {
 
     private static String PROP_FORMAT = "account.type.%s.%s";
 
-    Map<String,DynamicBooleanProperty> bools = new ConcurrentHashMap<String, DynamicBooleanProperty>();
-    Map<String,DynamicStringProperty> strings = new ConcurrentHashMap<String, DynamicStringProperty>();
-    Map<String,OptionCallback> callbacks = new HashMap<String, OptionCallback>();
+    Map<String, DynamicBooleanProperty> bools = new ConcurrentHashMap<String, DynamicBooleanProperty>();
+    Map<String, DynamicStringProperty> strings = new ConcurrentHashMap<String, DynamicStringProperty>();
+    Map<String, OptionCallback> callbacks = new HashMap<String, OptionCallback>();
     String name;
 
     public ArchaiusPolicyOptions(String name) {
@@ -25,7 +25,7 @@ public class ArchaiusPolicyOptions implements PolicyOptions {
     @Override
     public boolean isOption(String optionName) {
         DynamicBooleanProperty prop = bools.get(optionName);
-        if ( prop == null ) {
+        if (prop == null) {
             prop = ArchaiusUtil.getBoolean(String.format(PROP_FORMAT, name, optionName));
             bools.put(optionName, prop);
         }
@@ -35,12 +35,12 @@ public class ArchaiusPolicyOptions implements PolicyOptions {
     @Override
     public String getOption(String optionName) {
         OptionCallback callback = callbacks.get(optionName);
-        if ( callback != null ) {
+        if (callback != null) {
             return callback.getOption();
         }
 
         DynamicStringProperty prop = strings.get(optionName);
-        if ( prop == null ) {
+        if (prop == null) {
             prop = ArchaiusUtil.getString(String.format(PROP_FORMAT, name, optionName));
             strings.put(optionName, prop);
         }

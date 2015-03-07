@@ -18,11 +18,10 @@ public class AgentPackagesConfigItem extends TemplatesBasedArchiveItem {
 
     AgentIncludeMap map;
 
-    public AgentPackagesConfigItem(String name, ConfigItemStatusManager versionManager, ResourceRoot resourceRoot,
-            TemplateFactory templateFactory, AgentIncludeMap map, ObjectManager objectManager,
-            ConfigItemStatusManager statusManager) {
-        super(name, versionManager, resourceRoot, templateFactory,
-                Arrays.asList((ConfigItemContextFactory)new AgentPackagesContextFactory(name, map, objectManager, statusManager)));
+    public AgentPackagesConfigItem(String name, ConfigItemStatusManager versionManager, ResourceRoot resourceRoot, TemplateFactory templateFactory,
+            AgentIncludeMap map, ObjectManager objectManager, ConfigItemStatusManager statusManager) {
+        super(name, versionManager, resourceRoot, templateFactory, Arrays.asList((ConfigItemContextFactory) new AgentPackagesContextFactory(name, map,
+                objectManager, statusManager)));
         this.map = map;
     }
 
@@ -35,7 +34,7 @@ public class AgentPackagesConfigItem extends TemplatesBasedArchiveItem {
     protected void writePackages(ArchiveContext context) throws IOException {
         StringBuilder buffer = new StringBuilder();
 
-        for ( Map.Entry<String,String> entry : map.getMap(getName()).entrySet() ) {
+        for (Map.Entry<String, String> entry : map.getMap(getName()).entrySet()) {
             String value = isDevVersion(entry.getValue()) ? "config" : entry.getValue();
             buffer.append(entry.getKey()).append(" ").append(value).append("\n");
         }
@@ -50,7 +49,7 @@ public class AgentPackagesConfigItem extends TemplatesBasedArchiveItem {
     }
 
     public static final boolean isDevVersion(String value) {
-        if ( value == null ) {
+        if (value == null) {
             return false;
         }
 

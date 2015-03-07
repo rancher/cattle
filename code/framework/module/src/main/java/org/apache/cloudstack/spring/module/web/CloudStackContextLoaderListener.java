@@ -34,12 +34,12 @@ public class CloudStackContextLoaderListener extends ContextLoaderListener {
 
     public static final String WEB_PARENT_MODULE = "parentModule";
     public static final String WEB_PARENT_MODULE_DEFAULT = "web";
-    
+
     private static final Logger log = LoggerFactory.getLogger(CloudStackContextLoaderListener.class);
-    
+
     CloudStackSpringContext clouCattleContext;
     String configuredParentName;
-    
+
     @Override
     protected ApplicationContext loadParentContext(ServletContext servletContext) {
         return clouCattleContext.getApplicationContextForWeb(configuredParentName);
@@ -54,12 +54,12 @@ public class CloudStackContextLoaderListener extends ContextLoaderListener {
             log.error("Failed to start CloudStack", e);
             throw new RuntimeException("Failed to initialize CloudStack Spring modules", e);
         }
-        
+
         configuredParentName = event.getServletContext().getInitParameter(WEB_PARENT_MODULE);
-        if ( configuredParentName == null ) {
+        if (configuredParentName == null) {
             configuredParentName = WEB_PARENT_MODULE_DEFAULT;
         }
-        
+
         super.contextInitialized(event);
     }
 
@@ -71,13 +71,12 @@ public class CloudStackContextLoaderListener extends ContextLoaderListener {
     protected void customizeContext(ServletContext servletContext, ConfigurableWebApplicationContext applicationContext) {
         super.customizeContext(servletContext, applicationContext);
 
-        if ( applicationContext.getParent() != null ) {
+        if (applicationContext.getParent() != null) {
             /* Only set resource locations if a parent exists */
-            String[] newLocations = clouCattleContext.getConfigLocationsForWeb(configuredParentName, 
-                    applicationContext.getConfigLocations());
+            String[] newLocations = clouCattleContext.getConfigLocationsForWeb(configuredParentName, applicationContext.getConfigLocations());
 
             applicationContext.setConfigLocations(newLocations);
         }
     }
-   
+
 }

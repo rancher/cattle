@@ -33,19 +33,19 @@ public class SimulatorDelegateProcessor implements AgentSimulatorEventProcessor,
     public Event handle(AgentConnectionSimulator simulator, final Event event) throws Exception {
         String name = event.getName();
 
-        if ( ! name.startsWith(IaasEvents.DELEGATE_REQUEST) ) {
+        if (!name.startsWith(IaasEvents.DELEGATE_REQUEST)) {
             return null;
         }
 
         DelegateEvent delegate = jsonMapper.convertValue(event, DelegateEvent.class);
         Object agentId = delegate.getData().getInstanceData().get("agentId");
 
-        if ( agentId == null ) {
+        if (agentId == null) {
             throw new IllegalStateException("Failed to find agent id to simulate for delegate event [" + event.getId() + "]");
         }
 
         Agent agent = objectManager.loadResource(Agent.class, agentId.toString());
-        if ( agent == null ) {
+        if (agent == null) {
             throw new IllegalStateException("Failed to find agent to simulate for delegate event [" + event.getId() + "]");
         }
 
@@ -58,7 +58,7 @@ public class SimulatorDelegateProcessor implements AgentSimulatorEventProcessor,
         }), new AsyncFunction<Event, Event>() {
             @Override
             public ListenableFuture<Event> apply(Event input) throws Exception {
-                return AsyncUtils.done((Event)EventVO.reply(event).withData(input));
+                return AsyncUtils.done((Event) EventVO.reply(event).withData(input));
             }
         }).get();
     }

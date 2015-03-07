@@ -36,11 +36,11 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
 
     ProcessManager processManager;
     ProcessServer processServer;
-    Map<ExitReason,Counter> counters = new HashMap<ExitReason, Counter>();
+    Map<ExitReason, Counter> counters = new HashMap<ExitReason, Counter>();
 
     @Override
     public void processExecute(Event event) {
-        if ( event.getResourceId() == null )
+        if (event.getResourceId() == null)
             return;
 
         EVENT.inc();
@@ -53,38 +53,37 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
             instance.execute();
             runRemaining = true;
             DONE.inc();
-        } catch ( ProcessNotFoundException e ) {
+        } catch (ProcessNotFoundException e) {
             NOT_FOUND.inc();
             log.debug("Failed to find process for id [{}]", event.getResourceId());
-        } catch ( ProcessInstanceException e ) {
+        } catch (ProcessInstanceException e) {
             counters.get(e.getExitReason()).inc();
-            if ( e.getExitReason().isError() ) {
-                log.error("Process [{}:{}] on [{}] failed, exit [{}] : {}", instance.getName(), event.getResourceId(),
-                        instance.getResourceId(), e.getExitReason(), e.getMessage());
+            if (e.getExitReason().isError()) {
+                log.error("Process [{}:{}] on [{}] failed, exit [{}] : {}", instance.getName(), event.getResourceId(), instance.getResourceId(), e
+                        .getExitReason(), e.getMessage());
             }
-        } catch ( TimeoutException e ) {
+        } catch (TimeoutException e) {
             TIMEOUT.inc();
-            log.info("Communication timeout on process [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(),
-                    instance.getResourceId(), e.getMessage());
-        } catch ( ProcessCancelException e ) {
+            log.info("Communication timeout on process [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(), instance.getResourceId(), e
+                    .getMessage());
+        } catch (ProcessCancelException e) {
             CANCELED.inc();
-            log.info("Process canceled [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(),
-                    instance.getResourceId(), e.getMessage());
+            log.info("Process canceled [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(), instance.getResourceId(), e.getMessage());
 
-        } catch ( Throwable e ) {
+        } catch (Throwable e) {
             EXCEPTION.inc();
-            log.error("Unknown exception running process [{}:{}] on [{}]", instance == null ? null : instance.getName(),
-                    event.getResourceId(), instance == null ? null : instance.getResourceId(), e);
+            log.error("Unknown exception running process [{}:{}] on [{}]", instance == null ? null : instance.getName(), event.getResourceId(),
+                    instance == null ? null : instance.getResourceId(), e);
         }
 
-        if ( runRemaining ) {
+        if (runRemaining) {
             processServer.runRemainingTasks(processId);
         }
     }
 
     @PostConstruct
     public void init() {
-        for ( ExitReason e : ExitReason.values() ) {
+        for (ExitReason e : ExitReason.values()) {
             switch (e) {
             case DONE:
             case ALREADY_DONE:

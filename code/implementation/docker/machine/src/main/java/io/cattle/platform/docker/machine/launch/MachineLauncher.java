@@ -37,12 +37,18 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
     private static final String MACHINE_USER_UUID = "machineServiceAccount";
     private static final int WAIT = 2000;
 
-    @Inject LockDelegator lockDelegator;
-    @Inject ScheduledExecutorService executor;
-    @Inject AccountDao accountDao;
-    @Inject GenericResourceDao resourceDao;
-    @Inject ResourceMonitor resourceMonitor;
-    @Inject ScopedConfig scopedConfig;
+    @Inject
+    LockDelegator lockDelegator;
+    @Inject
+    ScheduledExecutorService executor;
+    @Inject
+    AccountDao accountDao;
+    @Inject
+    GenericResourceDao resourceDao;
+    @Inject
+    ResourceMonitor resourceMonitor;
+    @Inject
+    ScopedConfig scopedConfig;
 
     Process process;
     ScheduledFuture<?> future;
@@ -60,7 +66,7 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
 
     @Override
     public void stop() {
-        if ( future != null ) {
+        if (future != null) {
             future.cancel(true);
         }
 
@@ -68,7 +74,7 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
     }
 
     protected synchronized void processDestroy() {
-        if ( process != null ) {
+        if (process != null) {
             process.destroy();
             process = null;
         }
@@ -80,20 +86,16 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
 
     protected Credential getCredential() {
         Account account = accountDao.findByUuid(MACHINE_USER_UUID);
-        if ( account == null ) {
-            account = resourceDao.createAndSchedule(Account.class,
-                    ACCOUNT.UUID, getAccountUuid(),
-                    ACCOUNT.NAME, getAccountUuid(),
-                    ACCOUNT.KIND, AccountConstants.SERVICE_KIND);
+        if (account == null) {
+            account = resourceDao.createAndSchedule(Account.class, ACCOUNT.UUID, getAccountUuid(), ACCOUNT.NAME, getAccountUuid(), ACCOUNT.KIND,
+                    AccountConstants.SERVICE_KIND);
         }
 
         account = resourceMonitor.waitForState(account, CommonStatesConstants.ACTIVE);
         Credential cred = accountDao.getApiKey(account, false);
 
-        if ( cred == null ) {
-            cred = resourceDao.createAndSchedule(Credential.class,
-                    CREDENTIAL.KIND, CredentialConstants.KIND_API_KEY,
-                    CREDENTIAL.ACCOUNT_ID, account.getId());
+        if (cred == null) {
+            cred = resourceDao.createAndSchedule(Credential.class, CREDENTIAL.KIND, CredentialConstants.KIND_API_KEY, CREDENTIAL.ACCOUNT_ID, account.getId());
         }
 
         return resourceMonitor.waitForState(cred, CommonStatesConstants.ACTIVE);
@@ -101,16 +103,16 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
 
     @Override
     protected synchronized void doRun() throws Exception {
-        if ( ! LAUNCH_MACHINE.get() || ! ServerContext.isCustomApiHost() ) {
+        if (!LAUNCH_MACHINE.get() || !ServerContext.isCustomApiHost()) {
             return;
         }
 
-        if ( ! lockDelegator.tryLock(new MachineLauncherLock()) ) {
+        if (!lockDelegator.tryLock(new MachineLauncherLock())) {
             return;
         }
 
         boolean launch = false;
-        if ( process == null ) {
+        if (process == null) {
             launch = true;
         } else {
             try {
@@ -118,19 +120,19 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
                 launch = true;
                 process.waitFor();
             } catch (IllegalThreadStateException e) {
-                //ignore
+                // ignore
             } catch (InterruptedException e) {
-                //ignore
+                // ignore
             }
         }
 
-        if ( ! launch ) {
+        if (!launch) {
             return;
         }
 
         Credential cred = getCredential();
         ProcessBuilder pb = new ProcessBuilder(MACHINE_BINARY.get());
-        Map<String,String> env = pb.environment();
+        Map<String, String> env = pb.environment();
 
         env.put("CATTLE_ACCESS_KEY", cred.getPublicValue());
         env.put("CATTLE_SECRET_KEY", cred.getSecretValue());

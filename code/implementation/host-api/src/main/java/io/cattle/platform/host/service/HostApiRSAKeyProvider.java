@@ -39,7 +39,7 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
 
     @Override
     public void start() {
-        if ( GEN_ON_STARTUP.get() ) {
+        if (GEN_ON_STARTUP.get()) {
             getPrivateKey();
         }
     }
@@ -65,18 +65,18 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
             return null;
         }
     }
-    
+
     @Override
     public PublicKey getDefaultPublicKey() {
-    	return getPublicKeys().get(DEFAULT);
+        return getPublicKeys().get(DEFAULT);
     }
 
     @Override
-    public Map<String,PublicKey> getPublicKeys() {
-        Map<String,PublicKey> result = new HashMap<String, PublicKey>();
+    public Map<String, PublicKey> getPublicKeys() {
+        Map<String, PublicKey> result = new HashMap<String, PublicKey>();
 
         KeyPair defaultKp = getKeyPair();
-        if ( defaultKp != null ) {
+        if (defaultKp != null) {
             result.put(DEFAULT, defaultKp.getPublic());
         }
 

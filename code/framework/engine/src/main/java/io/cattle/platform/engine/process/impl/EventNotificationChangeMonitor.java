@@ -15,26 +15,22 @@ import java.util.Map;
 public class EventNotificationChangeMonitor implements StateChangeMonitor {
 
     @Override
-    public void onChange(boolean schedule, String previousState, String newState, ProcessRecord record,
-            ProcessState state, ProcessServiceContext context) {
-        Map<String,Object> data = CollectionUtils.asMap("previousState", previousState, "state", newState);
+    public void onChange(boolean schedule, String previousState, String newState, ProcessRecord record, ProcessState state, ProcessServiceContext context) {
+        Map<String, Object> data = CollectionUtils.asMap("previousState", previousState, "state", newState);
         addData(data, schedule, previousState, newState, record, state, context);
 
-        Event event = EventVO
-                .newEvent(FrameworkEvents.STATE_CHANGE)
-                .withData(data)
-                .withResourceType(record.getResourceType())
-                .withResourceId(record.getResourceId());
+        Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE).withData(data).withResourceType(record.getResourceType()).withResourceId(
+                record.getResourceId());
 
-        if ( schedule ) {
+        if (schedule) {
             DeferredUtils.deferPublish(context.getEventService(), event);
         } else {
             context.getEventService().publish(event);
         }
     }
 
-    public void addData(Map<String,Object> data, boolean schedule, String previousState, String newState, ProcessRecord record,
-            ProcessState state, ProcessServiceContext context) {
+    public void addData(Map<String, Object> data, boolean schedule, String previousState, String newState, ProcessRecord record, ProcessState state,
+            ProcessServiceContext context) {
     }
 
 }

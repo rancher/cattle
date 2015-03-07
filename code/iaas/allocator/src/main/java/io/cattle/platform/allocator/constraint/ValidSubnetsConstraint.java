@@ -1,10 +1,10 @@
 package io.cattle.platform.allocator.constraint;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ValidSubnetsConstraint implements Constraint {
 
@@ -22,12 +22,12 @@ public class ValidSubnetsConstraint implements Constraint {
 
     @Override
     public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
-        if ( subnets.size() == 0 ) {
+        if (subnets.size() == 0) {
             return true;
         }
 
         Long subnetId = candidate.getSubnetIds().get(nicId);
-        if ( subnetId == null ) {
+        if (subnetId == null) {
             return false;
         }
 

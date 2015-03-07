@@ -21,14 +21,14 @@ public class MacAddressGeneratorFactory extends AbstractTypeAndQualifierPooledIt
     @Override
     protected PooledResourceItemGenerator createGenerator(Object pool, String qualifier) {
         String prefix = DataAccessor.field(pool, NetworkConstants.FIELD_MAC_PREFIX, String.class);
-        if ( prefix == null ) {
+        if (prefix == null) {
             prefix = MAC_UNASSIGNED_PREFIX.get();
         }
 
         StringBuilder start = new StringBuilder(prefix);
         StringBuilder end = new StringBuilder(prefix);
 
-        for ( ; start.length() < 16 ; ) {
+        for (; start.length() < 16;) {
             start.append(":00");
             end.append(":ff");
         }

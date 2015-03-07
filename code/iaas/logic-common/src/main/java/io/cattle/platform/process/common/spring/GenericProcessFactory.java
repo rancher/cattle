@@ -25,7 +25,7 @@ public class GenericProcessFactory {
         definition.setName(name);
 
         ResourceStatesDefinition statesDef = new ResourceStatesDefinition();
-        if ( stateField != null ) {
+        if (stateField != null) {
             statesDef.setStateField(stateField);
         }
         statesDef.setStartStates(getSet(start));
@@ -38,24 +38,24 @@ public class GenericProcessFactory {
     }
 
     protected Set<String> getSet(String value) {
-        if ( StringUtils.isBlank(value) ) {
+        if (StringUtils.isBlank(value)) {
             return Collections.emptySet();
         }
 
         return new LinkedHashSet<String>(Arrays.asList(value.trim().split("\\s*,\\s*")));
     }
 
-    protected Map<String,String> getMap(String values) {
-        if ( StringUtils.isBlank(values) ) {
+    protected Map<String, String> getMap(String values) {
+        if (StringUtils.isBlank(values)) {
             return Collections.emptyMap();
         }
 
-        Map<String,String> result = new LinkedHashMap<String, String>();
-        if ( values.indexOf("=") == -1 && values.indexOf(",") == -1 ) {
+        Map<String, String> result = new LinkedHashMap<String, String>();
+        if (values.indexOf("=") == -1 && values.indexOf(",") == -1) {
             result.put(null, values.trim());
         } else {
-            for ( String value : values.trim().split("\\s*,\\s*") ) {
-                if ( value.indexOf('=') == -1 ) {
+            for (String value : values.trim().split("\\s*,\\s*")) {
+                if (value.indexOf('=') == -1) {
                     throw new IllegalArgumentException("Setting must be a single state or a list of states in the form from1=to1,from2=to2");
                 } else {
                     String[] parts = value.split("=");

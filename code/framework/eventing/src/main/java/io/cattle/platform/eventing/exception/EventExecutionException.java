@@ -14,8 +14,7 @@ public class EventExecutionException extends ExecutionException {
     }
 
     public EventExecutionException(Event event) {
-        super(event.getTransitioningInternalMessage() == null ?
-                event.getTransitioningMessage() : event.getTransitioningInternalMessage());
+        super(event.getTransitioningInternalMessage() == null ? event.getTransitioningMessage() : event.getTransitioningInternalMessage());
         this.event = event;
     }
 

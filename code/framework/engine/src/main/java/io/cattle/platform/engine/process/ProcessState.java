@@ -19,7 +19,7 @@ public interface ProcessState {
 
     void setPhase(ProcessPhase phase);
 
-    Map<String,Object> getData();
+    Map<String, Object> getData();
 
     boolean shouldCancel(ProcessRecord record);
 
@@ -35,8 +35,8 @@ public interface ProcessState {
 
     String setDone();
 
-    Map<String,Object> convertData(Object data);
+    Map<String, Object> convertData(Object data);
 
-    void applyData(Map<String,Object> data);
+    void applyData(Map<String, Object> data);
 
 }

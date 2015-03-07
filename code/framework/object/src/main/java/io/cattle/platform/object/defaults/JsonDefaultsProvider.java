@@ -32,24 +32,23 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider, Initializat
         return defaults;
     }
 
-
     @Override
     public void start() {
-        for ( Schema schema : schemaFactory.listSchemas() ) {
+        for (Schema schema : schemaFactory.listSchemas()) {
             Class<?> clz = schemaFactory.getSchemaClass(schema.getId());
-            if ( clz == null )
+            if (clz == null)
                 continue;
 
             InputStream is = null;
             try {
                 is = jsonFile(defaultOverridePath, schema);
-                if ( is == null ) {
+                if (is == null) {
                     is = jsonFile(defaultPath, schema);
                 }
 
-                if ( is != null ) {
+                if (is != null) {
                     @SuppressWarnings("unchecked")
-                    Map<String,Object> defaults = jsonMapper.readValue(is, Map.class);
+                    Map<String, Object> defaults = jsonMapper.readValue(is, Map.class);
                     this.defaults.put(clz, defaults);
                 }
             } catch (IOException e) {
@@ -67,7 +66,7 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider, Initializat
     protected InputStream jsonFile(String prefix, Schema schema) {
         String path = String.format("%s/%s.json", prefix, schema.getId());
         InputStream is = schema.getClass().getClassLoader().getResourceAsStream(path);
-        if ( is != null ) {
+        if (is != null) {
             log.info("Loading defaults for type [{}] from [{}]", schema.getId(), path);
         }
         return is;

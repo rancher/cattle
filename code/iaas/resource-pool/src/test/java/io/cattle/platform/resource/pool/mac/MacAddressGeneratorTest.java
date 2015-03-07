@@ -14,7 +14,7 @@ public class MacAddressGeneratorTest {
         Iterator<String> iter = new MacAddressGenerator(start, end);
         Set<String> ips = new LinkedHashSet<String>();
 
-        while ( iter.hasNext() ) {
+        while (iter.hasNext()) {
             ips.add(iter.next());
         }
 

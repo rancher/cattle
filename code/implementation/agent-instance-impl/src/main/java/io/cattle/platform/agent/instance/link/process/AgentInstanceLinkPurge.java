@@ -30,21 +30,20 @@ public class AgentInstanceLinkPurge extends AbstractObjectProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        InstanceLink link = (InstanceLink)state.getResource();
+        InstanceLink link = (InstanceLink) state.getResource();
         Instance instance = loadResource(Instance.class, link.getInstanceId());
 
-        if ( instance == null ) {
+        if (instance == null) {
             return null;
         }
 
         NetworkServiceInfo info = agentInstanceManager.getNetworkService(instance, NetworkServiceConstants.KIND_LINK, false);
 
-        if ( info == null ) {
+        if (info == null) {
             return null;
         }
 
-        resourcePoolManager.releaseResource(info.getNetworkService(), link,
-                new PooledResourceOptions().withQualifier(ResourcePoolConstants.LINK_PORT));
+        resourcePoolManager.releaseResource(info.getNetworkService(), link, new PooledResourceOptions().withQualifier(ResourcePoolConstants.LINK_PORT));
 
         return new HandlerResult(InstanceLinkConstants.FIELD_PORTS, new ArrayList<Object>()).withShouldContinue(true);
     }

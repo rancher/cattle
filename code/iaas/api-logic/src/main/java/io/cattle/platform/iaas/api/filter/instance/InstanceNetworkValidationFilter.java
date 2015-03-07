@@ -1,7 +1,5 @@
 package io.cattle.platform.iaas.api.filter.instance;
 
-import java.util.List;
-
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
@@ -10,6 +8,8 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+
+import java.util.List;
 
 public class InstanceNetworkValidationFilter extends AbstractDefaultResourceManagerFilter {
 
@@ -28,7 +28,7 @@ public class InstanceNetworkValidationFilter extends AbstractDefaultResourceMana
         List<?> networkIds = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_NETWORK_IDS, List.class);
         List<?> subnetIds = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_SUBNET_IDS, List.class);
 
-        if ( networkIds != null && subnetIds != null && networkIds.size() > 0 && subnetIds.size() > 0 ) {
+        if (networkIds != null && subnetIds != null && networkIds.size() > 0 && subnetIds.size() > 0) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, "NetworkIdsSubnetIdsMutuallyExclusive");
         }
 

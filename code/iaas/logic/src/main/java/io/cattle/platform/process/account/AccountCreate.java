@@ -27,38 +27,28 @@ import com.netflix.config.DynamicStringProperty;
 @Named
 public class AccountCreate extends AbstractDefaultProcessHandler {
 
-    public static final DynamicBooleanProperty CREATE_CREDENTIAL = ArchaiusUtil
-            .getBoolean("process.account.create.create.credential");
+    public static final DynamicBooleanProperty CREATE_CREDENTIAL = ArchaiusUtil.getBoolean("process.account.create.create.credential");
 
-    public static final DynamicStringProperty CREDENTIAL_TYPE = ArchaiusUtil
-            .getString("process.account.create.create.credential.default.kind");
+    public static final DynamicStringProperty CREDENTIAL_TYPE = ArchaiusUtil.getString("process.account.create.create.credential.default.kind");
 
-    public static final DynamicStringListProperty ACCOUNT_KIND_CREDENTIALS = ArchaiusUtil
-            .getList("process.account.create.create.credential.account.kinds");
+    public static final DynamicStringListProperty ACCOUNT_KIND_CREDENTIALS = ArchaiusUtil.getList("process.account.create.create.credential.account.kinds");
 
     ObjectProcessManager processManager;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Account account = (Account) state.getResource();
-        Map<Object,Object> result = new HashMap<Object, Object>();
-        boolean createApiKey = DataAccessor.fromMap(state.getData())
-                                        .withScope(AccountConstants.class)
-                                        .withKey(AccountConstants.OPTION_CREATE_APIKEY)
-                                        .withDefault(false)
-                                        .as(Boolean.class);
+        Map<Object, Object> result = new HashMap<Object, Object>();
+        boolean createApiKey = DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY)
+                .withDefault(false).as(Boolean.class);
 
-        String apiKeyKind = DataAccessor.fromMap(state.getData())
-                                        .withScope(AccountConstants.class)
-                                        .withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND)
-                                        .withDefault(CREDENTIAL_TYPE.get())
-                                        .as(String.class);
+        String apiKeyKind = DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND)
+                .withDefault(CREDENTIAL_TYPE.get()).as(String.class);
 
-        if ( shouldCreateCredentials(account) ) {
-            if ( createApiKey || CREATE_CREDENTIAL.get() ) {
-                List<Credential> creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class,
-                        CREDENTIAL.ACCOUNT_ID, account.getId(),
-                        CREDENTIAL.KIND, apiKeyKind);
+        if (shouldCreateCredentials(account)) {
+            if (createApiKey || CREATE_CREDENTIAL.get()) {
+                List<Credential> creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class, CREDENTIAL.ACCOUNT_ID,
+                        account.getId(), CREDENTIAL.KIND, apiKeyKind);
 
                 for (Credential cred : creds) {
                     result.put("_createdCredential" + cred.getId(), true);

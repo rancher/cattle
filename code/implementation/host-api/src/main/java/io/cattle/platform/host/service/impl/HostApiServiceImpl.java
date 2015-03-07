@@ -35,23 +35,23 @@ public class HostApiServiceImpl implements HostApiService {
     HostApiRSAKeyProvider keyProvider;
 
     @Override
-    public HostApiAccess getAccess(Long hostId, int port, Map<String,Object> data) {
+    public HostApiAccess getAccess(Long hostId, int port, Map<String, Object> data) {
         Host host = objectManager.loadResource(Host.class, hostId);
-        if ( host == null ) {
+        if (host == null) {
             return null;
         }
 
         IpAddress ip = getIpAddress(host);
-        if ( ip == null || ip.getAddress() == null ) {
+        if (ip == null || ip.getAddress() == null) {
             return null;
         }
 
         String token = getToken(ip, port, host, data);
-        if ( token == null ) {
+        if (token == null) {
             return null;
         }
 
-        Map<String,String> values = new HashMap<String, String>();
+        Map<String, String> values = new HashMap<String, String>();
         values.put(HEADER_AUTH.get(), String.format(HEADER_AUTH_VALUE.get(), token));
 
         return new HostApiAccess(getHostAddress(ip, port, host), token, values);
@@ -67,18 +67,17 @@ public class HostApiServiceImpl implements HostApiService {
         return keyProvider.getPublicKeys();
     }
 
-
-    protected String getToken(IpAddress ip, int port, Host host, Map<String,Object> inputData) {
-        Map<String,Object> data = new HashMap<String,Object>(inputData);
+    protected String getToken(IpAddress ip, int port, Host host, Map<String, Object> inputData) {
+        Map<String, Object> data = new HashMap<String, Object>(inputData);
         String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
-        if(uuid != null){
-            data.put(HOST_UUID,uuid);
+        if (uuid != null) {
+            data.put(HOST_UUID, uuid);
         } else {
             data.put(HOST_UUID, host.getUuid());
         }
 
         data.put(IP_ADDRESS, ip.getAddress());
-        if ( port > 0 ) {
+        if (port > 0) {
             data.put(PORT, port);
         }
 
@@ -88,17 +87,17 @@ public class HostApiServiceImpl implements HostApiService {
     protected IpAddress getIpAddress(Host host) {
         IpAddress choice = null;
 
-        for ( IpAddress ip : objectManager.mappedChildren(host, IpAddress.class) ) {
-            if ( ip.getAddress() == null || ! CommonStatesConstants.ACTIVE.equals(ip.getState()) ) {
+        for (IpAddress ip : objectManager.mappedChildren(host, IpAddress.class)) {
+            if (ip.getAddress() == null || !CommonStatesConstants.ACTIVE.equals(ip.getState())) {
                 continue;
             }
 
-            if ( IpAddressConstants.ROLE_PRIMARY.equals(ip.getRole()) ) {
+            if (IpAddressConstants.ROLE_PRIMARY.equals(ip.getRole())) {
                 choice = ip;
                 break;
-            } else if ( choice == null || choice.getCreated() == null ) {
+            } else if (choice == null || choice.getCreated() == null) {
                 choice = ip;
-            } else if ( ip.getCreated() != null && ip.getCreated().before(choice.getCreated()) ) {
+            } else if (ip.getCreated() != null && ip.getCreated().before(choice.getCreated())) {
                 choice = ip;
             }
         }

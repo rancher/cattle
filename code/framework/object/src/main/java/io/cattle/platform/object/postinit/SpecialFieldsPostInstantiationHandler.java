@@ -29,18 +29,18 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
         set(obj, STATE, "requested");
 
         Schema schema = schemaFactory.getSchema(clz);
-        if ( schema != null ) {
+        if (schema != null) {
             set(obj, KIND, schema.getId());
         }
 
-        //TODO Bad!
+        // TODO Bad!
         set(obj, ZONE_ID, 1L);
         return obj;
     }
 
     protected void set(Object obj, String property, Object value) {
         try {
-            if ( BeanUtils.getProperty(obj, property) == null ) {
+            if (BeanUtils.getProperty(obj, property) == null) {
                 BeanUtils.setProperty(obj, property, value);
             }
         } catch (IllegalAccessException e) {

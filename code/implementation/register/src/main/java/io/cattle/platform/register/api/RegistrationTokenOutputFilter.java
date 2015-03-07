@@ -17,23 +17,24 @@ import javax.inject.Inject;
 
 public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
 
-    @Inject ScopedConfig scopedConfig;
+    @Inject
+    ScopedConfig scopedConfig;
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if ( ! (original instanceof Credential) ) {
+        if (!(original instanceof Credential)) {
             return converted;
         }
 
-        Credential cred = (Credential)original;
+        Credential cred = (Credential) original;
 
         String accessKey = cred.getPublicValue();
         String secretKey = cred.getSecretValue();
 
-        if ( accessKey != null && secretKey != null ) {
+        if (accessKey != null && secretKey != null) {
             String token = RegistrationToken.createToken(accessKey, secretKey);
             URL url = null;
-            if ( ServerContext.isCustomApiHost() ) {
+            if (ServerContext.isCustomApiHost()) {
                 try {
                     url = new URL(scopedConfig.getApiUrl(null) + "/scripts/" + token);
                 } catch (MalformedURLException e) {

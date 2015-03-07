@@ -26,36 +26,33 @@ public class AgentLocatorImpl implements AgentLocator {
     ObjectManager objectManager;
     EventService eventService;
     JsonMapper jsonMapper;
-    Cache<Long, Long> groupIdCache = CacheBuilder
-            .newBuilder()
-            .expireAfterWrite(CACHE_TIME.get(), TimeUnit.SECONDS)
-            .build();
+    Cache<Long, Long> groupIdCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_TIME.get(), TimeUnit.SECONDS).build();
 
     @Override
     public RemoteAgent lookupAgent(Object resource) {
-        if ( resource == null ) {
+        if (resource == null) {
             return null;
         }
 
         Long agentId = null;
         Long groupId = null;
 
-        if ( resource instanceof Long ) {
-            agentId = (Long)resource;
-        } else if ( resource instanceof Agent ) {
-            agentId = ((Agent)resource).getId();
-            groupId = ((Agent)resource).getAgentGroupId();
+        if (resource instanceof Long) {
+            agentId = (Long) resource;
+        } else if (resource instanceof Agent) {
+            agentId = ((Agent) resource).getId();
+            groupId = ((Agent) resource).getAgentGroupId();
         }
 
-        if ( agentId == null ) {
+        if (agentId == null) {
             agentId = getAgentId(resource);
         }
 
-        if ( agentId == null ) {
+        if (agentId == null) {
             return null;
         }
 
-        if ( DIRECT.get() && groupId == null ) {
+        if (DIRECT.get() && groupId == null) {
             Agent agent = objectManager.loadResource(Agent.class, agentId);
             groupId = agent.getAgentGroupId();
         }
@@ -65,8 +62,8 @@ public class AgentLocatorImpl implements AgentLocator {
 
     protected Long getAgentId(Object resource) {
         Object obj = ObjectUtils.getPropertyIgnoreErrors(resource, "agentId");
-        if ( obj instanceof Long ) {
-            return (Long)obj;
+        if (obj instanceof Long) {
+            return (Long) obj;
         }
 
         return null;

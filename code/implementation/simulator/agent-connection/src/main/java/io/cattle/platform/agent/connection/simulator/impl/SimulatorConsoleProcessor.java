@@ -11,13 +11,11 @@ public class SimulatorConsoleProcessor implements AgentSimulatorEventProcessor {
 
     @Override
     public Event handle(AgentConnectionSimulator simulator, Event event) throws Exception {
-        if ( ! IaasEvents.CONSOLE_ACCESS.equals(event.getName()) ) {
+        if (!IaasEvents.CONSOLE_ACCESS.equals(event.getName())) {
             return null;
         }
 
-        return EventVO
-                .reply(event)
-                .withData(CollectionUtils.asMap("kind", "fake", "url", "http://localhost/console"));
+        return EventVO.reply(event).withData(CollectionUtils.asMap("kind", "fake", "url", "http://localhost/console"));
     }
 
 }

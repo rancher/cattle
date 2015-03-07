@@ -67,17 +67,12 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                 return;
             }
 
-            LoadBalancerConfig config = objectManager.loadResource(LoadBalancerConfig.class,
-                    lb.getLoadBalancerConfigId());
-            healthCheck = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_HEALTH_CHECK,
-                    jsonMapper,
-                    LoadBalancerHealthCheck.class);
+            LoadBalancerConfig config = objectManager.loadResource(LoadBalancerConfig.class, lb.getLoadBalancerConfigId());
+            healthCheck = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_HEALTH_CHECK, jsonMapper, LoadBalancerHealthCheck.class);
 
-            appPolicy = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_APP_COOKIE_POLICY, jsonMapper,
-                    LoadBalancerAppCookieStickinessPolicy.class);
+            appPolicy = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_APP_COOKIE_POLICY, jsonMapper, LoadBalancerAppCookieStickinessPolicy.class);
 
-            lbPolicy = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_COOKIE_POLICY, jsonMapper,
-                    LoadBalancerCookieStickinessPolicy.class);
+            lbPolicy = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_COOKIE_POLICY, jsonMapper, LoadBalancerCookieStickinessPolicy.class);
         }
         context.getData().put("listeners", listeners);
         context.getData().put("publicIp", lbMgr.getLoadBalancerInstanceIp(instance).getAddress());
@@ -88,13 +83,11 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
     }
 
     private List<LoadBalancerTargetInfo> populateTargetsInfo(LoadBalancer lb) {
-        List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(
-                objectManager.loadResource(LoadBalancer.class, lb.getId()),
+        List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(objectManager.loadResource(LoadBalancer.class, lb.getId()),
                 LoadBalancerTarget.class);
         List<LoadBalancerTargetInfo> targetsInfo = new ArrayList<>();
         for (LoadBalancerTarget target : targets) {
-            if (!(target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVATING) || target.getState()
-                    .equalsIgnoreCase(CommonStatesConstants.ACTIVE))) {
+            if (!(target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVATING) || target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE))) {
                 continue;
             }
             String ipAddress = target.getIpAddress();

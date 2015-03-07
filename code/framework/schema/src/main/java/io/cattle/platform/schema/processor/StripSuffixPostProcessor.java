@@ -14,7 +14,7 @@ public class StripSuffixPostProcessor extends AbstractSchemaPostProcessor implem
 
     @Override
     public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactory factory) {
-        if ( ! schema.getId().endsWith(suffix) ) {
+        if (!schema.getId().endsWith(suffix)) {
             return schema;
         }
 

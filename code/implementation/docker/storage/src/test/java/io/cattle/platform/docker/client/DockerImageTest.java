@@ -9,7 +9,7 @@ public class DockerImageTest {
     @Test
     public void testNoNamespace() {
         DockerImage image = DockerImage.parse("ubuntu");
-        assertEquals("index.docker.io",image.getServer());
+        assertEquals("index.docker.io", image.getServer());
         assertEquals("ubuntu", image.getRepository());
         assertEquals("latest", image.getTag());
         assertNull(image.getNamespace());
@@ -18,7 +18,7 @@ public class DockerImageTest {
     @Test
     public void testNoNamespaceWithTag() {
         DockerImage image = DockerImage.parse("ubuntu:14.04");
-        assertEquals("index.docker.io",image.getServer());
+        assertEquals("index.docker.io", image.getServer());
         assertEquals("ubuntu", image.getRepository());
         assertEquals("14.04", image.getTag());
         assertNull(image.getNamespace());
@@ -27,7 +27,7 @@ public class DockerImageTest {
     @Test
     public void testNamespace() {
         DockerImage image = DockerImage.parse("ibuildthecloud/ubuntu-core");
-        assertEquals("index.docker.io",image.getServer());
+        assertEquals("index.docker.io", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertEquals("ibuildthecloud", image.getNamespace());
         assertEquals("latest", image.getTag());
@@ -36,7 +36,7 @@ public class DockerImageTest {
     @Test
     public void testTag() {
         DockerImage image = DockerImage.parse("ibuildthecloud/ubuntu-core:123");
-        assertEquals("index.docker.io",image.getServer());
+        assertEquals("index.docker.io", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertEquals("ibuildthecloud", image.getNamespace());
         assertEquals("123", image.getTag());
@@ -45,7 +45,7 @@ public class DockerImageTest {
     @Test
     public void testUrl() {
         DockerImage image = DockerImage.parse("quay.io/ibuildthecloud/ubuntu-core:123");
-        assertEquals("quay.io",image.getServer());
+        assertEquals("quay.io", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertEquals("ibuildthecloud", image.getNamespace());
         assertEquals("123", image.getTag());
@@ -54,7 +54,7 @@ public class DockerImageTest {
     @Test
     public void testUrlLatest() {
         DockerImage image = DockerImage.parse("quay.io/ibuildthecloud/ubuntu-core");
-        assertEquals("quay.io",image.getServer());
+        assertEquals("quay.io", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertEquals("ibuildthecloud", image.getNamespace());
         assertEquals("latest", image.getTag());
@@ -63,7 +63,7 @@ public class DockerImageTest {
     @Test
     public void testUrlTlnNoTag() {
         DockerImage image = DockerImage.parse("quay.io/ubuntu-core");
-        assertEquals("quay.io",image.getServer());
+        assertEquals("quay.io", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertNull(image.getNamespace());
         assertEquals("latest", image.getTag());
@@ -72,7 +72,7 @@ public class DockerImageTest {
     @Test
     public void testUrlTln() {
         DockerImage image = DockerImage.parse("quay.io/ubuntu-core:123");
-        assertEquals("quay.io",image.getServer());
+        assertEquals("quay.io", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertNull(image.getNamespace());
         assertEquals("123", image.getTag());
@@ -81,7 +81,7 @@ public class DockerImageTest {
     @Test
     public void testLocalHost() {
         DockerImage image = DockerImage.parse("localhost:5000/ibuildthecloud/ubuntu-core:123");
-        assertEquals("localhost:5000",image.getServer());
+        assertEquals("localhost:5000", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertEquals("ibuildthecloud", image.getNamespace());
         assertEquals("123", image.getTag());
@@ -90,7 +90,7 @@ public class DockerImageTest {
     @Test
     public void testLocalHostLatest() {
         DockerImage image = DockerImage.parse("localhost:5000/ibuildthecloud/ubuntu-core");
-        assertEquals("localhost:5000",image.getServer());
+        assertEquals("localhost:5000", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertEquals("ibuildthecloud", image.getNamespace());
         assertEquals("latest", image.getTag());
@@ -99,7 +99,7 @@ public class DockerImageTest {
     @Test
     public void testLocalHostTln() {
         DockerImage image = DockerImage.parse("localhost:5000/ubuntu-core:123");
-        assertEquals("localhost:5000",image.getServer());
+        assertEquals("localhost:5000", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertNull(image.getNamespace());
         assertEquals("123", image.getTag());
@@ -108,16 +108,16 @@ public class DockerImageTest {
     @Test
     public void testLocalHostTlnNoTag() {
         DockerImage image = DockerImage.parse("localhost:5000/ubuntu-core");
-        assertEquals("localhost:5000",image.getServer());
+        assertEquals("localhost:5000", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertNull(image.getNamespace());
         assertEquals("latest", image.getTag());
     }
-    
+
     @Test
     public void testLocalHostTlnNoTagNoPort() {
         DockerImage image = DockerImage.parse("localhost/ubuntu-core");
-        assertEquals("localhost",image.getServer());
+        assertEquals("localhost", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertNull(image.getNamespace());
         assertEquals("latest", image.getTag());
@@ -126,7 +126,7 @@ public class DockerImageTest {
     @Test
     public void testMyLocalHostTlnNoTagNoPort() {
         DockerImage image = DockerImage.parse("mylocalhost/ubuntu-core");
-        assertEquals("index.docker.io",image.getServer());
+        assertEquals("index.docker.io", image.getServer());
         assertEquals("ubuntu-core", image.getRepository());
         assertEquals("mylocalhost", image.getNamespace());
         assertEquals("latest", image.getTag());

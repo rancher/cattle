@@ -1,8 +1,8 @@
 package io.cattle.platform.resource.pool.mac;
 
-import org.apache.commons.lang3.StringUtils;
-
 import io.cattle.platform.resource.pool.impl.AbstractStringRangeGenerator;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class MacAddressGenerator extends AbstractStringRangeGenerator {
 
@@ -22,8 +22,8 @@ public class MacAddressGenerator extends AbstractStringRangeGenerator {
     protected String toString(long value) {
         String hex = StringUtils.leftPad(Long.toHexString(value), macLength, '0');
         StringBuilder buffer = new StringBuilder();
-        for ( int i = 0 ; i < hex.length() ; i++ ) {
-            if ( i > 0 && i % 2 == 0 ) {
+        for (int i = 0; i < hex.length(); i++) {
+            if (i > 0 && i % 2 == 0) {
                 buffer.append(':');
             }
             buffer.append(hex.charAt(i));

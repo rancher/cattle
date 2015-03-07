@@ -22,10 +22,7 @@ import org.apache.commons.io.IOUtils;
 public class Compress {
 
     private static String UUID = System.getProperty("uuid", java.util.UUID.randomUUID().toString());
-    private static String[] EXCLUDES = new String[] {
-        "mysql-connector-java",
-        "mariadb-java-client"
-    };
+    private static String[] EXCLUDES = new String[] { "mysql-connector-java", "mariadb-java-client" };
 
     private static class NoCloseInputStream extends FilterInputStream {
         protected NoCloseInputStream(InputStream in) {
@@ -38,12 +35,12 @@ public class Compress {
     }
 
     protected static boolean containsSha1(Manifest m) {
-        if ( m == null ) {
+        if (m == null) {
             return false;
         }
 
-        for ( Attributes attr : m.getEntries().values() ) {
-            for ( Object i : attr.values() ) {
+        for (Attributes attr : m.getEntries().values()) {
+            for (Object i : attr.values()) {
                 i.toString().startsWith("SHA1");
                 return true;
             }
@@ -54,7 +51,7 @@ public class Compress {
 
     public static final void compressJar(InputStream is, JarEntry entry, String output, long mtime) throws IOException {
         JarInputStream jis = new JarInputStream(new NoCloseInputStream(is), true);
-        if ( containsSha1(jis.getManifest()) ) {
+        if (containsSha1(jis.getManifest())) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             System.out.println("Stripping signature on " + entry.getName());
@@ -62,7 +59,7 @@ public class Compress {
             jos.setLevel(0);
             try {
                 JarEntry jarEntry = null;
-                while ( ( jarEntry = jis.getNextJarEntry() ) != null ) {
+                while ((jarEntry = jis.getNextJarEntry()) != null) {
                     jos.putNextEntry(new JarEntry(jarEntry.getName()));
                     IOUtils.copy(jis, jos);
                     jos.closeEntry();
@@ -77,7 +74,7 @@ public class Compress {
         File tempOutputFile = new File(output, entry.getName() + ".pack.tmp");
         File outputFile = new File(output, entry.getName() + ".pack");
 
-        if ( mtime != -1 && outputFile.exists() && outputFile.lastModified() > mtime ) {
+        if (mtime != -1 && outputFile.exists() && outputFile.lastModified() > mtime) {
             System.out.println("Already up to date " + outputFile);
             return;
         }
@@ -95,7 +92,7 @@ public class Compress {
             IOUtils.closeQuietly(fos);
         }
 
-        if ( ! tempOutputFile.renameTo(outputFile) ) {
+        if (!tempOutputFile.renameTo(outputFile)) {
             throw new IOException("Failed to rename " + tempOutputFile + " to " + outputFile);
         }
     }
@@ -111,7 +108,7 @@ public class Compress {
         }
 
         File outputDir = new File(output);
-        if ( ! outputDir.exists() && ! outputDir.mkdirs() ) {
+        if (!outputDir.exists() && !outputDir.mkdirs()) {
             throw new IOException("Failed to create directory [" + outputDir.getAbsolutePath() + "]");
         }
 
@@ -124,9 +121,9 @@ public class Compress {
 
         try {
             JarEntry entry = null;
-            while ( ( entry = is.getNextJarEntry() ) != null ) {
+            while ((entry = is.getNextJarEntry()) != null) {
                 String name = entry.getName();
-                if ( ! exclude(name) && name.endsWith(".jar") ) {
+                if (!exclude(name) && name.endsWith(".jar")) {
                     compressJar(is, entry, output, entry.getTime());
                 } else {
                     System.out.println("Adding [" + entry.getName() + "] to [" + resourcesFile.getPath() + "]");
@@ -141,8 +138,8 @@ public class Compress {
     }
 
     protected static boolean exclude(String name) {
-        for ( String exclude : EXCLUDES ) {
-            if ( name.contains(exclude) ) {
+        for (String exclude : EXCLUDES) {
+            if (name.contains(exclude)) {
                 return true;
             }
         }

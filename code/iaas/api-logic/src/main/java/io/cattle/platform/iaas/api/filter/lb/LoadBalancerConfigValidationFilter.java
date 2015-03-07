@@ -25,12 +25,12 @@ import javax.inject.Inject;
 
 public class LoadBalancerConfigValidationFilter extends AbstractDefaultResourceManagerFilter {
 
-    private static final Map<String, Boolean> actions;
-    static
-    {
-        actions = new HashMap<>();
-        actions.put(LoadBalancerConstants.ACTION_LB_CONFIG_ADD_LISTENER, true);
-        actions.put(LoadBalancerConstants.ACTION_LB_CONFIG_REMOVE_LISTENER, false);
+    private static final Map<String, Boolean> ACTIONS;
+
+    static {
+        ACTIONS = new HashMap<>();
+        ACTIONS.put(LoadBalancerConstants.ACTION_LB_CONFIG_ADD_LISTENER, true);
+        ACTIONS.put(LoadBalancerConstants.ACTION_LB_CONFIG_REMOVE_LISTENER, false);
     }
 
     @Inject
@@ -67,7 +67,7 @@ public class LoadBalancerConfigValidationFilter extends AbstractDefaultResourceM
 
     @Override
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
-        if (actions.containsKey(request.getAction())) {
+        if (ACTIONS.containsKey(request.getAction())) {
             validateMapAction(request);
             validateForPortConflicts(request);
         }
@@ -76,20 +76,18 @@ public class LoadBalancerConfigValidationFilter extends AbstractDefaultResourceM
     }
 
     private void validateForPortConflicts(ApiRequest request) {
-        if (actions.get(request.getAction())) {
+        if (ACTIONS.get(request.getAction())) {
             Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
             Long listenerId = (Long) data.get(LoadBalancerConstants.FIELD_LB_LISTENER_ID);
             LoadBalancerListener listener = objectManager.loadResource(LoadBalancerListener.class, listenerId);
 
             Integer sourcePort = listener.getSourcePort();
             List<? extends LoadBalancerListener> listeners = objectManager.mappedChildren(
-                    objectManager.loadResource(LoadBalancerConfig.class, request.getId()),
-                    LoadBalancerListener.class);
+                    objectManager.loadResource(LoadBalancerConfig.class, request.getId()), LoadBalancerListener.class);
 
             for (LoadBalancerListener existingListener : listeners) {
                 if (existingListener.getSourcePort().equals(sourcePort)) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
-                            LoadBalancerConstants.FIELD_LB_SOURCE_PORT);
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE, LoadBalancerConstants.FIELD_LB_SOURCE_PORT);
                 }
             }
         }
@@ -99,14 +97,7 @@ public class LoadBalancerConfigValidationFilter extends AbstractDefaultResourceM
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         Long listenerId = (Long) data.get(LoadBalancerConstants.FIELD_LB_LISTENER_ID);
 
-        lbFilterUtils.validateGenericMapAction(
-                mapDao,
-                LoadBalancerConfigListenerMap.class,
-                LoadBalancerListener.class,
-                listenerId,
-                LoadBalancerConfig.class,
-                Long.valueOf(request.getId()),
-                new SimpleEntry<String, Boolean>(LoadBalancerConstants.FIELD_LB_LISTENER_ID, actions.get(request
-                        .getAction())));
+        lbFilterUtils.validateGenericMapAction(mapDao, LoadBalancerConfigListenerMap.class, LoadBalancerListener.class, listenerId, LoadBalancerConfig.class,
+                Long.valueOf(request.getId()), new SimpleEntry<String, Boolean>(LoadBalancerConstants.FIELD_LB_LISTENER_ID, ACTIONS.get(request.getAction())));
     }
 }

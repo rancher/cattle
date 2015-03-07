@@ -33,8 +33,8 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
     private static final Pattern NOT_PATTERN = Pattern.compile("[a-zA-Z0-9]*(\\.[a-zA-Z0-9]*)?");
     private static final Logger log = LoggerFactory.getLogger(AuthOverlayPostProcessor.class);
 
-    Map<String,Perm> perms = new LinkedHashMap<String, Perm>();
-    List<Pair<Pattern, Perm>> wildcards = new ArrayList<Pair<Pattern,Perm>>();
+    Map<String, Perm> perms = new LinkedHashMap<String, Perm>();
+    List<Pair<Pattern, Perm>> wildcards = new ArrayList<Pair<Pattern, Perm>>();
 
     List<URL> resources;
     JsonMapper jsonMapper;
@@ -50,7 +50,7 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
         Perm perm = getPerm(schema.getId());
 
-        if ( perm != null ) {
+        if (perm != null) {
             schema.setCreate(perm.isCreate());
             schema.setUpdate(perm.isUpdate());
             schema.setDeletable(perm.isDelete());
@@ -64,19 +64,19 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
 
             perm = getPerm(factory, schema, entry.getKey());
 
-            if ( perm == null ) {
+            if (perm == null) {
                 continue;
             }
 
-            if ( ! perm.isRead() ) {
+            if (!perm.isRead()) {
                 fieldIter.remove();
             }
 
-            if ( ! ( field instanceof FieldImpl ) ) {
+            if (!(field instanceof FieldImpl)) {
                 continue;
             }
 
-            FieldImpl fieldImpl = (FieldImpl)field;
+            FieldImpl fieldImpl = (FieldImpl) field;
             fieldImpl.setCreate(perm.isCreate());
             fieldImpl.setUpdate(perm.isUpdate());
         }
@@ -84,7 +84,7 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
 
         while (actionIter.hasNext()) {
             Map.Entry<String, Action> entry = actionIter.next();
-            perm = getPerm(factory, schema, "resourceActions."+entry.getKey());
+            perm = getPerm(factory, schema, "resourceActions." + entry.getKey());
             if (perm == null) {
                 continue;
             }
@@ -99,22 +99,22 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
     protected Perm getPerm(SchemaFactory factory, Schema schema, String field) {
         Schema start = schema;
 
-        while ( schema != null ) {
+        while (schema != null) {
             String name = String.format("%s.%s", schema.getId(), field);
             Perm perm = getPerm(name, false);
 
-            if ( perm != null )
+            if (perm != null)
                 return perm;
 
             schema = factory.getSchema(schema.getParent());
         }
 
         schema = start;
-        while ( schema != null ) {
+        while (schema != null) {
             String name = String.format("%s.%s", schema.getId(), field);
             Perm perm = getPerm(name, true);
 
-            if ( perm != null )
+            if (perm != null)
                 return perm;
 
             schema = factory.getSchema(schema.getParent());
@@ -130,16 +130,16 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
     protected Perm getPerm(String name, boolean wildcard) {
         List<Perm> result = new ArrayList<Perm>();
 
-        if ( wildcard ) {
-            for ( Pair<Pattern, Perm> entry : wildcards ) {
-                if ( entry.getLeft().matcher(name).matches() ) {
+        if (wildcard) {
+            for (Pair<Pattern, Perm> entry : wildcards) {
+                if (entry.getLeft().matcher(name).matches()) {
                     result.add(entry.getValue());
                 }
             }
         }
 
         Perm perm = perms.get(name);
-        if ( perm != null ) {
+        if (perm != null) {
             result.add(perm);
         }
 
@@ -148,15 +148,15 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
 
     @PostConstruct
     public void init() throws IOException {
-        for ( URL url : resources ) {
+        for (URL url : resources) {
             log.info("Loading [{}] for schema auth", url);
 
             InputStream is = url.openStream();
             try {
-                Map<String,Object> values = jsonMapper.readValue(is);
+                Map<String, Object> values = jsonMapper.readValue(is);
                 Object value = values.get("authorize");
-                if ( value instanceof Map ) {
-                    load((Map<?,?>)value);
+                if (value instanceof Map) {
+                    load((Map<?, ?>) value);
                 }
             } finally {
                 IOUtils.closeQuietly(is);
@@ -165,12 +165,12 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
         }
     }
 
-    protected void load(Map<?,?> values) {
-        for ( Map.Entry<?, ?> entry : values.entrySet() ) {
+    protected void load(Map<?, ?> values) {
+        for (Map.Entry<?, ?> entry : values.entrySet()) {
             String key = entry.getKey().toString();
             Perm perm = new Perm(entry.getValue().toString());
 
-            if ( NOT_PATTERN.matcher(key).matches() ) {
+            if (NOT_PATTERN.matcher(key).matches()) {
                 perms.put(key, perm);
             } else {
                 wildcards.add(new ImmutablePair<Pattern, Perm>(Pattern.compile(key), perm));

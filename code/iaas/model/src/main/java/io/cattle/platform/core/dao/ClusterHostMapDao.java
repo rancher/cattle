@@ -1,9 +1,9 @@
 package io.cattle.platform.core.dao;
 
-import java.util.List;
-
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.tables.records.ClusterHostMapRecord;
+
+import java.util.List;
 
 public interface ClusterHostMapDao {
 

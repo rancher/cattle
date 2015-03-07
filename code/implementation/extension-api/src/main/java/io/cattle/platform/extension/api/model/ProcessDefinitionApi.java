@@ -11,8 +11,7 @@ public class ProcessDefinitionApi {
 
     boolean extensionBased;
     String name;
-    ExtensionPoint preProcessListeners, processHandlers,
-        postProcessListeners;
+    ExtensionPoint preProcessListeners, processHandlers, postProcessListeners;
     String resourceType;
     List<StateTransition> stateTransitions;
 

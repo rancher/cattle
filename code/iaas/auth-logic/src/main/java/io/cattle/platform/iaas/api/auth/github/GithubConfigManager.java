@@ -126,10 +126,10 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         for (String org : orgs) {
             try {
                 GithubAccountInfo orgInfo = client.getOrgIdByName(org, token);
-            if (orgInfo == null) {
-                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidOrganization", "Invalid organization: " + org, null);
-            }
-            appendedList.add(orgInfo.toString());
+                if (orgInfo == null) {
+                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidOrganization", "Invalid organization: " + org, null);
+                }
+                appendedList.add(orgInfo.toString());
             } catch (IOException e) {
                 throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GithubUnavailable", "could not retireve orgId", null);
             }

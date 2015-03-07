@@ -15,8 +15,7 @@ import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 public class HostClusterLinkFilter implements ResourceOutputFilter {
 
     @Override
-    public Resource filter(ApiRequest request, Object original,
-            Resource converted) {
+    public Resource filter(ApiRequest request, Object original, Resource converted) {
         if (converted.getType().equals("cluster")) {
             converted.getLinks().remove("clusters");
         } else if (converted.getType().equals("host")) {

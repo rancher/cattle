@@ -25,7 +25,7 @@ public class TaskManagerEventListenerImpl implements TaskManagerEventListener {
         final String name = event.getData().getName();
         final Runnable runnable = taskManager.getRunnable(name);
 
-        if ( runnable != null ) {
+        if (runnable != null) {
             lockManager.lock(getLock(event), new LockCallbackNoReturn() {
                 @Override
                 public void doWithLockNoResult() {
@@ -37,7 +37,7 @@ public class TaskManagerEventListenerImpl implements TaskManagerEventListener {
     }
 
     protected LockDefinition getLock(ExecuteTask event) {
-        if ( taskManager.shouldLock(event.getName()) ) {
+        if (taskManager.shouldLock(event.getName())) {
             return new EventLock(event);
         } else {
             return null;

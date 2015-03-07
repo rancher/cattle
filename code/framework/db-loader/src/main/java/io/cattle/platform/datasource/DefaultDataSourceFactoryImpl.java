@@ -13,25 +13,16 @@ public class DefaultDataSourceFactoryImpl implements DataSourceFactory {
         String server = PoolConfig.getProperty("db." + name + ".database");
         String alias = PoolConfig.getProperty("db." + name + ".alias");
 
-        if ( server == null && alias != null ) {
+        if (server == null && alias != null) {
             server = PoolConfig.getProperty("db." + alias + ".database");
         }
 
         BasicDataSource ds = newBasicDataSource(name);
-        if ( alias == null ) {
-            PoolConfig.setConfig(ds, name,
-                    String.format("db.%s.%s.", name, server),
-                    String.format("db.%s.", name),
-                    "db.",
-                    "global.pool.");
+        if (alias == null) {
+            PoolConfig.setConfig(ds, name, String.format("db.%s.%s.", name, server), String.format("db.%s.", name), "db.", "global.pool.");
         } else {
-            PoolConfig.setConfig(ds, name,
-                    String.format("db.%s.%s.", name, server),
-                    String.format("db.%s.", name),
-                    String.format("db.%s.%s.", alias, server),
-                    String.format("db.%s.", alias),
-                    "db.",
-                    "global.pool.");
+            PoolConfig.setConfig(ds, name, String.format("db.%s.%s.", name, server), String.format("db.%s.", name), String.format("db.%s.%s.", alias, server),
+                    String.format("db.%s.", alias), "db.", "global.pool.");
         }
 
         return ds;

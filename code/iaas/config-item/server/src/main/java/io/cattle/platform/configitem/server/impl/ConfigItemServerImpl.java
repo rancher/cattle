@@ -41,7 +41,7 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
     protected void handleApplied(Request req) {
         ItemVersion version = req.getAppliedVersion();
 
-        if ( ! versionManager.isAssigned(req.getClient(), req.getItemName()) ) {
+        if (!versionManager.isAssigned(req.getClient(), req.getItemName())) {
             log.error("Client [{}] is reporting applied on non-assigned item [{}]", req.getClient(), req.getItemName());
             req.setResponseCode(Request.NOT_FOUND);
             return;
@@ -57,14 +57,12 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
             log.info("Setting item [{}] to latest for [{}]", req.getItemName(), req.getClient());
             versionManager.setLatest(req.getClient(), req.getItemName(), item.getSourceRevision());
         } else {
-            if ( item.getSourceRevision().equals(version.getSourceRevision()) ) {
-                log.info("Setting item [{}] to version [{}] for [{}]", req.getItemName(), req.getAppliedVersion(),
-                        req.getClient());
+            if (item.getSourceRevision().equals(version.getSourceRevision())) {
+                log.info("Setting item [{}] to version [{}] for [{}]", req.getItemName(), req.getAppliedVersion(), req.getClient());
                 versionManager.setApplied(req.getClient(), req.getItemName(), req.getAppliedVersion());
             } else {
-                log.info("Ignoring item [{}] to version [{}] for [{}] because source revision [{}] does not match expect [{}]",
-                        req.getItemName(), req.getAppliedVersion(), req.getClient(), version.getSourceRevision(),
-                        item.getSourceRevision());
+                log.info("Ignoring item [{}] to version [{}] for [{}] because source revision [{}] does not match expect [{}]", req.getItemName(), req
+                        .getAppliedVersion(), req.getClient(), version.getSourceRevision(), item.getSourceRevision());
             }
         }
     }
@@ -78,10 +76,9 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
             return;
         }
 
-        if ( ! versionManager.isAssigned(req.getClient(), req.getItemName()) ) {
-            if ( item.isDynamicallyApplied() ) {
-                ConfigUpdateRequest updateRequest = new ConfigUpdateRequest(req.getClient().getResourceId())
-                .withDeferredTrigger(true);
+        if (!versionManager.isAssigned(req.getClient(), req.getItemName())) {
+            if (item.isDynamicallyApplied()) {
+                ConfigUpdateRequest updateRequest = new ConfigUpdateRequest(req.getClient().getResourceId()).withDeferredTrigger(true);
                 updateRequest.addItem(req.getItemName());
                 versionManager.updateConfig(updateRequest);
             } else {
@@ -113,11 +110,11 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
         lockManager.lock(new SyncSourceVersionLock(), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                for ( ConfigItem item : itemRegistry.getConfigItems() ) {
-                    if ( ! initial ) {
-                        if ( item instanceof RefreshableConfigItem ) {
+                for (ConfigItem item : itemRegistry.getConfigItems()) {
+                    if (!initial) {
+                        if (item instanceof RefreshableConfigItem) {
                             try {
-                                ((RefreshableConfigItem)item).refresh();
+                                ((RefreshableConfigItem) item).refresh();
                             } catch (IOException e) {
                                 log.error("Failed to refresh item [{}]", item.getName(), e);
                                 continue;
@@ -131,7 +128,6 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
             }
         });
     }
-
 
     public ConfigItemStatusManager getVersionManager() {
         return versionManager;

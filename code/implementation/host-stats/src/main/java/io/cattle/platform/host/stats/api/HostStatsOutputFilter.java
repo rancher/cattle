@@ -17,15 +17,14 @@ public class HostStatsOutputFilter implements ResourceOutputFilter {
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         boolean add = false;
 
-        if ( original instanceof Host && DockerHostConstants.KIND_DOCKER.equals(((Host) original).getKind()) ) {
+        if (original instanceof Host && DockerHostConstants.KIND_DOCKER.equals(((Host) original).getKind())) {
             add = true;
-        } else if ( original instanceof Instance && InstanceConstants.KIND_CONTAINER.equals(((Instance)original).getKind()) ) {
+        } else if (original instanceof Instance && InstanceConstants.KIND_CONTAINER.equals(((Instance) original).getKind())) {
             add = true;
         }
 
-        if ( add ) {
-            converted.getLinks().put(HostStatsConstants.LINK_STATS,
-                    ApiContext.getUrlBuilder().resourceLink(converted, HostStatsConstants.LINK_STATS));
+        if (add) {
+            converted.getLinks().put(HostStatsConstants.LINK_STATS, ApiContext.getUrlBuilder().resourceLink(converted, HostStatsConstants.LINK_STATS));
         }
 
         return converted;

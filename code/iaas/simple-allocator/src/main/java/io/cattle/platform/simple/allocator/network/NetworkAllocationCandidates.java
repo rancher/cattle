@@ -23,25 +23,25 @@ import com.google.common.collect.Sets;
 public class NetworkAllocationCandidates implements AllocationCandidateCallback {
 
     AllocationAttempt attempt;
-    Set<List<Pair<Long,Long>>> subnetIds = new HashSet<List<Pair<Long,Long>>>();
+    Set<List<Pair<Long, Long>>> subnetIds = new HashSet<List<Pair<Long, Long>>>();
     ObjectManager objectManager;
 
     @SuppressWarnings("unchecked")
     public NetworkAllocationCandidates(ObjectManager objectManager, AllocationAttempt attempt) {
         this.attempt = attempt;
 
-        List<Set<Pair<Long,Long>>> nicToSubnets = new ArrayList<Set<Pair<Long,Long>>>();
+        List<Set<Pair<Long, Long>>> nicToSubnets = new ArrayList<Set<Pair<Long, Long>>>();
 
-        for ( Nic nic : attempt.getNics() ) {
-            Set<Pair<Long,Long>> nicToSubnet = new HashSet<Pair<Long,Long>>();
+        for (Nic nic : attempt.getNics()) {
+            Set<Pair<Long, Long>> nicToSubnet = new HashSet<Pair<Long, Long>>();
 
             Subnet existingSubnet = attempt.getSubnets().get(nic);
 
-            if ( existingSubnet == null ) {
+            if (existingSubnet == null) {
                 Network network = objectManager.loadResource(Network.class, nic.getNetworkId());
-                if ( network != null ) {
-                    for ( Subnet subnet : objectManager.children(network, Subnet.class) ) {
-                        if ( CommonStatesConstants.ACTIVE.equals(subnet.getState()) ) {
+                if (network != null) {
+                    for (Subnet subnet : objectManager.children(network, Subnet.class)) {
+                        if (CommonStatesConstants.ACTIVE.equals(subnet.getState())) {
                             nicToSubnet.add(new ImmutablePair<Long, Long>(nic.getId(), subnet.getId()));
                         }
                     }
@@ -50,31 +50,31 @@ public class NetworkAllocationCandidates implements AllocationCandidateCallback 
                 nicToSubnet.add(new ImmutablePair<Long, Long>(nic.getId(), existingSubnet.getId()));
             }
 
-            if ( nicToSubnet.size() > 0 ) {
+            if (nicToSubnet.size() > 0) {
                 nicToSubnets.add(nicToSubnet);
             }
         }
 
-        if ( nicToSubnets.size() == 1 ) {
-            for ( Pair<Long, Long> pair : nicToSubnets.get(0) ) {
+        if (nicToSubnets.size() == 1) {
+            for (Pair<Long, Long> pair : nicToSubnets.get(0)) {
                 subnetIds.add(Arrays.asList(pair));
             }
-        } else if ( nicToSubnets.size() > 1 ) {
+        } else if (nicToSubnets.size() > 1) {
             subnetIds = Sets.cartesianProduct(nicToSubnets.toArray(new Set[nicToSubnets.size()]));
         }
     }
 
     @Override
     public List<AllocationCandidate> withCandidate(AllocationCandidate candidate) {
-        if ( subnetIds.size() == 0 ) {
+        if (subnetIds.size() == 0) {
             return Arrays.asList(candidate);
         }
 
         List<AllocationCandidate> result = new ArrayList<AllocationCandidate>();
 
-        for ( List<Pair<Long,Long>> nicsToSubnetIds : subnetIds ) {
+        for (List<Pair<Long, Long>> nicsToSubnetIds : subnetIds) {
             AllocationCandidate withNics = new AllocationCandidate(candidate);
-            for ( Pair<Long,Long> nicsToSubnetId : nicsToSubnetIds ) {
+            for (Pair<Long, Long> nicsToSubnetId : nicsToSubnetIds) {
                 withNics.getSubnetIds().put(nicsToSubnetId.getLeft(), nicsToSubnetId.getRight());
             }
             result.add(withNics);

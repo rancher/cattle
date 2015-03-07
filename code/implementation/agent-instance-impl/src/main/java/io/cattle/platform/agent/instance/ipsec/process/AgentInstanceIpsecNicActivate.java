@@ -40,39 +40,36 @@ public class AgentInstanceIpsecNicActivate extends AbstractObjectProcessLogic im
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = (Nic)state.getResource();
+        Nic nic = (Nic) state.getResource();
         Instance instance = loadResource(Instance.class, nic.getInstanceId());
 
-        if ( nic.getDeviceNumber() == null || nic.getDeviceNumber() != 0 ||
-                instance == null || instance.getAgentId() == null ) {
+        if (nic.getDeviceNumber() == null || nic.getDeviceNumber() != 0 || instance == null || instance.getAgentId() == null) {
             return null;
         }
 
-        List<? extends NetworkService> service = networkDao.getAgentInstanceNetworkService(instance.getId(),
-                NetworkServiceConstants.KIND_IPSEC_TUNNEL);
+        List<? extends NetworkService> service = networkDao.getAgentInstanceNetworkService(instance.getId(), NetworkServiceConstants.KIND_IPSEC_TUNNEL);
 
-        if ( service.size() == 0 ) {
+        if (service.size() == 0) {
             return null;
         }
 
-        Map<Long,Map<String,Integer>> portMap = new HashMap<Long,Map<String,Integer>>();
+        Map<Long, Map<String, Integer>> portMap = new HashMap<Long, Map<String, Integer>>();
 
-        for ( Host host : mappedChildren(instance, Host.class) ) {
-            List<PooledResource> resources = poolManager.allocateResource(host, instance, new PooledResourceOptions()
-                    .withCount(2)
-                    .withQualifier(ResourcePoolConstants.HOST_PORT));
+        for (Host host : mappedChildren(instance, Host.class)) {
+            List<PooledResource> resources = poolManager.allocateResource(host, instance, new PooledResourceOptions().withCount(2).withQualifier(
+                    ResourcePoolConstants.HOST_PORT));
 
-            if ( resources == null ) {
+            if (resources == null) {
                 throw new ExecutionException("Failed to allocation ports for ipsec", "Failed to allocate network resources", instance);
             }
 
             Set<Integer> ports = new TreeSet<Integer>();
-            for ( PooledResource resource : resources ) {
+            for (PooledResource resource : resources) {
                 ports.add(new Integer(resource.getName()));
             }
 
             Iterator<Integer> portIter = ports.iterator();
-            Map<String,Integer> hostPortMap = new HashMap<String, Integer>();
+            Map<String, Integer> hostPortMap = new HashMap<String, Integer>();
 
             hostPortMap.put("isakmp", portIter.next());
             hostPortMap.put("nat", portIter.next());
@@ -84,8 +81,7 @@ public class AgentInstanceIpsecNicActivate extends AbstractObjectProcessLogic im
             portMap.put(host.getId(), hostPortMap);
         }
 
-        objectManager.setFields(instance, ObjectMetaDataManager.APPEND + ObjectMetaDataManager.DATA_FIELD,
-                CollectionUtils.asMap("ipsec", portMap));
+        objectManager.setFields(instance, ObjectMetaDataManager.APPEND + ObjectMetaDataManager.DATA_FIELD, CollectionUtils.asMap("ipsec", portMap));
 
         return null;
     }

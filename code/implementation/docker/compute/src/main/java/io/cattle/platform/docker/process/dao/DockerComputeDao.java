@@ -8,7 +8,7 @@ import io.cattle.platform.core.model.Volume;
 public interface DockerComputeDao {
 
     IpAddress getDockerIp(String ipAddress, Instance instance);
-    
+
     Volume getDockerVolumeInPool(String volumeUri, StoragePool storagePool);
 
     Volume createDockerVolumeInPool(Long accountId, String volumeUri, StoragePool storagePool, boolean isHostPath);

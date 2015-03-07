@@ -15,9 +15,9 @@ public class IpAddressDisassociate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        IpAddress address = (IpAddress)state.getResource();
+        IpAddress address = (IpAddress) state.getResource();
 
-        for ( IpAssociation assoc : getObjectManager().children(address, IpAssociation.class, IpAddressConstants.FIELD_IP_ADDRESS_ID) ) {
+        for (IpAssociation assoc : getObjectManager().children(address, IpAssociation.class, IpAddressConstants.FIELD_IP_ADDRESS_ID)) {
             deactivateThenRemove(assoc, state.getData());
         }
 

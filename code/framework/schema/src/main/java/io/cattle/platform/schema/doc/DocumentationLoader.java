@@ -23,14 +23,14 @@ public class DocumentationLoader {
 
     @PostConstruct
     public void init() throws IOException {
-        for ( URL url : resources ) {
+        for (URL url : resources) {
             InputStream is = url.openStream();
 
             try {
-                Map<String,TypeDocumentation> typeDocs = docHandler.getDocs();
+                Map<String, TypeDocumentation> typeDocs = docHandler.getDocs();
                 List<TypeDocumentation> docs = jsonMapper.readCollectionValue(is, List.class, TypeDocumentation.class);
 
-                for ( TypeDocumentation doc : docs ) {
+                for (TypeDocumentation doc : docs) {
                     typeDocs.put(doc.getId(), doc);
                 }
             } finally {

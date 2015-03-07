@@ -21,7 +21,7 @@ public class BackgroundStart implements BeanPostProcessor, Runnable, SmartLifecy
 
     @Override
     public void stop() {
-        for ( InitializationTask task : tasks ) {
+        for (InitializationTask task : tasks) {
             task.stop();
         }
         running = false;
@@ -45,8 +45,8 @@ public class BackgroundStart implements BeanPostProcessor, Runnable, SmartLifecy
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if ( InitializationTask.class.isAssignableFrom(bean.getClass()) ) {
-            tasks.add((InitializationTask)bean);
+        if (InitializationTask.class.isAssignableFrom(bean.getClass())) {
+            tasks.add((InitializationTask) bean);
         }
 
         return bean;
@@ -59,7 +59,7 @@ public class BackgroundStart implements BeanPostProcessor, Runnable, SmartLifecy
 
     @Override
     public void run() {
-        for ( InitializationTask task : tasks ) {
+        for (InitializationTask task : tasks) {
             task.start();
         }
     }

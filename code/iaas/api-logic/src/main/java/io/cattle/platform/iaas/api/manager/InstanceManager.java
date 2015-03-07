@@ -22,17 +22,15 @@ public class InstanceManager extends AbstractJooqResourceManager {
         return new Class<?>[] { Instance.class };
     }
 
-
-
     @Override
     protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
-        if ( ! ( obj instanceof Instance ) ) {
+        if (!(obj instanceof Instance)) {
             return super.deleteInternal(type, id, obj, request);
         }
 
-        Instance instance = (Instance)obj;
+        Instance instance = (Instance) obj;
 
-        if ( InstanceConstants.STATE_RUNNING.equals(instance.getState()) ) {
+        if (InstanceConstants.STATE_RUNNING.equals(instance.getState())) {
             scheduleProcess(InstanceConstants.PROCESS_STOP, obj, CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
             return getObjectManager().reload(obj);
         } else {
@@ -45,20 +43,19 @@ public class InstanceManager extends AbstractJooqResourceManager {
     protected <T> T createAndScheduleObject(Class<T> clz, Map<String, Object> properties) {
         Object count = properties.get(InstanceConstants.FIELD_COUNT);
 
-        if ( count instanceof Number && ((Number)count).intValue() > 1 ) {
-            int max = ((Number)count).intValue();
+        if (count instanceof Number && ((Number) count).intValue() > 1) {
+            int max = ((Number) count).intValue();
 
             List<Object> result = new ArrayList<Object>(max);
-            for ( int i = 0 ; i < max ; i++ ) {
+            for (int i = 0; i < max; i++) {
                 Object instance = super.createAndScheduleObject(clz, properties);
                 result.add(instance);
             }
 
-            return (T)result;
+            return (T) result;
         } else {
             return super.createAndScheduleObject(clz, properties);
         }
     }
-
 
 }

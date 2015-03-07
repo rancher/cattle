@@ -45,30 +45,30 @@ public class ArchaiusUtil {
     }
 
     public static Configuration getConfiguration() {
-        return (Configuration)DynamicPropertyFactory.getBackingConfigurationSource();
+        return (Configuration) DynamicPropertyFactory.getBackingConfigurationSource();
     }
 
     /**
-     * Please only use this as a static variable.  Calling getList(..).get() repeatedly
-     * will probably cause a memory leak
+     * Please only use this as a static variable. Calling getList(..).get()
+     * repeatedly will probably cause a memory leak
      *
      * @param key
      * @return
      */
     public static DynamicStringListProperty getList(String key) {
-        return new DynamicStringListProperty(key, (String)null);
+        return new DynamicStringListProperty(key, (String) null);
     }
 
     public static void addSchedulers(List<RefreshableFixedDelayPollingScheduler> schedulers) {
-        for ( RefreshableFixedDelayPollingScheduler scheduler : schedulers ) {
-            if ( ! ArchaiusUtil.schedulers.contains(scheduler) ) {
+        for (RefreshableFixedDelayPollingScheduler scheduler : schedulers) {
+            if (!ArchaiusUtil.schedulers.contains(scheduler)) {
                 ArchaiusUtil.schedulers.add(scheduler);
             }
         }
     }
 
     public static void refresh() {
-        for ( RefreshableFixedDelayPollingScheduler scheduler : schedulers ) {
+        for (RefreshableFixedDelayPollingScheduler scheduler : schedulers) {
             scheduler.refresh();
         }
     }

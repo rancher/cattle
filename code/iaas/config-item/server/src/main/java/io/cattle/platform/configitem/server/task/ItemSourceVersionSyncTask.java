@@ -1,9 +1,9 @@
 package io.cattle.platform.configitem.server.task;
 
-import javax.inject.Inject;
-
 import io.cattle.platform.configitem.server.service.ConfigItemServer;
 import io.cattle.platform.task.AbstractSingletonTask;
+
+import javax.inject.Inject;
 
 public class ItemSourceVersionSyncTask extends AbstractSingletonTask {
 

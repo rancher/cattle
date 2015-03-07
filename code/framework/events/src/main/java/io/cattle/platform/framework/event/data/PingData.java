@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class PingData {
 
-    Map<String,Boolean> options = new HashMap<String, Boolean>();
-    List<Map<String,Object>> resources = new ArrayList<Map<String,Object>>();
+    Map<String, Boolean> options = new HashMap<String, Boolean>();
+    List<Map<String, Object>> resources = new ArrayList<Map<String, Object>>();
 
     public Map<String, Boolean> getOptions() {
         return options;

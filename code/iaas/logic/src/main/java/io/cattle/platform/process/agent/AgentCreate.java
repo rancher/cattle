@@ -28,22 +28,17 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Agent agent = (Agent)state.getResource();
+        Agent agent = (Agent) state.getResource();
         Long accountId = agent.getAccountId();
 
-        if ( accountId != null || ! CREATE_ACCOUNT.get() ) {
+        if (accountId != null || !CREATE_ACCOUNT.get()) {
             return new HandlerResult(AGENT.ACCOUNT_ID, accountId);
         }
 
-        DataAccessor.fromMap(state.getData())
-                .withScope(AccountConstants.class)
-                .withKey(AccountConstants.OPTION_CREATE_APIKEY)
-                .set(true);
+        DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY).set(true);
 
-        DataAccessor.fromMap(state.getData())
-                .withScope(AccountConstants.class)
-                .withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND)
-                .set(CredentialConstants.KIND_AGENT_API_KEY);
+        DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND).set(
+                CredentialConstants.KIND_AGENT_API_KEY);
 
         Account account = createAccountObj(agent);
         create(account, state.getData());
@@ -52,17 +47,15 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
     }
 
     protected Account createAccountObj(Agent agent) {
-        if ( agent.getAccountId() != null ) {
+        if (agent.getAccountId() != null) {
             return getObjectManager().loadResource(Account.class, agent.getAccountId());
         }
 
         String uuid = getAccountUuid(agent);
         Account account = accountDao.findByUuid(uuid);
 
-        if ( account == null ) {
-            account = getObjectManager().create(Account.class,
-                    ACCOUNT.UUID, uuid,
-                    ACCOUNT.KIND, "agent");
+        if (account == null) {
+            account = getObjectManager().create(Account.class, ACCOUNT.UUID, uuid, ACCOUNT.KIND, "agent");
         }
 
         return account;

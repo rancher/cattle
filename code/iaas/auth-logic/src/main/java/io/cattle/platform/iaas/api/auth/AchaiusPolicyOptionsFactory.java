@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AchaiusPolicyOptionsFactory {
 
-    Map<String,ArchaiusPolicyOptions> options = new ConcurrentHashMap<String, ArchaiusPolicyOptions>();
+    Map<String, ArchaiusPolicyOptions> options = new ConcurrentHashMap<String, ArchaiusPolicyOptions>();
 
     public ArchaiusPolicyOptions getOptions(Account account) {
         return getOptions(account.getKind());
@@ -16,7 +16,7 @@ public class AchaiusPolicyOptionsFactory {
 
     public ArchaiusPolicyOptions getOptions(String kind) {
         ArchaiusPolicyOptions opts = options.get(kind);
-        if ( opts != null ) {
+        if (opts != null) {
             return opts;
         }
 

@@ -8,15 +8,13 @@ public enum ExitReason {
     STATE_CHANGED,
     DONE(SUCCESS),
     DELEGATE(false, false, false, null),
-    SERVER_TERMINATED,
-    SCHEDULED(false, false, false, null),
+    SERVER_TERMINATED, SCHEDULED(false, false, false, null),
     PROCESS_ALREADY_IN_PROGRESS(false, false, false, null),
     RESOURCE_BUSY(false, false, false, null),
     RETRY_EXCEPTION(true),
     UNKNOWN_EXCEPTION(true),
     TIMEOUT(true),
-    MISSING_HANDLER_RESULT_FIELDS,
-    CHAIN(SUCCESS);
+    MISSING_HANDLER_RESULT_FIELDS, CHAIN(SUCCESS);
 
     boolean terminating;
     boolean rethrow;
@@ -45,9 +43,8 @@ public enum ExitReason {
         this.result = result;
         this.error = error;
 
-        if ( terminating && result == null ) {
-            throw new IllegalStateException("All terminating ExitReasons must"
-                    + " have a result set");
+        if (terminating && result == null) {
+            throw new IllegalStateException("All terminating ExitReasons must" + " have a result set");
         }
     }
 

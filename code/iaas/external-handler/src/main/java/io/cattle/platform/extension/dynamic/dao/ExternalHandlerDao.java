@@ -1,8 +1,8 @@
 package io.cattle.platform.extension.dynamic.dao;
 
-import java.util.List;
-
 import io.cattle.platform.core.model.ExternalHandler;
+
+import java.util.List;
 
 public interface ExternalHandlerDao {
 

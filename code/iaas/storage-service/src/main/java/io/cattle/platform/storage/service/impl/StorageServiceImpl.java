@@ -24,7 +24,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public Image registerRemoteImage(final String uuid) throws IOException {
-        if ( uuid == null ) {
+        if (uuid == null) {
             return null;
         }
         return populateNewRecord(uuid);
@@ -35,10 +35,10 @@ public class StorageServiceImpl implements StorageService {
 
         StoragePool foundPool = null;
 
-        for ( StoragePool pool : storagePoolDao.findExternalActivePools() ) {
-            for ( StoragePoolDriver driver : drivers ) {
-                if ( driver.supportsPool(pool) ) {
-                    if ( driver.populateExtenalImage(pool, uuid, image) ) {
+        for (StoragePool pool : storagePoolDao.findExternalActivePools()) {
+            for (StoragePoolDriver driver : drivers) {
+                if (driver.supportsPool(pool)) {
+                    if (driver.populateExtenalImage(pool, uuid, image)) {
                         foundPool = pool;
                         break;
                     }
@@ -46,7 +46,7 @@ public class StorageServiceImpl implements StorageService {
             }
         }
 
-        if ( foundPool != null ) {
+        if (foundPool != null) {
             return persistAndCreate(uuid, image, foundPool);
         }
 

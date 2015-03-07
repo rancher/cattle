@@ -36,8 +36,8 @@ public class LoadBalancerConfigSetListeners extends AbstractObjectProcessHandler
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         LoadBalancerConfig config = (LoadBalancerConfig) state.getResource();
-        List<? extends Long> newListenerIds = DataAccessor.fromMap(state.getData())
-                .withKey(LoadBalancerConstants.FIELD_LB_LISTENER_IDS).asList(jsonMapper, Long.class);
+        List<? extends Long> newListenerIds = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_LB_LISTENER_IDS).asList(jsonMapper,
+                Long.class);
 
         if (newListenerIds != null) {
             // remove old listeners set
@@ -51,24 +51,19 @@ public class LoadBalancerConfigSetListeners extends AbstractObjectProcessHandler
 
     private void createNewListenerMaps(LoadBalancerConfig config, List<? extends Long> newListenerIds) {
         for (Long listenerId : newListenerIds) {
-            LoadBalancerConfigListenerMap configListenerMap = mapDao.findNonRemoved(
-                    LoadBalancerConfigListenerMap.class,
-                    LoadBalancerConfig.class, config.getId(), LoadBalancerListener.class, listenerId);
+            LoadBalancerConfigListenerMap configListenerMap = mapDao.findNonRemoved(LoadBalancerConfigListenerMap.class, LoadBalancerConfig.class, config
+                    .getId(), LoadBalancerListener.class, listenerId);
             if (configListenerMap == null) {
-                configListenerMap = objectManager.create(LoadBalancerConfigListenerMap.class,
-                        LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_CONFIG_ID, config.getId(),
-                        LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_LISTENER_ID, listenerId);
+                configListenerMap = objectManager.create(LoadBalancerConfigListenerMap.class, LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_CONFIG_ID, config
+                        .getId(), LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_LISTENER_ID, listenerId);
             }
-            objectProcessManager.executeProcess(
-                    LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_CREATE,
-                    configListenerMap, null);
+            objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_CREATE, configListenerMap, null);
         }
     }
 
     private void removeOldListenerMaps(LoadBalancerConfig config, List<? extends Long> newListenerIds) {
-        List<? extends LoadBalancerConfigListenerMap> existingMaps = mapDao.findToRemove(
-                LoadBalancerConfigListenerMap.class,
-                LoadBalancerConfig.class, config.getId());
+        List<? extends LoadBalancerConfigListenerMap> existingMaps = mapDao.findToRemove(LoadBalancerConfigListenerMap.class, LoadBalancerConfig.class, config
+                .getId());
 
         List<LoadBalancerConfigListenerMap> mapsToRemove = new ArrayList<>();
 
@@ -79,9 +74,7 @@ public class LoadBalancerConfigSetListeners extends AbstractObjectProcessHandler
         }
 
         for (LoadBalancerConfigListenerMap mapToRemove : mapsToRemove) {
-            objectProcessManager.executeProcess(
-                    LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE,
-                    mapToRemove, null);
+            objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE, mapToRemove, null);
         }
     }
 

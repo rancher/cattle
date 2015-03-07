@@ -20,8 +20,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
-        Priority {
+public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
 
     @Inject
     LoadBalancerInstanceManager lbInstanceManager;
@@ -50,11 +49,10 @@ public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLog
         if (lbInstance != null) {
             // try to remove first
             try {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbInstance,
-                        null);
+                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbInstance, null);
             } catch (ProcessCancelException e) {
-                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, lbInstance,
-                        CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
+                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, lbInstance, CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION,
+                        true));
             }
         }
     }

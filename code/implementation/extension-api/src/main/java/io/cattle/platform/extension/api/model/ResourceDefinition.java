@@ -1,6 +1,5 @@
 package io.cattle.platform.extension.api.model;
 
-
 public class ResourceDefinition {
 
     String name;

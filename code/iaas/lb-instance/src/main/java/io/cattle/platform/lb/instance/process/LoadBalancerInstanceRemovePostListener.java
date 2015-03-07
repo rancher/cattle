@@ -24,8 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class LoadBalancerInstanceRemovePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
-        Priority {
+public class LoadBalancerInstanceRemovePostListener extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
 
     @Inject
     LoadBalancerInstanceManager lbInstanceManager;
@@ -48,12 +47,10 @@ public class LoadBalancerInstanceRemovePostListener extends AbstractObjectProces
     }
 
     private void deleteInstanceTargets(Instance instance) {
-        List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(
-                objectManager.loadResource(Instance.class, instance.getId()),
+        List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(objectManager.loadResource(Instance.class, instance.getId()),
                 LoadBalancerTarget.class);
         for (LoadBalancerTarget target : targets) {
-            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
-                    target, null);
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE, target, null);
         }
     }
 
@@ -62,13 +59,10 @@ public class LoadBalancerInstanceRemovePostListener extends AbstractObjectProces
 
         // try to remove first
         try {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbAgent,
-                    null);
+            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbAgent, null);
         } catch (ProcessCancelException e) {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE,
-                    lbAgent,
-                    ProcessUtils.chainInData(new HashMap<String, Object>(), AgentConstants.PROCESS_DEACTIVATE,
-                            AgentConstants.PROCESS_REMOVE));
+            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, lbAgent, ProcessUtils.chainInData(new HashMap<String, Object>(),
+                    AgentConstants.PROCESS_DEACTIVATE, AgentConstants.PROCESS_REMOVE));
         }
     }
 

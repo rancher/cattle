@@ -21,11 +21,13 @@ public class InMemoryEventService extends AbstractThreadPoolingEventService {
         getDefaultExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                /* Don't send events we know there are no listeners for.
-                 * This emulates the behavior of endpoints only getting what they've subscribed to.
+                /*
+                 * Don't send events we know there are no listeners for. This
+                 * emulates the behavior of endpoints only getting what they've
+                 * subscribed to.
                  */
                 List<EventListener> listeners = getEventListeners(event);
-                if ( listeners != null && listeners.size() > 0 ) {
+                if (listeners != null && listeners.size() > 0) {
                     onEvent(null, name, eventString);
                 }
             }

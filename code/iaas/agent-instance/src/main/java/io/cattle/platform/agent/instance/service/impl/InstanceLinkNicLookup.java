@@ -16,17 +16,11 @@ public class InstanceLinkNicLookup extends AbstractJooqDao implements InstanceNi
     @Override
     public List<Nic> getNics(Object obj) {
         Nic nic = null;
-        if ( obj instanceof InstanceLink ) {
-            InstanceLink link = (InstanceLink)obj;
+        if (obj instanceof InstanceLink) {
+            InstanceLink link = (InstanceLink) obj;
 
-            nic = create()
-                    .select(NIC.fields())
-                    .from(INSTANCE_LINK)
-                    .join(NIC)
-                        .on(NIC.INSTANCE_ID.eq(INSTANCE_LINK.INSTANCE_ID))
-                    .where(NIC.DEVICE_NUMBER.eq(0)
-                            .and(INSTANCE_LINK.ID.eq(link.getId())))
-                    .fetchOneInto(NicRecord.class);
+            nic = create().select(NIC.fields()).from(INSTANCE_LINK).join(NIC).on(NIC.INSTANCE_ID.eq(INSTANCE_LINK.INSTANCE_ID)).where(
+                    NIC.DEVICE_NUMBER.eq(0).and(INSTANCE_LINK.ID.eq(link.getId()))).fetchOneInto(NicRecord.class);
         }
 
         return nic == null ? null : Arrays.asList(nic);

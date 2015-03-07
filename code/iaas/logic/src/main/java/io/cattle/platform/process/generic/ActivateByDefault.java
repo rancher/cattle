@@ -17,10 +17,10 @@ public class ActivateByDefault extends AbstractObjectProcessLogic implements Pro
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        HandlerResult result = new HandlerResult(true, (Map<Object,Object>)null);
+        HandlerResult result = new HandlerResult(true, (Map<Object, Object>) null);
 
         String type = getObjectManager().getType(state.getResource());
-        if ( ArchaiusUtil.getBoolean("activate.by.default." + type).get() ) {
+        if (ArchaiusUtil.getBoolean("activate.by.default." + type).get()) {
             result.shouldDelegate(true);
         }
 

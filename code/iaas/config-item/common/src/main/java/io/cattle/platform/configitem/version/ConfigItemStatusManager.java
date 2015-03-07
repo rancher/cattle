@@ -1,10 +1,10 @@
 package io.cattle.platform.configitem.version;
 
-import com.google.common.util.concurrent.ListenableFuture;
-
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
+
+import com.google.common.util.concurrent.ListenableFuture;
 
 public interface ConfigItemStatusManager {
 

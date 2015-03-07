@@ -69,8 +69,7 @@ public class LaunchConfiguration {
 
     @Override
     public String toString() {
-        return "LaunchConfiguration [processName=" + processName + ", resourceType=" + resourceType + ", resourceId="
-                + resourceId + ", data=" + data + "]";
+        return "LaunchConfiguration [processName=" + processName + ", resourceType=" + resourceType + ", resourceId=" + resourceId + ", data=" + data + "]";
     }
 
     public Predicate getPredicate() {

@@ -41,20 +41,20 @@ public class AgentInstanceHostServicesApplyItems extends AbstractHostApplyItems 
 
         List<? extends Nic> nics = getNics(state, process);
 
-        if ( nics == null ) {
+        if (nics == null) {
             log.error("Failed to find nic for [{}:{}]", objectManager.getType(state.getResource()), state.getResourceId());
             return null;
         }
 
-        for ( Nic nic : nics ) {
+        for (Nic nic : nics) {
             Instance instance = loadResource(Instance.class, nic.getInstanceId());
-            for ( Host host : mappedChildren(instance, Host.class) ) {
-                Map<NetworkServiceProvider,Instance> agentInstances = agentInstanceManager.getAgentInstances(nic);
+            for (Host host : mappedChildren(instance, Host.class)) {
+                Map<NetworkServiceProvider, Instance> agentInstances = agentInstanceManager.getAgentInstances(nic);
 
                 List<NetworkServiceProvider> providers = new ArrayList<NetworkServiceProvider>(agentInstances.keySet());
 
-                if ( providers.size() > 0 ) {
-                    hosts.put(host,  providers);
+                if (providers.size() > 0) {
+                    hosts.put(host, providers);
                 }
             }
         }

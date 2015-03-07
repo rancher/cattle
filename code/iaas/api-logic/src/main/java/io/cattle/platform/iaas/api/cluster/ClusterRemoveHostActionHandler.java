@@ -1,7 +1,5 @@
 package io.cattle.platform.iaas.api.cluster;
 
-import javax.inject.Inject;
-
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.dao.ClusterHostMapDao;
@@ -13,6 +11,8 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+
+import javax.inject.Inject;
 
 public class ClusterRemoveHostActionHandler implements ActionHandler {
 
@@ -35,11 +35,9 @@ public class ClusterRemoveHostActionHandler implements ActionHandler {
         if (!objectManager.isKind(obj, ClusterConstants.KIND)) {
             return null;
         }
-        Host cluster = (Host)obj;
+        Host cluster = (Host) obj;
 
-        Long hostToRemoveId = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(ClusterConstants.ADD_REMOVE_HOST_PARAM)
-                .as(Long.class);
+        Long hostToRemoveId = DataAccessor.fromMap(request.getRequestObject()).withKey(ClusterConstants.ADD_REMOVE_HOST_PARAM).as(Long.class);
         Host hostToRemove = objectManager.loadResource(Host.class, hostToRemoveId);
 
         ClusterHostMap mapping = clusterHostMapDao.getClusterHostMap(cluster, hostToRemove);

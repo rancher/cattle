@@ -35,55 +35,54 @@ public class AllocationAttempt {
     Set<Long> nicIds;
 
     Map<Nic, Subnet> subnets;
-    Map<Long,Long> subnetIds;
+    Map<Long, Long> subnetIds;
 
     List<Constraint> constraints = new ArrayList<Constraint>();
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
     AllocationCandidate matchedCandidate;
 
-    public AllocationAttempt(Instance instance, Set<Host> hosts,
-            Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools,
-            Set<Nic> nics, Map<Nic, Subnet> subnets) {
+    public AllocationAttempt(Instance instance, Set<Host> hosts, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
+            Map<Nic, Subnet> subnets) {
         super();
         this.instance = instance;
         this.hosts = hosts;
         this.volumes = volumes;
         this.pools = pools;
         this.nics = nics;
-        this.subnets = subnets == null ? Collections.<Nic, Subnet>emptyMap() : subnets;
+        this.subnets = subnets == null ? Collections.<Nic, Subnet> emptyMap() : subnets;
 
         this.hostIds = new HashSet<Long>(hosts.size());
-        for ( Host h : hosts ) {
+        for (Host h : hosts) {
             this.hostIds.add(h.getId());
         }
 
         this.volumeIds = new HashSet<Long>(volumes.size());
         this.poolIds = new HashMap<Long, Set<Long>>();
-        for ( Volume v : volumes ) {
+        for (Volume v : volumes) {
             this.volumeIds.add(v.getId());
             Set<StoragePool> storagePools = pools.get(v);
 
-            if ( storagePools != null ) {
+            if (storagePools != null) {
                 Set<Long> poolIds = new HashSet<Long>(storagePools.size());
-                for ( StoragePool pool : storagePools ) {
+                for (StoragePool pool : storagePools) {
                     poolIds.add(pool.getId());
                 }
                 this.poolIds.put(v.getId(), poolIds);
             }
         }
 
-        if ( nics == null ) {
+        if (nics == null) {
             this.nics = Collections.emptySet();
             this.nicIds = Collections.emptySet();
             this.subnetIds = Collections.emptyMap();
         } else {
             this.nicIds = new HashSet<Long>(subnets.size());
             this.subnetIds = new HashMap<Long, Long>();
-            for ( Nic n : nics ) {
+            for (Nic n : nics) {
                 this.nicIds.add(n.getId());
 
                 Subnet subnet = this.subnets.get(n);
-                if ( subnet != null ) {
+                if (subnet != null) {
                     this.subnetIds.put(n.getId(), subnet.getId());
                 }
             }

@@ -33,7 +33,7 @@ public class ClassAvailableSubscriptionHandler implements SubscriptionHandler, P
 
     @Override
     public boolean subscribe(Collection<String> eventNames, ApiRequest apiRequest, boolean strip) throws IOException {
-        if ( enabled ) {
+        if (enabled) {
             return handler.subscribe(eventNames, apiRequest, strip);
         } else {
             return false;
@@ -43,9 +43,8 @@ public class ClassAvailableSubscriptionHandler implements SubscriptionHandler, P
     @PostConstruct
     public void init() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Class<?> clz = getClass(testClass);
-        if ( clz != null ) {
-            handler = (SubscriptionHandler)ConstructorUtils.invokeConstructor(clz, jsonMapper,
-                    eventService, retryTimeout, executorService, eventProcessors);
+        if (clz != null) {
+            handler = (SubscriptionHandler) ConstructorUtils.invokeConstructor(clz, jsonMapper, eventService, retryTimeout, executorService, eventProcessors);
             enabled = true;
         }
     }

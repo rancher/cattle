@@ -116,8 +116,8 @@ public class GithubClient {
         List<TeamAccountInfo> teamInfoList = new ArrayList<>();
         List<Map<String, Object>> jsonData = null;
 
-        HttpResponse response = Request.Get(GITHUB_UNAUTH_ORG_URL.get() + org + "/teams").addHeader("Authorization", "token " + token)
-                .addHeader("Accept", "application/json").execute().returnResponse();
+        HttpResponse response = Request.Get(GITHUB_UNAUTH_ORG_URL.get() + org + "/teams").addHeader("Authorization", "token " + token).addHeader("Accept",
+                "application/json").execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
@@ -141,8 +141,8 @@ public class GithubClient {
         }
         Map<String, Object> jsonData = null;
 
-        HttpResponse response = Request.Get(GITHUB_UNAUTH_USER_URL.get() + username).addHeader("Accept", "application/json")
-                .addHeader("Authorization", "token " + token).execute().returnResponse();
+        HttpResponse response = Request.Get(GITHUB_UNAUTH_USER_URL.get() + username).addHeader("Accept", "application/json").addHeader("Authorization",
+                "token " + token).execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
@@ -162,8 +162,8 @@ public class GithubClient {
         }
         Map<String, Object> jsonData = null;
 
-        HttpResponse response = Request.Get(GITHUB_UNAUTH_ORG_URL.get() + org).addHeader("Accept", "application/json")
-                .addHeader("Authorization", "token " + token).execute().returnResponse();
+        HttpResponse response = Request.Get(GITHUB_UNAUTH_ORG_URL.get() + org).addHeader("Accept", "application/json").addHeader("Authorization",
+                "token " + token).execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "

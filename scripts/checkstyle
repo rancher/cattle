@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd $(dirname $0)/..
+
+if ! mvn checkstyle:checkstyle-aggregate; then
+    grep -C 1 error target/checkstyle-result.xml
+    echo Checkstyle Errors 1>&2
+    exit 1
+fi

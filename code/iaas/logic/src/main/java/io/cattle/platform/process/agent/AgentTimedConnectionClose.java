@@ -1,7 +1,5 @@
 package io.cattle.platform.process.agent;
 
-import javax.inject.Named;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -10,6 +8,8 @@ import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 import io.cattle.platform.util.type.Priority;
+
+import javax.inject.Named;
 
 import com.netflix.config.DynamicLongProperty;
 
@@ -27,19 +27,16 @@ public class AgentTimedConnectionClose extends AgentBasedProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        DataAccessor prop = DataAccessor
-                .fromMap(state.getData())
-                .withScope(AgentTimedConnectionClose.class)
-                .withKey("lastDisconnect");
+        DataAccessor prop = DataAccessor.fromMap(state.getData()).withScope(AgentTimedConnectionClose.class).withKey("lastDisconnect");
 
         Long lastDisconnect = prop.as(Long.class);
 
-        if ( lastDisconnect == null || System.currentTimeMillis() - lastDisconnect > (TIMEOUT.get() * 1000) ) {
+        if (lastDisconnect == null || System.currentTimeMillis() - lastDisconnect > (TIMEOUT.get() * 1000)) {
             prop.set(System.currentTimeMillis());
             super.handle(state, process);
         }
 
         return null;
-   }
+    }
 
 }

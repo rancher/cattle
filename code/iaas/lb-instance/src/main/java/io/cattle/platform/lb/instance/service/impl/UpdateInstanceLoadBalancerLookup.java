@@ -23,8 +23,7 @@ public class UpdateInstanceLoadBalancerLookup implements LoadBalancerLookup {
         }
 
         Instance instance = (Instance) obj;
-        List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(
-                objectManager.loadResource(Instance.class, instance.getId()),
+        List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(objectManager.loadResource(Instance.class, instance.getId()),
                 LoadBalancerTarget.class);
 
         for (LoadBalancerTarget target : targets) {

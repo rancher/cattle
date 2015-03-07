@@ -29,7 +29,7 @@ public class JmxPublisherFactory {
     private static final DynamicIntProperty JMX_TRANS_QUERY_INTERVAL = ArchaiusUtil.getInt("jmx.trans.query.interval.seconds");
 
     private static final DynamicIntProperty GRAPHITE_PORT = ArchaiusUtil.getInt("graphite.port");
-    private static final DynamicStringMapProperty GRAPHITE_OPTIONS = new DynamicStringMapProperty("graphite.options", (String)null);
+    private static final DynamicStringMapProperty GRAPHITE_OPTIONS = new DynamicStringMapProperty("graphite.options", (String) null);
 
     List<URL> resources;
     EmbeddedJmxTrans jmxTrans;
@@ -41,7 +41,7 @@ public class JmxPublisherFactory {
         jmxTrans.setExportIntervalInSeconds(JMX_TRANS_EXPORT_INTERVAL.get());
         jmxTrans.setQueryIntervalInSeconds(JMX_TRANS_QUERY_INTERVAL.get());
 
-        for ( URL resource : resources ) {
+        for (URL resource : resources) {
             InputStream is = null;
             try {
                 is = resource.openStream();
@@ -51,17 +51,16 @@ public class JmxPublisherFactory {
             }
         }
 
-        if ( ! StringUtils.isBlank(GRAPHITE_HOST.get()) ) {
-            Map<String,Object> config = new HashMap<String, Object>();
+        if (!StringUtils.isBlank(GRAPHITE_HOST.get())) {
+            Map<String, Object> config = new HashMap<String, Object>();
             config.put(AbstractOutputWriter.SETTING_HOST, GRAPHITE_HOST.get());
             config.put(AbstractOutputWriter.SETTING_PORT, GRAPHITE_PORT.get());
 
-            for ( Map.Entry<String, String> entry : GRAPHITE_OPTIONS.getMap().entrySet() ) {
+            for (Map.Entry<String, String> entry : GRAPHITE_OPTIONS.getMap().entrySet()) {
                 config.put(entry.getValue(), entry.getValue());
             }
 
-            if ( ! config.containsKey(AbstractOutputWriter.SETTING_NAME_PREFIX) &&
-                    ! StringUtils.isBlank(ServerContext.SERVER_ID.get()) ) {
+            if (!config.containsKey(AbstractOutputWriter.SETTING_NAME_PREFIX) && !StringUtils.isBlank(ServerContext.SERVER_ID.get())) {
                 config.put(AbstractOutputWriter.SETTING_NAME_PREFIX, "servers." + ServerContext.SERVER_ID.get());
             }
 

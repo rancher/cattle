@@ -38,9 +38,9 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
     List<Task> tasks;
     EventService eventService;
     boolean running = false;
-    Map<String,ScheduledFuture<?>> futures = new ConcurrentHashMap<String, ScheduledFuture<?>>();
-    Map<String,Runnable> runnables = new ConcurrentHashMap<String, Runnable>();
-    Map<String,Task> taskMap = new HashMap<String,Task>();
+    Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<String, ScheduledFuture<?>>();
+    Map<String, Runnable> runnables = new ConcurrentHashMap<String, Runnable>();
+    Map<String, Task> taskMap = new HashMap<String, Task>();
     TaskDao taskDao;
 
     @Override
@@ -53,12 +53,11 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
         return runnables.get(name);
     }
 
-
     @Override
     public boolean shouldLock(String name) {
         Task task = taskMap.get(name);
-        if ( task instanceof TaskOptions ) {
-            return ((TaskOptions)task).isShouldLock();
+        if (task instanceof TaskOptions) {
+            return ((TaskOptions) task).isShouldLock();
         }
 
         return true;
@@ -75,7 +74,7 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
     }
 
     protected void scheduleAll(boolean initial) {
-        for ( Task task : tasks ) {
+        for (Task task : tasks) {
             schedule(initial, task);
         }
     }
@@ -84,12 +83,12 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
         final String name = task.getName();
         ScheduledFuture<?> future = futures.get(name);
 
-        if ( future != null ) {
+        if (future != null) {
             future.cancel(false);
         }
 
         DynamicStringProperty prop = ArchaiusUtil.getString(String.format(SCHEDULE_FORMAT, name));
-        if ( initial ) {
+        if (initial) {
             prop.addCallback(this);
         }
 
@@ -101,7 +100,7 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
                     try {
                         task.run();
                         taskDao.finish(record);
-                    } catch ( Throwable t ) {
+                    } catch (Throwable t) {
                         log.error("Task [{}] failed", name, t);
                         taskDao.failed(record, t);
                     }
@@ -111,26 +110,25 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
             runnables.put(name, runnable);
             taskMap.put(name, task);
 
-            if ( ! StringUtils.isBlank(prop.get()) ) {
-                long delay = (long)(Float.parseFloat(prop.get()) * 1000);
-                if ( delay == 0 ) {
+            if (!StringUtils.isBlank(prop.get())) {
+                long delay = (long) (Float.parseFloat(prop.get()) * 1000);
+                if (delay == 0) {
                     log.info("Disabling task [{}]", name);
                     return;
                 }
 
                 log.info("Scheduling task [{}] for every [{}] seconds", name, delay);
-                future = executorService.scheduleWithFixedDelay(runnable,
-                        Math.min(DELAY_SECONDS.get() * 1000, delay), delay, TimeUnit.MILLISECONDS);
+                future = executorService.scheduleWithFixedDelay(runnable, Math.min(DELAY_SECONDS.get() * 1000, delay), delay, TimeUnit.MILLISECONDS);
                 futures.put(name, future);
             }
-        } catch ( NumberFormatException nfe ) {
+        } catch (NumberFormatException nfe) {
             log.error("Failed to parse [{}] for task [{}]", prop.get(), name, nfe);
         }
     }
 
     @Override
     public void stop() {
-        for ( ScheduledFuture<?> future : futures.values() ) {
+        for (ScheduledFuture<?> future : futures.values()) {
             future.cancel(false);
         }
     }

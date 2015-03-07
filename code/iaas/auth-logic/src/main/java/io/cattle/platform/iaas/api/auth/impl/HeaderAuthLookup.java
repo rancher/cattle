@@ -26,29 +26,27 @@ public class HeaderAuthLookup implements AccountLookup, Priority {
 
     @Override
     public Account getAccount(ApiRequest request) {
-        if ( ! ENABLED.get() ) {
+        if (!ENABLED.get()) {
             return null;
         }
 
         String header = request.getServletContext().getRequest().getHeader(HEADER);
 
-        if ( header == null ) {
+        if (header == null) {
             return null;
         }
 
         Account admin = adminLookup.getAccount(request);
-        if ( admin == null ) {
+        if (admin == null) {
             return null;
         }
 
         Policy policy = adminAuthProvider.getPolicy(admin, request);
-        if ( ! policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) ) {
+        if (!policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS)) {
             return null;
         }
 
-        return objectManager.findOne(Account.class,
-                ACCOUNT.UUID, header,
-                ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
+        return objectManager.findOne(Account.class, ACCOUNT.UUID, header, ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
     }
 
     @Override

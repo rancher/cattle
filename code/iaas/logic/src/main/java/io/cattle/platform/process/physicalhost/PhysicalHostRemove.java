@@ -14,9 +14,9 @@ public class PhysicalHostRemove extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(final ProcessState state, ProcessInstance process) {
-        final PhysicalHost pHost = (PhysicalHost)state.getResource();
+        final PhysicalHost pHost = (PhysicalHost) state.getResource();
 
-        for ( Host host: getObjectManager().children(pHost, Host.class) ) {
+        for (Host host : getObjectManager().children(pHost, Host.class)) {
             deactivateThenRemove(host, state.getData());
         }
 

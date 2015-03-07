@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface AllocationConstraintsProvider {
 
-    public void appendConstraints(AllocationAttempt attempt, AllocationLog log,
-            List<Constraint> constraints);
+    public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints);
 
 }

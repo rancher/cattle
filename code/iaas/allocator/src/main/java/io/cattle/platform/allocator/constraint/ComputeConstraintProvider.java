@@ -23,13 +23,13 @@ public class ComputeConstraintProvider implements AllocationConstraintsProvider 
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
         Instance instance = attempt.getInstance();
 
-        if ( instance == null ) {
+        if (instance == null) {
             return;
         }
 
         List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId());
 
-        if ( maps.size() > 0 ) {
+        if (maps.size() > 0) {
             return;
         }
 

@@ -141,8 +141,8 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         if (StringUtils.isEmpty(externalId)) {
             return null;
         }
-        Account newAccount = authDao.createAccount((String) account.get("name"), AccountConstants.TYPE_PROJECT, externalId,
-                (String) account.get(EXTERNAL_ID_TYPE));
+        Account newAccount = authDao.createAccount((String) account.get("name"), AccountConstants.TYPE_PROJECT, externalId, (String) account
+                .get(EXTERNAL_ID_TYPE));
         AccountPolicy policy = (AccountPolicy) ApiContext.getContext().getPolicy();
         Account modifiedAccount = copyProjectWithExternalId(newAccount, (String) account.get(EXTERNAL_ID));
         policy.grantObjectAccess(modifiedAccount);

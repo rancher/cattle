@@ -19,16 +19,16 @@ public class IpAddressDeactivate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        IpAddress ipAddress = (IpAddress)state.getResource();
+        IpAddress ipAddress = (IpAddress) state.getResource();
         Subnet subnet = getObjectManager().loadResource(Subnet.class, ipAddress.getSubnetId());
 
-        if ( subnet == null ) {
+        if (subnet == null) {
             return null;
         }
 
         poolManager.releaseResource(subnet, ipAddress);
 
-        if ( ipAddress.getKind().equals(IpAddressConstants.KIND_POOLED_IP_ADDRESS) ) {
+        if (ipAddress.getKind().equals(IpAddressConstants.KIND_POOLED_IP_ADDRESS)) {
             return new HandlerResult().withChainProcessName(IpAddressConstants.PROCESS_REMOVE);
         }
 

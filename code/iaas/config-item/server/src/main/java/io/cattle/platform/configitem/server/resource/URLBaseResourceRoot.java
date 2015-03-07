@@ -11,11 +11,11 @@ public class URLBaseResourceRoot extends AbstractCachingResourceRoot {
 
     List<Resource> resources;
 
-    public URLBaseResourceRoot(Map<String,URL> resourceMap) {
+    public URLBaseResourceRoot(Map<String, URL> resourceMap) {
         super();
 
         resources = new ArrayList<Resource>(resourceMap.size());
-        for ( Map.Entry<String, URL> entry : resourceMap.entrySet() ) {
+        for (Map.Entry<String, URL> entry : resourceMap.entrySet()) {
             resources.add(new URLResource(entry.getKey(), entry.getValue()));
         }
     }

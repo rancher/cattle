@@ -13,7 +13,7 @@ public class OptionalPropertiesConfigurationFactory {
     public AbstractConfiguration getConfiguration() {
         try {
             return new NamedPropertiesConfiguration(name);
-        } catch ( ConfigurationException e ) {
+        } catch (ConfigurationException e) {
             return new MapConfiguration(new HashMap<String, Object>());
         }
     }

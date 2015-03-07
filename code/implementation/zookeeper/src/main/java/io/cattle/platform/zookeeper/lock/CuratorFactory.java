@@ -26,12 +26,11 @@ public class CuratorFactory {
 
     public CuratorFramework newInstance() {
         RetryPolicy retryPolicy = new RetryNTimes(RETRIES.get(), RETRY_TIME.get());
-        CuratorFramework client = CuratorFrameworkFactory.newClient(CONNNECTION.get(),
-                SESSION_TIMEOUT.get(), CONN_TIMEOUT.get(), retryPolicy);
+        CuratorFramework client = CuratorFrameworkFactory.newClient(CONNNECTION.get(), SESSION_TIMEOUT.get(), CONN_TIMEOUT.get(), retryPolicy);
         client.getConnectionStateListenable().addListener(new ConnectionStateListener() {
             @Override
             public void stateChanged(CuratorFramework client, ConnectionState state) {
-                if ( state == ConnectionState.LOST ) {
+                if (state == ConnectionState.LOST) {
                     log.error("*** Lost Connection to ZooKeeper! ***");
                     log.error("*** Lost Connection to ZooKeeper! ***");
                     log.error("*** Lost Connection to ZooKeeper! ***");

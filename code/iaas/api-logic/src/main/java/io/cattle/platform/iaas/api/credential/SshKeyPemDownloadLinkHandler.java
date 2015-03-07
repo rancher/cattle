@@ -27,9 +27,9 @@ public class SshKeyPemDownloadLinkHandler implements LinkHandler {
 
     @Override
     public Object link(String name, Object obj, ApiRequest request) throws IOException {
-        if ( obj instanceof Credential ) {
-            String secretValue = ((Credential)obj).getSecretValue();
-            if ( secretValue == null ) {
+        if (obj instanceof Credential) {
+            String secretValue = ((Credential) obj).getSecretValue();
+            if (secretValue == null) {
                 return null;
             }
 
@@ -39,7 +39,7 @@ public class SshKeyPemDownloadLinkHandler implements LinkHandler {
 
             response.setContentLength(content.length);
             response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment; filename=" + getFilename((Credential)obj, request));
+            response.setHeader("Content-Disposition", "attachment; filename=" + getFilename((Credential) obj, request));
             response.setHeader("Cache-Control", "private");
             response.setHeader("Pragma", "private");
             response.setHeader("Expires", "Wed 24 Feb 1982 18:42:00 GMT");
@@ -55,7 +55,7 @@ public class SshKeyPemDownloadLinkHandler implements LinkHandler {
     protected String getFilename(Credential cred, ApiRequest request) {
         String name = cred.getName();
 
-        if ( StringUtils.isBlank(name) ) {
+        if (StringUtils.isBlank(name)) {
             IdFormatter formatter = ApiContext.getContext().getIdFormatter();
             Object id = formatter.formatId(cred.getKind(), cred.getId());
 

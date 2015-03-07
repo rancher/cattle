@@ -37,43 +37,41 @@ public class CreateInstanceAssociatePublicIpAddress extends AbstractObjectProces
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = (Nic)state.getResource();
+        Nic nic = (Nic) state.getResource();
 
-        if ( nic.getDeviceNumber() == null && nic.getDeviceNumber() != 0 ) {
+        if (nic.getDeviceNumber() == null && nic.getDeviceNumber() != 0) {
             return null;
         }
 
         Instance instance = loadResource(Instance.class, nic.getInstanceId());
         IpPool pool = loadResource(IpPool.class, DataAccessor.fieldLong(instance, InstanceConstants.FIELD_PUBLIC_IP_ADDRESS_POOL_ID));
 
-        if ( pool == null ) {
+        if (pool == null) {
             return null;
         }
 
         IpAddress primaryIp = ipAddressDao.getPrimaryIpAddress(nic);
 
-        if ( primaryIp == null ) {
+        if (primaryIp == null) {
             return null;
         }
 
         String uuid = primaryIp.getUuid() + "-public-ip";
         IpAddress ip = getObjectManager().findOne(IpAddress.class, ObjectMetaDataManager.UUID_FIELD, uuid);
 
-        if ( ip == null ) {
-            Map<String,Object> data = CollectionUtils.asMap(IpAddressConstants.OPTION_RELEASE_ON_CHILD_PURGE, true);
-            ip = ipAddressDao.createIpAddressFromPool(pool,
-                    ObjectMetaDataManager.UUID_FIELD, uuid,
-                    ObjectMetaDataManager.CAPABILITIES_FIELD, Collections.emptyList(),
-                    ObjectMetaDataManager.DATA_FIELD, data);
+        if (ip == null) {
+            Map<String, Object> data = CollectionUtils.asMap(IpAddressConstants.OPTION_RELEASE_ON_CHILD_PURGE, true);
+            ip = ipAddressDao.createIpAddressFromPool(pool, ObjectMetaDataManager.UUID_FIELD, uuid, ObjectMetaDataManager.CAPABILITIES_FIELD, Collections
+                    .emptyList(), ObjectMetaDataManager.DATA_FIELD, data);
         }
 
         try {
             createThenActivate(ip, state.getData());
-        } catch ( ProcessCancelException e ) {
+        } catch (ProcessCancelException e) {
             // ignore
         }
 
-        Map<String,Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<String, Object>();
         data.put(IpAddressConstants.DATA_IP_ADDRESS_ID, primaryIp.getId());
         objectProcessManager.createProcessInstance(IpAddressConstants.PROCESS_IP_ASSOCIATE, ip, data).execute();
 

@@ -16,15 +16,15 @@ public abstract class AbstractTypeAndQualifierPooledItemGeneratorFactory impleme
 
     @Override
     public PooledResourceItemGenerator getGenerator(Object pool, String qualifier) {
-        if ( pool == null || qualifier == null ) {
+        if (pool == null || qualifier == null) {
             return null;
         }
 
-        if ( typeClass == null && this.qualifier.equals(qualifier) ) {
+        if (typeClass == null && this.qualifier.equals(qualifier)) {
             return createGenerator(pool, qualifier);
         }
 
-        if ( typeClass != null && typeClass.isAssignableFrom(pool.getClass()) && this.qualifier.equals(qualifier) ) {
+        if (typeClass != null && typeClass.isAssignableFrom(pool.getClass()) && this.qualifier.equals(qualifier)) {
             return createGenerator(pool, qualifier);
         }
 

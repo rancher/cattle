@@ -16,7 +16,7 @@ public class LinkPortGeneratorFactory implements PooledResourceItemGeneratorFact
 
     @Override
     public PooledResourceItemGenerator getGenerator(Object pool, String qualifier) {
-        if ( ( pool instanceof NetworkService ) && ResourcePoolConstants.LINK_PORT.equals(qualifier) ) {
+        if ((pool instanceof NetworkService) && ResourcePoolConstants.LINK_PORT.equals(qualifier)) {
             return new StringRangeGenerator(LINK_PORT_START.get(), LINK_PORT_END.get());
         }
 

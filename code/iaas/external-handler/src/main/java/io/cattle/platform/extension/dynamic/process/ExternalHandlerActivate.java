@@ -28,46 +28,44 @@ public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        ExternalHandler externalHandler = (ExternalHandler)state.getResource();
+        ExternalHandler externalHandler = (ExternalHandler) state.getResource();
 
         List<String> eventNames = new ArrayList<String>();
-        DataAccessor accessor = DataAccessor.fields(externalHandler)
-            .withKey(ExternalHandlerConstants.FIELD_PROCESS_NAMES);
+        DataAccessor accessor = DataAccessor.fields(externalHandler).withKey(ExternalHandlerConstants.FIELD_PROCESS_NAMES);
 
         List<?> list = accessor.as(List.class);
-        if ( list != null ) {
-            for ( Object obj : accessor.as(List.class) ) {
-                for ( String part : obj.toString().trim().split("\\s*,\\s*") ) {
+        if (list != null) {
+            for (Object obj : accessor.as(List.class)) {
+                for (String part : obj.toString().trim().split("\\s*,\\s*")) {
                     eventNames.add(part);
                 }
             }
         }
 
-        if ( eventNames.size() > 0 ) {
-            for ( ExternalHandlerExternalHandlerProcessMap map :
-                getObjectManager().children(externalHandler, ExternalHandlerExternalHandlerProcessMap.class)) {
+        if (eventNames.size() > 0) {
+            for (ExternalHandlerExternalHandlerProcessMap map : getObjectManager().children(externalHandler, ExternalHandlerExternalHandlerProcessMap.class)) {
                 ExternalHandlerProcess handlerProcess = getObjectManager().loadResource(ExternalHandlerProcess.class, map.getExternalHandlerProcessId());
                 eventNames.remove(handlerProcess.getName());
             }
         }
 
-        if ( eventNames.size() > 0 ) {
-            for ( final String eventName : eventNames ) {
-                ExternalHandlerProcess handlerProcess = lockManager.lock(new CreateExternalHandlerProcessLock(eventName), new LockCallback<ExternalHandlerProcess>() {
-                    @Override
-                    public ExternalHandlerProcess doWithLock() {
-                        return getExternalHandlerProcess(eventName);
-                    }
-                });
+        if (eventNames.size() > 0) {
+            for (final String eventName : eventNames) {
+                ExternalHandlerProcess handlerProcess = lockManager.lock(new CreateExternalHandlerProcessLock(eventName),
+                        new LockCallback<ExternalHandlerProcess>() {
+                            @Override
+                            public ExternalHandlerProcess doWithLock() {
+                                return getExternalHandlerProcess(eventName);
+                            }
+                        });
 
-                getObjectManager().create(ExternalHandlerExternalHandlerProcessMap.class,
-                        EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_ID, externalHandler.getId(),
-                        EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_PROCESS_ID, handlerProcess.getId());
+                getObjectManager().create(ExternalHandlerExternalHandlerProcessMap.class, EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_ID,
+                        externalHandler.getId(), EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_PROCESS_ID, handlerProcess.getId());
             }
         }
 
-        for ( ExternalHandlerExternalHandlerProcessMap map :
-            mapDao.findNonRemoved(ExternalHandlerExternalHandlerProcessMap.class, ExternalHandler.class, externalHandler.getId()) ) {
+        for (ExternalHandlerExternalHandlerProcessMap map : mapDao.findNonRemoved(ExternalHandlerExternalHandlerProcessMap.class, ExternalHandler.class,
+                externalHandler.getId())) {
             getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, state.getData());
         }
 
@@ -82,9 +80,8 @@ public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
 
         ExternalHandlerProcess process = null;
 
-        if ( processes.size() == 0 ) {
-            process = getObjectManager().create(ExternalHandlerProcess.class,
-                    EXTERNAL_HANDLER_PROCESS.NAME, name);
+        if (processes.size() == 0) {
+            process = getObjectManager().create(ExternalHandlerProcess.class, EXTERNAL_HANDLER_PROCESS.NAME, name);
         } else {
             process = processes.get(0);
         }

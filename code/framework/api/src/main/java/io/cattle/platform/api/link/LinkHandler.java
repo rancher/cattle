@@ -1,8 +1,8 @@
 package io.cattle.platform.api.link;
 
-import java.io.IOException;
-
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+
+import java.io.IOException;
 
 public interface LinkHandler {
 

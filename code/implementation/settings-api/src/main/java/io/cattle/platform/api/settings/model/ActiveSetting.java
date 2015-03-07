@@ -5,7 +5,6 @@ import io.cattle.platform.core.model.Setting;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-
 @Type(update = true)
 public class ActiveSetting {
 
@@ -52,7 +51,7 @@ public class ActiveSetting {
 
     @Field(update = true)
     public String getValue() {
-        if ( value == null && ! isInDb && activeValue != null) {
+        if (value == null && !isInDb && activeValue != null) {
             return ArchaiusUtil.getString(name).get();
         }
         return value;

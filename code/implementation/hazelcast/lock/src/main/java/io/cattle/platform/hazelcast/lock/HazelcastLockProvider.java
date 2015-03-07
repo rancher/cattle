@@ -23,8 +23,8 @@ public class HazelcastLockProvider extends AbstractStandardLockProvider {
 
     @Override
     protected void destroyLock(StandardLock lock) {
-        //TODO: GC locks....
-//        ((ILock)lock.getLock()).destroy();
+        // TODO: GC locks....
+        // ((ILock)lock.getLock()).destroy();
     }
 
     public HazelcastInstance getHazelcast() {

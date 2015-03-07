@@ -23,30 +23,24 @@ public class InstanceStopPostAction extends AbstractObjectProcessLogic implement
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Instance instance = (Instance)state.getResource();
+        Instance instance = (Instance) state.getResource();
 
         String chainProcess = null;
-        boolean start = DataAccessor.fromMap(state.getData())
-                .withScope(InstanceProcessOptions.class)
-                .withKey(InstanceProcessOptions.START)
-                .withDefault(false)
+        boolean start = DataAccessor.fromMap(state.getData()).withScope(InstanceProcessOptions.class).withKey(InstanceProcessOptions.START).withDefault(false)
                 .as(Boolean.class);
 
-        boolean haRestart = DataAccessor.fromMap(state.getData())
-                .withScope(InstanceProcessOptions.class)
-                .withKey(InstanceProcessOptions.HA_RESTART)
-                .withDefault(false)
-                .as(Boolean.class);
+        boolean haRestart = DataAccessor.fromMap(state.getData()).withScope(InstanceProcessOptions.class).withKey(InstanceProcessOptions.HA_RESTART)
+                .withDefault(false).as(Boolean.class);
 
-        if ( haRestart ) {
-            if ( InstanceConstants.ON_STOP_REMOVE.equals(instance.getInstanceTriggeredStop()) ) {
+        if (haRestart) {
+            if (InstanceConstants.ON_STOP_REMOVE.equals(instance.getInstanceTriggeredStop())) {
                 chainProcess = objectProcessManager.getStandardProcessName(StandardProcess.REMOVE, instance);
-            } else if ( InstanceConstants.ON_STOP_RESTART.equals(instance.getInstanceTriggeredStop()) ) {
+            } else if (InstanceConstants.ON_STOP_RESTART.equals(instance.getInstanceTriggeredStop())) {
                 chainProcess = InstanceConstants.PROCESS_START;
             }
-        } else if ( start ) {
+        } else if (start) {
             chainProcess = InstanceConstants.PROCESS_START;
-        } else if ( Boolean.TRUE.equals(state.getData().get(InstanceConstants.REMOVE_OPTION)) ) {
+        } else if (Boolean.TRUE.equals(state.getData().get(InstanceConstants.REMOVE_OPTION))) {
             chainProcess = objectProcessManager.getStandardProcessName(StandardProcess.REMOVE, instance);
         }
 

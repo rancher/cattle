@@ -35,8 +35,7 @@ public class LoadBalancerSetHosts extends AbstractObjectProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         LoadBalancer lb = (LoadBalancer) state.getResource();
-        List<? extends Long> newHostIds = DataAccessor.fromMap(state.getData())
-                .withKey(LoadBalancerConstants.FIELD_LB_HOST_IDS).asList(jsonMapper, Long.class);
+        List<? extends Long> newHostIds = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_LB_HOST_IDS).asList(jsonMapper, Long.class);
 
         if (newHostIds != null) {
             // remove old host set
@@ -50,24 +49,17 @@ public class LoadBalancerSetHosts extends AbstractObjectProcessHandler {
 
     private void createNewHostMaps(LoadBalancer lb, List<? extends Long> newHostIds) {
         for (Long hostId : newHostIds) {
-            LoadBalancerHostMap lbHostMap = mapDao.findNonRemoved(
-                    LoadBalancerHostMap.class,
-                    LoadBalancer.class, lb.getId(), Host.class, hostId);
+            LoadBalancerHostMap lbHostMap = mapDao.findNonRemoved(LoadBalancerHostMap.class, LoadBalancer.class, lb.getId(), Host.class, hostId);
             if (lbHostMap == null) {
-                lbHostMap = objectManager.create(LoadBalancerHostMap.class,
-                        LOAD_BALANCER_HOST_MAP.LOAD_BALANCER_ID, lb.getId(),
+                lbHostMap = objectManager.create(LoadBalancerHostMap.class, LOAD_BALANCER_HOST_MAP.LOAD_BALANCER_ID, lb.getId(),
                         LOAD_BALANCER_HOST_MAP.HOST_ID, hostId);
             }
-            objectProcessManager.executeProcess(
-                    LoadBalancerConstants.PROCESS_LB_HOST_MAP_CREATE,
-                    lbHostMap, null);
+            objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_HOST_MAP_CREATE, lbHostMap, null);
         }
     }
 
     private void removeOldHostMaps(LoadBalancer lb, List<? extends Long> newHostIds) {
-        List<? extends LoadBalancerHostMap> existingMaps = mapDao.findToRemove(
-                LoadBalancerHostMap.class,
-                LoadBalancer.class, lb.getId());
+        List<? extends LoadBalancerHostMap> existingMaps = mapDao.findToRemove(LoadBalancerHostMap.class, LoadBalancer.class, lb.getId());
 
         List<LoadBalancerHostMap> mapsToRemove = new ArrayList<>();
 
@@ -78,9 +70,7 @@ public class LoadBalancerSetHosts extends AbstractObjectProcessHandler {
         }
 
         for (LoadBalancerHostMap mapToRemove : mapsToRemove) {
-            objectProcessManager.executeProcess(
-                    LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
-                    mapToRemove, null);
+            objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE, mapToRemove, null);
         }
     }
 }

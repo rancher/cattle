@@ -1,10 +1,9 @@
 package io.cattle.platform.api.pubsub.model;
 
-import java.util.List;
-
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
+import java.util.List;
 
 @Type(pluralName = "subscribe")
 public interface Subscribe {

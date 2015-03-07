@@ -13,20 +13,17 @@ public class InstanceHostMapNicLookup extends AbstractJooqDao implements Instanc
 
     @Override
     public List<? extends Nic> getNics(Object obj) {
-        if ( ! ( obj instanceof InstanceHostMap ) ) {
+        if (!(obj instanceof InstanceHostMap)) {
             return null;
         }
 
-        InstanceHostMap map = (InstanceHostMap)obj;
+        InstanceHostMap map = (InstanceHostMap) obj;
 
-        if ( map.getInstanceId() == null ) {
+        if (map.getInstanceId() == null) {
             return Collections.emptyList();
         }
 
-        return create()
-                .selectFrom(NIC)
-                .where(NIC.INSTANCE_ID.eq(map.getInstanceId()))
-                .fetch();
+        return create().selectFrom(NIC).where(NIC.INSTANCE_ID.eq(map.getInstanceId())).fetch();
     }
 
 }

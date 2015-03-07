@@ -20,7 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class ResourceChangeEventListenerImpl implements ResourceChangeEventListener, Task, TaskOptions {
 
-    volatile Map<Pair<String, String>,Object> changed = new ConcurrentHashMap<Pair<String,String>, Object>();
+    volatile Map<Pair<String, String>, Object> changed = new ConcurrentHashMap<Pair<String, String>, Object>();
     LockDelegator lockDelegator;
     EventService eventService;
 
@@ -43,40 +43,36 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
         String id = event.getResourceId();
         String type = event.getResourceType();
         @SuppressWarnings("unchecked")
-        Map<String,Object> data = (Map<String, Object>)event.getData();
+        Map<String, Object> data = (Map<String, Object>) event.getData();
         Object accountId = data == null ? null : data.get(ObjectMetaDataManager.ACCOUNT_FIELD);
-        if ( accountId == null ) {
+        if (accountId == null) {
             accountId = Boolean.TRUE;
         }
 
-        if ( type != null && id != null ) {
+        if (type != null && id != null) {
             changed.put(new ImmutablePair<String, String>(type, id), accountId);
         }
     }
 
     @Override
     public void run() {
-        if ( ! lockDelegator.tryLock(new ResourceChangePublishLock()) ) {
+        if (!lockDelegator.tryLock(new ResourceChangePublishLock())) {
             changed.clear();
             return;
         }
 
-        Map<Pair<String, String>,Object> changed = this.changed;
-        this.changed = new ConcurrentHashMap<Pair<String,String>, Object>();
+        Map<Pair<String, String>, Object> changed = this.changed;
+        this.changed = new ConcurrentHashMap<Pair<String, String>, Object>();
 
-        for ( Map.Entry<Pair<String, String>,Object> entry : changed.entrySet() ) {
-            Pair<String,String> pair = entry.getKey();
+        for (Map.Entry<Pair<String, String>, Object> entry : changed.entrySet()) {
+            Pair<String, String> pair = entry.getKey();
             Object accountId = entry.getValue();
 
-            eventService.publish(EventVO.newEvent(IaasEvents.RESOURCE_CHANGE)
-                    .withResourceType(pair.getLeft())
-                    .withResourceId(pair.getRight()));
+            eventService.publish(EventVO.newEvent(IaasEvents.RESOURCE_CHANGE).withResourceType(pair.getLeft()).withResourceId(pair.getRight()));
 
-            if ( accountId instanceof Number ) {
-                String event = IaasEvents.appendAccount(IaasEvents.RESOURCE_CHANGE, ((Number)accountId).longValue());
-                eventService.publish(EventVO.newEvent(event)
-                        .withResourceType(pair.getLeft())
-                        .withResourceId(pair.getRight()));
+            if (accountId instanceof Number) {
+                String event = IaasEvents.appendAccount(IaasEvents.RESOURCE_CHANGE, ((Number) accountId).longValue());
+                eventService.publish(EventVO.newEvent(event).withResourceType(pair.getLeft()).withResourceId(pair.getRight()));
             }
         }
     }

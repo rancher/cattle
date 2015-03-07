@@ -1,9 +1,9 @@
 package io.cattle.platform.task.cleanup;
 
-import javax.inject.Inject;
-
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.dao.impl.TaskDaoImpl;
+
+import javax.inject.Inject;
 
 public class CleanupTaskInstances implements Task {
 

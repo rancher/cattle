@@ -17,7 +17,7 @@ public class ParentExtensionDiscovery implements BeanPostProcessor, ApplicationC
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        for ( ExtensionDiscovery discovery : extensions ) {
+        for (ExtensionDiscovery discovery : extensions) {
             discovery.postProcessBeforeInitialization(bean, beanName);
         }
 
@@ -27,7 +27,7 @@ public class ParentExtensionDiscovery implements BeanPostProcessor, ApplicationC
     @PostConstruct
     public void init() {
         ApplicationContext parent = applicationContext.getParent();
-        while ( parent != null ) {
+        while (parent != null) {
             extensions.addAll(parent.getBeansOfType(ExtensionDiscovery.class).values());
             parent = parent.getParent();
         }

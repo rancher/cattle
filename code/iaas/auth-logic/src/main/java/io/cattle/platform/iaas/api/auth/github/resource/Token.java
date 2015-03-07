@@ -67,7 +67,7 @@ public class Token {
         return clientId;
     }
 
-    @Field(nullable=true)
+    @Field(nullable = true)
     public String getUserType() {
         return userType;
     }

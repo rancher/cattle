@@ -22,23 +22,20 @@ public class HostVnetMatchConstraintProvider implements AllocationConstraintsPro
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
-        for ( Nic nic : attempt.getNics() ) {
+        for (Nic nic : attempt.getNics()) {
             Network network = objectManager.loadResource(Network.class, nic.getNetworkId());
-            boolean dynamic = DataAccessor.fields(network)
-                                    .withKey(NetworkConstants.FIELD_DYNAMIC_CREATE_VNET)
-                                    .withDefault(false)
-                                    .as(Boolean.class);
+            boolean dynamic = DataAccessor.fields(network).withKey(NetworkConstants.FIELD_DYNAMIC_CREATE_VNET).withDefault(false).as(Boolean.class);
 
             boolean add = false;
-            if ( dynamic ) {
-                if ( nic.getVnetId() != null ) {
+            if (dynamic) {
+                if (nic.getVnetId() != null) {
                     add = true;
                 }
             } else {
                 add = true;
             }
 
-            if ( add ) {
+            if (add) {
                 constraints.add(new HostVnetMatchConstraint(nic.getId(), nic.getVnetId(), objectManager, allocatorDao));
             }
         }

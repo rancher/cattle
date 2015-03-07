@@ -87,8 +87,7 @@ public abstract class AbstractRequest implements Request {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [itemName=" + itemName + ", client=" + client + ", appliedVersion=" + appliedVersion
-                + ", params=" + params + "]";
+        return getClass().getSimpleName() + " [itemName=" + itemName + ", client=" + client + ", appliedVersion=" + appliedVersion + ", params=" + params + "]";
     }
 
 }

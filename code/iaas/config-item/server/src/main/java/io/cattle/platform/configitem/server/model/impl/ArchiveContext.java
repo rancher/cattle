@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
-
 public class ArchiveContext {
 
     String version;

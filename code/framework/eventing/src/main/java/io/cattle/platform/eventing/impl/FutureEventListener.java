@@ -29,10 +29,10 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
 
     @Override
     public synchronized void onEvent(Event reply) {
-        if ( future != null && event != null ) {
+        if (future != null && event != null) {
             String[] previous = reply.getPreviousIds();
 
-            if ( previous != null && previous.length > 0 && previous[0].equals(event.getId()) ) {
+            if (previous != null && previous.length > 0 && previous[0].equals(event.getId())) {
                 EventVO<Object> replyWithName = new EventVO<Object>(reply);
                 replyWithName.setName(appendReply(event.getName()));
 
@@ -40,12 +40,12 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
 
                 String transitioning = replyWithName.getTransitioning();
 
-                if ( transitioning == null || Event.TRANSITIONING_NO.equals(transitioning) ) {
+                if (transitioning == null || Event.TRANSITIONING_NO.equals(transitioning)) {
                     future.set(replyWithName);
-                } else if ( Event.TRANSITIONING_ERROR.equals(transitioning) ) {
+                } else if (Event.TRANSITIONING_ERROR.equals(transitioning)) {
                     future.setException(new EventExecutionException(replyWithName));
-                } else if ( progress != null ){
-                    if ( retry != null ) {
+                } else if (progress != null) {
+                    if (retry != null) {
                         retry.setKeepalive(true);
                     }
                     progress.progress(replyWithName);
@@ -56,7 +56,7 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
 
     protected String appendReply(String name) {
         int i = name.indexOf(";");
-        if ( i == -1 ) {
+        if (i == -1) {
             return name + Event.REPLY_SUFFIX;
         } else {
             return name.substring(0, i) + Event.REPLY_SUFFIX + name.substring(i);
@@ -78,7 +78,6 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
     public void setFuture(SettableFuture<Event> future) {
         this.future = future;
     }
-
 
     public boolean isFailed() {
         return failed;

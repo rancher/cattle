@@ -21,7 +21,6 @@ import java.util.jar.Pack200;
 import java.util.jar.Pack200.Unpacker;
 import java.util.zip.ZipEntry;
 
-
 public class Bootstrap implements Closeable {
 
     public static final String RESOURCES = "resources.jar";
@@ -40,15 +39,15 @@ public class Bootstrap implements Closeable {
     protected void setHomeAndEnv() throws IOException {
         String home = System.getenv("CATTLE_HOME");
 
-        if ( home == null ) {
+        if (home == null) {
             home = System.getProperty("cattle.home");
         }
 
-        if ( home == null ) {
+        if (home == null) {
             home = new File(System.getProperty("user.home"), ".cattle") + File.separator;
         }
 
-        if ( ! home.endsWith(File.separator) ) {
+        if (!home.endsWith(File.separator)) {
             home = home + File.separator;
         }
 
@@ -56,33 +55,33 @@ public class Bootstrap implements Closeable {
 
         File homeFile = new File(home);
 
-        if ( ! homeFile.exists() && ! homeFile.mkdirs() ) {
+        if (!homeFile.exists() && !homeFile.mkdirs()) {
             throw new IOException("Failed to create [" + homeFile.getAbsolutePath() + "]");
         }
 
         this.home = new File(home);
 
-        if ( System.getProperty("logback.bootstrap.level") == null ) {
+        if (System.getProperty("logback.bootstrap.level") == null) {
             System.setProperty("logback.bootstrap.level", "WARN");
         }
 
         String lib = System.getenv("CATTLE_LIB");
 
-        if ( lib == null ) {
+        if (lib == null) {
             lib = System.getProperty("cattle.lib");
         }
 
-        if ( lib != null ) {
+        if (lib != null) {
             System.setProperty("cattle.lib", lib);
         }
 
-        if ( lib != null ) {
+        if (lib != null) {
             libDir = new File(lib);
         }
     }
 
     protected void mkdirs(File dir) throws IOException {
-        if ( ! dir.exists() && ! dir.mkdirs() ) {
+        if (!dir.exists() && !dir.mkdirs()) {
             throw new IOException("Failed to create directory [" + dir + "]");
         }
     }
@@ -90,7 +89,7 @@ public class Bootstrap implements Closeable {
     protected JarInputStream getInput() throws IOException {
         String input = System.getenv("INPUT");
 
-        if ( input != null ) {
+        if (input != null) {
             return new JarInputStream(new FileInputStream(input));
         }
 
@@ -102,7 +101,7 @@ public class Bootstrap implements Closeable {
 
     public static void closeQuietly(Closeable closeable) {
         try {
-            if ( closeable != null ) {
+            if (closeable != null) {
                 closeable.close();
             }
         } catch (IOException ioe) {
@@ -114,8 +113,8 @@ public class Bootstrap implements Closeable {
 
         try {
             JarEntry entry = null;
-            while ( (entry = is.getNextJarEntry()) != null ) {
-                if ( ! entry.getName().equals(RESOURCES) ) {
+            while ((entry = is.getNextJarEntry()) != null) {
+                if (!entry.getName().equals(RESOURCES)) {
                     continue;
                 }
 
@@ -136,22 +135,22 @@ public class Bootstrap implements Closeable {
     protected void determineLibDir(JarInputStream is) throws IOException {
         version = getVersion(is);
 
-        if ( version == null ) {
+        if (version == null) {
             System.err.println("No cattle version found in jar");
             version = UUID.randomUUID().toString();
         }
 
-        if ( libDir == null ) {
+        if (libDir == null) {
             libDir = new File(new File(home, "lib"), version);
         }
     }
 
     protected void extractLib(JarInputStream is) throws IOException {
-        if ( libDir.exists() ) {
+        if (libDir.exists()) {
             return;
         }
 
-        if ( war ) {
+        if (war) {
             System.out.println("[BOOTSTRAP] Creating " + warName);
         } else {
             System.out.println("[BOOTSTRAP] Running first time extraction");
@@ -159,7 +158,7 @@ public class Bootstrap implements Closeable {
         extractFiles(is, true);
         System.out.println("\n[BOOTSTRAP] Done");
 
-        if ( tempDir != null ) {
+        if (tempDir != null) {
             tempDir.renameTo(libDir);
             tempDir = null;
         }
@@ -169,8 +168,8 @@ public class Bootstrap implements Closeable {
         int count = 0;
         JarEntry entry = null;
 
-        while ( (entry = is.getNextJarEntry()) != null ) {
-            if ( ! entry.isDirectory() )
+        while ((entry = is.getNextJarEntry()) != null) {
+            if (!entry.isDirectory())
                 count++;
         }
 
@@ -186,12 +185,12 @@ public class Bootstrap implements Closeable {
         int every = 10;
 
         JarEntry entry = null;
-        while ( (entry = is.getNextJarEntry()) != null ) {
+        while ((entry = is.getNextJarEntry()) != null) {
             String name = entry.getName();
 
-            if ( name.equals(RESOURCES) ) {
+            if (name.equals(RESOURCES)) {
                 extractFiles(new JarInputStream(new NoCloseInputStream(is)), false);
-            } else if ( name.endsWith(".pack") ) {
+            } else if (name.endsWith(".pack")) {
                 name = name.substring(0, name.length() - 5);
                 JarOutputStream os = new JarOutputStream(getOutputStream(name, false));
                 try {
@@ -200,9 +199,9 @@ public class Bootstrap implements Closeable {
                     closeQuietly(os);
                 }
                 done++;
-            } else if ( ! entry.isDirectory() ) {
-                OutputStream os = getOutputStream(name, first ? ! name.endsWith(".jar") : first);
-                if ( os == null ) {
+            } else if (!entry.isDirectory()) {
+                OutputStream os = getOutputStream(name, first ? !name.endsWith(".jar") : first);
+                if (os == null) {
                     continue;
                 }
 
@@ -211,7 +210,7 @@ public class Bootstrap implements Closeable {
 
                     int count = -1;
 
-                    while ( (count = is.read(buffer)) > 0 ) {
+                    while ((count = is.read(buffer)) > 0) {
                         os.write(buffer, 0, count);
                     }
                 } finally {
@@ -220,9 +219,9 @@ public class Bootstrap implements Closeable {
                 done++;
             }
 
-            if ( first ) {
+            if (first) {
                 int progress = ((done * 100) / total) / every;
-                if ( lastPrinted != progress ) {
+                if (lastPrinted != progress) {
                     System.out.print((progress * every) + "% ");
                     lastPrinted = progress;
                 }
@@ -231,16 +230,16 @@ public class Bootstrap implements Closeable {
     }
 
     protected OutputStream getOutputStream(String name, boolean rootResource) throws IOException {
-        if ( warOutput == null ) {
+        if (warOutput == null) {
             File root = rootResource ? home : tempDir;
             File outputFile = new File(root, name);
 
-            if ( rootResource ) {
-                if ( ! name.startsWith("etc") && ! name.startsWith("extensions") ) {
+            if (rootResource) {
+                if (!name.startsWith("etc") && !name.startsWith("extensions")) {
                     return null;
                 }
 
-                if ( outputFile.exists() ) {
+                if (outputFile.exists()) {
                     return null;
                 }
             }
@@ -248,11 +247,11 @@ public class Bootstrap implements Closeable {
 
             return new FileOutputStream(outputFile);
         } else {
-            if ( rootResource ) {
+            if (rootResource) {
                 return null;
             }
 
-            if ( inEntry ) {
+            if (inEntry) {
                 warOutput.closeEntry();
             }
             warOutput.putNextEntry(new ZipEntry(name));
@@ -262,13 +261,13 @@ public class Bootstrap implements Closeable {
     }
 
     protected void createOutput() throws IOException {
-        if ( war ) {
+        if (war) {
             Manifest manifest = null;
             JarInputStream jis = getInput();
             JarEntry entry = null;
 
-            while ( ( entry = jis.getNextJarEntry() ) != null ) {
-                if ( RESOURCES.equals(entry.getName()) ) {
+            while ((entry = jis.getNextJarEntry()) != null) {
+                if (RESOURCES.equals(entry.getName())) {
                     JarInputStream resourceIs = new JarInputStream(jis);
                     try {
                         manifest = resourceIs.getManifest();
@@ -280,7 +279,7 @@ public class Bootstrap implements Closeable {
             }
 
             try {
-                warName = "cattle-"  + version + ".war";
+                warName = "cattle-" + version + ".war";
                 warOutput = new JarOutputStream(new FileOutputStream(warName), manifest);
             } finally {
                 closeQuietly(jis);
@@ -288,23 +287,21 @@ public class Bootstrap implements Closeable {
         } else {
             tempDir = new File(libDir.getAbsolutePath() + "-" + UUID.randomUUID().toString());
 
-            if ( ! tempDir.mkdirs() ) {
+            if (!tempDir.mkdirs()) {
                 throw new IOException("Failed to create [" + tempDir.getAbsolutePath() + "]");
             }
         }
     }
 
     protected void determineClasspath() throws IOException {
-        classpath = new URL[] {
-                libDir.toURI().toURL()
-        };
+        classpath = new URL[] { libDir.toURI().toURL() };
     }
 
     protected String getVersion(JarInputStream input) throws IOException {
         boolean close = false;
 
         try {
-            if ( input == null ) {
+            if (input == null) {
                 close = true;
                 input = getInput();
             }
@@ -313,36 +310,36 @@ public class Bootstrap implements Closeable {
             String impl = m.getMainAttributes().getValue("Implementation-Version");
             String scm = m.getMainAttributes().getValue("SCM-Revision");
 
-            if ( impl == null ) {
+            if (impl == null) {
                 return "dev";
             }
 
-            if ( impl.contains("SNAPSHOT") && scm != null ) {
+            if (impl.contains("SNAPSHOT") && scm != null) {
                 return impl + "-" + scm + "-" + getCattleId();
             }
 
             return impl;
         } finally {
-            if ( close ) {
+            if (close) {
                 closeQuietly(input);
             }
         }
     }
 
     public void run(String... args) throws Exception {
-        for ( String arg : args ) {
-            if ( arg.contains("version") ) {
+        for (String arg : args) {
+            if (arg.contains("version")) {
                 System.out.println(getVersion(null));
                 System.exit(0);
-            } else if ( arg.equals("war") ) {
+            } else if (arg.equals("war")) {
                 war = true;
             }
         }
 
         System.out.println("[BOOTSTRAP] Starting Cattle");
 
-        if ( war ) {
-            if ( args.length == 1 ) {
+        if (war) {
+            if (args.length == 1) {
                 args = new String[0];
             } else {
                 args = Arrays.copyOfRange(args, 1, args.length - 1);
@@ -373,7 +370,7 @@ public class Bootstrap implements Closeable {
             closeQuietly(is);
             closeQuietly(this);
 
-            if ( war ) {
+            if (war) {
                 return;
             }
 
@@ -392,26 +389,26 @@ public class Bootstrap implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if ( warOutput != null ) {
+        if (warOutput != null) {
             closeQuietly(warOutput);
             warOutput = null;
         }
 
-        if ( tempDir != null && tempDir.exists() ) {
+        if (tempDir != null && tempDir.exists()) {
             delete(tempDir);
             tempDir = null;
         }
     }
 
     protected void delete(File dir) {
-        if ( dir == null ) {
+        if (dir == null) {
             return;
         }
 
         File[] children = dir.listFiles();
-        if ( children != null ) {
-            for ( File child : children ) {
-                if ( child.isDirectory() ) {
+        if (children != null) {
+            for (File child : children) {
+                if (child.isDirectory()) {
                     delete(child);
                 } else {
                     child.delete();

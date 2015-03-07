@@ -1,10 +1,10 @@
 package io.cattle.platform.iaas.api.manager;
 
-import java.util.Map;
-
 import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
 import io.cattle.platform.core.model.Data;
 import io.cattle.platform.core.model.tables.DataTable;
+
+import java.util.Map;
 
 public class DataManager extends AbstractJooqResourceManager {
 
