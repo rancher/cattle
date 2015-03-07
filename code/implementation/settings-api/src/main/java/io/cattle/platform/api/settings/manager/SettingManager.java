@@ -7,9 +7,11 @@ import io.cattle.platform.archaius.sources.NamedConfigurationSource;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TypeUtils;
 
 import java.util.ArrayList;
@@ -20,12 +22,16 @@ import java.util.TreeMap;
 
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.netflix.config.ConcurrentCompositeConfiguration;
 import com.netflix.config.DynamicConfiguration;
 import com.netflix.config.DynamicPropertyFactory;
 
 public class SettingManager extends AbstractJooqResourceManager {
+
+    private static final Logger log = LoggerFactory.getLogger(SettingManager.class);
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -74,6 +80,25 @@ public class SettingManager extends AbstractJooqResourceManager {
             ActiveSetting activeSetting = getSettingByName(setting.getName(), config);
             activeSetting.setSetting(setting);
             return activeSetting;
+        }
+    }
+
+    @Override
+    protected Object removeFromStore(String type, String id, Object obj, ApiRequest request) {
+        int result = create()
+            .delete(SETTING)
+            .where(SETTING.ID.eq(new Long(id)))
+            .execute();
+
+        if ( result != 1 ) {
+            log.error("While deleting type [{}] and id [{}] got a result of [{}]", type, id, result);
+            throw new ClientVisibleException(ResponseCodes.CONFLICT);
+        }
+
+        if ( obj instanceof ActiveSetting ) {
+            return getByIdInternal(type, ((ActiveSetting)obj).getName(), new ListOptions());
+        } else {
+            return obj;
         }
     }
 
@@ -150,7 +175,14 @@ public class SettingManager extends AbstractJooqResourceManager {
             source = ((CompositeConfiguration)config).getSource(name);
         }
 
-        return new ActiveSetting(name, value, toString(source));
+        ActiveSetting activeSetting = new ActiveSetting(name, value, toString(source));
+
+        Setting setting = create().selectFrom(SETTING).where(SETTING.NAME.eq(name)).fetchAny();
+        if ( setting != null ) {
+            activeSetting.setSetting(setting);
+        }
+
+        return activeSetting;
     }
 
     protected String toString(Configuration config) {

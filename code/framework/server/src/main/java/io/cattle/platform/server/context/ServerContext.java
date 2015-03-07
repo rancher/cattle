@@ -8,6 +8,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collections;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 
@@ -18,11 +20,16 @@ public class ServerContext {
     public static final DynamicStringProperty URL_PATH = ArchaiusUtil.getString("cattle.url.path");
     public static final DynamicStringProperty SERVER_IP = ArchaiusUtil.getString("cattle.server.ip");
     public static final DynamicStringProperty SERVER_ID = ArchaiusUtil.getString("cattle.server.id");
+    public static final DynamicStringProperty HOST = ArchaiusUtil.getString("api.host");
 
     private static final String URL_SETTING_FORMAT = "cattle.%s.url";
     private static final String DEFAULT_URL = "cattle.url";
     private static final String FOUND_SERVER_IP = lookupServerIp();
     private static final String SERVER_ID_FORMAT = System.getProperty("cattle.server.id.format", "%s");
+
+    public static boolean isCustomApiHost() {
+        return ! StringUtils.isBlank(HOST.get());
+    }
 
     public static ServerAddress getServerAddress() {
         return getServerAddress(null);
@@ -45,6 +52,13 @@ public class ServerContext {
 
         if ( url == null ) {
             url = ArchaiusUtil.getString(DEFAULT_URL).get();
+        }
+
+        if ( url == null ) {
+            String apiHost = HOST.get();
+            if ( ! StringUtils.isBlank(apiHost) ) {
+                return new ServerAddress("http://" + apiHost + URL_PATH.get());
+            }
         }
 
         if ( url == null ) {
