@@ -61,5 +61,5 @@ fi
 build
 
 if [ "$CI" = "true" ]; then
-    mvn checkstyle:checkstyle-aggregate
+    scripts/checkstyle
 fi

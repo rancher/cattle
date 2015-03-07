@@ -40,7 +40,7 @@ run()
 
 run ./bootstrap
 run ./clean
-MAVEN_ARGS='-B -q' ./build
+CI=true MAVEN_ARGS='-B -q' ./build
 
 run ./run --background
 
