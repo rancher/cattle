@@ -13,6 +13,7 @@ import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.iaas.config.ScopedConfig;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
@@ -25,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
-
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
@@ -50,6 +50,12 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
     @Override
     public void start() {
         future = executor.scheduleWithFixedDelay(this, WAIT, WAIT, TimeUnit.MILLISECONDS);
+        ServerContext.HOST.addCallback(new Runnable() {
+            @Override
+            public void run() {
+                processDestroy();
+            }
+        });
     }
 
     @Override
@@ -57,8 +63,14 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
         if ( future != null ) {
             future.cancel(true);
         }
+
+        processDestroy();
+    }
+
+    protected synchronized void processDestroy() {
         if ( process != null ) {
             process.destroy();
+            process = null;
         }
     }
 
@@ -88,8 +100,8 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
     }
 
     @Override
-    protected void doRun() throws Exception {
-        if ( ! LAUNCH_MACHINE.get() ) {
+    protected synchronized void doRun() throws Exception {
+        if ( ! LAUNCH_MACHINE.get() || ! ServerContext.isCustomApiHost() ) {
             return;
         }
 

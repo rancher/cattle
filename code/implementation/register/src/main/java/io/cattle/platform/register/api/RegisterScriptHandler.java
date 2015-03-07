@@ -3,8 +3,10 @@ package io.cattle.platform.register.api;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.request.handler.ScriptsHandler;
+import io.cattle.platform.iaas.config.ScopedConfig;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
 import io.cattle.platform.register.util.RegisterConstants;
+import io.cattle.platform.server.context.ServerContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
@@ -31,6 +33,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
     private static final DynamicStringProperty URL = ArchaiusUtil.getString("agent.instance.register.url");
 
     RegistrationAuthTokenManager tokenManager;
+    @Inject ScopedConfig scopedConfig;
 
     @Override
     public boolean handle(ApiRequest request) throws IOException {
@@ -70,6 +73,10 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
         if ( ! StringUtils.isBlank(url) ) {
             return url;
+        }
+
+        if ( ServerContext.isCustomApiHost() ) {
+            return scopedConfig.getApiUrl(null);
         }
 
         return request.getUrlBuilder().version(request.getApiVersion()).toExternalForm();
