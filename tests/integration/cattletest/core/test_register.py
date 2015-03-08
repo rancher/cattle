@@ -87,18 +87,23 @@ def test_registration_token_account_create(kind, admin_client, cattle_url):
 def test_registration_token_list(service_client, client):
     # Proves the service_client has access to all tokens
     tokens = service_client.list_registration_token(limit=1000)
-    preCount = len(tokens)
-    assert preCount < 1000, "Too many tokens. " \
-                            "Count: [%s]. Clear database." % preCount
+    pre_count = len(tokens)
+    assert pre_count < 1000, "Too many tokens. " \
+                             "Count: [%s]. Clear database." % pre_count
     t = client.create_registration_token()
     t = client.wait_success(t)
     assert t.state == 'active'
     tokens = service_client.list_registration_token(limit=1000)
-    postCount = len(tokens)
-    assert postCount > preCount
+    post_count = len(tokens)
+    assert post_count > pre_count
 
     token = service_client.by_id_registration_token(t.id)
     assert token is not None
+    assert token.command.startswith('sudo docker run')
+
+    parts = token.command.split()
+
+    assert token.registrationUrl == parts[-1]
 
 
 def test_service_create_token(service_client, client, user_account):
