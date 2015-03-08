@@ -135,11 +135,14 @@ def test_docker_stop(admin_client, docker_context):
 
     assert container.state == 'running'
 
-    container = container.stop()
+    start = time.time()
+    container = container.stop(timeout=0)
     assert container.state == 'stopping'
 
     container = wait_success(admin_client, container)
+    delta = time.time() - start
     assert container.state == 'stopped'
+    assert delta < 10
 
 
 @if_docker
@@ -153,7 +156,7 @@ def test_docker_purge(admin_client, docker_context):
 
     assert container.state == 'running'
 
-    container = container.stop()
+    container = container.stop(timeout=0)
     assert container.state == 'stopping'
 
     container = wait_success(admin_client, container)
@@ -320,7 +323,7 @@ def test_docker_ports_from_container(client, admin_client,
 
     assert c.primaryIpAddress == privateIp.address
 
-    c = client.wait_success(c.stop())
+    c = client.wait_success(c.stop(timeout=0))
     assert c.state == 'stopped'
 
     count = 0
@@ -346,7 +349,7 @@ def test_docker_ports_from_container(client, admin_client,
 
     assert count == 1
 
-    c.stop(remove=True)
+    c.stop(remove=True, timeout=0)
 
 
 @if_docker
@@ -502,8 +505,8 @@ def test_docker_volumes(client, admin_client, super_client, docker_context):
         elif mount.path == '/baz':
             assert mount.volumeId == baz_vol.id
 
-    c.stop(remove=True)
-    c2.stop(remove=True)
+    c.stop(remove=True, timeout=0)
+    c2.stop(remove=True, timeout=0)
 
     _check_path(foo_vol, True, admin_client)
     foo_vol = admin_client.wait_success(foo_vol.deactivate())
@@ -617,7 +620,7 @@ def test_docker_mount_life_cycle(client, admin_client, docker_context):
 
     check_mounts(c, 'active', 2)
 
-    c = admin_client.wait_success(c.stop(remove=True))
+    c = admin_client.wait_success(c.stop(remove=True, timeout=0))
     check_mounts(c, 'inactive', 2)
 
     c = admin_client.wait_success(c.restore())
@@ -628,7 +631,7 @@ def test_docker_mount_life_cycle(client, admin_client, docker_context):
     assert c.state == 'running'
     check_mounts(c, 'active', 2)
 
-    c = admin_client.wait_success(c.stop(remove=True))
+    c = admin_client.wait_success(c.stop(remove=True, timeout=0))
     c = admin_client.wait_success(c.purge())
     assert c.state == 'purged'
     check_mounts(c, 'removed', 2)
@@ -647,7 +650,11 @@ def _check_path(volume, should_exist, super_client):
                              '/tmp:/host/tmp'])
     c.start()
     c = super_client.wait_success(c)
-    c = _wait_until_stopped(c, super_client)
+    if 'stop' in c:
+        c = super_client.wait_success(c.stop(timeout=1))
+
+    c = super_client.wait_success(c)
+    assert c.state == 'stopped'
 
     code = c.data.dockerInspect.State.ExitCode
     if should_exist:
@@ -668,15 +675,3 @@ def _path_to_volume(volume):
         mounted_path = re.sub('^.*?/tmp', '/host/tmp',
                               path)
     return mounted_path
-
-
-def _wait_until_stopped(container, admin_client, timeout=45):
-        start = time.time()
-        container = admin_client.reload(container)
-        while container.state != 'stopped':
-            time.sleep(.5)
-            container = admin_client.reload(container)
-            if time.time() - start > timeout:
-                raise Exception('Timeout waiting for container to stop.')
-
-        return container

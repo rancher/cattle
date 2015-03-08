@@ -5,6 +5,10 @@
             "type" : "boolean",
             "create" : true
         },
+        "timeout" : {
+            "type" : "int",
+            "create" : true
+        },
         "deallocateFromHost" : {
             "type" : "boolean",
             "create" : true

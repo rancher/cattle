@@ -92,6 +92,7 @@
         p:agentResourceRelationship="host"
         p:dataTypeClass="io.cattle.platform.core.model.InstanceHostMap"
         p:processNames="instancehostmap.deactivate"
+        p:processDataKeys="timeout"
         p:shortCircuitIfRemoved="host" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>

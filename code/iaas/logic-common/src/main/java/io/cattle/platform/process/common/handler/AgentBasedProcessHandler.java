@@ -21,6 +21,9 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -50,6 +53,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     String dataResourceRelationship;
     String eventResourceRelationship;
     String shortCircuitIfRemoved;
+    List<String> processDataKeys = new ArrayList<>();
 
     String expression;
     int priority = Priority.SPECIFIC;
@@ -102,8 +106,23 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         ObjectSerializer serializer = getObjectSerializer(dataResource);
         Map<String, Object> data = serializer == null ? null : serializer.serialize(dataResource);
-        EventVO<Object> event = EventVO.newEvent(getCommandName() == null ? process.getName() : getCommandName()).withData(data).withResourceType(
-                getObjectManager().getType(eventResource)).withResourceId(ObjectUtils.getId(eventResource).toString());
+
+        Map<String, Object> processData = new HashMap<String, Object>();
+        for (String key : processDataKeys) {
+            Object value = state.getData().get(key);
+            if (value != null) {
+                processData.put(key, value);
+            }
+        }
+
+        if (processData.size() > 0) {
+            data.put("processData", processData);
+        }
+
+        EventVO<Object> event = EventVO.newEvent(getCommandName() == null ? process.getName() : getCommandName())
+                .withData(data)
+                .withResourceType(getObjectManager().getType(eventResource))
+                .withResourceId(ObjectUtils.getId(eventResource).toString());
 
         preProcessEvent(event, state, process, eventResource, dataResource, agentResource);
 
@@ -417,4 +436,13 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     public void setShortCircuitIfRemoved(String shortCircuitIfRemoved) {
         this.shortCircuitIfRemoved = shortCircuitIfRemoved;
     }
+
+    public List<String> getProcessDataKeys() {
+        return processDataKeys;
+    }
+
+    public void setProcessDataKeys(List<String> processDataKeys) {
+        this.processDataKeys = processDataKeys;
+    }
+
 }

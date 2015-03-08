@@ -114,6 +114,7 @@
 
         "instanceStop" : "cr",
         "instanceStop.remove" : "cr",
+        "instanceStop.timeout" : "cr",
 
         "ipAddress" : "r",
         "ipAddress.address" : "r",
