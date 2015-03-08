@@ -39,6 +39,18 @@ public class SettingManager extends AbstractJooqResourceManager {
     }
 
     @Override
+    protected Object createInternal(String type, ApiRequest request) {
+        Setting setting = request.proxyRequestObject(Setting.class);
+
+        Object existing = getByIdInternal(type, setting.getName(), new ListOptions());
+        if ( existing instanceof ActiveSetting && ((ActiveSetting)existing).isInDb() ) {
+            return updateInternal(type, setting.getName(), existing, request);
+        } else {
+            return super.createInternal(type, request);
+        }
+    }
+
+    @Override
     protected Object updateInternal(String type, String id, Object obj, ApiRequest request) {
         type = request.getSchemaFactory().getSchemaName(Setting.class);
 

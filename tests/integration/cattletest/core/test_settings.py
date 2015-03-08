@@ -77,3 +77,21 @@ def test_console_update_existing(admin_client):
 
     s = admin_client.by_id_setting(id)
     assert s.value == '9346'
+
+
+def test_settings_insert(admin_client, random_str):
+    name = random_str + '-test'
+    value = random_str + '-value'
+    value2 = random_str + '-value2'
+
+    s = admin_client.create_setting(name=name, value=value)
+    assert s.name == name
+    assert s.value == value
+    s = admin_client.by_id_setting(s.name)
+
+    s2 = admin_client.create_setting(name=name, value=value2)
+    assert s2.name == name
+    assert s2.value == value2
+    assert s.id == s2.id
+
+    admin_client.delete(s)
