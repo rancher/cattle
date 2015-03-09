@@ -17,6 +17,7 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.server.model.ApiServletContext;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
@@ -150,7 +151,15 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
     }
 
     private String getTokenFromRequest(ApiRequest apiRequest) {
-        HttpServletRequest request = apiRequest.getServletContext().getRequest();
+        ApiServletContext apiServletContext = apiRequest.getServletContext();
+        if (apiServletContext == null) {
+            /* The apiServletContext will be null during any non-HTTP request call
+             * to this method.  Specifically during the pub/sub operations which
+             * are done in the background
+             */
+            throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED);
+        }
+        HttpServletRequest request = apiServletContext.getRequest();
         String token = request.getHeader(AUTH);
         if (StringUtils.isEmpty(token)) {
             throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED);
