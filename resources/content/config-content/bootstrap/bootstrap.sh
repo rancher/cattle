@@ -65,9 +65,9 @@ download_agent()
 start_agent()
 {
     local main=${CATTLE_HOME}/pyagent/apply.sh
-    export AGENT_PARENT_PID=$$
+    export AGENT_PARENT_PID=$PPID
     info Starting agent $main
-    $main start
+    exec $main start
 }
 
 print_config()
