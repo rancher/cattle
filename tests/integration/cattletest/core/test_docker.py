@@ -125,6 +125,18 @@ def test_docker_command_args(admin_client, docker_context):
 
 
 @if_docker
+def test_short_lived_container(admin_client, docker_context):
+    network = find_one(admin_client.list_network, uuid='managed-docker0')
+    container = admin_client.create_container(imageUuid="docker:tianon/true",
+                                              networkIds=[network.id])
+
+    container = wait_until_expected_state(admin_client, container, 'stopped')
+
+    assert container.state == 'stopped'
+    assert container.transitioning == 'no'
+
+
+@if_docker
 def test_docker_stop(admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
     container = admin_client.create_container(name='test', imageUuid=uuid)
