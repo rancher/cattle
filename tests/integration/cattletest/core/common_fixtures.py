@@ -3,8 +3,8 @@ import os
 import pytest
 import random
 import time
+import inspect
 from datetime import datetime, timedelta
-
 
 NOT_NONE = object()
 DEFAULT_TIMEOUT = 90
@@ -186,6 +186,25 @@ def sim_context3(super_client):
                               public=True)
 
 
+@pytest.fixture
+def new_sim_context(super_client):
+    uri = 'sim://' + random_str()
+    sim_context = kind_context(super_client, 'sim', uri=uri, uuid=uri)
+
+    for i in ['host', 'pool', 'agent']:
+        sim_context[i] = super_client.wait_success(sim_context[i])
+
+    host = sim_context['host']
+    pool = sim_context['pool']
+    agent = sim_context['agent']
+
+    assert host is not None
+    assert pool is not None
+    assert agent is not None
+
+    return sim_context
+
+
 @pytest.fixture(scope='session')
 def user_sim_context(super_client, user_account):
     return create_sim_context(super_client, 'usersimagent', ip='192.168.11.1',
@@ -274,16 +293,18 @@ def wait_transitioning(client, obj, timeout=DEFAULT_TIMEOUT):
 
 
 @pytest.fixture
-def wait_until_expected_state(client, resource, expected_state,
-                              timeout=DEFAULT_TIMEOUT):
+def wait_for_condition(client, resource, check_function, fail_handler=None,
+                       timeout=DEFAULT_TIMEOUT):
     start = time.time()
     resource = client.reload(resource)
-    while resource.state != expected_state:
+    while not check_function(resource):
         if time.time() - start > timeout:
-            raise Exception(
-                'Timeout waiting for ' + resource.kind + ' to be in state=' +
-                expected_state + '; current state=' + resource.state
-                )
+            exceptionMsg = 'Timeout waiting for ' + resource.kind + \
+                ' to satisfy condition: ' + \
+                inspect.getsource(check_function)
+            if (fail_handler):
+                exceptionMsg = exceptionMsg + fail_handler(resource)
+            raise Exception(exceptionMsg)
 
         time.sleep(.5)
         resource = client.reload(resource)
@@ -603,17 +624,21 @@ def create_sim_container(admin_client, sim_context, *args, **kw):
 
 
 def create_agent_instance_nsp(admin_client, sim_context):
+    accountId = sim_context['host'].accountId
     network = create_and_activate(admin_client, 'hostOnlyNetwork',
                                   hostVnetUri='test:///',
-                                  dynamicCreateVnet=True)
+                                  dynamicCreateVnet=True,
+                                  accountId=accountId)
 
     create_and_activate(admin_client, 'subnet',
                         networkAddress='192.168.0.0',
-                        networkId=network.id)
+                        networkId=network.id,
+                        accountId=accountId)
 
     return create_and_activate(admin_client, 'agentInstanceProvider',
                                networkId=network.id,
-                               agentInstanceImageUuid=sim_context['imageUuid'])
+                               agentInstanceImageUuid=sim_context['imageUuid'],
+                               accountId=accountId)
 
 
 @pytest.fixture(scope='session')

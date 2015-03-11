@@ -83,6 +83,7 @@
                 <module>code/iaas/system</module>
                 <module>code/iaas/task-jooq</module>
                 <module>code/iaas/lb-instance</module>
+                <module>code/iaas/cluster-logic</module>
             </modules>
         </profile>
         <profile>

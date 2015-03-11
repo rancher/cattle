@@ -1,0 +1,11 @@
+{
+    "resourceFields": {
+        "certificateId": {
+            "type": "reference[certificate]",
+            "create": true,
+            "update": true,
+            "nullable": true,
+            "description":"Reference to certificate chain, cert, and key used for server to communicate to docker daemons"
+        }
+    }
+}

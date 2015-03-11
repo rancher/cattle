@@ -1,6 +1,8 @@
 package io.cattle.platform.networking.host.process;
 
 import static io.cattle.platform.core.model.tables.NicTable.*;
+import io.cattle.iaas.cluster.service.ClusterManager;
+import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostVnetMap;
@@ -27,6 +29,9 @@ import javax.inject.Inject;
 
 public class HostOnlyNicActivate extends AbstractObjectProcessLogic implements ProcessPreListener {
 
+    @Inject
+    ClusterManager clusterManager;
+
     HostOnlyDao hostOnlyDao;
     LockManager lockManager;
     GenericMapDao mapDao;
@@ -50,24 +55,29 @@ public class HostOnlyNicActivate extends AbstractObjectProcessLogic implements P
         Vnet vnet = null;
 
         for (Host host : mappedChildren(instance, Host.class)) {
-            vnet = hostOnlyDao.getVnetForHost(network, host);
+            Host actualHost = host;
+            if (objectManager.isKind(host, ClusterConstants.KIND)) {
+                actualHost = clusterManager.getManagingHost(host);
+            }
+            vnet = hostOnlyDao.getVnetForHost(network, actualHost);
 
             if (vnet == null) {
-                vnet = createVnetForHost(subnet, network, host);
+                vnet = createVnetForHost(subnet, network, actualHost);
             }
 
             createIgnoreCancel(vnet, null);
 
             boolean mapped = false;
             for (HostVnetMap map : mapDao.findNonRemoved(HostVnetMap.class, Vnet.class, vnet.getId())) {
-                if (map.getHostId().equals(host.getId())) {
+                if (map.getHostId().equals(actualHost.getId())) {
                     createThenActivate(map, state.getData());
                     mapped = true;
+                    break;
                 }
             }
 
             if (!mapped) {
-                HostVnetMap map = mapVnetToHost(vnet, network, host);
+                HostVnetMap map = mapVnetToHost(vnet, network, actualHost);
                 createThenActivate(map, state.getData());
             }
 
