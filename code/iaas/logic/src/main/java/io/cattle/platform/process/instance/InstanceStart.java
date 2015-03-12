@@ -18,6 +18,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.util.exception.ExecutionException;
 
@@ -135,7 +136,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     }
 
     protected HandlerResult stopOrRemove(ProcessState state, Instance instance, ExecutionException e) {
-        if (InstanceCreate.isCreateStart(state)) {
+        if (InstanceCreate.isCreateStart(state) && !ContainerEventCreate.isNativeDockerStart(state) ) {
             getObjectProcessManager().scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
         } else {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);

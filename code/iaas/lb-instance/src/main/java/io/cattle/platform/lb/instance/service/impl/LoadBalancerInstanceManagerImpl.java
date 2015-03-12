@@ -4,6 +4,7 @@ import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -70,7 +71,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer, Long... hostIds) {
         List<Instance> result = new ArrayList<Instance>();
         List<Long> hosts = populateHosts(loadBalancer, hostIds);
-        Network network = ntwkDao.getNetworkForObject(loadBalancer);
+        Network network = ntwkDao.getNetworkForObject(loadBalancer, NetworkConstants.KIND_HOSTONLY);
         if (network == null) {
             throw new RuntimeException(
                     "Unable to find a network to start a load balancer " + loadBalancer);

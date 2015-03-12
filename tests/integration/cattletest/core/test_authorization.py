@@ -196,6 +196,8 @@ def test_container_auth(admin_client, client):
         'tty': 'cr',
         'user': 'cr',
         'systemContainer': 'r',
+        'nativeContainer': 'r',
+        'externalId': 'r'
     })
 
     auth_check(client.schema, 'container', 'crud', {
@@ -239,6 +241,8 @@ def test_container_auth(admin_client, client):
         'tty': 'cr',
         'user': 'cr',
         'systemContainer': 'r',
+        'nativeContainer': 'r',
+        'externalId': 'r',
     })
 
 
@@ -617,4 +621,40 @@ def test_lb_host_map(admin_client, client):
         'hostId': 'r',
         'loadBalancerId': 'r',
         'accountId': 'r',
+        })
+
+
+def test_container_events(admin_client, client, agent_client):
+    auth_check(admin_client.schema, 'containerEvent', 'r', {
+        'externalTimestamp': 'r',
+        'hostId': 'r',
+        'accountId': 'r',
+        'externalFrom': 'r',
+        'reportedHostUuid': 'r',
+        'externalId': 'r',
+        'externalStatus': 'r',
+        'data': 'r',
+        'dockerInspect': 'r'
+    })
+
+    auth_check(agent_client.schema, 'containerEvent', 'cr', {
+        'externalTimestamp': 'cr',
+        'externalFrom': 'cr',
+        'reportedHostUuid': 'cr',
+        'externalId': 'cr',
+        'externalStatus': 'cr',
+        'dockerInspect': 'cr',
+        'data': 'cr',
+        'id': 'r'
+    })
+
+    auth_check(client.schema, 'containerEvent', 'r', {
+        'externalTimestamp': 'r',
+        'hostId': 'r',
+        'externalFrom': 'r',
+        'reportedHostUuid': 'r',
+        'externalId': 'r',
+        'externalStatus': 'r',
+        'accountId': 'r',
+        'dockerInspect': 'r'
     })

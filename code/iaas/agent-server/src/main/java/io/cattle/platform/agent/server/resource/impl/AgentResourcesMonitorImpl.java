@@ -10,6 +10,7 @@ import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
+import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
@@ -26,6 +27,7 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,12 +50,21 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
 
     private static final String[] UPDATABLE_HOST_FIELDS = new String[] { HostConstants.FIELD_API_PROXY, HostConstants.FIELD_INFO };
 
+    @Inject
     PingDao pingDao;
+    @Inject
+    AgentDao agentDao;
+    @Inject
     GenericResourceDao resourceDao;
+    @Inject
     StoragePoolDao storagePoolDao;
+    @Inject
     IpAddressDao ipAddressDao;
+    @Inject
     ObjectManager objectManager;
+    @Inject
     LockDelegator lockDelegator;
+    @Inject
     LockManager lockManager;
     Cache<String, Boolean> resourceCache;
 
@@ -121,7 +132,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     }
 
     protected Map<String, StoragePool> setStoragePools(Map<String, Host> hosts, Agent agent, AgentResources resources) {
-        Map<String, StoragePool> pools = pingDao.getStoragePools(agent.getId());
+        Map<String, StoragePool> pools = agentDao.getStoragePools(agent.getId());
 
         for (Map.Entry<String, Map<String, Object>> poolData : resources.getStoragePools().entrySet()) {
             String uuid = poolData.getKey();
@@ -168,7 +179,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     }
 
     protected Map<String, Host> setHosts(Agent agent, AgentResources resources) {
-        Map<String, Host> hosts = pingDao.getHosts(agent.getId());
+        Map<String, Host> hosts = agentDao.getHosts(agent.getId());
 
         for (Map.Entry<String, Map<String, Object>> hostData : resources.getHosts().entrySet()) {
             String uuid = hostData.getKey();
@@ -210,7 +221,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
             return null;
         }
 
-        Map<String, PhysicalHost> hosts = pingDao.getPhysicalHosts(agent.getId());
+        Map<String, PhysicalHost> hosts = agentDao.getPhysicalHosts(agent.getId());
         PhysicalHost host = hosts.get(uuid);
 
         if (host != null) {
@@ -229,12 +240,6 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
                 return host.getId();
             }
         } else if (host == null) {
-            // For physical hosts created via the Rancher docker machine API
-            // TODO Should we do a match up on account id to help prevent
-            // physical host stealing?
-            // Actually, the answer to the above depends on how
-            // go-machine-service will create agents on behalf of
-            // users.
             host = objectManager.findAny(PhysicalHost.class, PHYSICAL_HOST.EXTERNAL_ID, uuid);
             // For security purposes, only allow this type of assignment if the
             // host doesn't yet have an agentId
@@ -297,68 +302,4 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
 
         return resources;
     }
-
-    public LockDelegator getLockDelegator() {
-        return lockDelegator;
-    }
-
-    @Inject
-    public void setLockDelegator(LockDelegator lockDelegator) {
-        this.lockDelegator = lockDelegator;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public PingDao getPingDao() {
-        return pingDao;
-    }
-
-    @Inject
-    public void setPingDao(PingDao pingDao) {
-        this.pingDao = pingDao;
-    }
-
-    public GenericResourceDao getResourceDao() {
-        return resourceDao;
-    }
-
-    @Inject
-    public void setResourceDao(GenericResourceDao resourceDao) {
-        this.resourceDao = resourceDao;
-    }
-
-    public StoragePoolDao getStoragePoolDao() {
-        return storagePoolDao;
-    }
-
-    @Inject
-    public void setStoragePoolDao(StoragePoolDao storagePoolDao) {
-        this.storagePoolDao = storagePoolDao;
-    }
-
-    public IpAddressDao getIpAddressDao() {
-        return ipAddressDao;
-    }
-
-    @Inject
-    public void setIpAddressDao(IpAddressDao ipAddressDao) {
-        this.ipAddressDao = ipAddressDao;
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
-
 }

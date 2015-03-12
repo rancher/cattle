@@ -134,6 +134,11 @@ def token_client(accounts):
 
 
 @pytest.fixture(scope='session')
+def agent_client(accounts):
+    return _client_for_user('agent', accounts)
+
+
+@pytest.fixture(scope='session')
 def service_client(accounts):
     return _client_for_user('service', accounts)
 
@@ -724,3 +729,16 @@ def vnet(admin_client, subnet):
     vnets = subnet.vnets()
     assert len(vnets) == 1
     return vnets[0]
+
+
+def wait_setting_active(api_client, setting, timeout=45):
+    start = time.time()
+    setting = api_client.by_id('setting', setting.id)
+    while setting.value != setting.activeValue:
+        time.sleep(.5)
+        setting = api_client.by_id('setting', setting.id)
+        if time.time() - start > timeout:
+            msg = 'Timeout waiting for [{0}] to be done'.format(setting)
+            raise Exception(msg)
+
+    return setting

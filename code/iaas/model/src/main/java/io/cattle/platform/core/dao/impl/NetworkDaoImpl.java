@@ -1,12 +1,11 @@
 package io.cattle.platform.core.dao.impl;
 
 
-import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.NETWORK_SERVICE_PROVIDER_INSTANCE_MAP;
-import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER;
-import static io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
-import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
-import static io.cattle.platform.core.model.tables.NicTable.NIC;
-import io.cattle.platform.core.constants.NetworkConstants;
+import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
+import static io.cattle.platform.core.model.tables.NetworkTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -87,7 +86,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     }
 
     @Override
-    public Network getNetworkForObject(Object object) {
+    public Network getNetworkForObject(Object object, String networkKind) {
         Long networkId = DataAccessor
                 .fields(object)
                 .withKey("networkId")
@@ -101,8 +100,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
             return null;
         }
 
-        List<? extends Network> accountNetworks = getNetworksForAccount(accountId,
-                NetworkConstants.KIND_HOSTONLY);
+        List<? extends Network> accountNetworks = getNetworksForAccount(accountId, networkKind);
 
         if (!accountNetworks.isEmpty()) {
             return accountNetworks.get(0);
@@ -111,8 +109,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 
         // pass system network if account doesn't own any
         List<? extends Network> systemNetworks = getNetworksForAccount(accountDao.getSystemAccount()
-                .getId(),
-                NetworkConstants.KIND_HOSTONLY);
+                .getId(), networkKind);
         if (systemNetworks.isEmpty()) {
             return null;
         }

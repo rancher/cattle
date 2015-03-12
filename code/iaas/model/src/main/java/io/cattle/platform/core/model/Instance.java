@@ -300,6 +300,28 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "registry_credential_id", precision = 19)
 	public java.lang.Long getRegistryCredentialId();
 
+	/**
+	 * Setter for <code>cattle.instance.external_id</code>.
+	 */
+	public void setExternalId(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.instance.external_id</code>.
+	 */
+	@javax.persistence.Column(name = "external_id", length = 128)
+	public java.lang.String getExternalId();
+
+	/**
+	 * Setter for <code>cattle.instance.native_container</code>.
+	 */
+	public void setNativeContainer(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.instance.native_container</code>.
+	 */
+	@javax.persistence.Column(name = "native_container", nullable = false, precision = 1)
+	public java.lang.Boolean getNativeContainer();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

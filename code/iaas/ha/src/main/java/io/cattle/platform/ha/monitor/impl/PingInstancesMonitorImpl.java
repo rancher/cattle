@@ -33,42 +33,38 @@ import org.slf4j.LoggerFactory;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicLongProperty;
 
 public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
     private static final DynamicLongProperty CACHE_TIME = ArchaiusUtil.getLong("ha.instance.state.cache.millis");
-    private static final DynamicBooleanProperty COMPLAIN = ArchaiusUtil.getBoolean("ha.instance.state.report.unknown");
-
-    private static final Logger log = LoggerFactory.getLogger(PingInstancesMonitorImpl.class);
 
     PingInstancesMonitorDao monitorDao;
     ObjectManager objectManager;
     ObjectProcessManager processManager;
-    LoadingCache<Long, Set<String>> instanceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_TIME.get(), TimeUnit.MILLISECONDS).build(
-            new CacheLoader<Long, Set<String>>() {
+    LoadingCache<Long, Map<String, String>> instanceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_TIME.get(), TimeUnit.MILLISECONDS).build(
+            new CacheLoader<Long, Map<String, String>>() {
                 @Override
-                public Set<String> load(Long key) throws Exception {
+                public Map<String, String> load(Long key) throws Exception {
                     return PingInstancesMonitorImpl.this.load(key);
                 }
             });
 
     @Override
     public void pingReply(Ping ping) {
-        Set<String> instances = getInstances(ping);
+        ReportedInstances reportedInstances = getInstances(ping);
 
-        if (instances == null) {
+        if (reportedInstances == null) {
             return;
         }
 
         long agentId = Long.parseLong(ping.getResourceId());
-        Set<String> knownInstances = instanceCache.getUnchecked(agentId);
+        Map<String, String> knownInstances = instanceCache.getUnchecked(agentId);
 
-        if (different(agentId, knownInstances, instances, true)) {
+        if (handleUnreportedKnownInstances(agentId, knownInstances, reportedInstances, true)) {
             knownInstances = load(agentId);
             instanceCache.put(agentId, knownInstances);
-            different(agentId, knownInstances, instances, false);
+            handleUnreportedKnownInstances(agentId, knownInstances, reportedInstances, false);
         }
     }
 
@@ -79,22 +75,21 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             instanceCache.invalidate(agentId);
         }
     }
+    
+    protected boolean handleUnreportedKnownInstances(long agentId, Map<String, String> knownInstances, 
+            ReportedInstances reportedInstances, boolean checkOnly) {
 
-    protected boolean different(long agentId, Set<String> knownInstances, Set<String> instances, boolean check) {
-        instances = new HashSet<String>(instances);
-        for (String instance : knownInstances) {
-            if (!instances.remove(instance)) {
-                if (check) {
-                    return true;
-                } else {
-                    restart(instance);
+        if (knownInstances != null) {
+            for (Map.Entry<String, String> knownInstance : knownInstances.entrySet()) {
+                if(!reportedInstances.byUuid.contains(knownInstance.getKey())
+                        && !reportedInstances.byExternalId.contains(knownInstance.getValue())) {
+                    if (checkOnly) {
+                        return true;
+                    } else {
+                        // If this known instance was not reported, schedule a potential restart.
+                        restart(knownInstance.getKey());
+                    }
                 }
-            }
-        }
-
-        if (!check && COMPLAIN.get()) {
-            for (String instance : instances) {
-                log.error("Unknown instance [{}] reported from agent [{}]", instance, agentId);
             }
         }
 
@@ -115,36 +110,52 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         });
     }
 
-    protected Set<String> getInstances(Ping ping) {
+    protected ReportedInstances getInstances(Ping ping) {
         PingData data = ping.getData();
-        if (data == null || ping.getResourceId() == null) {
+
+        if ( data == null || ping.getResourceId() == null ) {
             return null;
         }
 
         List<Map<String, Object>> resources = data.getResources();
-        if (resources == null || !ping.getOption(Ping.INSTANCES)) {
+        if ( resources == null || !ping.getOption(Ping.INSTANCES) ) {
             return null;
         }
 
-        Set<String> instances = new HashSet<String>();
+        ReportedInstances reportedInstances = new ReportedInstances();
 
-        for (Map<String, Object> resource : resources) {
+        for ( Map<String, Object> resource : resources ) {
             Object state = resource.get(ObjectMetaDataManager.STATE_FIELD);
             Object type = resource.get(ObjectMetaDataManager.TYPE_FIELD);
             Object uuid = resource.get(ObjectMetaDataManager.UUID_FIELD);
+            Object externalId = resource.get("dockerId");
 
-            if (!InstanceConstants.TYPE.equals(type) || !InstanceConstants.STATE_RUNNING.equals(state) || uuid == null) {
+            if ( !InstanceConstants.TYPE.equals(type) || !InstanceConstants.STATE_RUNNING.equals(state) ) {
                 continue;
             }
 
-            instances.add(uuid.toString());
+            if ( uuid != null ) {
+                reportedInstances.byUuid.add(uuid.toString());
+            }
+
+            if ( externalId != null ) {
+                reportedInstances.byExternalId.add(externalId.toString());
+            }
         }
 
-        return instances;
+        return reportedInstances;
     }
 
-    protected Set<String> load(Long agentId) {
-        return monitorDao.getHosts(agentId);
+    protected class ReportedInstances {
+        Set<String> byUuid = new HashSet<String>();
+        Set<String> byExternalId = new HashSet<String>();
+    }
+
+    protected Map<String, String> load(Long agentId) {
+        if (agentId == null) {
+            return new HashMap<String, String>();
+        }
+        return monitorDao.getInstances(agentId.longValue());
     }
 
     public PingInstancesMonitorDao getMonitorDao() {
