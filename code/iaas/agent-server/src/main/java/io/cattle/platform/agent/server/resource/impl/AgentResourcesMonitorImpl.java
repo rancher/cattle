@@ -10,6 +10,7 @@ import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
+import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
@@ -26,6 +27,7 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +51,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     private static final String[] UPDATABLE_HOST_FIELDS = new String[] { HostConstants.FIELD_API_PROXY, HostConstants.FIELD_INFO };
 
     PingDao pingDao;
+    AgentDao agentDao;
     GenericResourceDao resourceDao;
     StoragePoolDao storagePoolDao;
     IpAddressDao ipAddressDao;
@@ -121,7 +124,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     }
 
     protected Map<String, StoragePool> setStoragePools(Map<String, Host> hosts, Agent agent, AgentResources resources) {
-        Map<String, StoragePool> pools = pingDao.getStoragePools(agent.getId());
+        Map<String, StoragePool> pools = agentDao.getStoragePools(agent.getId());
 
         for (Map.Entry<String, Map<String, Object>> poolData : resources.getStoragePools().entrySet()) {
             String uuid = poolData.getKey();
@@ -168,7 +171,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     }
 
     protected Map<String, Host> setHosts(Agent agent, AgentResources resources) {
-        Map<String, Host> hosts = pingDao.getHosts(agent.getId());
+        Map<String, Host> hosts = agentDao.getHosts(agent.getId());
 
         for (Map.Entry<String, Map<String, Object>> hostData : resources.getHosts().entrySet()) {
             String uuid = hostData.getKey();
@@ -210,7 +213,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
             return null;
         }
 
-        Map<String, PhysicalHost> hosts = pingDao.getPhysicalHosts(agent.getId());
+        Map<String, PhysicalHost> hosts = agentDao.getPhysicalHosts(agent.getId());
         PhysicalHost host = hosts.get(uuid);
 
         if (host != null) {
@@ -229,12 +232,6 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
                 return host.getId();
             }
         } else if (host == null) {
-            // For physical hosts created via the Rancher docker machine API
-            // TODO Should we do a match up on account id to help prevent
-            // physical host stealing?
-            // Actually, the answer to the above depends on how
-            // go-machine-service will create agents on behalf of
-            // users.
             host = objectManager.findAny(PhysicalHost.class, PHYSICAL_HOST.EXTERNAL_ID, uuid);
             // For security purposes, only allow this type of assignment if the
             // host doesn't yet have an agentId
@@ -325,6 +322,14 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
         this.pingDao = pingDao;
     }
 
+    public AgentDao getAgentDao() {
+        return agentDao;
+    }
+
+    @Inject
+    public void setAgentDao(AgentDao agentDao) {
+        this.agentDao = agentDao;
+    }
     public GenericResourceDao getResourceDao() {
         return resourceDao;
     }
