@@ -78,6 +78,14 @@
         "containerExec.command" : "cr",
         "containerExec.tty" : "cr",
         
+        "containerEvent" : "r",
+        "containerEvent.externalId" : "r",
+        "containerEvent.externalStatus" : "r",
+        "containerEvent.externalFrom" : "r",
+        "containerEvent.externalTimestamp" : "r",
+        "containerEvent.reportedHostUuid" : "r",
+        "containerEvent.hostId" : "r",
+        
         "containerLogs":"cr",
         "containerLogs.follow":"cr",
         "containerLogs.lines":"cr",

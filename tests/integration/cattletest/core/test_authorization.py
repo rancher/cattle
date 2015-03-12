@@ -585,3 +585,37 @@ def test_registry(admin_client, client):
         'accountId': 'r',
         'serverAddress': 'cr',
     })
+
+
+def test_container_events(admin_client, client, agent_client):
+    auth_check(admin_client.schema, 'containerEvent', 'r', {
+        'externalTimestamp': 'r',
+        'hostId': 'r',
+        'accountId': 'r',
+        'externalFrom': 'r',
+        'reportedHostUuid': 'r',
+        'externalId': 'r',
+        'externalStatus': 'r',
+        'data': 'r'
+    })
+
+    auth_check(agent_client.schema, 'containerEvent', 'cr', {
+        'externalTimestamp': 'cr',
+        'externalFrom': 'cr',
+        'reportedHostUuid': 'cr',
+        'externalId': 'cr',
+        'externalStatus': 'cr',
+        'dockerInspect': 'cr',
+        'data': 'cr',
+        'id': 'cr'
+    })
+
+    auth_check(client.schema, 'containerEvent', 'r', {
+        'externalTimestamp': 'r',
+        'hostId': 'r',
+        'externalFrom': 'r',
+        'reportedHostUuid': 'r',
+        'externalId': 'r',
+        'externalStatus': 'r',
+        'accountId': 'r'
+    })

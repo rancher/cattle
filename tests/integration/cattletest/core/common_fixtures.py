@@ -134,6 +134,11 @@ def token_client(accounts):
 
 
 @pytest.fixture(scope='session')
+def agent_client(accounts):
+    return _client_for_user('agent', accounts)
+
+
+@pytest.fixture(scope='session')
 def service_client(accounts):
     return _client_for_user('service', accounts)
 
