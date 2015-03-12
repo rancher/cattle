@@ -596,7 +596,8 @@ def test_container_events(admin_client, client, agent_client):
         'reportedHostUuid': 'r',
         'externalId': 'r',
         'externalStatus': 'r',
-        'data': 'r'
+        'data': 'r',
+        'dockerInspect': 'r'
     })
 
     auth_check(agent_client.schema, 'containerEvent', 'cr', {
@@ -617,5 +618,6 @@ def test_container_events(admin_client, client, agent_client):
         'reportedHostUuid': 'r',
         'externalId': 'r',
         'externalStatus': 'r',
-        'accountId': 'r'
+        'accountId': 'r',
+        'dockerInspect': 'r'
     })
