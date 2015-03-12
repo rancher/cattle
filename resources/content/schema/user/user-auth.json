@@ -85,6 +85,7 @@
         "containerEvent.externalTimestamp" : "r",
         "containerEvent.reportedHostUuid" : "r",
         "containerEvent.hostId" : "r",
+        "containerEvent.dockerInspect" : "r",
         
         "containerLogs":"cr",
         "containerLogs.follow":"cr",
