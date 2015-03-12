@@ -23,15 +23,23 @@
         "externalStatus": {
             "create": true
         },
-        "dockerInspect": {
-            "create": true
-        },
         "data": {
             "create": true
         },
         "dockerInspect": {
             "type": "json",
             "create": true
+        },
+        "transitioning": {
+            "create": true
+        },
+        "transitioningMessage": {
+            "create": true,
+            "nullable": true
+        },
+        "transitioningProgress": {
+            "create": true,
+            "nullable": true
         }
     }
 }

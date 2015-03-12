@@ -1,5 +1,4 @@
 from common_fixtures import *  # NOQA
-from cattle import ApiError
 from test_physical_host import disable_go_machine_service  # NOQA
 
 
@@ -10,9 +9,10 @@ def test_container_event(admin_client, user_sim_context):
     host = user_sim_context['host']
     event = create_event(host, user_agent_cli)
 
-    temp_super_event = admin_client.reload(event)
-    assert host.id == temp_super_event.hostId
-    assert agent_account.id == temp_super_event.accountId
+    event = admin_client.wait_success(event)
+    assert host.id == event.hostId
+    assert agent_account.id == event.accountId
+    assert event.state == 'created'
 
 
 def create_event(host, cli):
