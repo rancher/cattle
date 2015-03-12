@@ -1,0 +1,37 @@
+{
+    "collectionMethods": ["GET", "POST"],
+    "resourceMethods" : ["GET"],
+    "resourceFields": {
+        "id": {
+            "create": true
+        },
+        "hostId": {
+            "create": true
+        },
+        "externalTimestamp": {
+            "create": true
+        },
+        "externalFrom": {
+            "create": true
+        },
+        "reportedHostUuid": {
+            "create": true
+        },
+        "externalId": {
+            "create": true
+        },
+        "externalStatus": {
+            "create": true
+        },
+        "dockerInspect": {
+            "create": true
+        },
+        "data": {
+            "create": true
+        },
+        "dockerInspect": {
+            "type": "json",
+            "create": true
+        }
+    }
+}
