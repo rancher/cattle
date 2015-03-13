@@ -1,5 +1,3 @@
-import re
-import time
 from common_fixtures import *  # NOQA
 
 
@@ -11,96 +9,37 @@ if_docker = pytest.mark.skipif("os.environ.get('DOCKER_TEST') == 'false'",
                                reason='DOCKER_TEST is not set')
 
 
-@pytest.fixture(scope='session')
-def docker_context(super_client):
-    for host in super_client.list_host(state='active', remove_null=True,
-                                       kind='docker'):
-        return kind_context(super_client, 'docker', external_pool=True,
-                            agent=host.agent())
-
-    raise Exception('Failed to find docker host, please register one')
-
-
-def _check_path(volume, should_exist, super_client):
-    path = _path_to_volume(volume)
-    c = super_client. \
-        create_container(name="volume_check",
-                         imageUuid="docker:cjellick/rancher-test-tools",
-                         startOnCreate=False,
-                         environment={'TEST_PATH': path},
-                         command='/opt/tools/check_path_exists.sh',
-                         dataVolumes=[
-                             '/var/lib/docker:/host/var/lib/docker',
-                             '/tmp:/host/tmp'])
-    c.start()
-    c = super_client.wait_success(c)
-    c = _wait_until_stopped(c, super_client)
-
-    code = c.data.dockerInspect.State.ExitCode
-    if should_exist:
-        # The exit code of the container should be a 10 if the path existed
-        assert code == 10
-    else:
-        # And 11 if the path did not exist
-        assert code == 11
-
-    c.remove()
-
-
-def _path_to_volume(volume):
-    path = volume.uri.replace('file://', '')
-    mounted_path = re.sub('^.*?/var/lib/docker', '/host/var/lib/docker',
-                          path)
-    if not mounted_path.startswith('/host/var/lib/docker'):
-        mounted_path = re.sub('^.*?/tmp', '/host/tmp',
-                              path)
-    return mounted_path
-
-
-def _wait_until_stopped(container, admin_client, timeout=45):
-        start = time.time()
-        container = admin_client.reload(container)
-        while container.state != 'stopped':
-            time.sleep(.5)
-            container = admin_client.reload(container)
-            if time.time() - start > timeout:
-                raise Exception('Timeout waiting for container to stop.')
-
-        return container
-
-
 def _create_registry(client):
     registry = client.create_registry(serverAddress='quay.io',
                                       name='Quay')
+    registry = client.wait_success(registry)
     assert registry.serverAddress == 'quay.io'
     assert registry.name == 'Quay'
 
     return registry
 
 
-def _create_registry_credential(client, super_client, docker_context,):
+def _create_registry_credential(client):
     registry = _create_registry(client)
     reg_cred = client.create_registry_credential(
-        storagePoolId=registry.id,
+        registryId=registry.id,
         email='test@rancher.com',
-        publicValue='wizardofmath+whisper',
-        secretValue='W0IUYDBM2VORHM4DTTEHSMKLXGCG3KD3IT081QWWTZA11R9DZS2DDPP72'
-                    '48NUTT6')
+        publicValue='rancher',
+        secretValue='rancher')
+    reg_cred = client.wait_success(reg_cred)
     assert reg_cred is not None
     assert reg_cred.email == 'test@rancher.com'
     assert reg_cred.kind == 'registryCredential'
-    assert reg_cred.storagePoolId == registry.id
-    assert reg_cred.publicValue == 'wizardofmath+whisper'
+    assert reg_cred.registryId == registry.id
+    assert reg_cred.publicValue == 'rancher'
     assert 'secretValue' not in reg_cred
 
     return reg_cred
 
 
 @if_docker
-def test_create_container_with_registry_credential(client, super_client,
-                                                   docker_context):
-    reg_cred = _create_registry_credential(client, super_client,
-                                           docker_context)
+def _test_create_container_with_registry_credential(client, docker_context):
+    reg_cred = _create_registry_credential(client)
     uuid = TEST_IMAGE_UUID
     container = client.create_container(name='test',
                                         imageUuid=uuid,
@@ -113,11 +52,10 @@ def test_create_container_with_registry_credential(client, super_client,
 
 
 @if_docker
-def test_create_container_with_real_registry_credential(client, super_client,
-                                                        docker_context):
-    reg_cred = _create_registry_credential(client, super_client,
-                                           docker_context)
-    uuid = 'docker:quay.io/wizardofmath/whisperdocker'
+def _test_create_container_with_real_registry_credential(client,
+                                                         docker_context):
+    reg_cred = _create_registry_credential(client)
+    uuid = 'docker:registry.rancher.io/rancher/loop'
     container = client.create_container(name='test',
                                         imageUuid=uuid,
                                         registryCredentialId=reg_cred.id)
@@ -128,3 +66,48 @@ def test_create_container_with_real_registry_credential(client, super_client,
     container = client.wait_success(container)
 
     assert container.state == 'running'
+
+
+def _crud_registry(client):
+    registry = _create_registry(client)
+    registry = client.wait_success(registry)
+    assert registry.state == 'active'
+    registry = client.wait_success(registry.deactivate())
+    assert registry.state == 'inactive'
+    registry = client.delete(registry)
+    registry = client.wait_success(registry)
+    assert registry.state == 'removed'
+    registry = client.wait_success(registry.purge())
+    assert registry.state == 'purged'
+
+
+def _crud_registry_credential(client):
+    registry_credential = _create_registry_credential(client)
+    registry_credential = client.wait_success(registry_credential)
+    assert registry_credential.state == 'active'
+    registry_credential = client.wait_success(registry_credential.deactivate())
+    assert registry_credential.state == 'inactive'
+    registry_credential = client.wait_success(
+        client.update(registry_credential, {
+            'publicValue': 'test',
+            'secretValue': 'rancher45',
+            'email': 'engineering@rancher.com',
+        }))
+    assert registry_credential.publicValue == 'test'
+    assert registry_credential.email == 'engineering@rancher.com'
+    registry_credential = client.delete(registry_credential)
+    registry_credential = client.wait_success(registry_credential)
+    assert registry_credential.state == 'removed'
+    registry_credential = client.wait_success(registry_credential.purge())
+    assert registry_credential.state == 'purged'
+    pass
+
+
+def test_crud_registry(admin_client, client):
+    _crud_registry(admin_client)
+    _crud_registry(client)
+
+
+def test_crud_registry_credential(admin_client, client):
+    _crud_registry_credential(admin_client)
+    _crud_registry_credential(client)
