@@ -4,6 +4,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -15,6 +16,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.NamedUtils;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -58,7 +60,7 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Object resource = state.getResource();
+        final Object resource = state.getResource();
         String type = objectManager.getType(resource);
         if (type == null) {
             type = resource.getClass().getName();
@@ -75,7 +77,30 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         Event request = EventVO.newEvent(eventName).withResourceId(idString).withResourceType(type).withData(state.getData());
 
-        Event response = eventService.callSync(request, new EventCallOptions(retry, timeoutMillis));
+        EventCallOptions options = new EventCallOptions(retry, timeoutMillis);
+        options.setProgressIsKeepAlive(true);
+        options.setProgress(new EventProgress() {
+            @Override
+            public void progress(Event event) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                String transitioning = event.getTransitioningMessage();
+                Integer progress = event.getTransitioningProgress();
+
+                if (transitioning != null) {
+                    data.put(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, transitioning);
+                }
+
+                if (progress != null) {
+                    data.put(ObjectMetaDataManager.TRANSITIONING_PROGRESS_FIELD, progress);
+                }
+
+                if (data.size() > 0) {
+                    Object reloaded = objectManager.reload(resource);
+                    objectManager.setFields(reloaded, data);
+                }
+            }
+        });
+        Event response = eventService.callSync(request, options);
 
         return postEvent(state, process, CollectionUtils.toMap(response.getData()));
     }
