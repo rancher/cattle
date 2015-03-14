@@ -608,7 +608,7 @@ def test_container_events(admin_client, client, agent_client):
         'externalStatus': 'cr',
         'dockerInspect': 'cr',
         'data': 'cr',
-        'id': 'cr'
+        'id': 'r'
     })
 
     auth_check(client.schema, 'containerEvent', 'r', {

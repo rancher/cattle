@@ -23,10 +23,10 @@ import javax.inject.Inject;
 import org.jooq.exception.InvalidResultException;
 
 public class ContainerEventFilter extends AbstractDefaultResourceManagerFilter {
-    
+
     public static final String HOST_PARAM = "hostId";
     public static final String VERIFY_AGENT = "CantVerifyAgent";
-    
+
     @Inject
     AgentDao agentDao;
 
@@ -46,22 +46,23 @@ public class ContainerEventFilter extends AbstractDefaultResourceManagerFilter {
         Agent agent = null;
         try {
             agent = objectManager.findOne(Agent.class, AGENT.ACCOUNT_ID, policy.getAccountId());
-        } catch(InvalidResultException e) {
-            // Found more than one agent, reject request just as if we didn't find any.
+        } catch (InvalidResultException e) {
+            // Found more than one agent, reject request just as if we didn't
+            // find any.
         }
-        
-        if (agent == null) {
-            throw new ClientVisibleException(ResponseCodes.FORBIDDEN,VERIFY_AGENT);
+
+        if ( agent == null ) {
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
-        
+
         Map<String, Host> hosts = agentDao.getHosts(agent.getId());
         Host host = hosts.get(event.getReportedHostUuid());
-        if (host == null) {
+        if ( host == null ) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, HOST_PARAM);
         }
-        
+
         event.setHostId(host.getId());
-        
+
         return super.create(type, request, next);
     }
 }

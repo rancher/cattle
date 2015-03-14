@@ -3,10 +3,6 @@
     "resourceMethods" : ["GET"],
     "resourceFields": {
         "id": {
-            "create": true
-        },
-        "hostId": {
-            "create": true
         },
         "externalTimestamp": {
             "create": true

@@ -1,11 +1,11 @@
 package io.cattle.platform.core.dao;
 
-import java.util.Map;
-
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
+
+import java.util.Map;
 
 public interface AgentDao {
 
