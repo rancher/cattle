@@ -8,16 +8,14 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.ha.monitor.dao.PingInstancesMonitorDao;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public class PingInstancesMonitorDaoImpl extends AbstractJooqDao implements PingInstancesMonitorDao {
 
     @Override
-    public Set<String> getHosts(long agentId) {
-        List<String> result = create()
-                .select(INSTANCE.UUID)
+    public Map<String, String> getInstances(long agentId) {
+        Map<String, String> result = create()
+                .select(INSTANCE.UUID, INSTANCE.EXTERNAL_ID)
                 .from(AGENT)
                 .join(HOST)
                     .on(AGENT.ID.eq(HOST.AGENT_ID))
@@ -28,9 +26,9 @@ public class PingInstancesMonitorDaoImpl extends AbstractJooqDao implements Ping
                     .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
                 .where(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING)
                         .and(AGENT.ID.eq(agentId)))
-                .fetch(INSTANCE.UUID);
+                .fetchMap(INSTANCE.UUID, INSTANCE.EXTERNAL_ID);
 
-        return new HashSet<String>(result);
+        return result;
     }
 
     @Override

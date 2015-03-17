@@ -31,6 +31,7 @@ public class InstanceConstants {
     public static final String FIELD_VCPU = "vcpu";
     public static final String FIELD_VNET_IDS = "vnetIds";
     public static final String FIELD_VOLUME_OFFERING_IDS = "volumeOfferingIds";
+    public static final String FIELD_COMPUTE_TRIES = "computeTries";
 
     public static final String REMOVE_OPTION = "remove";
     public static final String DEALLOCATE_OPTION = "deallocateFromHost";

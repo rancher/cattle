@@ -32,8 +32,10 @@ def create_event(host, cli):
         reportedHostUuid=host.data.fields['reportedUuid'],
         externalId=external_id,
         externalFrom=image,
-        externalTimestamp= timestamp,
-        externalStatus=status)
+        externalTimestamp=timestamp,
+        externalStatus=status,
+        dockerInspect={'Name': random_str(),
+                       'Config': {'Image': 'sim:fake/image'}})
 
     assert event.reportedHostUuid == host.data.fields['reportedUuid']
     assert event.externalId == external_id
