@@ -14,6 +14,7 @@
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd">
 
     <bean class="io.cattle.platform.configitem.context.dao.impl.NetworkInfoDaoImpl" />
+    <bean class="io.cattle.platform.configitem.context.dao.impl.DnsInfoDaoImpl" />
 
     <bean class="io.cattle.platform.configitem.server.impl.ConfigItemServerImpl" />
     <bean class="io.cattle.platform.configitem.registry.impl.ConfigItemRegistryImpl" >
