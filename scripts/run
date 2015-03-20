@@ -3,6 +3,13 @@ set -e
 
 cd $(dirname $0)/..
 
+# This will start MySQL if needed.
+if [ "${BOOTSTRAP_ON_RUN}" = "true" ]; then
+    ./scripts/bootstrap
+    trap "service mysql stop" EXIT SIGTERM
+fi
+
+
 RUNTIME_DIR=${RUNTIME_DIR:-../../../runtime/cli/}
 
 cd code/packaging/app
