@@ -4,6 +4,7 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -54,14 +55,15 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     }
 
     @Override
-    public Policy getPolicy(Account account, ApiRequest request) {
+    public Policy getPolicy(AccountAccess accountAccess, ApiRequest request) {
+        Account account = accountAccess.getAccount();
         PolicyOptionsWrapper options = new PolicyOptionsWrapper(optionsFactory.getOptions(account));
-        AccountPolicy policy = new AccountPolicy(account, options);
+        AccountPolicy policy = new AccountPolicy(accountAccess, options);
 
         String kind = getRole(policy, request);
         if (kind != null) {
             options = new PolicyOptionsWrapper(optionsFactory.getOptions(kind));
-            policy = new AccountPolicy(account, options);
+            policy = new AccountPolicy(accountAccess, options);
         }
 
         if (SubscriptionUtils.getSubscriptionStyle(policy) == SubscriptionStyle.QUALIFIED) {
@@ -84,7 +86,7 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     }
 
     public static SubscriptionStyle getSubscriptionStyle(Account account, AchaiusPolicyOptionsFactory optionsFactory) {
-        Policy tempPolicy = new AccountPolicy(account, optionsFactory.getOptions(account));
+        Policy tempPolicy = new AccountPolicy(new AccountAccess(account, null), optionsFactory.getOptions(account));
         return SubscriptionUtils.getSubscriptionStyle(tempPolicy);
     }
 

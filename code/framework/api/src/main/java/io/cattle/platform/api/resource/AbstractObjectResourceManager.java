@@ -313,14 +313,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
                 return;
             }
 
-            List<Long> accounts = policy.getAuthorizedAccounts();
-            if (accounts.size() == 1) {
-                criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, accounts.get(0));
-            } else if (accounts.size() == 0) {
-                criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
-            } else {
-                criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, new Condition(ConditionType.IN, accounts));
-            }
+            criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
         }
     }
 

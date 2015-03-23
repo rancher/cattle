@@ -1,7 +1,7 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.util.type.Priority;
@@ -30,10 +30,10 @@ public class BasicAuthImpl implements AccountLookup, Priority {
     AuthDao authDao;
 
     @Override
-    public Account getAccount(ApiRequest request) {
+    public AccountAccess getAccount(ApiRequest request) {
         String[] auth = getUsernamePassword(request.getServletContext().getRequest().getHeader(AUTH_HEADER));
 
-        return auth == null ? null : authDao.getAccountByKeys(auth[0], auth[1]);
+        return auth == null ? null : new AccountAccess(authDao.getAccountByKeys(auth[0], auth[1]), null);
     }
 
     @Override

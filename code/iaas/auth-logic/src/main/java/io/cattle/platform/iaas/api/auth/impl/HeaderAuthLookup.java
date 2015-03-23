@@ -5,6 +5,7 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.object.ObjectManager;
@@ -25,7 +26,7 @@ public class HeaderAuthLookup implements AccountLookup, Priority {
     AuthorizationProvider adminAuthProvider;
 
     @Override
-    public Account getAccount(ApiRequest request) {
+    public AccountAccess getAccount(ApiRequest request) {
         if (!ENABLED.get()) {
             return null;
         }
@@ -36,7 +37,7 @@ public class HeaderAuthLookup implements AccountLookup, Priority {
             return null;
         }
 
-        Account admin = adminLookup.getAccount(request);
+        AccountAccess admin = adminLookup.getAccount(request);
         if (admin == null) {
             return null;
         }
@@ -46,7 +47,7 @@ public class HeaderAuthLookup implements AccountLookup, Priority {
             return null;
         }
 
-        return objectManager.findOne(Account.class, ACCOUNT.UUID, header, ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
+        return new AccountAccess(objectManager.findOne(Account.class, ACCOUNT.UUID, header, ACCOUNT.STATE, CommonStatesConstants.ACTIVE), null);
     }
 
     @Override
