@@ -230,7 +230,7 @@ def test_set_target_instance(admin_client, sim_context, config_id,
     container2 = admin_client.wait_success(container2)
 
     # set 2 targets
-    lb = lb.settargets(instanceIds=[container1.id, container2.id])
+    lb = lb.updateall(instanceIds=[container1.id, container2.id])
     lb = admin_client.wait_success(lb)
 
     target_map = admin_client. \
@@ -248,7 +248,7 @@ def test_set_target_instance(admin_client, sim_context, config_id,
     assert target_map[0].state == "active"
 
     # set 1 target
-    lb = lb.settargets(instanceIds=[container1.id])
+    lb = lb.updateall(instanceIds=[container1.id])
     lb = admin_client.wait_success(lb)
 
     target_map = admin_client. \
@@ -265,7 +265,7 @@ def test_set_target_instance(admin_client, sim_context, config_id,
     assert target_map[0].state == "removed"
 
     # set 0 targets
-    lb = lb.settargets(instanceIds=[])
+    lb = lb.updateall(instanceIds=[])
     lb = admin_client.wait_success(lb)
 
     target_map = admin_client. \
@@ -282,7 +282,7 @@ def test_lb_set_target_ip_address(admin_client, sim_context, config_id,
                          super_client, nsp)
 
     # set 2 targets
-    lb = lb.settargets(ipAddresses=["10.1.1.1", "10.1.1.2"])
+    lb = lb.updateall(ipAddresses=["10.1.1.1", "10.1.1.2"])
     lb = admin_client.wait_success(lb)
 
     target_map = admin_client. \
@@ -300,7 +300,7 @@ def test_lb_set_target_ip_address(admin_client, sim_context, config_id,
     assert target_map[0].state == "active"
 
     # set 1 target
-    lb = lb.settargets(ipAddresses=["10.1.1.1"])
+    lb = lb.updateall(ipAddresses=["10.1.1.1"])
     lb = admin_client.wait_success(lb)
 
     target_map = admin_client. \
@@ -318,7 +318,7 @@ def test_lb_set_target_ip_address(admin_client, sim_context, config_id,
     assert target_map[0].state == "removed"
 
     # set 0 targets
-    lb = lb.settargets(ipAddresses=[])
+    lb = lb.updateall(ipAddresses=[])
     lb = admin_client.wait_success(lb)
 
     target_map = admin_client. \
@@ -335,8 +335,8 @@ def test_set_target_instance_and_ip(admin_client, sim_context, config_id,
                                              config_id, super_client, nsp)
 
     # set 2 targets - one ip and one instanceId
-    lb = lb.settargets(instanceIds=[container1.id],
-                       ipAddresses="10.1.1.1")
+    lb = lb.updateall(instanceIds=[container1.id],
+                      ipAddresses="10.1.1.1")
     lb = admin_client.wait_success(lb)
 
     target_map = admin_client. \
