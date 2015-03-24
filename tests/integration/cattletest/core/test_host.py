@@ -44,6 +44,7 @@ def test_host_deactivate_two_hosts(admin_client, super_client,
     agent = admin_client.wait_success(agent)
     assert agent.state == 'active'
 
+    # Create another host using the same agent
     other_host = super_client.create_host(agentId=agent.id)
     other_host = super_client.wait_success(other_host)
     assert other_host.state == 'active'
@@ -112,7 +113,7 @@ def test_host_purge(admin_client, new_sim_context):
     assert c2.state == 'removed'
 
     c1 = admin_client.wait_success(c1.purge())
-    c1.state == 'purged'
+    assert c1.state == 'purged'
 
     volume = admin_client.wait_success(c1.volumes()[0])
     assert volume.state == 'removed'
