@@ -58,6 +58,7 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("resource", jsonMapper.convertValue(resource, Map.class));
 
+            event.setResourceType(resource.getType());
             event.setData(data);
         } catch (ClientVisibleException e) {
         }
