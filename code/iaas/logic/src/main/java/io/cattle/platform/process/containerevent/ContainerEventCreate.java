@@ -112,7 +112,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     void setHost(ContainerEvent event, Instance instance) {
-        DataAccessor.fromDataFieldOf(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID)
+        DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID)
                 .set(event.getHostId());
     }
 
@@ -151,7 +151,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         if ( !imageUuid.matches(IMAGE_KIND_PATTERN) ) {
             imageUuid = IMAGE_PREFIX + imageUuid;
         }
-        DataAccessor.fromDataFieldOf(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).set(imageUuid);
+        DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).set(imageUuid);
         Image image = null;
         try {
             image = storageService.registerRemoteImage(imageUuid);

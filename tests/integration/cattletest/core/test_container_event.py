@@ -1,6 +1,27 @@
 from common_fixtures import *  # NOQA
-from test_physical_host import disable_go_machine_service  # NOQA
 import time
+
+
+@pytest.fixture(scope='module', autouse=True)
+def update_event_settings(request, super_client):
+    settings = super_client.list_setting()
+    originals = []
+
+    def update_setting(new_value, s):
+        originals.append((setting, {'value': s.value}))
+        s = super_client.update(s, {'value': new_value})
+        wait_setting_active(super_client, s)
+
+    for setting in settings:
+        if setting.name == 'manage.nonrancher.containers'\
+                and setting.value != 'true':
+            update_setting('true', setting)
+
+    def revert_settings():
+        for s in originals:
+            super_client.update(s[0], s[1])
+
+    request.addfinalizer(revert_settings)
 
 
 def test_container_event(admin_client, client, user_sim_context, user_account):
