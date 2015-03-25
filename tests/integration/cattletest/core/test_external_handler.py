@@ -34,21 +34,23 @@ def _disable_test_handlers(admin_client):
 
 def test_external_handler(admin_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
+    configs = [{'name': 'instance.start', 'onError': 'instance.stop'}]
     h = admin_client.create_external_handler(name=name,
-                                             processNames=['instance.start'])
+                                             processConfigs=configs)
 
     assert h.state == 'registering'
-    assert h.get('processNames') is None
-    assert h.data.fields.processNames == ['instance.start']
+    assert h.get('processConfigs') is None
+    assert h.data.fields.processConfigs == configs
 
     h = wait_success(admin_client, h)
 
     assert h.state == 'active'
-    assert h.data.fields.processNames is None
+    assert h.data.fields.processConfigs is None
 
     maps = h.externalHandlerExternalHandlerProcessMaps()
     assert len(maps) == 1
     assert maps[0].state == 'active'
+    assert maps[0].onError == 'instance.stop'
 
     process = maps[0].externalHandlerProcess()
     assert process.state == 'active'
@@ -60,8 +62,9 @@ def test_external_handler(admin_client):
 
 def test_defaults(admin_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
+    configs = [{'name': 'instance.start'}]
     h = admin_client.create_external_handler(name=name,
-                                             processNames=['instance.start'])
+                                             processConfigs=configs)
     h = wait_success(admin_client, h)
     assert h.state == 'active'
 
@@ -77,8 +80,9 @@ def test_defaults(admin_client):
 
 def test_properties(admin_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
+    configs = [{'name': 'instance.start'}]
     h = admin_client.create_external_handler(name=name,
-                                             processNames=['instance.start'],
+                                             processConfigs=configs,
                                              timeoutMillis=2000,
                                              retries=4,
                                              priority=1234)
@@ -97,9 +101,9 @@ def test_properties(admin_client):
 
 def test_pre_handler(admin_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
-    process_names = ['pre.instance.start']
+    configs = [{'name': 'pre.instance.start'}]
     h = admin_client.create_external_handler(name=name,
-                                             processNames=process_names,
+                                             processConfigs=configs,
                                              timeoutMillis=2000,
                                              retries=4,
                                              priority=1234)
@@ -115,9 +119,9 @@ def test_pre_handler(admin_client):
 
 def test_post_handler(admin_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
-    event_names = ['post.instance.start']
+    configs = [{'name': 'post.instance.start'}]
     h = admin_client.create_external_handler(name=name,
-                                             processNames=event_names,
+                                             processConfigs=configs,
                                              timeoutMillis=2000,
                                              retries=4,
                                              priority=1234)
@@ -133,8 +137,9 @@ def test_post_handler(admin_client):
 
 def test_enabled_disable(admin_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
+    configs = [{'name': 'instance.start'}]
     h = admin_client.create_external_handler(name=name,
-                                             processNames=['instance.start'])
+                                             processConfigs=configs)
     h = wait_success(admin_client, h)
 
     ep = _get_extension(admin_client, 'process.instance.start.handlers',
@@ -176,9 +181,9 @@ def test_enabled_disable(admin_client):
 
 def test_event_name_comma(admin_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
-    event_names = ['pre.instance.start,instance.start'],
+    configs = [{'name': 'pre.instance.start,instance.start'}]
     h = admin_client.create_external_handler(name=name,
-                                             processNames=event_names)
+                                             processConfigs=configs)
     h = wait_success(admin_client, h)
 
     processes = [x.name for x in h.externalHandlerProcesses()]

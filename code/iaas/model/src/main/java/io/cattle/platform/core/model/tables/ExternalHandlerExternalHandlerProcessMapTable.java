@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ExternalHandlerExternalHandlerProcessMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ExternalHandlerExternalHandlerProcessMapRecord> {
 
-	private static final long serialVersionUID = 347958899;
+	private static final long serialVersionUID = 844682636;
 
 	/**
 	 * The singleton instance of <code>cattle.external_handler_external_handler_process_map</code>
@@ -85,6 +85,11 @@ public class ExternalHandlerExternalHandlerProcessMapTable extends org.jooq.impl
 	 * The column <code>cattle.external_handler_external_handler_process_map.external_handler_process_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ExternalHandlerExternalHandlerProcessMapRecord, java.lang.Long> EXTERNAL_HANDLER_PROCESS_ID = createField("external_handler_process_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.external_handler_external_handler_process_map.on_error</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ExternalHandlerExternalHandlerProcessMapRecord, java.lang.String> ON_ERROR = createField("on_error", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>cattle.external_handler_external_handler_process_map</code> table reference

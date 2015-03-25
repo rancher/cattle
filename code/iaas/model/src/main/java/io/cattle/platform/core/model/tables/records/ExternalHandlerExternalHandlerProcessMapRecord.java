@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "external_handler_external_handler_process_map", schema = "cattle")
-public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ExternalHandlerExternalHandlerProcessMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.ExternalHandlerExternalHandlerProcessMap {
+public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ExternalHandlerExternalHandlerProcessMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.ExternalHandlerExternalHandlerProcessMap {
 
-	private static final long serialVersionUID = -51503254;
+	private static final long serialVersionUID = 804964876;
 
 	/**
 	 * Setter for <code>cattle.external_handler_external_handler_process_map.id</code>.
@@ -220,6 +220,23 @@ public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.imp
 		return (java.lang.Long) getValue(11);
 	}
 
+	/**
+	 * Setter for <code>cattle.external_handler_external_handler_process_map.on_error</code>.
+	 */
+	@Override
+	public void setOnError(java.lang.String value) {
+		setValue(12, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.external_handler_external_handler_process_map.on_error</code>.
+	 */
+	@javax.persistence.Column(name = "on_error", length = 255)
+	@Override
+	public java.lang.String getOnError() {
+		return (java.lang.String) getValue(12);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -233,23 +250,23 @@ public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.imp
 	}
 
 	// -------------------------------------------------------------------------
-	// Record12 type implementation
+	// Record13 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row12) super.fieldsRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String> fieldsRow() {
+		return (org.jooq.Row13) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long> valuesRow() {
-		return (org.jooq.Row12) super.valuesRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String> valuesRow() {
+		return (org.jooq.Row13) super.valuesRow();
 	}
 
 	/**
@@ -352,6 +369,14 @@ public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.imp
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field13() {
+		return io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ON_ERROR;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -442,6 +467,14 @@ public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.imp
 	@Override
 	public java.lang.Long value12() {
 		return getExternalHandlerProcessId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value13() {
+		return getOnError();
 	}
 
 	/**
@@ -556,7 +589,16 @@ public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.imp
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ExternalHandlerExternalHandlerProcessMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12) {
+	public ExternalHandlerExternalHandlerProcessMapRecord value13(java.lang.String value) {
+		setOnError(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ExternalHandlerExternalHandlerProcessMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12, java.lang.String value13) {
 		return this;
 	}
 
@@ -581,6 +623,7 @@ public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.imp
 		setData(from.getData());
 		setExternalHandlerId(from.getExternalHandlerId());
 		setExternalHandlerProcessId(from.getExternalHandlerProcessId());
+		setOnError(from.getOnError());
 	}
 
 	/**
@@ -606,7 +649,7 @@ public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.imp
 	/**
 	 * Create a detached, initialised ExternalHandlerExternalHandlerProcessMapRecord
 	 */
-	public ExternalHandlerExternalHandlerProcessMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long externalHandlerId, java.lang.Long externalHandlerProcessId) {
+	public ExternalHandlerExternalHandlerProcessMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long externalHandlerId, java.lang.Long externalHandlerProcessId, java.lang.String onError) {
 		super(io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP);
 
 		setValue(0, id);
@@ -621,5 +664,6 @@ public class ExternalHandlerExternalHandlerProcessMapRecord extends org.jooq.imp
 		setValue(9, data);
 		setValue(10, externalHandlerId);
 		setValue(11, externalHandlerProcessId);
+		setValue(12, onError);
 	}
 }

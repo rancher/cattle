@@ -1,11 +1,11 @@
 package io.cattle.platform.extension.dynamic.impl;
 
 import io.cattle.platform.core.constants.ExternalHandlerConstants;
-import io.cattle.platform.core.model.ExternalHandler;
 import io.cattle.platform.engine.handler.ProcessLogic;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.extension.dynamic.DynamicExtensionHandler;
 import io.cattle.platform.extension.dynamic.dao.ExternalHandlerDao;
+import io.cattle.platform.extension.dynamic.data.ExternalHandlerData;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -53,37 +53,40 @@ public class ExternalDynamicExtensionHandlerImpl implements DynamicExtensionHand
                 break;
             }
         }
-
-        List<? extends ExternalHandler> externalHandlers = externalHandlerDao.getExternalHandler(eventName);
+        
+        List<? extends ExternalHandlerData> externalHandlers = externalHandlerDao.getExternalHandlerData(eventName);
+        
         if (externalHandlers.size() == 0) {
             return Collections.emptyList();
         }
 
         List<Object> result = new ArrayList<Object>(externalHandlers.size());
-        for (ExternalHandler handler : externalHandlers) {
+        for (ExternalHandlerData handler : externalHandlers) {
             result.add(toEventHandler(eventName, handler));
         }
 
         return (List<T>) result;
     }
 
-    protected Object toEventHandler(String eventName, ExternalHandler handler) {
+    protected Object toEventHandler(String eventName, ExternalHandlerData handler) {
         Integer retries = DataAccessor.fieldInteger(handler, ExternalHandlerConstants.FIELD_RETRIES);
         Long timeout = DataAccessor.fieldLong(handler, ExternalHandlerConstants.FIELD_TIMEOUT);
         String priorityName = DataAccessor.fieldString(handler, ExternalHandlerConstants.FIELD_PRIORITY_NAME);
         Integer priority = handler.getPriority();
-
+        String handlerName = handler.getName();
+        
         if (priority == null) {
             priority = PriorityUtils.getPriorityFromString(priorityName);
         }
 
         EventBasedProcessHandler processHandler = new EventBasedProcessHandler(eventService, objectManager, objectProcessManager, objectMetaDataManager);
 
-        processHandler.setEventName(String.format("%s;handler=%s", eventName, handler.getName()));
-        processHandler.setName(handler.getName());
+        processHandler.setEventName(String.format("%s;handler=%s", eventName, handlerName));
+        processHandler.setName(handlerName);
         processHandler.setPriority(priority);
         processHandler.setRetry(retries);
         processHandler.setTimeoutMillis(timeout);
+        processHandler.setOnError(handler.getOnError());
 
         return processHandler;
     }

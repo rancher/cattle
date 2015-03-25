@@ -9,8 +9,8 @@
                 "default_override"
             ]
         },
-        "processNames" : {
-            "type" : "array[string]",
+        "processConfigs" : {
+            "type" : "array[externalHandlerProcessConfig]",
             "required" : true,
             "includeInList" : false
         },
