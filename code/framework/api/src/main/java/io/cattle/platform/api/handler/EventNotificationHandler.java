@@ -36,20 +36,22 @@ public class EventNotificationHandler implements ApiRequestHandler {
             return;
         }
 
-        if (excludeTypes.contains(request.getType())) {
+        String type = request.getSchemaFactory().getBaseType(request.getType());
+
+        if (excludeTypes.contains(type)) {
             return;
         }
 
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("method", request.getMethod().toString());
         data.put("id", request.getId());
-        data.put("type", request.getType());
+        data.put("type", type);
         data.put("action", request.getAction());
         data.put("responseCode", request.getResponseCode());
         data.put("accountId", ApiUtils.getPolicy().getAccountId());
 
         DeferredUtils.deferPublish(eventService, EventVO.newEvent(FrameworkEvents.API_CHANGE).withResourceId(request.getId()).withResourceType(
-                request.getType()).withData(data));
+                type).withData(data));
     }
 
     @Override
