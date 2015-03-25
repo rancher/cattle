@@ -144,4 +144,8 @@
     <!-- Cluster host map -->
     <process:process name="clusterhostmap.create" resourceType="clusterHostMap" start="requested" transitioning="creating" done="created" />
     <process:process name="clusterhostmap.remove" resourceType="clusterHostMap" start="created,creating" transitioning="removing" done="removed" />
+
+    <!-- Container Event -->
+    <process:process name="containerevent.create" resourceType="containerEvent" start="requested" transitioning="creating" done="created" />
+    <process:process name="containerevent.remove" resourceType="containerEvent" start="created,creating" transitioning="removing" done="removed" />
 </beans>

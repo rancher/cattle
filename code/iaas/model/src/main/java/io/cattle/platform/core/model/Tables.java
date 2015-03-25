@@ -49,6 +49,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ConfigItemStatusTable CONFIG_ITEM_STATUS = io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS;
 
 	/**
+	 * The table cattle.container_event
+	 */
+	public static final io.cattle.platform.core.model.tables.ContainerEventTable CONTAINER_EVENT = io.cattle.platform.core.model.tables.ContainerEventTable.CONTAINER_EVENT;
+
+	/**
 	 * The table cattle.credential
 	 */
 	public static final io.cattle.platform.core.model.tables.CredentialTable CREDENTIAL = io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
