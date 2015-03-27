@@ -12,6 +12,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.ObjectUtils;
+import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.NamedUtils;
 import io.cattle.platform.util.type.Priority;
@@ -20,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang.StringUtils;
 
 public class EventBasedProcessHandler extends AbstractObjectProcessHandler implements Priority {
 
@@ -30,6 +33,7 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
     String eventName;
     Integer retry;
     Long timeoutMillis;
+    String onError;
     int priority = Priority.SPECIFIC;
 
     public EventBasedProcessHandler(EventService eventService, ObjectManager objectManager, ObjectProcessManager objectProcessManager,
@@ -100,9 +104,18 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
                 }
             }
         });
-        Event response = eventService.callSync(request, options);
 
-        return postEvent(state, process, CollectionUtils.toMap(response.getData()));
+        try {
+            Event response = eventService.callSync(request, options);
+            return postEvent(state, process, CollectionUtils.toMap(response.getData()));
+        } catch (ExecutionException e) {
+            if (!StringUtils.isEmpty(getOnError())) {
+                objectProcessManager.scheduleProcessInstance(getOnError(), state.getResource(), state.getData());
+                e.setResources(state.getResource());
+            }
+
+            throw e;
+        }
     }
 
     protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> data) {
@@ -166,4 +179,11 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
         this.priority = priority;
     }
 
+    public String getOnError() {
+        return this.onError;
+    }
+
+    public void setOnError(String onError) {
+        this.onError = onError;
+    }
 }

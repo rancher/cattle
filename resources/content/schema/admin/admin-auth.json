@@ -63,13 +63,17 @@
         "externalHandler" : "cru",
         "externalHandler.priority" : "cru",
         "externalHandler.priorityString" : "cru",
-        "externalHandler.processNames" : "cr",
+        "externalHandler.processConfigs" : "cr",
+        "externalHandlerProcessConfig" : "cr",
+        "externalHandlerProcessConfig.name" : "cr",
+        "externalHandlerProcessConfig.onError" : "cr",
         "externalHandler.retries" : "cru",
         "externalHandler.timeoutMillis" : "cru",
 
         "externalHandlerExternalHandlerProcessMap" : "r",
         "externalHandlerExternalHandlerProcessMap.externalHandlerId" : "r",
         "externalHandlerExternalHandlerProcessMap.externalHandlerProcessId" : "r",
+        "externalHandlerExternalHandlerProcessMap.onError" : "r",
         "externalHandlerProcess" : "r",
 
         "githubconfig": "cru",
