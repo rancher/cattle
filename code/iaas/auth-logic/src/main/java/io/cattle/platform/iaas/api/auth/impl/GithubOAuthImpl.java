@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 public class GithubOAuthImpl implements AccountLookup, Priority {
 
     private static final String AUTH_HEADER = "Authorization";
+    private static final String AUTH_TYPE = "bearer ";
     private static final String GITHUB_ACCOUNT_TYPE = "github";
     private static final String PROJECT_HEADER = "X-API-Project-Id";
     private static final String USER_SCOPE = "project:github_user";
@@ -41,7 +42,7 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
             return null;
         }
         String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);
-        if (StringUtils.isEmpty(token)) {
+        if (StringUtils.isEmpty(token) || !token.toLowerCase().startsWith(AUTH_TYPE)) {
             token = request.getServletContext().getRequest().getParameter("token");
             if (StringUtils.isEmpty(token)) {
                 return null;
