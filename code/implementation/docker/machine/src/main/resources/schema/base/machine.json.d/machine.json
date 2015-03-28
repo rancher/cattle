@@ -23,6 +23,10 @@
         "digitaloceanConfig": {
             "type": "digitaloceanConfig",
             "nullable": true
+        },
+        "amazonec2Config": {
+            "type": "amazonec2Config",
+            "nullable": true
         }
     }
 }

@@ -119,6 +119,28 @@ def test_machine_driver_config(admin_client):
     assert digoc_config == host.digitaloceanConfig
     assert host.driver == 'digitalocean'
 
+    name = "test-%s" % random_str()
+    ec2_config = {
+        "accessKey": "accesskey1",
+        "secretKey": "secretkey1",
+        "vpcId": "1234",
+        "subnetId": "5678",
+        "sessionToken": "sessiontoken1",
+        "ami": "ami1",
+        "region": "us-east-1",
+        "zone": "us-east-1a",
+        "securityGroup": "docker-machine",
+        "instanceType": "type1",
+        "rootSize": "60GB",
+        "iamInstanceProfile": "profile1",
+    }
+    host = admin_client.create_machine(name=name,
+                                       amazonec2Config=ec2_config)
+    host = admin_client.wait_success(host)
+    assert host.state == 'active'
+    assert ec2_config == host.amazonec2Config
+    assert host.driver == 'amazonec2'
+
 
 def test_machine_validation(admin_client):
     name = "test-%s" % random_str()
