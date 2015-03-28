@@ -51,6 +51,7 @@ public class LoadBalancerConstants {
     public static final String PROCESS_LB_HOST_MAP_CREATE = "loadbalancerhostmap.create";
     public static final String PROCESS_LB_HOST_MAP_REMOVE = "loadbalancerhostmap.remove";
     public static final String PROCESS_LB_REMOVE = "loadbalancer.remove";
+    public static final String PROCESS_LB_RESTART = "loadbalancer.restart";
     public static final String PROCESS_LB_CONFIG_REMOVE = "loadbalancerconfig.remove";
     public static final String PROCESS_GLB_ADD_LB = "globalloadbalancer.addloadbalancer";
     public static final String PROCESS_GLB_REMOVE_LB = "globalloadbalancer.removeloadbalancer";

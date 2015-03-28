@@ -271,6 +271,7 @@
         "loadBalancer.setHosts" : "r",
         "setLoadBalancerHostsInput" : "cr",
         "setLoadBalancerHostsInput.hostIds" : "cr",
+        "loadBalancer.restart" : "r",
 
         "loadBalancerTarget" : "r",
         "loadBalancerTarget.instanceId" : "r",

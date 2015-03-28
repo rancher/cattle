@@ -17,10 +17,13 @@ import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.lb.instance.dao.LoadBalancerInstanceDao;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
@@ -37,6 +40,8 @@ import com.netflix.config.DynamicStringProperty;
 public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceManager {
 
     static final DynamicStringProperty LB_INSTANCE_NAME = ArchaiusUtil.getString("lb.instance.name");
+    static final DynamicStringProperty LB_INSTANCE_RESTART_TIMEOUT = ArchaiusUtil
+            .getString("lb.instance.restart.default.wait.millis");
 
     @Inject
     AgentInstanceFactory agentInstanceFactory;
@@ -61,6 +66,9 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
 
     @Inject
     IpAddressDao ipAddressDao;
+
+    @Inject
+    ResourceMonitor resourceMonitor;
 
     @Override
     public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer, Long... hostIds) {
@@ -198,5 +206,23 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             }
         }
         return ip;
+    }
+
+    @Override
+    public void restartLoadBalancer(LoadBalancer lb) {
+        List<? extends Instance> lbInstances = getLoadBalancerInstances(lb);
+        for (final Instance lbInstance : lbInstances) {
+            try {
+                processManager.scheduleProcessInstance(InstanceConstants.PROCESS_RESTART, lbInstance, null);
+            } catch (ProcessCancelException e) {
+            }
+            resourceMonitor.waitFor(lbInstance, Long.valueOf(LB_INSTANCE_RESTART_TIMEOUT.get()),
+                    new ResourcePredicate<Instance>() {
+                        @Override
+                        public boolean evaluate(Instance obj) {
+                            return InstanceConstants.STATE_RUNNING.equals(obj.getState());
+                        }
+                    });
+        }
     }
 }
