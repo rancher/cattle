@@ -1,25 +1,6 @@
 from common_fixtures import *  # NOQA
 
 
-@pytest.fixture
-def new_sim_context(super_client):
-    uri = 'sim://' + random_str()
-    sim_context = kind_context(super_client, 'sim', uri=uri, uuid=uri)
-
-    for i in ['host', 'pool', 'agent']:
-        sim_context[i] = super_client.wait_success(sim_context[i])
-
-    host = sim_context['host']
-    pool = sim_context['pool']
-    agent = sim_context['agent']
-
-    assert host is not None
-    assert pool is not None
-    assert agent is not None
-
-    return sim_context
-
-
 def test_host_deactivate(admin_client, new_sim_context):
     host = new_sim_context['host']
     agent = new_sim_context['agent']

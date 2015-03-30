@@ -130,7 +130,10 @@ def test_short_lived_container(admin_client, docker_context):
     container = admin_client.create_container(imageUuid="docker:tianon/true",
                                               networkIds=[network.id])
 
-    container = wait_until_expected_state(admin_client, container, 'stopped')
+    container = wait_for_condition(
+        admin_client, container,
+        lambda x: x.state == 'stopped',
+        lambda x: 'State is: ' + x.state)
 
     assert container.state == 'stopped'
     assert container.transitioning == 'no'

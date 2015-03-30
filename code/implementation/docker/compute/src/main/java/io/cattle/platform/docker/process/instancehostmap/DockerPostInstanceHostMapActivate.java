@@ -9,6 +9,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
+import io.cattle.platform.core.dao.ClusterHostMapDao;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -67,6 +68,9 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     GenericMapDao mapDao;
     LockManager lockManager;
 
+    @Inject
+    ClusterHostMapDao clusterHostMapDao;
+
     @Override
     public String[] getProcessNames() {
         return new String[] { "instancehostmap.activate" };
@@ -82,16 +86,15 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         String dockerIp = DockerProcessUtils.getDockerIp(instance);
         Nic nic = nicDao.getPrimaryNic(instance);
 
-        String hostIp = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_DOCKER_HOST_IP).as(String.class);
-
+        IpAddress ipAddress = clusterHostMapDao.getIpAddressForHost(host.getId());
         Map ports = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_DOCKER_PORTS).as(jsonMapper, Map.class);
 
         if (dockerIp != null) {
             processDockerIp(instance, nic, dockerIp);
         }
 
-        if (hostIp != null && ports != null) {
-            processPorts(hostIp, ports, instance, nic, host);
+        if (ipAddress != null && ports != null) {
+            processPorts(ipAddress, ports, instance, nic, host);
         }
 
         processVolumes(instance, host, state);
@@ -208,20 +211,9 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         }
     }
 
-    protected void processPorts(final String hostIp, Map<String, String> ports, Instance instance, Nic nic, final Host host) {
-        IpAddress ipAddress = getIpAddress(host, hostIp);
+    protected void processPorts(IpAddress ipAddress, Map<String, String> ports, Instance instance, Nic nic, final Host host) {
         IpAddress dockerIpAddress = dockerDao.getDockerIp(DockerProcessUtils.getDockerIp(instance), instance);
         Long privateIpAddressId = dockerIpAddress == null ? null : dockerIpAddress.getId();
-
-        if (ipAddress == null && DYNAMIC_ADD_IP.get()) {
-            ipAddress = lockManager.lock(new AssignHostIpLockDefinition(host), new LockCallback<IpAddress>() {
-                @Override
-                public IpAddress doWithLock() {
-                    IpAddress ipAddress = getIpAddress(host, hostIp);
-                    return ipAddress == null ? ipAddressDao.assignNewAddress(host, hostIp) : ipAddress;
-                }
-            });
-        }
 
         if (DYNAMIC_ADD_IP.get()) {
             createThenActivate(ipAddress, null);
@@ -269,16 +261,6 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
     protected boolean hasPortNetworkService(long instanceId) {
         return networkDao.getNetworkService(instanceId, NetworkServiceConstants.KIND_PORT_SERVICE).size() > 0;
-    }
-
-    protected IpAddress getIpAddress(Host host, String hostIp) {
-        for (IpAddress address : getObjectManager().mappedChildren(host, IpAddress.class)) {
-            if (hostIp.equals(address.getAddress())) {
-                return address;
-            }
-        }
-
-        return null;
     }
 
     public JsonMapper getJsonMapper() {

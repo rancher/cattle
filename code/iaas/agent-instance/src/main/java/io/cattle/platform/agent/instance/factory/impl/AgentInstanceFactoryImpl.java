@@ -93,8 +93,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(InstanceConstants.FIELD_PRIVILEGED, builder.isPrivileged());
         properties.put(InstanceConstants.FIELD_VNET_IDS, getVnetIds(agent, builder));
         properties.put(InstanceConstants.FIELD_NETWORK_IDS, getNetworkIds(agent, builder));
-        properties.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, builder.getParams().get(InstanceConstants.FIELD_REQUESTED_HOST_ID));
-
+        properties.putAll(builder.getParams());
         addAdditionalProperties(properties, agent, builder);
 
         return objectManager.convertToPropertiesFor(Instance.class, properties);

@@ -75,7 +75,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+    <bean class="io.cattle.platform.process.instance.InstanceHostMapAgentProcessHandler"
         p:name="InstanceHostMapActivate"
         p:commandName="compute.instance.activate"
         p:agentResourceRelationship="host"
@@ -86,7 +86,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+    <bean class="io.cattle.platform.process.instance.InstanceHostMapAgentProcessHandler"
         p:name="InstanceHostMapDeactivate"
         p:commandName="compute.instance.deactivate"
         p:agentResourceRelationship="host"

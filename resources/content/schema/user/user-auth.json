@@ -26,10 +26,10 @@
         "addRemoveClusterHostInput.hostId" : "cr",
 
         "cluster" : "crud",
-        "cluster.discoverySpec" : "cru",
+        "cluster.discoverySpec" : "r",
         "cluster.port" : "cru",
         "cluster.managingHostId" : "",
-        "cluster.certificateId" : "cru",
+        "cluster.certificateId" : "",
 
         "clusterHostMap" : "",
 

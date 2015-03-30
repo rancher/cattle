@@ -4,7 +4,8 @@ public class InstanceConstants {
 
     public enum SystemContainer {
         NetworkAgent,
-        LoadBalancerAgent;
+        LoadBalancerAgent,
+        ClusterAgent;       // swarm
     }
 
     public static final String TYPE = "instance";
