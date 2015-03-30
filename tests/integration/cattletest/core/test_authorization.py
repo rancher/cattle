@@ -518,6 +518,7 @@ def test_machine(admin_client, client, service_client):
         'authKey': 'cr',
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
+        'amazonec2Config': 'cr',
     })
 
     auth_check(client.schema, 'machine', 'crd', {
@@ -528,6 +529,7 @@ def test_machine(admin_client, client, service_client):
         'authKey': 'cr',
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
+        'amazonec2Config': 'cr',
     })
 
     auth_check(service_client.schema, 'machine', 'crud', {
@@ -540,6 +542,7 @@ def test_machine(admin_client, client, service_client):
         'extractedConfig': 'ru',
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
+        'amazonec2Config': 'cr',
     })
 
 
