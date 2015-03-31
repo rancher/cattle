@@ -9,11 +9,15 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import com.google.common.collect.Lists;
 
 @Named
 public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
@@ -22,22 +26,34 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
-        // 1. retrieve all the links for the hosts
-        List<? extends DnsEntryData> dnsEntries = dnsInfoDao.getHostDnsData(instance);
-        // 2. aggregate the links based on the source ip address
+        // 1. retrieve all instance links for the hosts
+        List<DnsEntryData> dnsEntries = dnsInfoDao.getInstanceLinksHostDnsData(instance);
+        // 2. retrieve all service links for the host
+        dnsEntries.addAll(dnsInfoDao.getServiceHostDnsData(instance));
+        // 3. retrieve self service links
+        dnsEntries.addAll(dnsInfoDao.getSelfServiceLinks(instance));
+        // 4. aggregate the links based on the source ip address
         Map<String, DnsEntryData> processedDnsEntries = new HashMap<>();
         for (DnsEntryData dnsEntry : dnsEntries) {
-            Map<String, List<? extends IpAddress>> resolve = new HashMap<>();
-            DnsEntryData existingData = null;
+            Map<String, List<IpAddress>> resolve = new HashMap<>();
+            DnsEntryData newData = null;
             if (processedDnsEntries.containsKey(dnsEntry.getSourceIpAddress().getAddress())) {
-                existingData = processedDnsEntries.get(dnsEntry.getSourceIpAddress().getAddress());
-                resolve = existingData.getResolve();
-                resolve.putAll(dnsEntry.getResolve());
+                newData = processedDnsEntries.get(dnsEntry.getSourceIpAddress().getAddress());
+                resolve = newData.getResolve();
+                for (String dnsName : dnsEntry.getResolve().keySet()) {
+                    Set<IpAddress> ips = new HashSet<>();
+                    if (resolve.containsKey(dnsName)) {
+                        ips.addAll(resolve.get(dnsName));
+                    }
+                    ips.addAll(dnsEntry.getResolve().get(dnsName));
+                    resolve.put(dnsName, Lists.newArrayList(ips));
+                    newData.setResolve(resolve);
+                }
             } else {
-                existingData = dnsEntry;
+                newData = dnsEntry;
             }
 
-            processedDnsEntries.put(dnsEntry.getSourceIpAddress().getAddress(), existingData);
+            processedDnsEntries.put(dnsEntry.getSourceIpAddress().getAddress(), newData);
         }
         context.getData().put("dnsEntries", processedDnsEntries.values());
     }

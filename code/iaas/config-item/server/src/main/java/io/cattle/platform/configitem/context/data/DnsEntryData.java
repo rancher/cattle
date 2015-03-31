@@ -8,10 +8,9 @@ import java.util.Map;
 
 public class DnsEntryData {
     IpAddress sourceIpAddress;
-    Map<String, List<? extends IpAddress>> resolve = new HashMap<>();
+    Map<String, List<IpAddress>> resolve = new HashMap<>();
 
     public DnsEntryData() {
-
     }
 
     public IpAddress getSourceIpAddress() {
@@ -23,11 +22,11 @@ public class DnsEntryData {
     }
 
 
-    public Map<String, List<? extends IpAddress>> getResolve() {
+    public Map<String, List<IpAddress>> getResolve() {
         return resolve;
     }
 
-    public void setResolve(Map<String, List<? extends IpAddress>> resolve) {
+    public void setResolve(Map<String, List<IpAddress>> resolve) {
         this.resolve = resolve;
     }
 }

@@ -24,6 +24,8 @@
     <bean class="io.cattle.platform.agent.instance.service.impl.HostIpAddressMapNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.PortNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.IpAssociationNicLookup" />
+    <bean class="io.cattle.platform.agent.instance.service.impl.ServiceExposeMapCreateNicLookup" />
+    <bean class="io.cattle.platform.agent.instance.service.impl.ServiceConsumeMapCreateNicLookup" />
 
     <bean id="AgentInstanceTypes" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeNames">

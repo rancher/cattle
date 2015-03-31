@@ -6,5 +6,9 @@ import io.cattle.platform.core.model.Instance;
 import java.util.List;
 
 public interface DnsInfoDao {
-    List<DnsEntryData> getHostDnsData(Instance instance);
+    List<DnsEntryData> getInstanceLinksHostDnsData(Instance instance);
+
+    List<DnsEntryData> getServiceHostDnsData(Instance instance);
+
+    List<DnsEntryData> getSelfServiceLinks(Instance instance);
 }
