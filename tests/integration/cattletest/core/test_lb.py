@@ -31,9 +31,6 @@ def test_lb_create_wo_config(admin_client):
 
 # test (C)
 def create_valid_lb(admin_client, config_id, sim_context, super_client, nsp):
-    default_lb_config = admin_client.create_loadBalancerConfig(name='config')
-    default_lb_config = admin_client.wait_success(default_lb_config)
-
     im_id = sim_context['imageUuid']
     test_lb = super_client. \
         create_loadBalancer(name=random_str(),
