@@ -1,0 +1,41 @@
+{
+    "resourceFields": {
+        "environmentId":{
+            "type": "reference[environment]",
+            "required": true,
+            "nullable": false
+        },
+        "scale": {
+            "type": "int",
+            "required": false,
+            "nullable": true,
+            "default": 1
+        },
+        "networkId":{
+            "type": "reference[network]"
+        },
+        "dataVolumesFromService": {
+            "type" : "array[reference[service]]",
+            "nullable" : true
+        },
+        "name":{
+            "required": true
+        },
+        "launchConfig": {
+            "type": "container",
+            "create": true,
+            "required": true
+        }
+    },
+    "resourceActions" : {
+        "addservicelink" : {
+            "input" : "addRemoveServiceLinkInput",
+            "output" : "service"
+
+        },
+        "removeservicelink" : {
+            "input" : "addRemoveServiceLinkInput",
+            "output" : "service"
+        }
+    }
+}

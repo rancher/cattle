@@ -23,6 +23,7 @@
                 <value>io.cattle.platform.core.addon.GlobalLoadBalancerPolicy</value>
                 <value>io.cattle.platform.core.addon.GlobalLoadBalancerHealthCheck</value>
                 <value>io.cattle.platform.extension.dynamic.api.addon.ExternalHandlerProcessConfig</value>
+                <value>io.cattle.platform.core.addon.ComposeConfig</value>
             </set>
         </property>
     </bean>
@@ -55,6 +56,8 @@
                 <value>addRemoveClusterHostInput</value>
                 <value>registryCredential,parent=credential</value>
                 <value>registry,parent=storagePool</value>
+                <value>addRemoveServiceLinkInput</value>
+                <value>composeConfigInput</value>
             </set>
         </property>
     </bean>

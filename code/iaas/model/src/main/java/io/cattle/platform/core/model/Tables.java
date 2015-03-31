@@ -74,6 +74,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.DatabasechangeloglockTable DATABASECHANGELOGLOCK = io.cattle.platform.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK;
 
 	/**
+	 * The table cattle.environment
+	 */
+	public static final io.cattle.platform.core.model.tables.EnvironmentTable ENVIRONMENT = io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+
+	/**
 	 * The table cattle.external_handler
 	 */
 	public static final io.cattle.platform.core.model.tables.ExternalHandlerTable EXTERNAL_HANDLER = io.cattle.platform.core.model.tables.ExternalHandlerTable.EXTERNAL_HANDLER;
@@ -247,6 +252,21 @@ public class Tables {
 	 * The table cattle.resource_pool
 	 */
 	public static final io.cattle.platform.core.model.tables.ResourcePoolTable RESOURCE_POOL = io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL;
+
+	/**
+	 * The table cattle.service
+	 */
+	public static final io.cattle.platform.core.model.tables.ServiceTable SERVICE = io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+
+	/**
+	 * The table cattle.service_consume_map
+	 */
+	public static final io.cattle.platform.core.model.tables.ServiceConsumeMapTable SERVICE_CONSUME_MAP = io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
+
+	/**
+	 * The table cattle.service_expose_map
+	 */
+	public static final io.cattle.platform.core.model.tables.ServiceExposeMapTable SERVICE_EXPOSE_MAP = io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 
 	/**
 	 * The table cattle.setting

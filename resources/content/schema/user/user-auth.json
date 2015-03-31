@@ -277,6 +277,23 @@
         "loadBalancerTarget.loadBalancerId" : "r",
         "loadBalancerTarget.ipAddress" : "r",
 
+        "composeConfig" : "r",
+        "composeConfig.dockerComposeConfig" : "r",
+        "composeConfig.rancherComposeConfig" : "r",
+        "composeConfigInput" : "cr",
+        "composeConfigInput.serviceIds" : "cr",
+
+        "environment" : "crud",
+
+        "service" : "crud",
+        "service.environmentId" : "cr",
+        "service.scale" : "cr",
+        "service.dataVolumesFromService" : "cr",
+        "service.launchConfig" : "cr",
+
+        "addRemoveServiceLinkInput" : "cr",
+        "addRemoveServiceLinkInput.serviceId" : "cr",
+
         "end" : ""
     }
 }

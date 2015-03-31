@@ -84,6 +84,8 @@
                 <module>code/iaas/task-jooq</module>
                 <module>code/iaas/lb-instance</module>
                 <module>code/iaas/cluster-logic</module>
+                <module>code/iaas/service-discovery/server</module>
+                <module>code/iaas/service-discovery/api</module>
             </modules>
         </profile>
         <profile>

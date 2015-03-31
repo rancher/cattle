@@ -1,0 +1,10 @@
+{
+    "collectionMethods" : [],
+    "resourceFields" : {
+        "serviceId" : {
+            "type": "reference[service]",
+            "required": true,
+            "nullable": false
+        }
+    }
+}
