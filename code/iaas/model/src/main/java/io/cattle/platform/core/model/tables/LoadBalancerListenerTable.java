@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LoadBalancerListenerTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord> {
 
-	private static final long serialVersionUID = 2067427598;
+	private static final long serialVersionUID = 1830024150;
 
 	/**
 	 * The singleton instance of <code>cattle.load_balancer_listener</code>
@@ -102,6 +102,11 @@ public class LoadBalancerListenerTable extends org.jooq.impl.TableImpl<io.cattle
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord, java.lang.String> TARGET_PROTOCOL = createField("target_protocol", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
+	 * The column <code>cattle.load_balancer_listener.service_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.load_balancer_listener</code> table reference
 	 */
 	public LoadBalancerListenerTable() {
@@ -152,7 +157,7 @@ public class LoadBalancerListenerTable extends org.jooq.impl.TableImpl<io.cattle
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_LISTENER__ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_LISTENER__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_LISTENER__SERVICE_ID);
 	}
 
 	/**

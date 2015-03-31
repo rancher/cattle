@@ -86,6 +86,7 @@
                 <module>code/iaas/cluster-logic</module>
                 <module>code/iaas/service-discovery/server</module>
                 <module>code/iaas/service-discovery/api</module>
+                <module>code/iaas/lb-logic</module>
             </modules>
         </profile>
         <profile>

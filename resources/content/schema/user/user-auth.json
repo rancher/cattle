@@ -224,11 +224,14 @@
         "loadBalancerListener.sourceProtocol" : "cr",
         "loadBalancerListener.targetProtocol" : "cr",
         "loadBalancerListener.algorithm" : "cr",
+        "loadBalancerListener.serviceId" : "r",
 
         "loadBalancerConfig" : "crud",
         "loadBalancerConfig.healthCheck" : "cru",
         "loadBalancerConfig.appCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.lbCookieStickinessPolicy" : "cru",
+        "loadBalancerConfig.serviceId" : "r",
+
         "loadBalancerConfig.addListener" : "r",
         "loadBalancerConfig.removeListener" : "r",
         "loadBalancerConfig.setListeners" : "r",
@@ -277,6 +280,7 @@
         "loadBalancer.loadBalancerConfigId" : "cr",
         "loadBalancer.globalLoadBalancerId" : "r",
         "loadBalancer.weight" : "r",
+        "loadBalancer.serviceId" : "r",
 
         "loadBalancer.addTarget" : "r",
         "loadBalancer.removeTarget" : "r",
@@ -330,6 +334,9 @@
         "loadBalancerHostMap" : "r",
         "loadBalancerHostMap.hostId" : "r",
         "loadBalancerHostMap.loadBalancerId" : "r",
+
+        "loadBalancerService" : "crud",
+        "loadBalancerService.loadBalancerConfig" : "cr",
 
         "end" : ""
     }

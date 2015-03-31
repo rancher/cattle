@@ -1,4 +1,4 @@
-package io.cattle.platform.process.lb;
+package io.cattle.iaas.lb.process;
 
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.LoadBalancerDao;

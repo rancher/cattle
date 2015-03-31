@@ -7,6 +7,7 @@ public class LoadBalancerConstants {
 
     public static final String FIELD_LB_LISTENER_IDS = "loadBalancerListenerIds";
     public static final String FIELD_LB_LISTENER_ID = "loadBalancerListenerId";
+    public static final String FIELD_LB_LISTENER_ALGORITHM = "algorithm";
     public static final String FIELD_LB_ID = "loadBalancerId";
     public static final String FIELD_WEIGHT = "weight";
     public static final String FIELD_LB_TARGET_INSTANCE_ID = "instanceId";
@@ -22,6 +23,8 @@ public class LoadBalancerConstants {
     public static final String FIELD_LB_HEALTH_CHECK = "healthCheck";
     public static final String FIELD_LB_APP_COOKIE_POLICY = "appCookieStickinessPolicy";
     public static final String FIELD_LB_COOKIE_POLICY = "lbCookieStickinessPolicy";
+    public static final String FIELD_LB_CONFIG_ID = "loadBalancerConfigId";
+    public static final String FIELD_LB_SERVICE_ID = "serviceId";
 
     public static final String ACTION_ADD_HOST = "addhost";
     public static final String ACTION_REMOVE_HOST = "removehost";
@@ -54,4 +57,6 @@ public class LoadBalancerConstants {
     public static final String PROCESS_LB_CONFIG_REMOVE = "loadbalancerconfig.remove";
     public static final String PROCESS_GLB_ADD_LB = "globalloadbalancer.addloadbalancer";
     public static final String PROCESS_GLB_REMOVE_LB = "globalloadbalancer.removeloadbalancer";
+    public static final String PROCESS_LB_CONFIG_CREATE = "loadbalancerconfig.create";
+    public static final String PROCESS_LB_LISTENER_CREATE = "loadbalancerlistener.create";
 }

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LoadBalancerTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LoadBalancerRecord> {
 
-	private static final long serialVersionUID = 126400550;
+	private static final long serialVersionUID = 1978582618;
 
 	/**
 	 * The singleton instance of <code>cattle.load_balancer</code>
@@ -97,6 +97,11 @@ public class LoadBalancerTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerRecord, java.lang.Long> LOAD_BALANCER_CONFIG_ID = createField("load_balancer_config_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.load_balancer.service_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.load_balancer</code> table reference
 	 */
 	public LoadBalancerTable() {
@@ -147,7 +152,7 @@ public class LoadBalancerTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER__GLOBAL_LOAD_BALANCER_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER__LOAD_BALANCER_CONFIG_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER__GLOBAL_LOAD_BALANCER_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER__LOAD_BALANCER_CONFIG_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER__SERVICE_ID);
 	}
 
 	/**
