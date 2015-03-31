@@ -140,4 +140,99 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
             });
         }
     }
+
+    private void createServiceInstances(Service service, int scale) {
+        List<Instance> instancesToStart = new ArrayList<>();
+        Map<String, Object> launchConfigData = sdServer.buildLaunchData(service);
+        Long imageId = getImage(String.valueOf(launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID)));
+        List<Long> networkIds = getServiceNetworks(service);
+        for (int i = 0; i < scale; i++) {
+            Instance instance = createInstance(service, i, launchConfigData, imageId, networkIds);
+            instancesToStart.add(instance);
+        }
+        startServiceInstances(instancesToStart, service);
+    }
+
+    private void startServiceInstances(List<Instance> instancesToStart, Service service) {
+        for (Instance instance : instancesToStart) {
+            scheduleStart(instance);
+        }
+        for (Instance instance : instancesToStart) {
+            progress.checkPoint("start service instance " + instance.getUuid());
+            instance = resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
+                @Override
+                public boolean evaluate(Instance obj) {
+                    return InstanceConstants.STATE_RUNNING.equals(obj.getState());
+                }
+            });
+            // the reason we create instance service map after start - dns config is invoked on the map creation, and
+            // nic should be present in the DB once it happens
+            createInstanceServiceMap(instance, service);
+        }
+    }
+
+    protected void scheduleStart(final Instance instance) {
+        if (InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
+            DeferredUtils.nest(new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, instance, null);
+                    return null;
+                }
+            });
+        }
+    }
+
+
+    private List<Long> getServiceNetworks(Service service) {
+        List<Long> ntwkIds = new ArrayList<>();
+        long networkId = sdServer.getServiceNetworkId(service);
+        ntwkIds.add(networkId);
+        return ntwkIds;
+    }
+
+    protected Long getImage(String imageUuid) {
+        Image image;
+        try {
+            image = storageService.registerRemoteImage(imageUuid);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to get image [" + imageUuid + "]");
+        }
+
+        return image == null ? null : image.getId();
+    }
+
+
+    protected Instance createInstance(Service service, int i, Map<String, Object> launchConfigData, Long imageId,
+            List<Long> networkIds) {
+        String instanceName = sdServer.getInstanceName(service, i);
+        Instance instance = objectManager.findOne(Instance.class, INSTANCE.NAME, instanceName,
+                INSTANCE.REMOVED, null, INSTANCE.ACCOUNT_ID, service.getAccountId());
+        if (instance == null) {
+            Map<Object, Object> properties = new HashMap<Object, Object>();
+            properties.putAll(launchConfigData);
+            properties.put(INSTANCE.NAME, instanceName);
+            properties.put(INSTANCE.ACCOUNT_ID, service.getAccountId());
+            properties.put(INSTANCE.KIND, InstanceConstants.KIND_CONTAINER);
+            properties.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
+            properties.put(INSTANCE.IMAGE_ID, imageId);
+            Map<String, Object> props = objectManager.convertToPropertiesFor(Instance.class,
+                    properties);
+            instance = resourceDao.createAndSchedule(Instance.class, props);
+        }
+
+        return instance;
+    }
+
+    protected void createInstanceServiceMap(Instance instance, Service service) {
+        ServiceExposeMap instanceServiceMap = mapDao.findNonRemoved(ServiceExposeMap.class, Instance.class,
+                instance.getId(),
+                Service.class, service.getId());
+
+        if (instanceServiceMap == null) {
+            instanceServiceMap = objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID,
+                    instance.getId(), SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId());
+        }
+        objectProcessManager.executeStandardProcess(StandardProcess.CREATE, instanceServiceMap, null);
+    }
 }
