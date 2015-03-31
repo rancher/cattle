@@ -1,9 +1,0 @@
-{
-    "collectionMethods" : [],
-    "resourceFields" : {
-        "hostIds" : {
-            "type": "array[reference[host]]",
-            "nullable": true
-        }
-    }
-}
