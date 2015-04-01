@@ -111,6 +111,9 @@ def test_machine_driver_config(admin_client):
         "region": "reg1",
         "size": "40000",
         "accessToken": "ac-1",
+        "ipv6": True,
+        "privateNetworking": True,
+        "backups": True
     }
     host = admin_client.create_machine(name=name,
                                        digitaloceanConfig=digoc_config)

@@ -16,6 +16,18 @@
             "type": "string",
             "nullable": false,
             "required": true
+        },
+        "ipv6": {
+            "type": "boolean",
+            "nullable": true
+        },
+        "privateNetworking": {
+            "type": "boolean",
+            "nullable": true
+        },
+        "backups": {
+            "type": "boolean",
+            "nullable": true
         }
     }
 }
