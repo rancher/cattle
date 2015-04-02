@@ -1,5 +1,11 @@
 {
     "resourceFields": {
+        "name": {
+            "type": "string",
+            "nullable": false,
+            "minLength": 1,
+            "required": true
+        },
         "authCertificateAuthority": {
             "type": "string",
             "nullable": true

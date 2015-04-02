@@ -20,6 +20,9 @@
         "digitaloceanConfig.region" : "cr",
         "digitaloceanConfig.size" : "cr",
         "digitaloceanConfig.accessToken" : "cr",
+        "digitaloceanConfig.ipv6" : "cr",
+        "digitaloceanConfig.privateNetworking" : "cr",
+        "digitaloceanConfig.backups" : "cr",
         
         "amazonec2Config" : "cr",
         "amazonec2Config.accessKey" : "cr",

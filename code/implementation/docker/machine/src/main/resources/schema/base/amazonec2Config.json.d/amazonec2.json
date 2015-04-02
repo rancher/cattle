@@ -12,8 +12,7 @@
         },
         "vpcId": {
             "type": "string",
-            "nullable": false,
-            "required": true
+            "nullable": true
         },
         "sessionToken": {
             "type": "string",
