@@ -274,7 +274,7 @@ def test_set_hosts(admin_client,
     lb = _create_valid_lb(super_client, sim_context, config_id, nsp)
 
     # 1. Set hosts with 2 lbs
-    lb = lb.updateall(hostIds=[host1.id, host2.id])
+    lb = lb.sethosts(hostIds=[host1.id, host2.id])
     lb = admin_client.wait_success(lb)
 
     # VERIFICATION FOR HOST1
@@ -311,118 +311,11 @@ def test_set_hosts(admin_client,
     assert host_map[0].hostId == host1.id
 
     # 3. Re-add the host again
-    lb = lb.updateall(hostIds=[host1.id, host2.id])
+    lb = lb.sethosts(hostIds=[host1.id, host2.id])
     lb = admin_client.wait_success(lb)
     host_map = super_client. \
         list_loadBalancerHostMap(loadBalancerId=lb.id,
                                  hostId=host1.id)
-
-
-def test_set_hosts_and_targets(admin_client,
-                               super_client,
-                               sim_context,
-                               new_sim_context,
-                               config_id, nsp):
-    lb = _create_valid_lb(super_client, sim_context, config_id, nsp)
-
-    host1 = new_sim_context['host']
-    host2 = sim_context['host']
-
-    container1 = admin_client. \
-        create_container(imageUuid=sim_context['imageUuid'],
-                         startOnCreate=False)
-    container1 = admin_client.wait_success(container1)
-    container2 = admin_client. \
-        create_container(imageUuid=sim_context['imageUuid'],
-                         startOnCreate=False)
-    container2 = admin_client.wait_success(container2)
-
-    # 1. Set lb with 2 hosts and 2 instances
-    lb = lb.updateall(hostIds=[host1.id, host2.id],
-                      instanceIds=[container1.id, container2.id])
-    lb = admin_client.wait_success(lb)
-
-    # 2. Verify the hosts mappings
-    host_map1 = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host1.id)
-
-    assert len(host_map1) == 1
-    assert host_map1[0].state == "active"
-    assert host_map1[0].hostId == host1.id
-
-    host_map2 = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host2.id)
-
-    assert len(host_map2) == 1
-    assert host_map2[0].state == "active"
-    assert host_map2[0].hostId == host2.id
-
-    # 3. Verify the instance mappings
-    target_map1 = admin_client. \
-        list_loadBalancerTarget(loadBalancerId=lb.id,
-                                instanceId=container1.id)
-
-    assert len(target_map1) == 1
-    assert target_map1[0].state == "active"
-
-    target_map2 = admin_client. \
-        list_loadBalancerTarget(loadBalancerId=lb.id,
-                                instanceId=container2.id)
-
-    assert len(target_map2) == 1
-    assert target_map2[0].state == "active"
-
-    # 4. Remove the host and veirfy that the instance mappings are still around
-    lb = lb.updateall(hostIds=[host2.id])
-    lb = admin_client.wait_success(lb)
-
-    host_map1 = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host1.id)
-    assert len(host_map1) == 1
-    assert host_map1[0].state == "removed"
-
-    host_map2 = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host2.id)
-    assert len(host_map2) == 1
-    assert host_map2[0].state == "active"
-
-    target_map1 = admin_client. \
-        list_loadBalancerTarget(loadBalancerId=lb.id,
-                                instanceId=container1.id)
-    assert len(target_map1) == 1
-    assert target_map1[0].state == "active"
-
-    target_map2 = admin_client. \
-        list_loadBalancerTarget(loadBalancerId=lb.id,
-                                instanceId=container2.id)
-    assert len(target_map2) == 1
-    assert target_map2[0].state == "active"
-
-    # 5. remove the instance mappings
-    # and verify that the host mapping is still around
-    lb = lb.updateall(instanceIds=[])
-    lb = admin_client.wait_success(lb)
-    host_map2 = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host2.id)
-    assert len(host_map2) == 1
-    assert host_map2[0].state == "active"
-
-    target_map1 = admin_client. \
-        list_loadBalancerTarget(loadBalancerId=lb.id,
-                                instanceId=container1.id)
-    assert len(target_map1) == 1
-    assert target_map1[0].state == "removed"
-
-    target_map2 = admin_client. \
-        list_loadBalancerTarget(loadBalancerId=lb.id,
-                                instanceId=container2.id)
-    assert len(target_map2) == 1
-    assert target_map2[0].state == "removed"
 
 
 def _create_valid_lb(super_client, sim_context, config_id, nsp):

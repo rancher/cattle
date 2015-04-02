@@ -54,5 +54,4 @@ public class LoadBalancerConstants {
     public static final String PROCESS_LB_CONFIG_REMOVE = "loadbalancerconfig.remove";
     public static final String PROCESS_GLB_ADD_LB = "globalloadbalancer.addloadbalancer";
     public static final String PROCESS_GLB_REMOVE_LB = "globalloadbalancer.removeloadbalancer";
-    public static final String PROCESS_LB_UPDATE_ALL = "loadbalancer.updateall";
 }
