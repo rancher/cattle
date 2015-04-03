@@ -127,7 +127,10 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         List<Agent> agents = new ArrayList<>();
         List<Long> hostIds = lbInstanceDao.getLoadBalancerHosts(loadBalancer.getId());
         for (Long hostId : hostIds) {
-            agents.add(getLoadBalancerAgent(loadBalancer, hostId));
+            Agent agent = getLoadBalancerAgent(loadBalancer, hostId);
+            if (agent != null) {
+                agents.add(agent);
+            }
         }
         return agents;
     }
@@ -160,7 +163,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             DeferredUtils.nest(new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {
-                    processManager.executeProcess(InstanceConstants.PROCESS_START, agentInstance, null);
+                    processManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, agentInstance, null);
                     return null;
                 }
             });

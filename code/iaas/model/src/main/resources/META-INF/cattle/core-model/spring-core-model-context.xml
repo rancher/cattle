@@ -50,7 +50,8 @@
                 <value>removeLoadBalancerInput</value>
                 <value>addRemoveLoadBalancerHostInput</value>
                 <value>setLoadBalancerListenersInput</value>
-                <value>loadBalancerUpdateAllInput</value>
+                <value>setLoadBalancerTargetsInput</value>
+                <value>setLoadBalancerHostsInput</value>
                 <value>cluster,parent=host</value>
                 <value>addRemoveClusterHostInput</value>
                 <value>registryCredential,parent=credential</value>

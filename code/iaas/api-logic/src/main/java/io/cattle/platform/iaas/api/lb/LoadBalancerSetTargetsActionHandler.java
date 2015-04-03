@@ -1,26 +1,24 @@
-package io.cattle.platform.process.lb;
+package io.cattle.platform.iaas.api.lb;
 
 import static io.cattle.platform.core.model.tables.LoadBalancerTargetTable.LOAD_BALANCER_TARGET;
+import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.LoadBalancerTargetDao;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerTarget;
-import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.process.ProcessInstance;
-import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
-@Named
-public class LoadBalancerSetTargets extends AbstractObjectProcessHandler {
+public class LoadBalancerSetTargetsActionHandler implements ActionHandler {
     @Inject
     JsonMapper jsonMapper;
 
@@ -29,18 +27,29 @@ public class LoadBalancerSetTargets extends AbstractObjectProcessHandler {
 
     @Inject
     LoadBalancerTargetDao lbTargetDao;
+    
+    @Inject
+    ObjectManager objectManager;
+
+    @Inject
+    ObjectProcessManager objectProcessManager;
 
     @Override
-    public String[] getProcessNames() {
-        return new String[] { LoadBalancerConstants.PROCESS_LB_SET_TARGETS };
+    public String getName() {
+        return LoadBalancerConstants.PROCESS_LB_SET_TARGETS;
     }
 
     @Override
-    public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        LoadBalancer lb = (LoadBalancer) state.getResource();
-        List<? extends Long> newInstanceIds = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_IDS).asList(
+    public Object perform(String name, Object obj, ApiRequest request) {
+        if (!(obj instanceof LoadBalancer)) {
+            return null;
+        }
+        LoadBalancer lb = (LoadBalancer) obj;
+        List<? extends Long> newInstanceIds = DataAccessor.fromMap(request.getRequestObject())
+                .withKey(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_IDS).asList(
                 jsonMapper, Long.class);
-        List<? extends String> newIpAddresses = DataAccessor.fromMap(state.getData()).withKey(LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESSES).asList(
+        List<? extends String> newIpAddresses = DataAccessor.fromMap(request.getRequestObject())
+                .withKey(LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESSES).asList(
                 jsonMapper, String.class);
 
         // remove old targets set
@@ -49,7 +58,7 @@ public class LoadBalancerSetTargets extends AbstractObjectProcessHandler {
         // create a new targets set
         createNewTargetMaps(lb, newInstanceIds, newIpAddresses);
 
-        return null;
+        return objectManager.reload(lb);
     }
 
     private void createNewTargetMaps(LoadBalancer lb, List<? extends Long> newInstanceIds, List<? extends String> newIpAddresses) {
@@ -61,7 +70,8 @@ public class LoadBalancerSetTargets extends AbstractObjectProcessHandler {
                     target = objectManager.create(LoadBalancerTarget.class, LOAD_BALANCER_TARGET.INSTANCE_ID, instanceId,
                             LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lb.getId(), LOAD_BALANCER_TARGET.IP_ADDRESS, null);
                 }
-                getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE, target, null);
+                objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE,
+                        target, null);
             }
         }
 
@@ -72,7 +82,8 @@ public class LoadBalancerSetTargets extends AbstractObjectProcessHandler {
                     target = objectManager.create(LoadBalancerTarget.class, LOAD_BALANCER_TARGET.INSTANCE_ID, null, LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lb
                             .getId(), LOAD_BALANCER_TARGET.IP_ADDRESS, ipAddress);
                 }
-                getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE, target, null);
+                objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE,
+                        target, null);
             }
         }
     }
@@ -95,7 +106,9 @@ public class LoadBalancerSetTargets extends AbstractObjectProcessHandler {
         }
 
         for (LoadBalancerTarget targetToRemove : targetsToRemove) {
-            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE, targetToRemove, null);
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
+                    targetToRemove,
+                    null);
         }
     }
 

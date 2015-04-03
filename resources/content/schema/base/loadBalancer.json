@@ -24,6 +24,10 @@
             "input": "addRemoveLoadBalancerTargetInput",
             "output": "loadBalancer"
         },
+        "settargets": {
+            "input": "setLoadBalancerTargetsInput",
+            "output": "loadBalancer"
+        },
         "addhost": {
             "input": "addRemoveLoadBalancerHostInput",
             "output": "loadBalancer"
@@ -32,8 +36,8 @@
             "input": "addRemoveLoadBalancerHostInput",
             "output": "loadBalancer"
         },
-        "updateall": {
-            "input": "loadBalancerUpdateAllInput",
+        "sethosts": {
+            "input": "setLoadBalancerHostsInput",
             "output": "loadBalancer"
         }
     }

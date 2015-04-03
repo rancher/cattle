@@ -1,6 +1,8 @@
 package io.cattle.platform.lb.instance.service.impl;
 
+import io.cattle.platform.core.dao.LoadBalancerDao;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerTarget;
 import io.cattle.platform.object.ObjectManager;
 
@@ -15,6 +17,9 @@ public class UpdateInstanceLoadBalancerLookup implements LoadBalancerLookup {
     @Inject
     ObjectManager objectManager;
 
+    @Inject
+    LoadBalancerDao lbDao;
+
     @Override
     public Set<Long> getLoadBalancerIds(Object obj) {
         Set<Long> lbIds = new HashSet<>();
@@ -27,7 +32,10 @@ public class UpdateInstanceLoadBalancerLookup implements LoadBalancerLookup {
                 LoadBalancerTarget.class);
 
         for (LoadBalancerTarget target : targets) {
-            lbIds.add(target.getLoadBalancerId());
+            LoadBalancer lb = lbDao.getActiveLoadBalancerById(target.getLoadBalancerId());
+            if (lb != null) {
+                lbIds.add(lb.getId());
+            }
         }
 
         return lbIds;

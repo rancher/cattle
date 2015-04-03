@@ -12,4 +12,6 @@ public interface LoadBalancerDao {
     List<? extends LoadBalancer> listByConfigId(long configId);
 
     List<? extends LoadBalancerListener> listActiveListenersForConfig(long configId);
+
+    LoadBalancer getActiveLoadBalancerById(long lbId);
 }

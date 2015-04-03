@@ -1,5 +1,6 @@
 package io.cattle.platform.lb.instance.service.impl;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord;
@@ -16,6 +17,7 @@ public class UpdateListenerLoadBalancerLookup implements LoadBalancerLookup {
     @Inject
     ObjectManager objectManager;
 
+
     @Override
     public Set<Long> getLoadBalancerIds(Object obj) {
         Set<Long> lbIds = new HashSet<>();
@@ -28,7 +30,10 @@ public class UpdateListenerLoadBalancerLookup implements LoadBalancerLookup {
                 .getLoadBalancerConfigId()), LoadBalancer.class);
 
         for (LoadBalancer lb : lbs) {
-            lbIds.add(lb.getId());
+            if (!(lb.getState().equals(CommonStatesConstants.REMOVING) || lb.getState()
+                    .equals(CommonStatesConstants.REMOVED))) {
+                lbIds.add(lb.getId());
+            }
         }
 
         return lbIds;
