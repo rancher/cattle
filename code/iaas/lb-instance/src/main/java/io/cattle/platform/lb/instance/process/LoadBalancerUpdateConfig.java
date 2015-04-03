@@ -1,6 +1,6 @@
 package io.cattle.platform.lb.instance.process;
 
-import static io.cattle.platform.core.model.tables.PortTable.*;
+import static io.cattle.platform.core.model.tables.PortTable.PORT;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.request.util.ConfigUpdateRequestUtils;
@@ -178,8 +178,8 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
     private void updatePublicPorts(ProcessState state, Set<Long> lbIds) {
         for (Long lbId : lbIds) {
             LoadBalancer lb = loadResource(LoadBalancer.class, lbId);
-            List<? extends LoadBalancerListener> listeners = objectManager.mappedChildren(objectManager.loadResource(LoadBalancerConfig.class, lb
-                    .getLoadBalancerConfigId()), LoadBalancerListener.class);
+            List<? extends LoadBalancerListener> listeners = lbDao.listActiveListenersForConfig(lb
+                    .getLoadBalancerConfigId());
             Set<Integer> listenerPorts = new HashSet<>();
             for (LoadBalancerListener listener : listeners) {
                 listenerPorts.add(listener.getSourcePort());
