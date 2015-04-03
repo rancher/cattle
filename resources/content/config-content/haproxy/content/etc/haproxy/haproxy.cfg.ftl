@@ -30,12 +30,12 @@ defaults
 
 <#if listeners?has_content && targets?has_content>
 <#list listeners as listener >
-frontend ${listener.name}_frontend
+frontend ${listener.uuid}_frontend
         bind ${publicIp}:${listener.sourcePort}
         mode ${listener.sourceProtocol}
-        default_backend ${listener.name}_backend
+        default_backend ${listener.uuid}_backend
 
-backend ${listener.name}_backend
+backend ${listener.uuid}_backend
         mode ${listener.targetProtocol}
         balance ${listener.data.fields.algorithm}
         <#if healthCheck??>
@@ -44,10 +44,10 @@ backend ${listener.name}_backend
         </#if>
         <#if listener.targetProtocol="http">
         <#if appPolicy??>
-        appsession <#if appPolicy.cookie??>${appPolicy.cookie}<#else>appCookie_listener.name</#if><#if appPolicy.length??> len ${appPolicy.length}</#if><#if appPolicy.timeout??> timeout ${appPolicy.timeout}</#if><#if appPolicy.requestLearn> request-learn</#if><#if appPolicy.prefix> prefix</#if><#if appPolicy.mode??> mode <#if appPolicy.mode = "path_parameters">path-parameters<#else>query-string</#if></#if>
+        appsession <#if appPolicy.cookie??>${appPolicy.cookie}<#else>appCookie_listener.uuid</#if><#if appPolicy.length??> len ${appPolicy.length}</#if><#if appPolicy.timeout??> timeout ${appPolicy.timeout}</#if><#if appPolicy.requestLearn> request-learn</#if><#if appPolicy.prefix> prefix</#if><#if appPolicy.mode??> mode <#if appPolicy.mode = "path_parameters">path-parameters<#else>query-string</#if></#if>
         </#if>
         <#if lbPolicy??>
-        cookie <#if lbPolicy.cookie??>${lbPolicy.cookie}<#else>lbCookie_listener.name</#if><#if lbPolicy.mode??> ${lbPolicy.mode}<#else> insert</#if><#if lbPolicy.indirect> indirect</#if><#if lbPolicy.nocache> nocache</#if><#if lbPolicy.postonly> postonly</#if><#if lbPolicy.domain??> domain ${lbPolicy.domain}</#if>
+        cookie <#if lbPolicy.cookie??>${lbPolicy.cookie}<#else>lbCookie_listener.uuid</#if><#if lbPolicy.mode??> ${lbPolicy.mode}<#else> insert</#if><#if lbPolicy.indirect> indirect</#if><#if lbPolicy.nocache> nocache</#if><#if lbPolicy.postonly> postonly</#if><#if lbPolicy.domain??> domain ${lbPolicy.domain}</#if>
         </#if>
         </#if>
         <#list targets as target >
