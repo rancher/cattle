@@ -1,5 +1,6 @@
 package io.cattle.platform.lb.instance.service.impl;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.LoadBalancerDao;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
@@ -24,7 +25,10 @@ public class UpdateConfigLoadBalancerLookup implements LoadBalancerLookup {
         LoadBalancerConfig config = (LoadBalancerConfig) obj;
         List<? extends LoadBalancer> lbs = lbDao.listByConfigId(config.getId());
         for (LoadBalancer lb : lbs) {
-            lbIds.add(lb.getId());
+            if (!(lb.getState().equals(CommonStatesConstants.REMOVING) || lb.getState()
+                    .equals(CommonStatesConstants.REMOVED))) {
+                lbIds.add(lb.getId());
+            }
         }
         return lbIds;
     }

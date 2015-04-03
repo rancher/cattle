@@ -20,4 +20,14 @@
 
     <bean class="io.cattle.platform.iaas.api.cluster.ClusterAddHostActionHandler" />
     <bean class="io.cattle.platform.iaas.api.cluster.ClusterRemoveHostActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.lb.LoadBalancerSetTargetsActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.lb.LoadBalancerSetHostsActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.lb.LoadBalancerConfigSetListenersActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.lb.LoadBalancerConfigAddListenerActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.lb.LoadBalancerConfigRemoveListenerActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.lb.LoadBalancerAddTargetActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.lb.LoadBalancerRemoveTargetActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.lb.LoadBalancerAddHostActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.lb.LoadBalancerRemoveHostActionHandler" />
+
 </beans>

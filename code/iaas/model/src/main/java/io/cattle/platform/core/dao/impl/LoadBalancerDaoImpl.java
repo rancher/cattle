@@ -49,4 +49,21 @@ public class LoadBalancerDaoImpl extends AbstractJooqDao implements LoadBalancer
                 .where(LOAD_BALANCER_LISTENER.REMOVED.isNull())
                 .fetchInto(LoadBalancerListenerRecord.class);
     }
+
+    @Override
+    public LoadBalancer getActiveLoadBalancerById(long lbId) {
+        List<? extends LoadBalancer> lbs = create()
+                .select(LOAD_BALANCER.fields())
+                .from(LOAD_BALANCER)
+                .where(LOAD_BALANCER.REMOVED.isNull()
+                        .and(LOAD_BALANCER.ID.eq(lbId))
+                        .and(
+                        LOAD_BALANCER.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE)))
+                .fetchInto(LoadBalancerRecord.class);
+        if (lbs.isEmpty()) {
+            return null;
+        }
+        return lbs.get(0);
+    }
 }

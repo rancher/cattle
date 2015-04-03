@@ -14,22 +14,15 @@ def test_lb_config_add_listener(admin_client, super_client):
 
     # add listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    config = admin_client.wait_success(config)
 
-    assert config.state == 'active'
-    lbconfigmap = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
-                                           loadBalancerConfigId=config.id)
-
-    assert len(lbconfigmap) == 1
-    assert lbconfigmap[0].state == 'active'
+    validate_add_listener(config, listener, super_client)
 
 
 def test_create_config_add_invalid_listener(admin_client):
     config, listener = _create_config_and_listener(admin_client)
 
     with pytest.raises(ApiError) as e:
-        config = config.addlistener(loadBalancerListenerId='dummy')
+        config.addlistener(loadBalancerListenerId='dummy')
 
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidReference'
@@ -41,7 +34,7 @@ def test_lb_config_add_listener_wo_listenerId(admin_client):
 
     # add listener to the config without specifying the id
     with pytest.raises(ApiError) as e:
-        config = config.addlistener()
+        config.addlistener()
 
     assert e.value.error.status == 422
     assert e.value.error.code == 'MissingRequired'
@@ -53,25 +46,15 @@ def test_lb_config_remove_listener(admin_client, super_client):
 
     # add listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    config = admin_client.wait_success(config)
 
     assert config.state == 'active'
-    lbconfigmap = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
-                                           loadBalancerConfigId=config.id)
-
-    assert len(lbconfigmap) == 1
+    validate_add_listener(config, listener, super_client)
 
     # remove listener from the config
     config = config. \
         removelistener(loadBalancerListenerId=listener.id)
-    config = admin_client.wait_success(config)
 
-    lbconfigmap = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
-                                           loadBalancerConfigId=config.id)
-
-    assert lbconfigmap[0].state == 'removed'
+    validate_remove_listener(config, listener, super_client)
 
 
 def test_lb_config_delete_listener_wo_listenerId(admin_client):
@@ -79,7 +62,7 @@ def test_lb_config_delete_listener_wo_listenerId(admin_client):
 
     # remove listener to the config without specifying the id
     with pytest.raises(ApiError) as e:
-        config = config.removelistener()
+        config.removelistener()
 
     assert e.value.error.status == 422
     assert e.value.error.code == 'MissingRequired'
@@ -103,24 +86,60 @@ def test_lb_config_remove(admin_client):
     assert config.state == 'removed'
 
 
+def validate_add_listener(config, listener, super_client):
+    lb_config_maps = super_client. \
+        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
+                                           loadBalancerConfigId=config.id)
+    assert len(lb_config_maps) == 1
+    config_map = lb_config_maps[0]
+    wait_for_condition(
+        super_client, config_map, _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+
+def validate_remove_listener(config, listener, super_client):
+    lb_config_maps = super_client. \
+        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
+                                           loadBalancerConfigId=config.id)
+    assert len(lb_config_maps) == 1
+    config_map = lb_config_maps[0]
+    wait_for_condition(
+        super_client, config_map, _resource_is_removed,
+        lambda x: 'State is: ' + x.state)
+
+
 def test_lb_config_listener_remove(admin_client, super_client):
     # create config and listener
     config, listener = _create_config_and_listener(admin_client)
 
     # add a listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    config = admin_client.wait_success(config)
+    validate_add_listener(config, listener, super_client)
 
     # delete the listener
     listener = admin_client.wait_success(admin_client.delete(listener))
     assert listener.state == 'removed'
 
     # verify that the mapping is gone
-    lbconfigmap = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
-                                           loadBalancerConfigId=config.id)
+    validate_remove_listener(config, listener, super_client)
 
-    assert lbconfigmap[0].state == "removed"
+
+def create_two_configs_w_listener(admin_client, listener, super_client):
+    config1 = admin_client. \
+        create_loadBalancerConfig(name=random_str())
+    config1 = admin_client.wait_success(config1)
+    config1 = config1. \
+        addlistener(loadBalancerListenerId=listener.id)
+    validate_add_listener(config1, listener, super_client)
+
+    config2 = admin_client. \
+        create_loadBalancerConfig(name=random_str())
+    config2 = admin_client.wait_success(config2)
+    config2 = config2. \
+        addlistener(loadBalancerListenerId=listener.id)
+    validate_add_listener(config2, listener, super_client)
+
+    return config1, config2
 
 
 def test_lb_listener_remove(admin_client, super_client):
@@ -128,36 +147,17 @@ def test_lb_listener_remove(admin_client, super_client):
     listener = _create_valid_listener(admin_client)
 
     # create 2 configs, add listener to both of them
-    config1 = admin_client. \
-        create_loadBalancerConfig(name=random_str())
-    config1 = admin_client.wait_success(config1)
-    config1 = config1. \
-        addlistener(loadBalancerListenerId=listener.id)
-    config1 = admin_client.wait_success(config1)
-
-    config2 = admin_client. \
-        create_loadBalancerConfig(name=random_str())
-    config2 = admin_client.wait_success(config2)
-    config2 = config2. \
-        addlistener(loadBalancerListenerId=listener.id)
-    config2 = admin_client.wait_success(config2)
+    config1, config2 = create_two_configs_w_listener(admin_client,
+                                                     listener,
+                                                     super_client)
 
     # delete the listener
     listener = admin_client.wait_success(admin_client.delete(listener))
     assert listener.state == 'removed'
 
     # verify that the mapping is gone for both configs
-    lbconfigmap = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
-                                           loadBalancerConfigId=config1.id)
-
-    assert lbconfigmap[0].state == "removed"
-
-    lbconfigmap = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
-                                           loadBalancerConfigId=config2.id)
-
-    assert lbconfigmap[0].state == "removed"
+    validate_remove_listener(config1, listener, super_client)
+    validate_remove_listener(config2, listener, super_client)
 
 
 def test_lb_config_remove_w_listeners(admin_client, super_client):
@@ -165,36 +165,17 @@ def test_lb_config_remove_w_listeners(admin_client, super_client):
     listener = _create_valid_listener(admin_client)
 
     # create 2 configs, add listener to both of them
-    config1 = admin_client. \
-        create_loadBalancerConfig(name=random_str())
-    config1 = admin_client.wait_success(config1)
-    config1 = config1. \
-        addlistener(loadBalancerListenerId=listener.id)
-    config1 = admin_client.wait_success(config1)
-
-    config2 = admin_client. \
-        create_loadBalancerConfig(name=random_str())
-    config2 = admin_client.wait_success(config2)
-    config2 = config2. \
-        addlistener(loadBalancerListenerId=listener.id)
-    config2 = admin_client.wait_success(config2)
+    config1, config2 = create_two_configs_w_listener(admin_client,
+                                                     listener,
+                                                     super_client)
 
     # delete the config
     config1 = admin_client.wait_success(admin_client.delete(config1))
     assert config1.state == 'removed'
 
     # verify that the mapping is gone for config 1 and exists for config2
-    lbconfigmap = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
-                                           loadBalancerConfigId=config1.id)
-
-    assert lbconfigmap[0].state == "removed"
-
-    lbconfigmap = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
-                                           loadBalancerConfigId=config2.id)
-
-    assert lbconfigmap[0].state == "active"
+    validate_remove_listener(config1, listener, super_client)
+    validate_add_listener(config2, listener, super_client)
 
 
 def test_lb_config_remove_when_assigned(admin_client):
@@ -203,7 +184,7 @@ def test_lb_config_remove_when_assigned(admin_client):
 
     lb = admin_client.create_loadBalancer(name='lb',
                                           loadBalancerConfigId=config.id)
-    lb = admin_client.wait_success(lb)
+    admin_client.wait_success(lb)
 
     with pytest.raises(ApiError) as e:
         admin_client.wait_success(admin_client.delete(config))
@@ -234,44 +215,19 @@ def test_lb_config_set_listeners(admin_client, super_client):
     # set 2 listeners
     config = config.setlisteners(
         loadBalancerListenerIds=[listener1.id, listener2.id])
-    config = admin_client.wait_success(config)
-    assert config.state == 'active'
 
-    lb_config_map = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener1.id,
-                                           loadBalancerConfigId=config.id)
-    assert len(lb_config_map) == 1
-    assert lb_config_map[0].state == 'active'
-
-    lb_config_map = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener2.id,
-                                           loadBalancerConfigId=config.id)
-    assert len(lb_config_map) == 1
-    assert lb_config_map[0].state == 'active'
+    validate_add_listener(config, listener1, super_client)
+    validate_add_listener(config, listener2, super_client)
 
     # # set 1 listener
     config = config.setlisteners(loadBalancerListenerIds=[listener1.id])
-    config = admin_client.wait_success(config)
-    lb_config_map = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener2.id,
-                                           loadBalancerConfigId=config.id)
 
-    assert lb_config_map[0].state == 'removed'
-
-    lb_config_map = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener1.id,
-                                           loadBalancerConfigId=config.id)
-
-    assert lb_config_map[0].state == 'active'
+    validate_remove_listener(config, listener2, super_client)
+    validate_add_listener(config, listener1, super_client)
 
     # set 0 listener
     config = config.setlisteners(loadBalancerListenerIds=[])
-    admin_client.wait_success(config)
-    lb_config_map = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener1.id,
-                                           loadBalancerConfigId=config.id)
-
-    assert lb_config_map[0].state == 'removed'
+    validate_remove_listener(config, listener1, super_client)
 
 
 def _create_valid_listener(admin_client):
@@ -298,7 +254,7 @@ def test_lb_config_add_listener_twice(admin_client, super_client):
 
     # add listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    config = admin_client.wait_success(config)
+    validate_add_listener(config, listener, super_client)
 
     with pytest.raises(ApiError) as e:
         config.addlistener(loadBalancerListenerId=listener.id)
@@ -313,7 +269,7 @@ def test_lb_config_remove_invalid_listener(admin_client, super_client):
 
     # remove non-existing listener
     with pytest.raises(ApiError) as e:
-        config = config. \
+        config. \
             removelistener(loadBalancerListenerId=listener.id)
 
     assert e.value.error.status == 422
@@ -326,15 +282,7 @@ def test_lb_config_add_conflicting_listener(admin_client, super_client):
 
     # add listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    config = admin_client.wait_success(config)
-
-    assert config.state == 'active'
-    lbconfigmap = super_client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
-                                           loadBalancerConfigId=config.id)
-
-    assert len(lbconfigmap) == 1
-    assert lbconfigmap[0].state == 'active'
+    validate_add_listener(config, listener, super_client)
 
     # create duplicated listener, and try to add it to the config
     listener = _create_valid_listener(admin_client)
@@ -448,3 +396,11 @@ def test_lb_config_create_w_lb_olicy(admin_client):
                                   lbCookieStickinessPolicy=None)
     config = admin_client.wait_success(config)
     assert config.lbCookieStickinessPolicy is None
+
+
+def _resource_is_active(resource):
+    return resource.state == 'active'
+
+
+def _resource_is_removed(resource):
+    return resource.state == 'removed'

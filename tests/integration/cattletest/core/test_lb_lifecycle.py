@@ -28,7 +28,7 @@ def test_add_lb_w_host_and_target(super_client, admin_client, sim_context,
                                               startOnCreate=False)
     container = admin_client.wait_success(container)
     lb = lb.addtarget(instanceId=container.id)
-    admin_client.wait_success(lb)
+    validate_add_target(admin_client, container, lb, super_client)
 
     # check the port
     ports = super_client.list_port(publicPort=port, instanceId=instance.id)
@@ -48,7 +48,7 @@ def test_add_lb_w_host_and_target(super_client, admin_client, sim_context,
                                       port1)
     # add listener to config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    admin_client.wait_success(config)
+    validate_add_listener(config, listener, super_client)
     # check the port
     ports = super_client.list_port(publicPort=port1, instanceId=instance.id)
     assert len(ports) == 1
@@ -70,7 +70,7 @@ def test_destroy_lb_instance(super_client, admin_client, sim_context, nsp):
                                               startOnCreate=False)
     container = admin_client.wait_success(container)
     lb = lb.addtarget(instanceId=container.id)
-    admin_client.wait_success(lb)
+    validate_add_target(admin_client, container, lb, super_client)
 
     # destroy the lb instance
     # stop the lb instance
@@ -123,7 +123,7 @@ def _create_config(super_client, admin_client, sim_context, listenerPort):
                                       listenerPort)
     # add listener to config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    config = admin_client.wait_success(config)
+    validate_add_listener(config, listener, super_client)
 
     return config
 
@@ -138,7 +138,7 @@ def _create_lb_w_host(super_client, admin_client,
 
     # add host to lb
     lb.addhost(hostId=host.id)
-    admin_client.wait_success(lb)
+    validate_add_host(host, lb, super_client)
 
     # verify that the agent got created
     uri = 'sim://?lbId={}&hostId={}'. \
@@ -181,3 +181,45 @@ def _wait_until_listener_map_active(listener, config,
             assert 'Timeout waiting for hostmap to be active.'
 
     return listener_map
+
+
+def _resource_is_active(resource):
+    return resource.state == 'active'
+
+
+def _resource_is_removed(resource):
+    return resource.state == 'removed'
+
+
+def validate_add_listener(config, listener, super_client):
+    lb_config_maps = super_client. \
+        list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
+                                           loadBalancerConfigId=config.id)
+    assert len(lb_config_maps) == 1
+    config_map = lb_config_maps[0]
+    wait_for_condition(
+        super_client, config_map, _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+
+def validate_add_target(admin_client, container1, lb, super_client):
+    target_maps = admin_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id,
+                                instanceId=container1.id)
+    assert len(target_maps) == 1
+    target_map = target_maps[0]
+    wait_for_condition(
+        super_client, target_map, _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+
+def validate_add_host(host, lb, super_client):
+    host_maps = super_client. \
+        list_loadBalancerHostMap(loadBalancerId=lb.id,
+                                 hostId=host.id)
+    assert len(host_maps) == 1
+    host_map = host_maps[0]
+    wait_for_condition(
+        super_client, host_map, _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+    assert host_map.hostId == host.id

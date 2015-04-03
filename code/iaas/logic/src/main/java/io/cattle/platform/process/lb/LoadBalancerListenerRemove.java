@@ -34,7 +34,8 @@ public class LoadBalancerListenerRemove extends AbstractObjectProcessHandler {
 
         // remove all config-listener maps
         for (LoadBalancerConfigListenerMap map : maps) {
-            getObjectProcessManager().executeProcess(LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE, map, null);
+            getObjectProcessManager().scheduleProcessInstance(
+                    LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE, map, null);
         }
 
         return null;
