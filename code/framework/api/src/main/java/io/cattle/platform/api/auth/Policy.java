@@ -17,7 +17,7 @@ public interface Policy {
 
     String getOption(String optionName);
 
-    List<Long> getAuthorizedAccounts();
+    List<ExternalId> getExternalIds();
 
     long getAccountId();
 

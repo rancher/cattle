@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth.impl;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
@@ -42,8 +43,8 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             return;
         }
 
-        Account account = getAccount(request);
-        if (account == null) {
+        AccountAccess accountAccess = getAccount(request);
+        if (accountAccess == null) {
             if (failOnNotFound) {
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             } else {
@@ -51,7 +52,9 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             }
         }
 
-        Policy policy = getPolicy(account, request);
+        Account account = accountAccess.getAccount();
+
+        Policy policy = getPolicy(accountAccess, request);
         if (policy == null) {
             log.error("Failed to find policy for [{}]", account.getId());
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
@@ -80,11 +83,11 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         ApiContext.getContext().setPolicy(policy);
     }
 
-    protected Policy getPolicy(Account account, ApiRequest request) {
+    protected Policy getPolicy(AccountAccess accountAccess, ApiRequest request) {
         Policy policy = null;
 
         for (AuthorizationProvider auth : authorizationProviders) {
-            policy = auth.getPolicy(account, request);
+            policy = auth.getPolicy(accountAccess, request);
             if (policy != null) {
                 break;
             }
@@ -106,18 +109,18 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         return factory;
     }
 
-    protected Account getAccount(ApiRequest request) {
-        Account account = null;
+    protected AccountAccess getAccount(ApiRequest request) {
+        AccountAccess accountAccess = null;
 
         for (AccountLookup lookup : accountLookups) {
-            account = lookup.getAccount(request);
-            if (account != null) {
+            accountAccess = lookup.getAccount(request);
+            if (accountAccess != null) {
                 break;
             }
         }
 
-        if (account != null) {
-            return account;
+        if (accountAccess != null) {
+            return accountAccess;
         }
 
         String authHeader = StringUtils.trim(request.getServletContext().getRequest().getHeader(ENFORCE_AUTH_HEADER));
@@ -131,10 +134,11 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
                 }
             }
         } else if (!StringUtils.equals("true", authHeader)) {
-            account = authDao.getAdminAccount();
+            Account account = authDao.getAdminAccount();
+            accountAccess = new AccountAccess(account, null);
         }
 
-        return account;
+        return accountAccess;
     }
 
     public AuthDao getAuthDao() {

@@ -9,6 +9,7 @@ import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -38,7 +39,8 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
     ResourceManagerLocator locator;
 
     @Override
-    public Policy getPolicy(final Account account, ApiRequest request) {
+    public Policy getPolicy(AccountAccess accountAccess, ApiRequest request) {
+        final Account account = accountAccess.getAccount();
         PolicyOptions policyOptions = optionsFactory.getOptions(account);
 
         boolean apply = false;
@@ -56,7 +58,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         }
 
         final PolicyOptionsWrapper options = new PolicyOptionsWrapper(policyOptions);
-        AccountPolicy policy = new AccountPolicy(account, options);
+        AccountPolicy policy = new AccountPolicy(accountAccess, options);
 
         options.addCallback(Policy.AGENT_ID, new OptionCallback() {
             @Override

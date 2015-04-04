@@ -9,6 +9,6 @@ public interface AuthorizationProvider {
 
     SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request);
 
-    Policy getPolicy(Account account, ApiRequest request);
+    Policy getPolicy(AccountAccess accountAccess, ApiRequest request);
 
 }

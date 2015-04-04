@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.github.GithubUtils;
@@ -37,7 +38,7 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
     }
 
     @Override
-    public Account getAccount(ApiRequest request) {
+    public AccountAccess getAccount(ApiRequest request) {
         if (StringUtils.equals("token", request.getType())) {
             return null;
         }
@@ -58,7 +59,7 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
         if (StringUtils.isEmpty(projectId)) {
             projectId = request.getServletContext().getRequest().getParameter("projectId");
             if (StringUtils.isEmpty(projectId)) {
-                return account;
+                return new AccountAccess(account, null);
             }
         }
 
@@ -77,7 +78,7 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
         Account projectAccount = authDao.getAccountById(new Long(unobfuscatedId));
 
         if (validateProjectAccount(projectAccount, token)) {
-            return projectAccount;
+            return new AccountAccess(projectAccount, null);
         }
         return null;
     }

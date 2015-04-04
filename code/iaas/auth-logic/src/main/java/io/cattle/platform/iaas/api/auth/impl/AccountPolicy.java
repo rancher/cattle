@@ -3,11 +3,11 @@ package io.cattle.platform.iaas.api.auth.impl;
 import io.cattle.platform.api.auth.impl.DefaultPolicy;
 import io.cattle.platform.api.auth.impl.PolicyOptions;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
@@ -17,8 +17,9 @@ public class AccountPolicy extends DefaultPolicy {
 
     private static final Logger log = LoggerFactory.getLogger(AccountPolicy.class);
 
-    public AccountPolicy(Account account, PolicyOptions options) {
-        super(account.getId(), account.getName(), Arrays.asList(account.getId()), options);
+    public AccountPolicy(AccountAccess accountAccess, PolicyOptions options) {
+        super(accountAccess.getAccount().getId(), accountAccess.getAccount().getName(),
+                accountAccess.getExternalIds(), options);
     }
 
     @Override
