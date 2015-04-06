@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "load_balancer_host_map", schema = "cattle")
-public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.LoadBalancerHostMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.LoadBalancerHostMap {
+public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.LoadBalancerHostMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.LoadBalancerHostMap {
 
-	private static final long serialVersionUID = 843225939;
+	private static final long serialVersionUID = -1127783755;
 
 	/**
 	 * Setter for <code>cattle.load_balancer_host_map.id</code>.
@@ -220,6 +220,23 @@ public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl
 		return (java.lang.Long) getValue(11);
 	}
 
+	/**
+	 * Setter for <code>cattle.load_balancer_host_map.account_id</code>.
+	 */
+	@Override
+	public void setAccountId(java.lang.Long value) {
+		setValue(12, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.load_balancer_host_map.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	@Override
+	public java.lang.Long getAccountId() {
+		return (java.lang.Long) getValue(12);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -233,23 +250,23 @@ public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	}
 
 	// -------------------------------------------------------------------------
-	// Record12 type implementation
+	// Record13 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row12) super.fieldsRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row13) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long> valuesRow() {
-		return (org.jooq.Row12) super.valuesRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long> valuesRow() {
+		return (org.jooq.Row13) super.valuesRow();
 	}
 
 	/**
@@ -352,6 +369,14 @@ public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field13() {
+		return io.cattle.platform.core.model.tables.LoadBalancerHostMapTable.LOAD_BALANCER_HOST_MAP.ACCOUNT_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -442,6 +467,14 @@ public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	@Override
 	public java.lang.Long value12() {
 		return getLoadBalancerId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value13() {
+		return getAccountId();
 	}
 
 	/**
@@ -556,7 +589,16 @@ public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public LoadBalancerHostMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12) {
+	public LoadBalancerHostMapRecord value13(java.lang.Long value) {
+		setAccountId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public LoadBalancerHostMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12, java.lang.Long value13) {
 		return this;
 	}
 
@@ -581,6 +623,7 @@ public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl
 		setData(from.getData());
 		setHostId(from.getHostId());
 		setLoadBalancerId(from.getLoadBalancerId());
+		setAccountId(from.getAccountId());
 	}
 
 	/**
@@ -606,7 +649,7 @@ public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Create a detached, initialised LoadBalancerHostMapRecord
 	 */
-	public LoadBalancerHostMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long hostId, java.lang.Long loadBalancerId) {
+	public LoadBalancerHostMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long hostId, java.lang.Long loadBalancerId, java.lang.Long accountId) {
 		super(io.cattle.platform.core.model.tables.LoadBalancerHostMapTable.LOAD_BALANCER_HOST_MAP);
 
 		setValue(0, id);
@@ -621,5 +664,6 @@ public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl
 		setValue(9, data);
 		setValue(10, hostId);
 		setValue(11, loadBalancerId);
+		setValue(12, accountId);
 	}
 }

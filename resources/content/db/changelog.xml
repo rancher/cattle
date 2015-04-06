@@ -35,5 +35,6 @@
     <include file="db/core-028.xml"/>
     <include file="db/core-029.xml"/>
     <include file="db/core-030.xml"/>
+    <include file="db/core-031.xml"/>
 
 </databaseChangeLog>

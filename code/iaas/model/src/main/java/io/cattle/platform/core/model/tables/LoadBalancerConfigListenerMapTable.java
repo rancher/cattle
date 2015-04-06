@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LoadBalancerConfigListenerMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord> {
 
-	private static final long serialVersionUID = 1813963044;
+	private static final long serialVersionUID = -104115610;
 
 	/**
 	 * The singleton instance of <code>cattle.load_balancer_config_listener_map</code>
@@ -87,6 +87,11 @@ public class LoadBalancerConfigListenerMapTable extends org.jooq.impl.TableImpl<
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord, java.lang.Long> LOAD_BALANCER_LISTENER_ID = createField("load_balancer_listener_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.load_balancer_config_listener_map.account_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.load_balancer_config_listener_map</code> table reference
 	 */
 	public LoadBalancerConfigListenerMapTable() {
@@ -137,7 +142,7 @@ public class LoadBalancerConfigListenerMapTable extends org.jooq.impl.TableImpl<
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_CONFIG_LISTENER_MAP__LOAD_BALANCER_CONFIG_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_CONFIG_LISTENER_MAP__LOAD_BALANCER_LISTENER_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_CONFIG_LISTENER_MAP__LOAD_BALANCER_CONFIG_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_CONFIG_LISTENER_MAP__LOAD_BALANCER_LISTENER_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_CONFIG_LISTENER_MAP__ACCOUNT_ID);
 	}
 
 	/**

@@ -82,7 +82,7 @@ def test_lb_add_target_instance(admin_client, sim_context, config_id,
     # add target to a load balancer
     lb = lb.addtarget(instanceId=container.id)
 
-    validate_add_target(admin_client, container, lb, super_client)
+    validate_add_target(container, lb, super_client)
 
 
 def test_lb_remove_target_instance(admin_client, sim_context, config_id,
@@ -91,15 +91,15 @@ def test_lb_remove_target_instance(admin_client, sim_context, config_id,
                                             config_id, super_client, nsp)
 
     lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(admin_client, container, lb, super_client)
+    validate_add_target(container, lb, super_client)
 
     # remove the target and verify that the target no longer exists
     lb = lb.removetarget(instanceId=container.id)
-    validate_remove_target(admin_client, container, lb, super_client)
+    validate_remove_target(container, lb, super_client)
 
 
-def validate_add_target_ip(admin_client, ip_address, lb, super_client):
-    target_maps = admin_client. \
+def validate_add_target_ip(ip_address, lb, super_client):
+    target_maps = super_client. \
         list_loadBalancerTarget(loadBalancerId=lb.id,
                                 ipAddress=ip_address)
     assert len(target_maps) == 1
@@ -118,11 +118,11 @@ def test_lb_add_target_ip_address(admin_client, sim_context, config_id,
     lb = lb.addtarget(ipAddress=ip_address)
     lb = admin_client.wait_success(lb)
 
-    validate_add_target_ip(admin_client, ip_address, lb, super_client)
+    validate_add_target_ip(ip_address, lb, super_client)
 
 
-def validate_remove_target_ip(admin_client, ip_address, lb, super_client):
-    target_maps = admin_client. \
+def validate_remove_target_ip(ip_address, lb, super_client):
+    target_maps = super_client. \
         list_loadBalancerTarget(loadBalancerId=lb.id,
                                 ipAddress=ip_address)
     assert len(target_maps) == 1
@@ -141,12 +141,12 @@ def test_lb_remove_target_ip_address(admin_client, sim_context, config_id,
     ip_address = "10.1.1.1"
     lb = lb.addtarget(ipAddress=ip_address)
 
-    validate_add_target_ip(admin_client, ip_address, lb, super_client)
+    validate_add_target_ip(ip_address, lb, super_client)
 
     # remove the target and verify that the target no longer exists
     lb = lb.removetarget(ipAddress="10.1.1.1")
 
-    validate_remove_target_ip(admin_client, ip_address, lb, super_client)
+    validate_remove_target_ip(ip_address, lb, super_client)
 
 
 def create_lb_and_container(admin_client, sim_context, config_id,
@@ -175,7 +175,7 @@ def test_lb_remove_w_target(admin_client, sim_context, config_id,
     lb = admin_client.wait_success(admin_client.delete(lb))
     assert lb.state == 'removed'
 
-    validate_remove_target(admin_client, container, lb, super_client)
+    validate_remove_target(container, lb, super_client)
 
 
 def test_lb_remove_w_host(admin_client, super_client, sim_context,
@@ -195,8 +195,8 @@ def test_lb_remove_w_host(admin_client, super_client, sim_context,
     validate_remove_host(host, lb, super_client)
 
 
-def validate_add_target(admin_client, container1, lb, super_client):
-    target_maps = admin_client. \
+def validate_add_target(container1, lb, super_client):
+    target_maps = super_client. \
         list_loadBalancerTarget(loadBalancerId=lb.id,
                                 instanceId=container1.id)
     assert len(target_maps) == 1
@@ -206,8 +206,8 @@ def validate_add_target(admin_client, container1, lb, super_client):
         lambda x: 'State is: ' + x.state)
 
 
-def validate_remove_target(admin_client, container2, lb, super_client):
-    target_maps = admin_client. \
+def validate_remove_target(container2, lb, super_client):
+    target_maps = super_client. \
         list_loadBalancerTarget(loadBalancerId=lb.id,
                                 instanceId=container2.id)
     assert len(target_maps) == 1
@@ -232,20 +232,20 @@ def test_set_target_instance(admin_client, sim_context, config_id,
     lb = lb.settargets(instanceIds=[container1.id, container2.id])
     lb = admin_client.wait_success(lb)
 
-    validate_add_target(admin_client, container1, lb, super_client)
+    validate_add_target(container1, lb, super_client)
 
-    validate_add_target(admin_client, container2, lb, super_client)
+    validate_add_target(container2, lb, super_client)
 
     # set 1 target
     lb = lb.settargets(instanceIds=[container1.id])
 
-    validate_add_target(admin_client, container1, lb, super_client)
-    validate_remove_target(admin_client, container2, lb, super_client)
+    validate_add_target(container1, lb, super_client)
+    validate_remove_target(container2, lb, super_client)
 
     # set 0 targets
     lb = lb.settargets(instanceIds=[])
 
-    validate_remove_target(admin_client, container1, lb, super_client)
+    validate_remove_target(container1, lb, super_client)
 
 
 def test_lb_set_target_ip_address(admin_client, sim_context, config_id,
@@ -256,21 +256,21 @@ def test_lb_set_target_ip_address(admin_client, sim_context, config_id,
     # set 2 targets
     lb = lb.settargets(ipAddresses=["10.1.1.1", "10.1.1.2"])
 
-    validate_add_target_ip(admin_client, "10.1.1.1", lb, super_client)
+    validate_add_target_ip("10.1.1.1", lb, super_client)
 
-    validate_add_target_ip(admin_client, "10.1.1.2", lb, super_client)
+    validate_add_target_ip("10.1.1.2", lb, super_client)
 
     # set 1 target
     lb = lb.settargets(ipAddresses=["10.1.1.1"])
 
-    validate_add_target_ip(admin_client, "10.1.1.1", lb, super_client)
+    validate_add_target_ip("10.1.1.1", lb, super_client)
 
-    validate_remove_target_ip(admin_client, "10.1.1.2", lb, super_client)
+    validate_remove_target_ip("10.1.1.2", lb, super_client)
 
     # set 0 targets
     lb = lb.settargets(ipAddresses=[])
 
-    validate_remove_target_ip(admin_client, "10.1.1.1", lb, super_client)
+    validate_remove_target_ip("10.1.1.1", lb, super_client)
 
 
 def test_set_target_instance_and_ip(admin_client, sim_context, config_id,
@@ -282,9 +282,9 @@ def test_set_target_instance_and_ip(admin_client, sim_context, config_id,
     lb = lb.settargets(instanceIds=[container1.id],
                        ipAddresses="10.1.1.1")
 
-    validate_add_target(admin_client, container1, lb, super_client)
+    validate_add_target(container1, lb, super_client)
 
-    validate_add_target_ip(admin_client, "10.1.1.1", lb, super_client)
+    validate_add_target_ip("10.1.1.1", lb, super_client)
 
 
 def test_lb_add_target_instance_twice(admin_client, sim_context, config_id,
@@ -294,7 +294,7 @@ def test_lb_add_target_instance_twice(admin_client, sim_context, config_id,
 
     # add target to a load balancer
     lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(admin_client, container, lb, super_client)
+    validate_add_target(container, lb, super_client)
 
     with pytest.raises(ApiError) as e:
         lb.addtarget(instanceId=container.id)
@@ -351,7 +351,7 @@ def test_lb_add_target_ip_twice(admin_client, sim_context, config_id,
 
     # add target to a load balancer
     lb = lb.addtarget(ipAddress="10.1.1.1")
-    validate_add_target_ip(admin_client, "10.1.1.1", lb, super_client)
+    validate_add_target_ip("10.1.1.1", lb, super_client)
 
     with pytest.raises(ApiError) as e:
         lb.addtarget(ipAddress="10.1.1.1")
@@ -381,11 +381,11 @@ def test_add_removed_target_again(admin_client, sim_context, config_id,
 
     # add target to a load balancer
     lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(admin_client, container, lb, super_client)
+    validate_add_target(container, lb, super_client)
 
     # remove the target
     lb = lb.removetarget(instanceId=container.id)
-    validate_remove_target(admin_client, container, lb, super_client)
+    validate_remove_target(container, lb, super_client)
 
     # add the target - should be allowed
     lb.addtarget(instanceId=container.id)
@@ -398,7 +398,7 @@ def test_destroy_container(admin_client, sim_context, config_id,
 
     # add target to a load balancer
     lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(admin_client, container, lb, super_client)
+    validate_add_target(container, lb, super_client)
 
     # destroy the instance
     # stop the lb instance
@@ -411,7 +411,7 @@ def test_destroy_container(admin_client, sim_context, config_id,
     container = wait_success(admin_client, container.remove())
     assert container.state == 'removed'
 
-    validate_remove_target(admin_client, container, lb, super_client)
+    validate_remove_target(container, lb, super_client)
 
 
 def _resource_is_active(resource):

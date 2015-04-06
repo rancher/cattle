@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LoadBalancerHostMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LoadBalancerHostMapRecord> {
 
-	private static final long serialVersionUID = 1350788139;
+	private static final long serialVersionUID = -869927087;
 
 	/**
 	 * The singleton instance of <code>cattle.load_balancer_host_map</code>
@@ -87,6 +87,11 @@ public class LoadBalancerHostMapTable extends org.jooq.impl.TableImpl<io.cattle.
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerHostMapRecord, java.lang.Long> LOAD_BALANCER_ID = createField("load_balancer_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.load_balancer_host_map.account_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerHostMapRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.load_balancer_host_map</code> table reference
 	 */
 	public LoadBalancerHostMapTable() {
@@ -137,7 +142,7 @@ public class LoadBalancerHostMapTable extends org.jooq.impl.TableImpl<io.cattle.
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerHostMapRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerHostMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_HOST_MAP__HOST_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_HOST_MAP__LOAD_BALANCER_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerHostMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_HOST_MAP__HOST_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_HOST_MAP__LOAD_BALANCER_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_HOST_MAP__ACCOUNT_ID);
 	}
 
 	/**

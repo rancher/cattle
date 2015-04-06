@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LoadBalancerTargetTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LoadBalancerTargetRecord> {
 
-	private static final long serialVersionUID = 1963221504;
+	private static final long serialVersionUID = 537413003;
 
 	/**
 	 * The singleton instance of <code>cattle.load_balancer_target</code>
@@ -92,6 +92,11 @@ public class LoadBalancerTargetTable extends org.jooq.impl.TableImpl<io.cattle.p
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerTargetRecord, java.lang.Long> LOAD_BALANCER_ID = createField("load_balancer_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.load_balancer_target.account_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerTargetRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.load_balancer_target</code> table reference
 	 */
 	public LoadBalancerTargetTable() {
@@ -142,7 +147,7 @@ public class LoadBalancerTargetTable extends org.jooq.impl.TableImpl<io.cattle.p
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerTargetRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerTargetRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_TARGET__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_TARGET__LOAD_BALANCER_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerTargetRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_TARGET__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_TARGET__LOAD_BALANCER_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_TARGET__ACCOUNT_ID);
 	}
 
 	/**
