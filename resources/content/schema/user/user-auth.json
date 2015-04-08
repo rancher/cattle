@@ -286,8 +286,9 @@
         "environment" : "crud",
 
         "service" : "crud",
+        "service.name" : "cr",
         "service.environmentId" : "cr",
-        "service.scale" : "cr",
+        "service.scale" : "cru",
         "service.dataVolumesFromService" : "cr",
         "service.launchConfig" : "cr",
 

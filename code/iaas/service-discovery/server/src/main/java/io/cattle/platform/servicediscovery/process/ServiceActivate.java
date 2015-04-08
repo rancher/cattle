@@ -70,13 +70,20 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE };
+        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE,
+                ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE };
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
+        if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE)
+                && service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_INACTIVE)) {
+            // on inactive service update, do nothing
+            return null;
+        }
+
         List<Integer> consumedServiceIds = new ArrayList<>();
         boolean activateConsumedServices = DataAccessor.fromMap(state.getData()).withScope(ServiceActivate.class)
                 .withKey(ServiceDiscoveryConstants.FIELD_ACTIVATE_CONSUMED_SERVICES).withDefault(false)
@@ -143,12 +150,14 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
     }
 
     private void createServiceInstances(Service service, int scale) {
-
         List<Instance> instancesToStart = new ArrayList<>();
+        Map<String, Object> launchConfigData = sdServer.buildLaunchData(service);
+        Long imageId = getImage(String.valueOf(launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID)));
+        List<Long> networkIds = getServiceNetworks(service);
         for (int i = 0; i < scale; i++) {
-            Instance instance = createInstance(service, i);
-            instancesToStart.add(instance);
+            Instance instance = createInstance(service, i, launchConfigData, imageId, networkIds);
             createInstanceServiceMap(instance, service);
+            instancesToStart.add(instance);
         }
         startServiceInstances(instancesToStart);
     }
@@ -180,21 +189,40 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
         }
     }
 
-    private Instance createInstance(Service service, int i) {
+
+    private List<Long> getServiceNetworks(Service service) {
+        List<Long> ntwkIds = new ArrayList<>();
+        long networkId = sdServer.getServiceNetworkId(service);
+        ntwkIds.add(networkId);
+        return ntwkIds;
+    }
+
+    protected Long getImage(String imageUuid) {
+        Image image;
+        try {
+            image = storageService.registerRemoteImage(imageUuid);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to get image [" + imageUuid + "]");
+        }
+
+        return image == null ? null : image.getId();
+    }
+
+
+    protected Instance createInstance(Service service, int i, Map<String, Object> launchConfigData, Long imageId,
+            List<Long> networkIds) {
         Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
         String instanceName = String.format("%s_%s_%d", env.getName(), service.getName(), i + 1);
         Instance instance = objectManager.findOne(Instance.class, INSTANCE.NAME, instanceName,
-                INSTANCE.REMOVED, null);
-        
+                INSTANCE.REMOVED, null, INSTANCE.ACCOUNT_ID, service.getAccountId());
+
         if (instance == null) {
-            Map<String, Object> launchConfigData = sdServer.buildLaunchData(service);
-            Long imageId = getImage(String.valueOf(launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID)));
             Map<Object, Object> properties = new HashMap<Object, Object>();
             properties.putAll(launchConfigData);
             properties.put(INSTANCE.NAME, instanceName);
             properties.put(INSTANCE.ACCOUNT_ID, service.getAccountId());
             properties.put(INSTANCE.KIND, InstanceConstants.KIND_CONTAINER);
-            properties.put(InstanceConstants.FIELD_NETWORK_IDS, getServiceNetworks(service));
+            properties.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
             properties.put(INSTANCE.IMAGE_ID, imageId);
             Map<String, Object> props = objectManager.convertToPropertiesFor(Instance.class,
                     properties);
@@ -214,23 +242,5 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
                     instance.getId(), SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId());
         }
         objectProcessManager.executeStandardProcess(StandardProcess.CREATE, instanceServiceMap, null);
-    }
-
-    private List<Long> getServiceNetworks(Service service) {
-        List<Long> ntwkIds = new ArrayList<>();
-        long networkId = sdServer.getServiceNetworkId(service);
-        ntwkIds.add(networkId);
-        return ntwkIds;
-    }
-
-    protected Long getImage(String imageUuid) {
-        Image image;
-        try {
-            image = storageService.registerRemoteImage(imageUuid);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to get image [" + imageUuid + "]");
-        }
-
-        return image == null ? null : image.getId();
     }
 }

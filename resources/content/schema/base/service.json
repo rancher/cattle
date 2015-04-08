@@ -9,7 +9,10 @@
             "type": "int",
             "required": false,
             "nullable": true,
-            "default": 1
+            "default": 1,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "networkId":{
             "type": "reference[network]"

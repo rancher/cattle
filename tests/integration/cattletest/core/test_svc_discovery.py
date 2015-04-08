@@ -763,6 +763,59 @@ def test_remove_environment_w_active_svcs(super_client,
     _validate_instance_removed(admin_client, service, super_client)
 
 
+def _validate_compose_instance(service, super_client, number):
+    instances = super_client. \
+        list_container(name="compose_" + service.name
+                            + "_" + number, state="running")
+    assert len(instances) == 1
+    return instances[0]
+
+
+def test_valiate_service_scaleup(super_client,
+                                 admin_client, sim_context, nsp):
+    env = admin_client.create_environment(name="compose")
+    env = admin_client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = sim_context['imageUuid']
+    launch_config = {"imageUuid": image_uuid}
+
+    service = super_client.create_service(name=random_str(),
+                                          environmentId=env.id,
+                                          networkId=nsp.networkId,
+                                          launchConfig=launch_config,
+                                          scale=3)
+    service = super_client.wait_success(service)
+    assert service.state == "inactive"
+
+    # activate services
+    env.activateservices()
+    service = admin_client.wait_success(service, 120)
+    assert service.state == "active"
+
+    _validate_compose_instance(service, super_client, "1")
+    instance2 = _validate_compose_instance(service, super_client, "2")
+    _validate_compose_instance(service, super_client, "3")
+
+    # destroy the instance2
+    instance2 = wait_success(super_client, instance2)
+    instance2 = wait_success(super_client, instance2.stop())
+    assert instance2.state == 'stopped'
+
+    instance2 = wait_success(super_client, instance2.remove())
+    assert instance2.state == 'removed'
+
+    # scale up the service
+    service = admin_client.update(service, scale=4)
+    service = admin_client.wait_success(service, 120)
+    assert service.state == "active"
+
+    _validate_compose_instance(service, super_client, "1")
+    _validate_compose_instance(service, super_client, "2")
+    _validate_compose_instance(service, super_client, "3")
+    _validate_compose_instance(service, super_client, "4")
+
+
 def _create_registry_credential(admin_client):
     registry = _create_registry(admin_client)
     reg_cred = admin_client.create_registry_credential(
