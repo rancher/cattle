@@ -1,9 +1,11 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
+import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
@@ -301,5 +303,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
         long networkId = network.getId();
         return networkId;
+    }
+
+    @Override
+    public String getInstanceName(Service service, int order) {
+        Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
+        return String.format("%s_%s_%d", env.getName(), service.getName(), order + 1);
     }
 }

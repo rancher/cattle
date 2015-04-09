@@ -763,7 +763,7 @@ def test_remove_environment_w_active_svcs(super_client,
     _validate_instance_removed(admin_client, service, super_client)
 
 
-def _validate_compose_instance(service, super_client, number):
+def _validate_compose_instance_start(service, super_client, number):
     instances = super_client. \
         list_container(name="compose_" + service.name
                             + "_" + number, state="running")
@@ -771,8 +771,22 @@ def _validate_compose_instance(service, super_client, number):
     return instances[0]
 
 
-def test_valiate_service_scaleup(super_client,
-                                 admin_client, sim_context, nsp):
+def _validate_instance_removed(service, super_client, number):
+    instances = super_client. \
+        list_container(name="compose_" + service.name + "_" + number)
+    assert len(instances) == 1
+    instance = instances[0]
+    wait_for_condition(
+        super_client, instance, _resource_is_removed,
+        lambda x: 'State is: ' + x.state)
+
+
+def _resource_is_removed(resource):
+    return resource.state == 'removed'
+
+
+def test_valiate_service_scaleup_scaledown(super_client,
+                                           admin_client, sim_context, nsp):
     env = admin_client.create_environment(name="compose")
     env = admin_client.wait_success(env)
     assert env.state == "active"
@@ -793,9 +807,9 @@ def test_valiate_service_scaleup(super_client,
     service = admin_client.wait_success(service, 120)
     assert service.state == "active"
 
-    _validate_compose_instance(service, super_client, "1")
-    instance2 = _validate_compose_instance(service, super_client, "2")
-    _validate_compose_instance(service, super_client, "3")
+    _validate_compose_instance_start(service, super_client, "1")
+    instance2 = _validate_compose_instance_start(service, super_client, "2")
+    _validate_compose_instance_start(service, super_client, "3")
 
     # destroy the instance2
     instance2 = wait_success(super_client, instance2)
@@ -810,10 +824,19 @@ def test_valiate_service_scaleup(super_client,
     service = admin_client.wait_success(service, 120)
     assert service.state == "active"
 
-    _validate_compose_instance(service, super_client, "1")
-    _validate_compose_instance(service, super_client, "2")
-    _validate_compose_instance(service, super_client, "3")
-    _validate_compose_instance(service, super_client, "4")
+    _validate_compose_instance_start(service, super_client, "1")
+    _validate_compose_instance_start(service, super_client, "2")
+    _validate_compose_instance_start(service, super_client, "3")
+    _validate_compose_instance_start(service, super_client, "4")
+
+    # scale down the service
+    service = admin_client.update(service, scale=2)
+    service = admin_client.wait_success(service, 120)
+    assert service.state == "active"
+    _validate_compose_instance_start(service, super_client, "1")
+    _validate_compose_instance_start(service, super_client, "2")
+    _validate_instance_removed(service, super_client, "3")
+    _validate_instance_removed(service, super_client, "4")
 
 
 def _create_registry_credential(admin_client):

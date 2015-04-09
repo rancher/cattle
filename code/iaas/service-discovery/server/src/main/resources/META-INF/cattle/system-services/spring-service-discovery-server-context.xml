@@ -17,6 +17,7 @@
        <bean class="io.cattle.platform.servicediscovery.process.ServiceRemove" />
        <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePostListener" />
+       <bean class="io.cattle.platform.servicediscovery.process.ServiceUpdatePostListener" />
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.AddServiceLinkActionHandler" />
@@ -24,6 +25,7 @@
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentDeactivateServicesActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl" />
        <bean class="io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl" />
+       <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl" />
        
        <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
 

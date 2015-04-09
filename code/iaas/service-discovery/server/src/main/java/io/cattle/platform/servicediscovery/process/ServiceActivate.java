@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.process;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
@@ -8,7 +7,6 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
-import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -28,6 +26,7 @@ import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.storage.service.StorageService;
@@ -68,6 +67,9 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
     @Inject
     ServiceDiscoveryService sdServer;
 
+    @Inject
+    ServiceExposeMapDao svcExposeDao;
+
     @Override
     public String[] getProcessNames() {
         return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE,
@@ -78,9 +80,24 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
     @SuppressWarnings("unchecked")
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
+
+        // on inactive service update, do nothing
         if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE)
                 && service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_INACTIVE)) {
-            // on inactive service update, do nothing
+            return null;
+        }
+        int scale = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_SCALE,
+                jsonMapper,
+                Integer.class);
+        // on scale down, skip
+        // the reason why I put >, not >= is - is for this handler to cover the case when instance was removed outside
+        // of the service
+        // and number of instances no longer reflects the service's scale
+        // Example: 1) initial scale=3, instances compose-1 (Running), compose-2(Removed), compose-3 (Running)
+        // 2) user wants to scaleDown to scale=2. To preserve the numbering in names, we will have to re-create
+        // compose-2, and then remove compose-3 instance
+        // 3) this hander will recreate compose-2 instance, and then antother posthandler will cover the scale down
+        if (svcExposeDao.listNonRemovedInstancesForService(service.getId()).size() > scale) {
             return null;
         }
 
@@ -99,9 +116,6 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
             }
         }
 
-        int scale = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_SCALE,
-                jsonMapper,
-                Integer.class);
         progress.init(state, sdServer.getWeights(scale + consumedServiceIds.size(), 100));
 
         if (activateConsumedServices) {
@@ -211,8 +225,7 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
 
     protected Instance createInstance(Service service, int i, Map<String, Object> launchConfigData, Long imageId,
             List<Long> networkIds) {
-        Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
-        String instanceName = String.format("%s_%s_%d", env.getName(), service.getName(), i + 1);
+        String instanceName = sdServer.getInstanceName(service, i);
         Instance instance = objectManager.findOne(Instance.class, INSTANCE.NAME, instanceName,
                 INSTANCE.REMOVED, null, INSTANCE.ACCOUNT_ID, service.getAccountId());
 
