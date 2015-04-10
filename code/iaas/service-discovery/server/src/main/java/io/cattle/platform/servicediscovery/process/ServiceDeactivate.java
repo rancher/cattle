@@ -6,10 +6,8 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -53,20 +51,7 @@ public class ServiceDeactivate extends AbstractObjectProcessHandler {
 
     private void stopInstances(List<Instance> instances) {
         for (Instance instance : instances) {
-            try {
-                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
-            } catch (ProcessCancelException e) {
-                // do nothing
-            }
-        }
-        for (Instance instance : instances) {
-            progress.checkPoint("stop service instance " + instance.getUuid());
-            instance = resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
-                @Override
-                public boolean evaluate(Instance obj) {
-                    return InstanceConstants.STATE_STOPPED.equals(obj.getState());
-                }
-            });
+            objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
         }
     }
 }
