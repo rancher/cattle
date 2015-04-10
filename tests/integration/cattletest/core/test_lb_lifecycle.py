@@ -28,7 +28,7 @@ def test_add_lb_w_host_and_target(super_client, admin_client, sim_context,
                                               startOnCreate=False)
     container = admin_client.wait_success(container)
     lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(admin_client, container, lb, super_client)
+    validate_add_target(container, lb, super_client)
 
     # check the port
     ports = super_client.list_port(publicPort=port, instanceId=instance.id)
@@ -70,7 +70,7 @@ def test_destroy_lb_instance(super_client, admin_client, sim_context, nsp):
                                               startOnCreate=False)
     container = admin_client.wait_success(container)
     lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(admin_client, container, lb, super_client)
+    validate_add_target(container, lb, super_client)
 
     # destroy the lb instance
     # stop the lb instance
@@ -202,8 +202,8 @@ def validate_add_listener(config, listener, super_client):
         lambda x: 'State is: ' + x.state)
 
 
-def validate_add_target(admin_client, container1, lb, super_client):
-    target_maps = admin_client. \
+def validate_add_target(container1, lb, super_client):
+    target_maps = super_client. \
         list_loadBalancerTarget(loadBalancerId=lb.id,
                                 instanceId=container1.id)
     assert len(target_maps) == 1

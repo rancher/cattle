@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "load_balancer_target", schema = "cattle")
-public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.LoadBalancerTargetRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.LoadBalancerTarget {
+public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.LoadBalancerTargetRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.LoadBalancerTarget {
 
-	private static final long serialVersionUID = -1115571044;
+	private static final long serialVersionUID = 983921931;
 
 	/**
 	 * Setter for <code>cattle.load_balancer_target.id</code>.
@@ -237,6 +237,23 @@ public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<
 		return (java.lang.Long) getValue(12);
 	}
 
+	/**
+	 * Setter for <code>cattle.load_balancer_target.account_id</code>.
+	 */
+	@Override
+	public void setAccountId(java.lang.Long value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.load_balancer_target.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	@Override
+	public java.lang.Long getAccountId() {
+		return (java.lang.Long) getValue(13);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -250,23 +267,23 @@ public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<
 	}
 
 	// -------------------------------------------------------------------------
-	// Record13 type implementation
+	// Record14 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row13) super.fieldsRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row14) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long> valuesRow() {
-		return (org.jooq.Row13) super.valuesRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long> valuesRow() {
+		return (org.jooq.Row14) super.valuesRow();
 	}
 
 	/**
@@ -377,6 +394,14 @@ public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field14() {
+		return io.cattle.platform.core.model.tables.LoadBalancerTargetTable.LOAD_BALANCER_TARGET.ACCOUNT_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -475,6 +500,14 @@ public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<
 	@Override
 	public java.lang.Long value13() {
 		return getLoadBalancerId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value14() {
+		return getAccountId();
 	}
 
 	/**
@@ -598,7 +631,16 @@ public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<
 	 * {@inheritDoc}
 	 */
 	@Override
-	public LoadBalancerTargetRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.String value11, java.lang.Long value12, java.lang.Long value13) {
+	public LoadBalancerTargetRecord value14(java.lang.Long value) {
+		setAccountId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public LoadBalancerTargetRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.String value11, java.lang.Long value12, java.lang.Long value13, java.lang.Long value14) {
 		return this;
 	}
 
@@ -624,6 +666,7 @@ public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<
 		setIpAddress(from.getIpAddress());
 		setInstanceId(from.getInstanceId());
 		setLoadBalancerId(from.getLoadBalancerId());
+		setAccountId(from.getAccountId());
 	}
 
 	/**
@@ -649,7 +692,7 @@ public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<
 	/**
 	 * Create a detached, initialised LoadBalancerTargetRecord
 	 */
-	public LoadBalancerTargetRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String ipAddress, java.lang.Long instanceId, java.lang.Long loadBalancerId) {
+	public LoadBalancerTargetRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String ipAddress, java.lang.Long instanceId, java.lang.Long loadBalancerId, java.lang.Long accountId) {
 		super(io.cattle.platform.core.model.tables.LoadBalancerTargetTable.LOAD_BALANCER_TARGET);
 
 		setValue(0, id);
@@ -665,5 +708,6 @@ public class LoadBalancerTargetRecord extends org.jooq.impl.UpdatableRecordImpl<
 		setValue(10, ipAddress);
 		setValue(11, instanceId);
 		setValue(12, loadBalancerId);
+		setValue(13, accountId);
 	}
 }

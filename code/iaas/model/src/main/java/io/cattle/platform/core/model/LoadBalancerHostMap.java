@@ -146,6 +146,17 @@ public interface LoadBalancerHostMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "load_balancer_id", precision = 19)
 	public java.lang.Long getLoadBalancerId();
 
+	/**
+	 * Setter for <code>cattle.load_balancer_host_map.account_id</code>.
+	 */
+	public void setAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.load_balancer_host_map.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

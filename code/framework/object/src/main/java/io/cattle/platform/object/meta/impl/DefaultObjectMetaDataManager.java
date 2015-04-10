@@ -1,6 +1,7 @@
 package io.cattle.platform.object.meta.impl;
 
-import static io.cattle.platform.object.meta.Relationship.RelationshipType.*;
+import static io.cattle.platform.object.meta.Relationship.RelationshipType.CHILD;
+import static io.cattle.platform.object.meta.Relationship.RelationshipType.REFERENCE;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.StateTransition;
@@ -214,6 +215,18 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
         for (Map.Entry<Class<?>, List<Pair<Class<?>, Relationship>>> entry : foundRelationship.entrySet()) {
             List<Pair<Class<?>, Relationship>> rels = entry.getValue();
+            if (rels.size() > 2) {
+                Iterator<Pair<Class<?>, Relationship>> it = rels.iterator();
+                while (it.hasNext()) {
+                    Pair<Class<?>, Relationship> rel = it.next();
+                    boolean ignoreRelationship = excludeRelationShip(entry.getKey().getSimpleName(), rel.getRight()
+                            .getPropertyName());
+                    if (ignoreRelationship) {
+                        it.remove();
+                    }
+                }
+            }
+
             if (rels.size() != 2) {
                 continue;
             }
@@ -241,6 +254,11 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     private String getLinkNameOverride(String objectName, String property, String defaultName) {
         String mapNameOverride = ArchaiusUtil.getString(String.format("object.link.name.%s.%s.override", objectName, property).toLowerCase()).get();
         return mapNameOverride == null ? defaultName : mapNameOverride;
+    }
+
+    private boolean excludeRelationShip(String objectName, String fieldToIgnore) {
+        return ArchaiusUtil.getBoolean(
+                String.format("object.link.ignore.%s.%s", objectName, fieldToIgnore).toLowerCase()).get();
     }
 
     protected void register(String mappingName, Class<?> mappingType, Pair<Class<?>, Relationship> left, Pair<Class<?>, Relationship> right) {
