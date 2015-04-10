@@ -1,5 +1,6 @@
 package io.cattle.platform.process.instance;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -71,7 +72,9 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
         }
 
         for (Port port : getObjectManager().children(instance, Port.class)) {
-            deactivate(port, null);
+            if (port.getRemoved() == null && !port.getState().equals(CommonStatesConstants.REMOVED)) {
+                deactivate(port, null);
+            }
         }
 
         for (InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID)) {

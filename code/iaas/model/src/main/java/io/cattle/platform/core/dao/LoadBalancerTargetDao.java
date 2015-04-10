@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao;
 
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancerTarget;
 
 import java.util.List;
@@ -17,5 +18,9 @@ public interface LoadBalancerTargetDao {
     LoadBalancerTarget getLbInstanceTargetToRemove(long lbId, long instanceId);
 
     LoadBalancerTarget getLbIpAddressTargetToRemove(long lbId, String ipAddress);
+
+    List<? extends Instance> getLoadBalancerActiveInstanceTargets(long lbId);
+
+    List<? extends LoadBalancerTarget> getLoadBalancerActiveIpTargets(long lbId);
 
 }

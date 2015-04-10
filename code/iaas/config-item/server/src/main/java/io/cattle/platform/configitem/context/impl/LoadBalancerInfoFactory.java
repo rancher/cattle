@@ -94,7 +94,8 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             if (ipAddress == null) {
                 Instance userInstance = objectManager.loadResource(Instance.class, target.getInstanceId());
                 if (userInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)
-                        || userInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_STARTING)) {
+                        || userInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_STARTING)
+                        || userInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_RESTARTING)) {
                     for (Nic nic : objectManager.children(userInstance, Nic.class)) {
                         IpAddress ip = ipAddressDao.getPrimaryIpAddress(nic);
                         if (ip != null) {
@@ -104,6 +105,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                     }
                 }
             }
+
             if (ipAddress != null) {
                 String targetName = (target.getName() == null ? target.getUuid() : target.getName());
                 targetsInfo.add(new LoadBalancerTargetInfo(ipAddress, targetName, target.getUuid()));

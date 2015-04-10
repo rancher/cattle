@@ -47,6 +47,7 @@ public class InstanceConstants {
     public static final String STATE_RUNNING = "running";
     public static final String STATE_STOPPED = "stopped";
     public static final String STATE_STARTING = "starting";
+    public static final String STATE_RESTARTING = "restarting";
 
     public static final String ON_STOP_STOP = "stop";
     public static final String ON_STOP_RESTART = "restart";
