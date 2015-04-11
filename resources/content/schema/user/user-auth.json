@@ -294,6 +294,14 @@
         "addRemoveServiceLinkInput" : "cr",
         "addRemoveServiceLinkInput.serviceId" : "cr",
 
+        "loadBalancerConfigListenerMap" : "r",
+        "loadBalancerConfigListenerMap.loadBalancerConfigId" : "r",
+        "loadBalancerConfigListenerMap.loadBalancerListenerId" : "r",
+
+        "loadBalancerHostMap" : "r",
+        "loadBalancerHostMap.hostId" : "r",
+        "loadBalancerHostMap.loadBalancerId" : "r",
+
         "end" : ""
     }
 }
