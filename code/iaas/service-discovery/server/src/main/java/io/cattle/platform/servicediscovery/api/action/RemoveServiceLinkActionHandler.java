@@ -44,7 +44,7 @@ public class RemoveServiceLinkActionHandler implements ActionHandler {
         ServiceConsumeMap map = consumeMapDao.findMapToRemove(serviceId, consumedServiceId);
 
         if (map != null) {
-            objectProcessManager.executeProcess(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
                     map, null);
         }
     }

@@ -15,6 +15,7 @@ public class ServiceDiscoveryConstants {
     public static final String ACTION_SERVICE_ADD_SERVICE_LINK = "addservicelink";
     public static final String ACTION_SERVICE_REMOVE_SERVICE_LINK = "removeservicelink";
     public static final String ACTION_ENV_ACTIVATE_SERVICES = "activateservices";
+    public static final String ACTION_SERVICE_SET_SERVICE_LINKS = "setservicelinks";
 
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
     public static final String PROCESS_SERVICE_CREATE = "service." + ACTION_SERVICE_CREATE;
@@ -30,6 +31,7 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_CONSUME_MAP_CREATE = "serviceconsumemap.create";
     public static final String PROCESS_SERVICE_CONSUME_MAP_REMOVE = "serviceconsumemap.remove";
     public static final String PROCESS_SERVICE_UPDATE = "service.update";
+    public static final String PROCESS_SERVICE_SET_SERVICE_LINKS = "service." + ACTION_SERVICE_SET_SERVICE_LINKS;
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
