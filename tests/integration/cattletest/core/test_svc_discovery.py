@@ -832,6 +832,37 @@ def test_valiate_service_scaleup_scaledown(super_client,
     _validate_instance_removed(super_client, service, "4")
 
 
+def test_link_services_from_diff_env(super_client, admin_client,
+                                     sim_context, nsp):
+    env1 = admin_client.create_environment(name="compose")
+    env1 = admin_client.wait_success(env1)
+
+    image_uuid = sim_context['imageUuid']
+    launch_config = {"imageUuid": image_uuid}
+
+    service1 = super_client.create_service(name=random_str(),
+                                           environmentId=env1.id,
+                                           networkId=nsp.networkId,
+                                           launchConfig=launch_config)
+    service1 = super_client.wait_success(service1)
+
+    env2 = admin_client.create_environment(name="compose")
+    env2 = admin_client.wait_success(env2)
+    service2 = super_client.create_service(name=random_str(),
+                                           environmentId=env2.id,
+                                           networkId=nsp.networkId,
+                                           launchConfig=launch_config)
+    service2 = super_client.wait_success(service2)
+
+    # try to link again
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceId=service2.id)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidReference'
+    assert e.value.error.fieldName == 'serviceId'
+
+
 def _create_registry_credential(admin_client):
     registry = _create_registry(admin_client)
     reg_cred = admin_client.create_registry_credential(
