@@ -588,3 +588,33 @@ def test_registry(admin_client, client):
         'accountId': 'r',
         'serverAddress': 'cr',
     })
+
+
+def test_lb_config_listener_map(admin_client, client):
+    auth_check(admin_client.schema, 'loadBalancerConfigListenerMap', 'r', {
+        'loadBalancerConfigId': 'r',
+        'loadBalancerListenerId': 'r',
+        'accountId': 'r',
+        'data': 'r',
+    })
+
+    auth_check(client.schema, 'loadBalancerConfigListenerMap', 'r', {
+        'loadBalancerConfigId': 'r',
+        'loadBalancerListenerId': 'r',
+        'accountId': 'r',
+    })
+
+
+def test_lb_host_map(admin_client, client):
+    auth_check(admin_client.schema, 'loadBalancerHostMap', 'r', {
+        'hostId': 'r',
+        'loadBalancerId': 'r',
+        'accountId': 'r',
+        'data': 'r',
+    })
+
+    auth_check(client.schema, 'loadBalancerHostMap', 'r', {
+        'hostId': 'r',
+        'loadBalancerId': 'r',
+        'accountId': 'r',
+    })
