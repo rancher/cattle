@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Instance;
@@ -294,7 +295,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public long getServiceNetworkId(Service service) {
-        Network network = ntwkDao.getNetworkForObject(service);
+        Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
         if (network == null) {
             throw new RuntimeException(
                     "Unable to find a network to activate a service " + service);

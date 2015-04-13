@@ -80,7 +80,8 @@
         p:commandName="compute.instance.activate"
         p:agentResourceRelationship="host"
         p:dataTypeClass="io.cattle.platform.core.model.InstanceHostMap"
-        p:processNames="instancehostmap.activate" >
+        p:processNames="instancehostmap.activate"
+        p:processDataKeys="containerNoOpEvent" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>

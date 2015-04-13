@@ -14,7 +14,7 @@ def update_ping_settings(request, super_client):
     def update_setting(new_value, s):
         originals.append((setting, {'value': s.value}))
         s = super_client.update(s, {'value': new_value})
-        _wait_setting_active(super_client, s)
+        wait_setting_active(super_client, s)
 
     for setting in settings:
         if setting.name == 'agent.ping.resources.every' and setting.value != 1:
@@ -187,16 +187,3 @@ def test_digitalocean_config_validation(admin_client):
         assert e.error.code == 'MissingRequired'
     else:
         assert False, 'Should have got MissingRequired for accessToken'
-
-
-def _wait_setting_active(api_client, setting, timeout=45):
-    start = time.time()
-    setting = api_client.by_id('setting', setting.id)
-    while setting.value != setting.activeValue:
-        time.sleep(.5)
-        setting = api_client.by_id('setting', setting.id)
-        if time.time() - start > timeout:
-            msg = 'Timeout waiting for [{0}] to be done'.format(setting)
-            raise Exception(msg)
-
-    return setting

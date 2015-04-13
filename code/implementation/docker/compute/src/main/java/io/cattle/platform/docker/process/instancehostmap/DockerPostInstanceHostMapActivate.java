@@ -118,6 +118,9 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         }
 
         Map<String, Object> inspect = (Map<String, Object>) instance.getData().get("dockerInspect");
+        if (inspect == null) {
+            return;
+        }
         Map<String, String> volumes = (Map<String, String>) inspect.get("Volumes");
         Map<String, Boolean> volumesRW = (Map<String, Boolean>) inspect.get("VolumesRW");
         Map<String, String> hostBindMounts = extractHostBindMounts((List<String>) ((Map) inspect.get("HostConfig")).get("Binds"));

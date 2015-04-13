@@ -29,6 +29,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerHostValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerTargetValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerFilterUtils" />
+    <bean class="io.cattle.platform.iaas.api.filter.containerevent.ContainerEventFilter" />
 
     <bean class="io.cattle.platform.iaas.api.cluster.HostClusterLinkFilter" />
 

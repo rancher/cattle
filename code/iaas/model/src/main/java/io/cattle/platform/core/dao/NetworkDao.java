@@ -16,6 +16,6 @@ public interface NetworkDao {
 
     List<? extends Network> getNetworksForAccount(long accountId, String kind);
 
-    Network getNetworkForObject(Object object);
+    Network getNetworkForObject(Object object, String networkKind);
 
 }
