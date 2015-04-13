@@ -3,8 +3,7 @@ package io.cattle.platform.docker.process.instancehostmap;
 import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
 import static io.cattle.platform.core.model.tables.MountTable.MOUNT;
 import static io.cattle.platform.core.model.tables.PortTable.PORT;
-import static io.cattle.platform.docker.constants.DockerVolumeConstants.READ_ONLY;
-import static io.cattle.platform.docker.constants.DockerVolumeConstants.READ_WRITE;
+import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.PortConstants;
@@ -32,6 +31,8 @@ import io.cattle.platform.docker.process.dao.DockerComputeDao;
 import io.cattle.platform.docker.process.lock.DockerStoragePoolVolumeCreateLock;
 import io.cattle.platform.docker.process.util.DockerProcessUtils;
 import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
+import io.cattle.platform.docker.transform.DockerTransformer;
+import io.cattle.platform.docker.transform.DockerInspectTransformVolume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -60,16 +61,24 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
     private static final Logger log = LoggerFactory.getLogger(DockerPostInstanceHostMapActivate.class);
 
+    @Inject
     JsonMapper jsonMapper;
+    @Inject
     IpAddressDao ipAddressDao;
+    @Inject
     DockerComputeDao dockerDao;
+    @Inject
     NicDao nicDao;
+    @Inject
     NetworkDao networkDao;
+    @Inject
     GenericMapDao mapDao;
+    @Inject
     LockManager lockManager;
-
     @Inject
     ClusterHostMapDao clusterHostMapDao;
+    @Inject
+    DockerTransformer transformer;
 
     @Override
     public String[] getProcessNames() {
@@ -79,7 +88,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        InstanceHostMap map = (InstanceHostMap) state.getResource();
+        InstanceHostMap map = (InstanceHostMap)state.getResource();
         Instance instance = getObjectManager().loadResource(Instance.class, map.getInstanceId());
         Host host = getObjectManager().loadResource(Host.class, map.getHostId());
 
@@ -99,21 +108,31 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
         processVolumes(instance, host, state);
 
+        nativeDockerBackPopulate(instance);
+
         return null;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked" })
+    protected void nativeDockerBackPopulate(Instance instance) {
+        Map<String, Object> inspect = (Map<String, Object>)instance.getData().get(FIELD_DOCKER_INSPECT);
+        if (inspect == null || instance.getNativeContainer() == null || !instance.getNativeContainer().booleanValue()) {
+            return;
+        }
+        transformer.transform(inspect, instance);
+        objectManager.persist(instance);
+    }
+
+    @SuppressWarnings({ "unchecked" })
     protected void processVolumes(Instance instance, Host host, ProcessState state) {
 
-        Map<String, Object> inspect = (Map<String, Object>) instance.getData().get("dockerInspect");
+        Map<String, Object> inspect = (Map<String, Object>) instance.getData().get(FIELD_DOCKER_INSPECT);
         if (inspect == null) {
             return;
         }
-        Map<String, String> volumes = (Map<String, String>) inspect.get("Volumes");
-        Map<String, Boolean> volumesRW = (Map<String, Boolean>) inspect.get("VolumesRW");
-        Map<String, String> hostBindMounts = extractHostBindMounts((List<String>) ((Map) inspect.get("HostConfig")).get("Binds"));
+        List<DockerInspectTransformVolume> dockerVolumes = transformer.transformVolumes(inspect);
 
-        if (volumes.size() == 0) {
+        if (dockerVolumes.size() == 0) {
             /* If there are no volumes avoid looking for a pool because one may not exists
              * for this host and we don't want to warn about that
              */
@@ -133,13 +152,9 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             return;
         }
 
-        for (Map.Entry<String, String> volumeKV : volumes.entrySet()) {
-            String pathInContainer = volumeKV.getKey();
-            String pathOnHost = volumeKV.getValue();
-
-            String volumeUri = String.format(VolumeConstants.URI_FORMAT, pathOnHost);
-            boolean isHostPath = hostBindMounts.containsKey(pathInContainer);
-            Volume volume = createVolumeInStoragePool(storagePool, instance, volumeUri, isHostPath);
+        for (DockerInspectTransformVolume dVol : dockerVolumes) {
+            String volumeUri = String.format(VolumeConstants.URI_FORMAT, dVol.getHostPath());
+            Volume volume = createVolumeInStoragePool(storagePool, instance, volumeUri, dVol.isBindMount());
             log.debug("Created volume and storage pool mapping. Volume id [{}], storage pool id [{}].", volume.getId(), storagePool.getId());
             createIgnoreCancel(volume, state.getData());
 
@@ -150,27 +165,13 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
             activate(volume, state.getData());
 
-            Boolean readWrite = volumesRW.get(pathInContainer);
-            String perms = readWrite ? READ_WRITE : READ_ONLY;
-            Mount mount = mountVolume(volume, instance, pathInContainer, perms);
+            Mount mount = mountVolume(volume, instance, dVol.getContainerPath(), dVol.getAccessMode());
             log.info("Volme mount created. Volume id [{}], instance id [{}], mount id [{}]", volume.getId(), instance.getId(), mount.getId());
             createThenActivate(mount, null);
         }
     }
 
-    private Map<String, String> extractHostBindMounts(List<String> bindMounts) {
-        Map<String, String> hostBindMounts = new HashMap<String, String>();
-        if (bindMounts == null)
-            return hostBindMounts;
-
-        for (String bindMount : bindMounts) {
-            String[] parts = bindMount.split(":");
-            hostBindMounts.put(parts[1], parts[0]);
-        }
-        return hostBindMounts;
-    }
-
-    protected Volume createVolumeInStoragePool(final StoragePool storagePool, final Instance instance, final String volumeUri, final boolean isHostPath) {
+    protected Volume createVolumeInStoragePool(final StoragePool storagePool, final Instance instance, final String volumeUri, final boolean isHostBindMount) {
         Volume volume = dockerDao.getDockerVolumeInPool(volumeUri, storagePool);
         if (volume != null)
             return volume;
@@ -182,7 +183,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
                 if (volume != null)
                     return volume;
 
-                volume = dockerDao.createDockerVolumeInPool(instance.getAccountId(), volumeUri, storagePool, isHostPath);
+                volume = dockerDao.createDockerVolumeInPool(instance.getAccountId(), volumeUri, storagePool, isHostBindMount);
 
                 return volume;
             }
@@ -198,8 +199,8 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             return mount;
         }
 
-        return objectManager.create(Mount.class, MOUNT.ACCOUNT_ID, instance.getAccountId(), MOUNT.INSTANCE_ID, instance.getId(), MOUNT.VOLUME_ID, volume
-                .getId(), MOUNT.PATH, path, MOUNT.PERMISSIONS, permissions);
+        return objectManager.create(Mount.class, MOUNT.ACCOUNT_ID, instance.getAccountId(), MOUNT.INSTANCE_ID, instance.getId(), MOUNT.VOLUME_ID,
+                volume.getId(), MOUNT.PATH, path, MOUNT.PERMISSIONS, permissions);
     }
 
     protected void processDockerIp(Instance instance, Nic nic, String dockerIp) {
@@ -273,68 +274,4 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     protected boolean hasPortNetworkService(long instanceId) {
         return networkDao.getNetworkService(instanceId, NetworkServiceConstants.KIND_PORT_SERVICE).size() > 0;
     }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public IpAddressDao getIpAddressDao() {
-        return ipAddressDao;
-    }
-
-    @Inject
-    public void setIpAddressDao(IpAddressDao ipAddressDao) {
-        this.ipAddressDao = ipAddressDao;
-    }
-
-    public DockerComputeDao getDockerDao() {
-        return dockerDao;
-    }
-
-    @Inject
-    public void setDockerDao(DockerComputeDao dockerDao) {
-        this.dockerDao = dockerDao;
-    }
-
-    public NicDao getNicDao() {
-        return nicDao;
-    }
-
-    @Inject
-    public void setNicDao(NicDao nicDao) {
-        this.nicDao = nicDao;
-    }
-
-    public NetworkDao getNetworkDao() {
-        return networkDao;
-    }
-
-    @Inject
-    public void setNetworkDao(NetworkDao networkDao) {
-        this.networkDao = networkDao;
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
-
-    public GenericMapDao getMapDao() {
-        return mapDao;
-    }
-
-    @Inject
-    public void setMapDao(GenericMapDao mapDao) {
-        this.mapDao = mapDao;
-    }
-
 }

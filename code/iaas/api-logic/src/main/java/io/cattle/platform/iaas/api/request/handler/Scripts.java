@@ -36,8 +36,10 @@ public class Scripts extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
         }
 
-        request.setResponseObject(new Object());
-        request.commit();
+        if ( request.getResponseObject() == null ) {
+            request.setResponseObject(new Object());
+            request.commit();
+        }
     }
 
     public List<ScriptsHandler> getHandlers() {
