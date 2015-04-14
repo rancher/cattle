@@ -32,6 +32,12 @@ def test_add_lb_w_host_and_target(super_client, admin_client, sim_context,
 
     # check the port
     ports = super_client.list_port(publicPort=port, instanceId=instance.id)
+    assert len(ports) == 0
+
+    # start the instance and check the ports
+    container = container.start()
+    container = admin_client.wait_success(container)
+    ports = super_client.list_port(publicPort=port, instanceId=instance.id)
     assert len(ports) == 1
     assert ports[0].state == 'active'
     assert ports[0].publicPort == port
@@ -66,8 +72,7 @@ def test_destroy_lb_instance(super_client, admin_client, sim_context, nsp):
                                                          port, nsp)
     # add target to a load balancer
     image_uuid = sim_context['imageUuid']
-    container = admin_client.create_container(imageUuid=image_uuid,
-                                              startOnCreate=False)
+    container = admin_client.create_container(imageUuid=image_uuid)
     container = admin_client.wait_success(container)
     lb = lb.addtarget(instanceId=container.id)
     validate_add_target(container, lb, super_client)

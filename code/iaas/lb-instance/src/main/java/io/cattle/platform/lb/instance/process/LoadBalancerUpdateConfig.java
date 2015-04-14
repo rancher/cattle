@@ -8,14 +8,15 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.PortConstants;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.LoadBalancerDao;
+import io.cattle.platform.core.dao.LoadBalancerTargetDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.LoadBalancer;
-import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
@@ -24,8 +25,11 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lb.instance.process.lock.LoadBalancerInstancePortLock;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.lb.instance.service.impl.LoadBalancerLookup;
+import io.cattle.platform.lock.LockCallbackNoReturn;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
@@ -72,6 +76,15 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
 
     @Inject
     List<LoadBalancerLookup> lbLookups;
+
+    @Inject
+    LoadBalancerTargetDao targetDao;
+
+    @Inject
+    GenericResourceDao resourceDao;
+
+    @Inject
+    LockManager lockManager;
 
     @Override
     public String[] getProcessNames() {
@@ -177,45 +190,69 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
 
     private void updatePublicPorts(ProcessState state, Set<Long> lbIds) {
         for (Long lbId : lbIds) {
-            LoadBalancer lb = loadResource(LoadBalancer.class, lbId);
+            final LoadBalancer lb = loadResource(LoadBalancer.class, lbId);
             List<? extends LoadBalancerListener> listeners = lbDao.listActiveListenersForConfig(lb
                     .getLoadBalancerConfigId());
-            Set<Integer> listenerPorts = new HashSet<>();
+            final Set<Integer> listenerPorts = new HashSet<>();
             for (LoadBalancerListener listener : listeners) {
                 listenerPorts.add(listener.getSourcePort());
             }
             List<? extends Instance> lbInstances = lbInstanceManager.getLoadBalancerInstances(lb);
-            for (Instance lbInstance : lbInstances) {
-                Map<Integer, Port> portsToCreate = new HashMap<Integer, Port>();
-                Map<Integer, Port> portsToRemove = new HashMap<Integer, Port>();
-                for (Port port : objectManager.children(lbInstance, Port.class)) {
-                    if (listenerPorts.contains(port.getPublicPort())) {
-                        portsToCreate.put(port.getPublicPort(), port);
-                    } else {
-                        portsToRemove.put(port.getPublicPort(), port);
-                    }
-                }
-                for (Integer listenerPort : listenerPorts) {
-                    if (portsToCreate.containsKey(listenerPort)) {
-                        continue;
-                    }
-                    Nic primaryNic = networkDao.getPrimaryNic(lbInstance.getId());
-                    if (primaryNic == null) {
-                        continue;
-                    }
-                    IpAddress ipAddress = ipAddressDao.getPrimaryIpAddress(primaryNic);
-                    if (ipAddress == null) {
-                        continue;
-                    }
+            // surround by lock
+            for (final Instance lbInstance : lbInstances) {
+                final boolean hasActiveInstances = (targetDao.getLoadBalancerActiveInstanceTargets(lb.getId()).size() + targetDao
+                        .getLoadBalancerActiveIpTargets(lb.getId()).size()) > 0;
+                final Map<Integer, Port> portsToCreate = new HashMap<Integer, Port>();
+                final Map<Integer, Port> portsToRemove = new HashMap<Integer, Port>();
+                lockManager.lock(new LoadBalancerInstancePortLock(lbInstance), new LockCallbackNoReturn() {
+                    @Override
+                    public void doWithLockNoResult() {
+                        Map<Integer, Port> existingPorts = new HashMap<Integer, Port>();
+                        for (Port port : objectManager.children(lbInstance, Port.class)) {
+                            if (port.getRemoved() == null && !port.getState().equals(CommonStatesConstants.REMOVED)) {
+                                existingPorts.put(port.getPublicPort(), port);
+                            }
+                        }
+                        for (Port port : existingPorts.values()) {
+                            if (listenerPorts.contains(port.getPublicPort()) && hasActiveInstances) {
+                                portsToCreate.put(port.getPublicPort(), port);
+                            } else {
+                                portsToRemove.put(port.getPublicPort(), port);
+                            }
+                        }
 
-                    Port portObj = objectManager.create(Port.class, PORT.KIND, PortConstants.KIND_USER, PORT.ACCOUNT_ID, lbInstance.getAccountId(),
-                            PORT.INSTANCE_ID, lbInstance.getId(), PORT.PUBLIC_PORT, listenerPort, PORT.PRIVATE_PORT, listenerPort, PORT.PROTOCOL, "tcp",
-                            PORT.PRIVATE_IP_ADDRESS_ID, ipAddress.getId());
-                    portsToCreate.put(portObj.getPublicPort(), portObj);
-                }
+                        if (hasActiveInstances) {
+                            for (Integer listenerPort : listenerPorts) {
+                                if (existingPorts.containsKey(listenerPort)) {
+                                    continue;
+                                }
 
-                for (Port port : portsToCreate.values()) {
-                    createThenActivate(port, state.getData());
+                                Nic primaryNic = networkDao.getPrimaryNic(lbInstance.getId());
+                                if (primaryNic == null) {
+                                    continue;
+                                }
+                                IpAddress ipAddress = ipAddressDao.getPrimaryIpAddress(primaryNic);
+                                if (ipAddress == null) {
+                                    continue;
+                                }
+
+                                Port portObj = objectManager.create(Port.class, PORT.KIND, PortConstants.KIND_USER,
+
+                                        PORT.ACCOUNT_ID,
+                                        lbInstance.getAccountId(),
+                                        PORT.INSTANCE_ID, lbInstance.getId(), PORT.PUBLIC_PORT, listenerPort,
+                                        PORT.PRIVATE_PORT, listenerPort, PORT.PROTOCOL, "tcp",
+                                        PORT.PRIVATE_IP_ADDRESS_ID, ipAddress.getId());
+                                portsToCreate.put(portObj.getPublicPort(), portObj);
+                            }
+                        }
+                    }
+                });
+
+                if (hasActiveInstances) {
+                    for (Port port : portsToCreate.values()) {
+                        createThenActivate(port, state.getData());
+                    }
                 }
 
                 for (Port port : portsToRemove.values()) {
