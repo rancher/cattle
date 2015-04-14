@@ -42,7 +42,6 @@ public class EnvironmentExportConfigActionHandler implements ActionHandler {
         List<? extends Long> serviceIds = DataAccessor.fromMap(request.getRequestObject())
                 .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_IDS).asList(jsonMapper, Long.class);
 
-
         List<? extends Service> services = objectManager.mappedChildren(env, Service.class);
         List<Service> toExport = new ArrayList<>();
         for (Service service : services) {

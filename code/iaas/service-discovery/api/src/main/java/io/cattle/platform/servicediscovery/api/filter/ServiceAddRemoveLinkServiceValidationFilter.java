@@ -60,7 +60,8 @@ public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractDefault
                         ServiceDiscoveryConstants.FIELD_SERVICE_ID);
             }
             Service consumedService = objectManager.loadResource(Service.class, consumedServiceId);
-            if (!consumedService.getEnvironmentId().equals(service.getEnvironmentId())) {
+            if (service == null || consumedService == null
+                    || !consumedService.getEnvironmentId().equals(service.getEnvironmentId())) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
                         ServiceDiscoveryConstants.FIELD_SERVICE_ID);
             }

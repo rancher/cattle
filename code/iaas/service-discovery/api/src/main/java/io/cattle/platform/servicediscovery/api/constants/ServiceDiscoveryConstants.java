@@ -31,4 +31,7 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_CONSUME_MAP_REMOVE = "serviceconsumemap.remove";
     public static final String PROCESS_SERVICE_UPDATE = "service.update";
 
+    public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
+    public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
+
 }

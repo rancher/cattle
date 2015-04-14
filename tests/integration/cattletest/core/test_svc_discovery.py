@@ -834,7 +834,7 @@ def test_valiate_service_scaleup_scaledown(super_client,
 
 def test_link_services_from_diff_env(super_client, admin_client,
                                      sim_context, nsp):
-    env1 = admin_client.create_environment(name="compose")
+    env1 = admin_client.create_environment(name=random_str())
     env1 = admin_client.wait_success(env1)
 
     image_uuid = sim_context['imageUuid']
@@ -846,7 +846,7 @@ def test_link_services_from_diff_env(super_client, admin_client,
                                            launchConfig=launch_config)
     service1 = super_client.wait_success(service1)
 
-    env2 = admin_client.create_environment(name="compose")
+    env2 = admin_client.create_environment(name=random_str())
     env2 = admin_client.wait_success(env2)
     service2 = super_client.create_service(name=random_str(),
                                            environmentId=env2.id,

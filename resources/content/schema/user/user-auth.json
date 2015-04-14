@@ -295,6 +295,8 @@
         "composeConfigInput.serviceIds" : "cr",
 
         "environment" : "crud",
+        "environment.dockerComposeConfig" : "r",
+        "environment.rancherComposeConfig" : "r",
 
         "service" : "crud",
         "service.name" : "cr",

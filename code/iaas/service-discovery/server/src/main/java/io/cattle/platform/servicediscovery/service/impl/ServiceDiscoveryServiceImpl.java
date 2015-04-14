@@ -53,15 +53,26 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public SimpleEntry<String, String> buildConfig(List<? extends Service> services) {
-        Map<String, Object> dockerComposeData = createComposeData(services, true);
-        Map<String, Object> rancherComposeData = createComposeData(services, false);
+        return new SimpleEntry<String, String>(buildDockerComposeConfig(services), buildRancherComposeConfig(services));
+    }
 
+    @Override
+    public String buildDockerComposeConfig(List<? extends Service> services) {
+        Map<String, Object> dockerComposeData = createComposeData(services, true);
+        return convertToYml(dockerComposeData);
+    }
+
+    @Override
+    public String buildRancherComposeConfig(List<? extends Service> services) {
+        Map<String, Object> dockerComposeData = createComposeData(services, false);
+        return convertToYml(dockerComposeData);
+    }
+
+    private String convertToYml(Map<String, Object> dockerComposeData) {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(options);
-        String dockerComposeDataStr = yaml.dump(dockerComposeData);
-        String rancherComposeDataStr = yaml.dump(rancherComposeData);
-        return new SimpleEntry<String, String>(dockerComposeDataStr, rancherComposeDataStr);
+        return yaml.dump(dockerComposeData);
     }
 
     @SuppressWarnings("unchecked")

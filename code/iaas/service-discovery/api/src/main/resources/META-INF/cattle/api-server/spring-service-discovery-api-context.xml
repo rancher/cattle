@@ -14,5 +14,6 @@
         
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceCreateValidationFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceAddRemoveLinkServiceValidationFilter" />
+       <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceDiscoveryEnvironmentOutputFilter" />
         
 </beans>
