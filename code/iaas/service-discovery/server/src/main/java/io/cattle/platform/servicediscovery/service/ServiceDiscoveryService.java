@@ -16,4 +16,6 @@ public interface ServiceDiscoveryService {
 
     long getServiceNetworkId(Service service);
 
+    String getInstanceName(Service service, int order);
+
 }

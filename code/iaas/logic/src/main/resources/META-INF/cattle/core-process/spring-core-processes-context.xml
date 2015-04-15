@@ -144,7 +144,8 @@
     
     <!-- Service Discovery Service -->
     <process:process name="service.create" resourceType="service" start="requested" transitioning="registering" done="inactive" />
-    <process:process name="service.activate" resourceType="service" start="inactive" transitioning="activating" done="active" />
+    <process:process name="service.activate" resourceType="service" start="inactive" transitioning="activating" done="active" />    
+    <process:process name="service.update" resourceType="service" start="inactive,active" transitioning="inactive=updating-inactive,active=updating-active" done="updating-inactive=inactive,updating-active=active" />
     <process:process name="service.deactivate" resourceType="service" start="active,activating" transitioning="deactivating" done="inactive" />
     <process:process name="service.remove" resourceType="service" start="inactive, registering, active,activating" transitioning="removing" done="removed" />
     
