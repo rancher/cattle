@@ -58,6 +58,7 @@
                 <value>registry,parent=storagePool</value>
                 <value>addRemoveServiceLinkInput</value>
                 <value>composeConfigInput</value>
+                <value>setServiceLinksInput</value>
             </set>
         </property>
     </bean>

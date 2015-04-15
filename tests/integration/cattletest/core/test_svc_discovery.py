@@ -409,26 +409,13 @@ def test_service_add_remove_service_link(super_client, admin_client,
                                            launchConfig=launch_config)
     service2 = super_client.wait_success(service2)
 
-    # link servic2 to service1
+    # link service2 to service1
     service1 = service1.addservicelink(serviceId=service2.id)
-    service1 = admin_client.wait_success(service1)
-
-    service_map = super_client. \
-        list_serviceConsumeMap(serviceId=service1.id,
-                               consumedServiceId=service2.id)
-
-    assert len(service_map) == 1
-    assert service_map[0].state == 'active'
+    _validate_add_service_link(service1, service2, super_client)
 
     # remove service link
     service1 = service1.removeservicelink(serviceId=service2.id)
-    service1 = admin_client.wait_success(service1)
-
-    service_map = super_client. \
-        list_serviceConsumeMap(serviceId=service1.id,
-                               consumedServiceId=service2.id)
-
-    assert service_map[0].state == 'removed'
+    _validate_remove_service_link(service1, service2, super_client)
 
 
 def test_link_service_twice(super_client, admin_client,
@@ -454,14 +441,7 @@ def test_link_service_twice(super_client, admin_client,
 
     # link servic2 to service1
     service1 = service1.addservicelink(serviceId=service2.id)
-    service1 = admin_client.wait_success(service1)
-
-    service_map = super_client. \
-        list_serviceConsumeMap(serviceId=service1.id,
-                               consumedServiceId=service2.id)
-
-    assert len(service_map) == 1
-    assert service_map[0].state == 'active'
+    _validate_add_service_link(service1, service2, super_client)
 
     # try to link again
     with pytest.raises(ApiError) as e:
@@ -494,32 +474,18 @@ def test_links_after_service_remove(super_client, admin_client,
 
     # link servic2 to service1
     service1 = service1.addservicelink(serviceId=service2.id)
-    service1 = admin_client.wait_success(service1)
-
-    service_map1 = super_client. \
-        list_serviceConsumeMap(serviceId=service1.id,
-                               consumedServiceId=service2.id)
-
-    assert len(service_map1) == 1
-    assert service_map1[0].state == 'active'
+    _validate_add_service_link(service1, service2, super_client)
 
     # link service1 to service2
     service2 = service1.addservicelink(serviceId=service1.id)
-    service2 = admin_client.wait_success(service2)
-
-    service_map2 = super_client. \
-        list_serviceConsumeMap(serviceId=service2.id,
-                               consumedServiceId=service1.id)
-
-    assert len(service_map2) == 1
-    assert service_map2[0].state == 'active'
+    _validate_add_service_link(service2, service1, super_client)
 
     # remove service1
     service1 = wait_success(admin_client, service1.remove())
 
-    _wait_until_service_map_removed(service1, service2, super_client)
+    _validate_remove_service_link(service1, service2, super_client)
 
-    _wait_until_service_map_removed(service2, service1, super_client)
+    _validate_remove_service_link(service2, service1, super_client)
 
 
 def test_link_volumes(super_client, admin_client,
@@ -854,9 +820,68 @@ def test_link_services_from_diff_env(super_client, admin_client,
                                            launchConfig=launch_config)
     service2 = super_client.wait_success(service2)
 
-    # try to link again
+    # try to link
     with pytest.raises(ApiError) as e:
         service1.addservicelink(serviceId=service2.id)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidReference'
+    assert e.value.error.fieldName == 'serviceId'
+
+
+def test_set_service_links(super_client, admin_client,
+                           sim_context, nsp):
+    env1 = admin_client.create_environment(name=random_str())
+    env1 = admin_client.wait_success(env1)
+
+    image_uuid = sim_context['imageUuid']
+    launch_config = {"imageUuid": image_uuid}
+
+    service1 = admin_client.create_service(name=random_str(),
+                                           environmentId=env1.id,
+                                           networkId=nsp.networkId,
+                                           launchConfig=launch_config)
+    service1 = admin_client.wait_success(service1)
+
+    service2 = admin_client.create_service(name=random_str(),
+                                           environmentId=env1.id,
+                                           networkId=nsp.networkId,
+                                           launchConfig=launch_config)
+    service2 = admin_client.wait_success(service2)
+
+    service3 = admin_client.create_service(name=random_str(),
+                                           environmentId=env1.id,
+                                           networkId=nsp.networkId,
+                                           launchConfig=launch_config)
+    service3 = admin_client.wait_success(service3)
+
+    # set service2, service3 links for service1
+    service1 = service1.setservicelinks(serviceIds=[service2.id, service3.id])
+    _validate_add_service_link(service1, service2, super_client)
+    _validate_add_service_link(service1, service3, super_client)
+
+    # set service2 links for service1
+    service1 = service1.setservicelinks(serviceIds=[service2.id])
+    _validate_add_service_link(service1, service2, super_client)
+    _validate_remove_service_link(service1, service3, super_client)
+
+    # set empty service link set
+    service1 = service1.setservicelinks(serviceIds=[])
+    _validate_remove_service_link(service1, service2, super_client)
+    _validate_remove_service_link(service1, service3, super_client)
+
+    # try to link to the service from diff environment
+    env2 = admin_client.create_environment(name=random_str())
+    env2 = admin_client.wait_success(env2)
+
+    service4 = super_client.create_service(name=random_str(),
+                                           environmentId=env2.id,
+                                           networkId=nsp.networkId,
+                                           launchConfig=launch_config)
+    service4 = super_client.wait_success(service4)
+
+    with pytest.raises(ApiError) as e:
+        service1.setservicelinks(serviceIds=[service4.id])
 
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidReference'
@@ -894,27 +919,31 @@ def _resource_is_stopped(resource):
     return resource.state == 'stopped'
 
 
-def _resource_is_removed(resource):
-    return resource.state == 'removed'
-
-
-def _wait_until_service_map_removed(service, consumed_service,
-                                    super_client, timeout=30):
-    # need this function because we can't
-    # use wait_for_condition for resource of type map
-
-    start = time.time()
+def _validate_add_service_link(service, consumedService, super_client):
     service_maps = super_client. \
         list_serviceConsumeMap(serviceId=service.id,
-                               consumedServiceId=consumed_service.id)
+                               consumedServiceId=consumedService.id)
+    assert len(service_maps) == 1
     service_map = service_maps[0]
-    while service_map.state != 'removed':
-        time.sleep(.5)
-        service_maps = super_client. \
-            list_serviceConsumeMap(serviceId=service.id,
-                                   consumedServiceId=consumed_service.id)
-        service_map = service_maps[0]
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for service map to be removed.'
+    wait_for_condition(
+        super_client, service_map, _resource_is_active,
+        lambda x: 'State is: ' + x.state)
 
-    return
+
+def _validate_remove_service_link(service, consumedService, super_client):
+    service_maps = super_client. \
+        list_serviceConsumeMap(serviceId=service.id,
+                               consumedServiceId=consumedService.id)
+    assert len(service_maps) == 1
+    service_map = service_maps[0]
+    wait_for_condition(
+        super_client, service_map, _resource_is_removed,
+        lambda x: 'State is: ' + x.state)
+
+
+def _resource_is_active(resource):
+    return resource.state == 'active'
+
+
+def _resource_is_removed(resource):
+    return resource.state == 'removed'

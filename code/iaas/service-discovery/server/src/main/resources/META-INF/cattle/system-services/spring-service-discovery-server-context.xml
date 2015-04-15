@@ -21,6 +21,7 @@
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.AddServiceLinkActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.SetServiceLinksActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentActivateServicesActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentDeactivateServicesActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl" />

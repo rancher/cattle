@@ -52,7 +52,7 @@ public class AddServiceLinkActionHandler implements ActionHandler {
                     SERVICE_CONSUME_MAP.SERVICE_ID,
                     serviceId, SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId);
         }
-        objectProcessManager.executeProcess(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
+        objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
                 map, null);
     }
 }

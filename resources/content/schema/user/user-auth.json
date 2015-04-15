@@ -308,6 +308,9 @@
         "addRemoveServiceLinkInput" : "cr",
         "addRemoveServiceLinkInput.serviceId" : "cr",
 
+        "setServiceLinksInput" : "cr",
+        "setServiceLinksInput.serviceIds" : "cr",
+
         "loadBalancerConfigListenerMap" : "r",
         "loadBalancerConfigListenerMap.loadBalancerConfigId" : "r",
         "loadBalancerConfigListenerMap.loadBalancerListenerId" : "r",

@@ -1,0 +1,9 @@
+{
+    "collectionMethods" : [],
+    "resourceFields": {
+        "serviceIds": {
+            "type": "array[reference[service]]",
+            "nullable": false
+        }
+    }
+}
