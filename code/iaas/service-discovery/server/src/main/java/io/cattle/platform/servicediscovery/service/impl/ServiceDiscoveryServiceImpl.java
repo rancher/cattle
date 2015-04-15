@@ -37,6 +37,8 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
+    private static final String IMAGE_PREFIX = "docker:";
+
     @Inject
     GenericMapDao mapDao;
 
@@ -51,15 +53,26 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public SimpleEntry<String, String> buildConfig(List<? extends Service> services) {
-        Map<String, Object> dockerComposeData = createComposeData(services, true);
-        Map<String, Object> rancherComposeData = createComposeData(services, false);
+        return new SimpleEntry<String, String>(buildDockerComposeConfig(services), buildRancherComposeConfig(services));
+    }
 
+    @Override
+    public String buildDockerComposeConfig(List<? extends Service> services) {
+        Map<String, Object> dockerComposeData = createComposeData(services, true);
+        return convertToYml(dockerComposeData);
+    }
+
+    @Override
+    public String buildRancherComposeConfig(List<? extends Service> services) {
+        Map<String, Object> dockerComposeData = createComposeData(services, false);
+        return convertToYml(dockerComposeData);
+    }
+
+    private String convertToYml(Map<String, Object> dockerComposeData) {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(options);
-        String dockerComposeDataStr = yaml.dump(dockerComposeData);
-        String rancherComposeDataStr = yaml.dump(rancherComposeData);
-        return new SimpleEntry<String, String>(dockerComposeDataStr, rancherComposeDataStr);
+        return yaml.dump(dockerComposeData);
     }
 
     @SuppressWarnings("unchecked")
@@ -95,11 +108,20 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (forDockerCompose) {
                 populateLinksForService(service, servicesToExportIds, composeServiceData);
                 populateVolumesForService(service, servicesToExportIds, composeServiceData);
+                formatImage(service, composeServiceData);
             }
             
             data.put(service.getName(), composeServiceData);
         }
         return data;
+    }
+
+    private void formatImage(Service service, Map<String, Object> composeServiceData) {
+        String imageUuid = composeServiceData.get(ServiceDiscoveryConfigItem.IMAGE.getComposeName()).toString();
+        if (imageUuid.startsWith(IMAGE_PREFIX)) {
+            imageUuid = imageUuid.replaceFirst(IMAGE_PREFIX, "");
+        }
+        composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getComposeName(), imageUuid);
     }
 
     @SuppressWarnings("unchecked")
@@ -142,7 +164,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             }
         }
 
-        // 3. now translate all the references services that are not being imported, to instance names
+        // 4. now translate all the references services that are not being imported, to instance names
         for (Service volumesFromInstance : translateToInstances) {
             List<Instance> instances = objectManager.mappedChildren(volumesFromInstance, Instance.class);
             for (Instance instance : instances) {

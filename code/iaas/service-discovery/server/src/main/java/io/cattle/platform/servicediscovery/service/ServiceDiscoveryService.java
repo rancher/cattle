@@ -18,4 +18,8 @@ public interface ServiceDiscoveryService {
 
     String getInstanceName(Service service, int order);
 
+    String buildDockerComposeConfig(List<? extends Service> services);
+
+    String buildRancherComposeConfig(List<? extends Service> services);
+
 }
