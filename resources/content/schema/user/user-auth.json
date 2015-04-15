@@ -29,7 +29,6 @@
         "cluster.discoverySpec" : "r",
         "cluster.port" : "cru",
         "cluster.managingHostId" : "",
-        "cluster.certificateId" : "",
 
         "clusterHostMap" : "",
 

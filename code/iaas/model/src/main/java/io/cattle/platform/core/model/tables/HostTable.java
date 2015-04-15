@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.HostRecord> {
 
-	private static final long serialVersionUID = -667086310;
+	private static final long serialVersionUID = 211399298;
 
 	/**
 	 * The singleton instance of <code>cattle.host</code>
@@ -117,6 +117,11 @@ public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.m
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
+	 * The column <code>cattle.host.certificate_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.Long> CERTIFICATE_ID = createField("certificate_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.host</code> table reference
 	 */
 	public HostTable() {
@@ -167,7 +172,7 @@ public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.m
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HostRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HostRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_HOST__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_HOST__AGENT_ID, io.cattle.platform.core.model.Keys.FK_HOST__ZONE_ID, io.cattle.platform.core.model.Keys.FK_HOST__PHYSICAL_HOST_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HostRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_HOST__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_HOST__AGENT_ID, io.cattle.platform.core.model.Keys.FK_HOST__ZONE_ID, io.cattle.platform.core.model.Keys.FK_HOST__PHYSICAL_HOST_ID, io.cattle.platform.core.model.Keys.FK_HOST_CERT);
 	}
 
 	/**

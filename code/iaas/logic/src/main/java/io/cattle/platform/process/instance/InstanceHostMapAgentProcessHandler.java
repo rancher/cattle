@@ -1,11 +1,13 @@
 package io.cattle.platform.process.instance;
 
+import static io.cattle.platform.core.model.tables.CertificateTable.CERTIFICATE;
 import io.cattle.iaas.cluster.service.ClusterManager;
+import io.cattle.platform.core.constants.CertificateConstants;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.dao.ClusterHostMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
+import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceHostMapRecord;
@@ -33,6 +35,9 @@ public class InstanceHostMapAgentProcessHandler extends AgentBasedProcessHandler
     private static final Logger log = LoggerFactory.getLogger(InstanceHostMapAgentProcessHandler.class);
 
     private static final String CLUSTER_CONNECTION_FIELD = "clusterConnection";
+    private static final String CA_CRT_FIELD = "caCrt";
+    private static final String CLIENT_CRT_FIELD = "clientCrt";
+    private static final String CLIENT_KEY_FIELD = "clientKey";
 
     @Inject
     ClusterManager clusterManager;
@@ -56,10 +61,16 @@ public class InstanceHostMapAgentProcessHandler extends AgentBasedProcessHandler
                 Long managingHostId = DataAccessor.fields(potentialCluster).withKey(ClusterConstants.MANAGING_HOST).as(Long.class);
                 Integer clusterServerPort = DataAccessor.fields(potentialCluster).withKey(ClusterConstants.CLUSTER_SERVER_PORT).as(Integer.class);
 
-                Instance clusterServerInstance = clusterManager.getClusterServerInstance(potentialCluster);
-                IpAddress ipAddress = clusterManager.getClusterServerInstanceIp(clusterServerInstance);
+                Certificate clientCertRecord = objectManager.findOne(Certificate.class,
+                        CERTIFICATE.ACCOUNT_ID, potentialCluster.getAccountId(),
+                        CERTIFICATE.NAME, CertificateConstants.CLIENT,
+                        CERTIFICATE.REMOVED, null);
+                IpAddress ipAddress = clusterHostMapDao.getIpAddressForHost(managingHostId);
 
-                DataUtils.getWritableFields(instanceHostMap).put(CLUSTER_CONNECTION_FIELD, "http://" + ipAddress.getAddress() + ":" + clusterServerPort);
+                DataUtils.getWritableFields(instanceHostMap).put(CLUSTER_CONNECTION_FIELD, "https://" + ipAddress.getAddress() + ":" + clusterServerPort);
+                DataUtils.getWritableFields(instanceHostMap).put(CA_CRT_FIELD, clientCertRecord.getCertChain());
+                DataUtils.getWritableFields(instanceHostMap).put(CLIENT_CRT_FIELD, clientCertRecord.getCert());
+                DataUtils.getWritableFields(instanceHostMap).put(CLIENT_KEY_FIELD, clientCertRecord.getKey());
 
                 instanceHostMap.setHostId(managingHostId);
             }

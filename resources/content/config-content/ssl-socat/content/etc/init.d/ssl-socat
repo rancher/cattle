@@ -1,0 +1,39 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:		ssl-socat
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+# Short-Description:	socat to provide secure TCP for swarm
+# Description:		socat to provide secure TCP for swarm
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+SOCAT_ARG_FILE=/etc/ssl-socat/socat-cli-args.conf
+SOCAT_ARGS=$(cat ${SOCAT_ARG_FILE})
+PIDFILE=/var/run/ssl-socat.pid
+
+. /lib/lsb/init-functions
+
+case "$1" in
+  start)
+	log_daemon_msg "Starting socat for SSL" || true
+	if start-stop-daemon --start -b --pidfile $PIDFILE --make-pidfile --exec /usr/bin/socat -- $SOCAT_ARGS
+	then
+	    log_end_msg 0 || true
+	else
+	    log_end_msg 1 || true
+	fi
+	;;
+  stop)
+	log_daemon_msg "Stopping socat for SSL" || true
+	if start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE --exec /usr/bin/socat
+	then
+	    log_end_msg 0 || true
+	else
+	    log_end_msg 1 || true
+	fi
+	;;
+esac
+:
+exit 0
+

@@ -11,6 +11,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 
@@ -27,7 +29,7 @@ public class SshKeyGen {
     private static final byte[] HEADER = new byte[] { 's', 's', 'h', '-', 'r', 's', 'a' };
     private static final DynamicStringProperty SSH_FORMAT = ArchaiusUtil.getString("ssh.key.text.format");
 
-    public static String[] generateKeys() throws Exception {
+    public static String[] generateKeys() throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
         KeyPair pair = generateKeyPair();
 
         String publicString = sshRsaTextFormat((RSAPublicKey) pair.getPublic());
@@ -35,13 +37,13 @@ public class SshKeyGen {
         return new String[] { publicString, writeKeyPair(pair) };
     }
 
-    public static KeyPair generateKeyPair() throws Exception {
+    public static KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
         KeyPairGenerator generator = SecurityUtils.getKeyPairGenerator("RSA");
         generator.initialize(2048);
         return generator.generateKeyPair();
     }
 
-    public static KeyPair readKeyPair(String key) throws Exception {
+    public static KeyPair readKeyPair(String key) throws IOException {
         SecurityUtils.isBouncyCastleRegistered();
 
         PEMReader r = null;
@@ -62,26 +64,21 @@ public class SshKeyGen {
         }
     }
 
-    public static String writeKeyPair(KeyPair kp) throws Exception {
-        SecurityUtils.isBouncyCastleRegistered();
-
-        StringWriter stringWriter = new StringWriter();
-
-        PEMWriter w = new PEMWriter(stringWriter);
-        w.writeObject(kp);
-        w.flush();
-        IOUtils.closeQuietly(w);
-
-        return stringWriter.toString();
+    public static String writeKeyPair(KeyPair kp) throws IOException {
+        return writePemObject(kp);
     }
 
-    public static String writePublicKey(PublicKey pk) throws Exception {
+    public static String writePublicKey(PublicKey pk) throws IOException {
+        return writePemObject(pk);
+    }
+
+    public static String writePemObject(Object object) throws IOException {
         SecurityUtils.isBouncyCastleRegistered();
 
         StringWriter stringWriter = new StringWriter();
 
         PEMWriter w = new PEMWriter(stringWriter);
-        w.writeObject(pk);
+        w.writeObject(object);
         w.flush();
         IOUtils.closeQuietly(w);
 

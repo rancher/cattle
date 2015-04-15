@@ -21,6 +21,7 @@ import javax.inject.Named;
 
 @Named
 public class HostActivate extends AbstractDefaultProcessHandler {
+
     @Inject
     ClusterHostMapDao clusterHostMapDao;
 
@@ -44,6 +45,7 @@ public class HostActivate extends AbstractDefaultProcessHandler {
         lockManager.lock(new ClusterLock(cluster), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
+                clusterManager.checkSslAgentInstances(state, cluster);
                 clusterManager.activateCluster(state, cluster);
             }
         });
