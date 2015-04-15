@@ -13,6 +13,10 @@
         http://cattle.io/schemas/spring/process/generic-process http://cattle.io/schemas/spring/process/generic-process-1.0.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
+    <bean class="io.cattle.platform.docker.process.containerevent.ContainerEventPreCreate" />
+    <bean class="io.cattle.platform.docker.process.containerevent.ContainerEventCreate" />
+    <bean class="io.cattle.platform.docker.transform.DockerTransformerImpl" />
+
     <bean class="io.cattle.platform.docker.process.dao.impl.DockerComputeDaoImpl" />
 
     <bean class="io.cattle.platform.docker.process.instancehostmap.DockerPostInstanceHostMapActivate" />
