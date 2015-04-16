@@ -1,4 +1,4 @@
-package io.cattle.platform.process.containerevent;
+package io.cattle.platform.docker.process.containerevent;
 
 import io.cattle.platform.lock.definition.AbstractBlockingLockDefintion;
 

@@ -1,4 +1,4 @@
-package io.cattle.platform.process.containerevent;
+package io.cattle.platform.docker.process.containerevent;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
+import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -30,24 +31,19 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.netflix.config.DynamicBooleanProperty;
 
-@Named
 public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
     private static final DynamicBooleanProperty MANAGE_NONRANCHER_CONTAINERS = ArchaiusUtil
             .getBoolean("manage.nonrancher.containers");
     private static final String INSPECT_ENV = "Env";
-    private static final String INSPECT_NAME = "Name";
     private static final String FIELD_DOCKER_INSPECT = "dockerInspect";
     private static final String INSPECT_CONFIG = "Config";
-    private static final String INSPECT_IMAGE = "Image";
-    private static final String IMAGE_PREFIX = "docker:";
-    private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
+    
     private static final String RANCHER_UUID = "RANCHER_UUID=";
     private static final String RANCHER_NETWORK = "RANCHER_NETWORK=";
 
@@ -59,6 +55,9 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
     @Inject
     AccountDao accountDao;
+    
+    @Inject
+    DockerTransformer dockerTransformer;
 
     @Inject
     LockManager lockManager;
@@ -95,12 +94,11 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                 if ( instance == null ) {
                     instance = objectManager.newRecord(Instance.class);
                     instance.setKind(InstanceConstants.KIND_CONTAINER);
+                    dockerTransformer.transform(inspect, instance);
                     instance.setAccountId(accountId);
-                    instance.setExternalId(externalId);
                     instance.setNativeContainer(true);
-                    setName(inspect, instance);
                     setNetwork(inspect, instance);
-                    setImage(inspect, instance);
+                    setImage(instance);
                     setHost(event, instance);
                     instance = objectManager.create(instance);
                 }
@@ -117,11 +115,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         });
     }
 
-    public static boolean isNativeDockerStart(ProcessState state) {
-        return DataAccessor.fromMap(state.getData()).withScope(ContainerEventCreate.class)
-                .withKey(InstanceConstants.PROCESS_DATA_NO_OP).withDefault(false).as(Boolean.class);
-    }
-
     protected Map<String, Object> makeData() {
         Map<String, Object> data = new HashMap<String, Object>();
         DataAccessor.fromMap(data).withKey(InstanceConstants.PROCESS_DATA_NO_OP).set(true);
@@ -131,12 +124,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     void setHost(ContainerEvent event, Instance instance) {
         DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID)
                 .set(event.getHostId());
-    }
-
-    void setName(Map<String, Object> inspect, Instance instance) {
-        String name = (String)inspect.get(INSPECT_NAME);
-        name = name.replaceFirst("/", "");
-        instance.setName(name);
     }
 
     void setNetwork(Map<String, Object> inspect, Instance instance) {
@@ -154,15 +141,8 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     @SuppressWarnings("unchecked")
-    void setImage(Map<String, Object> inspect, Instance instance) {
-        Map<String, Object> config = (Map<String, Object>)inspect.get(INSPECT_CONFIG);
-        String imageUuid = (String)config.get(INSPECT_IMAGE);
-
-        // Somewhat of a hack, but needed for testing against sim contexts
-        if ( !imageUuid.matches(IMAGE_KIND_PATTERN) ) {
-            imageUuid = IMAGE_PREFIX + imageUuid;
-        }
-        DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).set(imageUuid);
+    void setImage(Instance instance) {
+        String imageUuid = (String)DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).get();
         Image image = null;
         try {
             image = storageService.registerRemoteImage(imageUuid);

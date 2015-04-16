@@ -1,4 +1,4 @@
-package io.cattle.platform.process.containerevent;
+package io.cattle.platform.docker.process.containerevent;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.ContainerEventTable.*;
@@ -17,11 +17,6 @@ import io.cattle.platform.util.type.Priority;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Named;
-
-import org.jooq.exception.InvalidResultException;
-
-@Named
 public class ContainerEventPreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
     @Override
