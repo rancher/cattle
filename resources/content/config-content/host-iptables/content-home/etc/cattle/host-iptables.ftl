@@ -32,10 +32,6 @@
     </#if>
 </#list>
 
-<#list metadataRedirects as redirect >
--A CATTLE_PREROUTING -s ${redirect.subnet.networkAddress}/${redirect.subnet.cidrSize} -d 169.254.169.254 -j DNAT --to ${redirect.ipAddress.address}
-</#list>
-
 #POSTRULES
 
 COMMIT
