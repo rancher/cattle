@@ -170,13 +170,12 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
         List<Long> networkIds = getServiceNetworks(service);
         for (int i = 0; i < scale; i++) {
             Instance instance = createInstance(service, i, launchConfigData, imageId, networkIds);
-            createInstanceServiceMap(instance, service);
             instancesToStart.add(instance);
         }
-        startServiceInstances(instancesToStart);
+        startServiceInstances(instancesToStart, service);
     }
 
-    private void startServiceInstances(List<Instance> instancesToStart) {
+    private void startServiceInstances(List<Instance> instancesToStart, Service service) {
         for (Instance instance : instancesToStart) {
             scheduleStart(instance);
         }
@@ -188,6 +187,9 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
                     return InstanceConstants.STATE_RUNNING.equals(obj.getState());
                 }
             });
+            // the reason we create instance service map after start - dns config is invoked on the map creation, and
+            // nic should be present in the DB once it happens
+            createInstanceServiceMap(instance, service);
         }
     }
 
@@ -228,7 +230,6 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
         String instanceName = sdServer.getInstanceName(service, i);
         Instance instance = objectManager.findOne(Instance.class, INSTANCE.NAME, instanceName,
                 INSTANCE.REMOVED, null, INSTANCE.ACCOUNT_ID, service.getAccountId());
-
         if (instance == null) {
             Map<Object, Object> properties = new HashMap<Object, Object>();
             properties.putAll(launchConfigData);
