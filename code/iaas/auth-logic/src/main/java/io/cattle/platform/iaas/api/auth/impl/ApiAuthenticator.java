@@ -1,11 +1,15 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
+import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -29,12 +33,13 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final Logger log = LoggerFactory.getLogger(ApiAuthenticator.class);
 
-    private static final String ENFORCE_AUTH_HEADER = "X-ENFORCE-AUTHENTICATION";
+    private static final String ACCOUNT_ID_HEADER = "X-API-ACCOUNT-ID";
 
     AuthDao authDao;
     List<AccountLookup> accountLookups;
-    boolean failOnNotFound = true;
     List<AuthorizationProvider> authorizationProviders;
+    @Inject
+    ObjectManager objectManager;
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -42,29 +47,24 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             return;
         }
 
-        Account account = getAccount(request);
-        if (account == null) {
-            if (failOnNotFound) {
-                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
-            } else {
-                return;
-            }
+        AccountAccess accountAccess = getAccountAccess(request);
+        if (accountAccess == null) {
+            throwUnauthorizated();
         }
 
-        Policy policy = getPolicy(account, request);
+        Policy policy = getPolicy(accountAccess, request);
         if (policy == null) {
-            log.error("Failed to find policy for [{}]", account.getId());
-            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+            log.error("Failed to find policy for [{}]", accountAccess.getAccount().getId());
+            throwUnauthorizated();
         }
 
-        SchemaFactory schemaFactory = getSchemaFactory(account, policy, request);
+        SchemaFactory schemaFactory = getSchemaFactory(accountAccess.getAccount(), policy, request);
         if (schemaFactory == null) {
-            log.error("Failed to find a schema for account type [{}]", account.getKind());
+            log.error("Failed to find a schema for account type [{}]", accountAccess.getAccount().getKind());
             if (SECURITY.get()) {
-                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+                throwUnauthorizated();
             }
         }
-
         saveInContext(request, policy, schemaFactory);
     }
 
@@ -76,11 +76,12 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         if (schemaFactory != null) {
             request.setSchemaFactory(schemaFactory);
         }
-
+        String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), policy.getAccountId());
+        request.getServletContext().getResponse().addHeader(ACCOUNT_ID_HEADER, accountId);
         ApiContext.getContext().setPolicy(policy);
     }
 
-    protected Policy getPolicy(Account account, ApiRequest request) {
+    protected Policy getPolicy(AccountAccess account, ApiRequest request) {
         Policy policy = null;
 
         for (AuthorizationProvider auth : authorizationProviders) {
@@ -106,35 +107,29 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         return factory;
     }
 
-    protected Account getAccount(ApiRequest request) {
-        Account account = null;
+    protected AccountAccess getAccountAccess(ApiRequest request) {
+        AccountAccess accountAccess = null;
 
         for (AccountLookup lookup : accountLookups) {
-            account = lookup.getAccount(request);
-            if (account != null) {
+            accountAccess = lookup.getAccountAccess(request);
+            if (accountAccess != null) {
                 break;
             }
         }
 
-        if (account != null) {
-            return account;
+        if (accountAccess != null) {
+            return accountAccess;
         }
-
-        String authHeader = StringUtils.trim(request.getServletContext().getRequest().getHeader(ENFORCE_AUTH_HEADER));
 
         if (SECURITY.get()) {
-            if (failOnNotFound) {
-                for (AccountLookup lookup : accountLookups) {
-                    if (lookup.challenge(request)) {
-                        break;
-                    }
+            for (AccountLookup lookup : accountLookups) {
+                if (lookup.challenge(request)) {
+                    break;
                 }
             }
-        } else if (!StringUtils.equals("true", authHeader)) {
-            account = authDao.getAdminAccount();
         }
 
-        return account;
+        return accountAccess;
     }
 
     public AuthDao getAuthDao() {
@@ -144,14 +139,6 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     @Inject
     public void setAuthDao(AuthDao authDao) {
         this.authDao = authDao;
-    }
-
-    public boolean isFailOnNotFound() {
-        return failOnNotFound;
-    }
-
-    public void setFailOnNotFound(boolean failOnNotFound) {
-        this.failOnNotFound = failOnNotFound;
     }
 
     public List<AuthorizationProvider> getAuthorizationProviders() {

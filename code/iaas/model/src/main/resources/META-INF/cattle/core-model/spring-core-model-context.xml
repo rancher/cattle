@@ -34,31 +34,33 @@
         </property>
         <property name="typeNames">
             <set>
-                <value>virtualMachine,parent=instance</value>
-                <value>container,parent=instance</value>
-                <value>apiKey,parent=credential</value>
-                <value>sshKey,parent=credential</value>
-                <value>instanceStop</value>
-                <value>instanceConsole</value>
-                <value>instanceConsoleInput</value>
-                <value>ipAddressAssociateInput</value>
-                <value>subnetIpPool,parent=ipPool</value>
-                <value>project,parent=account</value>
+                <value>addLoadBalancerInput</value>
+                <value>addRemoveClusterHostInput</value>
+                <value>addRemoveLoadBalancerHostInput</value>
                 <value>addRemoveLoadBalancerListenerInput</value>
                 <value>addRemoveLoadBalancerTargetInput</value>
-                <value>addLoadBalancerInput</value>
+                <value>addRemoveServiceLinkInput</value>
+                <value>apiKey,parent=credential</value>
+                <value>cluster,parent=host</value>
+                <value>composeConfigInput</value>
+                <value>container,parent=instance</value>
+                <value>instanceConsole</value>
+                <value>instanceConsoleInput</value>
+                <value>instanceStop</value>
+                <value>ipAddressAssociateInput</value>
+                <value>loadBalancerUpdateAllInput</value>
+                <value>project,parent=account</value>
+                <value>registry,parent=storagePool</value>
+                <value>registryCredential,parent=credential</value>
                 <value>removeLoadBalancerInput</value>
-                <value>addRemoveLoadBalancerHostInput</value>
+                <value>setLoadBalancerHostsInput</value>
                 <value>setLoadBalancerListenersInput</value>
                 <value>setLoadBalancerTargetsInput</value>
-                <value>setLoadBalancerHostsInput</value>
-                <value>cluster,parent=host</value>
-                <value>addRemoveClusterHostInput</value>
-                <value>registryCredential,parent=credential</value>
-                <value>registry,parent=storagePool</value>
-                <value>addRemoveServiceLinkInput</value>
-                <value>composeConfigInput</value>
+                <value>setProjectMembersInput</value>
                 <value>setServiceLinksInput</value>
+                <value>sshKey,parent=credential</value>
+                <value>subnetIpPool,parent=ipPool</value>
+                <value>virtualMachine,parent=instance</value>
             </set>
         </property>
     </bean>

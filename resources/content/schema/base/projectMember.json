@@ -1,0 +1,26 @@
+{
+  "pluralName": "projectMembers",
+  "resourceFields" : {
+    "projectId": {
+      "type" : "reference[project]"
+    },
+    "role" : {
+      "type" : "enum",
+      "default" : "member",
+      "options" : [
+        "member",
+        "owner"
+      ]
+    },
+    "externalIdType": {
+      "type" : "enum",
+      "default" : "rancher_id",
+      "options" : [
+        "github_user",
+        "github_org",
+        "github_team",
+        "rancher_id"
+      ]
+    }
+  }
+}

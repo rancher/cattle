@@ -18,10 +18,10 @@
 
         "account": "r",
 
-        "apiKey" : "crud", 
-        "apiKey.publicValue" : "r", 
+        "apiKey" : "crud",
+        "apiKey.publicValue" : "r",
         "apiKey.secretValue" : "r",
-        
+
         "addRemoveClusterHostInput" : "cr",
         "addRemoveClusterHostInput.hostId" : "cr",
 
@@ -87,7 +87,7 @@
         "containerEvent.reportedHostUuid" : "r",
         "containerEvent.hostId" : "r",
         "containerEvent.dockerInspect" : "r",
-        
+
         "containerLogs":"cr",
         "containerLogs.follow":"cr",
         "containerLogs.lines":"cr",
@@ -153,12 +153,21 @@
         "port.publicPort" : "ru",
 
         "project" : "crud",
+        "project.externalId" : "",
+        "project.externalIdType" : "",
         "project.description" : "cru",
-        "project.externalId" : "cru",
-        "project.externalIdType" : "cru",
-        "project.kind" : "r",
+        "project.members" : "cr",
         "project.name" : "cru",
-        "project.uuid" : "r",
+        "project.kind" : "r",
+        "project.id" : "r",
+
+        "projectMember" : "r",
+        "projectMember.accountId" : "",
+        "projectMember.role" : "cr",
+        "projectMember.name" : "r",
+        "projectMember.externalId" : "cr",
+        "projectMember.externalIdType" : "cr",
+        "projectMember.projectId" : "r",
 
         "register": "cr",
         "register.accessKey" : "r",
@@ -182,6 +191,9 @@
         "restartPolicy.maximumRetryCount" : "cr",
 
         "schema\\.*" : "r",
+
+        "setProjectMembersInput": "cr",
+        "setProjectMembersInput.members": "cr",
 
         "statsAccess" : "r",
         "statsAccess.token" : "r",

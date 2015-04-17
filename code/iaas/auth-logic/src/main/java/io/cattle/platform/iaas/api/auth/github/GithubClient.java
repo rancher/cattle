@@ -17,8 +17,9 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -39,9 +40,15 @@ public class GithubClient {
     private static final DynamicStringProperty GITHUB_UNAUTH_USER_URL = ArchaiusUtil.getString("api.github.user.url");
     private static final DynamicStringProperty GITHUB_UNAUTH_ORG_URL = ArchaiusUtil.getString("api.github.org.url");
 
+    @Inject
     private JsonMapper jsonMapper;
 
-    public Map<String, Object> getAccessToken(String code) throws ClientProtocolException, IOException {
+    @Inject
+    private GithubUtils githubUtils;
+
+    private static final Log logger = LogFactory.getLog(GithubClient.class);
+
+    public Map<String, Object> getAccessToken(String code) throws IOException {
         List<BasicNameValuePair> requestData = new ArrayList<>();
 
         requestData.add(new BasicNameValuePair(CLIENT_ID, GITHUB_CLIENT_ID.get()));
@@ -54,7 +61,7 @@ public class GithubClient {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + new Integer(statusCode).toString());
+                    + Integer.toString(statusCode));
         }
         jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -76,7 +83,7 @@ public class GithubClient {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + new Integer(statusCode).toString());
+                    + Integer.toString(statusCode));
         }
         jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -97,7 +104,7 @@ public class GithubClient {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + new Integer(statusCode).toString());
+                    + Integer.toString(statusCode));
         }
         jsonData = jsonMapper.readCollectionValue(response.getEntity().getContent(), List.class, Map.class);
 
@@ -121,63 +128,80 @@ public class GithubClient {
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + new Integer(statusCode).toString());
+                    + Integer.toString(statusCode));
         }
         jsonData = jsonMapper.readCollectionValue(response.getEntity().getContent(), List.class, Map.class);
 
         for (Map<String, Object> orgObject : jsonData) {
             String accountId = ObjectUtils.toString(orgObject.get("id"));
             String accountName = ObjectUtils.toString(orgObject.get("name"));
+            String slug = ObjectUtils.toString(orgObject.get("slug"));
             if (!StringUtils.equalsIgnoreCase("Owners", accountName)) {
-                teamInfoList.add(new TeamAccountInfo(org, accountName, accountId));
+                teamInfoList.add(new TeamAccountInfo(org, accountName, accountId, slug));
             }
         }
         return teamInfoList;
     }
 
-    public GithubAccountInfo getUserIdByName(String username, String token) throws IOException {
-        if (StringUtils.isEmpty(username)) {
-            return null;
-        }
-        Map<String, Object> jsonData = null;
+    public GithubAccountInfo getUserIdByName(String username, String token) {
+        try {
+            if (StringUtils.isEmpty(username)) {
+                return null;
+            }
+            HttpResponse response = Request.Get(GITHUB_UNAUTH_USER_URL.get() + username).addHeader("Accept", "application/json").addHeader("Authorization",
+                    "token " + token).execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
+                        + Integer.toString(statusCode));
+            }
+            Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
 
-        HttpResponse response = Request.Get(GITHUB_UNAUTH_USER_URL.get() + username).addHeader("Accept", "application/json").addHeader("Authorization",
-                "token " + token).execute().returnResponse();
-        int statusCode = response.getStatusLine().getStatusCode();
-        if (statusCode != 200) {
-            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + new Integer(statusCode).toString());
+            String accountId = ObjectUtils.toString(jsonData.get("id"));
+            String accountName = ObjectUtils.toString(jsonData.get("login"));
+            return new GithubAccountInfo(accountId, accountName);
+        } catch (IOException e){
+            logger.error(e);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GithubUnavailable", "Could not retrieve UserId from Github", null);
         }
-        jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
-
-        String accountId = ObjectUtils.toString(jsonData.get("id"));
-        String accountName = ObjectUtils.toString(jsonData.get("login"));
-        return new GithubAccountInfo(accountId, accountName);
 
     }
 
-    public GithubAccountInfo getOrgIdByName(String org, String token) throws IOException {
-        if (StringUtils.isEmpty(org)) {
-            return null;
-        }
-        Map<String, Object> jsonData = null;
+    public GithubAccountInfo getUserIdByName(String username) {
+        String token = githubUtils.validateAndFetchGithubToken(githubUtils.getToken());
+        return getUserIdByName(username, token);
 
-        HttpResponse response = Request.Get(GITHUB_UNAUTH_ORG_URL.get() + org).addHeader("Accept", "application/json").addHeader("Authorization",
-                "token " + token).execute().returnResponse();
-        int statusCode = response.getStatusLine().getStatusCode();
-        if (statusCode != 200) {
-            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + new Integer(statusCode).toString());
-        }
-        jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
-
-        String accountId = ObjectUtils.toString(jsonData.get("id"));
-        String accountName = ObjectUtils.toString(jsonData.get("login"));
-        return new GithubAccountInfo(accountId, accountName);
     }
 
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
+    public GithubAccountInfo getOrgIdByName(String org, String token) {
+        try{
+            if (StringUtils.isEmpty(org)) {
+                return null;
+            }
+            HttpResponse response = Request.Get(GITHUB_UNAUTH_ORG_URL.get() + org).addHeader("Accept", "application/json").addHeader("Authorization",
+                    "token " + token).execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
+                        + Integer.toString(statusCode));
+            }
+            Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
+
+            String accountId = ObjectUtils.toString(jsonData.get("id"));
+            String accountName = ObjectUtils.toString(jsonData.get("login"));
+            return new GithubAccountInfo(accountId, accountName);
+        } catch (IOException e){
+            logger.error(e);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GithubUnavailable", "Could not retrieve orgId from Github", null);
+        }
+    }
+
+    public GithubAccountInfo getOrgIdByName(String org) {
+        String token = githubUtils.validateAndFetchGithubToken(githubUtils.getToken());
+        return  getOrgIdByName(org, token);
+    }
+
+    public String getTeamOrgById(String id) {
+        return  githubUtils.getTeamOrgById(id);
     }
 }

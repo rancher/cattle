@@ -683,6 +683,27 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     }
 
     @Override
+    public Relationship getRelationship(String type, String linkName, String fieldName) {
+        Class<?> clz = schemaFactory.getSchemaClass(type, true);
+        Map<String, List<Relationship>> relationship = relationshipsBothCase.get(clz);
+        List<Relationship> relationshipList = relationship.get(linkName);
+        if (relationshipList == null || relationshipList.size() == 0) {
+            return null;
+        }
+        if (relationshipList.size() > 1) {
+            for (Relationship rel : relationshipList) {
+                if (rel instanceof ForeignKeyRelationship && rel.getName() != null
+                        && rel.getName().equalsIgnoreCase(linkName)
+                        && rel.getPropertyName().equalsIgnoreCase(fieldName)) {
+                    return rel;
+                }
+            }
+            return null;
+        }
+        return relationshipList.get(0);
+    }
+
+    @Override
     public Map<String, Object> getTransitionFields(Schema schema, Object obj) {
         Set<String> states = transitioningStates.get(schema.getId());
         if (states == null || states.size() == 0) {

@@ -254,6 +254,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ProcessInstanceTable PROCESS_INSTANCE = io.cattle.platform.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE;
 
 	/**
+	 * The table cattle.project_member
+	 */
+	public static final io.cattle.platform.core.model.tables.ProjectMemberTable PROJECT_MEMBER = io.cattle.platform.core.model.tables.ProjectMemberTable.PROJECT_MEMBER;
+
+	/**
 	 * The table cattle.resource_pool
 	 */
 	public static final io.cattle.platform.core.model.tables.ResourcePoolTable RESOURCE_POOL = io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL;

@@ -10,6 +10,7 @@
         "account.externalIdType" : "cru",
         "account.kind" : "cru",
         "account.uuid" : "cr",
+        "account.projectId" : "r",
 
         "activeSetting" : "rud",
         "activeSetting.activeValue" : "r",
@@ -78,6 +79,7 @@
 
         "githubconfig": "cru",
         "githubconfig.allowedOrganizations": "cr",
+        "githubconfig.accessMode": "cr",
         "githubconfig.allowedUsers": "cr",
         "githubconfig.clientId": "cr",
         "githubconfig.clientSecret": "cr",
@@ -115,6 +117,8 @@
         "processInstance.runningProcessServerId" : "r",
         "processInstance.startProcessServerId" : "r",
         "processInstance.startTime" : "r",
+
+        "project": "crud",
 
         "publish": "cr",
         "publish.data": "cr",

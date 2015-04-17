@@ -1,7 +1,6 @@
 from common_fixtures import *  # NOQA
 from test_docker import docker_context, TEST_IMAGE_UUID, if_docker
 
-# work around flake8 issue
 docker_context
 
 

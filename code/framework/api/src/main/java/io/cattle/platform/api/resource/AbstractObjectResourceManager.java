@@ -186,7 +186,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             }
         }
 
-        Relationship relationship = metaDataManager.getRelationship(type, link);
+        Relationship relationship = getRelationship(type, link);
 
         if (relationship == null) {
             return null;
@@ -313,14 +313,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
                 return;
             }
 
-            List<Long> accounts = policy.getAuthorizedAccounts();
-            if (accounts.size() == 1) {
-                criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, accounts.get(0));
-            } else if (accounts.size() == 0) {
-                criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
-            } else {
-                criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, new Condition(ConditionType.IN, accounts));
-            }
+            criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
         }
     }
 
@@ -330,7 +323,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         if (link == null) {
             return request.getType();
         } else {
-            Relationship relationship = metaDataManager.getRelationship(request.getType(), link);
+            Relationship relationship = getRelationship(request.getType(), link);
             return request.getSchemaFactory().getSchemaName(relationship.getObjectType());
         }
     }
@@ -482,6 +475,10 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         }
     }
 
+    protected Relationship getRelationship(String type, String linkName) {
+        return metaDataManager.getRelationship(type, linkName);
+    }
+
     @Override
     public void stop() {
     }
@@ -540,5 +537,4 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     public void setLinkHandlers(List<LinkHandler> linkHandlers) {
         this.linkHandlers = linkHandlers;
     }
-
 }

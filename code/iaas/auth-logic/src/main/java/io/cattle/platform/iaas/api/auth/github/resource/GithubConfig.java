@@ -9,13 +9,15 @@ import java.util.List;
 public class GithubConfig {
 
     private Boolean enabled;
+    private String accessMode;
     private String clientId;
     private String clientSecret;
     private List<String> allowedUsers;
     private List<String> allowedOrganizations;
 
-    public GithubConfig(Boolean enabled, String clientId, List<String> allowedUsers, List<String> allowedOrganizations) {
+    public GithubConfig(Boolean enabled, String accessMode, String clientId, List<String> allowedUsers, List<String> allowedOrganizations) {
         this.enabled = enabled;
+        this.accessMode = accessMode;
         this.clientId = clientId;
         this.allowedUsers = allowedUsers;
         this.allowedOrganizations = allowedOrganizations;
@@ -46,4 +48,8 @@ public class GithubConfig {
         return allowedOrganizations;
     }
 
+    @Field(nullable = false)
+    public String getAccessMode() {
+        return accessMode;
+    }
 }
