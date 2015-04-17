@@ -56,7 +56,8 @@ public class HostStatsLinkHandler implements LinkHandler {
             return null;
         }
 
-        HostApiAccess apiAccess = hostApiService.getAccess(host.getId(), HOST_STATS_PORT.get(), Collections.<String, Object> emptyMap());
+        HostApiAccess apiAccess = hostApiService.getAccess(host.getId(), HOST_STATS_PORT.get(),
+                Collections.<String, Object> emptyMap());
         if (apiAccess == null) {
             return null;
         }
@@ -66,7 +67,8 @@ public class HostStatsLinkHandler implements LinkHandler {
         url.append(HOST_STATS_PATH.get());
 
         if (instance != null) {
-            url.append("/").append(instance.getUuid());
+            String dockerId = DockerUtils.getDockerIdentifier(instance);
+            url.append("/").append(dockerId);
         }
 
         StatsAccess statsAccess = new StatsAccess();
