@@ -1,3 +1,9 @@
 image: rancher/build-cattle:v0.4.0
 script:
   - ./scripts/ci
+notify:
+  slack:
+    webhook_url: 'https://hooks.slack.com/services/$$SLACK_WEBHOOK_TOKEN'
+    on_started: true
+    on_success: true
+    on_failure: true
