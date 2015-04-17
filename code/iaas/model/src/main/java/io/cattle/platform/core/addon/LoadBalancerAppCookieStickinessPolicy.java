@@ -3,7 +3,7 @@ package io.cattle.platform.core.addon;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 /**
- * HAProxy FORMAT : appsession <cookie> len <length> timeout <timeout>
+ * HAProxy FORMAT : appsession <cookie> len <maxLength> timeout <timeout>
  * [request-learn] [prefix] [mode
  * <path-parameters|query-string>]
  *
@@ -13,7 +13,7 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 public class LoadBalancerAppCookieStickinessPolicy {
     String name;
     String cookie;
-    Integer length;
+    Integer maxLength;
     Boolean prefix = false;
     Boolean requestLearn = false;
     Integer timeout;
@@ -40,12 +40,12 @@ public class LoadBalancerAppCookieStickinessPolicy {
         this.cookie = cookie;
     }
 
-    public Integer getLength() {
-        return length;
+    public Integer getMaxLength() {
+        return maxLength;
     }
 
-    public void setLength(Integer length) {
-        this.length = length;
+    public void setMaxLength(Integer maxLength) {
+        this.maxLength = maxLength;
     }
 
     public Boolean getPrefix() {

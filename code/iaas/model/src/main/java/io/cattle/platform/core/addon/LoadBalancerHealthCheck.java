@@ -5,7 +5,7 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 /**
  * HA Proxy format (set on the backend listener)
  * timeout check <responseTimeout>
- * option httpchk <uri>
+ * option httpchk <requestLine>
  * server <serverName Ip:port> check inter <interval> rise <healthyThreshold> fall <unhealthyThreshold>
  */
 
@@ -17,7 +17,7 @@ public class LoadBalancerHealthCheck {
     Integer interval;
     Integer healthyThreshold;
     Integer unhealthyThreshold;
-    String uri;
+    String requestLine;
 
     public String getName() {
         return name;
@@ -59,11 +59,11 @@ public class LoadBalancerHealthCheck {
         this.unhealthyThreshold = unhealthyThreshold;
     }
 
-    public String getUri() {
-        return uri;
+    public String getRequestLine() {
+        return requestLine;
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
+    public void setRequestLine(String requestLine) {
+        this.requestLine = requestLine;
     }
 }

@@ -230,11 +230,11 @@
         "loadBalancerHealthCheck.interval" : "cru",
         "loadBalancerHealthCheck.healthyThreshold" : "cru",
         "loadBalancerHealthCheck.unhealthyThreshold" : "cru",
-        "loadBalancerHealthCheck.uri" : "cru",
+        "loadBalancerHealthCheck.requestLine" : "cru",
 
         "loadBalancerAppCookieStickinessPolicy" : "cru",
         "loadBalancerAppCookieStickinessPolicy.cookie" : "cru",
-        "loadBalancerAppCookieStickinessPolicy.length" : "cru",
+        "loadBalancerAppCookieStickinessPolicy.maxLength" : "cru",
         "loadBalancerAppCookieStickinessPolicy.prefix" : "cru",
         "loadBalancerAppCookieStickinessPolicy.requestLearn" : "cru",
         "loadBalancerAppCookieStickinessPolicy.timeout" : "cru",

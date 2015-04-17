@@ -296,7 +296,7 @@ def test_lb_config_add_conflicting_listener(admin_client, super_client):
 def test_lb_config_create_w_healthCheck(admin_client):
     health_check = {"name": "check1", "responseTimeout": 3,
                     "interval": 4, "healthyThreshold": 5,
-                    "unhealthyThreshold": 6, "uri": "index.html"}
+                    "unhealthyThreshold": 6, "requestLine": "index.html"}
     config = admin_client.create_loadBalancerConfig(name=random_str(),
                                                     healthCheck=health_check)
     config = admin_client.wait_success(config)
@@ -307,13 +307,13 @@ def test_lb_config_create_w_healthCheck(admin_client):
     assert config.healthCheck.interval == 4
     assert config.healthCheck.healthyThreshold == 5
     assert config.healthCheck.unhealthyThreshold == 6
-    assert config.healthCheck.uri == "index.html"
+    assert config.healthCheck.requestLine == "index.html"
 
 
 def test_lb_config_create_disable_health_check(admin_client):
     health_check = {"name": "policy1", "responseTimeout": 3,
                     "interval": 4, "healthyThreshold": 5,
-                    "unhealthyThreshold": 6, "uri": "index.html"}
+                    "unhealthyThreshold": 6, "requestLine": "index.html"}
     config = admin_client.create_loadBalancerConfig(name=random_str(),
                                                     healthCheck=health_check)
     config = admin_client.wait_success(config)
@@ -327,7 +327,7 @@ def test_lb_config_create_disable_health_check(admin_client):
 def test_lb_config_create_update_health_check(admin_client):
     health_check = {"name": "check1", "responseTimeout": 3,
                     "interval": 4, "healthyThreshold": 5,
-                    "unhealthyThreshold": 6, "uri": "index.html"}
+                    "unhealthyThreshold": 6, "requestLine": "index.html"}
     config = admin_client.create_loadBalancerConfig(name=random_str(),
                                                     healthCheck=health_check)
     config = admin_client.wait_success(config)
@@ -335,7 +335,7 @@ def test_lb_config_create_update_health_check(admin_client):
 
     health_check = {"name": "check2", "responseTimeout": 3,
                     "interval": 4, "healthyThreshold": 5,
-                    "unhealthyThreshold": 6, "uri": "index.html"}
+                    "unhealthyThreshold": 6, "requestLine": "index.html"}
 
     config = admin_client.update(config, healthCheck=health_check)
     config = admin_client.wait_success(config)
@@ -344,7 +344,7 @@ def test_lb_config_create_update_health_check(admin_client):
 
 def test_lb_config_create_w_app_policy(admin_client):
     app_policy = {"name": "policy1", "cookie": "cookie1",
-                  "length": 4, "prefix": "true",
+                  "maxLength": 4, "prefix": "true",
                   "requestLearn": "false", "timeout": 10,
                   "mode": "query_string"}
 
@@ -356,7 +356,7 @@ def test_lb_config_create_w_app_policy(admin_client):
     assert config.state == 'active'
     assert config.appCookieStickinessPolicy.name == "policy1"
     assert config.appCookieStickinessPolicy.cookie == "cookie1"
-    assert config.appCookieStickinessPolicy.length == 4
+    assert config.appCookieStickinessPolicy.maxLength == 4
     assert config.appCookieStickinessPolicy.prefix is True
     assert config.appCookieStickinessPolicy.requestLearn is False
     assert config.appCookieStickinessPolicy.timeout == 10
