@@ -37,7 +37,6 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
-    private static final String IMAGE_PREFIX = "docker:";
 
     @Inject
     GenericMapDao mapDao;
@@ -50,6 +49,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     NetworkDao ntwkDao;
+
+    @Inject
+    List<RancherConfigToComposeFormatter> formatters;
 
     @Override
     public SimpleEntry<String, String> buildConfig(List<? extends Service> services) {
@@ -101,6 +103,20 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     }
                     if (export) {
                         composeServiceData.put(item.getComposeName(), value);
+                        // for every lookup, do transform
+                        Object formattedValue = null;
+                        for (RancherConfigToComposeFormatter formatter : formatters) {
+                            formattedValue = formatter.format(item, value);
+                            if (formattedValue != null) {
+                                break;
+                            }
+                        }
+                        if (formattedValue != null) {
+                            composeServiceData.put(item.getComposeName(), formattedValue);
+                        } else {
+                            composeServiceData.put(item.getComposeName(), value);
+                        }
+
                     }
                 }
             }
@@ -108,20 +124,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (forDockerCompose) {
                 populateLinksForService(service, servicesToExportIds, composeServiceData);
                 populateVolumesForService(service, servicesToExportIds, composeServiceData);
-                formatImage(service, composeServiceData);
             }
             
             data.put(service.getName(), composeServiceData);
         }
         return data;
-    }
-
-    private void formatImage(Service service, Map<String, Object> composeServiceData) {
-        String imageUuid = composeServiceData.get(ServiceDiscoveryConfigItem.IMAGE.getComposeName()).toString();
-        if (imageUuid.startsWith(IMAGE_PREFIX)) {
-            imageUuid = imageUuid.replaceFirst(IMAGE_PREFIX, "");
-        }
-        composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getComposeName(), imageUuid);
     }
 
     @SuppressWarnings("unchecked")
