@@ -96,6 +96,9 @@ def test_cluster_add_remove_host_actions(admin_client, super_client,
         lambda x: len(x.hosts()))
 
 
+# temporarily skipping since this was inadvertently deleting the
+# real host causing downstream TFs
+@pytest.mark.skipif('True')
 def test_host_purge(admin_client, super_client):
     new_context = create_sim_context(
         super_client, 'simagent' + random_str(), ip='192.168.10.14',
