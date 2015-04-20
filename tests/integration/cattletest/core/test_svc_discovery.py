@@ -11,9 +11,11 @@ def nsp(super_client, sim_context):
 
     return nsp
 
+
 @pytest.fixture(scope='module')
 def random_str():
     return 'random{0}'.format(random_num())
+
 
 def create_env_and_svc(super_client, admin_client, nsp):
     env = admin_client.create_environment(name=random_str())
