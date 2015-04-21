@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
+import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
@@ -166,7 +167,9 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
     private void createServiceInstances(Service service, int scale) {
         List<Instance> instancesToStart = new ArrayList<>();
         Map<String, Object> launchConfigData = sdServer.buildLaunchData(service);
-        Long imageId = getImage(String.valueOf(launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID)));
+        Object registryCredentialId = launchConfigData.get(ServiceDiscoveryConfigItem.REGISTRYCREDENTIALID.getRancherName());
+        Long imageId = getImage(String.valueOf(launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID)),
+                registryCredentialId != null ? (Integer) registryCredentialId : null);
         List<Long> networkIds = getServiceNetworks(service);
         for (int i = 0; i < scale; i++) {
             Instance instance = createInstance(service, i, launchConfigData, imageId, networkIds);
@@ -211,10 +214,16 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
         return ntwkIds;
     }
 
-    protected Long getImage(String imageUuid) {
+    protected Long getImage(String imageUuid, Integer registryCredentialId) {
         Image image;
         try {
             image = storageService.registerRemoteImage(imageUuid);
+            if (image == null) {
+                return null;
+            }
+            if (registryCredentialId != null) {
+                objectManager.setFields(image, IMAGE.REGISTRY_CREDENTIAL_ID, registryCredentialId);
+            }
         } catch (IOException e) {
             throw new IllegalStateException("Failed to get image [" + imageUuid + "]");
         }
