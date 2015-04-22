@@ -52,7 +52,8 @@ public class ContainerLogsActionHandler implements ActionHandler {
 
         ContainerLogs logs = request.proxyRequestObject(ContainerLogs.class);
 
-        Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_CONTAINER, container.getUuid(), "Lines", logs.getLines(), "Follow",
+        String dockerId = DockerUtils.getDockerIdentifier(container);
+        Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_CONTAINER, dockerId, "Lines", logs.getLines(), "Follow",
                 logs.getFollow());
 
         HostApiAccess apiAccess = apiService.getAccess(host.getId(), HOST_LOGS_PORT.get(), CollectionUtils.asMap("logs", data));

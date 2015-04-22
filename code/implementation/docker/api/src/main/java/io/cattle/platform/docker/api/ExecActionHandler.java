@@ -52,9 +52,10 @@ public class ExecActionHandler implements ActionHandler {
 
         ContainerExec exec = request.proxyRequestObject(ContainerExec.class);
 
+        String dockerId = DockerUtils.getDockerIdentifier(instance);
         Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_ATTACH_STDIN, exec.getAttachStdin(),
                 DockerInstanceConstants.DOCKER_ATTACH_STDOUT, exec.getAttachStdout(), DockerInstanceConstants.DOCKER_TTY, exec.getTty(),
-                DockerInstanceConstants.DOCKER_CMD, exec.getCommand(), DockerInstanceConstants.DOCKER_CONTAINER, instance.getUuid());
+                DockerInstanceConstants.DOCKER_CMD, exec.getCommand(), DockerInstanceConstants.DOCKER_CONTAINER, dockerId);
 
         HostApiAccess apiAccess = apiService.getAccess(host.getId(), CONSOLE_AGENT_PORT.get(), CollectionUtils.asMap("exec", data));
 

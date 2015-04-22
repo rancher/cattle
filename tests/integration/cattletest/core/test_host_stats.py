@@ -54,8 +54,8 @@ def test_stats_container(admin_client, docker_context):
     stats_access = container.stats()
 
     assert stats_access.token.index('.') > 0
-    assert stats_access.url == \
-        'ws://{}:9345/v1/stats/{}'.format(found_ip.address, container.uuid)
+    assert stats_access.url == 'ws://{}:9345/v1/stats/{}'.format(
+        found_ip.address, container.externalId)
 
 
 def test_host_api_key_download(client):
