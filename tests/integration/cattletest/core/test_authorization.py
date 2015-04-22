@@ -342,6 +342,7 @@ def test_process_definition(admin_client, client):
         'postProcessListeners': 'r',
         'processHandlers': 'r',
         'resourceType': 'r',
+        'stateTransitions': 'r',
     })
 
 

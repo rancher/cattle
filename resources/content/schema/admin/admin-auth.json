@@ -97,6 +97,8 @@
         "processDefinition.resourceType" : "r",
         "processDefinition.stateTransitions" : "r",
 
+        "stateTransition" : "r",
+
         "processExecution" : "r",
         "processExecution.log" : "r",
         "processExecution.processInstanceId" : "r",
