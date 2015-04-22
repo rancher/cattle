@@ -162,4 +162,13 @@
     <process:process name="containerevent.create" resourceType="containerEvent" start="requested" transitioning="creating" done="created" />
     <process:process name="containerevent.remove" resourceType="containerEvent" start="created,creating" transitioning="removing" done="removed" />
 
+    <!-- Snapshot -->
+    <process:process name="snapshot.create" resourceType="snapshot" start="requested" transitioning="creating" done="created" />
+    <process:process name="snapshot.backup" resourceType="snapshot" start="created" transitioning="backing-up" done="backed-up" />
+    <process:process name="snapshot.remove" resourceType="snapshot" start="creating,created,backing-up,backed-up" transitioning="removing" done="removed" />
+
+    <!-- Snapshot StoragePool map -->
+    <process:process name="snapshotstoragepoolmap.create" resourceType="snapshotStoragePoolMap" start="requested" transitioning="creating" done="created" />
+    <process:process name="snapshotstoragepoolmap.remove" resourceType="snapshotStoragePoolMap" start="created,creating" transitioning="removing" done="removed" />
+
 </beans>
