@@ -22,7 +22,9 @@
             "nullable" : true
         },
         "name":{
-            "required": true
+            "required": true,
+            "validChars": "[a-zA-Z0-9]",
+            "minLength": 1
         },
         "launchConfig": {
             "type": "container",

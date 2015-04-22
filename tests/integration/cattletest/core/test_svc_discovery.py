@@ -12,6 +12,10 @@ def nsp(super_client, sim_context):
     return nsp
 
 
+def random_str():
+    return 'random{0}'.format(random_num())
+
+
 def create_env_and_svc(super_client, admin_client, nsp):
     env = admin_client.create_environment(name=random_str())
     env = admin_client.wait_success(env)
@@ -35,6 +39,7 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
     assert env.state == "active"
 
     image_uuid = sim_context['imageUuid']
+    host = sim_context['host']
     container1 = admin_client.create_container(imageUuid=image_uuid,
                                                startOnCreate=False)
     container1 = admin_client.wait_success(container1)
@@ -75,6 +80,7 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
                      "tty": True,
                      "entryPoint": ["/bin/sh", "-c"],
                      "cpuShares": 400,
+                     "cpuSet": "2",
                      "restartPolicy": restart_policy,
                      "directory": "/",
                      "hostname": "test",
@@ -82,7 +88,8 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
                      "instanceLinks": {
                          'container2_link':
                              container2.id},
-                     "registryCredentialId": reg_cred.id}
+                     "registryCredentialId": reg_cred.id,
+                     "requestedHostId": host.id}
 
     service = super_client.create_service(name=random_str(),
                                           environmentId=env.id,
@@ -153,6 +160,8 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
     assert container.user == "test"
     assert container.state == "running"
     assert container.registryCredentialId == reg_cred.id
+    assert container.cpuSet == "2"
+    assert container.requestedHostId == host.id
 
 
 def test_activate_services(super_client, admin_client, sim_context, nsp):

@@ -105,8 +105,8 @@
     <process:process name="loadbalancerconfig.update" resourceType="loadBalancerConfig" start="active" transitioning="updating-active" done="active" />
 
     <!-- Load Balancer Config Listener Map -->
-    <process:process name="loadbalancerconfiglistenermap.create" resourceType="loadBalancerConfigListeneMap" start="requested" transitioning="activating" done="active" />
-    <process:process name="loadbalancerconfiglistenermap.remove" resourceType="loadBalancerConfigListeneMap" start="active,activating" transitioning="removing" done="removed" />
+    <process:process name="loadbalancerconfiglistenermap.create" resourceType="loadBalancerConfigListenerMap" start="requested" transitioning="activating" done="active" />
+    <process:process name="loadbalancerconfiglistenermap.remove" resourceType="loadBalancerConfigListenerMap" start="active,activating" transitioning="removing" done="removed" />
 
     <!-- Global Load Balancer -->
     <process:process name="globalloadbalancer.create" resourceType="globalLoadBalancer" start="requested" transitioning="activating" done="active" />

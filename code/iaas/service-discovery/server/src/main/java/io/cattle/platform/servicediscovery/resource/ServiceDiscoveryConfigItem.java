@@ -54,6 +54,11 @@ public class ServiceDiscoveryConfigItem {
             "registryCredentialId", true, false);
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale",
             false, false);
+    public static final ServiceDiscoveryConfigItem CPU_SET = new ServiceDiscoveryConfigItem("cpuSet",
+            "cpuSet", true, false);
+    public static final ServiceDiscoveryConfigItem REQUESTED_HOST_ID = new ServiceDiscoveryConfigItem(
+            InstanceConstants.FIELD_REQUESTED_HOST_ID, InstanceConstants.FIELD_REQUESTED_HOST_ID,
+            true, false);
 
     /**
      * Name as it appears in docker-compose file

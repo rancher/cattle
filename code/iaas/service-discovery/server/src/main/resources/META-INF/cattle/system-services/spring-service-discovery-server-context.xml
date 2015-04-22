@@ -30,6 +30,9 @@
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentDockerComposeLinkHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentRancherComposeLinkHandler" />
        
+       <bean class="io.cattle.platform.servicediscovery.service.impl.RancherImageToComposeFormatter" />
+       <bean class="io.cattle.platform.servicediscovery.service.impl.RancherRestartToComposeFormatter" />
+       
        <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
 
 </beans>
