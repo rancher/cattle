@@ -13,10 +13,11 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.util.type.Priority;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -40,6 +41,7 @@ public class ServiceDiscoveryInstanceStartPostListener extends AbstractObjectPro
     @Inject
     LoadBalancerInstanceManager lbInstanceService;
 
+
     @Override
     public String[] getProcessNames() {
         return new String[] { InstanceConstants.PROCESS_START };
@@ -48,31 +50,35 @@ public class ServiceDiscoveryInstanceStartPostListener extends AbstractObjectPro
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance) state.getResource();
-        Long serviceId = null;
         if (lbInstanceService.isLbInstance(instance)) {
             LoadBalancer lb = lbInstanceService.getLoadBalancerForInstance(instance);
-            serviceId = lb.getServiceId();
-        } else {
-            Integer requestedServiceId = (Integer)DataUtils.getFields(instance).get(
-                    ServiceDiscoveryConstants.FIELD_SERVICE_ID);
-            if (requestedServiceId != null) {
-                serviceId = requestedServiceId.longValue();
+            Long serviceId = lb.getServiceId();
+            if (serviceId != null) {
+                // for the lb instance, service map gets created only at this point
+                // as the instance gets created in generic manner by AgentBuilder factory, and I avoided to make service
+                // specific modifications there
+                ServiceExposeMap instanceServiceMap = mapDao.findNonRemoved(ServiceExposeMap.class, Instance.class,
+                        instance.getId(),
+                        Service.class, serviceId);
+
+                if (instanceServiceMap == null) {
+                    instanceServiceMap = resourceDao.createAndSchedule(ServiceExposeMap.class,
+                            SERVICE_EXPOSE_MAP.INSTANCE_ID,
+                            instance.getId(), SERVICE_EXPOSE_MAP.SERVICE_ID, serviceId);
+                }
             }
+        } else {
+            // for regular, non lb instance, the instance->service map gets created as a part of the instance creation
+            // (within the same transaction), so it should exist at this point
+            List<? extends ServiceExposeMap> instanceServiceMap = mapDao.findNonRemoved(ServiceExposeMap.class,
+                    Instance.class,
+                    instance.getId());
+            if (instanceServiceMap.isEmpty()) {
+                // not a service instance
+                return null;
+            }
+            objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, instanceServiceMap.get(0), null);
         }
-
-        if (serviceId == null) {
-            return null;
-        }
-
-        ServiceExposeMap instanceServiceMap = mapDao.findNonRemoved(ServiceExposeMap.class, Instance.class,
-                instance.getId(),
-                Service.class, serviceId);
-
-        if (instanceServiceMap == null) {
-            instanceServiceMap = resourceDao.createAndSchedule(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID,
-                    instance.getId(), SERVICE_EXPOSE_MAP.SERVICE_ID, serviceId);
-        }
-
         return null;
     }
 

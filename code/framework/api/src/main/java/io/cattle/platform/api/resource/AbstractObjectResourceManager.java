@@ -136,6 +136,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     protected Object updateInternal(String type, String id, Object obj, ApiRequest request) {
         Map<String, Object> updates = CollectionUtils.toMap(request.getRequestObject());
+        Map<String, Object> existingValues = new HashMap<>();
         Map<String, Object> filteredUpdates = new HashMap<String, Object>();
         Map<String, Object> existing = createResource(obj, IDENTITY_FORMATTER, request).getFields();
         Schema schema = request.getSchemaFactory().getSchema(type);
@@ -147,7 +148,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             Object existingValue = existing.get(key);
             if (!ObjectUtils.equals(existingValue, entry.getValue())) {
                 filteredUpdates.put(key, entry.getValue());
-
+                existingValues.put(key, existingValue);
                 Field field = fields.get(key);
                 if (field != null) {
                     schedule |= Boolean.TRUE.equals(field.getAttributes().get(SCHEDULE_UPDATE));
@@ -158,6 +159,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         Object result = objectManager.setFields(obj, filteredUpdates);
         if (schedule) {
+            filteredUpdates.put("old", existingValues);
             objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, filteredUpdates);
             result = objectManager.reload(result);
         }

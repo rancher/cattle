@@ -27,10 +27,10 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_CREATE = "service." + ACTION_SERVICE_CREATE;
     public static final String PROCESS_ENV_ACTIVATE_SERVICES = "environment." + ACTION_ENV_ACTIVATE_SERVICES;
     public static final String PROCESS_ENV_DEACTIVATE_SERVICES = "environment.deactivateservices";
+    public static final String PROCESS_ENV_UPDATE = "environment.update";
     public static final String PROCESS_ENV_REMOVE = "environment.remove";
     public static final String PROCESS_SERVICE_DEACTIVATE = "service.deactivate";
     public static final String PROCESS_SERVICE_REMOVE = "service.remove";
-    public static final String PROCESS_SERVICE_INSTANCE_MAP_REMOVE = "serviceexposemap.remove";
     public static final String PROCESS_ENV_EXPORT_CONFIG = "environment.exportconfig";
     public static final String PROCESS_SERVICE_ADD_SERVICE_LINK = "service." + ACTION_SERVICE_ADD_SERVICE_LINK;
     public static final String PROCESS_SERVICE_REMOVE_SERVICE_LINK = "service." + ACTION_SERVICE_REMOVE_SERVICE_LINK;

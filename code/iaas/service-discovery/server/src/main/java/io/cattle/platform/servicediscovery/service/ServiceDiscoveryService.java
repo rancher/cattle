@@ -39,4 +39,6 @@ public interface ServiceDiscoveryService {
 
     void scaleDownLoadBalancerService(Service service, int requestedScale);
 
+    String generateServiceInstanceName(Service service, int finalOrder);
+
 }
