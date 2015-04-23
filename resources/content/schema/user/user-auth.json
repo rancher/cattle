@@ -184,8 +184,11 @@
         "registrationToken" : "r",
         "registrationToken.publicValue" : "",
         "registrationToken.secretValue" : "",
+        "registrationToken.command":"r",
+        "registrationToken.image":"r",
         "registrationToken.registrationUrl" : "r",
         "registrationToken.state":"r",
+        "registrationToken.token":"r",
 
         "restartPolicy" : "r",
         "restartPolicy.maximumRetryCount" : "cr",

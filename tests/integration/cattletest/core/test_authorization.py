@@ -679,6 +679,10 @@ def test_registration_tokens_auth(admin_user_client, user_client,
         'description': 'r',
         'removeTime': 'r',
         'accountId': 'r',
+        'image': 'r',
+        'command': 'r',
+        'registrationUrl': 'r',
+        'token': 'r',
     })
 
     auth_check(service_client.schema, 'registrationToken', 'cr', {
@@ -687,6 +691,10 @@ def test_registration_tokens_auth(admin_user_client, user_client,
         'description': 'cr',
         'removeTime': 'r',
         'accountId': 'cr',
+        'image': 'r',
+        'command': 'r',
+        'registrationUrl': 'r',
+        'token': 'r',
     })
 
     auth_check(user_client.schema, 'registrationToken', 'r', {
@@ -694,6 +702,10 @@ def test_registration_tokens_auth(admin_user_client, user_client,
         'created': 'r',
         'description': 'r',
         'uuid': 'r',
+        'image': 'r',
+        'command': 'r',
+        'registrationUrl': 'r',
+        'token': 'r',
     })
 
     auth_check(project_client.schema, 'registrationToken', 'cr', {
@@ -701,6 +713,10 @@ def test_registration_tokens_auth(admin_user_client, user_client,
         'created': 'r',
         'description': 'cr',
         'uuid': 'r',
+        'image': 'r',
+        'command': 'r',
+        'registrationUrl': 'r',
+        'token': 'r',
     })
 
 
