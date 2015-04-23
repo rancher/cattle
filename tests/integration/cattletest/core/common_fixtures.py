@@ -1,3 +1,4 @@
+import gdapi
 import cattle
 import os
 import pytest
@@ -11,6 +12,11 @@ DEFAULT_TIMEOUT = 90
 DEFAULT_AGENT_URI = 'ssh://root@localhost:22'
 DEFAULT_AGENT_UUID = 'test-agent'
 SLEEP_DELAY = 0.5
+ACCOUNT_LIST = ['admin', 'agent', 'user', 'agentRegister',
+                'readAdmin', 'token', 'superadmin', 'service', 'project']
+
+ADMIN_HEADERS = dict(gdapi.HEADERS)
+ADMIN_HEADERS['X-API-Project-Id'] = 'USER'
 
 
 @pytest.fixture(scope='session')
@@ -21,6 +27,7 @@ def cattle_url():
 
 def _admin_client():
     return cattle.from_env(url=cattle_url(),
+                           headers=ADMIN_HEADERS,
                            cache=False,
                            access_key='admin',
                            secret_key='adminpass')
@@ -33,13 +40,42 @@ def _client_for_user(name, accounts):
                            secret_key=accounts[name][1])
 
 
+def client_for_project(project):
+    access_key = random_str()
+    secret_key = random_str()
+    admin_client = _admin_client()
+    active_cred = None
+    account = project
+    for cred in account.credentials():
+        if cred.kind == 'apiKey' and cred.publicValue == access_key\
+                and cred.secretValue == secret_key:
+            active_cred = cred
+            break
+
+    if active_cred is None:
+        active_cred = admin_client.create_api_key({
+            'accountId': account.id,
+            'publicValue': access_key,
+            'secretValue': secret_key
+        })
+
+    active_cred = wait_success(admin_client, active_cred)
+    if active_cred.state != 'active':
+        wait_success(admin_client, active_cred.activate())
+
+    return cattle.from_env(url=cattle_url(),
+                           cache=False,
+                           access_key=access_key,
+                           secret_key=secret_key)
+
+
 def create_user(admin_client, user_name, kind=None):
     if kind is None:
         kind = user_name
 
     password = user_name + 'pass'
     account = create_type_by_uuid(admin_client, 'account', user_name,
-                                  kind=user_name,
+                                  kind=kind,
                                   name=user_name)
 
     active_cred = None
@@ -67,8 +103,7 @@ def create_user(admin_client, user_name, kind=None):
 def accounts():
     result = {}
     admin_client = _admin_client()
-    for user_name in ['admin', 'agent', 'user', 'agentRegister', 'test',
-                      'readAdmin', 'token', 'superadmin', 'service']:
+    for user_name in ACCOUNT_LIST:
         result[user_name] = create_user(admin_client,
                                         user_name,
                                         kind=user_name)
@@ -78,6 +113,14 @@ def accounts():
     result['system'] = [None, None, system_account]
 
     return result
+
+
+@pytest.fixture(scope='session')
+def clients(accounts):
+    clients = {}
+    for account in ACCOUNT_LIST:
+        clients[account] = _client_for_user(account, accounts)
+    return clients
 
 
 @pytest.fixture(scope='session')

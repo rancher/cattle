@@ -1,6 +1,7 @@
 package io.cattle.platform.register.api;
 
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.impl.BasicAuthImpl;
 import io.cattle.platform.iaas.api.auth.impl.DefaultAuthorizationProvider;
@@ -15,7 +16,7 @@ public class RegistrationTokenAccountLookup implements AccountLookup {
     RegistrationAuthTokenManager tokenManager;
 
     @Override
-    public Account getAccount(ApiRequest request) {
+    public AccountAccess getAccountAccess(ApiRequest request) {
         String[] auth = BasicAuthImpl.getUsernamePassword(request);
 
         if (auth == null) {
@@ -37,7 +38,7 @@ public class RegistrationTokenAccountLookup implements AccountLookup {
 
         request.setAttribute(DefaultAuthorizationProvider.ACCOUNT_SCHEMA_FACTORY_NAME, RegisterConstants.SCHEMA_NAME);
 
-        return account;
+        return new AccountAccess(account, null);
     }
 
     @Override

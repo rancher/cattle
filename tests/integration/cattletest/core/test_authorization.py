@@ -1,6 +1,23 @@
 from common_fixtures import *  # NOQA
 
 
+def test_client_access(clients):
+    typesLen = {
+        'admin': 90,
+        'agent': 8,
+        'user': 68,
+        'agentRegister': 4,
+        'test': 140,
+        'readAdmin': 90,
+        'token': 2,
+        'superadmin': 140,
+        'service': 90,
+        'project': 68,
+    }
+    for tuple in clients.items():
+        assert typesLen[tuple[0]] == len(tuple[1].schema.types.items())
+
+
 def test_instance_link_auth(admin_client, client):
     auth_check(admin_client.schema, 'instanceLink', 'ru', {
         'accountId': 'r',
@@ -28,7 +45,9 @@ def test_token_auth(token_client):
         'clientId': 'r',
         'security': 'r',
         'teams': 'r',
-        'userType': 'r'
+        'userType': 'r',
+        'accountId': 'r',
+        'defaultProject': 'r'
     })
 
 
@@ -38,28 +57,45 @@ def test_github_auth(admin_client):
         'allowedOrganizations': 'cr',
         'allowedUsers': 'cr',
         'clientId': 'cr',
-        'clientSecret': 'cr'
+        'clientSecret': 'cr',
+        'accessMode': 'cr'
     })
 
 
 def test_project_auth(admin_client, client):
     auth_check(admin_client.schema, 'project', 'crud', {
         'description': 'cru',
-        'externalId': 'cru',
-        'externalIdType': 'cru',
         'kind': 'r',
         'name': 'cru',
-        'uuid': 'r',
+        'uuid': 'cr',
         'data': 'r',
+        'members': 'cr',
+        'projectId': 'r'
     })
 
     auth_check(client.schema, 'project', 'crud', {
         'description': 'cru',
-        'externalId': 'cru',
-        'externalIdType': 'cru',
         'kind': 'r',
         'name': 'cru',
         'uuid': 'r',
+        'members': 'cr'
+    })
+
+
+def test_project_member_auth(admin_client, client):
+    auth_check(admin_client.schema, 'projectMember', 'r', {
+        "role": "r",
+        "externalId": "r",
+        "externalIdType": "r",
+        "projectId": "r",
+        "data": 'r'
+    })
+
+    auth_check(client.schema, 'projectMember', 'r', {
+        "role": "r",
+        "externalId": "r",
+        "externalIdType": "r",
+        "projectId": "r"
     })
 
 
@@ -405,6 +441,7 @@ def test_account_auth(admin_client, client):
         'data': 'r',
         'kind': 'cru',
         'uuid': 'cr',
+        'projectId': 'r'
     })
 
     auth_check(client.schema, 'account', 'r', {

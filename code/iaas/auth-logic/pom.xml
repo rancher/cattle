@@ -69,5 +69,10 @@
         	<artifactId>cattle-iaas-api-logic</artifactId>
         	<version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-resource-monitor</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

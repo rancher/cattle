@@ -1,6 +1,7 @@
 package io.cattle.platform.api.auth;
 
 import java.util.List;
+import java.util.Set;
 
 public interface Policy {
 
@@ -17,7 +18,7 @@ public interface Policy {
 
     String getOption(String optionName);
 
-    List<Long> getAuthorizedAccounts();
+    Set<ExternalId> getExternalIds();
 
     long getAccountId();
 

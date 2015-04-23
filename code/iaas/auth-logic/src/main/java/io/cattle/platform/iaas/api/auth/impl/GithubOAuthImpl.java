@@ -1,6 +1,9 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
+import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.github.GithubUtils;
@@ -11,24 +14,20 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.common.collect.ImmutableList;
-
 public class GithubOAuthImpl implements AccountLookup, Priority {
 
-    private static final String AUTH_HEADER = "Authorization";
-    private static final String AUTH_TYPE = "bearer ";
-    private static final String GITHUB_ACCOUNT_TYPE = "github";
-    private static final String PROJECT_HEADER = "X-API-Project-Id";
-    private static final String USER_SCOPE = "project:github_user";
-    private static final String ORG_SCOPE = "project:github_org";
-    private static final String TEAM_SCOPE = "project:github_team";
 
+    private static final String GITHUB_ACCOUNT_TYPE = "github";
+
+    @Inject
     private AuthDao authDao;
+    @Inject
     private GithubUtils githubUtils;
 
     @Override
@@ -37,29 +36,54 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
     }
 
     @Override
-    public Account getAccount(ApiRequest request) {
+    public AccountAccess getAccountAccess(ApiRequest request) {
         if (StringUtils.equals("token", request.getType())) {
             return null;
         }
-        String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);
-        if (StringUtils.isEmpty(token) || !token.toLowerCase().startsWith(AUTH_TYPE)) {
+        String token = request.getServletContext().getRequest().getHeader(ProjectConstants.AUTH_HEADER);
+        if (StringUtils.isEmpty(token) || !token.toLowerCase().startsWith(ProjectConstants.AUTH_TYPE)) {
             token = request.getServletContext().getRequest().getParameter("token");
             if (StringUtils.isEmpty(token)) {
                 return null;
             }
         }
+        String projectId = request.getServletContext().getRequest().getHeader(ProjectConstants.PROJECT_HEADER);
+        if (projectId == null || projectId.isEmpty()) {
+            projectId = request.getServletContext().getRequest().getParameter("projectId");
+        }
+        return getAccountAccessInternal(token, projectId, request);
+    }
+
+    private AccountAccess getAccountAccessInternal(String token, String projectId, ApiRequest request){
+        Account project = null;
         String accountId = githubUtils.validateAndFetchAccountIdFromToken(token);
         if (null == accountId) {
             return null;
         }
         Account account = authDao.getAccountByExternalId(accountId, GITHUB_ACCOUNT_TYPE);
-
-        String projectId = request.getServletContext().getRequest().getHeader(PROJECT_HEADER);
+        Set<ExternalId> externalIds = githubUtils.getExternalIds();
+        if (account != null && externalIds != null) {
+            externalIds.add(new ExternalId(String.valueOf(account.getId()), ProjectConstants.RANCHER_ID));
+        }
         if (StringUtils.isEmpty(projectId)) {
-            projectId = request.getServletContext().getRequest().getParameter("projectId");
-            if (StringUtils.isEmpty(projectId)) {
-                return account;
+            if (account != null) {
+                if (account.getProjectId() != null) {
+                    project = authDao.getAccountById(account.getProjectId());
+                    if (project == null) {
+                        List<Account> projects = authDao.getAccessibleProjects(externalIds, false, null);
+                        if (projects.isEmpty()) {
+                            throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "NoProject", "You don't have access to any projects.", null);
+                        } else {
+                            project = projects.get(0);
+                        }
+                    }
+                }
             }
+        } else if (projectId.equalsIgnoreCase(ProjectConstants.USER)){
+            project = account;
+        }
+        if (project != null){
+            return new AccountAccess(project, externalIds);
         }
 
         String unobfuscatedId = null;
@@ -74,50 +98,20 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
             return null;
         }
 
-        Account projectAccount = authDao.getAccountById(new Long(unobfuscatedId));
-
-        if (validateProjectAccount(projectAccount, token)) {
-            return projectAccount;
+        project = authDao.getAccountById(new Long(unobfuscatedId));
+        if (project != null && authDao.hasAccessToProject(project.getId(), null, account.getKind().equalsIgnoreCase("admin"), externalIds)) {
+            return new AccountAccess(project, externalIds);
         }
         return null;
     }
 
-    protected boolean validateProjectAccount(Account projectAccount, String token) {
-        if (null == projectAccount) {
-            return false;
-        }
-        Account account = projectAccount;
-        List<String> accesibleIds = null;
-        if (StringUtils.equals(TEAM_SCOPE, account.getExternalIdType())) {
-            accesibleIds = githubUtils.validateAndFetchTeamIdsFromToken(token);
-        } else if (StringUtils.equals(ORG_SCOPE, account.getExternalIdType())) {
-            accesibleIds = githubUtils.validateAndFetchOrgIdsFromToken(token);
-        }
-        if (StringUtils.equals(USER_SCOPE, projectAccount.getExternalIdType())) {
-            account = authDao.getAccountByExternalId(projectAccount.getExternalId(), GITHUB_ACCOUNT_TYPE);
-
-            accesibleIds = ImmutableList.of(githubUtils.validateAndFetchAccountIdFromToken(token));
-        }
-
-        return accesibleIds.contains(account.getExternalId());
+    public AccountAccess getAccountAccess(String token, String projectId, ApiRequest request){
+        request.getServletContext().getRequest().setAttribute(ProjectConstants.OAUTH_BASIC, token);
+        return getAccountAccessInternal(token, projectId, request);
     }
 
     @Override
     public boolean challenge(ApiRequest request) {
         return false;
-    }
-
-    public AuthDao getAuthDao() {
-        return authDao;
-    }
-
-    @Inject
-    public void setGithubUtils(GithubUtils githubUtils) {
-        this.githubUtils = githubUtils;
-    }
-
-    @Inject
-    public void setAuthDao(AuthDao authDao) {
-        this.authDao = authDao;
     }
 }

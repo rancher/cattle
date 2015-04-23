@@ -1,11 +1,20 @@
 package io.cattle.platform.iaas.api.auth.github;
 
+import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -14,11 +23,18 @@ import org.apache.commons.lang3.StringUtils;
 
 public class GithubUtils {
 
+    public static final String TEAM_SCOPE = "github_team";
+    public static final String ORG_SCOPE = "github_org";
+    public static final String USER_SCOPE = "github_user";
     private TokenService tokenService;
+
+
+    @Inject
+    GithubClient githubClient;
 
     public String validateAndFetchGithubToken(String token) {
         Map<String, Object> jsonData = getJsonData(token);
-        if (null == jsonData) {
+        if (jsonData == null) {
             return null;
         }
         return ObjectUtils.toString(jsonData.get("access_token"), null);
@@ -26,58 +42,34 @@ public class GithubUtils {
 
     public String validateAndFetchAccountIdFromToken(String token) {
         Map<String, Object> jsonData = getJsonData(token);
-        if (null == jsonData) {
+        if (jsonData == null) {
             return null;
         }
         return ObjectUtils.toString(jsonData.get("account_id"), null);
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> validateAndFetchOrgIdsFromToken(String token) {
+    public Set<ExternalId> externalIds(String token) {
         Map<String, Object> jsonData = getJsonData(token);
-        if (null == jsonData) {
-            return null;
-        }
-        return (List<String>) CollectionUtils.toList(jsonData.get("org_ids"));
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<String> validateAndFetchTeamIdsFromToken(String token) {
-        Map<String, Object> jsonData = getJsonData(token);
-        if (null == jsonData) {
-            return null;
-        }
-        return (List<String>) CollectionUtils.toList(jsonData.get("team_ids"));
-    }
-
-    @SuppressWarnings("unchecked")
-    public AccesibleIds validateAndFetchAccesibleIdsFromToken(String token) {
-        Map<String, Object> jsonData = getJsonData(token);
-        if (null == jsonData) {
-            return null;
-        }
         List<String> teamIds = (List<String>) CollectionUtils.toList(jsonData.get("team_ids"));
         List<String> orgIds = (List<String>) CollectionUtils.toList(jsonData.get("org_ids"));
         String accountId = ObjectUtils.toString(jsonData.get("account_id"), null);
-        return new AccesibleIds(accountId, teamIds, orgIds);
-    }
-
-    public ReverseMappings validateAndFetchReverseMappings(String token) {
-        Map<String, Object> jsonData = getJsonData(token);
-        if (null == jsonData) {
-            return null;
+        Set<ExternalId> externalIds = new HashSet<>();
+        externalIds.add(new ExternalId(accountId , USER_SCOPE, (String) jsonData.get("username")));
+        for (String teamId: teamIds){
+            externalIds.add(new ExternalId(teamId, TEAM_SCOPE));
         }
-        Map<String, String> teamsMap = CollectionUtils.toMap(jsonData.get("teams_reverse_mapping"));
-        Map<String, String> orgsMap = CollectionUtils.toMap(jsonData.get("orgs_reverse_mapping"));
-        String userName = ObjectUtils.toString(jsonData.get("username"), null);
-        return new ReverseMappings(teamsMap, userName, orgsMap);
+        for (String orgId: orgIds){
+            externalIds.add(new ExternalId(orgId, ORG_SCOPE));
+        }
+        return  externalIds;
     }
 
     private Map<String, Object> getJsonData(String jwt) {
         if (StringUtils.isEmpty(jwt)) {
             return null;
         }
-        String toParse = null;
+        String toParse;
         String[] tokenArr = jwt.split("\\s+");
         if (tokenArr.length == 2) {
             if (!StringUtils.equalsIgnoreCase("bearer", StringUtils.trim(tokenArr[0]))) {
@@ -95,6 +87,10 @@ public class GithubUtils {
         } catch (TokenException e) { // in case of invalid token
             return null;
         }
+        if (jsonData == null){
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, ValidationErrorCodes.MISSING_REQUIRED,
+                    "There is no github token present.", null);
+        }
         return jsonData;
     }
 
@@ -103,78 +99,30 @@ public class GithubUtils {
         this.tokenService = tokenService;
     }
 
-    public class AccesibleIds {
-        String userId;
-        List<String> teamIds;
-        List<String> orgIds;
-
-        public AccesibleIds(String userId, List<String> teamIds, List<String> orgIds) {
-            this.userId = userId;
-            this.teamIds = teamIds;
-            this.orgIds = orgIds;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public List<String> getTeamIds() {
-            return teamIds;
-        }
-
-        public void setTeamIds(List<String> teamIds) {
-            this.teamIds = teamIds;
-        }
-
-        public List<String> getOrgIds() {
-            return orgIds;
-        }
-
-        public void setOrgIds(List<String> orgIds) {
-            this.orgIds = orgIds;
-        }
-
+    public Set<ExternalId> getExternalIds() {
+        Set<ExternalId> externalIds = externalIds(getToken());
+        return externalIds;
     }
 
-    public class ReverseMappings {
-        Map<String, String> teamsMap;
-        String username;
-        Map<String, String> orgMap;
-
-        public ReverseMappings(Map<String, String> teamsMap, String username, Map<String, String> orgMap) {
-            this.teamsMap = teamsMap;
-            this.username = username;
-            this.orgMap = orgMap;
+    public String getToken() {
+        ApiRequest request = ApiContext.getContext().getApiRequest();
+        String token = request.getServletContext().getRequest().getHeader(ProjectConstants.AUTH_HEADER);
+        if (StringUtils.isEmpty(token) || !token.toLowerCase().startsWith(ProjectConstants.AUTH_TYPE)) {
+            token = request.getServletContext().getRequest().getParameter("token");
+            if (StringUtils.isEmpty(token)) {
+                token = (String) request.getServletContext().getRequest().getAttribute(ProjectConstants.OAUTH_BASIC);
+                if (token.isEmpty()) {
+                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, ValidationErrorCodes.MISSING_REQUIRED,
+                            "There is no github token present.", null);
+                }
+            }
         }
-
-        public Map<String, String> getTeamsMap() {
-            return teamsMap;
-        }
-
-        public void setTeamsMap(Map<String, String> teamsMap) {
-            this.teamsMap = teamsMap;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public Map<String, String> getOrgMap() {
-            return orgMap;
-        }
-
-        public void setOrgMap(Map<String, String> orgMap) {
-            this.orgMap = orgMap;
-        }
-
+        return token;
     }
 
+    public String getTeamOrgById(String id) {
+        Map<String, Object> jsonData = getJsonData(getToken());
+        Map<String, String> teamToOrg = (Map<String, String>) jsonData.get("teamToOrg");
+        return  teamToOrg.get(id);
+    }
 }

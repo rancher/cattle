@@ -2,6 +2,7 @@
 .m2
 
 code
+resources/local
 dist
 docs
 LICENSE

@@ -10,6 +10,8 @@
         "token.security": "r",
         "token.clientId": "r",
         "token.code": "cr",
-        "token.userType": "r"
+        "token.userType": "r",
+        "token.defaultProject": "r",
+        "token.accountId": "r"
     }
 }

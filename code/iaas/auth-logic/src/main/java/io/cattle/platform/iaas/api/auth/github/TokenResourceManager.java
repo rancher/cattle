@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.github;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.iaas.api.auth.TokenHandler;
 import io.cattle.platform.iaas.api.auth.github.resource.Token;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -8,6 +9,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -22,7 +24,16 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString("api.auth.github.client.id");
 
-    private GithubTokenHandler githubTokenHandler;
+    public List<TokenHandler> getTokenHandlers() {
+        return tokenHandlers;
+    }
+
+    @Inject
+    public void setTokenHandlers(List<TokenHandler> tokenHandlers) {
+        this.tokenHandlers = tokenHandlers;
+    }
+
+    private List<TokenHandler> tokenHandlers;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -35,19 +46,25 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
             return null;
         }
         try {
-            return githubTokenHandler.getGithubAccessToken(request);
+            return getToken(request);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return new Token(null, null, null, null, SECURITY.get(), GITHUB_CLIENT_ID.get(), null);
+    private Token getToken(ApiRequest request) throws IOException {
+        Token token = null;
+        for (TokenHandler tokenHandler: tokenHandlers){
+            token = tokenHandler.getToken(request);
+            if (token != null){
+                break;
+            }
+        }
+        return token;
     }
 
-    @Inject
-    public void setGithubTokenHandler(GithubTokenHandler githubTokenHandler) {
-        this.githubTokenHandler = githubTokenHandler;
+    @Override
+    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+        return new Token(null, null, null, null, SECURITY.get(), GITHUB_CLIENT_ID.get(), null, null, null);
     }
 }

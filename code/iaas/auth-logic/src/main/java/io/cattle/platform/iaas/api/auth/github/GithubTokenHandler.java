@@ -1,13 +1,17 @@
 package io.cattle.platform.iaas.api.auth.github;
 
+import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.TokenHandler;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.github.resource.TeamAccountInfo;
 import io.cattle.platform.iaas.api.auth.github.resource.Token;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
@@ -33,10 +37,13 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicLongProperty;
 import com.netflix.config.DynamicStringProperty;
 
-public class GithubTokenHandler {
+public class GithubTokenHandler implements TokenHandler {
 
+    @Inject
     private TokenService tokenService;
+    @Inject
     private AuthDao authDao;
+    @Inject
     private GithubClient client;
 
     private static final String GITHUB_REQUEST_TOKEN = "code";
@@ -48,6 +55,12 @@ public class GithubTokenHandler {
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final DynamicStringProperty WHITELISTED_ORGS = ArchaiusUtil.getString("api.auth.github.allowed.orgs");
     private static final DynamicStringProperty WHITELISTED_USERS = ArchaiusUtil.getString("api.auth.github.allowed.users");
+    private static final DynamicStringProperty ACCESS_MODE = ArchaiusUtil.getString("api.auth.github.access.mode");
+
+    @Inject
+    ProjectResourceManager projectResourceManager;
+    @Inject
+    ObjectManager objectManager;
 
     public Token getGithubAccessToken(ApiRequest request) throws IOException {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
@@ -58,54 +71,73 @@ public class GithubTokenHandler {
         List<String> orgNames = new ArrayList<>();
         List<String> teamIds = new ArrayList<>();
         List<String> orgIds = new ArrayList<>();
+        Map<String, String> teamToOrg = new HashMap<>();
         List<TeamAccountInfo> teamsAccountInfo = new ArrayList<>();
-        Map<String, String> orgsMap = new HashMap<>();
         GithubAccountInfo userAccountInfo = client.getUserAccountInfo(token);
         List<GithubAccountInfo> orgAccountInfo = client.getOrgAccountInfo(token);
-        Map<String, String> teamsMap = new HashMap<>();
+        Set<ExternalId> externalIds = new HashSet<>();
 
         idList.add(userAccountInfo.getAccountId());
+        externalIds.add(new ExternalId(userAccountInfo.getAccountId(), GithubUtils.USER_SCOPE, userAccountInfo.getAccountName()));
 
         for (GithubAccountInfo info : orgAccountInfo) {
-            orgsMap.put(info.getAccountId(), info.getAccountName());
             idList.add(info.getAccountId());
             orgNames.add(info.getAccountName());
             orgIds.add(info.getAccountId());
             teamsAccountInfo.addAll(client.getOrgTeamInfo(token, info.getAccountName()));
+            externalIds.add(new ExternalId(info.getAccountId(), GithubUtils.ORG_SCOPE, info.getAccountName()));
         }
 
         for (TeamAccountInfo info : teamsAccountInfo) {
             teamIds.add(info.getId());
+            teamToOrg.put(info.getId(), info.getOrg());
             idList.add(info.getId());
-            teamsMap.put(info.getId(), info.getOrg() + "/" + info.getName());
+            externalIds.add(new ExternalId(info.getId(), GithubUtils.ORG_SCOPE, info.getOrg() + ":" + info.getName()));
         }
 
         Account account = null;
-
+        boolean whiteListed = getWhitelistedUser(idList) != null;
+        boolean hasAccessToAProject = authDao.hasAccessToAnyProject(externalIds, false, null);
         if (SECURITY.get()) {
-            if (null == getWhitelistedUser(idList)) {
-                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+            switch (ACCESS_MODE.get()) {
+                case "restricted":
+                    if (whiteListed) {
+                        break;
+                    } else if (!whiteListed && !hasAccessToAProject) {
+                        throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+                    }
+                    break;
+                case "unrestricted":
+                whiteListed = true;
+                    break;
+                default:
+                    throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
             account = authDao.getAccountByExternalId(userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
             if (null == account) {
                 account = authDao.createAccount(userAccountInfo.getAccountName(), GITHUB_USER_ACCOUNT_KIND, userAccountInfo.getAccountId(),
                         GITHUB_EXTERNAL_TYPE);
+                projectResourceManager.createDefaultProject(account);
+            }
+            if (whiteListed && !hasAccessToAProject) {
+                    projectResourceManager.createDefaultProject(account);
             }
         } else {
             account = authDao.getAdminAccount();
             authDao.updateAccount(account, null, GITHUB_ADMIN_ACCOUNT_KIND, userAccountInfo.getAccountId(), GITHUB_EXTERNAL_TYPE);
         }
-
+        account = objectManager.reload(account);
         jsonData.put("account_id", userAccountInfo.getAccountId());
-        jsonData.put("orgs_reverse_mapping", orgsMap);
-        jsonData.put("teams_reverse_mapping", teamsMap);
+        jsonData.put("external_ids", externalIds);
+        jsonData.put("teamToOrg", teamToOrg);
         jsonData.put("username", userAccountInfo.getAccountName());
         jsonData.put("team_ids", teamIds);
         jsonData.put("org_ids", orgIds);
+        String defaultProjectId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getProjectId());
+        String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
-
         return new Token(tokenService.generateEncryptedToken(jsonData, expiry), userAccountInfo.getAccountName(), orgNames, teamsAccountInfo, null, null,
-                account.getKind());
+                account.getKind(), defaultProjectId, accountId);
     }
 
     protected String getWhitelistedUser(List<String> idList) {
@@ -145,28 +177,8 @@ public class GithubTokenHandler {
         return strings;
     }
 
-    @Inject
-    public void setGithubClient(GithubClient client) {
-        this.client = client;
-    }
-
-    @Inject
-    public void setTokenService(TokenService tokenService) {
-        this.tokenService = tokenService;
-    }
-
-    @Inject
-    public void setAuthDao(AuthDao authDao) {
-        this.authDao = authDao;
-    }
-
-    class AccountInfo {
-        String accountId;
-        String accountName;
-
-        AccountInfo(String accountId, String accountName) {
-            this.accountId = accountId;
-            this.accountName = accountName;
-        }
+    @Override
+    public Token getToken(ApiRequest request) throws IOException {
+        return getGithubAccessToken(request);
     }
 }

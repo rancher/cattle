@@ -1,5 +1,6 @@
 package io.cattle.platform.api.auth.impl;
 
+import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -14,25 +15,25 @@ public class DefaultPolicy implements Policy {
 
     long accountId;
     String name;
-    List<Long> authorizedAccounts;
+    Set<ExternalId> externalIds;
     PolicyOptions options;
 
     @SuppressWarnings("unchecked")
     public DefaultPolicy() {
-        this(Policy.NO_ACCOUNT, null, Collections.EMPTY_LIST, new NoPolicyOptions());
+        this(Policy.NO_ACCOUNT, null, Collections.EMPTY_SET, new NoPolicyOptions());
     }
 
-    public DefaultPolicy(long accountId, String name, List<Long> authorizedAccounts, PolicyOptions options) {
+    public DefaultPolicy(long accountId, String name, Set<ExternalId> externalIds, PolicyOptions options) {
         super();
         this.accountId = accountId;
-        this.authorizedAccounts = authorizedAccounts;
+        this.externalIds = externalIds;
         this.options = options;
         this.name = name;
     }
 
     @Override
-    public List<Long> getAuthorizedAccounts() {
-        return authorizedAccounts;
+    public Set<ExternalId> getExternalIds(){
+        return externalIds;
     }
 
     @Override

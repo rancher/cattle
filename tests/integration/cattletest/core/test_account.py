@@ -1,6 +1,5 @@
 from common_fixtures import *  # NOQA
 import re
-from cattle import from_env
 
 
 @pytest.mark.parametrize('kind', ['user', 'admin'])
@@ -55,32 +54,3 @@ def test_account_no_key(super_admin_client):
     creds = account.credentials()
 
     assert len(creds) == 0
-
-
-def test_account_delete(super_client, random_str, admin_client):
-
-    cred = create_user(admin_client,
-                       random_str,
-                       kind='user')
-
-    test_user_client = from_env(url=cattle_url(),
-                                cache=False,
-                                access_key=cred[0],
-                                secret_key=cred[1])
-
-    user_account = cred[2]
-
-    sim_context = create_sim_context(super_client,
-                                     random_str,
-                                     ip='192.168.11.6',
-                                     account=user_account)
-
-    host = super_client.wait_success(sim_context['host'])
-    assert host.state == 'active'
-    assert host.accountId == user_account.id
-    account = test_user_client.wait_success(user_account.deactivate())
-    account = test_user_client.delete(account)
-    account = test_user_client.wait_success(account)
-    account = test_user_client.wait_success(account.purge())
-    host = admin_client.wait_success(sim_context["host"])
-    assert host.state == 'removed'

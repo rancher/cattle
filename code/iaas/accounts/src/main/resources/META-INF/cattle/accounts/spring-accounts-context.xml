@@ -46,6 +46,8 @@
                         <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
                             <property name="resources">
                                 <list>
+                                    <value>classpath:schema/project/project.json</value>
+                                    <value>classpath*:schema/project/project.json.d/**/*.json</value>
                                     <value>classpath:schema/user/user-auth.json</value>
                                     <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
                                     <value>classpath:schema/admin/admin-auth.json</value>
@@ -72,6 +74,8 @@
                         <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
                             <property name="resources">
                                 <list>
+                                    <value>classpath:schema/project/project.json</value>
+                                    <value>classpath*:schema/project/project.json.d/**/*.json</value>
                                     <value>classpath:schema/user/user-auth.json</value>
                                     <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
                                     <value>classpath:schema/admin/admin-auth.json</value>
@@ -149,10 +153,29 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="Project" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="project" />
-        <property name="schemaFactory" ref="User" />
+        <property name="schemaFactory" ref="AdminSchema" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/project" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
     </bean>
 
     <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >

@@ -14,7 +14,6 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ import com.netflix.config.DynamicStringProperty;
 public class GithubConfigManager extends AbstractNoOpResourceManager {
 
     private static final String ENABLED = "enabled";
+    private static final String ACCESSMODE = "accessMode";
     private static final String CLIENT_ID = "clientId";
     private static final String CLIENT_SECRET = "clientSecret";
     private static final String ALLOWED_USERS = "allowedUsers";
@@ -40,12 +40,15 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private static final String AUTH_HEADER = "Authorization";
 
     private static final String SECURITY_SETTING = "api.security.enabled";
+    private static final String ACCESSMODE_SETTING = "api.auth.github.access.mode";
     private static final String CLIENT_ID_SETTING = "api.auth.github.client.id";
+    private static final String CLIENT_SECRET_SETTING = "api.auth.github.client.secret";
     private static final String ALLOWED_USERS_SETTING = "api.auth.github.allowed.users";
     private static final String ALLOWED_ORGS_SETTING = "api.auth.github.allowed.orgs";
 
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean(SECURITY_SETTING);
     private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString(CLIENT_ID_SETTING);
+    private static final DynamicStringProperty ACCESS_MODE = ArchaiusUtil.getString(ACCESSMODE_SETTING);
     private static final DynamicStringProperty GITHUB_ALLOWED_USERS = ArchaiusUtil.getString(ALLOWED_USERS_SETTING);
     private static final DynamicStringProperty GITHUB_ALLOWED_ORGS = ArchaiusUtil.getString(ALLOWED_ORGS_SETTING);
 
@@ -70,7 +73,8 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
         createOrUpdateSetting(SECURITY_SETTING, config.get(ENABLED));
         createOrUpdateSetting(CLIENT_ID_SETTING, config.get(CLIENT_ID));
-        createOrUpdateSetting("api.auth.github.client.secret", config.get(CLIENT_SECRET));
+        createOrUpdateSetting(CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
+        createOrUpdateSetting(ACCESSMODE_SETTING, config.get(ACCESSMODE));
         createOrUpdateSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(ALLOWED_USERS), access_token), ","));
         createOrUpdateSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(ALLOWED_ORGS), access_token), ","));
         return currentGithubConfig(config);
@@ -82,6 +86,10 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         Boolean enabled = currentConfig.getEnabled();
         if (config.get(ENABLED) != null) {
             enabled = (Boolean) config.get(ENABLED);
+        }
+        String accessMode = currentConfig.getAccessMode();
+        if (config.get(ACCESSMODE) != null) {
+            accessMode = (String) config.get(ACCESSMODE);
         }
         String clientId = currentConfig.getClientId();
         if (config.get(CLIENT_ID) != null) {
@@ -95,7 +103,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         if (config.get(ALLOWED_ORGS) != null) {
             allowedOrgs = (List<String>) config.get(ALLOWED_ORGS);
         }
-        return new GithubConfig(enabled, clientId, allowedUsers, allowedOrgs);
+        return new GithubConfig(enabled, accessMode, clientId, allowedUsers, allowedOrgs);
     }
 
     protected List<String> appendUserIds(List<String> usernames, String token) {
@@ -105,15 +113,11 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         List<String> appendedList = new ArrayList<>();
 
         for (String username : usernames) {
-            try {
-                GithubAccountInfo userInfo = client.getUserIdByName(username, token);
-                if (userInfo == null) {
-                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidUsername", "Invalid username: " + username, null);
-                }
-                appendedList.add(userInfo.toString());
-            } catch (IOException e) {
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GithubUnavailable", "could not retireve userId", null);
+            GithubAccountInfo userInfo = client.getUserIdByName(username, token);
+            if (userInfo == null) {
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidUsername", "Invalid username: " + username, null);
             }
+            appendedList.add(userInfo.toString());
         }
         return appendedList;
     }
@@ -124,15 +128,11 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         }
         List<String> appendedList = new ArrayList<>();
         for (String org : orgs) {
-            try {
-                GithubAccountInfo orgInfo = client.getOrgIdByName(org, token);
-                if (orgInfo == null) {
-                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidOrganization", "Invalid organization: " + org, null);
-                }
-                appendedList.add(orgInfo.toString());
-            } catch (IOException e) {
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GithubUnavailable", "could not retireve orgId", null);
+            GithubAccountInfo orgInfo = client.getOrgIdByName(org, token);
+            if (orgInfo == null) {
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidOrganization", "Invalid organization: " + org, null);
             }
+            appendedList.add(orgInfo.toString());
         }
         return appendedList;
     }
@@ -160,9 +160,10 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         boolean enabled = SECURITY.get();
         String clientId = GITHUB_CLIENT_ID.get();
+        String accessMode = ACCESS_MODE.get();
         List<String> allowedUsers = getAccountNames(fromCommaSeparatedString(GITHUB_ALLOWED_USERS.get()));
         List<String> allowedOrgs = getAccountNames(fromCommaSeparatedString(GITHUB_ALLOWED_ORGS.get()));
-        return new GithubConfig(enabled, clientId, allowedUsers, allowedOrgs);
+        return new GithubConfig(enabled, accessMode, clientId, allowedUsers, allowedOrgs);
     }
 
     private List<String> getAccountNames(List<String> accountInfos) {

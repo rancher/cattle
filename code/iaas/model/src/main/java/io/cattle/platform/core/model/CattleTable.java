@@ -82,6 +82,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.PortTable.PORT,
 			io.cattle.platform.core.model.tables.ProcessExecutionTable.PROCESS_EXECUTION,
 			io.cattle.platform.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE,
+			io.cattle.platform.core.model.tables.ProjectMemberTable.PROJECT_MEMBER,
 			io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL,
 			io.cattle.platform.core.model.tables.ServiceTable.SERVICE,
 			io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP,

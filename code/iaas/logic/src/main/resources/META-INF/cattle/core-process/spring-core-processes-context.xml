@@ -30,8 +30,8 @@
     -->
 
 
-    <process:defaultProcesses resourceType="agentgroup" />
     <process:defaultProcesses resourceType="account" />
+    <process:defaultProcesses resourceType="agentgroup" />
     <process:defaultProcesses resourceType="credential" />
     <process:defaultProcesses resourceType="credentialInstanceMap" />
     <process:defaultProcesses resourceType="genericObject" />
@@ -45,12 +45,14 @@
     <process:defaultProcesses resourceType="ipAddressNicMap" />
     <process:defaultProcesses resourceType="ipAssociation" />
     <process:defaultProcesses resourceType="ipPool" />
+    <process:defaultProcesses resourceType="mount" />
     <process:defaultProcesses resourceType="network" />
     <process:defaultProcesses resourceType="networkService" />
     <process:defaultProcesses resourceType="networkServiceProvider" />
     <process:defaultProcesses resourceType="networkServiceProviderInstanceMap" />
     <process:defaultProcesses resourceType="nic" />
     <process:defaultProcesses resourceType="port" />
+    <process:defaultProcesses resourceType="projectMember" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="storagePoolHostMap" />
     <process:defaultProcesses resourceType="subnet" />
@@ -58,7 +60,6 @@
     <process:defaultProcesses resourceType="vnet" />
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
     <process:defaultProcesses resourceType="zone" />
-    <process:defaultProcesses resourceType="mount" />
 
     <!-- IP Address -->
     <process:defaultProcesses resourceType="ipAddress" />
