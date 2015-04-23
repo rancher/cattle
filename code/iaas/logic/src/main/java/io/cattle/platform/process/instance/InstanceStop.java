@@ -60,7 +60,9 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
 
         for (Volume volume : volumes) {
-            deactivate(volume, null);
+            if (volume.getRemoved() == null && !volume.getState().equals(CommonStatesConstants.REMOVED)) {
+                deactivate(volume, null);
+            }
         }
     }
 
@@ -68,7 +70,9 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
         List<Nic> nics = getObjectManager().children(instance, Nic.class);
 
         for (Nic nic : nics) {
-            deactivate(nic, null);
+            if (nic.getRemoved() == null && !nic.getState().equals(CommonStatesConstants.REMOVED)) {
+                deactivate(nic, null);
+            }
         }
 
         for (Port port : getObjectManager().children(instance, Port.class)) {
@@ -78,7 +82,9 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
         }
 
         for (InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID)) {
-            deactivate(link, null);
+            if (link.getRemoved() == null && !link.getState().equals(CommonStatesConstants.REMOVED)) {
+                deactivate(link, null);
+            }
         }
     }
 

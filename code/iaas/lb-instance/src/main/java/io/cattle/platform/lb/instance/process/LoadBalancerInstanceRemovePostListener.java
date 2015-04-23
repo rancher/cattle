@@ -57,12 +57,15 @@ public class LoadBalancerInstanceRemovePostListener extends AbstractObjectProces
     private void deleteLoadBalancerInstance(Instance instance) {
         Agent lbAgent = objectManager.loadResource(Agent.class, instance.getAgentId());
 
-        // try to remove first
-        try {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbAgent, null);
-        } catch (ProcessCancelException e) {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, lbAgent, ProcessUtils.chainInData(new HashMap<String, Object>(),
-                    AgentConstants.PROCESS_DEACTIVATE, AgentConstants.PROCESS_REMOVE));
+        if (lbAgent.getRemoved() == null) {
+            // try to remove first
+            try {
+                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbAgent, null);
+            } catch (ProcessCancelException e) {
+                objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, lbAgent,
+                        ProcessUtils.chainInData(new HashMap<String, Object>(),
+                                AgentConstants.PROCESS_DEACTIVATE, AgentConstants.PROCESS_REMOVE));
+            }
         }
     }
 
