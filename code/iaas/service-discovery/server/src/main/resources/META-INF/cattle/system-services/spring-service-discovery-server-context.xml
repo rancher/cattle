@@ -18,6 +18,8 @@
        <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePostListener" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceUpdatePostListener" />
+       <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceStartPostListener" />
+
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.AddServiceLinkActionHandler" />
@@ -32,7 +34,14 @@
        
        <bean class="io.cattle.platform.servicediscovery.service.impl.RancherImageToComposeFormatter" />
        <bean class="io.cattle.platform.servicediscovery.service.impl.RancherRestartToComposeFormatter" />
-       
-       <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
 
+       <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
+       
+       <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceCreate" />
+       <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceRemove" />
+       <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerRemovePostListener" />
+       <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetAddPostListener" />
+       <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetRemovePostListener" />
+       
+       <bean class="io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl" />
 </beans>

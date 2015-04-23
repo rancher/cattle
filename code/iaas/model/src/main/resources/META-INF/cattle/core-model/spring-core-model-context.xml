@@ -61,6 +61,7 @@
                 <value>sshKey,parent=credential</value>
                 <value>subnetIpPool,parent=ipPool</value>
                 <value>virtualMachine,parent=instance</value>
+                <value>loadBalancerService,parent=service</value>
             </set>
         </property>
     </bean>

@@ -3,16 +3,16 @@ from common_fixtures import *  # NOQA
 
 def test_client_access(clients):
     typesLen = {
-        'admin': 90,
+        'admin': 91,
         'agent': 8,
-        'user': 68,
+        'user': 69,
         'agentRegister': 4,
         'test': 140,
-        'readAdmin': 90,
+        'readAdmin': 91,
         'token': 2,
-        'superadmin': 140,
-        'service': 90,
-        'project': 68,
+        'superadmin': 141,
+        'service': 91,
+        'project': 69,
     }
     for tuple in clients.items():
         assert typesLen[tuple[0]] == len(tuple[1].schema.types.items())
@@ -695,4 +695,61 @@ def test_container_events(admin_client, client, agent_client):
         'externalStatus': 'r',
         'accountId': 'r',
         'dockerInspect': 'r'
+    })
+
+
+def test_svc_discovery_service(admin_client, client):
+    auth_check(admin_client.schema, 'service', 'crud', {
+        'name': 'cr',
+        'environmentId': 'cr',
+        'scale': 'cru',
+        'dataVolumesFromService': 'cr',
+        'launchConfig': 'cr',
+        'accountId': 'r',
+        'data': 'r',
+    })
+
+    auth_check(client.schema, 'service', 'crud', {
+        'name': 'cr',
+        'environmentId': 'cr',
+        'scale': 'cru',
+        'dataVolumesFromService': 'cr',
+        'launchConfig': 'cr',
+        'accountId': 'r',
+    })
+
+
+def test_svc_discovery_environment(admin_client, client):
+    auth_check(admin_client.schema, 'environment', 'crud', {
+        'name': 'cru',
+        'accountId': 'r',
+        'data': 'r',
+    })
+
+    auth_check(client.schema, 'environment', 'crud', {
+        'name': 'cru',
+        'accountId': 'r',
+    })
+
+
+def test_svc_discovery_lb_service(admin_client, client):
+    auth_check(admin_client.schema, 'loadBalancerService', 'crud', {
+        'name': 'cr',
+        'environmentId': 'cr',
+        'scale': 'cru',
+        'dataVolumesFromService': 'cr',
+        'launchConfig': 'cr',
+        'accountId': 'r',
+        'data': 'r',
+        'loadBalancerConfig': 'cr',
+    })
+
+    auth_check(client.schema, 'loadBalancerService', 'crud', {
+        'name': 'cr',
+        'environmentId': 'cr',
+        'scale': 'cru',
+        'dataVolumesFromService': 'cr',
+        'launchConfig': 'cr',
+        'accountId': 'r',
+        'loadBalancerConfig': 'cr',
     })

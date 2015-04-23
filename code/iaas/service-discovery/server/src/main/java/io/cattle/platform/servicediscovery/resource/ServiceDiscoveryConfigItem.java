@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.resource;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,10 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem REQUESTED_HOST_ID = new ServiceDiscoveryConfigItem(
             InstanceConstants.FIELD_REQUESTED_HOST_ID, InstanceConstants.FIELD_REQUESTED_HOST_ID,
             true, false);
+    public static final ServiceDiscoveryConfigItem LB_CONGFIG = new ServiceDiscoveryConfigItem(
+            ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG, ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
+            false, false);
+
 
     /**
      * Name as it appears in docker-compose file

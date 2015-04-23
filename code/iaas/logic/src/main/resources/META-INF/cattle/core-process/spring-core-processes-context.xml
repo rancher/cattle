@@ -161,4 +161,5 @@
     <!-- Container Event -->
     <process:process name="containerevent.create" resourceType="containerEvent" start="requested" transitioning="creating" done="created" />
     <process:process name="containerevent.remove" resourceType="containerEvent" start="created,creating" transitioning="removing" done="removed" />
+
 </beans>

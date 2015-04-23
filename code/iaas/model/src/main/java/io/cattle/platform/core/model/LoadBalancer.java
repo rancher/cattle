@@ -168,6 +168,17 @@ public interface LoadBalancer extends java.io.Serializable {
 	@javax.persistence.Column(name = "load_balancer_config_id", precision = 19)
 	public java.lang.Long getLoadBalancerConfigId();
 
+	/**
+	 * Setter for <code>cattle.load_balancer.service_id</code>.
+	 */
+	public void setServiceId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.load_balancer.service_id</code>.
+	 */
+	@javax.persistence.Column(name = "service_id", precision = 19)
+	public java.lang.Long getServiceId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

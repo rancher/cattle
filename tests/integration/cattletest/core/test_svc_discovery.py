@@ -121,6 +121,7 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
     assert service.launchConfig.hostname == "test"
     assert service.launchConfig.user == "test"
     assert len(service.launchConfig.instanceLinks) == 1
+    assert service.kind == "service"
     # assert service.launchConfig.registryCredentialId == reg_cred.id
 
     # activate the service and validate that parameters were set for instance

@@ -3,12 +3,18 @@ package io.cattle.platform.servicediscovery.api.constants;
 
 public class ServiceDiscoveryConstants {
 
+    public enum KIND {
+        SERVICE,
+        LOADBALANCERSERVICE
+    }
+
     public static final String FIELD_SCALE = "scale";
     public static final String FIELD_NETWORK_ID = "networkId";
     public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_SERVICE_IDS = "serviceIds";
     public static final String FIELD_ACTIVATE_CONSUMED_SERVICES = "activateConsumedServices";
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
+    public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

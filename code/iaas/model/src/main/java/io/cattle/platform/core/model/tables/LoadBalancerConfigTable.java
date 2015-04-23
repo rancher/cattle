@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LoadBalancerConfigTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LoadBalancerConfigRecord> {
 
-	private static final long serialVersionUID = -991627288;
+	private static final long serialVersionUID = -213809786;
 
 	/**
 	 * The singleton instance of <code>cattle.load_balancer_config</code>
@@ -82,6 +82,11 @@ public class LoadBalancerConfigTable extends org.jooq.impl.TableImpl<io.cattle.p
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerConfigRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
+	 * The column <code>cattle.load_balancer_config.service_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerConfigRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.load_balancer_config</code> table reference
 	 */
 	public LoadBalancerConfigTable() {
@@ -132,7 +137,7 @@ public class LoadBalancerConfigTable extends org.jooq.impl.TableImpl<io.cattle.p
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerConfigRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerConfigRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_CONFIG__ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.LoadBalancerConfigRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_CONFIG__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_LOAD_BALANCER_CONFIG__SERVICE_ID);
 	}
 
 	/**

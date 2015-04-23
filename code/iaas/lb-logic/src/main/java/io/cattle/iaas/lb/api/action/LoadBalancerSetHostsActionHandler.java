@@ -1,10 +1,9 @@
-package io.cattle.platform.iaas.api.lb;
+package io.cattle.iaas.lb.api.action;
 
-import static io.cattle.platform.core.model.tables.LoadBalancerHostMapTable.LOAD_BALANCER_HOST_MAP;
+import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.json.JsonMapper;
@@ -30,6 +29,9 @@ public class LoadBalancerSetHostsActionHandler implements ActionHandler {
 
     @Inject
     ObjectProcessManager objectProcessManager;
+
+    @Inject
+    LoadBalancerService lbService;
 
     @Override
     public String getName() {
@@ -58,18 +60,13 @@ public class LoadBalancerSetHostsActionHandler implements ActionHandler {
 
     private void createNewHostMaps(LoadBalancer lb, List<? extends Long> newHostIds) {
         for (Long hostId : newHostIds) {
-            LoadBalancerHostMap lbHostMap = mapDao.findNonRemoved(LoadBalancerHostMap.class, LoadBalancer.class, lb.getId(), Host.class, hostId);
-            if (lbHostMap == null) {
-                lbHostMap = objectManager.create(LoadBalancerHostMap.class, LOAD_BALANCER_HOST_MAP.LOAD_BALANCER_ID, lb.getId(),
-                        LOAD_BALANCER_HOST_MAP.HOST_ID, hostId);
-            }
-            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_CREATE, lbHostMap,
-                    null);
+            lbService.addHostToLoadBalancer(lb, hostId);
         }
     }
 
     private void removeOldHostMaps(LoadBalancer lb, List<? extends Long> newHostIds) {
-        List<? extends LoadBalancerHostMap> existingMaps = mapDao.findToRemove(LoadBalancerHostMap.class, LoadBalancer.class, lb.getId());
+        List<? extends LoadBalancerHostMap> existingMaps = mapDao.findToRemove(LoadBalancerHostMap.class,
+                LoadBalancer.class, lb.getId());
 
         List<LoadBalancerHostMap> mapsToRemove = new ArrayList<>();
 
@@ -80,8 +77,7 @@ public class LoadBalancerSetHostsActionHandler implements ActionHandler {
         }
 
         for (LoadBalancerHostMap mapToRemove : mapsToRemove) {
-            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE, mapToRemove,
-                    null);
+            lbService.removeHostFromLoadBalancer(lb, mapToRemove.getHostId());
         }
     }
 }
