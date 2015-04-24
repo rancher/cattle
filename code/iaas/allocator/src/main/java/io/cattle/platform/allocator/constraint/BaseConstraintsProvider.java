@@ -148,4 +148,8 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
         return Priority.PRE;
     }
 
+    @Override
+    public boolean isCritical() {
+        return true;
+    }
 }

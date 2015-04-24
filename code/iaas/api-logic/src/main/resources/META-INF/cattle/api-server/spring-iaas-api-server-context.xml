@@ -21,4 +21,9 @@
     <bean class="io.cattle.platform.iaas.api.cluster.ClusterAddHostActionHandler" />
     <bean class="io.cattle.platform.iaas.api.cluster.ClusterRemoveHostActionHandler" />
 
+    <bean class="io.cattle.platform.iaas.api.label.AddHostLabelActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.label.RemoveHostLabelActionHandler" />
+
+    <bean class="io.cattle.platform.iaas.api.label.AddContainerLabelActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.label.RemoveContainerLabelActionHandler" />
 </beans>

@@ -4,7 +4,7 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.model.Host;
 
-public class ComputeContstraint implements Constraint {
+public class ComputeContstraint extends HardConstraint implements Constraint {
 
     long computeFree;
 

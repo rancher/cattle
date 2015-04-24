@@ -6,7 +6,7 @@ import io.cattle.platform.allocator.service.AllocationCandidate;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ValidHostsConstraint implements Constraint {
+public class ValidHostsConstraint extends HardConstraint implements Constraint {
 
     Set<Long> hosts = new HashSet<Long>();
 

@@ -33,4 +33,8 @@ public class PortsConstraintProvider implements AllocationConstraintsProvider {
         }
     }
 
+    @Override
+    public boolean isCritical() {
+        return false;
+    }
 }

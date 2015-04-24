@@ -4,7 +4,7 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.model.Host;
 
-public class HostKindConstraint implements Constraint, KindConstraint {
+public class HostKindConstraint extends HardConstraint implements Constraint, KindConstraint {
 
     String kind;
 

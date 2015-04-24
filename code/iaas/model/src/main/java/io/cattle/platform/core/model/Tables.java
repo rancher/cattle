@@ -119,6 +119,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.HostIpAddressMapTable HOST_IP_ADDRESS_MAP = io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP;
 
 	/**
+	 * The table cattle.host_label_map
+	 */
+	public static final io.cattle.platform.core.model.tables.HostLabelMapTable HOST_LABEL_MAP = io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP;
+
+	/**
 	 * The table cattle.host_vnet_map
 	 */
 	public static final io.cattle.platform.core.model.tables.HostVnetMapTable HOST_VNET_MAP = io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP;
@@ -144,6 +149,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.InstanceHostMapTable INSTANCE_HOST_MAP = io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 
 	/**
+	 * The table cattle.instance_label_map
+	 */
+	public static final io.cattle.platform.core.model.tables.InstanceLabelMapTable INSTANCE_LABEL_MAP = io.cattle.platform.core.model.tables.InstanceLabelMapTable.INSTANCE_LABEL_MAP;
+
+	/**
 	 * The table cattle.instance_link
 	 */
 	public static final io.cattle.platform.core.model.tables.InstanceLinkTable INSTANCE_LINK = io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
@@ -167,6 +177,11 @@ public class Tables {
 	 * The table cattle.ip_pool
 	 */
 	public static final io.cattle.platform.core.model.tables.IpPoolTable IP_POOL = io.cattle.platform.core.model.tables.IpPoolTable.IP_POOL;
+
+	/**
+	 * The table cattle.label
+	 */
+	public static final io.cattle.platform.core.model.tables.LabelTable LABEL = io.cattle.platform.core.model.tables.LabelTable.LABEL;
 
 	/**
 	 * The table cattle.load_balancer

@@ -7,7 +7,6 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -51,12 +50,12 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     @Override
-    public List<? extends Instance> getNonRemovedInstanceOn(Host host) {
+    public List<? extends Instance> getNonRemovedInstanceOn(Long hostId) {
         return create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
                 .join(INSTANCE_HOST_MAP)
-                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(host.getId())
+                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
                             .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID)))
                 .where(INSTANCE.REMOVED.isNull())
                 .fetchInto(InstanceRecord.class);

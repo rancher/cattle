@@ -67,4 +67,8 @@ public class ImageKindConstraintsProvider implements AllocationConstraintsProvid
         this.exclusive = exclusive;
     }
 
+    @Override
+    public boolean isCritical() {
+        return true;
+    }
 }

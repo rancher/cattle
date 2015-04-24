@@ -7,7 +7,7 @@ import io.cattle.platform.core.model.Volume;
 import java.util.HashSet;
 import java.util.Set;
 
-public class VolumeValidStoragePoolConstraint implements Constraint {
+public class VolumeValidStoragePoolConstraint extends HardConstraint implements Constraint {
 
     Volume volume;
     Set<Long> storagePools = new HashSet<Long>();

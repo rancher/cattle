@@ -103,6 +103,12 @@
         "host.physicalHostId" : "r",
         "host.zoneId" : "ru",
 
+        "addLabelInput" : "cr",
+        "addLabelInput.key" : "cr",
+        "addLabelInput.value" : "cr",
+        "removeLabelInput" : "cr",
+        "removeLabelInput.label" : "cr",
+
         "hostAccess" : "r",
         "hostAccess.token" : "r",
         "hostAccess.url" : "r",
@@ -352,6 +358,11 @@
         "snapshot.volumeId" : "cr",
         "snapshot.managedVolumeUUID" : "r",
         "snapshot.managedSnapshotUUID" : "r",
+
+        "label" : "crud",
+        "label.type" : "",
+        "label.key" : "cru",
+        "label.value" : "cru",
 
         "end" : ""
     }

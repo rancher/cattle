@@ -8,7 +8,7 @@ import io.cattle.platform.core.model.Port;
 import java.util.List;
 import java.util.Set;
 
-public class PortsConstraint implements Constraint {
+public class PortsConstraint extends HardConstraint implements Constraint {
 
     AllocatorDao allocatorDao;
 

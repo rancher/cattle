@@ -13,6 +13,16 @@ def test_user_client_access(clients):
         'superadmin': 145,
         'service': 93,
         'project': 71,
+        'admin': 95,
+        'agent': 8,
+        'user': 73,
+        'agentRegister': 4,
+        'test': 140,
+        'readAdmin': 95,
+        'token': 2,
+        'superadmin': 149,
+        'service': 96,
+        'project': 74,
     }
     for tuple in clients.items():
         assert typesLen[tuple[0]] == len(tuple[1].schema.types.items())

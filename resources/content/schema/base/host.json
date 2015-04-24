@@ -7,5 +7,15 @@
             "type" : "string",
             "nullable" : true
         }
+    },
+    "resourceActions": {
+        "addlabel": {
+            "input": "addLabelInput",
+            "output": "host"
+        },
+        "removelabel": {
+            "input": "removeLabelInput",
+            "output": "host"
+        }
     }
 }
