@@ -72,8 +72,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             instanceCache.invalidate(agentId);
         }
     }
-    
-    protected boolean handleUnreportedKnownInstances(long agentId, Map<String, String> knownInstances, 
+
+    protected boolean handleUnreportedKnownInstances(long agentId, Map<String, String> knownInstances,
             ReportedInstances reportedInstances, boolean checkOnly) {
 
         if (knownInstances != null) {
