@@ -36,7 +36,6 @@
         "container" : "crud",
         "container.capAdd" : "cr",
         "container.capDrop" : "cr",
-        "container.commandArgs" : "cr",
         "container.command" : "cr",
         "container.count" : "cr",
         "container.cpuSet" : "cr",
