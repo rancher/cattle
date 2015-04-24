@@ -61,11 +61,12 @@ public class GithubProxy extends AbstractResponseGenerator {
         Response res = Request.Get(GITHUB_API_BASE.get() + redirect).addHeader("Authorization", "token " + accessToken).addHeader("Accept", "application/json")
                 .execute();
         res.handleResponse(new ResponseHandler<Object>() {
-
             @Override
             public Object handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
                 int statusCode = response.getStatusLine().getStatusCode();
-                request.getServletContext().getResponse().setStatus(statusCode);
+                request.setResponseObject(new Object());
+                request.setResponseCode(statusCode);
+                request.commit();
                 OutputStream writer = request.getServletContext().getResponse().getOutputStream();
                 Header[] headers = response.getAllHeaders();
                 for (int i = 0; i < headers.length; i++) {
@@ -75,9 +76,6 @@ public class GithubProxy extends AbstractResponseGenerator {
                 return null;
             }
         });
-
-        request.commit();
-        request.setResponseObject(new Object());
     }
 
     @Inject
