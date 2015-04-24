@@ -1,8 +1,7 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
-import static io.cattle.platform.core.model.tables.LoadBalancerTargetTable.LOAD_BALANCER_TARGET;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.LoadBalancerTargetTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.LoadBalancerTargetDao;

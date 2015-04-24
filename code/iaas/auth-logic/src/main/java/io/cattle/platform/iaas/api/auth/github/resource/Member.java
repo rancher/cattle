@@ -2,8 +2,6 @@ package io.cattle.platform.iaas.api.auth.github.resource;
 
 import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.core.model.ProjectMember;
-import io.github.ibuildthecloud.gdapi.annotation.Field;
-import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 public class Member  {
 

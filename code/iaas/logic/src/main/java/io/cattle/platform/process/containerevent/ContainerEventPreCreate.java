@@ -19,8 +19,6 @@ import java.util.Map;
 
 import javax.inject.Named;
 
-import org.jooq.exception.InvalidResultException;
-
 @Named
 public class ContainerEventPreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
