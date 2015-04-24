@@ -14,8 +14,11 @@ def _resource_is_active(resource):
     return resource.state == 'active'
 
 
-def test_cluster_add_remove_host_actions(admin_client, super_client,
-                                         sim_context, sim_context2):
+def test_cluster_add_remove_host_actions(admin_client, super_client):
+    sim_context = create_sim_context(
+        super_client, 'simagent' + random_str(), ip='192.168.10.15')
+    sim_context2 = create_sim_context(
+        super_client, 'simagent' + random_str(), ip='192.168.10.16')
     host1 = sim_context['host']
     _clean_clusterhostmap_for_host(host1)
 
@@ -96,13 +99,9 @@ def test_cluster_add_remove_host_actions(admin_client, super_client,
         lambda x: len(x.hosts()))
 
 
-# temporarily skipping since this was inadvertently deleting the
-# real host causing downstream TFs
-@pytest.mark.skipif('True')
 def test_host_purge(admin_client, super_client):
     new_context = create_sim_context(
-        super_client, 'simagent' + random_str(), ip='192.168.10.14',
-        public=True)
+        super_client, 'simagent' + random_str(), ip='192.168.10.17')
 
     host1 = new_context['host']
     _clean_clusterhostmap_for_host(host1)
@@ -122,7 +121,9 @@ def test_host_purge(admin_client, super_client):
         admin_client, cluster, lambda x: len(x.hosts()) == 0)
 
 
-def test_cluster_purge(admin_client, super_client, sim_context):
+def test_cluster_purge(admin_client, super_client):
+    sim_context = create_sim_context(
+        super_client, 'simagent' + random_str(), ip='192.168.10.18')
     host1 = sim_context['host']
     _clean_clusterhostmap_for_host(host1)
 
@@ -179,7 +180,9 @@ def test_cluster_purge(admin_client, super_client, sim_context):
         lambda x: 'State is: ' + x.state)
 
 
-def test_cluster_actions_invalid_host_ref(admin_client, sim_context):
+def test_cluster_actions_invalid_host_ref(admin_client, super_client):
+    sim_context = create_sim_context(
+        super_client, 'simagent' + random_str(), ip='192.168.10.19')
     host1 = sim_context['host']
     _clean_clusterhostmap_for_host(host1)
 

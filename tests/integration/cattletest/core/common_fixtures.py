@@ -451,6 +451,9 @@ def kind_context(admin_client, kind, external_pool=False,
         get_plain_id(admin_client, kind_pool.account()) == \
         str(kind_agent.data.agentResourcesAccountId)
 
+    kind_host = admin_client.wait_success(kind_host)
+    assert kind_host.state == 'active'
+
     context = {
         'host': kind_host,
         'pool': kind_pool,
