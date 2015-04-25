@@ -87,7 +87,7 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
             }
 
             if (version == null) {
-                throw new IllegalStateException("Failed to find verions for [" + item.getName() + "]");
+                throw new IllegalStateException("Failed to find versions for [" + item.getName() + "]");
             }
 
             log.info("Simulator POSTing version [{}] for [{}]", version, item.getName());
