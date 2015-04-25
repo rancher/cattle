@@ -36,7 +36,7 @@ public class Idempotent {
 
             T result = null;
 
-            outer: for (int i = 0; i < 3; i++) {
+            outer: for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < LOOP_MAX; j++) {
                     try {
                         T resultAgain = execution.execute();
