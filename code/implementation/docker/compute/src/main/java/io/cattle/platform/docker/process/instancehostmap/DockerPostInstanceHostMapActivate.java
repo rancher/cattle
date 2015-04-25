@@ -104,6 +104,22 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void processVolumes(Instance instance, Host host, ProcessState state) {
+
+        Map<String, Object> inspect = (Map<String, Object>) instance.getData().get("dockerInspect");
+        if (inspect == null) {
+            return;
+        }
+        Map<String, String> volumes = (Map<String, String>) inspect.get("Volumes");
+        Map<String, Boolean> volumesRW = (Map<String, Boolean>) inspect.get("VolumesRW");
+        Map<String, String> hostBindMounts = extractHostBindMounts((List<String>) ((Map) inspect.get("HostConfig")).get("Binds"));
+
+        if (volumes.size() == 0) {
+            /* If there are no volumes avoid looking for a pool because one may not exists
+             * for this host and we don't want to warn about that
+             */
+            return;
+        }
+
         StoragePool storagePool = null;
         for (StoragePool pool : objectManager.mappedChildren(host, StoragePool.class)) {
             if (DockerStoragePoolDriver.isDockerPool(pool)) {
@@ -116,14 +132,6 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             log.warn("Could not find docker storage pool for host [{}]. Volumes will not be created.", host.getId());
             return;
         }
-
-        Map<String, Object> inspect = (Map<String, Object>) instance.getData().get("dockerInspect");
-        if (inspect == null) {
-            return;
-        }
-        Map<String, String> volumes = (Map<String, String>) inspect.get("Volumes");
-        Map<String, Boolean> volumesRW = (Map<String, Boolean>) inspect.get("VolumesRW");
-        Map<String, String> hostBindMounts = extractHostBindMounts((List<String>) ((Map) inspect.get("HostConfig")).get("Binds"));
 
         for (Map.Entry<String, String> volumeKV : volumes.entrySet()) {
             String pathInContainer = volumeKV.getKey();
