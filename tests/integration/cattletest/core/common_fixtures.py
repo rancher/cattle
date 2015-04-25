@@ -238,6 +238,7 @@ def sim_context3(super_client):
 def new_sim_context(super_client):
     uri = 'sim://' + random_str()
     sim_context = kind_context(super_client, 'sim', uri=uri, uuid=uri)
+    sim_context['imageUuid'] = 'sim:{}'.format(random_num())
 
     for i in ['host', 'pool', 'agent']:
         sim_context[i] = super_client.wait_success(sim_context[i])
