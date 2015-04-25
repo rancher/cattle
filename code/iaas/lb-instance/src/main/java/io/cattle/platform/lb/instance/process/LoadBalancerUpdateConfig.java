@@ -113,19 +113,21 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
             }
         }
 
-        createLoadBalancerInstances(state, process, lbIds);
+        Map<Long, List<? extends Instance>> lbInstancesMap = createLoadBalancerInstances(state, process, lbIds);
 
-        updateLoadBalancerConfigs(state, lbIds);
+        updateLoadBalancerConfigs(state, lbInstancesMap);
 
-        updatePublicPorts(state, lbIds);
+        updatePublicPorts(state, lbInstancesMap);
 
         return null;
     }
 
-    private void updateLoadBalancerConfigs(ProcessState state, Set<Long> lbIds) {
+    private void updateLoadBalancerConfigs(ProcessState state, Map<Long, List<? extends Instance>> lbInstancesMap) {
         List<Agent> agents = new ArrayList<>();
-        for (Long lbId : lbIds) {
-            agents.addAll(lbInstanceManager.getLoadBalancerAgents(objectManager.loadResource(LoadBalancer.class, lbId)));
+        for (Long lbId : lbInstancesMap.keySet()) {
+            for (Instance lbInstance : lbInstancesMap.get(lbId)) {
+                agents.add(objectManager.loadResource(Agent.class, lbInstance.getAgentId()));
+            }
         }
 
         for (Agent agent : agents) {
@@ -171,14 +173,19 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
         return String.format("AgentUpdateConfig:%s", agent.getId());
     }
 
-    private void createLoadBalancerInstances(ProcessState state, ProcessInstance process, Set<Long> lbIds) {
-        List<Instance> lbInstances = new ArrayList<>();
+    private Map<Long, List<? extends Instance>> createLoadBalancerInstances(ProcessState state,
+            ProcessInstance process, Set<Long> lbIds) {
+        Map<Long, List<? extends Instance>> lbInstancesMap = new HashMap<>();
+        List<Instance> allLbInstances = new ArrayList<>();
         // create lb instances and open the ports for them
         for (Long lbId : lbIds) {
+            List<? extends Instance> lbInstances = new ArrayList<>();
             LoadBalancer lb = loadResource(LoadBalancer.class, lbId);
-            lbInstances.addAll(lbInstanceManager.createLoadBalancerInstances(lb));
+            lbInstances = lbInstanceManager.createLoadBalancerInstances(lb);
+            allLbInstances.addAll(lbInstances);
+            lbInstancesMap.put(lbId, lbInstances);
         }
-        for (Instance lbInstance : lbInstances) {
+        for (Instance lbInstance : allLbInstances) {
             lbInstance = resourceMonitor.waitFor(lbInstance, new ResourcePredicate<Instance>() {
                 @Override
                 public boolean evaluate(Instance obj) {
@@ -186,10 +193,11 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
                 }
             });
         }
+        return lbInstancesMap;
     }
 
-    private void updatePublicPorts(ProcessState state, Set<Long> lbIds) {
-        for (Long lbId : lbIds) {
+    private void updatePublicPorts(ProcessState state, Map<Long, List<? extends Instance>> lbInstancesMap) {
+        for (Long lbId : lbInstancesMap.keySet()) {
             final LoadBalancer lb = loadResource(LoadBalancer.class, lbId);
             List<? extends LoadBalancerListener> listeners = lbDao.listActiveListenersForConfig(lb
                     .getLoadBalancerConfigId());
@@ -197,7 +205,7 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
             for (LoadBalancerListener listener : listeners) {
                 listenerPorts.add(listener.getSourcePort());
             }
-            List<? extends Instance> lbInstances = lbInstanceManager.getLoadBalancerInstances(lb);
+            List<? extends Instance> lbInstances = lbInstancesMap.get(lbId);
             // surround by lock
             for (final Instance lbInstance : lbInstances) {
                 final boolean hasActiveInstances = (targetDao.getLoadBalancerActiveInstanceTargets(lb.getId()).size() + targetDao

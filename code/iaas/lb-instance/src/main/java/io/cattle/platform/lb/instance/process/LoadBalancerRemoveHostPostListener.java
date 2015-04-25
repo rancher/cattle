@@ -1,7 +1,9 @@
 package io.cattle.platform.lb.instance.process;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
@@ -35,7 +37,12 @@ public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLog
         LoadBalancerHostMap map = (LoadBalancerHostMap) state.getResource();
         LoadBalancer lb = loadResource(LoadBalancer.class, map.getLoadBalancerId());
         long hostId = map.getHostId();
-        removeLoadBalancerInstance(lb, hostId);
+        Host host = objectManager.loadResource(Host.class, hostId);
+        if (host.getRemoved() == null
+                && !(host.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || host.getState()
+                        .equalsIgnoreCase(CommonStatesConstants.REMOVING))) {
+            removeLoadBalancerInstance(lb, hostId);
+        }
         return null;
     }
 
@@ -46,7 +53,10 @@ public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLog
 
     protected void removeLoadBalancerInstance(LoadBalancer loadBalancer, long hostId) {
         Instance lbInstance = lbInstanceManager.getLoadBalancerInstance(loadBalancer, hostId);
-        if (lbInstance != null) {
+        if (lbInstance != null
+                && !(lbInstance.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || lbInstance.getState()
+                        .equals(
+                        CommonStatesConstants.REMOVING))) {
             // try to remove first
             try {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbInstance, null);

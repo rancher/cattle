@@ -136,9 +136,8 @@ def test_deactivate_then_remove_lb_svc(super_client, admin_client):
 
     # remove service and verify that the lb is gone
     wait_success(admin_client, service.remove())
-    lb = super_client.reload(lb)
-    lb = super_client.wait_success(lb)
-    assert lb.state == "removed"
+    wait_for_condition(super_client, lb, _resource_is_removed,
+                       lambda x: 'State is: ' + x.state)
 
 
 def test_remove_active_lb_svc(super_client, admin_client):
@@ -156,8 +155,9 @@ def test_remove_active_lb_svc(super_client, admin_client):
     validate_remove_host(host1, lb, super_client)
     validate_remove_host(host2, lb, super_client)
 
-    lb = super_client.reload(lb)
-    assert lb.state == "removed"
+    wait_for_condition(
+        super_client, lb, _resource_is_removed,
+        lambda x: 'State is: ' + x.state)
 
     lb_configs = super_client. \
         list_loadBalancerConfig(name=env.name + "_" + service.name)
