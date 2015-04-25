@@ -14,11 +14,8 @@ def _resource_is_active(resource):
     return resource.state == 'active'
 
 
-def test_cluster_add_remove_host_actions(admin_client, super_client):
-    sim_context = create_sim_context(
-        super_client, 'simagent' + random_str(), ip='192.168.10.15')
-    sim_context2 = create_sim_context(
-        super_client, 'simagent' + random_str(), ip='192.168.10.16')
+def test_cluster_add_remove_host_actions(admin_client, super_client,
+                                         sim_context, sim_context2):
     host1 = sim_context['host']
     _clean_clusterhostmap_for_host(host1)
 
@@ -99,8 +96,15 @@ def test_cluster_add_remove_host_actions(admin_client, super_client):
         lambda x: len(x.hosts()))
 
 
-def test_host_purge(admin_client, super_client, new_sim_context):
-    host1 = new_sim_context['host']
+# temporarily skipping since this was inadvertently deleting the
+# real host causing downstream TFs
+@pytest.mark.skipif('True')
+def test_host_purge(admin_client, super_client):
+    new_context = create_sim_context(
+        super_client, 'simagent' + random_str(), ip='192.168.10.14',
+        public=True)
+
+    host1 = new_context['host']
     _clean_clusterhostmap_for_host(host1)
 
     cluster = admin_client.create_cluster(
@@ -110,7 +114,6 @@ def test_host_purge(admin_client, super_client, new_sim_context):
         lambda x: 'State is: ' + x.state)
 
     cluster = cluster.addhost(hostId=str(host1.id))
-
     host1 = admin_client.wait_success(host1.deactivate())
     host1 = admin_client.wait_success(admin_client.delete(host1))
     admin_client.wait_success(host1.purge())
@@ -119,11 +122,11 @@ def test_host_purge(admin_client, super_client, new_sim_context):
         admin_client, cluster, lambda x: len(x.hosts()) == 0)
 
 
-def test_cluster_purge(admin_client, super_client, new_sim_context):
-    host1 = new_sim_context['host']
+def test_cluster_purge(admin_client, super_client, sim_context):
+    host1 = sim_context['host']
     _clean_clusterhostmap_for_host(host1)
 
-    create_agent_instance_nsp(super_client, new_sim_context)
+    create_agent_instance_nsp(super_client, sim_context)
 
     cluster = admin_client.create_cluster(
         name='testcluster3', port=9000)
@@ -176,9 +179,8 @@ def test_cluster_purge(admin_client, super_client, new_sim_context):
         lambda x: 'State is: ' + x.state)
 
 
-def test_cluster_actions_invalid_host_ref(admin_client, super_client,
-                                          new_sim_context):
-    host1 = new_sim_context['host']
+def test_cluster_actions_invalid_host_ref(admin_client, sim_context):
+    host1 = sim_context['host']
     _clean_clusterhostmap_for_host(host1)
 
     cluster = admin_client.create_cluster(
