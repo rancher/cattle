@@ -238,7 +238,6 @@ def sim_context3(super_client):
 def new_sim_context(super_client):
     uri = 'sim://' + random_str()
     sim_context = kind_context(super_client, 'sim', uri=uri, uuid=uri)
-    sim_context['imageUuid'] = 'sim:{}'.format(random_num())
 
     for i in ['host', 'pool', 'agent']:
         sim_context[i] = super_client.wait_success(sim_context[i])
@@ -451,9 +450,6 @@ def kind_context(admin_client, kind, external_pool=False,
     assert kind_pool.accountId == kind_agent.accountId or \
         get_plain_id(admin_client, kind_pool.account()) == \
         str(kind_agent.data.agentResourcesAccountId)
-
-    kind_host = admin_client.wait_success(kind_host)
-    assert kind_host.state == 'active'
 
     context = {
         'host': kind_host,
