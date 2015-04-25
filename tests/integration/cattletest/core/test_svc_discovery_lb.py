@@ -136,9 +136,8 @@ def test_deactivate_then_remove_lb_svc(super_client, admin_client):
 
     # remove service and verify that the lb is gone
     wait_success(admin_client, service.remove())
-    wait_for_condition(
-    super_client, lb, _resource_is_removed,
-    lambda x: 'State is: ' + x.state)
+    wait_for_condition(super_client, lb, _resource_is_removed,
+                       lambda x: 'State is: ' + x.state)
 
 
 def test_remove_active_lb_svc(super_client, admin_client):

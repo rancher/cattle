@@ -1,6 +1,7 @@
 package io.cattle.platform.lb.instance.process;
 
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Agent;
@@ -56,8 +57,9 @@ public class LoadBalancerInstanceRemovePostListener extends AbstractObjectProces
 
     private void deleteLoadBalancerInstance(Instance instance) {
         Agent lbAgent = objectManager.loadResource(Agent.class, instance.getAgentId());
-
-        if (lbAgent.getRemoved() == null) {
+        if (lbAgent.getRemoved() == null
+                && !(lbAgent.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || lbAgent.getState().equals(
+                        CommonStatesConstants.REMOVING))) {
             // try to remove first
             try {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, lbAgent, null);
@@ -68,6 +70,7 @@ public class LoadBalancerInstanceRemovePostListener extends AbstractObjectProces
             }
         }
     }
+
 
     @Override
     public int getPriority() {

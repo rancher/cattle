@@ -3,6 +3,7 @@ package io.cattle.platform.lb.instance.service.impl;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
@@ -78,10 +79,14 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         }
 
         for (long hostId : hosts) {
+            Host host = objectManager.loadResource(Host.class, hostId);
+            if (!host.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
+                // skip inactive host
+                continue;
+            }
             Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostId);
 
             if (lbInstance == null) {
-                Host host = objectManager.loadResource(Host.class, hostId);
 
                 String imageUUID = DataAccessor.fields(loadBalancer).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID).as(String.class);
 
