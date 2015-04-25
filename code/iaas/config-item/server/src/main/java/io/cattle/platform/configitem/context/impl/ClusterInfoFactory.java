@@ -56,7 +56,9 @@ public class ClusterInfoFactory extends AbstractAgentBaseContextFactory {
                 continue;
             }
             IpAddress ipAddress = clusterHostMapDao.getIpAddressForHost(hostId);
-            hostPorts.add(ipAddress.getAddress() + ":" + CLUSTER_INSECUREDOCKER_PORT.getValue());
+            if (ipAddress != null) {
+                hostPorts.add(ipAddress.getAddress() + ":" + CLUSTER_INSECUREDOCKER_PORT.getValue());
+            }
         }
 
         context.getData().put("clusterServerPort", clusterServerPort);
