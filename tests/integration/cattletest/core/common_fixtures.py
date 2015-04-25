@@ -786,3 +786,13 @@ def wait_setting_active(api_client, setting, timeout=45):
             raise Exception(msg)
 
     return setting
+
+
+def create_container(client, sim_context, **kw):
+    args = {
+        'imageUuid': sim_context['imageUuid'],
+        'requestedHostId': sim_context['host'].id,
+        }
+    args.update(kw)
+
+    return client.create_container(**args)
