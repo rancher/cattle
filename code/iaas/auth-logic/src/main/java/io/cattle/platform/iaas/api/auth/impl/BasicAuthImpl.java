@@ -35,6 +35,8 @@ public class BasicAuthImpl implements AccountLookup, Priority {
     AuthDao authDao;
     @Inject
     GithubOAuthImpl githubOAuth;
+    @Inject
+    AdminAuthLookUp adminAuthLookUp;
 
     @Override
     public AccountAccess getAccountAccess(ApiRequest request) {
@@ -51,6 +53,10 @@ public class BasicAuthImpl implements AccountLookup, Priority {
             String[] splits = auth[0].split("=");
             String projectId = splits.length == 2 ? splits[1] : null;
             accountAccess = githubOAuth.getAccountAccess(ProjectConstants.AUTH_TYPE + auth[1], projectId, request);
+        } else if (auth[0].toLowerCase().startsWith(ProjectConstants.OAUTH_BASIC.toLowerCase()) && !SECURITY.get()) {
+            String[] splits = auth[0].split("=");
+            String projectId = splits.length == 2 ? splits[1] : null;
+            accountAccess = adminAuthLookUp.getAccountAccess(projectId);
         }
         return accountAccess;
     }

@@ -29,35 +29,43 @@ public class AdminAuthLookUp implements AccountLookup, Priority {
 
     @Override
     public AccountAccess getAccountAccess(ApiRequest request) {
-        AccountAccess accountAccess = null;
         if (SECURITY.get()){
-            return accountAccess;
+            return null;
         }
-
         String authHeader = StringUtils.trim(request.getServletContext().getRequest().getHeader(ENFORCE_AUTH_HEADER));
         if (StringUtils.equals("true", authHeader)) {
-            return accountAccess;
+            return null;
         }
+        String projectId = request.getServletContext().getRequest().getHeader(ProjectConstants.PROJECT_HEADER);
+        if (projectId == null || projectId.isEmpty()) {
+            projectId = request.getServletContext().getRequest().getParameter("projectId");
+        }
+        return getAccountAccessInternal(projectId);
+    }
+
+    private AccountAccess getAccountAccessInternal(String projectId){
         Account admin = authDao.getAdminAccount();
         if (admin == null){
             return null;
         }
-        String projectId = request.getServletContext().getRequest().getHeader(ProjectConstants.PROJECT_HEADER);
         Account project = null;
-        if (projectId == null || projectId.isEmpty()) {
-            projectId = request.getServletContext().getRequest().getParameter("projectId");
-        }
-        if (projectId != null && !projectId.isEmpty() && !projectId.equalsIgnoreCase(ProjectConstants.USER)) {
+        if (projectId != null && !projectId.isEmpty()) {
             String id = ApiContext.getContext().getIdFormatter().parseId(projectId);
-            project = authDao.getAccountById(Long.valueOf(id));
+            try {
+                project = authDao.getAccountById(Long.valueOf(id));
+            } catch (NumberFormatException e){
+                if (!id.equalsIgnoreCase("user")){
+                    throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
+                }
+                project = admin;
+            }
             if (project == null){
                 throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
             }
         }
+
+        AccountAccess accountAccess;
         if (project == null) {
-            project = authDao.getDefaultProject(admin);
-        }
-        if (projectId != null && projectId.equalsIgnoreCase(ProjectConstants.USER)) {
             accountAccess = new AccountAccess(admin, null);
             accountAccess.getExternalIds().add(new ExternalId(String.valueOf(admin.getId()), ProjectConstants.RANCHER_ID));
         }else{
@@ -65,6 +73,10 @@ public class AdminAuthLookUp implements AccountLookup, Priority {
             accountAccess.getExternalIds().add(new ExternalId(String.valueOf(project.getId()), ProjectConstants.RANCHER_ID));
         }
         return accountAccess;
+    }
+
+    public AccountAccess getAccountAccess(String projectId){
+        return  getAccountAccessInternal(projectId);
     }
 
     @Override

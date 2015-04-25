@@ -218,7 +218,6 @@ public class Keys {
 	// FOREIGN KEY definitions
 	// -------------------------------------------------------------------------
 
-	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_ACCOUNT__PROJECT_ID = ForeignKeys0.FK_ACCOUNT__PROJECT_ID;
 	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_AGENT__ACCOUNT_ID = ForeignKeys0.FK_AGENT__ACCOUNT_ID;
 	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.AgentGroupRecord> FK_AGENT__AGENT_GROUP_ID = ForeignKeys0.FK_AGENT__AGENT_GROUP_ID;
 	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.ZoneRecord> FK_AGENT__ZONE_ID = ForeignKeys0.FK_AGENT__ZONE_ID;
@@ -549,7 +548,6 @@ public class Keys {
 	}
 
 	private static class ForeignKeys0 extends org.jooq.impl.AbstractKeys {
-		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_ACCOUNT__PROJECT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, io.cattle.platform.core.model.tables.AccountTable.ACCOUNT, io.cattle.platform.core.model.tables.AccountTable.ACCOUNT.PROJECT_ID);
 		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_AGENT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, io.cattle.platform.core.model.tables.AgentTable.AGENT, io.cattle.platform.core.model.tables.AgentTable.AGENT.ACCOUNT_ID);
 		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.AgentGroupRecord> FK_AGENT__AGENT_GROUP_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_AGENT_GROUP_PRIMARY, io.cattle.platform.core.model.tables.AgentTable.AGENT, io.cattle.platform.core.model.tables.AgentTable.AGENT.AGENT_GROUP_ID);
 		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.ZoneRecord> FK_AGENT__ZONE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ZONE_PRIMARY, io.cattle.platform.core.model.tables.AgentTable.AGENT, io.cattle.platform.core.model.tables.AgentTable.AGENT.ZONE_ID);

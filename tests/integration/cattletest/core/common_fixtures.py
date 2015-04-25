@@ -1,4 +1,3 @@
-import gdapi
 import cattle
 import os
 import pytest
@@ -15,9 +14,6 @@ SLEEP_DELAY = 0.5
 ACCOUNT_LIST = ['admin', 'agent', 'user', 'agentRegister',
                 'readAdmin', 'token', 'superadmin', 'service', 'project']
 
-ADMIN_HEADERS = dict(gdapi.HEADERS)
-ADMIN_HEADERS['X-API-Project-Id'] = 'USER'
-
 
 @pytest.fixture(scope='session')
 def cattle_url():
@@ -27,7 +23,6 @@ def cattle_url():
 
 def _admin_client():
     return cattle.from_env(url=cattle_url(),
-                           headers=ADMIN_HEADERS,
                            cache=False,
                            access_key='admin',
                            secret_key='adminpass')
@@ -522,6 +517,11 @@ def create_and_activate(client, type, **kw):
 
     assert obj.state == 'active'
     return obj
+
+
+def acc_id(client):
+    obj = client.list_api_key()[0]
+    return obj.account().id
 
 
 def delete_sim_instances(admin_client):

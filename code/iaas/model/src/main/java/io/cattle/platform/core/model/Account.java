@@ -146,17 +146,6 @@ public interface Account extends java.io.Serializable {
 	@javax.persistence.Column(name = "external_id_type", length = 128)
 	public java.lang.String getExternalIdType();
 
-	/**
-	 * Setter for <code>cattle.account.project_id</code>.
-	 */
-	public void setProjectId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.account.project_id</code>.
-	 */
-	@javax.persistence.Column(name = "project_id", precision = 19)
-	public java.lang.Long getProjectId();
-
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

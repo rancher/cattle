@@ -46,8 +46,7 @@ def test_token_auth(token_client):
         'security': 'r',
         'teams': 'r',
         'userType': 'r',
-        'accountId': 'r',
-        'defaultProject': 'r'
+        'accountId': 'r'
     })
 
 
@@ -69,8 +68,7 @@ def test_project_auth(admin_client, client):
         'name': 'cru',
         'uuid': 'cr',
         'data': 'r',
-        'members': 'cr',
-        'projectId': 'r'
+        'members': 'cr'
     })
 
     auth_check(client.schema, 'project', 'crud', {
@@ -438,8 +436,7 @@ def test_account_auth(admin_client, client):
         'removeTime': 'r',
         'data': 'r',
         'kind': 'cru',
-        'uuid': 'cr',
-        'projectId': 'r'
+        'uuid': 'cr'
     })
 
     auth_check(client.schema, 'account', 'r', {

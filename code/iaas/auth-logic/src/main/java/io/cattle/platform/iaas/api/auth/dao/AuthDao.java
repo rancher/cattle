@@ -24,8 +24,6 @@ public interface AuthDao {
 
     Account createProject(String name, String description);
 
-    Account createDefaultProject(Account account);
-
     void updateAccount(Account account, String name, String kind, String externalId, String externalType);
 
     List<Account> getAccessibleProjects(Set<ExternalId> externalIdSet, boolean isAdmin, Long usingAccount);
@@ -48,7 +46,5 @@ public interface AuthDao {
 
     ProjectMember createProjectMember(Account project, Member member);
 
-    Account setDefaultProject(Account project, long accountId);
-
-    Account getDefaultProject(Account account);
+    void ensureAllProjectsHaveNonRancherIdMembers(ExternalId externalId);
 }
