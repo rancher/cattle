@@ -3,11 +3,19 @@ from cattle import ApiError
 from common_fixtures import *  # NOQA
 
 
+def _create_virtual_machine(client, sim_context, **kw):
+    args = {
+        'imageUuid': sim_context['imageUuid'],
+        'requestedHostId': sim_context['host'].id,
+    }
+    args.update(kw)
+
+    return client.create_virtual_machine(**args)
+
+
 def test_virtual_machine_create_cpu_memory(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-    vm = super_client.create_virtual_machine(imageUuid=image_uuid,
-                                             vcpu=2,
-                                             memoryMb=42)
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 vcpu=2, memoryMb=42)
 
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -17,8 +25,7 @@ def test_virtual_machine_create_cpu_memory(super_client, sim_context):
 
 
 def test_virtual_machine_create(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-    vm = super_client.create_virtual_machine(imageUuid=image_uuid)
+    vm = _create_virtual_machine(super_client, sim_context)
 
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -51,9 +58,8 @@ def test_virtual_machine_n_ids_s_ids(super_client, sim_context,
 def test_virtual_machine_network(super_client, sim_context, network,
                                  subnet):
     subnet_plain_id = get_plain_id(super_client, subnet)
-    image_uuid = sim_context['imageUuid']
-    vm = super_client.create_virtual_machine(imageUuid=image_uuid,
-                                             networkIds=[network.id])
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 networkIds=[network.id])
 
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -99,9 +105,8 @@ def test_virtual_machine_network(super_client, sim_context, network,
 
 def test_virtual_machine_subnet(super_client, sim_context, subnet, vnet):
     network = subnet.network()
-    image_uuid = sim_context['imageUuid']
-    vm = super_client.create_virtual_machine(imageUuid=image_uuid,
-                                             subnetIds=[subnet.id])
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 subnetIds=[subnet.id])
 
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -130,8 +135,6 @@ def test_virtual_machine_subnet(super_client, sim_context, subnet, vnet):
 
 
 def test_virtual_machine_no_ip(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-
     network = super_client.create_network()
     subnet = super_client.create_subnet(networkAddress='192.168.0.0',
                                         isPublic=True,
@@ -141,17 +144,16 @@ def test_virtual_machine_no_ip(super_client, sim_context):
                                         endAddress='192.168.0.3')
     subnet = super_client.wait_success(subnet)
     assert subnet.state == 'active'
-
-    vm = super_client.create_virtual_machine(imageUuid=image_uuid,
-                                             subnetIds=[subnet.id])
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 subnetIds=[subnet.id])
 
     vm = super_client.wait_success(vm)
 
     assert vm.state == 'running'
     assert vm.primaryIpAddress == '192.168.0.3'
 
-    vm = super_client.create_virtual_machine(imageUuid=image_uuid,
-                                             subnetIds=[subnet.id])
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 subnetIds=[subnet.id])
     vm = super_client.wait_transitioning(vm)
 
     assert vm.state == 'removed'
@@ -161,10 +163,8 @@ def test_virtual_machine_no_ip(super_client, sim_context):
 
 
 def test_virtual_machine_stop_subnet(super_client, sim_context, subnet, vnet):
-    image_uuid = sim_context['imageUuid']
-
-    vm = super_client.create_virtual_machine(subnetIds=[subnet.id],
-                                             imageUuid=image_uuid)
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -189,10 +189,8 @@ def test_virtual_machine_stop_subnet(super_client, sim_context, subnet, vnet):
 
 def test_virtual_machine_remove_subnet(super_client, sim_context,
                                        subnet, vnet):
-    image_uuid = sim_context['imageUuid']
-
-    vm = super_client.create_virtual_machine(subnetIds=[subnet.id],
-                                             imageUuid=image_uuid)
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -216,10 +214,9 @@ def test_virtual_machine_remove_subnet(super_client, sim_context,
 
 
 def test_virtual_machine_purge_subnet(super_client, sim_context, subnet, vnet):
-    image_uuid = sim_context['imageUuid']
     subnet_plain_id = get_plain_id(super_client, subnet)
-    vm = super_client.create_virtual_machine(subnetIds=[subnet.id],
-                                             imageUuid=image_uuid)
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -272,10 +269,9 @@ def test_virtual_machine_purge_subnet(super_client, sim_context, subnet, vnet):
 
 def test_virtual_machine_restore_subnet(super_client, sim_context,
                                         subnet, vnet):
-    image_uuid = sim_context['imageUuid']
     subnet_plain_id = get_plain_id(super_client, subnet)
-    vm = super_client.create_virtual_machine(subnetIds=[subnet.id],
-                                             imageUuid=image_uuid)
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -316,8 +312,7 @@ def test_virtual_machine_restore_subnet(super_client, sim_context,
 
 
 def test_virtual_machine_console(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-    vm = super_client.create_virtual_machine(imageUuid=image_uuid)
+    vm = _create_virtual_machine(super_client, sim_context)
     vm = super_client.wait_success(vm)
 
     assert vm.state == 'running'
@@ -340,8 +335,7 @@ def test_virtual_machine_console(super_client, sim_context):
 
 
 def test_virtual_machine_console_visibility(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-    vm = super_client.create_virtual_machine(imageUuid=image_uuid)
+    vm = _create_virtual_machine(super_client, sim_context)
     vm = super_client.wait_success(vm)
 
     assert vm.state == 'running'
@@ -363,7 +357,6 @@ def test_virtual_machine_console_visibility(super_client, sim_context):
 
 
 def test_virtual_machine_account_defaults(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
     account = create_and_activate(super_client, 'account',
                                   kind='user')
     cred = create_and_activate(super_client, 'credential',
@@ -380,8 +373,8 @@ def test_virtual_machine_account_defaults(super_client, sim_context):
     assert account.defaultCredentialIds == [cred.id]
     assert account.defaultNetworkIds == [network.id, network2.id]
 
-    vm = super_client.create_virtual_machine(imageUuid=image_uuid,
-                                             accountId=account.id)
+    vm = _create_virtual_machine(super_client, sim_context,
+                                 accountId=account.id)
     vm = super_client.wait_success(vm)
 
     assert vm.state == 'running'
