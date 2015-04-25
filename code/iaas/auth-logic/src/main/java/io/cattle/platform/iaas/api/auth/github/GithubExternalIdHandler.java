@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.auth.github;
 import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.iaas.api.auth.ExternalIdHandler;
 import io.cattle.platform.iaas.api.auth.github.resource.GithubAccountInfo;
-import io.cattle.platform.iaas.api.auth.github.resource.TeamAccountInfo;
 
 import javax.inject.Inject;
 

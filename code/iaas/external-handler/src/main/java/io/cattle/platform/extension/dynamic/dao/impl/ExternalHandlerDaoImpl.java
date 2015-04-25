@@ -1,8 +1,8 @@
 package io.cattle.platform.extension.dynamic.dao.impl;
 
-import static io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP;
-import static io.cattle.platform.core.model.tables.ExternalHandlerProcessTable.EXTERNAL_HANDLER_PROCESS;
-import static io.cattle.platform.core.model.tables.ExternalHandlerTable.EXTERNAL_HANDLER;
+import static io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.*;
+import static io.cattle.platform.core.model.tables.ExternalHandlerProcessTable.*;
+import static io.cattle.platform.core.model.tables.ExternalHandlerTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.ExternalHandler;
 import io.cattle.platform.core.model.tables.records.ExternalHandlerRecord;
@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jooq.Field;
-import org.jooq.Result;
 
 public class ExternalHandlerDaoImpl extends AbstractJooqDao implements ExternalHandlerDao {
 

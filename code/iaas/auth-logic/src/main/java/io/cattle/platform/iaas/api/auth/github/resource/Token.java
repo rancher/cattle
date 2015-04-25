@@ -1,9 +1,7 @@
 package io.cattle.platform.iaas.api.auth.github.resource;
 
-import io.cattle.platform.core.constants.ProjectConstants;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
-import io.github.ibuildthecloud.gdapi.context.ApiContext;
 
 import java.util.List;
 

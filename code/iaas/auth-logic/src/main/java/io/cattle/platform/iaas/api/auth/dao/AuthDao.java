@@ -1,12 +1,12 @@
 package io.cattle.platform.iaas.api.auth.dao;
 
-import io.cattle.platform.core.model.Account;
 import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
-import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.iaas.api.auth.github.resource.Member;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 public interface AuthDao {
 

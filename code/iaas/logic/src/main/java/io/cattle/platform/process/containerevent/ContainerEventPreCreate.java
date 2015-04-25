@@ -19,8 +19,6 @@ import java.util.Map;
 
 import javax.inject.Named;
 
-import org.jooq.exception.InvalidResultException;
-
 @Named
 public class ContainerEventPreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
@@ -40,7 +38,7 @@ public class ContainerEventPreCreate extends AbstractObjectProcessLogic implemen
 
         Long resourceAccId = null;
         Host host = objectManager.loadResource(Host.class, event.getHostId());
-        
+
         if ( agent != null ) {
             resourceAccId = DataAccessor.fromDataFieldOf(agent)
                     .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID).as(Long.class);

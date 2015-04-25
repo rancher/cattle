@@ -1,7 +1,5 @@
 package io.cattle.platform.core.dao;
 
-import io.cattle.platform.core.model.ProjectMember;
-
 import java.util.Map;
 
 public interface GenericResourceDao {

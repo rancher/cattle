@@ -27,9 +27,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -75,8 +72,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             instanceCache.invalidate(agentId);
         }
     }
-    
-    protected boolean handleUnreportedKnownInstances(long agentId, Map<String, String> knownInstances, 
+
+    protected boolean handleUnreportedKnownInstances(long agentId, Map<String, String> knownInstances,
             ReportedInstances reportedInstances, boolean checkOnly) {
 
         if (knownInstances != null) {
