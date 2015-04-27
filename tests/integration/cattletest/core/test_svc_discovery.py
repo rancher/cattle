@@ -131,7 +131,9 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
         list_serviceExposeMap(serviceId=service.id)
 
     assert len(instance_service_map) == 1
-    assert instance_service_map[0].state == 'active'
+    wait_for_condition(
+        super_client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
 
     instances = super_client. \
         list_container(name="compose_" + service.name + "_" + "1")
@@ -235,7 +237,9 @@ def test_deactivate_remove_service(super_client, admin_client,
         list_serviceExposeMap(serviceId=service.id)
 
     assert len(instance_service_map) == 1
-    assert instance_service_map[0].state == 'active'
+    wait_for_condition(
+        super_client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
 
     instances = super_client. \
         list_container(name="compose_" + service.name + "_" + "1")
@@ -313,7 +317,9 @@ def test_remove_inactive_service(super_client, admin_client, sim_context, nsp):
         list_serviceExposeMap(serviceId=service.id)
 
     assert len(instance_service_map) == 1
-    assert instance_service_map[0].state == 'active'
+    wait_for_condition(
+        super_client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
 
     instances = super_client. \
         list_container(name="compose_" + service.name + "_" + "1")
@@ -353,7 +359,9 @@ def test_remove_environment(super_client, admin_client, sim_context, nsp):
         list_serviceExposeMap(serviceId=service.id)
 
     assert len(instance_service_map) == 1
-    assert instance_service_map[0].state == 'active'
+    wait_for_condition(
+        super_client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
 
     instances = super_client. \
         list_container(name="compose_" + service.name + "_" + "1")
@@ -634,7 +642,9 @@ def test_remove_active_service(super_client, admin_client, sim_context, nsp):
         list_serviceExposeMap(serviceId=service.id)
 
     assert len(instance_service_map) == 1
-    assert instance_service_map[0].state == 'active'
+    wait_for_condition(
+        super_client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
 
     instances = super_client. \
         list_container(name="compose_" + service.name + "_" + "1")
@@ -650,9 +660,8 @@ def test_remove_active_service(super_client, admin_client, sim_context, nsp):
 def validateServiceAndInstances(admin_client, service, super_client):
     service = wait_success(admin_client, service.activate(), 120)
     assert service.state == "active"
-    instance_service_map = super_client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map) == 2
+    _wait_until_active_map_count(service, 2, super_client)
+
     instances = super_client. \
         list_container(name="compose_"
                             + service.name + "_" + "1", state="running")
@@ -666,6 +675,22 @@ def validateServiceAndInstances(admin_client, service, super_client):
     container2 = instances[0]
     assert container2.state == "running"
     return container1, service
+
+
+def _wait_until_active_map_count(service, count, super_client, timeout=30):
+    # need this function because agent state changes
+    # active->deactivating->removed
+    start = time.time()
+    instance_service_map = super_client. \
+        list_serviceExposeMap(serviceId=service.id, state="active")
+    while len(instance_service_map) != count:
+        time.sleep(.5)
+        instance_service_map = super_client. \
+            list_serviceExposeMap(serviceId=service.id, state="active")
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for agent to be removed.'
+
+    return
 
 
 def test_destroy_service_instance(super_client,
@@ -725,7 +750,9 @@ def test_remove_environment_w_active_svcs(super_client,
     instance_service_map = super_client. \
         list_serviceExposeMap(serviceId=service.id)
     assert len(instance_service_map) == 1
-    assert instance_service_map[0].state == 'active'
+    wait_for_condition(
+        super_client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
 
     instances = super_client. \
         list_container(name="compose_" + service.name + "_" + "1")
