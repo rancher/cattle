@@ -338,6 +338,9 @@
         "loadBalancerService" : "crud",
         "loadBalancerService.loadBalancerConfig" : "cr",
 
+        "snapshot" : "cr",
+        "snapshot.volumeId" : "cr",
+
         "end" : ""
     }
 }

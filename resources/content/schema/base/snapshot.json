@@ -1,0 +1,10 @@
+{
+    "resourceFields": {
+        "snapshotUUID": {
+            "type": "string",
+            "nullable": true
+        }
+    }
+}
+
+
