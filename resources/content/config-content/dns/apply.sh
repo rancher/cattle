@@ -4,5 +4,10 @@
 
 stage_files
 
-# TODO - implement startup up dns server
-exit 0
+PID=$(pidof rancher-dns || true)
+
+if [ -z "$PID" ]; then
+    /etc/init.d/rancher-dns start
+fi
+
+killall -HUP rancher-dns
