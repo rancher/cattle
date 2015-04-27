@@ -80,6 +80,10 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                     HOST.KIND.eq(options.getKind()).and(STORAGE_POOL.KIND.eq(options.getKind())));
         }
 
+        if (options.getAccountId() != null) {
+            condition = append(condition, HOST.ACCOUNT_ID.eq(options.getAccountId()));
+        }
+
         return condition == null ? DSL.trueCondition() : condition;
     }
 
