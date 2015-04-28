@@ -16,55 +16,58 @@ def test_container_port_create_start(client, admin_client,
                                     80,
                                     '8081:81',
                                     '8082:82/udp'])
+    try:
+        assert c.state == 'creating'
+        c = client.wait_success(c)
 
-    assert c.state == 'creating'
-    c = client.wait_success(c)
+        assert c.state == 'stopped'
 
-    assert c.state == 'stopped'
+        c_admin = admin_client.update(c, requestedHostId=host.id)
+        assert c_admin.requestedHostId == host.id
 
-    c_admin = admin_client.update(c, requestedHostId=host.id)
-    assert c_admin.requestedHostId == host.id
+        ports = c.ports()
+        assert len(ports) == 3
 
-    ports = c.ports()
-    assert len(ports) == 3
+        count = 0
+        for port in ports:
+            assert port.kind == 'userPort'
+            if port.privatePort == 80:
+                count += 1
+                assert port.publicPort is None
+                assert port.protocol == 'tcp'
+                assert port.instanceId == c.id
+                assert port.state == 'inactive'
+            elif port.privatePort == 81:
+                count += 1
+                assert port.publicPort == 8081
+                assert port.protocol == 'tcp'
+                assert port.instanceId == c.id
+                assert port.state == 'inactive'
+            elif port.privatePort == 82:
+                count += 1
+                assert port.publicPort == 8082
+                assert port.protocol == 'udp'
+                assert port.instanceId == c.id
+                assert port.state == 'inactive'
 
-    count = 0
-    for port in ports:
-        assert port.kind == 'userPort'
-        if port.privatePort == 80:
-            count += 1
-            assert port.publicPort is None
-            assert port.protocol == 'tcp'
-            assert port.instanceId == c.id
-            assert port.state == 'inactive'
-        elif port.privatePort == 81:
-            count += 1
-            assert port.publicPort == 8081
-            assert port.protocol == 'tcp'
-            assert port.instanceId == c.id
-            assert port.state == 'inactive'
-        elif port.privatePort == 82:
-            count += 1
-            assert port.publicPort == 8082
-            assert port.protocol == 'udp'
-            assert port.instanceId == c.id
-            assert port.state == 'inactive'
+        assert count == 3
 
-    assert count == 3
+        c = client.wait_success(c.start())
+        assert admin_client.reload(c).hosts()[0].id == host.id
 
-    c = client.wait_success(c.start())
-    assert admin_client.reload(c).hosts()[0].id == host.id
-
-    for port in c.ports():
-        assert port.state == 'active'
-        private_ip = port.privateIpAddress()
-        public_ip = port.publicIpAddress()
-        assert private_ip.address == c.primaryIpAddress
-        assert public_ip.address == host_ip
-        assert port.id in [x.id for x in private_ip.privatePorts()]
-        assert port.id in [x.id for x in public_ip.publicPorts()]
-        assert port.id not in [x.id for x in public_ip.privatePorts()]
-        assert port.id not in [x.id for x in private_ip.publicPorts()]
+        for port in c.ports():
+            assert port.state == 'active'
+            private_ip = port.privateIpAddress()
+            public_ip = port.publicIpAddress()
+            assert private_ip.address == c.primaryIpAddress
+            assert public_ip.address == host_ip
+            assert port.id in [x.id for x in private_ip.privatePorts()]
+            assert port.id in [x.id for x in public_ip.publicPorts()]
+            assert port.id not in [x.id for x in public_ip.privatePorts()]
+            assert port.id not in [x.id for x in private_ip.publicPorts()]
+    finally:
+        if c is not None:
+            admin_client.wait_success(admin_client.delete(c))
 
 
 def test_container_port_start(client, sim_context, network):
@@ -76,35 +79,39 @@ def test_container_port_start(client, sim_context, network):
                                     '8081:81',
                                     '8082:82/udp'])
 
-    assert c.state == 'creating'
-    c = client.wait_success(c)
+    try:
+        assert c.state == 'creating'
+        c = client.wait_success(c)
 
-    assert c.state == 'running'
+        assert c.state == 'running'
 
-    ports = c.ports()
-    assert len(ports) == 3
+        ports = c.ports()
+        assert len(ports) == 3
 
-    count = 0
-    for port in ports:
-        if port.privatePort == 80:
-            count += 1
-            assert port.protocol == 'tcp'
-            assert port.instanceId == c.id
-            assert port.state == 'active'
-        elif port.privatePort == 81:
-            count += 1
-            assert port.publicPort == 8081
-            assert port.protocol == 'tcp'
-            assert port.instanceId == c.id
-            assert port.state == 'active'
-        elif port.privatePort == 82:
-            count += 1
-            assert port.publicPort == 8082
-            assert port.protocol == 'udp'
-            assert port.instanceId == c.id
-            assert port.state == 'active'
+        count = 0
+        for port in ports:
+            if port.privatePort == 80:
+                count += 1
+                assert port.protocol == 'tcp'
+                assert port.instanceId == c.id
+                assert port.state == 'active'
+            elif port.privatePort == 81:
+                count += 1
+                assert port.publicPort == 8081
+                assert port.protocol == 'tcp'
+                assert port.instanceId == c.id
+                assert port.state == 'active'
+            elif port.privatePort == 82:
+                count += 1
+                assert port.publicPort == 8082
+                assert port.protocol == 'udp'
+                assert port.instanceId == c.id
+                assert port.state == 'active'
 
-    assert count == 3
+        assert count == 3
+    finally:
+        if c is not None:
+            client.wait_success(client.delete(c))
 
 
 def test_container_port_stop(admin_client, sim_context, network):
@@ -117,32 +124,35 @@ def test_container_port_stop(admin_client, sim_context, network):
                                           80,
                                           '8081:81',
                                           '8082:82/udp'])
+    try:
+        assert c.state == 'creating'
+        c = admin_client.wait_success(c)
+        assert c.state == 'running'
 
-    assert c.state == 'creating'
-    c = admin_client.wait_success(c)
-    assert c.state == 'running'
+        c = admin_client.wait_success(c.stop())
+        assert c.state == 'stopped'
 
-    c = admin_client.wait_success(c.stop())
-    assert c.state == 'stopped'
+        ports = c.ports()
+        assert len(ports) == 3
 
-    ports = c.ports()
-    assert len(ports) == 3
+        count = 0
+        for port in ports:
+            assert port.state == 'inactive'
+            assert port.publicIpAddressId is not None
+            assert port.privateIpAddressId is not None
+            if port.privatePort == 80:
+                count += 1
+            elif port.privatePort == 81:
+                count += 1
+                assert port.publicPort == 8081
+            elif port.privatePort == 82:
+                count += 1
+                assert port.publicPort == 8082
 
-    count = 0
-    for port in ports:
-        assert port.state == 'inactive'
-        assert port.publicIpAddressId is not None
-        assert port.privateIpAddressId is not None
-        if port.privatePort == 80:
-            count += 1
-        elif port.privatePort == 81:
-            count += 1
-            assert port.publicPort == 8081
-        elif port.privatePort == 82:
-            count += 1
-            assert port.publicPort == 8082
-
-    assert count == 3
+        assert count == 3
+    finally:
+        if c is not None:
+            admin_client.wait_success(admin_client.delete(c))
 
 
 def test_container_port_purge(admin_client, sim_context, network):
@@ -198,32 +208,36 @@ def test_ports_service(admin_client, sim_context, test_network):
                              ports=['80'],
                              networkIds=[test_network.id])
 
-    agent = c.hosts()[0].agent()
-    assert agent is not None
+    try:
+        agent = c.hosts()[0].agent()
+        assert agent is not None
 
-    items = [x.name for x in agent.configItemStatuses()]
+        items = [x.name for x in agent.configItemStatuses()]
 
-    assert 'host-iptables' in items
-    assert 'host-routes' in items
+        assert 'host-iptables' in items
+        assert 'host-routes' in items
 
-    item = None
-    for x in agent.configItemStatuses():
-        if x.name == 'host-iptables':
-            item = x
-            break
+        item = None
+        for x in agent.configItemStatuses():
+            if x.name == 'host-iptables':
+                item = x
+                break
 
-    assert item is not None
+        assert item is not None
 
-    port = c.ports()[0]
+        port = c.ports()[0]
 
-    assert port.publicPort is None
+        assert port.publicPort is None
 
-    port = admin_client.update(port, publicPort=12345)
-    assert port.state == 'updating-active'
-    assert port.publicPort == 12345
+        port = admin_client.update(port, publicPort=12345)
+        assert port.state == 'updating-active'
+        assert port.publicPort == 12345
 
-    port = admin_client.wait_success(port)
-    assert port.state == 'active'
+        port = admin_client.wait_success(port)
+        assert port.state == 'active'
 
-    new_item = admin_client.reload(item)
-    assert new_item.requestedVersion > item.requestedVersion
+        new_item = admin_client.reload(item)
+        assert new_item.requestedVersion > item.requestedVersion
+    finally:
+        if c is not None:
+            admin_client.wait_success(admin_client.delete(c))

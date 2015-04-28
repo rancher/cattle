@@ -306,3 +306,69 @@ def test_vnet_stickiness(super_client, sim_context, sim_context2,
         assert nic.subnetId == c1_nic.subnetId
         assert nic.vnetId == c1_nic.vnetId
         assert nic.networkId == c1_nic.networkId
+
+
+def test_port_constraint(super_client, sim_context, network):
+    image_uuid = sim_context['imageUuid']
+    host = sim_context['host']
+
+    try:
+        c = super_client.create_container(imageUuid=image_uuid,
+                                          networkIds=[network.id],
+                                          requestedHostId=host.id,
+                                          startOnCreate=True,
+                                          ports=[
+                                              '8081:81/tcp'])
+        wait_for_condition(
+            super_client, c,
+            lambda x: x.state == 'running')
+
+        # try to deploy another container with same public port + protocol
+        c2 = super_client.create_container(imageUuid=image_uuid,
+                                           networkIds=[network.id],
+                                           requestedHostId=host.id,
+                                           startOnCreate=True,
+                                           ports=[
+                                               '8081:81/tcp'])
+        c2 = wait_transitioning(super_client, c2)
+        assert c2.transitioning == 'error'
+        assert c2.transitioningMessage == 'Failed to find a placement'
+        assert c2.state == 'removed'
+
+        c3 = super_client.create_container(imageUuid=image_uuid,
+                                           networkIds=[network.id],
+                                           requestedHostId=host.id,
+                                           startOnCreate=True,
+                                           ports=[
+                                               '8082:81/tcp'])
+        wait_for_condition(
+            super_client, c3,
+            lambda x: x.state == 'running')
+
+        c4 = super_client.create_container(imageUuid=image_uuid,
+                                           networkIds=[network.id],
+                                           requestedHostId=host.id,
+                                           startOnCreate=True,
+                                           ports=[
+                                               '8081:81/udp'])
+        wait_for_condition(
+            super_client, c4,
+            lambda x: x.state == 'running')
+
+        c5 = super_client.create_container(imageUuid=image_uuid,
+                                           networkIds=[network.id],
+                                           requestedHostId=host.id,
+                                           startOnCreate=True,
+                                           ports=[
+                                               '8081:81/udp'])
+        c5 = wait_transitioning(super_client, c5)
+        assert c5.transitioning == 'error'
+        assert c5.transitioningMessage == 'Failed to find a placement'
+        assert c5.state == 'removed'
+    finally:
+        if c is not None:
+            super_client.wait_success(super_client.delete(c))
+        if c3 is not None:
+            super_client.wait_success(super_client.delete(c3))
+        if c4 is not None:
+            super_client.wait_success(super_client.delete(c4))

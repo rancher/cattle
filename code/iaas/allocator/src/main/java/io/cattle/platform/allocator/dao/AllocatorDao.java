@@ -4,6 +4,7 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 
@@ -32,5 +33,7 @@ public interface AllocatorDao {
     List<Long> getHostsForSubnet(long subnetId, Long vnetId);
 
     List<Long> getPhysicalHostsForSubnet(long subnetId, Long vnetId);
+
+    List<Port> getPortsForHost(long hostId);
 
 }

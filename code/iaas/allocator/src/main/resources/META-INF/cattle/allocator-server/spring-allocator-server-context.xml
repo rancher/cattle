@@ -25,6 +25,7 @@
     <bean class="io.cattle.platform.allocator.constraint.BaseConstraintsProvider" />
     <bean class="io.cattle.platform.allocator.constraint.HostVnetMatchConstraintProvider" />
     <bean class="io.cattle.platform.allocator.constraint.AccountConstraintsProvider" />
+    <bean class="io.cattle.platform.allocator.constraint.PortsConstraintProvider" />
 
     <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
