@@ -33,6 +33,10 @@
         "amazonec2Config": {
             "type": "amazonec2Config",
             "nullable": true
+        },
+        "packetConfig": {
+            "type": "packetConfig",
+            "nullable": true
         }
     }
 }

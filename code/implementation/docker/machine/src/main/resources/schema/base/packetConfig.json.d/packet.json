@@ -1,0 +1,30 @@
+{
+    "resourceFields": {
+        "apiKey": {
+            "type": "string",
+            "nullable": false,
+            "required": true
+        },
+        "projectId": {
+            "type": "string",
+            "nullable": false,
+            "required": true
+        },
+        "os": {
+            "type": "string",
+            "nullable": true
+        },
+        "facilityCode": {
+            "type": "string",
+            "nullable": true
+        },
+        "plan": {
+            "type": "string",
+            "nullable": true
+        },
+        "billingCycle": {
+            "type": "string",
+            "nullable": true
+        }
+    }
+}
