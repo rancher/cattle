@@ -33,6 +33,7 @@
        
        <bean class="io.cattle.platform.servicediscovery.service.impl.RancherImageToComposeFormatter" />
        <bean class="io.cattle.platform.servicediscovery.service.impl.RancherRestartToComposeFormatter" />
+       <bean class="io.cattle.platform.servicediscovery.service.impl.RancherLoadBalancerConfigToComposeFormatter" />
 
        <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
        

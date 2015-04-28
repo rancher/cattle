@@ -158,9 +158,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                             }
                         }
                         if (formattedValue != null) {
-                            composeServiceData.put(item.getComposeName(), formattedValue);
+                            composeServiceData.put(item.getComposeName().toLowerCase(), formattedValue);
                         } else {
-                            composeServiceData.put(item.getComposeName(), value);
+                            composeServiceData.put(item.getComposeName().toLowerCase(), value);
                         }
 
                     }
