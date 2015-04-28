@@ -44,6 +44,14 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Override
     protected LockDefinition getAllocationLock(AllocationRequest request, AllocationAttempt attempt) {
+        if (attempt != null) {
+            for (Constraint constraint : attempt.getConstraints()) {
+                if (constraint instanceof AccountConstraint) {
+                    return new AccountAllocatorLock(((AccountConstraint) constraint).getAccountId());
+                }
+            }
+        }
+
         return new SimpleAllocatorLock();
     }
 
