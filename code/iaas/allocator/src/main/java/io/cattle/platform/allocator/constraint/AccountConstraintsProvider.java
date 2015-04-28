@@ -2,9 +2,11 @@ package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.List;
 
@@ -17,22 +19,36 @@ public class AccountConstraintsProvider implements AllocationConstraintsProvider
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
-        Long accountId = null;
+        Account account = null;
 
         Instance instance = attempt.getInstance();
         if (instance != null) {
-            accountId = instance.getAccountId();
+            //TODO: remove this condition once we have networks per user
+            if (instance.getSystemContainer() != null) {
+                return;
+            }
+            account = objectManager.loadResource(Account.class, instance.getAccountId());
         }
 
-        if (accountId == null) {
+        if (account == null) {
             for (Volume v : attempt.getVolumes()) {
-                accountId = v.getAccountId();
+                account = objectManager.loadResource(Account.class, v.getAccountId());
                 break;
             }
         }
 
-        if (accountId != null) {
-            constraints.add(new AccountConstraint(objectManager, accountId));
+        if (account == null) {
+            return;
+        }
+
+        Boolean enabled = DataAccessor.fromDataFieldOf(account)
+            .withScope(AccountConstraintsProvider.class)
+            .withDefault(true)
+            .withKey("accountScoped")
+            .as(Boolean.class);
+
+        if (enabled) {
+            constraints.add(new AccountConstraint(objectManager, account.getId()));
         }
     }
 
