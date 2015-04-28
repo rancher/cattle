@@ -2,7 +2,7 @@
     "resourceFields": {
         "name":{
             "required": true,
-            "validChars": "[a-zA-Z0-9]",
+            "validChars": "[a-zA-Z0-9-]",
             "minLength": 1
         }
     },
