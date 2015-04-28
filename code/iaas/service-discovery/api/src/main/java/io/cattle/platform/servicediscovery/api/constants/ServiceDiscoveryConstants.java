@@ -41,5 +41,6 @@ public class ServiceDiscoveryConstants {
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
+    public static final String LINK_COMPOSE_CONFIG = "composeConfig";
 
 }

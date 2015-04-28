@@ -11,12 +11,9 @@ public class ServiceDiscoveryEnvironmentOutputFilter implements ResourceOutputFi
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         if (original instanceof Environment) {
-            converted.getLinks().put(ServiceDiscoveryConstants.LINK_DOCKER_COMPOSE_CONFIG,
+            converted.getLinks().put(ServiceDiscoveryConstants.LINK_COMPOSE_CONFIG,
                     ApiContext.getUrlBuilder().resourceLink(converted,
-                            ServiceDiscoveryConstants.LINK_DOCKER_COMPOSE_CONFIG));
-            converted.getLinks().put(ServiceDiscoveryConstants.LINK_RANCHER_COMPOSE_CONFIG,
-                    ApiContext.getUrlBuilder().resourceLink(converted,
-                            ServiceDiscoveryConstants.LINK_RANCHER_COMPOSE_CONFIG));
+                            ServiceDiscoveryConstants.LINK_COMPOSE_CONFIG));
         }
 
         return converted;
