@@ -64,7 +64,7 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
 
     reg_cred = _create_registry_credential(admin_client)
     launch_config = {"imageUuid": image_uuid,
-                     "command": 'touch test.txt',
+                     "command": ['sleep', '42'],
                      "environment": {'TEST_FILE': "/etc/testpath.conf"},
                      "ports": ['8081', '8082/tcp'],
                      "dataVolumes": ['/foo'],
@@ -100,7 +100,7 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
     # validate that parameters were set for service
     assert service.state == "inactive"
     assert service.launchConfig.imageUuid == image_uuid
-    assert service.launchConfig.command == "touch test.txt"
+    assert service.launchConfig.command == ['sleep', '42']
     assert len(service.launchConfig.environment) == 1
     assert len(service.launchConfig.ports) == 2
     assert len(service.launchConfig.dataVolumes) == 1
@@ -138,7 +138,7 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
     assert len(instances) == 1
     container = instances[0]
     assert container.imageUuid == image_uuid
-    assert container.command == "touch test.txt"
+    assert container.command == ['sleep', '42']
     assert len(container.instanceLinks()) == 1
     assert len(container.environment) == 1
     assert len(container.ports()) == 2
