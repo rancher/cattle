@@ -106,7 +106,7 @@ def test_docker_command(admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
     container = admin_client.create_container(name='test',
                                               imageUuid=uuid,
-                                              command='sleep 42')
+                                              command=['sleep', '42'])
 
     container = wait_success(admin_client, container)
     assert container.data.dockerContainer.Command == 'sleep 42'
@@ -117,8 +117,7 @@ def test_docker_command_args(admin_client, docker_context):
     uuid = TEST_IMAGE_UUID
     container = admin_client.create_container(name='test',
                                               imageUuid=uuid,
-                                              command='sleep',
-                                              commandArgs=['1', '2', '3'])
+                                              command=['sleep', '1', '2', '3'])
 
     container = wait_success(admin_client, container)
     assert container.data.dockerContainer.Command == 'sleep 1 2 3'

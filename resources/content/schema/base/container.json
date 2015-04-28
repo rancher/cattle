@@ -5,12 +5,6 @@
             "create": true
         },
         "command": {
-            "type": "string",
-            "create": true,
-            "nullable": true,
-            "minLength": 1
-        },
-        "commandArgs": {
             "type": "array[string]",
             "nullable": true,
             "create": true
