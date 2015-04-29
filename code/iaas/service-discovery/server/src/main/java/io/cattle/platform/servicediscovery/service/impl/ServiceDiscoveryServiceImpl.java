@@ -273,7 +273,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                         null);
                 String instanceName = getInstanceName(instance);
                 if (instanceName != null) {
-                    instanceLinksWithNames.put(linkName, instanceName);
+                    instanceLinksWithNames.put(instanceName, linkName);
                 }
             }
         }
