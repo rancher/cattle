@@ -144,6 +144,10 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                         if (!((Map<?, ?>) value).isEmpty()) {
                             export = true;
                         }
+                    } else if (value instanceof Boolean) {
+                        if (((Boolean) value).booleanValue()) {
+                            export = true;
+                        }
                     } else if (value != null) {
                         export = true;
                     }
@@ -158,9 +162,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                             }
                         }
                         if (formattedValue != null) {
-                            composeServiceData.put(item.getComposeName(), formattedValue);
+                            composeServiceData.put(item.getComposeName().toLowerCase(), formattedValue);
                         } else {
-                            composeServiceData.put(item.getComposeName(), value);
+                            composeServiceData.put(item.getComposeName().toLowerCase(), value);
                         }
 
                     }
@@ -530,7 +534,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<Long> availableHostIds = (List<Long>) CollectionUtils.collect(availableHosts,
                 TransformerUtils.invokerTransformer("getId"));
         List<Long> existingHostIds = (List<Long>) CollectionUtils.collect(existingHosts,
-                TransformerUtils.invokerTransformer("getId"));
+                TransformerUtils.invokerTransformer("getHostId"));
 
         requestedScale = requestedScale - existingHostIds.size();
         availableHostIds.removeAll(existingHostIds);
@@ -540,7 +544,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     + service.getName());
         }
         Collections.shuffle(availableHostIds);
-        return availableHostIds;
+        return availableHostIds.subList(0, requestedScale);
     }
 
     @Override
