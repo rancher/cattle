@@ -81,7 +81,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
     }
 
     private void removeOldServiceMaps(Service service, List<? extends Long> newConsumedServicesIds) {
-        List<? extends ServiceConsumeMap> existingMaps = consumeMapDao.findMapsToRemove(service.getId());
+        List<? extends ServiceConsumeMap> existingMaps = consumeMapDao.findConsumedMapsToRemove(service.getId());
         List<ServiceConsumeMap> mapsToRemove = new ArrayList<>();
 
         for (ServiceConsumeMap existingMap : existingMaps) {

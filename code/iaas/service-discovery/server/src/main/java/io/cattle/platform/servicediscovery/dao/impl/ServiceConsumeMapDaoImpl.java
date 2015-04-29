@@ -47,7 +47,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
     }
 
     @Override
-    public List<? extends ServiceConsumeMap> findMapsToRemove(long serviceId) {
+    public List<? extends ServiceConsumeMap> findConsumedMapsToRemove(long serviceId) {
         return create()
                 .selectFrom(SERVICE_CONSUME_MAP)
                 .where(
@@ -64,6 +64,17 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                 .where(
                         SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID.eq(serviceId)
                                 .and(SERVICE_CONSUME_MAP.REMOVED.isNull())).fetchInto(ServiceConsumeMapRecord.class);
+    }
+
+    @Override
+    public List<? extends ServiceConsumeMap> findConsumingMapsToRemove(long serviceId) {
+        return create()
+                .selectFrom(SERVICE_CONSUME_MAP)
+                .where(
+                        SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID.eq(serviceId)
+                                .and((SERVICE_CONSUME_MAP.REMOVED.isNull().
+                                        or(SERVICE_CONSUME_MAP.STATE.eq(CommonStatesConstants.REMOVING))))).
+                fetchInto(ServiceConsumeMapRecord.class);
     }
 
 }

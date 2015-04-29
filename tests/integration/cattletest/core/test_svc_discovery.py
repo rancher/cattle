@@ -496,7 +496,7 @@ def test_links_after_service_remove(super_client, admin_client,
     _validate_add_service_link(service1, service2, super_client)
 
     # link service1 to service2
-    service2 = service1.addservicelink(serviceId=service1.id)
+    service2 = service2.addservicelink(serviceId=service1.id)
     _validate_add_service_link(service2, service1, super_client)
 
     # remove service1
