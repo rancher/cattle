@@ -3,16 +3,16 @@ from common_fixtures import *  # NOQA
 
 def test_client_access(clients):
     typesLen = {
-        'admin': 91,
+        'admin': 92,
         'agent': 8,
-        'user': 69,
+        'user': 70,
         'agentRegister': 4,
         'test': 140,
-        'readAdmin': 91,
+        'readAdmin': 92,
         'token': 2,
-        'superadmin': 141,
-        'service': 91,
-        'project': 69,
+        'superadmin': 142,
+        'service': 92,
+        'project': 70,
     }
     for tuple in clients.items():
         assert typesLen[tuple[0]] == len(tuple[1].schema.types.items())
@@ -559,6 +559,7 @@ def test_machine(admin_client, client, service_client):
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
         'amazonec2Config': 'cr',
+        'packetConfig': 'cr',
     })
 
     auth_check(client.schema, 'machine', 'crd', {
@@ -570,6 +571,7 @@ def test_machine(admin_client, client, service_client):
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
         'amazonec2Config': 'cr',
+        'packetConfig': 'cr',
     })
 
     auth_check(service_client.schema, 'machine', 'crud', {
@@ -583,6 +585,7 @@ def test_machine(admin_client, client, service_client):
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
         'amazonec2Config': 'cr',
+        'packetConfig': 'cr',
     })
 
 

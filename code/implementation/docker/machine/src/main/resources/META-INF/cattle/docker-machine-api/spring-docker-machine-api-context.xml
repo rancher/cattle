@@ -19,6 +19,7 @@
                 <value>virtualboxConfig,parent=baseMachineConfig</value>
                 <value>digitaloceanConfig,parent=baseMachineConfig</value>
                 <value>amazonec2Config,parent=baseMachineConfig</value>
+                <value>packetConfig,parent=baseMachineConfig</value>
             </set>
         </property>
     </bean>

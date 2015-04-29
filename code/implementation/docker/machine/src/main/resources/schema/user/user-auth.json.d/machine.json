@@ -9,6 +9,7 @@
         "machine.virtualboxConfig" : "cr",
         "machine.digitaloceanConfig" : "cr",
         "machine.amazonec2Config" : "cr",
+        "machine.packetConfig" : "cr",
 
         "virtualboxConfig" : "cr",
         "virtualboxConfig.memory" : "cr",
@@ -37,7 +38,15 @@
         "amazonec2Config.instanceType" : "cr",
         "amazonec2Config.rootSize" : "cr",
         "amazonec2Config.iamInstanceProfile" : "cr",
-
+        
+        "packetConfig" : "cr",
+        "packetConfig.apiKey" : "cr",
+        "packetConfig.projectId" : "cr",
+        "packetConfig.os" : "cr",
+        "packetConfig.facilityCode" : "cr",
+        "packetConfig.plan" : "cr",
+        "packetConfig.billingCycle" : "cr",
+        
         "end" : ""
     }
 }

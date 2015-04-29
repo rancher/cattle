@@ -144,6 +144,22 @@ def test_machine_driver_config(admin_client):
     assert ec2_config == host.amazonec2Config
     assert host.driver == 'amazonec2'
 
+    name = "test-%s" % random_str()
+    packet_config = {
+        "apiKey": "apikey1",
+        "projectId": "projectId",
+        "os": "centos_7",
+        "facilityCode": "ewr1",
+        "plan": "baremetal_1",
+        "billingCycle": "hourly",
+    }
+    host = admin_client.create_machine(name=name,
+                                       packetConfig=packet_config)
+    host = admin_client.wait_success(host)
+    assert host.state == 'active'
+    assert packet_config == host.packetConfig
+    assert host.driver == 'packet'
+
 
 def test_machine_validation(admin_client):
     name = "test-%s" % random_str()
