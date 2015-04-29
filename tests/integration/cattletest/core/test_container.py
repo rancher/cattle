@@ -420,8 +420,6 @@ def test_container_compute_fail(super_client, sim_context):
 
 
 def test_container_storage_fail(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-
     data = {
         'storage.volume.activate::fail': True,
     }
