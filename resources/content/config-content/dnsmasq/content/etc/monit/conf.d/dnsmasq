@@ -1,3 +1,0 @@
- check process dnsmasq with pidfile /var/run/dnsmasq/dnsmasq.pid
-   start program = "/etc/init.d/dnsmasq start"
-   stop  program = "/etc/init.d/dnsmasq stop"
