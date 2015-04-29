@@ -144,6 +144,10 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                         if (!((Map<?, ?>) value).isEmpty()) {
                             export = true;
                         }
+                    } else if (value instanceof Boolean) {
+                        if (((Boolean) value).booleanValue()) {
+                            export = true;
+                        }
                     } else if (value != null) {
                         export = true;
                     }
