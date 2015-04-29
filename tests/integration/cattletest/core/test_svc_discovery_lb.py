@@ -368,14 +368,14 @@ def test_scale(admin_client, super_client):
     _wait_until_active_map_count(lb, 1, super_client)
 
     # scale up
-    service = admin_client.update(service, scale=2)
+    service = admin_client.update(service, scale=2, name=service.name)
     service = admin_client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 2
     _wait_until_active_map_count(lb, 2, super_client)
 
     # now scale down
-    service = admin_client.update(service, scale=0)
+    service = admin_client.update(service, scale=0, name=service.name)
     service = admin_client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 0

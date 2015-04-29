@@ -8,7 +8,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.process.ServiceActivate;
+import io.cattle.platform.servicediscovery.process.ServiceUpdateActivate;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class EnvironmentActivateServicesActionHandler implements ActionHandler {
 
     private void activateServices(List<? extends Service> services, Map<String, Object> data) {
         // flag for service.activate to indicate that the consumed services should be activated first
-        DataAccessor.fromMap(data).withScope(ServiceActivate.class)
+        DataAccessor.fromMap(data).withScope(ServiceUpdateActivate.class)
                 .withKey(ServiceDiscoveryConstants.FIELD_ACTIVATE_CONSUMED_SERVICES).set(true);
         for (Service service : services) {
             if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {

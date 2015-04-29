@@ -355,7 +355,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public int[] getWeights(int size, int total) {
-        int[] weights = new int[size];
+        int[] weights = size == 0 ? new int[1] : new int[size];
+        if (size == 0) {
+            weights[0] = total;
+            return weights;
+        }
+
         Integer sum = 0;
         int i = 0;
         while (true) {
@@ -385,9 +390,100 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return networkId;
     }
 
-    protected String getServiceInstanceName(Service service, int order) {
+    protected List<? extends String> getServiceInstancesNamesToAdd(Service service, int countToAdd) {
+        List<Integer> usedIds = getServiceInstanceUsedOrderIds(service);
+        List<String> serviceNames = new ArrayList<>();
+        // in situation when service with scale=3 has one container missing (it got destroyed outside of the
+        // service)
+        // and container names don't reflect the order, we should pick the least available number that is <=order
+        for (int i = 1; i < countToAdd + 1; i++) {
+            if (serviceNames.size() < countToAdd) {
+                if (!usedIds.contains(i)) {
+                    serviceNames.add(generateServiceInstanceName(service, i));
+                    usedIds.add(i);
+                }
+            }
+        }
+        // only after we got all "gap" names, get the rest
+        // first, figure out the next available
+        Collections.sort(usedIds);
+        int currentId = usedIds.get(usedIds.size() - 1) + 1;
+        while (serviceNames.size() < countToAdd) {
+            serviceNames.add(generateServiceInstanceName(service, currentId));
+            currentId++;
+        }
+        return serviceNames;
+    }
+
+    protected List<? extends String> getServiceInstancesNamesToRemove(Service service, int countToRemove) {
+        List<Integer> usedIds = getServiceInstanceUsedOrderIds(service);
+        List<String> serviceNames = new ArrayList<>();
+        Collections.sort(usedIds, Collections.reverseOrder());
+        List<? extends Instance> serviceInstances = exposeMapDao.listActiveServiceInstances(service.getId());
+        int originalScale = serviceInstances.size();
+        // in a situation when service instances names don't match the scale (user renamed the instance outside of the
+        // service, or destroyed the instance)
+        // we always try to remove the instances having names:
+        // a) that don't qualify for <environment>_<service> pattern
+        // b) have higher order in name (<environment>_<service>_4 should be removed prior to
+        // <environment>_<service>_3)
+        int currentCount = originalScale - countToRemove;
+        // a)
+        for (Instance serviceInstance : serviceInstances) {
+            if (currentCount < originalScale) {
+                if (!isServiceGeneratedName(service, serviceInstance)) {
+                    if (serviceInstance != null) {
+                        serviceNames.add(serviceInstance.getName());
+                        currentCount++;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        // b)
+        for (Integer usedId : usedIds) {
+            if (currentCount < originalScale) {
+                String instanceName = generateServiceInstanceName(service, usedId);
+                serviceNames.add(instanceName);
+                currentCount++;
+            } else {
+                break;
+            }
+        }
+        return serviceNames;
+    }
+
+    private boolean isServiceGeneratedName(Service service, Instance serviceInstance) {
         Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
-        return String.format("%s_%s_%d", env.getName(), service.getName(), order + 1);
+        return serviceInstance.getName().startsWith(String.format("%s_%s", env.getName(), service.getName()));
+    }
+
+    @Override
+    public String generateServiceInstanceName(Service service, int finalOrder) {
+        Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
+        String name = String.format("%s_%s_%d", env.getName(), service.getName(), finalOrder);
+        return name;
+    }
+
+    private List<Integer> getServiceInstanceUsedOrderIds(Service service) {
+        Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
+        // get all existing instances to check if the name is in use by the instance of the same service
+        List<Integer> usedIds = new ArrayList<>();
+        // list all the instances
+        List<? extends ServiceExposeMap> instanceServiceMaps = exposeMapDao.getNonRemovedServiceInstanceMap(service
+                .getId());
+        
+        for (ServiceExposeMap instanceServiceMap : instanceServiceMaps) {
+            Instance instance = objectManager.loadResource(Instance.class, instanceServiceMap.getInstanceId());
+            if (isServiceGeneratedName(service, instance)) {
+                String id = instance.getName().replace(String.format("%s_%s_", env.getName(), service.getName()), "");
+                if (id.matches("\\d+")) {
+                    usedIds.add(Integer.valueOf(id));
+                }
+            }
+        }
+        return usedIds;
     }
 
     @Override
@@ -417,10 +513,20 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         Long imageId = getImage(String.valueOf(launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID)),
                 registryCredentialId != null ? (Integer) registryCredentialId : null);
         List<Long> networkIds = getServiceNetworks(service);
-        for (int i = 0; i < scale; i++) {
-            Instance instance = createServiceInstance(service, i, launchConfigData, imageId, networkIds);
-            instancesToStart.add(instance);
+
+        List<? extends Instance> instances = exposeMapDao.listServiceInstances(service.getId());
+        
+        instancesToStart.addAll(instances);
+        if (instances.size() < scale) {
+            List<? extends String> instanceNames = getServiceInstancesNamesToAdd(service, scale - instances.size());
+            for (String instanceName : instanceNames) {
+                Instance newInstance = createServiceInstance(service, launchConfigData, imageId,
+                        networkIds,
+                        instanceName);
+                instancesToStart.add(newInstance);
+            }
         }
+
         startServiceInstances(instancesToStart);
     }
 
@@ -475,27 +581,18 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return image == null ? null : image.getId();
     }
 
-    protected Instance createServiceInstance(Service service, int i, Map<String, Object> launchConfigData, Long imageId,
-            List<Long> networkIds) {
-        String instanceName = getServiceInstanceName(service, i);
-        Instance instance = objectManager.findOne(Instance.class, INSTANCE.NAME, instanceName,
-                INSTANCE.REMOVED, null, INSTANCE.ACCOUNT_ID, service.getAccountId());
+    protected Instance createServiceInstance(Service service, Map<String, Object> launchConfigData,
+            Long imageId,
+            List<Long> networkIds, String instanceName) {
 
-        if (instance == null) {
-            Map<Object, Object> properties = new HashMap<Object, Object>();
-            properties.putAll(launchConfigData);
-            properties.put(INSTANCE.NAME, instanceName);
-            properties.put(INSTANCE.ACCOUNT_ID, service.getAccountId());
-            properties.put(INSTANCE.KIND, InstanceConstants.KIND_CONTAINER);
-            properties.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
-            properties.put(INSTANCE.IMAGE_ID, imageId);
-            properties.put(ServiceDiscoveryConstants.FIELD_SERVICE_ID, service.getId());
-            Map<String, Object> props = objectManager.convertToPropertiesFor(Instance.class,
-                    properties);
-            instance = resourceDao.createAndSchedule(Instance.class, props);
-        }
-
-        return instance;
+        Map<Object, Object> properties = new HashMap<Object, Object>();
+        properties.putAll(launchConfigData);
+        properties.put(INSTANCE.NAME, instanceName);
+        properties.put(INSTANCE.ACCOUNT_ID, service.getAccountId());
+        properties.put(INSTANCE.KIND, InstanceConstants.KIND_CONTAINER);
+        properties.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
+        properties.put(INSTANCE.IMAGE_ID, imageId);
+        return exposeMapDao.createServiceInstance(properties, service, instanceName);
     }
 
     @Override
@@ -578,16 +675,16 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public void scaleDownService(Service service, int requestedScale) {
         // on scale up, skip
-        List<? extends Instance> serviceInstances = exposeMapDao.listNonRemovedInstancesForService(service.getId());
+        List<? extends Instance> serviceInstances = exposeMapDao.listServiceInstances(service.getId());
         int originalScale = serviceInstances.size();
         if (originalScale <= requestedScale) {
             return;
         }
         // remove instances
         int toRemove = originalScale - requestedScale;
-        for (int i = originalScale - toRemove; i < originalScale; i++) {
-            String instanceName = getServiceInstanceName(service, i);
-            Instance instance = exposeMapDao.getServiceInstance(service.getId(), instanceName);
+        List<? extends String> instanceNames = getServiceInstancesNamesToRemove(service, toRemove);
+        for (String instanceName : instanceNames) {
+            Instance instance = exposeMapDao.getActiveServiceInstance(service.getId(), instanceName);
             if (instance != null) {
                 removeServiceInstance(instance);
             }
@@ -595,13 +692,25 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     private void removeServiceInstance(Instance instance) {
-        try {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
-        } catch (ProcessCancelException e) {
-            Map<String, Object> data = new HashMap<>();
-            data.put(InstanceConstants.REMOVE_OPTION, true);
-            objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                    data);
+        // 1) schedule remove for the instance
+        if (!(instance.getState().equals(CommonStatesConstants.REMOVED)
+        || instance.getState().equals(CommonStatesConstants.REMOVING))) {
+            try {
+                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
+            } catch (ProcessCancelException e) {
+                Map<String, Object> data = new HashMap<>();
+                data.put(InstanceConstants.REMOVE_OPTION, true);
+                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
+                        data);
+            }
+        }
+
+        // 2) remove the mapping
+        List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
+                objectManager.loadResource(Instance.class, instance.getId()),
+                ServiceExposeMap.class);
+        for (ServiceExposeMap map : maps) {
+            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, map, null);
         }
     }
 

@@ -141,6 +141,7 @@
 
     <!-- Service Discovery Environment -->
     <process:process name="environment.create" resourceType="environment" start="requested" transitioning="activating" done="active" />
+    <process:process name="environment.update" resourceType="environment" start="active" transitioning="updating-active" done="active" />
     <process:process name="environment.remove" resourceType="environment" start="active, activating" transitioning="removing" done="removed" />
     
     <!-- Service Discovery Service -->

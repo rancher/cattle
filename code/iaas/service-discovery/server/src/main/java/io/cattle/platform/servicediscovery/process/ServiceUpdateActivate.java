@@ -27,8 +27,13 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/**
+ * This handler is responsible for activating the service as well as restoring the active service to its scale
+ * The handler can be invoked as a part of service.activate, service.update for both scaleUp and ScaleDown
+ *
+ */
 @Named
-public class ServiceActivate extends AbstractObjectProcessHandler {
+public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
     @Inject
     JsonMapper jsonMapper;
     
@@ -63,20 +68,12 @@ public class ServiceActivate extends AbstractObjectProcessHandler {
         int scale = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_SCALE,
                 jsonMapper,
                 Integer.class);
-        // on scale down, skip
-        // the reason why I put >, not >= is - is for this handler to cover the case when instance was removed outside
-        // of the service
-        // and number of instances no longer reflects the service's scale
-        // Example: 1) initial scale=3, instances compose-1 (Running), compose-2(Removed), compose-3 (Running)
-        // 2) user wants to scaleDown to scale=2. To preserve the numbering in names, we will have to re-create
-        // compose-2, and then remove compose-3 instance
-        // 3) this hander will recreate compose-2 instance, and then antother posthandler will cover the scale down
-        if (svcExposeDao.listNonRemovedInstancesForService(service.getId()).size() > scale) {
+        if (scale == 0) {
             return null;
         }
 
         List<Integer> consumedServiceIds = new ArrayList<>();
-        boolean activateConsumedServices = DataAccessor.fromMap(state.getData()).withScope(ServiceActivate.class)
+        boolean activateConsumedServices = DataAccessor.fromMap(state.getData()).withScope(ServiceUpdateActivate.class)
                 .withKey(ServiceDiscoveryConstants.FIELD_ACTIVATE_CONSUMED_SERVICES).withDefault(false)
                 .as(Boolean.class);
         if (activateConsumedServices) {

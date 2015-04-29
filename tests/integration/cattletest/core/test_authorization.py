@@ -701,7 +701,7 @@ def test_container_events(admin_client, client, agent_client):
 
 def test_svc_discovery_service(admin_client, client):
     auth_check(admin_client.schema, 'service', 'crud', {
-        'name': 'cr',
+        'name': 'cru',
         'environmentId': 'cr',
         'scale': 'cru',
         'dataVolumesFromService': 'cr',
@@ -711,7 +711,7 @@ def test_svc_discovery_service(admin_client, client):
     })
 
     auth_check(client.schema, 'service', 'crud', {
-        'name': 'cr',
+        'name': 'cru',
         'environmentId': 'cr',
         'scale': 'cru',
         'dataVolumesFromService': 'cr',
@@ -735,7 +735,7 @@ def test_svc_discovery_environment(admin_client, client):
 
 def test_svc_discovery_lb_service(admin_client, client):
     auth_check(admin_client.schema, 'loadBalancerService', 'crud', {
-        'name': 'cr',
+        'name': 'cru',
         'environmentId': 'cr',
         'scale': 'cru',
         'dataVolumesFromService': 'cr',
@@ -746,7 +746,7 @@ def test_svc_discovery_lb_service(admin_client, client):
     })
 
     auth_check(client.schema, 'loadBalancerService', 'crud', {
-        'name': 'cr',
+        'name': 'cru',
         'environmentId': 'cr',
         'scale': 'cru',
         'dataVolumesFromService': 'cr',

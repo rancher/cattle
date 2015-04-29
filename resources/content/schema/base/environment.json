@@ -3,7 +3,10 @@
         "name":{
             "required": true,
             "validChars": "[a-zA-Z0-9-]",
-            "minLength": 1
+            "minLength": 1,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions" : {

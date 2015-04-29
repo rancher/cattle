@@ -23,8 +23,11 @@
         },
         "name":{
             "required": true,
-            "validChars": "[a-zA-Z0-9-]",
-            "minLength": 1
+            "validChars": "[a-zA-Z0-9]-",
+            "minLength": 1,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "launchConfig": {
             "type": "container",

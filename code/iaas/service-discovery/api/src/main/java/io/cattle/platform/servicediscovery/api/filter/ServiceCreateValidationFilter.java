@@ -35,6 +35,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
                     "name");
         }
+
         return super.create(type, request, next);
     }
 }

@@ -27,6 +27,13 @@ public class EnvironmentCreateValidationFilter extends AbstractDefaultResourceMa
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
                     "name");
         }
+
+        Environment existingEnv = objectManager.findOne(Environment.class, ENVIRONMENT.NAME, env.getName(),
+                ENVIRONMENT.REMOVED, null);
+        if (existingEnv != null) {
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
+                    "name");
+        }
         return super.create(type, request, next);
     }
 }
