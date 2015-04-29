@@ -91,7 +91,6 @@ You can run hit http://localhost:8080/v1/containers?name=kibana and you should s
             "ES_PORT_12201_UDP_PROTO": "udp",
         },
         "command": null,
-        "commandArgs": null,
         "directory": null,
         "user": null,
         "tcpPorts": null,

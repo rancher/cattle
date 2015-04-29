@@ -1,0 +1,149 @@
+{
+      "Config": {
+        "PortSpecs": null,
+        "Hostname": "ahostname",
+        "Entrypoint": [
+          "/bin/sh",
+          "-c"
+        ],
+        "Env": [
+          "RANCHER_IP=10.42.66.67/16",
+          "FOO=BAR",
+          "RANCHER_UUID=a02153a6-3301-4694-93d8-aa6157fff1e2",
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Memory": 0,
+        "OnBuild": null,
+        "OpenStdin": false,
+        "MacAddress": "02:af:71:4b:f6:54",
+        "Cpuset": "0,3",
+        "User": "",
+        "AttachStderr": false,
+        "AttachStdout": false,
+        "NetworkDisabled": false,
+        "WorkingDir": "",
+        "Cmd": [
+          "echo",
+          "yo"
+        ],
+        "StdinOnce": false,
+        "AttachStdin": false,
+        "Volumes": {
+          "/oncontainer": {}
+        },
+        "MemorySwap": 1073741824,
+        "Tty": true,
+        "CpuShares": 1024,
+        "Domainname": "example.com",
+        "Image": "ubuntu:14.04.1",
+        "ExposedPorts": null
+      },
+      "HostsPath": "/mnt/sda1/var/lib/docker/containers/30ad6d9ca7238f6d0e6e311e6487368596855725bd87629353ac1bcf5487d8c3/hosts",
+      "Args": [
+        "-c",
+        "echo",
+        "yo"
+      ] ,
+      "Driver": "aufs",
+      "ExecDriver": "native-0.2",
+      "Path": "/bin/sh",
+      "HostnamePath": "/mnt/sda1/var/lib/docker/containers/30ad6d9ca7238f6d0e6e311e6487368596855725bd87629353ac1bcf5487d8c3/hostname",
+      "VolumesRW": {
+        "/oncontainer": true,
+        "/tmp/incontainer": false,
+        "/var/incontainer": true
+      },
+      "RestartCount": 0,
+      "Name": "/a02153a6-3301-4694-93d8-aa6157fff1e2",
+      "Created": "2015-04-17T14:49:33.159398282Z",
+      "ResolvConfPath": "/mnt/sda1/var/lib/docker/containers/30ad6d9ca7238f6d0e6e311e6487368596855725bd87629353ac1bcf5487d8c3/resolv.conf",
+      "Volumes": {
+        "/oncontainer": "/mnt/sda1/var/lib/docker/vfs/dir/0db73655317a8168175a0bd83d21b2455ad60a4a161ea76f4fa21722ef13804c",
+        "/tmp/incontainer": "/mnt/sda1/tmp",
+        "/var/incontainer": "/var"
+      },
+      "ExecIDs": null,
+      "ProcessLabel": "",
+      "NetworkSettings": {
+        "Bridge": "",
+        "GlobalIPv6PrefixLen": 0,
+        "LinkLocalIPv6Address": "",
+        "GlobalIPv6Address": "",
+        "IPAddress": "",
+        "PortMapping": null,
+        "IPPrefixLen": 0,
+        "LinkLocalIPv6PrefixLen": 0,
+        "MacAddress": "",
+        "IPv6Gateway": "",
+        "Gateway": "",
+        "Ports": null
+      },
+      "AppArmorProfile": "",
+      "Image": "5ba9dab47459d81c0037ca3836a368a4f8ce5050505ce89720e1fb8839ea048a",
+      "HostConfig": {
+        "CapDrop": [
+          "AUDIT_WRITE"
+        ],
+        "ContainerIDFile": "",
+        "NetworkMode": "",
+        "Links": null,
+        "IpcMode": "",
+        "LxcConf": null,
+        "PortBindings": null,
+        "SecurityOpt": null,
+        "CapAdd": [
+          "AUDIT_CONTROL"
+        ],
+        "Binds": [
+          "/tmp:/tmp/incontainer:ro",
+          "/var:/var/incontainer:rw"
+        ],
+        "RestartPolicy": {
+          "MaximumRetryCount": 5,
+          "Name": "on-failure"
+        },
+        "ReadonlyRootfs": false,
+        "Devices": [
+          {
+            "PathInContainer": "/dev/xsdc",
+            "CgroupPermissions": "rwm",
+            "PathOnHost": "/dev/sdc"
+          },
+          {
+            "PathInContainer": "/dev/xnull",
+            "CgroupPermissions": "wm",
+            "PathOnHost": "/dev/null"
+          },
+          {
+            "PathInContainer": "/dev/xstdin",
+            "CgroupPermissions": "m",
+            "PathOnHost": "/dev/stdin"
+          }
+        ],
+        "Dns": [
+          "8.8.4.4",
+          "2.2.2.2"
+        ],
+        "ExtraHosts": null,
+        "PidMode": "",
+        "DnsSearch": [
+          "prod.example.com"
+        ],
+        "Privileged": true,
+        "VolumesFrom": null,
+        "PublishAllPorts": false
+      },
+      "Id": "30ad6d9ca7238f6d0e6e311e6487368596855725bd87629353ac1bcf5487d8c3",
+      "MountLabel": "",
+        "State": {
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "2015-04-16T05:30:54.823874152Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 0,
+        "Restarting": false,
+        "Running": false,
+        "StartedAt": "2015-04-16T05:30:53.726869757Z"
+      }
+    }
