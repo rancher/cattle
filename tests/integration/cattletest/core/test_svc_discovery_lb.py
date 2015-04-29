@@ -365,23 +365,38 @@ def test_scale(admin_client, super_client):
     assert lb.state == 'active'
 
     # validate that one host map was created
-    validate_add_host(host1, lb, super_client)
+    _wait_until_active_map_count(lb, 1, super_client)
 
     # scale up
     service = admin_client.update(service, scale=2)
     service = admin_client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 2
-    validate_add_host(host1, lb, super_client)
-    validate_add_host(host2, lb, super_client)
+    _wait_until_active_map_count(lb, 2, super_client)
 
     # now scale down
     service = admin_client.update(service, scale=0)
     service = admin_client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 0
+    _wait_until_active_map_count(lb, 0, super_client)
     validate_remove_host(host1, lb, super_client)
     validate_remove_host(host2, lb, super_client)
+
+
+def _wait_until_active_map_count(lb, count, super_client, timeout=30):
+    start = time.time()
+    host_maps = super_client. \
+        list_loadBalancerHostMap(loadBalancerId=lb.id,
+                                 state="active")
+    while len(host_maps) != count:
+        time.sleep(.5)
+        host_maps = super_client.\
+            list_loadBalancerHostMap(loadBalancerId=lb.id, state="active")
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for agent to be removed.'
+
+    return
 
 
 def _resource_is_active(resource):

@@ -530,7 +530,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<Long> availableHostIds = (List<Long>) CollectionUtils.collect(availableHosts,
                 TransformerUtils.invokerTransformer("getId"));
         List<Long> existingHostIds = (List<Long>) CollectionUtils.collect(existingHosts,
-                TransformerUtils.invokerTransformer("getId"));
+                TransformerUtils.invokerTransformer("getHostId"));
 
         requestedScale = requestedScale - existingHostIds.size();
         availableHostIds.removeAll(existingHostIds);
@@ -540,7 +540,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     + service.getName());
         }
         Collections.shuffle(availableHostIds);
-        return availableHostIds;
+        return availableHostIds.subList(0, requestedScale);
     }
 
     @Override
