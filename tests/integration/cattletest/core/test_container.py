@@ -7,25 +7,24 @@ from datetime import timedelta
 import time
 
 
-def test_container_create_count(admin_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-
-    cs = admin_client.create_container(imageUuid=image_uuid,
-                                       count=3)
+def test_container_create_count(client, sim_context):
+    cs = create_container(client, sim_context,
+                          count=3)
 
     assert len(cs) == 3
 
     for c in cs:
-        c = admin_client.wait_success(c)
+        c = client.wait_success(c)
         assert c.state == 'running'
 
 
 def test_container_create_only(admin_client, super_client,
                                sim_context):
     uuid = "sim:{}".format(random_num())
-    container = admin_client.create_container(name="test",
-                                              imageUuid=uuid,
-                                              startOnCreate=False)
+    container = create_container(admin_client, sim_context,
+                                 imageUuid=uuid,
+                                 name="test",
+                                 startOnCreate=False)
 
     assert_fields(container, {
         "type": "container",
@@ -145,8 +144,7 @@ def _assert_running(container, sim_context):
 
 
 def test_container_create_then_start(admin_client, super_client, sim_context):
-    uuid = "sim:{}".format(random_num())
-    container = admin_client.create_container(imageUuid=uuid)
+    container = create_container(admin_client, sim_context)
     container = container.start()
 
     assert container.state == "starting"
@@ -158,8 +156,7 @@ def test_container_create_then_start(admin_client, super_client, sim_context):
 
 
 def test_container_first_running(admin_client, sim_context):
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      startOnCreate=False)
+    c = create_container(admin_client, sim_context, startOnCreate=False)
     c = admin_client.wait_success(c)
 
     assert c.state == 'stopped'
@@ -177,8 +174,7 @@ def test_container_first_running(admin_client, sim_context):
 
 
 def test_container_restart(admin_client, super_client, sim_context):
-    uuid = "sim:{}".format(random_num())
-    container = admin_client.create_container(imageUuid=uuid)
+    container = create_container(admin_client, sim_context)
     container = admin_client.wait_success(container)
 
     _assert_running(super_client.reload(container), sim_context)
@@ -192,10 +188,9 @@ def test_container_restart(admin_client, super_client, sim_context):
 
 
 def test_container_stop(admin_client, super_client, sim_context):
-    uuid = "sim:{}".format(random_num())
-    container = admin_client.create_container(name="test",
-                                              imageUuid=uuid,
-                                              startOnCreate=True)
+    container = create_container(admin_client, sim_context,
+                                 name="test",
+                                 startOnCreate=True)
     container = wait_success(admin_client, container)
 
     assert_fields(container, {
@@ -272,10 +267,9 @@ def _assert_removed(container):
 
 
 def test_container_remove(admin_client, super_client, sim_context):
-    uuid = "sim:{}".format(random_num())
-    container = admin_client.create_container(name="test",
-                                              imageUuid=uuid,
-                                              startOnCreate=True)
+    container = create_container(admin_client, sim_context,
+                                 name="test",
+                                 startOnCreate=True)
     container = wait_success(admin_client, container)
     container = wait_success(admin_client, container.stop())
 
@@ -293,9 +287,8 @@ def test_container_remove(admin_client, super_client, sim_context):
 
 def test_container_delete_while_running(admin_client, super_client,
                                         sim_context):
-    uuid = "sim:{}".format(random_num())
-    container = admin_client.create_container(name="test",
-                                              imageUuid=uuid)
+    container = create_container(admin_client, sim_context,
+                                 name="test")
     container = admin_client.wait_success(container)
     assert container.state == 'running'
 
@@ -383,10 +376,8 @@ def test_container_purge(admin_client, super_client, sim_context):
 
 
 def test_start_stop(admin_client, sim_context):
-    uuid = "sim:{}".format(random_num())
-
-    container = admin_client.create_container(name="test",
-                                              imageUuid=uuid)
+    container = create_container(admin_client, sim_context,
+                                 name="test")
 
     container = wait_success(admin_client, container)
 
@@ -409,8 +400,6 @@ def test_container_image_required(client, sim_context):
 
 
 def test_container_compute_fail(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-
     data = {
         'compute.instance.activate::fail': True,
         'io.cattle.platform.process.instance.InstanceStart': {
@@ -418,8 +407,8 @@ def test_container_compute_fail(super_client, sim_context):
         }
     }
 
-    container = super_client.create_container(imageUuid=image_uuid,
-                                              data=data)
+    container = create_container(super_client, sim_context,
+                                 data=data)
 
     container = super_client.wait_transitioning(container)
 
@@ -437,8 +426,8 @@ def test_container_storage_fail(super_client, sim_context):
         'storage.volume.activate::fail': True,
     }
 
-    container = super_client.create_container(imageUuid=image_uuid,
-                                              data=data)
+    container = create_container(super_client, sim_context,
+                                 data=data)
     container = super_client.wait_transitioning(container)
 
     assert container.transitioning == 'error'
@@ -466,8 +455,8 @@ def test_create_with_vnet(super_client, sim_context):
                         vnetId=vnet.id,
                         subnetId=subnet1.id)
 
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      vnetIds=[vnet.id])
+    c = create_container(super_client, sim_context,
+                         vnetIds=[vnet.id])
     c = super_client.wait_success(c)
     assert c.state == 'running'
     assert 'vnetIds' not in c
@@ -500,8 +489,8 @@ def test_create_with_vnet2(super_client, sim_context):
                         vnetId=vnet.id,
                         subnetId=subnet2.id)
 
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      vnetIds=[vnet.id])
+    c = create_container(super_client, sim_context,
+                         vnetIds=[vnet.id])
     c = super_client.wait_success(c)
     assert c.state == 'running'
     assert 'vnetIds' not in c
@@ -542,8 +531,8 @@ def test_create_with_vnet_multiple_nics(super_client, sim_context):
                         vnetId=vnet2.id,
                         subnetId=subnet1.id)
 
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      vnetIds=[vnet.id, vnet2.id])
+    c = create_container(super_client, sim_context,
+                         vnetIds=[vnet.id, vnet2.id])
     c = super_client.wait_success(c)
     assert c.state == 'running'
     assert 'vnetIds' not in c
@@ -579,8 +568,7 @@ def test_container_restart_policy(admin_client, client):
 
 
 def test_container_exec_on_stop(admin_client, sim_context):
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=sim_context['host'].id)
+    c = create_container(admin_client, sim_context)
     c = admin_client.wait_success(c)
     assert c.state == 'running'
 
@@ -592,8 +580,7 @@ def test_container_exec_on_stop(admin_client, sim_context):
 
 
 def test_container_exec(admin_client, sim_context):
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=sim_context['host'].id)
+    c = create_container(admin_client, sim_context)
     c = admin_client.wait_success(c)
     assert c.state == 'running'
 
@@ -630,8 +617,7 @@ def test_container_exec(admin_client, sim_context):
 
 
 def test_container_logs(admin_client, sim_context):
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=sim_context['host'].id)
+    c = create_container(admin_client, sim_context)
     c = admin_client.wait_success(c)
 
     assert callable(c.logs)
