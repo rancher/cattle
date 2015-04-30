@@ -14,6 +14,9 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.Condition;
+
 public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
 
     @Override
@@ -59,4 +62,27 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .fetchInto(InstanceRecord.class);
     }
 
+    @Override
+    public Instance getInstanceByUuidOrExternalId(Long accountId, String uuid, String externalId) {
+        Instance instance = null;
+        Condition accountCondition = INSTANCE.ACCOUNT_ID.eq(accountId).and(INSTANCE.REMOVED.isNull());
+
+        if(StringUtils.isNotEmpty(uuid)) {
+            instance = create()
+                    .selectFrom(INSTANCE)
+                    .where(accountCondition
+                    .and(INSTANCE.UUID.eq(uuid)))
+                    .fetchAny();
+        }
+
+        if (instance == null && StringUtils.isNotEmpty(externalId)) {
+            instance = create()
+                    .selectFrom(INSTANCE)
+                    .where(accountCondition
+                    .and(INSTANCE.EXTERNAL_ID.eq(externalId)))
+                    .fetchAny();
+        }
+
+        return instance;
+    }
 }

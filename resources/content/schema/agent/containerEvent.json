@@ -24,7 +24,8 @@
         },
         "dockerInspect": {
             "type": "json",
-            "create": true
+            "create": true,
+            "nullable": true
         }
     }
 }

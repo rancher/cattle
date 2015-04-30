@@ -595,7 +595,7 @@ def test_container_exec(admin_client, sim_context):
     assert jwt['exec']['AttachStdout']
     assert jwt['exec']['Tty']
     assert jwt['exec']['Cmd'] == ['/bin/sh']
-    assert jwt['exec']['Container'] == c.uuid
+    assert jwt['exec']['Container'] == c.externalId
     assert jwt['exp'] is not None
 
     resp = c.execute(command=['/bin/sh2', 'blah'], attachStdin=False,
@@ -627,7 +627,7 @@ def test_container_logs(admin_client, sim_context):
 
     jwt = _get_jwt(resp.token)
 
-    assert jwt['logs']['Container'] == c.uuid
+    assert jwt['logs']['Container'] == c.externalId
     assert jwt['logs']['Lines'] == 300
     assert jwt['logs']['Follow'] is True
     assert jwt['exp'] is not None
@@ -639,7 +639,7 @@ def test_container_logs(admin_client, sim_context):
 
     jwt = _get_jwt(resp.token)
 
-    assert jwt['logs']['Container'] == c.uuid
+    assert jwt['logs']['Container'] == c.externalId
     assert jwt['logs']['Lines'] == 100
     assert jwt['logs']['Follow'] is True
     assert jwt['exp'] is not None

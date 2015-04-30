@@ -3,9 +3,12 @@ package io.cattle.platform.agent.connection.simulator.impl;
 import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
 import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -21,6 +24,7 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
     JsonMapper jsonMapper;
     ScheduledExecutorService scheduleExecutorService;
 
+    @SuppressWarnings("unchecked")
     @Override
     public Event handle(final AgentConnectionSimulator simulator, Event event) throws Exception {
         Boolean add = null;
@@ -56,7 +60,15 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
             }, Long.parseLong(m.group(1)), TimeUnit.SECONDS);
         }
 
-        return null;
+        Map<String, Object> instance = (Map<String, Object>)CollectionUtils.getNestedValue(event.getData(), "instanceHostMap", "instance");
+        Map<String, Object> update = null;
+        if (instance.get("externalId") == null) {
+            update =
+                    CollectionUtils.asMap("instanceHostMap",
+                            CollectionUtils.asMap("instance", CollectionUtils.asMap("externalId", UUID.randomUUID().toString())));
+        }
+
+        return EventVO.reply(event).withData(update);
     }
 
     public JsonMapper getJsonMapper() {
