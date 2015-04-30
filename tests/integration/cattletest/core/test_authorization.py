@@ -3,16 +3,16 @@ from common_fixtures import *  # NOQA
 
 def test_client_access(clients):
     typesLen = {
-        'admin': 92,
+        'admin': 93,
         'agent': 8,
-        'user': 70,
+        'user': 71,
         'agentRegister': 4,
         'test': 140,
-        'readAdmin': 92,
+        'readAdmin': 93,
         'token': 2,
-        'superadmin': 142,
-        'service': 92,
-        'project': 70,
+        'superadmin': 144,
+        'service': 93,
+        'project': 71,
     }
     for tuple in clients.items():
         assert typesLen[tuple[0]] == len(tuple[1].schema.types.items())
