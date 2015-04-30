@@ -44,10 +44,10 @@ backend ${listener.uuid}_backend
         </#if>
         <#if listener.targetProtocol="http">
         <#if appPolicy??>
-        appsession <#if appPolicy.cookie??>${appPolicy.cookie}<#else>appCookie_listener.uuid</#if><#if appPolicy.maxLength??> len ${appPolicy.maxLength}</#if><#if appPolicy.timeout??> timeout ${appPolicy.timeout}</#if><#if appPolicy.requestLearn> request-learn</#if><#if appPolicy.prefix> prefix</#if><#if appPolicy.mode??> mode <#if appPolicy.mode = "path_parameters">path-parameters<#else>query-string</#if></#if>
+        appsession ${appPolicy.cookie} len ${appPolicy.maxLength} timeout ${appPolicy.timeout}<#if appPolicy.requestLearn> request-learn</#if><#if appPolicy.prefix> prefix</#if><#if appPolicy.mode??> mode <#if appPolicy.mode = "path_parameters">path-parameters<#else>query-string</#if></#if>
         </#if>
         <#if lbPolicy??>
-        cookie <#if lbPolicy.cookie??>${lbPolicy.cookie}<#else>lbCookie_listener.uuid</#if><#if lbPolicy.mode??> ${lbPolicy.mode}<#else> insert</#if><#if lbPolicy.indirect> indirect</#if><#if lbPolicy.nocache> nocache</#if><#if lbPolicy.postonly> postonly</#if><#if lbPolicy.domain?? && lbPolicy.domain?has_content> domain ${lbPolicy.domain}</#if>
+        cookie <#if lbPolicy.cookie??>${lbPolicy.cookie}<#else>lbCookie_${listener.uuid}</#if><#if lbPolicy.mode??> ${lbPolicy.mode}<#else> insert</#if><#if lbPolicy.indirect> indirect</#if><#if lbPolicy.nocache> nocache</#if><#if lbPolicy.postonly> postonly</#if><#if lbPolicy.domain?? && lbPolicy.domain?has_content> domain ${lbPolicy.domain}</#if>
         </#if>
         </#if>
         <#list targets as target >

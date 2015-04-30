@@ -10,7 +10,21 @@ public interface ServiceConsumeMapDao {
 
     ServiceConsumeMap findNonRemovedMap(long serviceId, long consumedServiceId);
 
-    List<? extends ServiceConsumeMap> findMapsToRemove(long serviceId);
+    /**
+     * Lists maps to remove referencing services consumed by passed serviceId
+     * 
+     * @param serviceId
+     * @return
+     */
+    List<? extends ServiceConsumeMap> findConsumedMapsToRemove(long serviceId);
+
+    /**
+     * Lists maps to remove consuming service passed by serviceId
+     * 
+     * @param serviceId
+     * @return
+     */
+    List<? extends ServiceConsumeMap> findConsumingMapsToRemove(long serviceId);
 
     /**
      * @param serviceId

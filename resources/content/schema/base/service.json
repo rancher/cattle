@@ -8,7 +8,7 @@
         "scale": {
             "type": "int",
             "required": false,
-            "nullable": true,
+            "nullable": false,
             "default": 1,
              "attributes" : {
                 "scheduleUpdate" : true
