@@ -284,6 +284,16 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.SettingTable SETTING = io.cattle.platform.core.model.tables.SettingTable.SETTING;
 
 	/**
+	 * The table cattle.snapshot
+	 */
+	public static final io.cattle.platform.core.model.tables.SnapshotTable SNAPSHOT = io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT;
+
+	/**
+	 * The table cattle.snapshot_storage_pool_map
+	 */
+	public static final io.cattle.platform.core.model.tables.SnapshotStoragePoolMapTable SNAPSHOT_STORAGE_POOL_MAP = io.cattle.platform.core.model.tables.SnapshotStoragePoolMapTable.SNAPSHOT_STORAGE_POOL_MAP;
+
+	/**
 	 * The table cattle.storage_pool
 	 */
 	public static final io.cattle.platform.core.model.tables.StoragePoolTable STORAGE_POOL = io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL;
