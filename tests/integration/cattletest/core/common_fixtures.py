@@ -112,6 +112,18 @@ def accounts():
     system_account = admin_client.list_account(kind='system', uuid='system')[0]
     result['system'] = [None, None, system_account]
 
+    # TODO: remove once data in tests is cleaned up
+    key = 'io.cattle.platform.allocator.constraint.AccountConstraintsProvider'
+    client = super_client(None, result)
+    for user_name in ACCOUNT_LIST:
+        account = create_user(admin_client, user_name, kind=user_name)[2]
+        if account.data is None or key not in account.data:
+            data = account.data
+            if data is None:
+                data = {}
+            data[key] = {'accountScoped': False}
+            account = client.update(account, data=data)
+
     return result
 
 
@@ -166,8 +178,9 @@ def admin_client(accounts):
 @pytest.fixture(scope='session')
 def super_client(request, accounts):
     ret = _client_for_user('superadmin', accounts)
-    request.addfinalizer(
-        lambda: delete_sim_instances(ret))
+    if request is not None:
+        request.addfinalizer(
+            lambda: delete_sim_instances(ret))
     return ret
 
 

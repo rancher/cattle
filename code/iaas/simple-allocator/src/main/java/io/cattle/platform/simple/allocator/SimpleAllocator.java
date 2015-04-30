@@ -1,5 +1,6 @@
 package io.cattle.platform.simple.allocator;
 
+import io.cattle.platform.allocator.constraint.AccountConstraint;
 import io.cattle.platform.allocator.constraint.ComputeContstraint;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.KindConstraint;
@@ -43,6 +44,14 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Override
     protected LockDefinition getAllocationLock(AllocationRequest request, AllocationAttempt attempt) {
+        if (attempt != null) {
+            for (Constraint constraint : attempt.getConstraints()) {
+                if (constraint instanceof AccountConstraint) {
+                    return new AccountAllocatorLock(((AccountConstraint) constraint).getAccountId());
+                }
+            }
+        }
+
         return new SimpleAllocatorLock();
     }
 
@@ -66,6 +75,10 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
             if (constraint instanceof ValidHostsConstraint) {
                 options.getHosts().addAll(((ValidHostsConstraint) constraint).getHosts());
+            }
+
+            if (constraint instanceof AccountConstraint) {
+                options.setAccountId(((AccountConstraint) constraint).getAccountId());
             }
         }
 

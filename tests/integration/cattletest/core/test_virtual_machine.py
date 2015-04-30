@@ -357,7 +357,10 @@ def test_virtual_machine_console_visibility(super_client, sim_context):
 
 
 def test_virtual_machine_account_defaults(super_client, sim_context):
+    key = 'io.cattle.platform.allocator.constraint.AccountConstraintsProvider'
+    data = {key: {'accountScoped': False}}
     account = create_and_activate(super_client, 'account',
+                                  data=data,
                                   kind='user')
     cred = create_and_activate(super_client, 'credential',
                                accountId=account.id)

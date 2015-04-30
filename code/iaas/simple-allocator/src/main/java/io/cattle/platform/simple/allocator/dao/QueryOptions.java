@@ -5,6 +5,7 @@ import java.util.Set;
 
 public class QueryOptions {
 
+    Long accountId;
     String kind;
     Long compute;
     Set<Long> hosts = new HashSet<Long>();
@@ -27,6 +28,14 @@ public class QueryOptions {
 
     public Set<Long> getHosts() {
         return hosts;
+    }
+
+    public Long getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
 
 }
