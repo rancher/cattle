@@ -121,8 +121,9 @@ public class LoadBalancerServiceCreate extends AbstractObjectProcessHandler {
             lbConfigData.put("accountId", service.getAccountId());
             lbConfigData.put("name", name);
             lbConfigData.put("serviceId", service.getId());
-            lbConfig = resourceDao.createAndSchedule(LoadBalancerConfig.class, lbConfigData);
+            lbConfig = objectManager.create(LoadBalancerConfig.class, lbConfigData);
         }
+        objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_CONFIG_CREATE, lbConfig, null);
         return lbConfig;
     }
 
