@@ -47,31 +47,34 @@ def test_docker_create_only(admin_client, super_client, docker_context):
     container = admin_client.create_container(name='test',
                                               imageUuid=uuid,
                                               startOnCreate=False)
-    container = wait_success(admin_client, container)
+    try:
+        container = wait_success(admin_client, container)
 
-    assert container is not None
-    assert 'container' == container.type
-    image = super_client.reload(container).image()
-    assert image.instanceKind == 'container'
+        assert container is not None
+        assert 'container' == container.type
+        image = super_client.reload(container).image()
+        assert image.instanceKind == 'container'
 
-    image_mapping = filter(
-        lambda m: m.storagePool().external,
-        image.imageStoragePoolMaps()
-    )
+        image_mapping = filter(
+            lambda m: m.storagePool().external,
+            image.imageStoragePoolMaps()
+        )
 
-    assert len(image_mapping) == 1
-    assert image_mapping[0].imageId == image.id
-    assert image_mapping[0].storagePoolId == docker_context['external_pool'].id
+        assert len(image_mapping) == 1
+        assert image_mapping[0].imageId == image.id
+        assert image_mapping[0].storagePoolId == \
+            docker_context['external_pool'].id
 
-    assert not image.isPublic
-    assert image.name == '{}'.format(image.data.dockerImage.fullName,
-                                     image.data.dockerImage.id)
-    assert image.name == TEST_IMAGE_LATEST
-    assert image.data.dockerImage.repository == 'helloworld'
-    assert image.data.dockerImage.namespace == 'ibuildthecloud'
-    assert image.data.dockerImage.tag == 'latest'
-
-    return container
+        assert not image.isPublic
+        assert image.name == '{}'.format(image.data.dockerImage.fullName,
+                                         image.data.dockerImage.id)
+        assert image.name == TEST_IMAGE_LATEST
+        assert image.data.dockerImage.repository == 'helloworld'
+        assert image.data.dockerImage.namespace == 'ibuildthecloud'
+        assert image.data.dockerImage.tag == 'latest'
+    finally:
+        if container is not None:
+            admin_client.wait_success(admin_client.delete(container))
 
 
 @if_docker
@@ -79,26 +82,30 @@ def test_docker_create_with_start(admin_client, super_client, docker_context):
     uuid = TEST_IMAGE_UUID
     container = admin_client.create_container(name='test', imageUuid=uuid)
 
-    assert container.state == 'creating'
+    try:
+        assert container.state == 'creating'
 
-    container = wait_success(admin_client, container)
+        container = wait_success(admin_client, container)
 
-    assert container.state == 'running'
+        assert container.state == 'running'
 
-    assert container.data.dockerContainer.Image == TEST_IMAGE_LATEST
+        assert container.data.dockerContainer.Image == TEST_IMAGE_LATEST
 
-    assert len(container.volumes()) == 1
+        assert len(container.volumes()) == 1
 
-    image = container.volumes()[0].image()
-    image = super_client.reload(image)
-    image_mapping = filter(
-        lambda m: not m.storagePool().external,
-        image.imageStoragePoolMaps()
-    )
+        image = container.volumes()[0].image()
+        image = super_client.reload(image)
+        image_mapping = filter(
+            lambda m: not m.storagePool().external,
+            image.imageStoragePoolMaps()
+        )
 
-    assert len(image_mapping) == 1
-    assert image_mapping[0].imageId == image.id
-    assert image_mapping[0].storagePoolId == docker_context['pool'].id
+        assert len(image_mapping) == 1
+        assert image_mapping[0].imageId == image.id
+        assert image_mapping[0].storagePoolId == docker_context['pool'].id
+    finally:
+        if container is not None:
+            admin_client.wait_success(admin_client.delete(container))
 
 
 @if_docker
@@ -108,8 +115,12 @@ def test_docker_command(admin_client, docker_context):
                                               imageUuid=uuid,
                                               command=['sleep', '42'])
 
-    container = wait_success(admin_client, container)
-    assert container.data.dockerContainer.Command == 'sleep 42'
+    try:
+        container = wait_success(admin_client, container)
+        assert container.data.dockerContainer.Command == 'sleep 42'
+    finally:
+        if container is not None:
+            admin_client.wait_success(admin_client.delete(container))
 
 
 @if_docker
@@ -119,8 +130,12 @@ def test_docker_command_args(admin_client, docker_context):
                                               imageUuid=uuid,
                                               command=['sleep', '1', '2', '3'])
 
-    container = wait_success(admin_client, container)
-    assert container.data.dockerContainer.Command == 'sleep 1 2 3'
+    try:
+        container = wait_success(admin_client, container)
+        assert container.data.dockerContainer.Command == 'sleep 1 2 3'
+    finally:
+        if container is not None:
+            admin_client.wait_success(admin_client.delete(container))
 
 
 @if_docker
@@ -197,12 +212,16 @@ def test_docker_image_format(admin_client, super_client,
     uuid = TEST_IMAGE_UUID
     container = admin_client.create_container(name='test', imageUuid=uuid)
 
-    container = wait_success(admin_client, container)
-    container = super_client.reload(container)
+    try:
+        container = wait_success(admin_client, container)
+        container = super_client.reload(container)
 
-    assert container.image().format == 'docker'
-    assert container.volumes()[0].image().format == 'docker'
-    assert container.volumes()[0].format == 'docker'
+        assert container.image().format == 'docker'
+        assert container.volumes()[0].image().format == 'docker'
+        assert container.volumes()[0].format == 'docker'
+    finally:
+        if container is not None:
+            admin_client.wait_success(admin_client.delete(container))
 
 
 @if_docker
@@ -226,7 +245,7 @@ def test_docker_ports_from_container_publish_all(client, admin_client,
     assert port.publicIpAddressId is not None
     assert port.kind == 'imagePort'
 
-    client.delete(c)
+    client.wait_success(client.delete(c))
 
 
 @if_docker
@@ -249,7 +268,7 @@ def test_docker_ports_from_container_no_publish(client, admin_client,
     assert port.publicIpAddressId is not None
     assert port.kind == 'imagePort'
 
-    client.delete(c)
+    client.wait_success(client.delete(c))
 
 
 @if_docker
@@ -363,7 +382,7 @@ def test_docker_ports_from_container(client, admin_client,
 
     assert count == 1
 
-    c.stop(remove=True, timeout=0)
+    client.wait_success(client.delete(c))
 
 
 @if_docker
@@ -382,23 +401,27 @@ def test_agent_instance(admin_client, super_client, docker_context):
     c = admin_client.create_container(imageUuid=TEST_IMAGE_UUID,
                                       networkIds=[network.id])
     # TODO: Figure out whats failing here
-    c = admin_client.wait_success(c, timeout=240)
-    assert c.state == 'running'
+    try:
+        c = admin_client.wait_success(c, timeout=240)
+        assert c.state == 'running'
 
-    agent_instance = None
-    for nic in super_client.reload(network).nics():
-        instance = nic.instance()
-        if instance.agentId is not None:
-            agent_instance = instance
-            break
+        agent_instance = None
+        for nic in super_client.reload(network).nics():
+            instance = nic.instance()
+            if instance.agentId is not None:
+                agent_instance = instance
+                break
 
-    assert agent_instance is not None
+        assert agent_instance is not None
 
-    agent_instance = super_client.wait_success(agent_instance)
-    assert agent_instance.state == 'running'
+        agent_instance = super_client.wait_success(agent_instance)
+        assert agent_instance.state == 'running'
 
-    agent = super_client.wait_success(agent_instance.agent())
-    assert agent.state == 'active'
+        agent = super_client.wait_success(agent_instance.agent())
+        assert agent.state == 'active'
+    finally:
+        if c is not None:
+            admin_client.wait_success(admin_client.delete(c))
 
 
 @if_docker
@@ -409,16 +432,20 @@ def test_no_port_override(admin_client, docker_context):
                                       networkIds=[network.id],
                                       ports=['8081:8080'])
 
-    # TODO: Figure out why this takes so long
-    c = admin_client.wait_success(c, timeout=240)
+    try:
+        # TODO: Figure out why this takes so long
+        c = admin_client.wait_success(c, timeout=240)
 
-    assert c.state == 'running'
-    ports = c.ports()
+        assert c.state == 'running'
+        ports = c.ports()
 
-    assert len(ports) == 1
-    assert ports[0].kind == 'userPort'
-    assert ports[0].publicPort == 8081
-    assert ports[0].privatePort == 8080
+        assert len(ports) == 1
+        assert ports[0].kind == 'userPort'
+        assert ports[0].publicPort == 8081
+        assert ports[0].privatePort == 8080
+    finally:
+        if c is not None:
+            admin_client.wait_success(admin_client.delete(c))
 
 
 @if_docker
@@ -442,105 +469,108 @@ def test_docker_volumes(client, admin_client, super_client, docker_context):
                                       dataVolumes=['/foo',
                                                    bar_bind_mount,
                                                    baz_bind_mount])
+    try:
+        c = admin_client.wait_success(c)
+        assert len(c.dataVolumes) == 3
+        assert set(c.dataVolumes) == set(['/foo',
+                                          bar_bind_mount,
+                                          baz_bind_mount])
 
-    c = admin_client.wait_success(c)
-    assert len(c.dataVolumes) == 3
-    assert set(c.dataVolumes) == set(['/foo',
-                                      bar_bind_mount,
-                                      baz_bind_mount])
+        c = admin_client.wait_success(c.start())
 
-    c = admin_client.wait_success(c.start())
+        volumes = c.volumes()
+        assert len(volumes) == 1
 
-    volumes = c.volumes()
-    assert len(volumes) == 1
+        mounts = c.mounts()
+        assert len(mounts) == 3
+        foo_mount, bar_mount, baz_mount = None, None, None
+        foo_vol, bar_vol, baz_vol = None, None, None
+        for mount in mounts:
+            assert mount.instance().id == c.id
+            if mount.path == '/foo':
+                foo_mount = mount
+                foo_vol = mount.volume()
+            elif mount.path == '/bar':
+                bar_mount = mount
+                bar_vol = mount.volume()
+            elif mount.path == '/baz':
+                baz_mount = mount
+                baz_vol = mount.volume()
 
-    mounts = c.mounts()
-    assert len(mounts) == 3
-    foo_mount, bar_mount, baz_mount = None, None, None
-    foo_vol, bar_vol, baz_vol = None, None, None
-    for mount in mounts:
-        assert mount.instance().id == c.id
-        if mount.path == '/foo':
-            foo_mount = mount
-            foo_vol = mount.volume()
-        elif mount.path == '/bar':
-            bar_mount = mount
-            bar_vol = mount.volume()
-        elif mount.path == '/baz':
-            baz_mount = mount
-            baz_vol = mount.volume()
+        assert foo_mount is not None
+        assert foo_mount.permissions == 'rw'
+        assert foo_vol is not None
+        assert foo_vol.state == 'active'
+        assert _(foo_vol).attachedState == 'inactive'
 
-    assert foo_mount is not None
-    assert foo_mount.permissions == 'rw'
-    assert foo_vol is not None
-    assert foo_vol.state == 'active'
-    assert _(foo_vol).attachedState == 'inactive'
+        assert bar_mount is not None
+        assert bar_mount.permissions == 'rw'
+        assert bar_vol is not None
+        assert bar_vol.state == 'active'
+        assert _(bar_vol).attachedState == 'inactive'
 
-    assert bar_mount is not None
-    assert bar_mount.permissions == 'rw'
-    assert bar_vol is not None
-    assert bar_vol.state == 'active'
-    assert _(bar_vol).attachedState == 'inactive'
+        assert baz_mount is not None
+        assert baz_mount.permissions == 'ro'
+        assert baz_vol is not None
+        assert baz_vol.state == 'active'
+        assert _(baz_vol).attachedState == 'inactive'
 
-    assert baz_mount is not None
-    assert baz_mount.permissions == 'ro'
-    assert baz_vol is not None
-    assert baz_vol.state == 'active'
-    assert _(baz_vol).attachedState == 'inactive'
+        assert not foo_vol.isHostPath
 
-    assert not foo_vol.isHostPath
+        assert bar_vol.isHostPath
+        # We use 'in' instead of '==' because Docker uses the fully qualified
+        # non-linked path and it might look something like: /mnt/sda1/<path>
+        assert bar_host_path in bar_vol.uri
 
-    assert bar_vol.isHostPath
-    # We use 'in' instead of '==' because Docker uses the fully qualified
-    # non-linked path and it might look something like: /mnt/sda1/<path>
-    assert bar_host_path in bar_vol.uri
+        assert baz_vol.isHostPath
+        assert baz_host_path in baz_vol.uri
 
-    assert baz_vol.isHostPath
-    assert baz_host_path in baz_vol.uri
+        c2 = admin_client.create_container(name="volumes_from_test",
+                                           imageUuid=uuid,
+                                           startOnCreate=False,
+                                           dataVolumesFrom=[c.id])
+        c2 = admin_client.wait_success(c2)
+        assert len(c2.dataVolumesFrom) == 1
+        assert set(c2.dataVolumesFrom) == set([c.id])
 
-    c2 = admin_client.create_container(name="volumes_from_test",
-                                       imageUuid=uuid,
-                                       startOnCreate=False,
-                                       dataVolumesFrom=[c.id])
-    c2 = admin_client.wait_success(c2)
-    assert len(c2.dataVolumesFrom) == 1
-    assert set(c2.dataVolumesFrom) == set([c.id])
+        c2 = admin_client.wait_success(c2.start())
+        c2_mounts = c2.mounts()
+        assert len(c2_mounts) == 3
 
-    c2 = admin_client.wait_success(c2.start())
-    c2_mounts = c2.mounts()
-    assert len(c2_mounts) == 3
+        for mount in c2_mounts:
+            assert mount.instance().id == c2.id
+            if mount.path == '/foo':
+                assert mount.volumeId == foo_vol.id
+            elif mount.path == '/bar':
+                assert mount.volumeId == bar_vol.id
+            elif mount.path == '/baz':
+                assert mount.volumeId == baz_vol.id
 
-    for mount in c2_mounts:
-        assert mount.instance().id == c2.id
-        if mount.path == '/foo':
-            assert mount.volumeId == foo_vol.id
-        elif mount.path == '/bar':
-            assert mount.volumeId == bar_vol.id
-        elif mount.path == '/baz':
-            assert mount.volumeId == baz_vol.id
+        c.stop(remove=True, timeout=0)
+        c2.stop(remove=True, timeout=0)
 
-    c.stop(remove=True, timeout=0)
-    c2.stop(remove=True, timeout=0)
+        _check_path(foo_vol, True, admin_client)
+        foo_vol = admin_client.wait_success(foo_vol.deactivate())
+        foo_vol = admin_client.wait_success(foo_vol.remove())
+        foo_vol = admin_client.wait_success(foo_vol.purge())
+        _check_path(foo_vol, False, admin_client)
 
-    _check_path(foo_vol, True, admin_client)
-    foo_vol = admin_client.wait_success(foo_vol.deactivate())
-    foo_vol = admin_client.wait_success(foo_vol.remove())
-    foo_vol = admin_client.wait_success(foo_vol.purge())
-    _check_path(foo_vol, False, admin_client)
+        _check_path(bar_vol, True, admin_client)
+        bar_vol = admin_client.wait_success(bar_vol.deactivate())
+        bar_vol = admin_client.wait_success(bar_vol.remove())
+        bar_vol = admin_client.wait_success(bar_vol.purge())
+        # Host bind mount. Wont actually delete the dir on the host.
+        _check_path(bar_vol, True, admin_client)
 
-    _check_path(bar_vol, True, admin_client)
-    bar_vol = admin_client.wait_success(bar_vol.deactivate())
-    bar_vol = admin_client.wait_success(bar_vol.remove())
-    bar_vol = admin_client.wait_success(bar_vol.purge())
-    # Host bind mount. Wont actually delete the dir on the host.
-    _check_path(bar_vol, True, admin_client)
-
-    _check_path(baz_vol, True, admin_client)
-    baz_vol = admin_client.wait_success(baz_vol.deactivate())
-    baz_vol = admin_client.wait_success(baz_vol.remove())
-    baz_vol = admin_client.wait_success(baz_vol.purge())
-    # Host bind mount. Wont actually delete the dir on the host.
-    _check_path(baz_vol, True, admin_client)
+        _check_path(baz_vol, True, admin_client)
+        baz_vol = admin_client.wait_success(baz_vol.deactivate())
+        baz_vol = admin_client.wait_success(baz_vol.remove())
+        baz_vol = admin_client.wait_success(baz_vol.purge())
+        # Host bind mount. Wont actually delete the dir on the host.
+        _check_path(baz_vol, True, admin_client)
+    finally:
+        if c is not None:
+            admin_client.wait_success(admin_client.delete(c))
 
 
 @if_docker

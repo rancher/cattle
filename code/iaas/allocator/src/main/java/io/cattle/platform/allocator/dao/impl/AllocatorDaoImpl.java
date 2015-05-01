@@ -7,6 +7,7 @@ import static io.cattle.platform.core.model.tables.ImageTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.PortTable.PORT;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
@@ -17,11 +18,13 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
@@ -315,6 +318,24 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     @Inject
     public void setMapDao(GenericMapDao mapDao) {
         this.mapDao = mapDao;
+    }
+
+    @Override
+    public List<Port> getPortsForHost(long hostId) {
+        return create()
+                .select(PORT.fields())
+                    .from(PORT)
+                    .join(INSTANCE_HOST_MAP)
+                        .on(PORT.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                    .join(INSTANCE)
+                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                    .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING, InstanceConstants.STATE_RUNNING))
+                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                        .and(PORT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING))
+                        .and(PORT.REMOVED.isNull()))
+                .fetchInto(Port.class);
     }
 
 }
