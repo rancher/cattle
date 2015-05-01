@@ -5,11 +5,12 @@ import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
+import io.cattle.platform.core.dao.LoadBalancerDao;
 import io.cattle.platform.core.dao.LoadBalancerTargetDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Agent;
@@ -17,6 +18,8 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.LoadBalancer;
+import io.cattle.platform.core.model.LoadBalancerHostMap;
+import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -68,23 +71,28 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     @Inject
     NetworkDao ntwkDao;
 
+    @Inject
+    LoadBalancerDao lbDao;
+
     @Override
-    public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer, Long... hostIds) {
+    public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer) {
         List<Instance> result = new ArrayList<Instance>();
-        List<Long> hosts = populateHosts(loadBalancer, hostIds);
         Network network = ntwkDao.getNetworkForObject(loadBalancer, NetworkConstants.KIND_HOSTONLY);
         if (network == null) {
             throw new RuntimeException(
                     "Unable to find a network to start a load balancer " + loadBalancer);
         }
-
-        for (long hostId : hosts) {
-            Host host = objectManager.loadResource(Host.class, hostId);
-            if (!host.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
-                // skip inactive host
-                continue;
+        List<? extends LoadBalancerHostMap> hostMaps = lbInstanceDao.getLoadBalancerHostMaps(loadBalancer.getId());
+        for (LoadBalancerHostMap hostMap : hostMaps) {
+            if (hostMap.getHostId() != null) {
+                Host host = objectManager.loadResource(Host.class, hostMap.getHostId());
+                if (!host.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
+                    // skip inactive host
+                    continue;
+                }
             }
-            Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostId);
+
+            Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostMap);
 
             if (lbInstance == null) {
 
@@ -94,11 +102,21 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                 List<Long> networkIds = new ArrayList<>();
                 networkIds.add(network.getId());
                 params.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
-                params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, hostId);
+                if (hostMap.getHostId() != null) {
+                    params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, hostMap.getHostId());
+                }
+
+                // set inital set of lb ports
+                List<String> ports = getLbInstancePorts(lbInstance, loadBalancer);
+                if (!ports.isEmpty()) {
+                    params.put(InstanceConstants.FIELD_PORTS, ports);
+                }
 
                 // create lb agent (instance will be created along)
-                lbInstance = agentInstanceFactory.newBuilder().withAccountId(loadBalancer.getAccountId()).withZoneId(host.getZoneId()).withPrivileged(true)
-                        .withUri(getUri(loadBalancer, hostId)).withName(LB_INSTANCE_NAME.get()).withImageUuid(imageUUID).withParameters(params)
+                // following logic from SpecialFieldsPostInstantiationHandler when default zoneId to 1L
+                lbInstance = agentInstanceFactory.newBuilder().withAccountId(loadBalancer.getAccountId())
+                        .withZoneId(1L).withPrivileged(true)
+                        .withUri(getUri(loadBalancer, hostMap)).withName(LB_INSTANCE_NAME.get()).withImageUuid(imageUUID).withParameters(params)
                         .withSystemContainerType(SystemContainer.LoadBalancerAgent).build();
             } else {
                 start(lbInstance);
@@ -113,8 +131,8 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     }
 
     @Override
-    public Instance getLoadBalancerInstance(LoadBalancer loadBalancer, long hostId) {
-        Agent lbAgent = getLoadBalancerAgent(loadBalancer, hostId);
+    public Instance getLoadBalancerInstance(LoadBalancer loadBalancer, LoadBalancerHostMap hostMap) {
+        Agent lbAgent = getLoadBalancerAgent(loadBalancer, hostMap);
         Instance lbInstance = null;
         if (lbAgent != null) {
             lbInstance = agentInstanceDao.getInstanceByAgent(lbAgent);
@@ -122,8 +140,8 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         return lbInstance;
     }
 
-    protected Agent getLoadBalancerAgent(LoadBalancer loadBalancer, long hostId) {
-        String uri = getUri(loadBalancer, hostId);
+    protected Agent getLoadBalancerAgent(LoadBalancer loadBalancer, LoadBalancerHostMap hostMap) {
+        String uri = getUri(loadBalancer, hostMap);
         Agent lbAgent = agentInstanceDao.getAgentByUri(uri);
         return lbAgent;
     }
@@ -131,9 +149,9 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     @Override
     public List<Agent> getLoadBalancerAgents(LoadBalancer loadBalancer) {
         List<Agent> agents = new ArrayList<>();
-        List<Long> hostIds = lbInstanceDao.getLoadBalancerHosts(loadBalancer.getId());
-        for (Long hostId : hostIds) {
-            Agent agent = getLoadBalancerAgent(loadBalancer, hostId);
+        List<? extends LoadBalancerHostMap> hostMaps = lbInstanceDao.getLoadBalancerHostMaps(loadBalancer.getId());
+        for (LoadBalancerHostMap hostMap : hostMaps) {
+            Agent agent = getLoadBalancerAgent(loadBalancer, hostMap);
             if (agent != null) {
                 agents.add(agent);
             }
@@ -144,9 +162,9 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     @Override
     public List<Instance> getLoadBalancerInstances(LoadBalancer loadBalancer) {
         List<Instance> instances = new ArrayList<>();
-        List<Long> hosts = populateHosts(loadBalancer);
-        for (long hostId : hosts) {
-            Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostId);
+        List<? extends LoadBalancerHostMap> hostMaps = lbInstanceDao.getLoadBalancerHostMaps(loadBalancer.getId());
+        for (LoadBalancerHostMap hostMap : hostMaps) {
+            Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostMap);
             if (lbInstance != null) {
                 instances.add(lbInstance);
             }
@@ -154,12 +172,12 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         return instances;
     }
 
-    private List<Long> populateHosts(LoadBalancer loadBalancer, Long... hostIds) {
-        List<Long> hosts = new ArrayList<Long>();
-        if (hostIds.length == 0) {
-            hosts = lbInstanceDao.getLoadBalancerHosts(loadBalancer.getId());
+    private List<LoadBalancerHostMap> populateHostMaps(LoadBalancer loadBalancer, LoadBalancerHostMap... hostMaps) {
+        List<LoadBalancerHostMap> hosts = new ArrayList<>();
+        if (hostMaps.length == 0) {
+            hosts.addAll(lbInstanceDao.getLoadBalancerHostMaps(loadBalancer.getId()));
         } else {
-            hosts.addAll(Arrays.asList(hostIds));
+            hosts.addAll(Arrays.asList(hostMaps));
         }
         return hosts;
     }
@@ -176,10 +194,10 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         }
     }
 
-    protected String getUri(LoadBalancer lb, long hostId) {
+    protected String getUri(LoadBalancer lb, LoadBalancerHostMap hostMap) {
         String uriPredicate = DataAccessor.fields(lb).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_URI_PREDICATE).withDefault("delegate:///").as(
                 String.class);
-        return String.format("%s?lbId=%d&hostId=%d", uriPredicate, lb.getId(), hostId);
+        return String.format("%s?lbId=%d&hostMapId=%d", uriPredicate, lb.getId(), hostMap.getId());
     }
 
     @Override
@@ -215,5 +233,31 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             }
         }
         return ip;
+    }
+
+    private List<String> getLbInstancePorts(Instance instance, LoadBalancer lb) {
+        List<? extends LoadBalancerListener> listeners = lbDao.listActiveListenersForConfig(lb
+                .getLoadBalancerConfigId());
+        List<String> ports = new ArrayList<String>();
+        for (LoadBalancerListener listener : listeners) {
+            String fullPort = listener.getSourcePort() + ":" + listener.getTargetPort();
+            ports.add(fullPort);
+        }
+
+        return ports;
+    }
+
+    @Override
+    public LoadBalancerHostMap getLoadBalancerHostMapForInstance(Instance lbInstance) {
+        if (!isLbInstance(lbInstance)) {
+            return null;
+        }
+        Agent agent = objectManager.loadResource(Agent.class, lbInstance.getAgentId());
+
+        // get lb id from agent uri
+        String uri = agent.getUri();
+        String[] result = uri.split("hostMapId=");
+        Long hostMapId = Long.valueOf(result[1]);
+        return objectManager.loadResource(LoadBalancerHostMap.class, hostMapId);
     }
 }

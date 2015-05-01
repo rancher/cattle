@@ -36,12 +36,21 @@ public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLog
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         LoadBalancerHostMap map = (LoadBalancerHostMap) state.getResource();
         LoadBalancer lb = loadResource(LoadBalancer.class, map.getLoadBalancerId());
-        long hostId = map.getHostId();
-        Host host = objectManager.loadResource(Host.class, hostId);
-        if (host.getRemoved() == null
-                && !(host.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || host.getState()
-                        .equalsIgnoreCase(CommonStatesConstants.REMOVING))) {
-            removeLoadBalancerInstance(lb, hostId);
+        Long hostId = map.getHostId();
+        boolean validHostState = false;
+        if (hostId == null) {
+            validHostState = true;
+        } else {
+            Host host = objectManager.loadResource(Host.class, hostId);
+            if (host.getRemoved() == null
+                    && !(host.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || host.getState()
+                            .equalsIgnoreCase(CommonStatesConstants.REMOVING))) {
+                validHostState = true;
+            }
+        }
+
+        if (validHostState) {
+            removeLoadBalancerInstance(lb, map);
         }
         return null;
     }
@@ -51,8 +60,8 @@ public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLog
         return Priority.DEFAULT;
     }
 
-    protected void removeLoadBalancerInstance(LoadBalancer loadBalancer, long hostId) {
-        Instance lbInstance = lbInstanceManager.getLoadBalancerInstance(loadBalancer, hostId);
+    protected void removeLoadBalancerInstance(LoadBalancer loadBalancer, LoadBalancerHostMap hostMap) {
+        Instance lbInstance = lbInstanceManager.getLoadBalancerInstance(loadBalancer, hostMap);
         if (lbInstance != null
                 && !(lbInstance.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || lbInstance.getState()
                         .equals(

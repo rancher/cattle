@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
@@ -9,12 +8,12 @@ import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
@@ -599,18 +598,20 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
                 LOAD_BALANCER.REMOVED, null);
 
-        List<Long> hostIds = (List<Long>) getLoadBalancerHostIds(service, scale, lb);
-        for (Long hostId : hostIds) {
-            lbService.addHostToLoadBalancer(lb, hostId);
+        List<? extends LoadBalancerHostMap> existingMaps = mapDao.findNonRemoved(LoadBalancerHostMap.class,
+                LoadBalancer.class, lb.getId());
+        List<LoadBalancerHostMap> allMaps = new ArrayList<>();
+        allMaps.addAll(existingMaps);
+        while (allMaps.size() < scale) {
+            LoadBalancerHostMap hostMap = lbService.addHostToLoadBalancer(lb);
+            allMaps.add(hostMap);
         }
-        waitForLbUpdate(lb, hostIds);
+        waitForLbUpdate(lb, allMaps);
     }
 
-    private void waitForLbUpdate(LoadBalancer lb, List<Long> hostIds) {
-        for (Long hostId : hostIds) {
-            LoadBalancerHostMap map = mapDao.findNonRemoved(LoadBalancerHostMap.class, Host.class, hostId,
-                    LoadBalancer.class, lb.getId());
-            map = resourceMonitor.waitFor(map, new ResourcePredicate<LoadBalancerHostMap>() {
+    private void waitForLbUpdate(LoadBalancer lb, List<? extends LoadBalancerHostMap> hostMaps) {
+        for (LoadBalancerHostMap hostMap : hostMaps) {
+            hostMap = resourceMonitor.waitFor(hostMap, new ResourcePredicate<LoadBalancerHostMap>() {
                 @Override
                 public boolean evaluate(LoadBalancerHostMap obj) {
                     return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
@@ -619,29 +620,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected List<Long> getLoadBalancerHostIds(Service service, int requestedScale, LoadBalancer lb) {
-        // TODO - once the swarm is in, swarm cluster is going to be sent instead of the hostIds
-        List<Host> availableHosts = objectManager.find(Host.class, HOST.ACCOUNT_ID, service.getAccountId(),
-                HOST.STATE, CommonStatesConstants.ACTIVE, HOST.REMOVED, null);
-        List<? extends LoadBalancerHostMap> existingHosts = mapDao.findNonRemoved(LoadBalancerHostMap.class,
-                LoadBalancer.class, lb.getId());
-        
-        List<Long> availableHostIds = (List<Long>) CollectionUtils.collect(availableHosts,
-                TransformerUtils.invokerTransformer("getId"));
-        List<Long> existingHostIds = (List<Long>) CollectionUtils.collect(existingHosts,
-                TransformerUtils.invokerTransformer("getHostId"));
-
-        requestedScale = requestedScale - existingHostIds.size();
-        availableHostIds.removeAll(existingHostIds);
-
-        if (availableHostIds.size() < requestedScale) {
-            throw new RuntimeException("Not enough hosts found  " + " to scale load balancer service "
-                    + service.getName());
-        }
-        Collections.shuffle(availableHostIds);
-        return availableHostIds.subList(0, requestedScale);
-    }
 
     @Override
     public void deactivateLoadBalancerService(Service service) {
@@ -653,7 +631,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<? extends LoadBalancerHostMap> maps = mapDao.findNonRemoved(LoadBalancerHostMap.class, LoadBalancer.class,
                 lb.getId());
         for (LoadBalancerHostMap map : maps) {
-            lbService.removeHostFromLoadBalancer(lb, map.getHostId());
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE, map,
+                    null);
         }
     }
 
@@ -724,17 +703,18 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         // on scale up, skip
-        List<? extends LoadBalancerHostMap> existingHosts = mapDao.findNonRemoved(LoadBalancerHostMap.class,
+        List<? extends LoadBalancerHostMap> existingMaps = mapDao.findNonRemoved(LoadBalancerHostMap.class,
                 LoadBalancer.class, lb.getId());
-        int originalScale = existingHosts.size();
+        int originalScale = existingMaps.size();
         if (originalScale <= requestedScale) {
             return;
         }
         // remove hosts
         int toRemove = originalScale - requestedScale;
         for (int i = originalScale - toRemove; i < originalScale; i++) {
-            LoadBalancerHostMap existingMap = existingHosts.get(i);
-            lbService.removeHostFromLoadBalancer(lb, existingMap.getHostId());
+            LoadBalancerHostMap existingMap = existingMaps.get(i);
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE, existingMap,
+                    null);
         }
     }
 }

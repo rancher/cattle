@@ -1,6 +1,7 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -191,7 +192,12 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
     protected void postNetwork(Instance instance, ProcessState state) {
         for (Port port : getObjectManager().children(instance, Port.class)) {
-            activate(port, state.getData());
+            // ports can be removed while instance is still present (lb instance is an example)
+            if (port.getRemoved() == null
+                    && !(port.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || port.getState()
+                            .equalsIgnoreCase(CommonStatesConstants.REMOVING))) {
+                activate(port, state.getData());
+            }
         }
     }
 
