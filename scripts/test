@@ -25,6 +25,18 @@ destroy_root()
     fi
 }
 
+check_schemas()
+{
+    for i in resources/content/db/core*xml; do
+        if ! grep -q http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd $i; then
+            echo 'ERROR: Please use 3.1 xsd for changelog schema on file:' $i
+            echo 'ERROR:    Currently using' $(head -n2 $i | grep databaseChangeLog)
+        fi
+    done
+}
+
+check_schemas
+
 setup_root
 
 cd tests/integration
