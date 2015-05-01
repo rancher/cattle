@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from cattle import ApiError
 
 
 @pytest.fixture(scope='module')
@@ -133,6 +134,13 @@ def test_deactivate_then_remove_lb_svc(super_client, admin_client):
 
     lb = super_client.reload(lb)
     assert lb.state == "active"
+
+    # try to remove lb - should fail
+    with pytest.raises(ApiError) as e:
+        lb = admin_client.wait_success(admin_client.delete(lb))
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidAction'
+    assert e.value.error.fieldName == 'serviceId'
 
     # remove service and verify that the lb is gone
     wait_success(admin_client, service.remove())
