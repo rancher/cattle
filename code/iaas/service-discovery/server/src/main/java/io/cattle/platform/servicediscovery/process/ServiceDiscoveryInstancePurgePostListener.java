@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -41,7 +42,10 @@ public class ServiceDiscoveryInstancePurgePostListener extends AbstractObjectPro
                 objectManager.loadResource(Instance.class, instance.getId()),
                 ServiceExposeMap.class);
         for (ServiceExposeMap map : maps) {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, map, null);
+            if (!(map.getState().equals(CommonStatesConstants.REMOVED) || map.getState().equals(
+                    CommonStatesConstants.REMOVING))) {
+                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, map, null);
+            }
         }
     }
 

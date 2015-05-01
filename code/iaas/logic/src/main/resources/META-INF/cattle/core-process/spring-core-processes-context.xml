@@ -153,7 +153,7 @@
     
     <!-- Service Discovery Service/Instance map -->
     <process:process name="serviceexposemap.create" resourceType="serviceExposeMap" start="requested" transitioning="activating" done="active" />
-    <process:process name="serviceexposemap.remove" resourceType="serviceExposeMap" start="active,activating" transitioning="removing" done="removed" />
+    <process:process name="serviceexposemap.remove" resourceType="serviceExposeMap" start="active,activating, requested" transitioning="removing" done="removed" />
     
     <!-- Service Discovery Service/Service map -->
     <process:process name="serviceconsumemap.create" resourceType="serviceConsumeMap" start="requested" transitioning="activating" done="active" />
