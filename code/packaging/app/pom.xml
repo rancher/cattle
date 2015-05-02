@@ -8,11 +8,4 @@
         <relativePath>../app-parent/pom.xml</relativePath>
     </parent>
     <packaging>war</packaging>
-    <dependencies>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-host-stats</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
 </project>
