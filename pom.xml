@@ -126,6 +126,7 @@
                 <module>code/implementation/simulator/storage</module>
                 <module>code/implementation/zookeeper</module>
                 <module>code/packaging/app</module>
+                <module>code/packaging/app-intellij</module>
                 <module>code/packaging/app-parent</module>
                 <module>code/packaging/dev</module>
                 <module>code/packaging/meta</module>
