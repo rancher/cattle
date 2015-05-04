@@ -34,6 +34,6 @@ public interface AllocatorDao {
 
     List<Long> getPhysicalHostsForSubnet(long subnetId, Long vnetId);
 
-    List<Port> getPortsForHost(long hostId);
+    List<Port> getUsedPortsForHostExcludingInstance(long hostId, long instanceId);
 
 }

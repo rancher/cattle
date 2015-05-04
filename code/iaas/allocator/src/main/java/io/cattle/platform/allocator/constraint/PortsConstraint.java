@@ -26,7 +26,7 @@ public class PortsConstraint implements Constraint {
 
         for (Long hostId : hostIds) {
             // TODO: Performance improvement. Move more of the filtering into the DB query itself
-            List<Port> portsUsedByHost = allocatorDao.getPortsForHost(hostId);
+            List<Port> portsUsedByHost = allocatorDao.getUsedPortsForHostExcludingInstance(hostId, attempt.getInstanceId());
             for (Port portUsed : portsUsedByHost) {
                 for (Port requestedPort : ports) {
                     if (requestedPort.getPublicPort() != null &&

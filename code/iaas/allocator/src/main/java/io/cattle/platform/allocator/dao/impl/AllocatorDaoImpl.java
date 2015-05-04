@@ -321,7 +321,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public List<Port> getPortsForHost(long hostId) {
+    public List<Port> getUsedPortsForHostExcludingInstance(long hostId, long instanceId) {
         return create()
                 .select(PORT.fields())
                     .from(PORT)
@@ -331,9 +331,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                         .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                     .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
                         .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.ID.ne(instanceId))
                         .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING, InstanceConstants.STATE_RUNNING))
                         .and(INSTANCE_HOST_MAP.REMOVED.isNull())
-                        .and(PORT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING))
                         .and(PORT.REMOVED.isNull()))
                 .fetchInto(Port.class);
     }
