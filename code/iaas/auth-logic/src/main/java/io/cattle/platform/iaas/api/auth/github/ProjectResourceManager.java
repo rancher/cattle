@@ -26,17 +26,20 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
+import io.github.ibuildthecloud.gdapi.model.Resource;
+import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import javax.inject.Inject;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
 
 public class ProjectResourceManager extends AbstractObjectResourceManager {
 
@@ -215,5 +218,24 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             }
         }
         return super.getRelationship(type, linkName);
+    }
+
+    @Override
+    protected void addLinks(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
+        super.addLinks(obj, schemaFactory, schema, resource);
+
+        Map<String,URL> links = resource.getLinks();
+        UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
+
+        for ( Schema childSchema : schemaFactory.listSchemas() ) {
+            if ( ! schema.getCollectionMethods().contains(Schema.Method.GET.toString()) ) {
+                continue;
+            }
+
+            URL link = urlBuilder.resourceLink(resource, childSchema.getPluralName());
+            if ( link != null ) {
+                links.put(childSchema.getPluralName(), link);
+            }
+        }
     }
 }
