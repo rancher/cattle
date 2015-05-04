@@ -1,0 +1,10 @@
+{
+        "port": {
+            "type": "int",
+            "min": 1,
+            "max": 65535,
+            "required": false,
+            "nullable": true
+        }
+    }
+}

@@ -66,5 +66,7 @@
     <bean class="io.cattle.platform.configitem.server.agentinclude.impl.AgentIncludeMapImpl" />
 
     <context:component-scan base-package="io.cattle.platform.configitem.context.impl" />
+    
+    <bean class="io.cattle.platform.configitem.context.dao.impl.HealthcheckInfoDaoImpl" />
 
 </beans>

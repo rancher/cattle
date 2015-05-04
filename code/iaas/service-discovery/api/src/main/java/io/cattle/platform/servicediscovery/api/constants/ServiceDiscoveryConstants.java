@@ -8,6 +8,7 @@ public class ServiceDiscoveryConstants {
         LOADBALANCERSERVICE
     }
 
+
     public static final String FIELD_SCALE = "scale";
     public static final String FIELD_NETWORK_ID = "networkId";
     public static final String FIELD_SERVICE_ID = "serviceId";
@@ -16,6 +17,9 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
     public static final String FIELD_RECONCILE_PROCESS_UUID = "reconcileProcessUuid";
+
+    public static final String FIELD_HEALTH_STATE_HEALTHY = "healthy";
+    public static final String FIELD_HEALTH_STATE_UNHEALTHY = "unhealthy";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -39,6 +43,8 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_CONSUME_MAP_REMOVE = "serviceconsumemap.remove";
     public static final String PROCESS_SERVICE_UPDATE = "service.update";
     public static final String PROCESS_SERVICE_SET_SERVICE_LINKS = "service." + ACTION_SERVICE_SET_SERVICE_LINKS;
+    public static final String PROCESS_SERVICE_EXPOSE_MAP_UPDATE_HEALTHY = "serviceexposemap.updatehealthy";
+    public static final String PROCESS_SERVICE_EXPOSE_MAP_UPDATE_UNHEALTHY = "serviceexposemap.updateunhealthy";
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";

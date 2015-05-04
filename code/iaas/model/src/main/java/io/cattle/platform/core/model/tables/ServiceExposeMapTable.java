@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceExposeMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord> {
 
-	private static final long serialVersionUID = 1362091789;
+	private static final long serialVersionUID = 1727358906;
 
 	/**
 	 * The singleton instance of <code>cattle.service_expose_map</code>
@@ -87,6 +87,16 @@ public class ServiceExposeMapTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, java.lang.Long> INSTANCE_ID = createField("instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.service_expose_map.account_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.service_expose_map.health_state</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, java.lang.String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
+
+	/**
 	 * Create a <code>cattle.service_expose_map</code> table reference
 	 */
 	public ServiceExposeMapTable() {
@@ -137,7 +147,7 @@ public class ServiceExposeMapTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_INSTANCE_MAP__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_INSTANCE_MAP__INSTANCE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_INSTANCE_MAP__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_INSTANCE_MAP__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_EXPOSE_MAP__ACCOUNT_ID);
 	}
 
 	/**

@@ -1,25 +1,32 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG;
 import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
+import static io.cattle.platform.core.model.tables.ServiceExposeHostMapTable.SERVICE_EXPOSE_HOST_MAP;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
+import io.cattle.platform.core.model.ServiceExposeHostMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.json.JsonMapper;
@@ -36,6 +43,7 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -78,6 +86,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     JsonMapper jsonMapper;
+
+    @Inject
+    GenericResourceDao resourceDao;
 
     @Override
     public SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services) {
@@ -594,4 +605,44 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 null);
     }
 
+    @Override
+    public void registerForHealthCheck(ServiceExposeMap serviceExposeMap) {
+        // 2. create instance service map to host (used by healthcheck)
+        for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class,
+                serviceExposeMap.getInstanceId())) {
+            List<Long> healthCheckHostIds = getHealthCheckHostIds(serviceExposeMap.getAccountId(), map.getHostId());
+            for (Long healthCheckHostId : healthCheckHostIds) {
+                ServiceExposeHostMap serviceExposeHostMap = mapDao.findNonRemoved(ServiceExposeHostMap.class,
+                        Host.class, healthCheckHostId, ServiceExposeMap.class,
+                        serviceExposeMap.getId());
+                if (serviceExposeHostMap == null) {
+                    resourceDao.createAndSchedule(ServiceExposeHostMap.class, SERVICE_EXPOSE_HOST_MAP.HOST_ID,
+                            healthCheckHostId,
+                            SERVICE_EXPOSE_HOST_MAP.SERVICE_EXPOSE_MAP_ID, serviceExposeMap.getId(),
+                            SERVICE_EXPOSE_HOST_MAP.ACCOUNT_ID,
+                            serviceExposeMap.getAccountId());
+                }
+            }
+            break;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Long> getHealthCheckHostIds(long accountId, long inferiorHostId) {
+        List<Host> availableHosts = objectManager.find(Host.class, HOST.ACCOUNT_ID, accountId,
+                HOST.STATE, CommonStatesConstants.ACTIVE, HOST.REMOVED, null);
+
+        List<Long> availableHostIds = (List<Long>) CollectionUtils.collect(availableHosts,
+                TransformerUtils.invokerTransformer("getId"));
+        Collections.shuffle(availableHostIds);
+
+        // place inferiorHostId to the end of the list
+        availableHostIds.remove(inferiorHostId);
+        availableHostIds.add(inferiorHostId);
+
+        int defaultNumber = 3;
+        int returnedNumber = defaultNumber > availableHostIds.size() ? availableHostIds.size() : defaultNumber;
+
+        return availableHostIds.subList(0, returnedNumber);
+    }
 }

@@ -51,7 +51,7 @@ backend ${listener.uuid}_backend
         </#if>
         </#if>
         <#list targets as target >
-        server ${target.name} ${target.ipAddress}:${listener.targetPort}<#if healthCheck??> check<#if healthCheck.interval??> inter ${healthCheck.interval}</#if><#if healthCheck.healthyThreshold??> rise ${healthCheck.healthyThreshold}</#if><#if healthCheck.unhealthyThreshold??> fall ${healthCheck.unhealthyThreshold}</#if></#if><#if listener.targetProtocol="http" && lbPolicy??> cookie ${target.cookie}</#if>
+        server ${target.name} ${target.ipAddress}:${listener.targetPort}<#if healthCheck??> check<#if healthCheck.port??> port ${healthCheck.port}</#if><#if healthCheck.interval??> inter ${healthCheck.interval}</#if><#if healthCheck.healthyThreshold??> rise ${healthCheck.healthyThreshold}</#if><#if healthCheck.unhealthyThreshold??> fall ${healthCheck.unhealthyThreshold}</#if></#if><#if listener.targetProtocol="http" && lbPolicy??> cookie ${target.cookie}</#if>
         </#list>
 
 </#list>

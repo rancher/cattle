@@ -41,6 +41,11 @@ def test_activate_single_service(super_client, client, context):
 
     launch_config = {"imageUuid": image_uuid}
 
+    health_check = {"name": "check1", "responseTimeout": 3,
+                    "interval": 4, "healthyThreshold": 5,
+                    "unhealthyThreshold": 6, "requestLine": "index.html",
+                    "port": 200}
+
     consumed_service = client.create_service(name=random_str(),
                                              environmentId=env.id,
                                              launchConfig=launch_config)
@@ -78,7 +83,8 @@ def test_activate_single_service(super_client, client, context):
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
-                                    launchConfig=launch_config)
+                                    launchConfig=launch_config,
+                                    healthCheck=health_check)
     service = client.wait_success(service)
 
     # validate that parameters were set for service
@@ -107,11 +113,18 @@ def test_activate_single_service(super_client, client, context):
     assert len(service.launchConfig.instanceLinks) == 1
     assert service.kind == "service"
     # assert service.launchConfig.registryCredentialId == reg_cred.id
+    assert service.healthCheck.name == "check1"
+    assert service.healthCheck.responseTimeout == 3
+    assert service.healthCheck.interval == 4
+    assert service.healthCheck.healthyThreshold == 5
+    assert service.healthCheck.unhealthyThreshold == 6
+    assert service.healthCheck.requestLine == "index.html"
+    assert service.healthCheck.port == 200
 
     # activate the service and validate that parameters were set for instance
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
-    instance_service_map = super_client\
+    instance_service_map = super_client \
         .list_serviceExposeMap(serviceId=service.id)
 
     assert len(instance_service_map) == 1

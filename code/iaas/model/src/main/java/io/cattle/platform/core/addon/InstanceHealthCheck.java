@@ -3,15 +3,14 @@ package io.cattle.platform.core.addon;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 /**
- * HA Proxy format (set on the backend listener)
- * timeout check <responseTimeout>
- * option httpchk <requestLine>
- * server <serverName Ip:port> check port <port> inter <interval> rise <healthyThreshold> fall <unhealthyThreshold>
+ * Class duplicating load balancer healthcheck. The reason for that is that we can define the same field as required
+ * when used from one context, and optional if used from another
+ *
+ *
  */
 
 @Type(list = false)
-public class LoadBalancerHealthCheck {
-
+public class InstanceHealthCheck {
     String name;
     Integer responseTimeout;
     Integer interval;

@@ -289,6 +289,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ServiceConsumeMapTable SERVICE_CONSUME_MAP = io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
 
 	/**
+	 * The table cattle.service_expose_host_map
+	 */
+	public static final io.cattle.platform.core.model.tables.ServiceExposeHostMapTable SERVICE_EXPOSE_HOST_MAP = io.cattle.platform.core.model.tables.ServiceExposeHostMapTable.SERVICE_EXPOSE_HOST_MAP;
+
+	/**
 	 * The table cattle.service_expose_map
 	 */
 	public static final io.cattle.platform.core.model.tables.ServiceExposeMapTable SERVICE_EXPOSE_MAP = io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
