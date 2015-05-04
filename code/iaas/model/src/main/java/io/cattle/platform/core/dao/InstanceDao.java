@@ -11,4 +11,6 @@ public interface InstanceDao {
 
     List<? extends Instance> getNonRemovedInstanceOn(Host host);
 
+    Instance getInstanceByUuidOrExternalId(Long accountId, String uuid, String externalId);
+
 }
