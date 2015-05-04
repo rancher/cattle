@@ -4,7 +4,8 @@
             "type" : "string"
         },
         "loadBalancerConfig": {
-            "type" : "loadBalancerConfig"
+            "type" : "loadBalancerConfig",
+            "nullable": true
         }
     }
 }
