@@ -23,7 +23,8 @@
         p:commandName="storage.image.activate"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.cattle.platform.core.model.ImageStoragePoolMap"
-        p:processNames="imagestoragepoolmap.activate" >
+        p:processNames="imagestoragepoolmap.activate"
+        p:processDataKeys="containerNoOpEvent" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
@@ -34,7 +35,8 @@
         p:commandName="storage.image.deactivate"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.cattle.platform.core.model.ImageStoragePoolMap"
-        p:processNames="imagestoragepoolmap.deactivate" >
+        p:processNames="imagestoragepoolmap.deactivate"
+        p:processDataKeys="containerNoOpEvent" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
