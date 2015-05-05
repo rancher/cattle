@@ -160,4 +160,8 @@ public class DockerImage {
     public void setServer(String server) {
         this.server = server;
     }
+
+    public String getServerAddress() {
+        return serverAddress;
+    }
 }

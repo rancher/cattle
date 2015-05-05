@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import javax.inject.Inject;
 
 import io.cattle.platform.core.model.StoragePool;
+import io.cattle.platform.docker.constants.DockerStoragePoolConstants;
 import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
 import io.cattle.platform.docker.storage.dao.DockerStorageDao;
 import io.cattle.platform.object.ObjectManager;
@@ -19,7 +20,7 @@ public class DockerStorageDaoImpl implements DockerStorageDao {
     @Override
     public StoragePool getExternalStoragePool(StoragePool parentPool) {
         return objectManager.findOne(StoragePool.class,
-                STORAGE_POOL.KIND, DockerStoragePoolDriver.DOCKER_KIND,
+                STORAGE_POOL.KIND, DockerStoragePoolConstants.DOCKER_KIND,
                 STORAGE_POOL.EXTERNAL, true);
     }
 
@@ -29,7 +30,7 @@ public class DockerStorageDaoImpl implements DockerStorageDao {
                 STORAGE_POOL.NAME, "Docker Index",
                 STORAGE_POOL.ACCOUNT_ID, parentPool.getAccountId(),
                 STORAGE_POOL.EXTERNAL, true,
-                STORAGE_POOL.KIND, DockerStoragePoolDriver.DOCKER_KIND);
+                STORAGE_POOL.KIND, DockerStoragePoolConstants.DOCKER_KIND);
 
         processManager.scheduleStandardProcess(StandardProcess.CREATE, externalPool, null);
         return objectManager.reload(externalPool);

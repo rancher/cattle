@@ -14,8 +14,8 @@
 
     <bean class="io.cattle.platform.iaas.api.auth.github.TokenResourceManager" >
         <property name="tokenHandlers" value="#{extensionManager.list('token.handler')}" />
-
     </bean>
+
     <bean class="io.cattle.platform.iaas.api.auth.github.GithubTokenHandler" />
 
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />

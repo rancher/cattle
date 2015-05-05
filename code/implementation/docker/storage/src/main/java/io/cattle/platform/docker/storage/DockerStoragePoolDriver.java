@@ -4,6 +4,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.docker.client.DockerImage;
+import io.cattle.platform.docker.constants.DockerStoragePoolConstants;
 import io.cattle.platform.docker.storage.dao.DockerStorageDao;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -21,16 +22,13 @@ import org.slf4j.LoggerFactory;
 
 public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver implements StoragePoolDriver {
 
-    public static final String DOCKER_KIND = "docker";
-    public static final String DOCKER_FORMAT = "docker";
-
     private static final Logger log = LoggerFactory.getLogger(DockerStoragePoolDriver.class);
 
     LockManager lockManager;
     DockerStorageDao storageDao;
 
     public DockerStoragePoolDriver() {
-        super(DOCKER_KIND);
+        super(DockerStoragePoolConstants.DOCKER_KIND);
     }
 
     @Override
@@ -50,7 +48,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
         }
 
         data.put("dockerImage", dockerImage);
-        image.setFormat(DOCKER_FORMAT);
+        image.setFormat(DockerStoragePoolConstants.DOCKER_FORMAT);
         image.setInstanceKind(InstanceConstants.KIND_CONTAINER);
 
         return true;
@@ -79,7 +77,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
     }
 
     public static boolean isDockerPool(StoragePool pool) {
-        return pool == null ? false : DOCKER_KIND.equals(pool.getKind());
+        return pool == null ? false : DockerStoragePoolConstants.DOCKER_KIND.equals(pool.getKind());
     }
 
     public LockManager getLockManager() {
