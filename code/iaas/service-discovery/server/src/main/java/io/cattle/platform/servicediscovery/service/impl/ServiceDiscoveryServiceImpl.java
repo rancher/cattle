@@ -152,7 +152,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                         export = true;
                     }
                     if (export) {
-                        composeServiceData.put(item.getComposeName(), value);
                         // for every lookup, do transform
                         Object formattedValue = null;
                         for (RancherConfigToComposeFormatter formatter : formatters) {
