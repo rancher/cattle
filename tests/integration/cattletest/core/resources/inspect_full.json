@@ -21,7 +21,8 @@
         "Entrypoint": ["/bin/bash"],
         "Env": [
             "ENV1=FOO",
-            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "NOVALUE"
         ],
         "ExposedPorts": {
           "1111/tcp": {},

@@ -271,8 +271,14 @@ public class DockerTransformerImpl implements DockerTransformer {
 
         Map<String, String> envMap = new HashMap<String, String>();
         for (String e : env) {
-            String[] kvp = e.split("=");
-            envMap.put(kvp[0], kvp[1]);
+            String[] kvp = e.split("=", 2);
+            if (kvp.length == 2) {
+                envMap.put(kvp[0], kvp[1]);
+            } else if (kvp.length == 1) {
+                // TODO Change the Rancher API to support valueless environment variables.
+                // -e FOO and -e FOO="" are not the same thing.
+                envMap.put(kvp[0], "");
+            }
         }
         setField(instance, FIELD_ENVIRONMENT, envMap);
     }

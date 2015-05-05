@@ -70,7 +70,9 @@ def test_transform_inspect_full(transform_url, client, admin_client):
     assert container['stdinOpen'] is True
     assert container['imageUuid'] == 'docker:busybox'
     assert container['directory'] == '/a_workdir'
+    assert len(container['environment']['ENV1']) == 3
     assert container['environment']['ENV1'] == 'FOO'
+    assert container['environment']['NOVALUE'] == ''
     assert 'PATH' in container['environment']
     assert container['entryPoint'] == ['/bin/bash']
     assert container['command'] == ['sleep', '1', '2', '3']
