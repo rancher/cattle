@@ -469,108 +469,105 @@ def test_docker_volumes(client, admin_client, super_client, docker_context):
                                       dataVolumes=['/foo',
                                                    bar_bind_mount,
                                                    baz_bind_mount])
-    try:
-        c = admin_client.wait_success(c)
-        assert len(c.dataVolumes) == 3
-        assert set(c.dataVolumes) == set(['/foo',
-                                          bar_bind_mount,
-                                          baz_bind_mount])
 
-        c = admin_client.wait_success(c.start())
+    c = admin_client.wait_success(c)
+    assert len(c.dataVolumes) == 3
+    assert set(c.dataVolumes) == set(['/foo',
+                                      bar_bind_mount,
+                                      baz_bind_mount])
 
-        volumes = c.volumes()
-        assert len(volumes) == 1
+    c = admin_client.wait_success(c.start())
 
-        mounts = c.mounts()
-        assert len(mounts) == 3
-        foo_mount, bar_mount, baz_mount = None, None, None
-        foo_vol, bar_vol, baz_vol = None, None, None
-        for mount in mounts:
-            assert mount.instance().id == c.id
-            if mount.path == '/foo':
-                foo_mount = mount
-                foo_vol = mount.volume()
-            elif mount.path == '/bar':
-                bar_mount = mount
-                bar_vol = mount.volume()
-            elif mount.path == '/baz':
-                baz_mount = mount
-                baz_vol = mount.volume()
+    volumes = c.volumes()
+    assert len(volumes) == 1
 
-        assert foo_mount is not None
-        assert foo_mount.permissions == 'rw'
-        assert foo_vol is not None
-        assert foo_vol.state == 'active'
-        assert _(foo_vol).attachedState == 'inactive'
+    mounts = c.mounts()
+    assert len(mounts) == 3
+    foo_mount, bar_mount, baz_mount = None, None, None
+    foo_vol, bar_vol, baz_vol = None, None, None
+    for mount in mounts:
+        assert mount.instance().id == c.id
+        if mount.path == '/foo':
+            foo_mount = mount
+            foo_vol = mount.volume()
+        elif mount.path == '/bar':
+            bar_mount = mount
+            bar_vol = mount.volume()
+        elif mount.path == '/baz':
+            baz_mount = mount
+            baz_vol = mount.volume()
 
-        assert bar_mount is not None
-        assert bar_mount.permissions == 'rw'
-        assert bar_vol is not None
-        assert bar_vol.state == 'active'
-        assert _(bar_vol).attachedState == 'inactive'
+    assert foo_mount is not None
+    assert foo_mount.permissions == 'rw'
+    assert foo_vol is not None
+    assert foo_vol.state == 'active'
+    assert _(foo_vol).attachedState == 'inactive'
 
-        assert baz_mount is not None
-        assert baz_mount.permissions == 'ro'
-        assert baz_vol is not None
-        assert baz_vol.state == 'active'
-        assert _(baz_vol).attachedState == 'inactive'
+    assert bar_mount is not None
+    assert bar_mount.permissions == 'rw'
+    assert bar_vol is not None
+    assert bar_vol.state == 'active'
+    assert _(bar_vol).attachedState == 'inactive'
 
-        assert not foo_vol.isHostPath
+    assert baz_mount is not None
+    assert baz_mount.permissions == 'ro'
+    assert baz_vol is not None
+    assert baz_vol.state == 'active'
+    assert _(baz_vol).attachedState == 'inactive'
 
-        assert bar_vol.isHostPath
-        # We use 'in' instead of '==' because Docker uses the fully qualified
-        # non-linked path and it might look something like: /mnt/sda1/<path>
-        assert bar_host_path in bar_vol.uri
+    assert not foo_vol.isHostPath
 
-        assert baz_vol.isHostPath
-        assert baz_host_path in baz_vol.uri
+    assert bar_vol.isHostPath
+    # We use 'in' instead of '==' because Docker uses the fully qualified
+    # non-linked path and it might look something like: /mnt/sda1/<path>
+    assert bar_host_path in bar_vol.uri
 
-        c2 = admin_client.create_container(name="volumes_from_test",
-                                           imageUuid=uuid,
-                                           startOnCreate=False,
-                                           dataVolumesFrom=[c.id])
-        c2 = admin_client.wait_success(c2)
-        assert len(c2.dataVolumesFrom) == 1
-        assert set(c2.dataVolumesFrom) == set([c.id])
+    assert baz_vol.isHostPath
+    assert baz_host_path in baz_vol.uri
 
-        c2 = admin_client.wait_success(c2.start())
-        c2_mounts = c2.mounts()
-        assert len(c2_mounts) == 3
+    c2 = admin_client.create_container(name="volumes_from_test",
+                                       imageUuid=uuid,
+                                       startOnCreate=False,
+                                       dataVolumesFrom=[c.id])
+    c2 = admin_client.wait_success(c2)
+    assert len(c2.dataVolumesFrom) == 1
+    assert set(c2.dataVolumesFrom) == set([c.id])
 
-        for mount in c2_mounts:
-            assert mount.instance().id == c2.id
-            if mount.path == '/foo':
-                assert mount.volumeId == foo_vol.id
-            elif mount.path == '/bar':
-                assert mount.volumeId == bar_vol.id
-            elif mount.path == '/baz':
-                assert mount.volumeId == baz_vol.id
+    c2 = admin_client.wait_success(c2.start())
+    c2_mounts = c2.mounts()
+    assert len(c2_mounts) == 3
 
-        c.stop(remove=True, timeout=0)
-        c2.stop(remove=True, timeout=0)
+    for mount in c2_mounts:
+        assert mount.instance().id == c2.id
+        if mount.path == '/foo':
+            assert mount.volumeId == foo_vol.id
+        elif mount.path == '/bar':
+            assert mount.volumeId == bar_vol.id
+        elif mount.path == '/baz':
+            assert mount.volumeId == baz_vol.id
 
-        _check_path(foo_vol, True, admin_client)
-        foo_vol = admin_client.wait_success(foo_vol.deactivate())
-        foo_vol = admin_client.wait_success(foo_vol.remove())
-        foo_vol = admin_client.wait_success(foo_vol.purge())
-        _check_path(foo_vol, False, admin_client)
+    c.stop(remove=True, timeout=0)
+    c2.stop(remove=True, timeout=0)
 
-        _check_path(bar_vol, True, admin_client)
-        bar_vol = admin_client.wait_success(bar_vol.deactivate())
-        bar_vol = admin_client.wait_success(bar_vol.remove())
-        bar_vol = admin_client.wait_success(bar_vol.purge())
-        # Host bind mount. Wont actually delete the dir on the host.
-        _check_path(bar_vol, True, admin_client)
+    _check_path(foo_vol, True, admin_client)
+    foo_vol = admin_client.wait_success(foo_vol.deactivate())
+    foo_vol = admin_client.wait_success(foo_vol.remove())
+    foo_vol = admin_client.wait_success(foo_vol.purge())
+    _check_path(foo_vol, False, admin_client)
 
-        _check_path(baz_vol, True, admin_client)
-        baz_vol = admin_client.wait_success(baz_vol.deactivate())
-        baz_vol = admin_client.wait_success(baz_vol.remove())
-        baz_vol = admin_client.wait_success(baz_vol.purge())
-        # Host bind mount. Wont actually delete the dir on the host.
-        _check_path(baz_vol, True, admin_client)
-    finally:
-        if c is not None:
-            admin_client.wait_success(admin_client.delete(c))
+    _check_path(bar_vol, True, admin_client)
+    bar_vol = admin_client.wait_success(bar_vol.deactivate())
+    bar_vol = admin_client.wait_success(bar_vol.remove())
+    bar_vol = admin_client.wait_success(bar_vol.purge())
+    # Host bind mount. Wont actually delete the dir on the host.
+    _check_path(bar_vol, True, admin_client)
+
+    _check_path(baz_vol, True, admin_client)
+    baz_vol = admin_client.wait_success(baz_vol.deactivate())
+    baz_vol = admin_client.wait_success(baz_vol.remove())
+    baz_vol = admin_client.wait_success(baz_vol.purge())
+    # Host bind mount. Wont actually delete the dir on the host.
+    _check_path(baz_vol, True, admin_client)
 
 
 @if_docker
