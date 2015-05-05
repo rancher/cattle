@@ -30,14 +30,16 @@ def test_add_lb_w_host_and_target(super_client, admin_client, sim_context,
     lb = lb.addtarget(instanceId=container.id)
     validate_add_target(container, lb, super_client)
 
-    # check the port
-    ports = super_client.list_port(publicPort=port, instanceId=instance.id)
-    assert len(ports) == 0
+    # check the port (should be created along with the instance)
+    ports = super_client.list_port(publicPort=port,
+                                   instanceId=instance.id, state='active')
+    assert len(ports) == 1
 
     # start the instance and check the ports
     container = container.start()
     container = admin_client.wait_success(container)
-    ports = super_client.list_port(publicPort=port, instanceId=instance.id)
+    ports = super_client.list_port(publicPort=port,
+                                   instanceId=instance.id, state='active')
     assert len(ports) == 1
     assert ports[0].state == 'active'
     assert ports[0].publicPort == port
@@ -89,12 +91,9 @@ def test_destroy_lb_instance(super_client, admin_client, sim_context, nsp):
     assert instance.state == 'removed'
 
     # check that the port is deactivated
-    ports = super_client.list_port(publicPort=port, instanceId=instance.id)
-    ports = super_client.list_port(publicPort=port, instanceId=instance.id)
+    ports = super_client.list_port(publicPort=port,
+                                   instanceId=instance.id, state='inactive')
     assert len(ports) == 1
-    assert ports[0].state == 'inactive'
-    assert ports[0].publicPort == port
-    assert ports[0].privatePort == port
 
 
 def _create_valid_lb(super_client, admin_client, sim_context, listenerPort,
@@ -143,12 +142,11 @@ def _create_lb_w_host(super_client, admin_client,
 
     # add host to lb
     lb.addhost(hostId=host.id)
-    validate_add_host(host, lb, super_client)
-
+    host_map = _validate_add_host(host, lb, super_client)
     # verify that the agent got created
-    uri = 'sim://?lbId={}&hostId={}'. \
+    uri = 'sim://?lbId={}&hostMapId={}'. \
         format(get_plain_id(super_client, lb),
-               get_plain_id(super_client, host))
+               get_plain_id(super_client, host_map))
     agents = super_client.list_agent(uri=uri)
     assert len(agents) == 1
 
@@ -218,7 +216,7 @@ def validate_add_target(container1, lb, super_client):
         lambda x: 'State is: ' + x.state)
 
 
-def validate_add_host(host, lb, super_client):
+def _validate_add_host(host, lb, super_client):
     host_maps = super_client. \
         list_loadBalancerHostMap(loadBalancerId=lb.id,
                                  hostId=host.id)
@@ -228,3 +226,4 @@ def validate_add_host(host, lb, super_client):
         super_client, host_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
     assert host_map.hostId == host.id
+    return host_map

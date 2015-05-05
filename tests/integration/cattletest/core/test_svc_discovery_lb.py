@@ -49,7 +49,7 @@ def test_activate_lb_svc(super_client, admin_client, sim_context, nsp):
 
     image_uuid = sim_context['imageUuid']
     launch_config = {"imageUuid": image_uuid,
-                     "ports": [8081, '909:1001']}
+                     "ports": [8082, '910:1001']}
 
     service = super_client. \
         create_loadBalancerService(name=random_str(),
@@ -63,7 +63,8 @@ def test_activate_lb_svc(super_client, admin_client, sim_context, nsp):
     service = wait_success(admin_client, service.activate(), 120)
     # perform validation
     lb, service = _validate_lb_service_activate(env, host,
-                                                service, super_client)
+                                                service, super_client,
+                                                ['8082:8082', '910:1001'])
     _validate_lb_instance(host, lb, super_client, service)
 
 
@@ -222,7 +223,8 @@ def test_targets(super_client, admin_client, sim_context, nsp):
 
     # activate web and lb services
     lb_service = wait_success(admin_client, lb_service.activate(), 120)
-    _validate_lb_service_activate(env, host, lb_service, super_client)
+    _validate_lb_service_activate(env, host, lb_service, super_client,
+                                  ['8081:8081', '909:1001'])
     web_service = wait_success(admin_client, web_service.activate(), 120)
     assert web_service.state == "active"
     db_service = wait_success(admin_client, db_service.activate(), 120)
@@ -440,10 +442,14 @@ def validate_remove_host(host, lb, super_client):
 
 
 def _validate_lb_instance(host, lb, super_client, service):
+    host_maps = super_client. \
+        list_loadBalancerHostMap(loadBalancerId=lb.id,
+                                 hostId=host.id)
+    assert len(host_maps) == 1
     # verify that the agent got created
-    uri = 'sim://?lbId={}&hostId={}'. \
+    uri = 'sim://?lbId={}&hostMapId={}'. \
         format(get_plain_id(super_client, lb),
-               get_plain_id(super_client, host))
+               get_plain_id(super_client, host_maps[0]))
     agents = super_client.list_agent(uri=uri)
     assert len(agents) == 1
     # verify that the agent instance got created
@@ -457,7 +463,20 @@ def _validate_lb_instance(host, lb, super_client, service):
     assert len(instance_service_map) == 1
 
 
-def _validate_lb_service_activate(env, host, service, super_client):
+def _validate_create_listener(env, service, source_port,
+                              super_client, target_port):
+    l_name = env.name + "_" + service.name + "_" + source_port
+    listeners = super_client. \
+        list_loadBalancerListener(sourcePort=source_port,
+                                  name=l_name)
+    assert len(listeners) >= 1
+    listener = listeners[0]
+    assert listener.sourcePort == int(source_port)
+    assert listener.targetPort == int(target_port)
+    return listener
+
+
+def _validate_lb_service_activate(env, host, service, super_client, ports):
     # 1. verify that the service was activated
     assert service.state == "active"
     # 2. verify that lb got created
@@ -470,30 +489,21 @@ def _validate_lb_service_activate(env, host, service, super_client):
     validate_add_host(host, lb, super_client)
     # 4. verify that listeners are created and mapped to the config
     config_id = lb.loadBalancerConfigId
-    l_name = env.name + "_" + service.name + "_" + "8081"
-    listeners = super_client. \
-        list_loadBalancerListener(sourcePort=8081,
-                                  name=l_name)
-    assert len(listeners) >= 1
-    listener = listeners[0]
-    assert listener.sourcePort == 8081
-    assert listener.targetPort == 8081
+    source_port = ports[0].split(':')[0]
+    target_port = ports[0].split(':')[1]
+    listener = _validate_create_listener(env, service, source_port,
+                                         super_client, target_port)
+    _validate_add_listener(config_id, listener, super_client)
 
-    validate_add_listener(config_id, listener, super_client)
-
-    l_name = env.name + "_" + service.name + "_" + "909"
-    listeners = super_client. \
-        list_loadBalancerListener(sourcePort=909, name=l_name)
-    assert len(listeners) >= 1
-    listener = listeners[0]
-    assert listener.sourcePort == 909
-    assert listener.targetPort == 1001
-
-    validate_add_listener(config_id, listener, super_client)
+    source_port = ports[1].split(':')[0]
+    target_port = ports[1].split(':')[1]
+    listener = _validate_create_listener(env, service, source_port,
+                                         super_client, target_port)
+    _validate_add_listener(config_id, listener, super_client)
     return lb, service
 
 
-def validate_add_listener(config_id, listener, super_client):
+def _validate_add_listener(config_id, listener, super_client):
     lb_config_maps = _wait_until_map_created(config_id, listener, super_client)
     config_map = lb_config_maps[0]
     wait_for_condition(

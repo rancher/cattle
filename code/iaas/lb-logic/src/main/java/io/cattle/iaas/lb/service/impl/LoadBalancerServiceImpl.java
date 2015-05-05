@@ -129,4 +129,11 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         }
     }
 
+    @Override
+    public LoadBalancerHostMap addHostToLoadBalancer(LoadBalancer lb) {
+        return resourceDao.createAndSchedule(LoadBalancerHostMap.class,
+                    LOAD_BALANCER_HOST_MAP.LOAD_BALANCER_ID, lb.getId(),
+                    LOAD_BALANCER_HOST_MAP.ACCOUNT_ID, lb.getAccountId());
+    }
+
 }

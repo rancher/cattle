@@ -32,6 +32,8 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
@@ -45,6 +47,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.jooq.tools.StringUtils;
 
 import com.netflix.config.DynamicStringListProperty;
 
@@ -208,8 +212,13 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
             List<? extends Instance> lbInstances = lbInstancesMap.get(lbId);
             // surround by lock
             for (final Instance lbInstance : lbInstances) {
-                final boolean hasActiveInstances = (targetDao.getLoadBalancerActiveInstanceTargets(lb.getId()).size() + targetDao
+                boolean lbHasActiveTargets = (targetDao.getLoadBalancerActiveInstanceTargets(lb.getId()).size() + targetDao
                         .getLoadBalancerActiveIpTargets(lb.getId()).size()) > 0;
+                List<String> ports = DataUtils.getFieldList(lbInstance.getData(), InstanceConstants.FIELD_PORTS,
+                        String.class);
+                boolean lbInstanceHasPortsSet = (ports != null && !ports.isEmpty());
+                final boolean hasActiveInstances = lbHasActiveTargets || lbInstanceHasPortsSet;
+
                 final Map<Integer, Port> portsToCreate = new HashMap<Integer, Port>();
                 final Map<Integer, Port> portsToRemove = new HashMap<Integer, Port>();
                 lockManager.lock(new LoadBalancerInstancePortLock(lbInstance), new LockCallbackNoReturn() {
