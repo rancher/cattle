@@ -7,10 +7,7 @@
           "-c"
         ],
         "Env": [
-          "RANCHER_IP=10.42.66.67/16",
-          "FOO=BAR",
-          "RANCHER_UUID=a02153a6-3301-4694-93d8-aa6157fff1e2",
-          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+          "FOO=BAR"
         ],
         "Memory": 0,
         "OnBuild": null,

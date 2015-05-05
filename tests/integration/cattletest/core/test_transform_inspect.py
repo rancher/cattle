@@ -137,9 +137,6 @@ def test_transform_inspect_rountrip(transform_url, client):
     assert container['stdinOpen'] == orig_container['stdinOpen']
     assert container['imageUuid'] == orig_container['imageUuid']
     assert container['directory'] == orig_container['directory']
-    del container['environment']['PATH']
-    del container['environment']['RANCHER_IP']
-    del container['environment']['RANCHER_UUID']
     assert container['environment'] == orig_container['environment']
     assert container['command'] == orig_container['command']
     orig_vols = {}
