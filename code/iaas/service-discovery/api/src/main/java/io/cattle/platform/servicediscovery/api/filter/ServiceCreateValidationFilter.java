@@ -1,19 +1,24 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
-import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
 
     @Inject
-    ObjectManager objectManager;
+    ResourceManagerLocator locator;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -24,9 +29,15 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Service service = request.proxyRequestObject(Service.class);
         
-        Service existingService = objectManager.findOne(Service.class, SERVICE.NAME, service.getName(),
-                SERVICE.ENVIRONMENT_ID, service.getEnvironmentId(), SERVICE.REMOVED, null);
-        if (existingService != null) {
+        ResourceManager rm = locator.getResourceManagerByType(type);
+
+        Map<Object, Object> criteria = new HashMap<>();
+        criteria.put(ObjectMetaDataManager.NAME_FIELD, service.getName());
+        criteria.put(ObjectMetaDataManager.REMOVED_FIELD, null);
+        criteria.put(ServiceDiscoveryConstants.FIELD_ENVIRIONMENT_ID, service.getEnvironmentId());
+
+        List<?> existingSvcs = rm.list(type, criteria, null);
+        if (!existingSvcs.isEmpty()) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
                     "name");
         }

@@ -15,6 +15,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_ACTIVATE_CONSUMED_SERVICES = "activateConsumedServices";
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
+    public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

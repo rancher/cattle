@@ -73,7 +73,11 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
                         lbService.getId(),
                         LOAD_BALANCER.REMOVED, null);
 
-                lbManager.removeTargetFromLoadBalancer(lb, instanceServicePair.getLeft());
+                if (lb != null) {
+                    // to handle the case when link was created/removed in the short period of time while lb service is
+                    // being created
+                    lbManager.removeTargetFromLoadBalancer(lb, instanceServicePair.getLeft());
+                }
             }
         }
         return null;

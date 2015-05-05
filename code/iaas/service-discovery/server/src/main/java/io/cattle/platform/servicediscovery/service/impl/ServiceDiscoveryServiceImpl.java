@@ -152,7 +152,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                         export = true;
                     }
                     if (export) {
-                        composeServiceData.put(item.getComposeName(), value);
                         // for every lookup, do transform
                         Object formattedValue = null;
                         for (RancherConfigToComposeFormatter formatter : formatters) {
@@ -718,6 +717,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public void scaleDownLoadBalancerService(Service service, int requestedScale) {
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
                 LOAD_BALANCER.REMOVED, null);
+
+        // lb can be already removed at this point if scaleDown is called by the cleanup for service.remove process
+        if (lb == null) {
+            return;
+        }
+
         // on scale up, skip
         List<? extends LoadBalancerHostMap> existingHosts = mapDao.findNonRemoved(LoadBalancerHostMap.class,
                 LoadBalancer.class, lb.getId());

@@ -62,7 +62,8 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
     @Override
     public String[] getProcessNames() {
         return new String[] { InstanceConstants.PROCESS_START,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE };
+                ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
+                ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE };
     }
 
     @Override
@@ -84,7 +85,9 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
                         lbService.getId(),
                         LOAD_BALANCER.REMOVED, null);
 
-                lbManager.addTargetToLoadBalancer(lb, instanceServicePair.getLeft());
+                if (lb != null) {
+                    lbManager.addTargetToLoadBalancer(lb, instanceServicePair.getLeft());
+                }
             }
         }
 
@@ -101,7 +104,7 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
                 return instancesToService;
             }
             instancesToService.add(instanceToService);
-        } else {
+        } else if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE)) {
             ServiceConsumeMap consumeMap = (ServiceConsumeMap) state.getResource();
             List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
                     objectManager.loadResource(Service.class, consumeMap.getConsumedServiceId()),
@@ -109,6 +112,25 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
             for (ServiceExposeMap map : maps) {
                 instancesToService.add(new ImmutablePair<Long, Long>(map.getInstanceId(), maps.get(0)
                         .getServiceId()));
+            }
+        } else if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE)) {
+            // handle only for lb service to handle the case when lbService.create finishes after the link is created
+            // for the service
+            Service service = (Service) state.getResource();
+            if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+                // a) get all the services consumed by the lb service
+                List<? extends ServiceConsumeMap> consumedServicesMaps = consumeMapDao.findConsumedServices(service
+                        .getId());
+                // b) for every service, get the instances and register them as lb targets
+                for (ServiceConsumeMap consumedServiceMap : consumedServicesMaps) {
+                    List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
+                            objectManager.loadResource(Service.class, consumedServiceMap.getConsumedServiceId()),
+                            ServiceExposeMap.class);
+                    for (ServiceExposeMap map : maps) {
+                        instancesToService.add(new ImmutablePair<Long, Long>(map.getInstanceId(), maps.get(0)
+                                .getServiceId()));
+                    }
+                }
             }
         }
         return instancesToService;

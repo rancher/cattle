@@ -1,18 +1,23 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
-import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 public class EnvironmentCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
+
     @Inject
-    ObjectManager objectManager;
+    ResourceManagerLocator locator;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -28,9 +33,13 @@ public class EnvironmentCreateValidationFilter extends AbstractDefaultResourceMa
                     "name");
         }
 
-        Environment existingEnv = objectManager.findOne(Environment.class, ENVIRONMENT.NAME, env.getName(),
-                ENVIRONMENT.REMOVED, null);
-        if (existingEnv != null) {
+        ResourceManager rm = locator.getResourceManagerByType(type);
+
+        Map<Object, Object> criteria = new HashMap<>();
+        criteria.put(ObjectMetaDataManager.NAME_FIELD, env.getName());
+        criteria.put(ObjectMetaDataManager.REMOVED_FIELD, null);
+        List<?> existingEnv = rm.list(type, criteria, null);
+        if (!existingEnv.isEmpty()) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
                     "name");
         }
