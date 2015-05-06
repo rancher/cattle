@@ -11,6 +11,11 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
+            <artifactId>cattle-host-stats</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-jmx</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -110,7 +115,6 @@
                         </goals>
                         <configuration>
                             <includeGroupIds>org.eclipse.jetty</includeGroupIds>
-                            <scope>provided</scope>
                             <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/jetty</outputDirectory>
                         </configuration>
                     </execution>
@@ -123,7 +127,6 @@
                         <configuration>
                             <includeGroupIds>io.cattle</includeGroupIds>
                             <includeArtifactIds>cattle-launcher</includeArtifactIds>
-                            <scope>provided</scope>
                             <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/jetty</outputDirectory>
                         </configuration>
                     </execution>
