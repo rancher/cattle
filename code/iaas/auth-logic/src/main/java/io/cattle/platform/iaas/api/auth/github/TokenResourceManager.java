@@ -65,6 +65,6 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return new Token(null, null, null, null, SECURITY.get(), GITHUB_CLIENT_ID.get(), null, null, null);
+        return new Token(SECURITY.get(), GITHUB_CLIENT_ID.get());
     }
 }

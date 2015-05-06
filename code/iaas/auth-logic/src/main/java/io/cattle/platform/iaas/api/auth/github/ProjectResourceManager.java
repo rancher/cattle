@@ -14,9 +14,11 @@ import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.github.resource.Member;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
@@ -64,10 +66,10 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
 
     @Override
     public Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        ApiRequest request = (ApiRequest) ApiContext.getContext().getApiRequest();
+        ApiRequest request = ApiContext.getContext().getApiRequest();
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         Object obj = criteria.get("id");
-        String id = "";
+        String id;
         if (obj != null) {
             if (obj instanceof String) {
                 id = (String) obj;
@@ -84,7 +86,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
                     throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
                 }
             }
-            policy.grantObjectAccess(project);
+            giveProjectAccess(project, policy);
             return Collections.singletonList(project);
         }
         if (criteria.get("uuid") != null) {
@@ -95,6 +97,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             }
             if (authDao.hasAccessToProject(project.getId(), policy.getAccountId(),
                     policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+               giveProjectAccess(project, policy);
                 return project;
             } else {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
@@ -115,9 +118,16 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         List<Account> projects = authDao.getAccessibleProjects(policy.getExternalIds(),
             isAdmin, policy.getAccountId());
         for (Account project: projects){
-        policy.grantObjectAccess(project);
+            giveProjectAccess(project, policy);
         }
         return  projects;
+    }
+
+    private void giveProjectAccess(Account project, Policy policy) {
+        if (authDao.isProjectOwner(project.getId(), policy.getAccountId(), policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+            DataAccessor.fields(project).withKey(ObjectMetaDataManager.CAPABILITIES_FIELD).set(Arrays.asList("owner"));
+        }
+        policy.grantObjectAccess(project);
     }
 
     @Override
@@ -142,24 +152,17 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         return newProject;
     }
 
-    public Account createDefaultProject(Account account) {
-        if (account.getProjectId() != null){
-            Account defaultProject = authDao.getAccountById(account.getProjectId());
-            if (defaultProject != null){
-                return defaultProject;
-            }
-        }
+    public Account createProjectForUser(Account account) {
+        Account project = authDao.createProject(account.getName() + ProjectConstants.PROJECT_DEFAULT_NAME, null);
+        ExternalId externalId = new ExternalId(account.getExternalId(), account.getExternalIdType(), account.getName());
+        authDao.createProjectMember(project, new Member(externalId, ProjectConstants.OWNER));
 
-        Account defaultProject = authDao.createDefaultProject(account);
-        ExternalId externalId = new ExternalId(String.valueOf(account.getId()), ProjectConstants.RANCHER_ID);
-        authDao.createProjectMember(defaultProject, new Member(externalId, ProjectConstants.OWNER));
-
-        return defaultProject;
+        return project;
     }
 
     @Override
     protected Object deleteInternal(String type, String id, final Object obj, ApiRequest apiRequest) {
-        if (!(obj instanceof Account)) {
+        if (!(obj instanceof Account) || !(((Account) obj).getKind().equalsIgnoreCase(ProjectConstants.TYPE))) {
             return super.deleteInternal(type, id, obj, apiRequest);
         }
         Policy policy = (Policy) ApiContext.getContext().getPolicy();

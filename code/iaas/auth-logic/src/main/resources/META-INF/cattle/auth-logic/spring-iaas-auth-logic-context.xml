@@ -32,7 +32,7 @@
         <property name="externalIdHandlers" value="#{extensionManager.list('external.id.handler')}" />
     </bean>
     <bean class="io.cattle.platform.iaas.api.auth.github.SetProjectMembersActionHandler"/>
-    <bean class="io.cattle.platform.iaas.api.auth.impl.SetAsDefault"/>
+    <bean class="io.cattle.platform.iaas.api.auth.impl.ProjectDeactivate"/>
 
 
     <bean class="io.cattle.platform.iaas.api.auth.github.GithubUtils"/>

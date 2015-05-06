@@ -31,9 +31,6 @@ public class SampleDataStartupV3 extends AbstractSampleData {
                 adminProject.getId(), PROJECT_MEMBER.PROJECT_ID, adminProject.getId(),
                 PROJECT_MEMBER.EXTERNAL_ID, 1, PROJECT_MEMBER.EXTERNAL_ID_TYPE,
                 ProjectConstants.RANCHER_ID, PROJECT_MEMBER.ROLE, "owner"));
-        Account admin = accountDao.findByUuid("admin");
-        admin.setProjectId(adminProject.getId());
-        objectManager.persist(admin);
 
 
     }

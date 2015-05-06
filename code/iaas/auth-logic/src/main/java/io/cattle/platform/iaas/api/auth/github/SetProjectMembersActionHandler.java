@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth.github;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -26,19 +27,14 @@ public class SetProjectMembersActionHandler implements ActionHandler{
 
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
-        Policy policy = (Policy) ApiContext.getContext().getPolicy();
-        Account account = (Account) obj;
-        account = authDao.getAccountById(account.getId());
-        if (account == null || !account.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
+        Account project = (Account) obj;
+        project = authDao.getAccountById(project.getId());
+        if (project == null) {
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
-        }
-        if (!authDao.isProjectOwner(account.getId(), policy.getAccountId(),
-                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())){
-            throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "Forbidden", "You must be a project owner to change members", null);
         }
         LinkedHashMap<String, Object> reqObj = (LinkedHashMap<String, Object>) request.getRequestObject();
         List<Map<String, String>> members = (List<Map<String, String>>) reqObj.get("members");
-        return projectMemberResourceManager.setMembers(account, members);
+        return projectMemberResourceManager.setMembers(project, members);
     }
 
     @Override

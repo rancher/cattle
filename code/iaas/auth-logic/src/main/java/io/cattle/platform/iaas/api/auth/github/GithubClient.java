@@ -60,8 +60,7 @@ public class GithubClient {
         HttpResponse response = Request.Post(GITHUB_URL.get()).addHeader("Accept", "application/json").bodyForm(requestData).execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + Integer.toString(statusCode));
+            noGithub(statusCode);
         }
         jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -82,8 +81,7 @@ public class GithubClient {
                 .execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + Integer.toString(statusCode));
+            noGithub(statusCode);
         }
         jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -103,8 +101,7 @@ public class GithubClient {
                 .execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + Integer.toString(statusCode));
+            noGithub(statusCode);
         }
         jsonData = jsonMapper.readCollectionValue(response.getEntity().getContent(), List.class, Map.class);
 
@@ -127,8 +124,7 @@ public class GithubClient {
                 "application/json").execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
-            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
-                    + Integer.toString(statusCode));
+            noGithub(statusCode);
         }
         jsonData = jsonMapper.readCollectionValue(response.getEntity().getContent(), List.class, Map.class);
 
@@ -203,5 +199,10 @@ public class GithubClient {
 
     public String getTeamOrgById(String id) {
         return  githubUtils.getTeamOrgById(id);
+    }
+
+    private void noGithub(Integer statusCode) {
+        throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GitHubError", "Non-200 Response from Github", "Status code from Github: "
+                + Integer.toString(statusCode));
     }
 }

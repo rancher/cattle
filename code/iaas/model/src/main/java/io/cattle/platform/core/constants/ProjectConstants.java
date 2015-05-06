@@ -15,6 +15,5 @@ public class ProjectConstants {
     public static final String OAUTH_BASIC = "X-API-BEARER=";
     public static final String AUTH_TYPE = "bearer ";
     public static final String PROJECT_HEADER = "X-API-Project-Id";
-    public static final String USER = "USER";
 
 }
