@@ -106,7 +106,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
                     String state = instance.getState();
                     if (EVENT_START.equals(status)) {
-                        if (STATE_RUNNING.equals(state) || STATE_STARTING.equals(state) || STATE_RESTARTING.equals(status))
+                        if (STATE_CREATING.equals(state) || STATE_RUNNING.equals(state) || STATE_STARTING.equals(state) || STATE_RESTARTING.equals(status))
                             return null;
 
                         objectProcessManager.scheduleProcessInstance(PROCESS_START, instance, makeData());
