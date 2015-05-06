@@ -2,15 +2,17 @@
 
 . ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
-if [ ! -w /etc/hosts ]; then
-    mv content/etc/hosts{,.dnsmasq}
-fi
+reload_dns()
+{
+    PID=$(pidof rancher-dns || true)
+
+    if [ -z "$PID" ]; then
+        /etc/init.d/rancher-dns start
+    fi
+
+    killall -HUP rancher-dns
+}
 
 stage_files
 
-DNSMASQ_PID=$(pidof dnsmasq || true)
-
-if [ -n "$DNSMASQ_PID" ]; then
-    info Reloading dnsmasq
-    kill -HUP $DNSMASQ_PID
-fi
+reload_dns
