@@ -9,7 +9,7 @@ remote anonymous
 	lifetime time 24 hour ;
 	dpd_delay 20 ;
 	proposal {
-		encryption_algorithm 3des;
+		encryption_algorithm aes;
 		hash_algorithm sha1;
 		authentication_method pre_shared_key ;
 		dh_group 2 ;
@@ -20,7 +20,7 @@ sainfo anonymous
 {
 	pfs_group 2;
 	lifetime time 12 hour ;
-	encryption_algorithm 3des, des, rijndael ;
+	encryption_algorithm aes ;
 	authentication_algorithm hmac_sha1, hmac_md5 ;
 	compression_algorithm deflate ;
 }
