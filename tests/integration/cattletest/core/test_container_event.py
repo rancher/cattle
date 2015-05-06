@@ -129,7 +129,7 @@ def test_rancher_container_events(client, user_sim_context, user_account):
     assert container.state == 'stopped'
 
     inspect = new_inspect(random_str())
-    inspect['Config']['Env'] = ['RANCHER_UUID=%s' % container.uuid]
+    inspect['Config']['Labels'] = {'io.rancher.container.uuid': container.uuid}
 
     # pass random external id to prove look up by rancher uuid works
     rand = random_str()

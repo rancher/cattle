@@ -44,14 +44,17 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
     private static final DynamicBooleanProperty MANAGE_NONRANCHER_CONTAINERS = ArchaiusUtil.getBoolean("manage.nonrancher.containers");
     private static final String INSPECT_ENV = "Env";
+    private static final String INSPECT_LABELS = "Labels";
     private static final String INSPECT_NAME = "Name";
     private static final String FIELD_DOCKER_INSPECT = "dockerInspect";
     private static final String INSPECT_CONFIG = "Config";
     private static final String INSPECT_IMAGE = "Image";
     private static final String IMAGE_PREFIX = "docker:";
     private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
-    private static final String RANCHER_UUID = "RANCHER_UUID=";
-    private static final String RANCHER_NETWORK = "RANCHER_NETWORK=";
+    private static final String RANCHER_UUID = "io.rancher.container.uuid";
+    private static final String RANCHER_NETWORK = "io.rancher.container.network";
+    private static final String RANCHER_UUID_ENV_VAR = "RANCHER_UUID=";
+    private static final String RANCHER_NETWORK_ENV_VAR = "RANCHER_NETWORK=";
     private static final String EVENT_CREATE = "create";
     private static final String EVENT_STOP = "stop";
     private static final String EVENT_START = "start";
@@ -73,7 +76,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     @Inject
     LockManager lockManager;
 
-    @SuppressWarnings("unchecked")
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         if (!MANAGE_NONRANCHER_CONTAINERS.get()) {
@@ -215,27 +217,30 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     String getRancherUuidLabel(Map<String, Object> inspect) {
-        return getLabel(RANCHER_UUID, inspect);
+        return getLabel(RANCHER_UUID, RANCHER_UUID_ENV_VAR, inspect);
     }
 
     String getRancherNetworkLabel(Map<String, Object> inspect) {
-        return getLabel(RANCHER_NETWORK, inspect);
+        return getLabel(RANCHER_NETWORK, RANCHER_NETWORK_ENV_VAR, inspect);
     }
 
     @SuppressWarnings("unchecked")
-    String getLabel(String key, Map<String, Object> inspect) {
+    String getLabel(String labelKey, String envVarPrefix, Map<String, Object> inspect) {
         if (inspect == null) {
             return null;
         }
 
         Map<String, Object> config = (Map<String, Object>)inspect.get(INSPECT_CONFIG);
-        List<String> envVars = (List<String>)config.get(INSPECT_ENV);
-        if (envVars == null) {
-            return null;
-        }
+
+        Map<String, String> labels = CollectionUtils.toMap(config.get(INSPECT_LABELS));
+        String label = labels.get(labelKey);
+        if (StringUtils.isNotEmpty(label))
+            return label;
+
+        List<String> envVars = (List<String>)CollectionUtils.toList(config.get(INSPECT_ENV));
         for (String envVar : envVars) {
-            if (envVar.startsWith(key)) {
-                return envVar.substring(key.length());
+            if (envVar.startsWith(envVarPrefix)) {
+                return envVar.substring(envVarPrefix.length());
             }
         }
         return null;
