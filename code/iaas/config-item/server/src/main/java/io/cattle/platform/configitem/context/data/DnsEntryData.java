@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.data;
 
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.Map;
 public class DnsEntryData {
     IpAddress sourceIpAddress;
     Map<String, List<IpAddress>> resolve = new HashMap<>();
+    Instance instance;
 
     public DnsEntryData() {
     }
@@ -28,5 +30,13 @@ public class DnsEntryData {
 
     public void setResolve(Map<String, List<IpAddress>> resolve) {
         this.resolve = resolve;
+    }
+
+    public Instance getInstance() {
+        return instance;
+    }
+
+    public void setInstance(Instance instance) {
+        this.instance = instance;
     }
 }

@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
 import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
@@ -15,6 +16,7 @@ import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
+import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressNicMapTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NicTable;
@@ -44,6 +46,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 resolve.put(((InstanceLink) input.get(0)).getLinkName(), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
+                data.setInstance((Instance)input.get(3));
                 return data;
             }
         };
@@ -51,6 +54,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         InstanceLinkTable instanceLink = mapper.add(INSTANCE_LINK);
         IpAddressTable targetIpAddress = mapper.add(IP_ADDRESS);
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
+        InstanceTable clientInstance = mapper.add(INSTANCE);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
@@ -73,6 +77,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(clientNicIpTable.NIC_ID.eq(clientNic.ID))
                 .join(clientIpAddress)
                 .on(clientNicIpTable.IP_ADDRESS_ID.eq(clientIpAddress.ID))
+                .join(clientInstance)
+                .on(clientNic.INSTANCE_ID.eq(clientInstance.ID))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
                         .and(NIC.VNET_ID.isNotNull())
                         .and(NIC.REMOVED.isNull())
@@ -99,6 +105,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 resolve.put(((Service) input.get(0)).getName(), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
+                data.setInstance((Instance)input.get(3));
                 return data;
             }
         };
@@ -106,6 +113,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         ServiceTable targetService = mapper.add(SERVICE);
         IpAddressTable targetIpAddress = mapper.add(IP_ADDRESS);
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
+        InstanceTable clientInstance = mapper.add(INSTANCE);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
@@ -137,6 +145,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(clientNicIpTable.NIC_ID.eq(clientNic.ID))
                 .join(clientIpAddress)
                 .on(clientNicIpTable.IP_ADDRESS_ID.eq(clientIpAddress.ID))
+                .join(clientInstance)
+                .on(clientNic.INSTANCE_ID.eq(clientInstance.ID))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
                         .and(NIC.VNET_ID.isNotNull())
                         .and(NIC.REMOVED.isNull())
@@ -166,6 +176,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 resolve.put(((Service) input.get(0)).getName(), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
+                data.setInstance((Instance)input.get(3));
                 return data;
             }
         };
@@ -173,6 +184,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         ServiceTable targetService = mapper.add(SERVICE);
         IpAddressTable targetIpAddress = mapper.add(IP_ADDRESS);
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
+        InstanceTable clientInstance = mapper.add(INSTANCE);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
@@ -201,6 +213,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(clientNicIpTable.NIC_ID.eq(clientNic.ID))
                 .join(clientIpAddress)
                 .on(clientNicIpTable.IP_ADDRESS_ID.eq(clientIpAddress.ID))
+                .join(clientInstance)
+                .on(clientNic.INSTANCE_ID.eq(clientInstance.ID))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
                         .and(NIC.VNET_ID.isNotNull())
                         .and(NIC.REMOVED.isNull())
