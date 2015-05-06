@@ -48,6 +48,7 @@ public class InstanceConstants {
     public static final String KIND_CONTAINER = "container";
     public static final String KIND_VIRTUAL_MACHINE = "virtualMachine";
 
+    public static final String STATE_CREATING = "creating";
     public static final String STATE_RUNNING = "running";
     public static final String STATE_STOPPED = "stopped";
     public static final String STATE_STOPPING = "stopping";
