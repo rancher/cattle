@@ -1,7 +1,7 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
 import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
 import static io.cattle.platform.core.model.tables.NicTable.NIC;
@@ -10,6 +10,7 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.data.DnsEntryData;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -59,6 +60,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         NicTable targetNic = NIC.as("target_nic");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
+        InstanceTable targetInstance = INSTANCE.as("instance");
 
         return create()
                 .select(mapper.fields())
@@ -69,6 +71,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(instanceLink.INSTANCE_ID.eq(clientNic.INSTANCE_ID))
                 .join(targetNic)
                 .on(targetNic.INSTANCE_ID.eq(instanceLink.TARGET_INSTANCE_ID))
+                .join(targetInstance)
+                .on(targetNic.INSTANCE_ID.eq(targetInstance.ID))
                 .join(targetNicIpTable)
                 .on(targetNicIpTable.NIC_ID.eq(targetNic.ID))
                 .join(targetIpAddress)
@@ -89,7 +93,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(targetNicIpTable.REMOVED.isNull())
                         .and(clientNic.REMOVED.isNull())
                         .and(targetNic.REMOVED.isNull())
-                        .and(instanceLink.REMOVED.isNull()))
+                        .and(instanceLink.REMOVED.isNull())
+                        .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
+                                InstanceConstants.STATE_STARTING)))
                 .fetch().map(mapper);
     }
 
@@ -116,6 +122,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         InstanceTable clientInstance = mapper.add(INSTANCE);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
+        InstanceTable targetInstance = INSTANCE.as("instance");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
@@ -137,6 +144,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(serviceConsumeMap.CONSUMED_SERVICE_ID.eq(targetService.ID))
                 .join(targetNic)
                 .on(targetNic.INSTANCE_ID.eq(targetServiceExposeMap.INSTANCE_ID))
+                .join(targetInstance)
+                .on(targetNic.INSTANCE_ID.eq(targetInstance.ID))
                 .join(targetNicIpTable)
                 .on(targetNicIpTable.NIC_ID.eq(targetNic.ID))
                 .join(targetIpAddress)
@@ -160,7 +169,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(serviceConsumeMap.REMOVED.isNull())
                         .and(clientServiceExposeMap.REMOVED.isNull())
                         .and(targetServiceExposeMap.REMOVED.isNull())
-                        .and(targetService.REMOVED.isNull()))
+                        .and(targetService.REMOVED.isNull())
+                        .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
+                                InstanceConstants.STATE_STARTING)))
                 .fetch().map(mapper);
     }
 
@@ -187,6 +198,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         InstanceTable clientInstance = mapper.add(INSTANCE);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
+        InstanceTable targetInstance = INSTANCE.as("instance");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
@@ -205,6 +217,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(targetServiceExposeMap.SERVICE_ID.eq(targetService.ID))
                 .join(targetNic)
                 .on(targetNic.INSTANCE_ID.eq(targetServiceExposeMap.INSTANCE_ID))
+                .join(targetInstance)
+                .on(targetNic.INSTANCE_ID.eq(targetInstance.ID))
                 .join(targetNicIpTable)
                 .on(targetNicIpTable.NIC_ID.eq(targetNic.ID))
                 .join(targetIpAddress)
@@ -226,7 +240,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(clientNic.REMOVED.isNull())
                         .and(targetNic.REMOVED.isNull())
                         .and(clientServiceExposeMap.REMOVED.isNull())
-                        .and(targetServiceExposeMap.REMOVED.isNull()))
+                        .and(targetServiceExposeMap.REMOVED.isNull())
+                        .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
+                                InstanceConstants.STATE_STARTING)))
                 .fetch().map(mapper);
     }
 
