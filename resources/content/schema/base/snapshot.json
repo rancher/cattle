@@ -4,10 +4,6 @@
             "required": true,
             "nullable": false
         },
-        "managedSnapshotUUID": {
-            "type": "string",
-            "nullable": true
-        },
         "managedVolumeUUID": {
             "type": "string",
             "nullable": true

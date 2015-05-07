@@ -337,7 +337,6 @@
         "snapshot" : "cr",
         "snapshot.volumeId" : "cr",
         "snapshot.managedVolumeUUID" : "r",
-        "snapshot.managedSnapshotUUID" : "r",
 
         "end" : ""
     }
