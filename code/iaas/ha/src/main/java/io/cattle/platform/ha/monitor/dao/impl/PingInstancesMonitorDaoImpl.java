@@ -4,18 +4,21 @@ import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.ha.monitor.dao.PingInstancesMonitorDao;
+import io.cattle.platform.ha.monitor.model.KnownInstance;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PingInstancesMonitorDaoImpl extends AbstractJooqDao implements PingInstancesMonitorDao {
 
     @Override
-    public Map<String, String> getInstances(long agentId) {
-        Map<String, String> result = create()
-                .select(INSTANCE.UUID, INSTANCE.EXTERNAL_ID)
+    public Map<String, KnownInstance> getInstances(long agentId) {
+        List<KnownInstance> instances = create()
+                .select(INSTANCE.fields())
                 .from(AGENT)
                 .join(HOST)
                     .on(AGENT.ID.eq(HOST.AGENT_ID))
@@ -24,9 +27,13 @@ public class PingInstancesMonitorDaoImpl extends AbstractJooqDao implements Ping
                         .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
                 .join(INSTANCE)
                     .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .where(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING)
-                        .and(AGENT.ID.eq(agentId)))
-                .fetchMap(INSTANCE.UUID, INSTANCE.EXTERNAL_ID);
+                .where(INSTANCE.STATE.ne(CommonStatesConstants.PURGED)
+                    .and(AGENT.ID.eq(agentId)))
+                .fetchInto(KnownInstance.class);
+
+        Map<String, KnownInstance> result = new HashMap<String, KnownInstance>();
+        for (KnownInstance i : instances)
+            result.put(i.getUuid(), i);
 
         return result;
     }

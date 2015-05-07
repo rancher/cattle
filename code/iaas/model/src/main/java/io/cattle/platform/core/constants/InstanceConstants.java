@@ -51,6 +51,7 @@ public class InstanceConstants {
     public static final String KIND_VIRTUAL_MACHINE = "virtualMachine";
 
     public static final String STATE_CREATING = "creating";
+    public static final String STATE_CREATED = "created";
     public static final String STATE_RUNNING = "running";
     public static final String STATE_STOPPED = "stopped";
     public static final String STATE_STOPPING = "stopping";
@@ -61,4 +62,5 @@ public class InstanceConstants {
     public static final String ON_STOP_RESTART = "restart";
     public static final String ON_STOP_REMOVE = "remove";
 
+    public static final String EVENT_INSTANCE_FORCE_STOP = "compute.instance.force.stop";
 }

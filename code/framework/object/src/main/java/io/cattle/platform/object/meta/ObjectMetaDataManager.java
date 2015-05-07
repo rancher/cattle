@@ -53,4 +53,6 @@ public interface ObjectMetaDataManager {
     Map<String, Object> getTransitionFields(Schema schema, Object obj);
 
     Map<String, ActionDefinition> getActionDefinitions(Object obj);
+
+    boolean isTransitioningState(Class<?> resourceType, String state);
 }

@@ -8,4 +8,5 @@ public interface ResourceMonitor {
 
     <T> T waitForState(T obj, String state);
 
+    <T> T waitForNotTransitioning(T obj);
 }

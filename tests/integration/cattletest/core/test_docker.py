@@ -139,13 +139,13 @@ def test_docker_command_args(admin_client, super_client, docker_context):
 
 
 @if_docker
-def test_short_lived_container(super_client, docker_context):
+def test_short_lived_container(admin_client, super_client, docker_context):
     network = find_one(super_client.list_network, uuid='managed-docker0')
-    container = super_client.create_container(imageUuid="docker:tianon/true",
+    container = admin_client.create_container(imageUuid="docker:tianon/true",
                                               networkIds=[network.id])
 
     container = wait_for_condition(
-        super_client, container,
+        admin_client, container,
         lambda x: x.state == 'stopped',
         lambda x: 'State is: ' + x.state)
 

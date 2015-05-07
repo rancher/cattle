@@ -37,7 +37,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     private static final String DEFAULT_NAME = "AgentBased";
 
-    AgentLocator agentLocator;
+    protected AgentLocator agentLocator;
     ObjectSerializerFactory factory;
     ObjectSerializer serializer;
     ProcessProgress progress;
@@ -104,6 +104,13 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
             return new HandlerResult(true, CollectionUtils.asMap((Object) "_noAgent", true));
         }
 
+        Event reply = handleEvent(state, process, eventResource, dataResource, agentResource, agent);
+
+        return new HandlerResult(shouldContinue, getResourceDataMap(getObjectManager().getType(eventResource), reply.getData()));
+    }
+
+    protected Event handleEvent(ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource,
+            RemoteAgent agent) {
         ObjectSerializer serializer = getObjectSerializer(dataResource);
         Map<String, Object> data = serializer == null ? null : serializer.serialize(dataResource);
 
@@ -148,8 +155,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         Event reply = agent.callSync(event, options);
 
         postProcessEvent(event, reply, state, process, eventResource, dataResource, agentResource);
-
-        return new HandlerResult(shouldContinue, getResourceDataMap(getObjectManager().getType(eventResource), reply.getData()));
+        return reply;
     }
 
     protected Map<Object, Object> getResourceDataMap(String type, Object data) {

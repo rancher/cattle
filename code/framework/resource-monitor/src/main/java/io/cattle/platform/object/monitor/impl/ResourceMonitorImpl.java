@@ -6,6 +6,7 @@ import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.ObjectUtils;
@@ -27,6 +28,8 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
 
     ObjectManager objectManager;
     ConcurrentMap<String, Object> waiters = new ConcurrentHashMap<String, Object>();
+    @Inject
+    ObjectMetaDataManager objectMetaDataManger;
 
     @EventHandler
     public void resourceChange(Event event) {
@@ -112,6 +115,16 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             @Override
             public boolean evaluate(T obj) {
                 return desiredState.equals(ObjectUtils.getState(obj));
+            }
+        });
+    }
+
+    @Override
+    public <T> T waitForNotTransitioning(T obj) {
+        return waitFor(obj, new ResourcePredicate<T>() {
+            @Override
+            public boolean evaluate(T obj) {
+                return !objectMetaDataManger.isTransitioningState(obj.getClass(), (ObjectUtils.getState(obj)));
             }
         });
     }
