@@ -352,8 +352,10 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
             for (ProjectMember member: members){
                 if (!member.getExternalIdType().equalsIgnoreCase(ProjectConstants.RANCHER_ID)){
                     hasNonRancherMember = true;
-                } else {
+                } else if (member.getExternalId().equals(String.valueOf(getAdminAccount().getId()))){
                     deactivateThenRemove(member);
+                } else {
+                    hasNonRancherMember = true;
                 }
             }
             if (!hasNonRancherMember) {
