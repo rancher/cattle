@@ -10,6 +10,8 @@ import io.cattle.platform.iaas.api.auth.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.github.resource.TeamAccountInfo;
 import io.cattle.platform.iaas.api.auth.github.resource.Token;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -56,15 +58,15 @@ public class GithubTokenHandler implements TokenHandler {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
         String code = ObjectUtils.toString(requestBody.get(GITHUB_REQUEST_TOKEN));
         Map<String, Object> jsonData = client.getAccessToken(code);
-        String token = (String) jsonData.get("access_token");
+        String accessToken = (String) jsonData.get("access_token");
         List<String> idList = new ArrayList<>();
         List<String> orgNames = new ArrayList<>();
         List<String> teamIds = new ArrayList<>();
         List<String> orgIds = new ArrayList<>();
         Map<String, String> teamToOrg = new HashMap<>();
         List<TeamAccountInfo> teamsAccountInfo = new ArrayList<>();
-        GithubAccountInfo userAccountInfo = client.getUserAccountInfo(token);
-        List<GithubAccountInfo> orgAccountInfo = client.getOrgAccountInfo(token);
+        GithubAccountInfo userAccountInfo = client.getUserAccountInfo(accessToken);
+        List<GithubAccountInfo> orgAccountInfo = client.getOrgAccountInfo(accessToken);
         Set<ExternalId> externalIds = new HashSet<>();
 
         idList.add(userAccountInfo.getAccountId());
@@ -74,7 +76,7 @@ public class GithubTokenHandler implements TokenHandler {
             idList.add(info.getAccountId());
             orgNames.add(info.getAccountName());
             orgIds.add(info.getAccountId());
-            teamsAccountInfo.addAll(client.getOrgTeamInfo(token, info.getAccountName()));
+            teamsAccountInfo.addAll(client.getOrgTeamInfo(accessToken, info.getAccountName()));
             externalIds.add(new ExternalId(info.getAccountId(), GithubUtils.ORG_SCOPE, info.getAccountName()));
         }
 
@@ -87,7 +89,8 @@ public class GithubTokenHandler implements TokenHandler {
 
         Account account;
         boolean hasAccessToAProject = authDao.hasAccessToAnyProject(externalIds, false, null);
-        if (SECURITY.get() && githubUtils.isAllowed(idList, externalIds)) {
+        if (SECURITY.get()) {
+            githubUtils.isAllowed(idList, externalIds);
             account = authDao.getAccountByExternalId(userAccountInfo.getAccountId(), GithubUtils.USER_SCOPE);
             if (null == account) {
                 account = authDao.createAccount(userAccountInfo.getAccountName(), AccountConstants.USER_KIND, userAccountInfo.getAccountId(),
@@ -102,6 +105,8 @@ public class GithubTokenHandler implements TokenHandler {
             authDao.ensureAllProjectsHaveNonRancherIdMembers(new ExternalId(userAccountInfo.getAccountId(), GithubUtils.USER_SCOPE,
                     userAccountInfo.getAccountName()));
         }
+        DataAccessor.fields(account).withKey("access_token").set(accessToken);
+        objectManager.persist(account);
         account = objectManager.reload(account);
         jsonData.put("account_id", userAccountInfo.getAccountId());
         jsonData.put("teamToOrg", teamToOrg);
