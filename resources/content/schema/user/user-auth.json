@@ -213,6 +213,9 @@
         "typeDocumentation" : "r",
         "typeDocumentation.resourceFields" : "r",
 
+        "userPreference" : "crud",
+        "userPreference.value" : "crud",
+
         "volume" : "r",
         "volume.imageId" : "r",
         "volume.instanceId" : "r",

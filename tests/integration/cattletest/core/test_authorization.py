@@ -3,14 +3,14 @@ from common_fixtures import *  # NOQA
 
 def test_user_client_access(clients):
     typesLen = {
-        'admin': 92,
+        'admin': 93,
         'agent': 8,
-        'user': 70,
+        'user': 71,
         'agentRegister': 4,
         'test': 140,
-        'readAdmin': 92,
+        'readAdmin': 93,
         'token': 2,
-        'superadmin': 144,
+        'superadmin': 145,
         'service': 93,
         'project': 71,
     }

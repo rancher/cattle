@@ -46,6 +46,7 @@
         "snapshot" : "cr",
         "subscribe" : "cr",
         "subscribe.eventNames" : "cr",
+        "userPreference": "",
         "volume" : "rd",
         "end" : ""
     }
