@@ -44,6 +44,7 @@
     <bean class="io.cattle.platform.iaas.api.auth.github.GithubClient"/>
 
     <bean class="io.cattle.platform.iaas.api.request.handler.GithubProxy" />
+    <bean class="io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy" />
     <bean class="io.cattle.platform.iaas.api.auth.impl.RancherExternalIdHandler" />
     <bean class="io.cattle.platform.iaas.api.auth.github.GithubExternalIdHandler" />
 
