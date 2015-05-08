@@ -4,6 +4,11 @@
 
 reload_dns()
 {
+    if [ ! -e /etc/init.d/rancher-dns ]; then
+        # rancher-dns is not yet installed
+        return
+    fi
+
     PID=$(pidof rancher-dns || true)
 
     if [ -z "$PID" ]; then
