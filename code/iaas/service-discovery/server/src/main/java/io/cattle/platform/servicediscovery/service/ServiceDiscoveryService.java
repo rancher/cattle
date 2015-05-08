@@ -41,4 +41,6 @@ public interface ServiceDiscoveryService {
 
     String generateServiceInstanceName(Service service, int finalOrder);
 
+    Map<String, String> getServiceInstanceLabels(Service service);
+
 }

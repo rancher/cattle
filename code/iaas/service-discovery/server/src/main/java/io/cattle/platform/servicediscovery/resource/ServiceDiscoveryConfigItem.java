@@ -64,6 +64,9 @@ public class ServiceDiscoveryConfigItem {
             ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG, ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
             false, false);
 
+    public static final ServiceDiscoveryConfigItem LABELS = new ServiceDiscoveryConfigItem(
+            InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS,
+            true, false);
 
     /**
      * Name as it appears in docker-compose file

@@ -63,6 +63,7 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
     consumed_service = super_client.wait_success(consumed_service)
 
     reg_cred = _create_registry_credential(admin_client)
+
     launch_config = {"imageUuid": image_uuid,
                      "command": ['sleep', '42'],
                      "environment": {'TEST_FILE': "/etc/testpath.conf"},
@@ -1095,6 +1096,59 @@ def test_validate_scale_down_restore_state(super_client,
         list_serviceExposeMap(serviceId=service.id,
                               instanceId=instance1.id, state="active")
     assert len(instance_service_map) == 1
+
+
+def test_validate_labels(super_client, admin_client, sim_context, nsp):
+    env = admin_client.create_environment(name=random_str())
+    env = admin_client.wait_success(env)
+    assert env.state == "active"
+
+    # create service1 with labels defined
+    service_name1 = random_str()
+    initial_labels1 = {'affinity': "container==B", '!affinity': "container==C"}
+    image_uuid = sim_context['imageUuid']
+    launch_config1 = {"imageUuid": image_uuid, "labels": initial_labels1}
+
+    service1 = super_client.create_service(name=service_name1,
+                                           environmentId=env.id,
+                                           networkId=nsp.networkId,
+                                           launchConfig=launch_config1)
+    service1 = super_client.wait_success(service1)
+    assert service1.state == "inactive"
+    assert service1.launchConfig.labels == initial_labels1
+
+    # create service2 w/o labels defined
+    service_name2 = random_str()
+    image_uuid = sim_context['imageUuid']
+    launch_config2 = {"imageUuid": image_uuid}
+
+    service2 = super_client.create_service(name=service_name2,
+                                           environmentId=env.id,
+                                           networkId=nsp.networkId,
+                                           launchConfig=launch_config2)
+    service2 = super_client.wait_success(service2)
+    assert service2.state == "inactive"
+    assert "labels" not in service2.launchConfig
+
+    # activate services
+    env.activateservices()
+    service1 = super_client.wait_success(service1, 120)
+    assert service1.state == "active"
+    service2 = super_client.wait_success(service2, 120)
+    assert service2.state == "active"
+
+    # check that labels defined in launch config + the internal label, are set
+    result_labels_1 = {'affinity': "container==B", '!affinity': "container==C",
+                       'io.rancher.service.name': service_name1}
+    instance1 = _validate_compose_instance_start(super_client, service1,
+                                                 env, "1")
+    assert instance1.labels == result_labels_1
+
+    # check that only one internal label is set
+    result_labels_2 = {'io.rancher.service.name': service_name2}
+    instance2 = _validate_compose_instance_start(super_client, service2,
+                                                 env, "1")
+    assert instance2.labels == result_labels_2
 
 
 def _create_registry_credential(admin_client):

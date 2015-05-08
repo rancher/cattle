@@ -394,6 +394,65 @@ def test_scale(admin_client, super_client):
     validate_remove_host(host2, lb, super_client)
 
 
+def test_labels(super_client, admin_client, sim_context, nsp):
+    host = sim_context['host']
+    user_account_id = host.accountId
+    env = admin_client.create_environment(name=random_str(),
+                                          accountId=user_account_id)
+    env = admin_client.wait_success(env)
+    assert env.state == "active"
+
+    # create service with labels, and validate all of them
+    # plus service label were set
+    service_name = random_str()
+    initial_labels = {'affinity': "container==B", '!affinity': "container==C"}
+    image_uuid = sim_context['imageUuid']
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": [8010, '913:913'], "labels": initial_labels}
+
+    service = super_client. \
+        create_loadBalancerService(name=service_name,
+                                   environmentId=env.id,
+                                   networkId=nsp.networkId,
+                                   launchConfig=launch_config,
+                                   accountId=user_account_id,
+                                   loadBalancerInstanceUriPredicate='sim://')
+    service = super_client.wait_success(service)
+    assert service.state == "inactive"
+    service = wait_success(super_client, service.activate(), 120)
+    lb, service = _validate_lb_service_activate(env, host,
+                                                service, super_client,
+                                                ['8010:8010', '913:913'])
+    lb_instance = _validate_lb_instance(host, lb, super_client, service)
+    result_labels = {'affinity': "container==B", '!affinity': "container==C",
+                     'io.rancher.service.name': service_name}
+    assert lb_instance.labels == result_labels
+
+    # create service w/o labels, and validate that
+    #  only one service label was set
+    service_name = random_str()
+    image_uuid = sim_context['imageUuid']
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": [8089, '914:914']}
+
+    service = super_client. \
+        create_loadBalancerService(name=service_name,
+                                   environmentId=env.id,
+                                   networkId=nsp.networkId,
+                                   launchConfig=launch_config,
+                                   accountId=user_account_id,
+                                   loadBalancerInstanceUriPredicate='sim://')
+    service = super_client.wait_success(service)
+    assert service.state == "inactive"
+    service = wait_success(super_client, service.activate(), 120)
+    lb, service = _validate_lb_service_activate(env, host,
+                                                service, super_client,
+                                                ['8089:8089', '914:914'])
+    lb_instance = _validate_lb_instance(host, lb, super_client, service)
+    result_labels = {'io.rancher.service.name': service_name}
+    assert lb_instance.labels == result_labels
+
+
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
     start = time.time()
     host_maps = super_client. \
@@ -401,7 +460,7 @@ def _wait_until_active_map_count(lb, count, super_client, timeout=30):
                                  state="active")
     while len(host_maps) != count:
         time.sleep(.5)
-        host_maps = super_client.\
+        host_maps = super_client. \
             list_loadBalancerHostMap(loadBalancerId=lb.id, state="active")
         if time.time() - start > timeout:
             assert 'Timeout waiting for agent to be removed.'
@@ -461,6 +520,7 @@ def _validate_lb_instance(host, lb, super_client, service):
         list_serviceExposeMap(serviceId=service.id,
                               instanceId=agent_instances[0].id)
     assert len(instance_service_map) == 1
+    return agent_instances[0]
 
 
 def _validate_create_listener(env, service, source_port,
