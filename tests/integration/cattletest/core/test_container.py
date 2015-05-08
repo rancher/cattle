@@ -26,6 +26,8 @@ def test_container_create_only(admin_client, super_client,
                                  name="test",
                                  startOnCreate=False)
 
+    container = super_client.reload(container)
+
     assert_fields(container, {
         "type": "container",
         "allocationState": "inactive",
@@ -34,7 +36,7 @@ def test_container_create_only(admin_client, super_client,
         "firstRunning": None,
     })
 
-    container = wait_success(admin_client, container)
+    container = wait_success(super_client, container)
 
     assert_fields(container, {
         "type": "container",
@@ -205,7 +207,7 @@ def test_container_stop(admin_client, super_client, sim_context):
 
     container = wait_success(admin_client, container)
 
-    assert_fields(container, {
+    assert_fields(super_client.reload(container), {
         "allocationState": "active",
         "state": "stopped"
     })
@@ -313,13 +315,13 @@ def test_container_restore(admin_client, super_client, sim_context):
     container = wait_success(admin_client, container)
 
     assert container.state == "stopped"
-    assert_restored_fields(container)
+    assert_restored_fields(super_client.reload(container))
 
     volumes = container.volumes()
     assert len(volumes) == 1
 
     assert volumes[0].state == "inactive"
-    assert_restored_fields(volumes[0])
+    assert_restored_fields(super_client.reload(volumes[0]))
 
     volume_mappings = super_client.reload(volumes[0]).volumeStoragePoolMaps()
     assert len(volume_mappings) == 1
@@ -340,7 +342,7 @@ def test_container_purge(admin_client, super_client, sim_context):
         'removeTime': format_time(remove_time)
     })
 
-    purge = admin_client.list_task(name="purge.resources")[0]
+    purge = super_client.list_task(name="purge.resources")[0]
     purge.execute()
 
     container = admin_client.reload(container)

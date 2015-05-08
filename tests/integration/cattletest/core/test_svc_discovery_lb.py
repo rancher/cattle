@@ -60,7 +60,7 @@ def test_activate_lb_svc(super_client, admin_client, sim_context, nsp):
                                    loadBalancerInstanceUriPredicate='sim://')
     service = super_client.wait_success(service)
     assert service.state == "inactive"
-    service = wait_success(admin_client, service.activate(), 120)
+    service = wait_success(super_client, service.activate(), 120)
     # perform validation
     lb, service = _validate_lb_service_activate(env, host,
                                                 service, super_client,
@@ -69,7 +69,7 @@ def test_activate_lb_svc(super_client, admin_client, sim_context, nsp):
 
 
 def _activate_svc_w_scale_two(admin_client, random_str, super_client):
-    cred = create_user(admin_client,
+    cred = create_user(super_client,
                        random_str,
                        kind='user')
     account = cred[2]
@@ -106,7 +106,7 @@ def _activate_svc_w_scale_two(admin_client, random_str, super_client):
     service = super_client.wait_success(service)
     assert service.state == "inactive"
     # 1. verify that the service was activated
-    service = wait_success(admin_client, service.activate(), 120)
+    service = wait_success(super_client, service.activate(), 120)
     assert service.state == "active"
     # 2. verify that lb got created
     lbs = super_client. \
@@ -129,7 +129,7 @@ def test_deactivate_then_remove_lb_svc(super_client, admin_client):
     # 2. deactivate service and validate that
     # the hosts mappings are gone,
     # but lb still present
-    service = wait_success(admin_client, service.deactivate())
+    service = wait_success(super_client, service.deactivate())
     validate_remove_host(host1, lb, super_client)
     validate_remove_host(host2, lb, super_client)
 
@@ -138,13 +138,13 @@ def test_deactivate_then_remove_lb_svc(super_client, admin_client):
 
     # try to remove lb - should fail
     with pytest.raises(ApiError) as e:
-        lb = admin_client.wait_success(admin_client.delete(lb))
+        lb = super_client.wait_success(super_client.delete(lb))
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidAction'
     assert e.value.error.fieldName == 'serviceId'
 
     # remove service and verify that the lb is gone
-    wait_success(admin_client, service.remove())
+    wait_success(super_client, service.remove())
     wait_for_condition(super_client, lb, _resource_is_removed,
                        lambda x: 'State is: ' + x.state)
 
@@ -160,7 +160,7 @@ def test_remove_active_lb_svc(super_client, admin_client):
 
     # 2. delete service and validate that the hosts mappings are gone,
     # and lb is gone as well as lb config/listeners
-    wait_success(admin_client, service.remove())
+    wait_success(super_client, service.remove())
     validate_remove_host(host1, lb, super_client)
     validate_remove_host(host2, lb, super_client)
 
@@ -222,12 +222,12 @@ def test_targets(super_client, admin_client, sim_context, nsp):
     lb_service = lb_service.addservicelink(serviceId=web_service.id)
 
     # activate web and lb services
-    lb_service = wait_success(admin_client, lb_service.activate(), 120)
+    lb_service = wait_success(super_client, lb_service.activate(), 120)
     _validate_lb_service_activate(env, host, lb_service, super_client,
                                   ['8081:8081', '909:1001'])
-    web_service = wait_success(admin_client, web_service.activate(), 120)
+    web_service = wait_success(super_client, web_service.activate(), 120)
     assert web_service.state == "active"
-    db_service = wait_success(admin_client, db_service.activate(), 120)
+    db_service = wait_success(super_client, db_service.activate(), 120)
     assert db_service.state == "active"
 
     # bind db and lb services after service is activated
@@ -329,7 +329,7 @@ def test_create_svc_with_lb_config(sim_context, client):
 
 
 def test_scale(admin_client, super_client):
-    cred = create_user(admin_client,
+    cred = create_user(super_client,
                        random_str(),
                        kind='user')
     account = cred[2]
@@ -365,7 +365,7 @@ def test_scale(admin_client, super_client):
     service = super_client.wait_success(service)
     assert service.state == "inactive"
     # 1. verify that the service was activated
-    service = wait_success(admin_client, service.activate(), 120)
+    service = wait_success(super_client, service.activate(), 120)
     assert service.state == "active"
     # 2. verify that lb got created
     lbs = super_client. \
@@ -378,15 +378,15 @@ def test_scale(admin_client, super_client):
     _wait_until_active_map_count(lb, 1, super_client)
 
     # scale up
-    service = admin_client.update(service, scale=2, name=service.name)
-    service = admin_client.wait_success(service, 120)
+    service = super_client.update(service, scale=2, name=service.name)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 2
     _wait_until_active_map_count(lb, 2, super_client)
 
     # now scale down
-    service = admin_client.update(service, scale=0, name=service.name)
-    service = admin_client.wait_success(service, 120)
+    service = super_client.update(service, scale=0, name=service.name)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 0
     _wait_until_active_map_count(lb, 0, super_client)

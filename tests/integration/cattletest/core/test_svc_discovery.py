@@ -125,7 +125,7 @@ def test_activate_single_service(super_client, admin_client, sim_context, nsp):
     # assert service.launchConfig.registryCredentialId == reg_cred.id
 
     # activate the service and validate that parameters were set for instance
-    service = wait_success(admin_client, service.activate(), 120)
+    service = wait_success(super_client, service.activate(), 120)
     assert service.state == "active"
     instance_service_map = super_client. \
         list_serviceExposeMap(serviceId=service.id)
@@ -241,7 +241,7 @@ def test_deactivate_remove_service(super_client, admin_client,
                                           launchConfig=launch_config)
     service = super_client.wait_success(service)
     assert service.state == "inactive"
-    service = wait_success(admin_client, service.activate(), 120)
+    service = wait_success(super_client, service.activate(), 120)
     assert service.state == "active"
     instance_service_map = super_client. \
         list_serviceExposeMap(serviceId=service.id)
@@ -254,12 +254,12 @@ def test_deactivate_remove_service(super_client, admin_client,
     _validate_compose_instance_start(super_client, service, env, "1")
 
     # deactivate service
-    service = wait_success(admin_client, service.deactivate())
+    service = wait_success(super_client, service.deactivate())
     assert service.state == "inactive"
     _validate_instance_stopped(service, super_client, env)
 
     # remove service
-    service = wait_success(admin_client, service.remove())
+    service = wait_success(super_client, service.remove())
     _validate_compose_instance_removed(super_client, service, env)
 
 
@@ -318,7 +318,7 @@ def test_remove_inactive_service(super_client, admin_client, sim_context, nsp):
     assert service.state == "inactive"
 
     # activate service
-    service = wait_success(admin_client, service.activate(), 120)
+    service = wait_success(super_client, service.activate(), 120)
     assert service.state == "active"
     instance_service_map = super_client. \
         list_serviceExposeMap(serviceId=service.id)
@@ -331,11 +331,11 @@ def test_remove_inactive_service(super_client, admin_client, sim_context, nsp):
     _validate_compose_instance_start(super_client, service, env, "1")
 
     # deactivate service
-    service = wait_success(admin_client, service.deactivate())
+    service = wait_success(super_client, service.deactivate())
     assert service.state == "inactive"
 
     # remove service
-    service = wait_success(admin_client, service.remove())
+    service = wait_success(super_client, service.remove())
     assert service.state == "removed"
     _validate_compose_instance_removed(super_client, service, env)
 
@@ -357,7 +357,7 @@ def test_remove_environment(super_client, admin_client, sim_context, nsp):
 
     # activate services
     env = env.activateservices()
-    service = admin_client.wait_success(service, 120)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
     instance_service_map = super_client. \
         list_serviceExposeMap(serviceId=service.id)
@@ -378,7 +378,7 @@ def test_remove_environment(super_client, admin_client, sim_context, nsp):
     env = wait_success(admin_client, env.remove())
     assert env.state == "removed"
     wait_for_condition(
-        admin_client, service, _resource_is_removed,
+        super_client, service, _resource_is_removed,
         lambda x: 'State is: ' + x.state)
 
 
@@ -500,7 +500,7 @@ def test_links_after_service_remove(super_client, admin_client,
     _validate_add_service_link(service2, service1, super_client)
 
     # remove service1
-    service1 = wait_success(admin_client, service1.remove())
+    service1 = wait_success(super_client, service1.remove())
 
     _validate_remove_service_link(service1, service2, super_client)
 
@@ -524,7 +524,7 @@ def test_link_volumes(super_client, admin_client,
                                            networkId=nsp.networkId,
                                            launchConfig=launch_config)
     service1 = super_client.wait_success(service1)
-    service1 = wait_success(admin_client, service1.activate(), 120)
+    service1 = wait_success(super_client, service1.activate(), 120)
     instances = super_client. \
         list_container(name=env.name + "_" + service1.name + "_" + "1")
     assert len(instances) == 1
@@ -541,7 +541,7 @@ def test_link_volumes(super_client, admin_client,
                        dataVolumesFromService=[service1.id])
 
     service2 = super_client.wait_success(service2)
-    service2 = wait_success(admin_client, service2.activate(), 120)
+    service2 = wait_success(super_client, service2.activate(), 120)
     instances = super_client. \
         list_container(name=env.name + "_" + service2.name + "_" + "1")
     assert len(instances) == 1
@@ -637,7 +637,7 @@ def test_remove_active_service(super_client, admin_client, sim_context, nsp):
     assert service.state == "inactive"
 
     # activate service
-    service = wait_success(admin_client, service.activate(), 120)
+    service = wait_success(super_client, service.activate(), 120)
     assert service.state == "active"
     instance_service_map = super_client. \
         list_serviceExposeMap(serviceId=service.id)
@@ -650,7 +650,7 @@ def test_remove_active_service(super_client, admin_client, sim_context, nsp):
     _validate_compose_instance_start(super_client, service, env, "1")
 
     # remove service
-    service = wait_success(admin_client, service.remove(), 120)
+    service = wait_success(super_client, service.remove(), 120)
     assert service.state == "removed"
     _validate_compose_instance_removed(super_client, service, env)
 
@@ -689,7 +689,7 @@ def test_remove_environment_w_active_svcs(super_client,
 
     # activate services
     env = env.activateservices()
-    service = admin_client.wait_success(service, 120)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
     instance_service_map = super_client. \
         list_serviceExposeMap(serviceId=service.id)
@@ -740,14 +740,14 @@ def test_validate_service_scaleup_scaledown(super_client,
     assert service.state == "inactive"
 
     # scale up the inactive service
-    service = admin_client.update(service, scale=3, name=service.name)
-    service = admin_client.wait_success(service, 120)
+    service = super_client.update(service, scale=3, name=service.name)
+    service = super_client.wait_success(service, 120)
     assert service.state == "inactive"
     assert service.scale == 3
 
     # activate services
     env.activateservices()
-    service = admin_client.wait_success(service, 120)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
 
     _validate_compose_instance_start(super_client, service, env, "1")
@@ -762,12 +762,12 @@ def test_validate_service_scaleup_scaledown(super_client,
     assert instance2.state == 'stopped'
 
     # rename the instance 3
-    instance3 = admin_client.update(instance3, name='newName')
+    instance3 = super_client.update(instance3, name='newName')
 
     # scale up the service
     # instance 2 should get started; env_service_3 name should be utilized
-    service = admin_client.update(service, scale=4, name=service.name)
-    service = admin_client.wait_success(service, 120)
+    service = super_client.update(service, scale=4, name=service.name)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 4
 
@@ -777,8 +777,8 @@ def test_validate_service_scaleup_scaledown(super_client,
     _validate_instance_start(service, super_client, instance3.name)
 
     # scale down the service
-    service = admin_client.update(service, scale=2, name=service.name)
-    service = admin_client.wait_success(service, 120)
+    service = super_client.update(service, scale=2, name=service.name)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
     _validate_compose_instance_start(super_client, service, env, "1")
     _validate_compose_instance_start(super_client, service, env, "2")
@@ -825,23 +825,23 @@ def test_set_service_links(super_client, admin_client,
     image_uuid = sim_context['imageUuid']
     launch_config = {"imageUuid": image_uuid}
 
-    service1 = admin_client.create_service(name=random_str(),
+    service1 = super_client.create_service(name=random_str(),
                                            environmentId=env1.id,
                                            networkId=nsp.networkId,
                                            launchConfig=launch_config)
-    service1 = admin_client.wait_success(service1)
+    service1 = super_client.wait_success(service1)
 
-    service2 = admin_client.create_service(name=random_str(),
+    service2 = super_client.create_service(name=random_str(),
                                            environmentId=env1.id,
                                            networkId=nsp.networkId,
                                            launchConfig=launch_config)
-    service2 = admin_client.wait_success(service2)
+    service2 = super_client.wait_success(service2)
 
-    service3 = admin_client.create_service(name=random_str(),
+    service3 = super_client.create_service(name=random_str(),
                                            environmentId=env1.id,
                                            networkId=nsp.networkId,
                                            launchConfig=launch_config)
-    service3 = admin_client.wait_success(service3)
+    service3 = super_client.wait_success(service3)
 
     # set service2, service3 links for service1
     service1 = service1.setservicelinks(serviceIds=[service2.id, service3.id])
@@ -904,7 +904,7 @@ def test_destroy_service_instance(super_client,
 
     # activate service
     service.activate()
-    service = admin_client.wait_success(service, 120)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
 
     instance1 = _validate_compose_instance_start(super_client, service,
@@ -926,7 +926,7 @@ def test_destroy_service_instance(super_client,
 
     # 2. deactivate the service. the map should be removed
     service.deactivate()
-    service = admin_client.wait_success(service, 120)
+    service = super_client.wait_success(service, 120)
     assert service.state == "inactive"
 
     instance_service_map = super_client. \
@@ -938,14 +938,14 @@ def test_destroy_service_instance(super_client,
 
     # 3. activate the service. The map should be gone
     service.activate()
-    service = admin_client.wait_success(service, 120)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
 
     # 4. destroy instance3 and update the service's scale.
     # Validate that instance3 map is gone
     instance3 = _instance_remove(instance3, super_client)
-    service = admin_client.update(service, scale=4, name=service.name)
-    service = admin_client.wait_success(service, 120)
+    service = super_client.update(service, scale=4, name=service.name)
+    service = super_client.wait_success(service, 120)
 
     instance_service_map = super_client. \
         list_serviceExposeMap(serviceId=service.id, instanceId=instance3.id)
@@ -957,7 +957,7 @@ def test_destroy_service_instance(super_client,
     # purge the instance1 w/o changing the service
     # and validate instance1-service map is gone
     instance1 = _instance_remove(instance1, super_client)
-    instance1 = wait_success(admin_client, instance1.purge())
+    instance1 = wait_success(super_client, instance1.purge())
     assert instance1.state == 'purged'
     instance_service_map = super_client. \
         list_serviceExposeMap(serviceId=service.id, instanceId=instance1.id)
@@ -984,7 +984,7 @@ def test_service_rename(super_client, admin_client, sim_context, nsp):
 
     # activate service
     service.activate()
-    service = admin_client.wait_success(service, 120)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
 
     _validate_compose_instance_start(super_client, service, env, "1")
@@ -993,8 +993,8 @@ def test_service_rename(super_client, admin_client, sim_context, nsp):
     # update name and validate that the service name got
     # updated as well as its instances
     new_name = "newname"
-    service = admin_client.update(service, scale=3, name=new_name)
-    service = admin_client.wait_success(service)
+    service = super_client.update(service, scale=3, name=new_name)
+    service = super_client.wait_success(service)
     assert service.name == new_name
     _validate_compose_instance_start(super_client, service, env, "1")
     _validate_compose_instance_start(super_client, service, env, "2")
@@ -1063,7 +1063,7 @@ def test_validate_scale_down_restore_state(super_client,
 
     # activate services
     env.activateservices()
-    service = admin_client.wait_success(service, 120)
+    service = super_client.wait_success(service, 120)
     assert service.state == "active"
 
     instance1 = _validate_compose_instance_start(super_client, service,
@@ -1084,8 +1084,8 @@ def test_validate_scale_down_restore_state(super_client,
     # first instance is running
     # second instance is removed
     # third instance is removed
-    service = admin_client.update(service, scale=1, name=service.name)
-    admin_client.wait_success(service)
+    service = super_client.update(service, scale=1, name=service.name)
+    super_client.wait_success(service)
     _validate_compose_instance_start(super_client, service, env, "1")
     _validate_compose_instance_removed(super_client, service, env, "2")
     _validate_compose_instance_removed(super_client, service, env, "3")

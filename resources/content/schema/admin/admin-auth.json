@@ -23,6 +23,7 @@
         "agent.managedConfig" : "r",
         "agent.uri" : "r",
 
+        "apiKey" : "crud",
         "apiKey.accountId" : "cr",
         "apiKey.publicValue" : "cr",
         "apiKey.secretValue" : "cr", 
@@ -117,8 +118,6 @@
         "processInstance.runningProcessServerId" : "r",
         "processInstance.startProcessServerId" : "r",
         "processInstance.startTime" : "r",
-
-        "project": "crud",
 
         "publish": "cr",
         "publish.data": "cr",

@@ -220,7 +220,8 @@ def test_delete_lb(admin_client, super_client, sim_context,
                                                  nsp)
 
     # remove the lb
-    lb = admin_client.wait_success(admin_client.delete(lb))
+    admin_client.delete(lb)
+    lb = admin_client.wait_success(lb)
     assert lb.state == 'removed'
 
     # verify the cleanup was executed

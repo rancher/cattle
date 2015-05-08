@@ -46,8 +46,6 @@
                         <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
                             <property name="resources">
                                 <list>
-                                    <value>classpath:schema/project/project.json</value>
-                                    <value>classpath*:schema/project/project.json.d/**/*.json</value>
                                     <value>classpath:schema/user/user-auth.json</value>
                                     <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
                                     <value>classpath:schema/admin/admin-auth.json</value>
@@ -61,7 +59,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
+    <bean id="ServiceSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="service" />
         <property name="schemaFactory" ref="CoreSchemaFactory" />
         <property name="postProcessors">
@@ -74,12 +72,12 @@
                         <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
                             <property name="resources">
                                 <list>
-                                    <value>classpath:schema/project/project.json</value>
-                                    <value>classpath*:schema/project/project.json.d/**/*.json</value>
                                     <value>classpath:schema/user/user-auth.json</value>
                                     <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
                                     <value>classpath:schema/admin/admin-auth.json</value>
                                     <value>classpath*:schema/admin/admin-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/project/project-auth.json</value>
+                                    <value>classpath*:schema/project/project-auth.json.d/**/*.json</value>
                                     <value>classpath:schema/service/service-auth.json</value>
                                     <value>classpath*:schema/service/service-auth.json.d/**/*.json</value>
                                 </list>
@@ -132,7 +130,7 @@
 
     <bean id="User" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="user" />
-        <property name="schemaFactory" ref="AdminSchema" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
         <property name="postProcessors">
             <list>
                 <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
@@ -156,7 +154,7 @@
 
     <bean id="Project" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="project" />
-        <property name="schemaFactory" ref="AdminSchema" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
         <property name="postProcessors">
             <list>
                 <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
@@ -169,6 +167,8 @@
                                 <list>
                                     <value>classpath:schema/user/user-auth.json</value>
                                     <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/project/project-auth.json</value>
+                                    <value>classpath*:schema/project/project-auth.json.d/**/*.json</value>
                                 </list>
                             </property>
                         </bean>

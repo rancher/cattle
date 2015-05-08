@@ -22,9 +22,10 @@ def test_register_create(admin_client, super_client):
     assert r.accessKey is not None
     assert r.secretKey is not None
 
-    agent = get_by_plain_id(super_client, 'agent', r.data.agentId)
+    agent = get_by_plain_id(super_client, 'agent',
+                            super_client.reload(r).data.agentId)
 
-    raw_account_id = get_plain_id(admin_client, r.account())
+    raw_account_id = get_plain_id(super_client, r.account())
 
     agent = super_client.reload(agent)
     assert str(agent.data.agentResourcesAccountId) == raw_account_id
@@ -58,15 +59,15 @@ def test_registration_token_create(admin_client):
 
 
 @pytest.mark.parametrize('kind', ['user', 'admin'])
-def test_registration_token_account_create(kind, admin_client, cattle_url):
-    account = create_and_activate(admin_client, 'account', kind=kind)
+def test_registration_token_account_create(kind, admin_user_client, cattle_url):
+    account = create_and_activate(admin_user_client, 'account', kind=kind)
 
     creds = filter(lambda x: x.kind == 'registrationToken',
                    account.credentials())
 
     assert len(creds) == 1
 
-    cred = admin_client.wait_success(creds[0])
+    cred = admin_user_client.wait_success(creds[0])
     assert cred.state == 'active'
     assert cred.token is not None
 

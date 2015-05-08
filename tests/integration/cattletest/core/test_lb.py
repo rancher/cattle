@@ -59,7 +59,7 @@ def test_lb_remove(admin_client, config_id, sim_context, super_client, nsp):
                          super_client, nsp)
 
     # remove newly created lb
-    lb = admin_client.wait_success(admin_client.delete(lb))
+    lb = super_client.wait_success(super_client.delete(lb))
     assert lb.state == 'removed'
 
 
@@ -70,7 +70,7 @@ def test_lb_update(admin_client, config_id, sim_context, super_client, nsp):
                          super_client, nsp)
 
     # update the lb
-    lb = admin_client.update(lb, name='newName')
+    lb = super_client.update(lb, name='newName')
     assert lb.name == 'newName'
 
 
@@ -116,7 +116,7 @@ def test_lb_add_target_ip_address(admin_client, sim_context, config_id,
                          super_client, nsp)
     ip_address = "10.1.1.1"
     lb = lb.addtarget(ipAddress=ip_address)
-    lb = admin_client.wait_success(lb)
+    lb = super_client.wait_success(lb)
 
     validate_add_target_ip(ip_address, lb, super_client)
 
@@ -169,10 +169,10 @@ def test_lb_remove_w_target(admin_client, sim_context, config_id,
 
     # add target to a load balancer
     lb = lb.addtarget(instanceId=container.id)
-    lb = admin_client.wait_success(lb)
+    lb = super_client.wait_success(lb)
 
     # remove the load balancer
-    lb = admin_client.wait_success(admin_client.delete(lb))
+    lb = super_client.wait_success(super_client.delete(lb))
     assert lb.state == 'removed'
 
     validate_remove_target(container, lb, super_client)
@@ -189,7 +189,7 @@ def test_lb_remove_w_host(admin_client, super_client, sim_context,
     validate_add_host(host, lb, super_client)
 
     # remove the load balancer
-    lb = admin_client.wait_success(admin_client.delete(lb))
+    lb = super_client.wait_success(super_client.delete(lb))
     assert lb.state == 'removed'
 
     validate_remove_host(host, lb, super_client)
@@ -230,7 +230,7 @@ def test_set_target_instance(admin_client, sim_context, config_id,
 
     # set 2 targets
     lb = lb.settargets(instanceIds=[container1.id, container2.id])
-    lb = admin_client.wait_success(lb)
+    lb = super_client.wait_success(lb)
 
     validate_add_target(container1, lb, super_client)
 

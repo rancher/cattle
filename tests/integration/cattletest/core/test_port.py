@@ -1,7 +1,7 @@
 from common_fixtures import *  # NOQA
 
 
-def test_container_port_create_start(client, admin_client,
+def test_container_port_create_start(client, admin_user_client,
                                      sim_context, network):
     image_uuid = sim_context['imageUuid']
     host = sim_context['host']
@@ -22,7 +22,7 @@ def test_container_port_create_start(client, admin_client,
 
         assert c.state == 'stopped'
 
-        c_admin = admin_client.update(c, requestedHostId=host.id)
+        c_admin = client.update(c, requestedHostId=host.id)
         assert c_admin.requestedHostId == host.id
 
         ports = c.ports()
@@ -53,7 +53,7 @@ def test_container_port_create_start(client, admin_client,
         assert count == 3
 
         c = client.wait_success(c.start())
-        assert admin_client.reload(c).hosts()[0].id == host.id
+        assert admin_user_client.reload(c).hosts()[0].id == host.id
 
         for port in c.ports():
             assert port.state == 'active'
@@ -67,7 +67,7 @@ def test_container_port_create_start(client, admin_client,
             assert port.id not in [x.id for x in private_ip.publicPorts()]
     finally:
         if c is not None:
-            admin_client.wait_success(admin_client.delete(c))
+            client.wait_success(client.delete(c))
 
 
 def test_container_port_start(client, sim_context, network):

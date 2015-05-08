@@ -18,14 +18,14 @@
 
         "account": "r",
 
-        "apiKey" : "crud",
+        "apiKey" : "r",
         "apiKey.publicValue" : "r",
         "apiKey.secretValue" : "r",
 
         "addRemoveClusterHostInput" : "cr",
         "addRemoveClusterHostInput.hostId" : "cr",
 
-        "cluster" : "crud",
+        "cluster" : "r",
         "cluster.discoverySpec" : "r",
         "cluster.port" : "cru",
         "cluster.managingHostId" : "",
@@ -33,7 +33,7 @@
 
         "clusterHostMap" : "",
 
-        "container" : "crud",
+        "container" : "r",
         "container.capAdd" : "cr",
         "container.capDrop" : "cr",
         "container.command" : "cr",
@@ -72,7 +72,7 @@
         "container.systemContainer" : "r",
         "container.nativeContainer" : "r",
 
-        "containerExec" : "cr",
+        "containerExec" : "r",
         "containerExec.attachStdin" : "cr",
         "containerExec.attachStdout" : "cr",
         "containerExec.command" : "cr",
@@ -87,7 +87,7 @@
         "containerEvent.hostId" : "r",
         "containerEvent.dockerInspect" : "r",
 
-        "containerLogs":"cr",
+        "containerLogs":"r",
         "containerLogs.follow":"cr",
         "containerLogs.lines":"cr",
 
@@ -95,7 +95,7 @@
         "credential.publicValue" : "r",
         "credential.secretValue" : "r",
 
-        "host" : "rud",
+        "host" : "r",
         "host.agentId" : "r",
         "host.computeTotal" : "r",
         "host.info" : "r",
@@ -114,7 +114,7 @@
         "instanceConsole.password" : "r",
         "instanceConsole.url" : "r",
 
-        "instanceLink" : "ru",
+        "instanceLink" : "r",
         "instanceLink.instanceId" : "r",
         "instanceLink.linkName" : "r",
         "instanceLink.targetInstanceId" : "ru",
@@ -122,7 +122,7 @@
         "instance" : "r",
         "instance.externalId": "r",
 
-        "instanceStop" : "cr",
+        "instanceStop" : "r",
         "instanceStop.remove" : "cr",
         "instanceStop.timeout" : "cr",
 
@@ -130,7 +130,7 @@
         "ipAddress.address" : "r",
         "ipAddress.networkId" : "r",
 
-        "ipAddressAssociateInput" : "cr",
+        "ipAddressAssociateInput" : "r",
         "ipAddressAssociateInput.ipAddressId" : "cr",
 
         "mount" : "r",
@@ -143,7 +143,7 @@
 
         "physicalHost": "r",
 
-        "port" : "ru",
+        "port" : "r",
         "port.instanceId" : "r",
         "port.privateIpAddressId" : "r",
         "port.privatePort" : "r",
@@ -155,12 +155,10 @@
         "project.externalId" : "",
         "project.externalIdType" : "",
         "project.description" : "cru",
-        "project.members" : "cr",
-        "project.name" : "cru",
         "project.kind" : "r",
-        "project.id" : "r",
+        "project.members" : "cr",
 
-        "projectMember" : "r",
+        "projectMember" : "cr",
         "projectMember.accountId" : "",
         "projectMember.role" : "cr",
         "projectMember.name" : "r",
@@ -168,30 +166,33 @@
         "projectMember.externalIdType" : "cr",
         "projectMember.projectId" : "r",
 
-        "register": "cr",
+        "register": "r",
         "register.accessKey" : "r",
         "register.key":"cr",
         "register.secretKey" : "r",
 
-        "registry": "crud",
+        "registry": "r",
         "registry.serverAddress": "cr",
 
-        "registryCredential": "crud",
+        "registryCredential": "r",
         "registryCredential.publicValue": "cru",
         "registryCredential.secretValue": "cru",
         "registryCredential.registryId": "cr",
         "registryCredential.email": "cru",
 
-        "registrationToken" : "cr",
+        "registrationToken" : "r",
+        "registrationToken.publicValue" : "",
+        "registrationToken.secretValue" : "",
         "registrationToken.registrationUrl" : "r",
         "registrationToken.state":"r",
 
-        "restartPolicy" : "cr",
+        "restartPolicy" : "r",
         "restartPolicy.maximumRetryCount" : "cr",
 
-        "schema\\.*" : "r",
+        "schema" : "r",
+        "schema\\..*" : "r",
 
-        "setProjectMembersInput": "cr",
+        "setProjectMembersInput": "r",
         "setProjectMembersInput.members": "cr",
 
         "statsAccess" : "r",
@@ -200,10 +201,10 @@
 
         "storagePool": "r",
 
-        "subscribe" : "cr",
+        "subscribe" : "",
         "subscribe.eventNames" : "cr",
 
-        "certificate" : "crud",
+        "certificate" : "r",
         "certificate.certChain" : "crud",
         "certificate.cert" : "crud",
         "certificate.key" : "crud",
@@ -211,13 +212,13 @@
         "typeDocumentation" : "r",
         "typeDocumentation.resourceFields" : "r",
 
-        "volume" : "rd",
+        "volume" : "r",
         "volume.imageId" : "r",
         "volume.instanceId" : "r",
         "volume.isHostPath" : "r",
         "volume.uri" : "r",
 
-        "loadBalancerListener" : "crud",
+        "loadBalancerListener" : "r",
         "loadBalancerListener.sourcePort" : "cr",
         "loadBalancerListener.targetPort" : "cr",
         "loadBalancerListener.sourceProtocol" : "cr",
@@ -225,7 +226,7 @@
         "loadBalancerListener.algorithm" : "cr",
         "loadBalancerListener.serviceId" : "r",
 
-        "loadBalancerConfig" : "crud",
+        "loadBalancerConfig" : "r",
         "loadBalancerConfig.healthCheck" : "cru",
         "loadBalancerConfig.appCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.lbCookieStickinessPolicy" : "cru",
@@ -234,19 +235,21 @@
         "loadBalancerConfig.addListener" : "r",
         "loadBalancerConfig.removeListener" : "r",
         "loadBalancerConfig.setListeners" : "r",
-        "addRemoveLoadBalancerListenerInput" : "cr",
+
+        "addRemoveLoadBalancerListenerInput" : "r",
         "addRemoveLoadBalancerListenerInput.loadBalancerListenerId" : "cr",
-        "setLoadBalancerListenersInput" : "cr",
+
+        "setLoadBalancerListenersInput" : "r",
         "setLoadBalancerListenersInput.loadBalancerListenerIds" : "cr",
 
-        "loadBalancerHealthCheck" : "cru",
+        "loadBalancerHealthCheck" : "r",
         "loadBalancerHealthCheck.responseTimeout" : "cru",
         "loadBalancerHealthCheck.interval" : "cru",
         "loadBalancerHealthCheck.healthyThreshold" : "cru",
         "loadBalancerHealthCheck.unhealthyThreshold" : "cru",
         "loadBalancerHealthCheck.requestLine" : "cru",
 
-        "loadBalancerAppCookieStickinessPolicy" : "cru",
+        "loadBalancerAppCookieStickinessPolicy" : "r",
         "loadBalancerAppCookieStickinessPolicy.cookie" : "cru",
         "loadBalancerAppCookieStickinessPolicy.maxLength" : "cru",
         "loadBalancerAppCookieStickinessPolicy.prefix" : "cru",
@@ -254,7 +257,7 @@
         "loadBalancerAppCookieStickinessPolicy.timeout" : "cru",
         "loadBalancerAppCookieStickinessPolicy.mode" : "cru",
 
-        "loadBalancerCookieStickinessPolicy" : "cru",
+        "loadBalancerCookieStickinessPolicy" : "r",
         "loadBalancerCookieStickinessPolicy.cookie" : "cru",
         "loadBalancerCookieStickinessPolicy.domain" : "cru",
         "loadBalancerCookieStickinessPolicy.indirect" : "cru",
@@ -262,40 +265,47 @@
         "loadBalancerCookieStickinessPolicy.postonly" : "cru",
         "loadBalancerCookieStickinessPolicy.mode" : "cru",
 
-        "globalLoadBalancer" : "crud",
+        "globalLoadBalancer" : "r",
         "globalLoadBalancer.globalLoadBalancerHealthCheck" : "cr",
         "globalLoadBalancer.globalLoadBalancerPolicy" : "cr",
-        "globalLoadBalancerHealthCheck" : "cr",
-        "globalLoadBalancerPolicy" : "cr",
         "globalLoadBalancer.addLoadBalancer" : "r",
         "globalLoadBalancer.removeLoadBalancer" : "r",
-        "addLoadBalancerInput" : "cr",
+
+        "globalLoadBalancerHealthCheck" : "r",
+
+        "globalLoadBalancerPolicy" : "r",
+
+        "addLoadBalancerInput" : "r",
         "addLoadBalancerInput.loadBalancerId" : "cr",
         "addLoadBalancerInput.weight" : "cr",
-        "removeLoadBalancerInput" : "cr",
+
+        "removeLoadBalancerInput" : "r",
         "removeLoadBalancerInput.loadBalancerId" : "cr",
 
-        "loadBalancer" : "crud",
+        "loadBalancer" : "r",
         "loadBalancer.loadBalancerConfigId" : "cr",
         "loadBalancer.globalLoadBalancerId" : "r",
         "loadBalancer.weight" : "r",
         "loadBalancer.serviceId" : "r",
-
         "loadBalancer.addTarget" : "r",
         "loadBalancer.removeTarget" : "r",
         "loadBalancer.setTargets" : "r",
-        "addRemoveLoadBalancerTargetInput" : "cr",
-        "addRemoveLoadBalancerTargetInput.instanceId" : "cr",
-        "addRemoveLoadBalancerTargetInput.ipAddress" : "cr",
-        "setLoadBalancerTargetsInput" : "cr",
-        "setLoadBalancerTargetsInput.instanceIds" : "cr",
-        "setLoadBalancerTargetsInput.ipAddresses" : "cr",
         "loadBalancer.addHost" : "r",
         "loadBalancer.removeHost" : "r",
-        "addRemoveLoadBalancerHostInput" : "cr",
-        "addRemoveLoadBalancerHostInput.hostId" : "cr",
         "loadBalancer.setHosts" : "r",
-        "setLoadBalancerHostsInput" : "cr",
+
+        "addRemoveLoadBalancerTargetInput" : "r",
+        "addRemoveLoadBalancerTargetInput.instanceId" : "cr",
+        "addRemoveLoadBalancerTargetInput.ipAddress" : "cr",
+
+        "setLoadBalancerTargetsInput" : "r",
+        "setLoadBalancerTargetsInput.instanceIds" : "cr",
+        "setLoadBalancerTargetsInput.ipAddresses" : "cr",
+
+        "addRemoveLoadBalancerHostInput" : "r",
+        "addRemoveLoadBalancerHostInput.hostId" : "cr",
+
+        "setLoadBalancerHostsInput" : "r",
         "setLoadBalancerHostsInput.hostIds" : "cr",
 
         "loadBalancerTarget" : "r",
@@ -309,18 +319,18 @@
         "composeConfigInput" : "cr",
         "composeConfigInput.serviceIds" : "cr",
 
-        "environment" : "crud",
+        "environment" : "r",
 
-        "service" : "crud",
+        "service" : "r",
         "service.environmentId" : "cr",
         "service.scale" : "cru",
         "service.dataVolumesFromService" : "cr",
         "service.launchConfig" : "cr",
 
-        "addRemoveServiceLinkInput" : "cr",
+        "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceId" : "cr",
 
-        "setServiceLinksInput" : "cr",
+        "setServiceLinksInput" : "r",
         "setServiceLinksInput.serviceIds" : "cr",
 
         "loadBalancerConfigListenerMap" : "r",
@@ -331,10 +341,10 @@
         "loadBalancerHostMap.hostId" : "r",
         "loadBalancerHostMap.loadBalancerId" : "r",
 
-        "loadBalancerService" : "crud",
+        "loadBalancerService" : "r",
         "loadBalancerService.loadBalancerConfig" : "cr",
 
-        "snapshot" : "cr",
+        "snapshot" : "r",
         "snapshot.volumeId" : "cr",
         "snapshot.managedVolumeUUID" : "r",
         "snapshot.managedSnapshotUUID" : "r",

@@ -3,19 +3,19 @@ import re
 
 
 @pytest.mark.parametrize('kind', ['user', 'admin'])
-def test_account_create(kind, admin_client, random_str):
-    account = admin_client.create_account(kind=kind,
+def test_account_create(kind, admin_user_client, random_str):
+    account = admin_user_client.create_account(kind=kind,
                                           name=random_str)
 
     assert account.state == "registering"
     assert account.transitioning == "yes"
 
-    account = wait_success(admin_client, account)
+    account = wait_success(admin_user_client, account)
 
     assert account.transitioning == "no"
     assert account.state == "active"
 
-    count = len(admin_client.list_account(name=random_str))
+    count = len(admin_user_client.list_account(name=random_str))
     assert count == 1
 
     creds = account.credentials()
@@ -32,25 +32,25 @@ def test_account_create(kind, admin_client, random_str):
     assert len(creds[0].secretValue) == 40
 
 
-def test_account_external(admin_client):
-    account = admin_client.create_account(externalId='extid',
+def test_account_external(admin_user_client):
+    account = admin_user_client.create_account(externalId='extid',
                                           externalIdType='extType')
-    account = admin_client.wait_success(account)
+    account = admin_user_client.wait_success(account)
 
     assert account.state == 'active'
     assert account.externalId == 'extid'
     assert account.externalIdType == 'extType'
 
 
-def test_account_no_key(super_admin_client):
-    account = super_admin_client.create_account(kind='admin')
-    account = super_admin_client.wait_success(account)
+def test_account_no_key(super_client):
+    account = super_client.create_account(kind='admin')
+    account = super_client.wait_success(account)
     creds = account.credentials()
 
     assert len(creds) >= 2
 
-    account = super_admin_client.create_account(kind='unknown')
-    account = super_admin_client.wait_success(account)
+    account = super_client.create_account(kind='unknown')
+    account = super_client.wait_success(account)
     creds = account.credentials()
 
     assert len(creds) == 0
