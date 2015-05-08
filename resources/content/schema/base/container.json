@@ -183,6 +183,10 @@
         },
         "registryCredentialId":{
             "type":"reference[registryCredential]"
+        },
+        "labels": {
+            "type": "map[string]",
+            "create": true
         }
     },
     "resourceActions": {

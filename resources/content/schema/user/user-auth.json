@@ -71,6 +71,7 @@
         "container.user" : "cr",
         "container.systemContainer" : "r",
         "container.nativeContainer" : "r",
+        "container.labels" : "cr",
 
         "containerExec" : "r",
         "containerExec.attachStdin" : "cr",
