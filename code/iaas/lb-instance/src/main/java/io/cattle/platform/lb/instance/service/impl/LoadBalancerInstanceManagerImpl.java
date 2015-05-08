@@ -240,7 +240,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                 .getLoadBalancerConfigId());
         List<String> ports = new ArrayList<String>();
         for (LoadBalancerListener listener : listeners) {
-            String fullPort = listener.getSourcePort() + ":" + listener.getTargetPort();
+            String fullPort = listener.getSourcePort() + ":" + listener.getSourcePort();
             ports.add(fullPort);
         }
 
