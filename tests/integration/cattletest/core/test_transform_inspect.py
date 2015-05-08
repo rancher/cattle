@@ -9,8 +9,9 @@ RESOURCE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 
 
 @pytest.fixture(scope='module')
-def transform_url(cattle_url):
-    return cattle_url + '/scripts/transform'
+def transform_url(client):
+    return urlparse.urljoin(client.schema.types['schema'].links['collection'],
+                            'scripts/transform')
 
 
 def test_transform_inspect_minimal(transform_url, client):

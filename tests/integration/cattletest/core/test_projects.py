@@ -30,19 +30,20 @@ def _client_for_user(name, accounts):
 
 
 @pytest.fixture(autouse=True, scope="session")
-def clean_up_projects(admin_client, request):
-    #on = admin_client.create_setting(name='api.projects.use.rancher_id',
-    #                                 value='true')
-    #wait_setting_active(admin_client, on)
+def clean_up_projects(super_client, request):
+    # This randomly times out, don't know why, disabling it
+    # on = super_client.create_setting(name='api.projects.use.rancher_id',
+    #                                  value='true')
+    # wait_setting_active(super_client, on)
 
     def fin():
         for project in PROJECTS:
             try:
-                admin_client.delete(admin_client.by_id('project', project))
+                super_client.delete(super_client.by_id('project', project))
             except ApiError as e:
                 assert e.error.status == 404
-        assert len(get_ids(admin_client.list_project()) & PROJECTS) == 0
-        #admin_client.delete(on)
+        assert len(get_ids(super_client.list_project()) & PROJECTS) == 0
+        # super_client.delete(on)
     request.addfinalizer(fin)
     pass
 
@@ -203,25 +204,35 @@ def test_set_members(admin_user_client, project_clients, project):
         'externalId': acc_id(project_clients['Member']),
         'externalIdType': 'rancher_id'
     })
-    _set_members(admin_user_client, project_clients['Owner'], project.id, None, 422)
-    _set_members(admin_user_client, project_clients['Owner'], project.id, [], 422)
-    _set_members(admin_user_client, project_clients['Owner'], project.id, members, None)
-    _set_members(admin_user_client, project_clients['Member'], project.id, None, 'Attribute')
-    _set_members(admin_user_client, project_clients['Member'], project.id, [], 'Attribute')
-    _set_members(admin_user_client, project_clients['Member'], project.id, members, 'Attribute')
+    _set_members(admin_user_client, project_clients['Owner'], project.id, None,
+                 422)
+    _set_members(admin_user_client, project_clients['Owner'], project.id, [],
+                 422)
+    _set_members(admin_user_client, project_clients['Owner'], project.id,
+                 members, None)
+    _set_members(admin_user_client, project_clients['Member'], project.id,
+                 None, 'Attribute')
+    _set_members(admin_user_client, project_clients['Member'], project.id, [],
+                 'Attribute')
+    _set_members(admin_user_client, project_clients['Member'], project.id,
+                 members, 'Attribute')
     with pytest.raises(ApiError) as e:
-        _set_members(admin_user_client, project_clients['Stranger'], project.id, None, 422)
+        _set_members(admin_user_client, project_clients['Stranger'],
+                     project.id, None, 422)
     assert e.value.error.status == 404
     with pytest.raises(ApiError) as e:
-        _set_members(admin_user_client, project_clients['Stranger'], project.id, [], 422)
+        _set_members(admin_user_client, project_clients['Stranger'],
+                     project.id, [], 422)
     assert e.value.error.status == 404
     with pytest.raises(ApiError) as e:
-        _set_members(admin_user_client, project_clients['Stranger'], project.id, members, 403)
+        _set_members(admin_user_client, project_clients['Stranger'],
+                     project.id, members, 403)
     assert e.value.error.status == 404
 
 
 def test_get_members(admin_user_client, project_clients, members):
-    project = _create_project_with_members(admin_user_client, project_clients['Owner'], members)
+    project = _create_project_with_members(admin_user_client,
+                                           project_clients['Owner'], members)
     members = project.projectMembers()
     _get_members(project_clients['Owner'], project.id, members)
     _get_members(project_clients['Member'], project.id, members)
@@ -233,7 +244,8 @@ def test_get_members(admin_user_client, project_clients, members):
 
 def test_list_all_projects(admin_user_client):
     projects = admin_user_client.list_project()
-    projectAccounts = admin_user_client.list_account(kind='project', limit=4000)
+    projectAccounts = admin_user_client.list_account(kind='project',
+                                                     limit=4000)
     ids = []
     ids_2 = []
     for project in projects:
@@ -271,8 +283,10 @@ def check_state(client, project_id, states, excludes):
             pass
 
 
-def test_delete_project(admin_user_client, project_clients, members, super_client):
-    project = _create_project_with_members(admin_user_client, project_clients['Owner'],
+def test_delete_project(admin_user_client, project_clients, members,
+                        super_client):
+    project = _create_project_with_members(admin_user_client,
+                                           project_clients['Owner'],
                                            members=members)
     proj_id = project.id
     client = client_for_project(project)
@@ -299,7 +313,8 @@ def test_create_project_no_members(admin_user_client, project_clients):
 
 
 def test_delete_members(admin_user_client, project_clients, members):
-    project = _create_project_with_members(admin_user_client, project_clients['Owner'], members)
+    project = _create_project_with_members(admin_user_client,
+                                           project_clients['Owner'], members)
     members = [members[0]]
     assert len(project_clients['Member']
                .by_id('project', project.id).projectMembers()) == 2
@@ -312,7 +327,8 @@ def test_delete_members(admin_user_client, project_clients, members):
 
 
 def test_change_roles(admin_user_client, project_clients, members):
-    project = _create_project_with_members(admin_user_client, project_clients['Owner'], members)
+    project = _create_project_with_members(admin_user_client,
+                                           project_clients['Owner'], members)
     assert len(project.projectMembers()) == 2
     new_members = all_owners(get_plain_members(project.projectMembers()))
     project_from_member = project_clients['Member'].by_id('project',
@@ -333,7 +349,8 @@ def test_change_roles(admin_user_client, project_clients, members):
 
 
 def test_delete_other_owners(admin_user_client, project_clients, members):
-    project = _create_project_with_members(admin_user_client, project_clients['Owner'],
+    project = _create_project_with_members(admin_user_client,
+                                           project_clients['Owner'],
                                            all_owners(members))
     project.setmembers(members=members)
     project = project_clients['Member'].by_id('project', project.id)
@@ -352,8 +369,10 @@ def test_delete_other_owners(admin_user_client, project_clients, members):
     assert len(got_members) == 1
 
 
-def test_multiple_owners_add_members(admin_user_client, project_clients, members):
-    project = _create_project_with_members(admin_user_client, project_clients['Owner'],
+def test_multiple_owners_add_members(admin_user_client, project_clients,
+                                     members):
+    project = _create_project_with_members(admin_user_client,
+                                           project_clients['Owner'],
                                            all_owners(members))
     current_members = get_plain_members(project.projectMembers())
     current_members.append({
@@ -361,21 +380,26 @@ def test_multiple_owners_add_members(admin_user_client, project_clients, members
         'externalId': acc_id(project_clients['Stranger']),
         'externalIdType': 'rancher_id'
     })
-    _set_members(admin_user_client, project_clients['Owner'], project.id, current_members, None)
-    _set_members(admin_user_client, project_clients['Stranger'], project.id, current_members,
+    _set_members(admin_user_client, project_clients['Owner'], project.id,
+                 current_members, None)
+    _set_members(admin_user_client, project_clients['Stranger'], project.id,
+                 current_members,
                  'Attribute')
     project = project_clients['Stranger'].by_id('project', project.id)
     assert len(project.projectMembers()) == 3
-    _set_members(admin_user_client, project_clients['Member'], project.id, members, None)
+    _set_members(admin_user_client, project_clients['Member'], project.id,
+                 members, None)
     with pytest.raises(ApiError) as e:
         project.projectMembers()
     assert e.value.error.status == 404
-    _set_members(admin_user_client, project_clients['Member'], project.id, current_members, None)
+    _set_members(admin_user_client, project_clients['Member'], project.id,
+                 current_members, None)
     assert len(project.projectMembers()) == len(current_members)
 
 
 def test_members_cant_delete(admin_user_client, project_clients, members):
-    project = _create_project_with_members(admin_user_client, project_clients['Owner'], members)
+    project = _create_project_with_members(admin_user_client,
+                                           project_clients['Owner'], members)
     project = project_clients['Member'].by_id("project", project.id)
     got_members = get_plain_members(project.projectMembers())
     id = acc_id(project_clients['Member'])
@@ -395,9 +419,7 @@ def test_members_cant_delete(admin_user_client, project_clients, members):
 def test_project_cant_create_project(project_clients, members, project):
     uuid = project.uuid
     client = client_for_project(project)
-    with pytest.raises(ApiError) as e:
-        project = client.create_project()
-    assert e.value.error.status == 403
+    assert 'POST' not in client.schema.types['project'].collectionMethods
     got_project = client.list_project()[0]
     assert got_project.uuid == uuid
     assert len(project.projectMembers()) == len(got_project.projectMembers())
@@ -408,7 +430,8 @@ def test_accessible_projects(admin_user_client, project_clients):
     members = _create_members(project_clients, ['OutThereUser'])
     projects = []
     for i in range(0, 4):
-        projects.append(_create_project_with_members(admin_user_client, project_clients['admin'],
+        projects.append(_create_project_with_members(admin_user_client,
+                                                     project_clients['admin'],
                                                      members))
     assert len(projects) == 4
     got_projects = project_clients['OutThereUser'].list_project()
@@ -468,7 +491,7 @@ def test_project_deactivate(admin_client, project_clients, project, members):
     project = project_clients['Owner'].wait_success(project)
     assert project.state == 'inactive'
     project.activate()
-    project = admin_client.wait_success(project)
+    project = project_clients['Owner'].wait_success(project)
     project.deactivate()
     project = project_clients['Owner'].wait_success(project)
     assert project.state == 'inactive'

@@ -532,7 +532,8 @@ def test_config_item(admin_user_client, user_client, project_client):
     })
 
 
-def test_config_item_status_auth(admin_user_client, user_client, project_client):
+def test_config_item_status_auth(admin_user_client, user_client,
+                                 project_client):
     assert 'configItemStatus' not in user_client.schema.types
     assert 'configItemStatus' not in project_client.schema.types
 
@@ -667,8 +668,8 @@ def test_subscribe_auth(admin_user_client, user_client, project_client):
     })
 
 
-def test_registration_tokens_auth(admin_user_client, user_client, project_client,
-                                  service_client):
+def test_registration_tokens_auth(admin_user_client, user_client,
+                                  project_client, service_client):
     auth_check(admin_user_client.schema, 'registrationToken', 'r', {
         'created': 'r',
         'data': 'r',
@@ -700,7 +701,8 @@ def test_registration_tokens_auth(admin_user_client, user_client, project_client
     })
 
 
-def test_type_documentation_auth(admin_user_client, user_client, project_client):
+def test_type_documentation_auth(admin_user_client, user_client,
+                                 project_client):
     auth_check(admin_user_client.schema, 'typeDocumentation', 'r', {
     })
 
@@ -740,7 +742,8 @@ def test_account_resource_auth(admin_user_client):
     ])
 
 
-def test_machine(admin_user_client, user_client, service_client, project_client):
+def test_machine(admin_user_client, user_client, service_client,
+                 project_client):
     auth_check(admin_user_client.schema, 'machine', 'r', {
         'driver': 'r',
         'accountId': 'r',
@@ -793,7 +796,8 @@ def test_machine(admin_user_client, user_client, service_client, project_client)
     })
 
 
-def test_physical_host(admin_user_client, user_client, service_client, project_client):
+def test_physical_host(admin_user_client, user_client, service_client,
+                       project_client):
     auth_check(admin_user_client.schema, 'physicalHost', 'r', {
         'accountId': 'r',
         'data': 'r',
@@ -853,13 +857,15 @@ def test_registry(admin_user_client, user_client, project_client):
     })
 
 
-def test_lb_config_listener_map(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'loadBalancerConfigListenerMap', 'r', {
-        'loadBalancerConfigId': 'r',
-        'loadBalancerListenerId': 'r',
-        'accountId': 'r',
-        'data': 'r',
-    })
+def test_lb_config_listener_map(admin_user_client, user_client,
+                                project_client):
+    auth_check(admin_user_client.schema, 'loadBalancerConfigListenerMap', 'r',
+               {
+                   'loadBalancerConfigId': 'r',
+                   'loadBalancerListenerId': 'r',
+                   'accountId': 'r',
+                   'data': 'r',
+               })
 
     auth_check(user_client.schema, 'loadBalancerConfigListenerMap', 'r', {
         'loadBalancerConfigId': 'r',
@@ -895,7 +901,8 @@ def test_lb_host_map(admin_user_client, user_client, project_client):
     })
 
 
-def test_container_events(admin_user_client, user_client, agent_client, project_client):
+def test_container_events(admin_user_client, user_client, agent_client,
+                          project_client):
     auth_check(admin_user_client.schema, 'containerEvent', 'r', {
         'externalTimestamp': 'r',
         'hostId': 'r',
@@ -972,7 +979,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
     })
 
 
-def test_svc_discovery_environment(admin_user_client, user_client, project_client):
+def test_svc_discovery_environment(admin_user_client, user_client,
+                                   project_client):
     auth_check(admin_user_client.schema, 'environment', 'r', {
         'name': 'r',
         'accountId': 'r',
@@ -990,7 +998,8 @@ def test_svc_discovery_environment(admin_user_client, user_client, project_clien
     })
 
 
-def test_svc_discovery_lb_service(admin_user_client, user_client, project_client):
+def test_svc_discovery_lb_service(admin_user_client, user_client,
+                                  project_client):
     auth_check(admin_user_client.schema, 'loadBalancerService', 'r', {
         'name': 'r',
         'environmentId': 'r',
@@ -1020,4 +1029,4 @@ def test_svc_discovery_lb_service(admin_user_client, user_client, project_client
         'launchConfig': 'cr',
         'accountId': 'r',
         'loadBalancerConfig': 'cr',
-        })
+    })

@@ -5,7 +5,7 @@ import re
 @pytest.mark.parametrize('kind', ['user', 'admin'])
 def test_account_create(kind, admin_user_client, random_str):
     account = admin_user_client.create_account(kind=kind,
-                                          name=random_str)
+                                               name=random_str)
 
     assert account.state == "registering"
     assert account.transitioning == "yes"
@@ -34,7 +34,7 @@ def test_account_create(kind, admin_user_client, random_str):
 
 def test_account_external(admin_user_client):
     account = admin_user_client.create_account(externalId='extid',
-                                          externalIdType='extType')
+                                               externalIdType='extType')
     account = admin_user_client.wait_success(account)
 
     assert account.state == 'active'

@@ -23,6 +23,7 @@ ACCOUNT_LIST = ['admin', 'agent', 'user', 'agentRegister',
 PROJECT_ACCOUNTS = {'admin': True, 'user': True}
 _SUPER_CLIENT = None
 
+
 @pytest.fixture(scope='session')
 def cattle_url():
     default_url = 'http://localhost:8080/v1/schemas'
@@ -73,9 +74,9 @@ def client_for_project(project):
     secret_key = random_str()
     active_cred = None
     client = super_client(None)
-    for cred in client.reload(project).credentials():
-        if cred.kind == 'apiKey' and cred.publicValue is not None:
-            active_cred = client.reload(cred)
+    for cred in client.list_api_key(accountId=project.id):
+        if cred.state == 'active' and cred.publicValue is not None:
+            active_cred = cred
             break
 
     if active_cred is None:
@@ -178,6 +179,7 @@ def super_client(request):
                              secret_key=cred.secretValue)
 
     assert _is_valid_super_client(client)
+    _make_not_account_scoped(client, super_admin)
     _SUPER_CLIENT = client
     return client
 
@@ -229,6 +231,7 @@ def accounts(super_client):
     result['system'] = [None, None, system_account, system_account, None, None]
 
     return result
+
 
 @pytest.fixture(scope='session')
 def clients(accounts):
@@ -818,6 +821,7 @@ def create_agent_instance_nsp(admin_client, sim_context):
 def test_network(super_client, sim_context):
     network = create_type_by_uuid(super_client, 'hostOnlyNetwork',
                                   'nsp-test-network',
+                                  isPublic=True,
                                   hostVnetUri='test:///',
                                   dynamicCreateVnet=True)
 
@@ -901,7 +905,7 @@ def vnet(admin_client, subnet):
 
 def wait_setting_active(api_client, setting, timeout=45):
     start = time.time()
-    setting = api_client.by_id('setting', setting.id)
+    setting = api_client.by_id_setting(setting.name)
     while setting.value != setting.activeValue:
         time.sleep(.5)
         setting = api_client.by_id('setting', setting.id)

@@ -203,13 +203,13 @@ def test_port_validation(client, sim_context, network):
         assert e.error.code == 'PortWrongFormat'
 
 
-def test_ports_service(admin_client, sim_context, test_network):
+def test_ports_service(super_client, admin_client, sim_context, test_network):
     c = create_sim_container(admin_client, sim_context,
                              ports=['80'],
                              networkIds=[test_network.id])
 
     try:
-        agent = c.hosts()[0].agent()
+        agent = super_client.reload(c).hosts()[0].agent()
         assert agent is not None
 
         items = [x.name for x in agent.configItemStatuses()]
@@ -236,8 +236,8 @@ def test_ports_service(admin_client, sim_context, test_network):
         port = admin_client.wait_success(port)
         assert port.state == 'active'
 
-        new_item = admin_client.reload(item)
+        new_item = super_client.reload(item)
         assert new_item.requestedVersion > item.requestedVersion
     finally:
         if c is not None:
-            admin_client.wait_success(admin_client.delete(c))
+            super_client.wait_success(super_client.delete(c))

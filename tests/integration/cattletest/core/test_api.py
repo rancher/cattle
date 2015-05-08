@@ -316,7 +316,8 @@ def test_role_option(admin_user_client, client, random_str, token_account):
     creds = admin_user_client.list_credential(name=random_str)
     assert len(creds) == 0
 
-    creds = admin_user_client.list_credential(name=random_str, _role='superadmin')
+    creds = admin_user_client.list_credential(name=random_str,
+                                              _role='superadmin')
     assert len(creds) == 1
 
     creds = client.list_credential(name=random_str, _role='superadmin')

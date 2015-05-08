@@ -1,14 +1,17 @@
 package io.cattle.platform.api.parser;
 
-import com.netflix.config.DynamicBooleanProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.parser.DefaultApiRequestParser;
+
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+import com.netflix.config.DynamicBooleanProperty;
 
 public class ApiRequestParser extends DefaultApiRequestParser {
 

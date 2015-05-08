@@ -32,7 +32,6 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import javax.inject.Inject;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +39,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.inject.Inject;
 
 public class ProjectResourceManager extends AbstractObjectResourceManager {
 
@@ -223,7 +224,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
     protected void addLinks(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
         super.addLinks(obj, schemaFactory, schema, resource);
 
-        Map<String,URL> links = resource.getLinks();
+        Map<String, URL> links = resource.getLinks();
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
 
         for ( Schema childSchema : schemaFactory.listSchemas() ) {
