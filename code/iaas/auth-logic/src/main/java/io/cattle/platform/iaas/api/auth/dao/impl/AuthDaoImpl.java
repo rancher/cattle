@@ -291,30 +291,6 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public Account updateProject(Account project, String name, String description) {
-        Map<TableField<AccountRecord, String>, String> properties = new HashMap<>();
-        if (name != null) {
-            properties.put(ACCOUNT.NAME, name);
-        }
-        if (description != null) {
-            properties.put(ACCOUNT.DESCRIPTION, description);
-        }
-        if (name == null && description == null){
-            return project;
-        }
-        int updateCount = create()
-                .update(ACCOUNT)
-                .set(properties)
-                .where(ACCOUNT.ID
-                        .eq(project.getId()))
-                .execute();
-        if(1 != updateCount) {
-            throw new RuntimeException("UpdateProject failed.");
-        }
-        return getAccountById(project.getId());
-    }
-
-    @Override
     public List<? extends ProjectMember> setProjectMembers(final Account project, final Set<Member> members) {
         return lockManager.lock(new ProjectLock(project), new LockCallback<List<? extends ProjectMember>>() {
             public List<? extends ProjectMember> doWithLock() {

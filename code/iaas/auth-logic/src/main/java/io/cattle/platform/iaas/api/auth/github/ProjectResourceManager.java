@@ -202,8 +202,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         Account project = (Account) obj;
         if (authDao.isProjectOwner(project.getId(), policy.getAccountId(),
                 policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
-            Map<String, String> reqObj = (Map<String, String>) apiRequest.getRequestObject();
-            return authDao.updateProject(project, reqObj.get("name"), reqObj.get("description"));
+            return super.updateInternal(type, id, obj, apiRequest);
         }else {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "Forbidden", "You must be a project owner to update the name or description.", null);
         }

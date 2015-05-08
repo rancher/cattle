@@ -34,8 +34,6 @@ public interface AuthDao {
 
     boolean isProjectMember(long projectId , Long usingAccount, boolean isAdmin, Set<ExternalId> externalIdSet);
 
-    Account updateProject(Account project, String name, String description);
-
     List<? extends ProjectMember> getActiveProjectMembers(long projectId);
 
     ProjectMember getProjectMember(long id);
