@@ -48,30 +48,21 @@ public class AdminAuthLookUp implements AccountLookup, Priority {
         if (admin == null){
             return null;
         }
-        Account project = null;
         if (projectId != null && !projectId.isEmpty()) {
             String id = ApiContext.getContext().getIdFormatter().parseId(projectId);
             try {
-                project = authDao.getAccountById(Long.valueOf(id));
+                admin = authDao.getAccountById(Long.valueOf(id));
             } catch (NumberFormatException e){
-                if (!id.equalsIgnoreCase("user")){
-                    throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
-                }
-                project = admin;
-            }
-            if (project == null){
-                throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
             }
         }
 
-        AccountAccess accountAccess;
-        if (project == null) {
-            accountAccess = new AccountAccess(admin, null);
-            accountAccess.getExternalIds().add(new ExternalId(String.valueOf(admin.getId()), ProjectConstants.RANCHER_ID));
-        }else{
-            accountAccess = new AccountAccess(project, null);
-            accountAccess.getExternalIds().add(new ExternalId(String.valueOf(project.getId()), ProjectConstants.RANCHER_ID));
+        if (admin == null){
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
+
+        AccountAccess accountAccess = new AccountAccess(admin, null);
+        accountAccess.getExternalIds().add(new ExternalId(String.valueOf(admin.getId()), ProjectConstants.RANCHER_ID));
+
         return accountAccess;
     }
 

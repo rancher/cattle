@@ -47,6 +47,7 @@ run ./run --background
 # Wait for completion now to ensure that images are pulled
 ./test-warm
 
+export AGENT_IMAGE=$(grep bootstrap.required.image ../resources/content/cattle-global.properties | cut -f2 -d=)
 DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/register.log &
 
 ./wait-for-hosts

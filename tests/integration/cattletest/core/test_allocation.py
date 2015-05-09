@@ -15,7 +15,7 @@ def test_compute_free(admin_client, super_client, sim_context):
                                           requestedHostId=host.id)
         containers.append(c)
 
-    containers = wait_all_success(admin_client, containers)
+    containers = wait_all_success(super_client, containers)
 
     host = super_client.reload(host)
     assert host.computeFree == start_free - count
@@ -228,13 +228,13 @@ def test_host_vnet_association(super_client, sim_context,
     assert host2.id in hosts
 
 
-def test_allocation_stay_associated_to_host(admin_client, sim_context):
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'])
-    c = admin_client.wait_success(c)
+def test_allocation_stay_associated_to_host(super_client, sim_context):
+    c = super_client.create_container(imageUuid=sim_context['imageUuid'])
+    c = super_client.wait_success(c)
 
     assert c.state == 'running'
 
-    c = admin_client.wait_success(c.stop())
+    c = super_client.wait_success(c.stop())
     assert c.state == 'stopped'
 
     assert len(c.hosts()) == 1

@@ -26,9 +26,13 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
+import io.github.ibuildthecloud.gdapi.model.Resource;
+import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -199,8 +203,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         Account project = (Account) obj;
         if (authDao.isProjectOwner(project.getId(), policy.getAccountId(),
                 policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
-            Map<String, String> reqObj = (Map<String, String>) apiRequest.getRequestObject();
-            return authDao.updateProject(project, reqObj.get("name"), reqObj.get("description"));
+            return super.updateInternal(type, id, obj, apiRequest);
         }else {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "Forbidden", "You must be a project owner to update the name or description.", null);
         }
@@ -215,5 +218,24 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             }
         }
         return super.getRelationship(type, linkName);
+    }
+
+    @Override
+    protected void addLinks(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
+        super.addLinks(obj, schemaFactory, schema, resource);
+
+        Map<String, URL> links = resource.getLinks();
+        UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
+
+        for ( Schema childSchema : schemaFactory.listSchemas() ) {
+            if ( ! schema.getCollectionMethods().contains(Schema.Method.GET.toString()) ) {
+                continue;
+            }
+
+            URL link = urlBuilder.resourceLink(resource, childSchema.getPluralName());
+            if ( link != null ) {
+                links.put(childSchema.getPluralName(), link);
+            }
+        }
     }
 }

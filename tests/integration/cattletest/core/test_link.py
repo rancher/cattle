@@ -11,7 +11,8 @@ def link_network(super_client, sim_context):
     return super_client.by_id_network(nsp.networkId)
 
 
-def test_link_instance_stop_start(admin_client, sim_context, link_network):
+def test_link_instance_stop_start(admin_user_client, admin_client, sim_context,
+                                  link_network):
     target1 = create_sim_container(admin_client, sim_context,
                                    ports=['180', '122/udp'],
                                    networkIds=[link_network.id])
@@ -29,7 +30,7 @@ def test_link_instance_stop_start(admin_client, sim_context, link_network):
     ports = set()
 
     for link in c.instanceLinks():
-        for port in link.data.fields.ports:
+        for port in admin_user_client.reload(link).data.fields.ports:
             ports.add('{}:{}'.format(port.publicPort, port.privatePort))
 
     assert len(ports) > 0
@@ -38,7 +39,7 @@ def test_link_instance_stop_start(admin_client, sim_context, link_network):
     c = admin_client.wait_success(c.stop())
     assert c.state == 'stopped'
 
-    for link in c.instanceLinks():
+    for link in admin_user_client.reload(c).instanceLinks():
         assert len(link.data.fields.ports) == 2
         for port in link.data.fields.ports:
             new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
@@ -49,7 +50,7 @@ def test_link_instance_stop_start(admin_client, sim_context, link_network):
     c = admin_client.wait_success(c.start())
     assert c.state == 'running'
 
-    for link in c.instanceLinks():
+    for link in admin_user_client.reload(c).instanceLinks():
         assert len(link.data.fields.ports) == 2
         for port in link.data.fields.ports:
             new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
@@ -70,7 +71,8 @@ def _find_agent_instance_ip(nsp, source):
     assert False, 'Failed to find agent instance for ' + source.id
 
 
-def test_link_create(admin_client, super_client, sim_context, link_network):
+def test_link_create(admin_client, admin_user_client, super_client,
+                     sim_context, link_network):
     target1 = create_sim_container(admin_client, sim_context,
                                    ports=['180', '122/udp'],
                                    networkIds=[link_network.id])
@@ -99,6 +101,7 @@ def test_link_create(admin_client, super_client, sim_context, link_network):
     assert names == set(['target1_link', 'target2_link'])
 
     for link in links:
+        link = admin_user_client.reload(link)
         assert link.state == 'active'
         assert len(resource_pool_items(super_client, link)) == 2
         assert link.instanceId == c.id
@@ -140,12 +143,12 @@ def test_link_create(admin_client, super_client, sim_context, link_network):
         assert len(resource_pool_items(super_client, link)) == 2
 
     c = admin_client.wait_success(c.purge())
-    for link in c.instanceLinks():
+    for link in admin_user_client.reload(c).instanceLinks():
         assert len(link.data.fields.ports) > 0
         assert len(resource_pool_items(super_client, link)) == 2
 
     for link in c.instanceLinks():
-        link = admin_client.wait_success(link.purge())
+        link = admin_user_client.wait_success(link.purge())
         assert len(link.data.fields.ports) == 0
         assert len(resource_pool_items(super_client, link)) == 0
 

@@ -9,8 +9,9 @@ RESOURCE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 
 
 @pytest.fixture(scope='module')
-def transform_url(cattle_url):
-    return urlparse.urljoin(cattle_url, 'scripts/transform')
+def transform_url(client):
+    return urlparse.urljoin(client.schema.types['schema'].links['collection'],
+                            'scripts/transform')
 
 
 def test_transform_inspect_minimal(transform_url, client):
@@ -47,7 +48,8 @@ def test_transform_inspect_minimal(transform_url, client):
     assert len(container['devices']) == 0
 
 
-def test_transform_inspect_full(transform_url, client, admin_client):
+def test_transform_inspect_full(transform_url, client, admin_client,
+                                super_client):
     inspect = inspect_payload('inspect_full.json')
     response = requests.post(transform_url, inspect,
                              auth=HTTPBasicAuth(client._access_key,
@@ -96,8 +98,8 @@ def test_transform_inspect_full(transform_url, client, admin_client):
 
     # Load with admin so that we can see the data field
     response = requests.post(transform_url, inspect,
-                             auth=HTTPBasicAuth(admin_client._access_key,
-                                                admin_client._secret_key))
+                             auth=HTTPBasicAuth(super_client._access_key,
+                                                super_client._secret_key))
     assert response.status_code == 200
     container = response.json()
     ports = container['data']['fields']['ports']

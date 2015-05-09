@@ -220,7 +220,8 @@ def test_delete_lb(admin_client, super_client, sim_context,
                                                  nsp)
 
     # remove the lb
-    lb = admin_client.wait_success(admin_client.delete(lb))
+    super_client.delete(lb)
+    lb = super_client.wait_success(lb)
     assert lb.state == 'removed'
 
     # verify the cleanup was executed
@@ -240,7 +241,7 @@ def test_set_hosts(admin_client,
 
     # 1. Set hosts with 2 lbs
     lb = lb.sethosts(hostIds=[host1.id, host2.id])
-    lb = admin_client.wait_success(lb)
+    lb = super_client.wait_success(lb)
 
     # VERIFICATION FOR HOST1
     # verify the mapping

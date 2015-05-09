@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth.github;
 import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractObjectResourceManager;
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -19,12 +20,14 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.*;
 
 import javax.inject.Inject;
 
+import org.apache.commons.collections.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -56,7 +59,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
-        String id = (String) criteria.get("id");
+        String id = RequestUtils.makeSingularStringIfCan(criteria.get("id"));
         if (StringUtils.isNotEmpty(id)) {
             ProjectMember projectMember = authDao.getProjectMember(Long.valueOf(id));
             if (!authDao.hasAccessToProject(projectMember.getProjectId(), policy.getAccountId(),
@@ -67,7 +70,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
             policy.grantObjectAccess(projectMember);
             return Arrays.asList(projectMember);
         }
-        String projectId = (String) criteria.get("projectId");
+        String projectId = RequestUtils.makeSingularStringIfCan(criteria.get("projectId"));
         List<? extends ProjectMember> members;
         if (StringUtils.isNotEmpty(projectId)) {
             members =  authDao.getActiveProjectMembers(Long.valueOf(projectId));
@@ -93,6 +96,11 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         return new Class<?>[0];
     }
 
+    @Override
+    protected Object createInternal(String type, ApiRequest request) {
+        throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED);
+    }
+
     public List<ProjectMember> setMembers(Account project, List<Map<String, String>> membersProvided) {
         List<Map<String, String>> members = membersProvided;
         List<ProjectMember> membersCreated = new ArrayList<>();
@@ -102,7 +110,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
             members = new ArrayList<>();
             Map<String, String> newMember = new HashMap<>();
             String accountId = (String) ApiContext.getContext().getIdFormatter()
-                    .formatId(objectManager.getType(Account.class), authDao.getAdminAccount().getId());
+                    .formatId(objectManager.getType(Account.class), ApiUtils.getPolicy().getAccountId());
             newMember.put("externalId", accountId);
             newMember.put("externalIdType", ProjectConstants.RANCHER_ID);
             newMember.put("role", ProjectConstants.OWNER);

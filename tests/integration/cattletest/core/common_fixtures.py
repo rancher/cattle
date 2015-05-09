@@ -6,6 +6,13 @@ import time
 import inspect
 from datetime import datetime, timedelta
 
+ACCESS_KEY = 0
+SECRET_KEY = 1
+ACCOUNT = 2
+PROJECT_ACCOUNT = 3
+CLIENT = 4
+PROJECT_CLIENT = 5
+
 NOT_NONE = object()
 DEFAULT_TIMEOUT = 90
 DEFAULT_AGENT_URI = 'ssh://root@localhost:22'
@@ -13,6 +20,8 @@ DEFAULT_AGENT_UUID = 'test-agent'
 SLEEP_DELAY = 0.5
 ACCOUNT_LIST = ['admin', 'agent', 'user', 'agentRegister',
                 'readAdmin', 'token', 'superadmin', 'service', 'project']
+PROJECT_ACCOUNTS = {'admin': True, 'user': True}
+_SUPER_CLIENT = None
 
 
 @pytest.fixture(scope='session')
@@ -28,40 +37,63 @@ def _admin_client():
                            secret_key='adminpass')
 
 
-def _client_for_user(name, accounts):
-    return cattle.from_env(url=cattle_url(),
-                           cache=False,
-                           access_key=accounts[name][0],
-                           secret_key=accounts[name][1])
+def _client_and_project(access_key, secret_key, create_project):
+    client = cattle.from_env(url=cattle_url(),
+                             cache=False,
+                             access_key=access_key,
+                             secret_key=secret_key)
+
+    if not create_project:
+        return client, client, None
+
+    projects = client.list_project()
+    if len(projects):
+        project = projects[0]
+        return client, client_for_project(project), project
+    else:
+        project = create_and_activate(client, 'project',
+                                      name='project for tests')
+        return client, client_for_project(project), project
+
+
+@pytest.fixture(scope='session')
+def project_client(admin_client):
+    p = admin_client.list_project(name='test-project')
+
+    if len(p) == 0:
+        p = admin_client.create_project(name='test-project')
+        p = admin_client.wait_success(p)
+    else:
+        p = p[0]
+
+    return client_for_project(p)
 
 
 def client_for_project(project):
     access_key = random_str()
     secret_key = random_str()
-    admin_client = _admin_client()
     active_cred = None
-    account = project
-    for cred in account.credentials():
-        if cred.kind == 'apiKey' and cred.publicValue == access_key\
-                and cred.secretValue == secret_key:
+    client = super_client(None)
+    for cred in client.list_api_key(accountId=project.id):
+        if cred.state == 'active' and cred.publicValue is not None:
             active_cred = cred
             break
 
     if active_cred is None:
-        active_cred = admin_client.create_api_key({
-            'accountId': account.id,
+        active_cred = client.create_api_key({
+            'accountId': project.id,
             'publicValue': access_key,
             'secretValue': secret_key
         })
 
-    active_cred = wait_success(admin_client, active_cred)
+    active_cred = wait_success(client, active_cred)
     if active_cred.state != 'active':
-        wait_success(admin_client, active_cred.activate())
+        wait_success(client, active_cred.activate())
 
     return cattle.from_env(url=cattle_url(),
                            cache=False,
-                           access_key=access_key,
-                           secret_key=secret_key)
+                           access_key=active_cred.publicValue,
+                           secret_key=active_cred.secretValue)
 
 
 def create_user(admin_client, user_name, kind=None):
@@ -94,30 +126,109 @@ def create_user(admin_client, user_name, kind=None):
     return [user_name, password, account]
 
 
-@pytest.fixture(scope='session')
-def accounts():
-    result = {}
-    admin_client = _admin_client()
-    for user_name in ACCOUNT_LIST:
-        result[user_name] = create_user(admin_client,
-                                        user_name,
-                                        kind=user_name)
+def _is_valid_super_client(client):
+    try:
+        # stupid test
+        return 'zone' in client.schema.types
+    except:
+        return False
 
-    result['admin'] = create_user(admin_client, 'admin')
-    system_account = admin_client.list_account(kind='system', uuid='system')[0]
-    result['system'] = [None, None, system_account]
+
+@pytest.fixture(scope='session')
+def super_client(request):
+    global _SUPER_CLIENT
+
+    if _SUPER_CLIENT is not None:
+        return _SUPER_CLIENT
+
+    if request is not None:
+        request.addfinalizer(
+            lambda: delete_sim_instances(client))
+
+    client = cattle.from_env(url=cattle_url(),
+                             cache=False,
+                             access_key='superadmin',
+                             secret_key='superadminpass')
+
+    if _is_valid_super_client(client):
+        _SUPER_CLIENT = client
+        return client
+
+    super_admin = find_one(client.list_account, name='superadmin')
+    super_admin = activate_resource(client, super_admin)
+
+    creds = client.list_api_key(_role='superadmin',
+                                accountId=super_admin.id)
+
+    cred = None
+    for i in creds:
+        if i.removed is None:
+            cred = i
+            break
+
+    if cred is None:
+        cred = client.create_api_key(_role='superadmin',
+                                     accountId=super_admin.id,
+                                     publicValue='superadmin',
+                                     secretValue='superadminpass')
+        client.wait_success(cred)
+
+    client = cattle.from_env(url=cattle_url(),
+                             cache=False,
+                             access_key=cred.publicValue,
+                             secret_key=cred.secretValue)
+
+    assert _is_valid_super_client(client)
+    _make_not_account_scoped(client, super_admin)
+    _SUPER_CLIENT = client
+    return client
+
+
+def _make_not_account_scoped(super_client, account):
+    if account is None:
+        return None
 
     # TODO: remove once data in tests is cleaned up
     key = 'io.cattle.platform.allocator.constraint.AccountConstraintsProvider'
-    client = super_client(None, result)
+    account = super_client.reload(account)
+    if account.data is None or key not in account.data:
+        data = account.data
+        if data is None:
+            data = {}
+        data[key] = {'accountScoped': False}
+        account = super_client.update(account, data=data)
+    return account
+
+
+@pytest.fixture(scope='session')
+def accounts(super_client):
+    result = {}
     for user_name in ACCOUNT_LIST:
-        account = create_user(admin_client, user_name, kind=user_name)[2]
-        if account.data is None or key not in account.data:
-            data = account.data
-            if data is None:
-                data = {}
-            data[key] = {'accountScoped': False}
-            account = client.update(account, data=data)
+        access_key, secret_key, account = create_user(super_client,
+                                                      user_name,
+                                                      kind=user_name)
+        client, project_client, project = \
+            _client_and_project(access_key,
+                                secret_key,
+                                user_name in PROJECT_ACCOUNTS)
+
+        if project_client is None:
+            project_client = client
+
+        if project is None:
+            project = account
+
+        account = _make_not_account_scoped(super_client, account)
+        project = _make_not_account_scoped(super_client, project)
+        result[user_name] = [access_key,
+                             secret_key,
+                             account,
+                             project,
+                             client,
+                             project_client]
+
+    system_account = super_client.list_account(kind='system', uuid='system')[0]
+    result['system'] = [None, None, system_account, system_account, None, None]
 
     return result
 
@@ -126,72 +237,68 @@ def accounts():
 def clients(accounts):
     clients = {}
     for account in ACCOUNT_LIST:
-        clients[account] = _client_for_user(account, accounts)
+        clients[account] = accounts[account][CLIENT]
     return clients
 
 
 @pytest.fixture(scope='session')
 def system_account(accounts):
-    return accounts['system'][2]
+    return accounts['system'][PROJECT_ACCOUNT]
 
 
 @pytest.fixture(scope='session')
 def admin_account(accounts):
-    return accounts['admin'][2]
+    return accounts['admin'][PROJECT_ACCOUNT]
 
 
 @pytest.fixture(scope='session')
 def user_account(accounts):
-    return accounts['user'][2]
+    return accounts['user'][PROJECT_ACCOUNT]
 
 
 @pytest.fixture(scope='session')
 def token_account(accounts):
-    return accounts['token'][2]
+    return accounts['token'][PROJECT_ACCOUNT]
 
 
 @pytest.fixture(scope='session')
 def super_account(accounts):
-    return accounts['superadmin'][2]
+    return accounts['superadmin'][PROJECT_ACCOUNT]
 
 
 @pytest.fixture(scope='session')
 def client(accounts):
-    return _client_for_user('user', accounts)
+    return accounts['user'][PROJECT_CLIENT]
 
 
 @pytest.fixture(scope='session')
-def super_admin_client(accounts):
-    return _client_for_user('superadmin', accounts)
+def user_client(accounts):
+    return accounts['user'][CLIENT]
 
 
 @pytest.fixture(scope='session')
 def admin_client(accounts):
-    return _client_for_user('admin', accounts)
+    return accounts['admin'][PROJECT_CLIENT]
 
 
 @pytest.fixture(scope='session')
-def super_client(request, accounts):
-    ret = _client_for_user('superadmin', accounts)
-    if request is not None:
-        request.addfinalizer(
-            lambda: delete_sim_instances(ret))
-    return ret
+def admin_user_client(accounts):
+    return accounts['admin'][CLIENT]
 
 
 @pytest.fixture(scope='session')
 def token_client(accounts):
-    return _client_for_user('token', accounts)
+    return accounts['token'][CLIENT]
 
 
 @pytest.fixture(scope='session')
 def agent_client(accounts):
-    return _client_for_user('agent', accounts)
+    return accounts['agent'][CLIENT]
 
 
 @pytest.fixture(scope='session')
 def service_client(accounts):
-    return _client_for_user('service', accounts)
+    return accounts['service'][CLIENT]
 
 
 def create_sim_context(super_client, uuid, ip=None, account=None,
@@ -525,6 +632,9 @@ def acc_id(client):
 
 
 def delete_sim_instances(admin_client):
+    if admin_client is None:
+        return
+
     to_delete = []
     to_delete.extend(admin_client.list_instance(state='running', limit=1000))
     to_delete.extend(admin_client.list_instance(state='starting', limit=1000))
@@ -547,10 +657,13 @@ def delete_sim_instances(admin_client):
                                          uri_like='delegate%'):
             if not callable(a.instances):
                 for i in a.instances:
-                    if i.state != 'running' and len(i.hosts()) > 0 and \
-                            i.hosts()[0].agent().uri.startswith('sim://'):
-                        a.deactivate()
-                        break
+                    try:
+                        if i.state != 'running' and len(i.hosts()) > 0 and \
+                                i.hosts()[0].agent().uri.startswith('sim://'):
+                            a.deactivate()
+                            break
+                    except:
+                        pass
 
 
 def one(method, *args, **kw):
@@ -688,6 +801,7 @@ def create_sim_container(admin_client, sim_context, *args, **kw):
 def create_agent_instance_nsp(admin_client, sim_context):
     accountId = sim_context['host'].accountId
     network = create_and_activate(admin_client, 'hostOnlyNetwork',
+                                  isPublic=True,
                                   hostVnetUri='test:///',
                                   dynamicCreateVnet=True,
                                   accountId=accountId)
@@ -707,6 +821,7 @@ def create_agent_instance_nsp(admin_client, sim_context):
 def test_network(super_client, sim_context):
     network = create_type_by_uuid(super_client, 'hostOnlyNetwork',
                                   'nsp-test-network',
+                                  isPublic=True,
                                   hostVnetUri='test:///',
                                   dynamicCreateVnet=True)
 
@@ -790,7 +905,7 @@ def vnet(admin_client, subnet):
 
 def wait_setting_active(api_client, setting, timeout=45):
     start = time.time()
-    setting = api_client.by_id('setting', setting.id)
+    setting = api_client.by_id_setting(setting.name)
     while setting.value != setting.activeValue:
         time.sleep(.5)
         setting = api_client.by_id('setting', setting.id)
