@@ -12,7 +12,7 @@ create_dummy()
         ip link add dev $ARPDEV type dummy
     fi
 
-    ip link set dev $ARPDEV up
+    ip link set dev $ARPDEV mtu $(</sys/class/net/${IFACE}/mtu) up
 }
 
 create_dummy
