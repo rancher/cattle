@@ -22,12 +22,12 @@ public class OutputStreamMessageWriter implements MessageWriter {
 
     @Override
     public void write(String content, Object writeLock) throws IOException {
-        if (os == null) {
-            throw new EOFException("OutputStream is closed");
-        }
-
         synchronized (writeLock) {
             try {
+                if (os == null) {
+                    throw new EOFException("OutputStream is closed");
+                }
+
                 byte[] bytes = content.getBytes("UTF-8");
                 os.write(bytes);
 
