@@ -363,7 +363,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         int i = 0;
         while (true) {
             int value = total / size;
-            if (sum + value > total) {
+            if (sum + value > total || i == weights.length) {
                 weights[i - 1] = total - sum + value;
                 break;
             }
