@@ -326,24 +326,6 @@ def _verify_host_map_cleanup(admin_client, host,
         instance = admin_client.wait_success(instances[0])
         assert instance.state == 'removed'
 
-    # verify that the agent is gone
-    _wait_until_agent_removed(uri, super_client)
-
-
-def _wait_until_agent_removed(uri, super_client, timeout=30):
-    # need this function because agent state changes
-    # active->deactivating->removed
-    start = time.time()
-    agent = super_client.list_agent(uri=uri)[0]
-    agent = super_client.wait_success(agent)
-    while agent.state != 'removed':
-        time.sleep(.5)
-        agent = super_client.reload(agent)
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for agent to be removed.'
-
-    return agent
-
 
 def validate_remove_host(host, lb, super_client):
     host_maps = super_client. \

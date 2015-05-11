@@ -32,7 +32,6 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
@@ -47,8 +46,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import org.jooq.tools.StringUtils;
 
 import com.netflix.config.DynamicStringListProperty;
 

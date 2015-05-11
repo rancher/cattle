@@ -172,16 +172,6 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         return instances;
     }
 
-    private List<LoadBalancerHostMap> populateHostMaps(LoadBalancer loadBalancer, LoadBalancerHostMap... hostMaps) {
-        List<LoadBalancerHostMap> hosts = new ArrayList<>();
-        if (hostMaps.length == 0) {
-            hosts.addAll(lbInstanceDao.getLoadBalancerHostMaps(loadBalancer.getId()));
-        } else {
-            hosts.addAll(Arrays.asList(hostMaps));
-        }
-        return hosts;
-    }
-
     protected void start(final Instance agentInstance) {
         if (InstanceConstants.STATE_STOPPED.equals(agentInstance.getState())) {
             DeferredUtils.nest(new Callable<Object>() {
