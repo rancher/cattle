@@ -293,7 +293,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'user': 'r',
         'systemContainer': 'r',
         'nativeContainer': 'r',
-        'externalId': 'r'
+        'externalId': 'r',
+        'labels': 'r'
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -338,6 +339,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
+        'labels': 'r'
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -382,7 +384,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
-        })
+        'labels': 'cr'
+    })
 
 
 def test_port_auth(admin_user_client, user_client, project_client):

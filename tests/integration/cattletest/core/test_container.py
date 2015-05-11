@@ -649,6 +649,17 @@ def test_container_logs(admin_client, sim_context):
     admin_client.delete(c)
 
 
+def test_container_labels(client, sim_context):
+    labels = {'affinity': "container==B", '!affinity': "container==C"}
+    image_uuid = sim_context['imageUuid']
+    container = client.create_container(name="test",
+                                        imageUuid=image_uuid,
+                                        labels=labels)
+    container = client.wait_success(container)
+    assert container.state == 'running'
+    assert container.labels == labels
+
+
 def _get_jwt(token):
     text = token.split('.')[1]
     missing_padding = 4 - len(text) % 4

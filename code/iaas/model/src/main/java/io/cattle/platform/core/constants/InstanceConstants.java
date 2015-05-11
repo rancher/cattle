@@ -33,6 +33,7 @@ public class InstanceConstants {
     public static final String FIELD_VNET_IDS = "vnetIds";
     public static final String FIELD_VOLUME_OFFERING_IDS = "volumeOfferingIds";
     public static final String FIELD_COMPUTE_TRIES = "computeTries";
+    public static final String FIELD_LABELS = "labels";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 
