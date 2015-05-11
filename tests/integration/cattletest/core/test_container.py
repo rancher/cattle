@@ -656,3 +656,40 @@ def _get_jwt(token):
         text += '=' * missing_padding
 
     return json.loads(base64.b64decode(text))
+
+
+def test_container_request_ip(super_client, sim_context, test_network):
+    for i in range(2):
+        # Doing this twice essentially ensure that the IP gets freed the first
+        # time
+        container = create_container(super_client, sim_context,
+                                     networkIds=[test_network.id],
+                                     startOnCreate=False)
+        container = super_client.wait_success(container)
+        assert container.state == 'stopped'
+        container.data.fields['requestedIpAddress'] = '1.1.1.1'
+
+        container = super_client.update(container, data=container.data)
+        container = super_client.wait_success(container.start())
+
+        assert container.primaryIpAddress == '1.1.1.1'
+
+        # Try second time and should fail because it is used
+        container2 = create_container(super_client, sim_context,
+                                      networkIds=[test_network.id],
+                                      startOnCreate=False)
+        container2 = super_client.wait_success(container2)
+        assert container2.state == 'stopped'
+        container2.data.fields['requestedIpAddress'] = '1.1.1.1'
+
+        container2 = super_client.update(container2, data=container2.data)
+        container2 = super_client.wait_success(container2.start())
+
+        assert container2.primaryIpAddress != '1.1.1.1'
+
+        # Release 1.1.1.1
+        container = super_client.wait_success(super_client.delete(container))
+        container = super_client.wait_success(container.purge())
+
+        ip = container.nics()[0].ipAddresses()[0]
+        super_client.wait_success(ip.deactivate())

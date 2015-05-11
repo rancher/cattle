@@ -2,6 +2,7 @@ package io.cattle.platform.resource.pool;
 
 public class PooledResourceOptions {
 
+    String requestedItem;
     String qualifier = ResourcePoolManager.DEFAULT_QUALIFIER;
     int count = 1;
 
@@ -29,6 +30,14 @@ public class PooledResourceOptions {
     public PooledResourceOptions withCount(int count) {
         this.count = count;
         return this;
+    }
+
+    public String getRequestedItem() {
+        return requestedItem;
+    }
+
+    public void setRequestedItem(String requestedItem) {
+        this.requestedItem = requestedItem;
     }
 
 }
