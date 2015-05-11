@@ -4,6 +4,8 @@ import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 
+import java.util.Map;
+
 public interface LoadBalancerService {
 
     void addListenerToConfig(LoadBalancerConfig config, long listenerId);
@@ -30,9 +32,10 @@ public interface LoadBalancerService {
      * requests any host to be added to the load balancer - the decision which host is delegated to allocator
      * 
      * @param lb
+     * @param data TODO
      * @return TODO
      */
-    LoadBalancerHostMap addHostToLoadBalancer(LoadBalancer lb);
+    LoadBalancerHostMap addHostWLaunchConfigToLoadBalancer(LoadBalancer lb, Map<String, Object> data);
 
     /**
      * removes a particular host from the load balancer

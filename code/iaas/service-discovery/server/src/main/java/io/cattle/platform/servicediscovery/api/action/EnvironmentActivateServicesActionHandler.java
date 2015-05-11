@@ -6,9 +6,8 @@ import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.process.ServiceUpdateActivate;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.HashMap;
@@ -27,6 +26,9 @@ public class EnvironmentActivateServicesActionHandler implements ActionHandler {
     @Inject
     ObjectManager objectManager;
 
+    @Inject
+    ServiceDiscoveryService sdService;
+
     @Override
     public String getName() {
         return ServiceDiscoveryConstants.PROCESS_ENV_ACTIVATE_SERVICES;
@@ -38,16 +40,13 @@ public class EnvironmentActivateServicesActionHandler implements ActionHandler {
             return null;
         }
         Environment env = (Environment) obj;
-        List<? extends Service> services = objectManager.mappedChildren(env, Service.class);
+        List<? extends Service> services = sdService.listEnvironmentServices(env.getId());
         activateServices(services, new HashMap<String, Object>());
 
         return env;
     }
 
     private void activateServices(List<? extends Service> services, Map<String, Object> data) {
-        // flag for service.activate to indicate that the consumed services should be activated first
-        DataAccessor.fromMap(data).withScope(ServiceUpdateActivate.class)
-                .withKey(ServiceDiscoveryConstants.FIELD_ACTIVATE_CONSUMED_SERVICES).set(true);
         for (Service service : services) {
             if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
                 objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE,

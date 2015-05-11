@@ -6,28 +6,30 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class ServiceDeactivate extends AbstractObjectProcessHandler {
+public class ServiceCreate extends AbstractObjectProcessHandler {
 
     @Inject
-    DeploymentManager deploymentMgr;
+    ServiceDiscoveryService sdService;
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_DEACTIVATE };
+        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
-
-        deploymentMgr.deactivate(service);
-
+        if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+            sdService.createLoadBalancerService(service);
+        }
+        // no special handling for non-load balancer service
         return null;
     }
 

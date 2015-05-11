@@ -1,55 +1,45 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
-import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG;
+import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.iaas.lb.service.LoadBalancerService;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
-import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
-import io.cattle.platform.core.model.LoadBalancerHostMap;
+import io.cattle.platform.core.model.LoadBalancerConfig;
+import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.deferred.util.DeferredUtils;
-import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
-import io.cattle.platform.storage.service.StorageService;
 
-import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
@@ -78,19 +68,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     List<RancherConfigToComposeFormatter> formatters;
 
     @Inject
-    ResourceMonitor resourceMonitor;
-
-    @Inject
-    GenericResourceDao resourceDao;
-
-    @Inject
-    ProcessProgress progress;
-
-    @Inject
     ObjectProcessManager objectProcessManager;
-
-    @Inject
-    StorageService storageService;
 
     @Inject
     LoadBalancerService lbService;
@@ -98,8 +76,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Inject
     ServiceExposeMapDao exposeMapDao;
 
+    @Inject
+    JsonMapper jsonMapper;
+
     @Override
-    public SimpleEntry<String, String> buildConfig(List<? extends Service> services) {
+    public SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services) {
         return new SimpleEntry<String, String>(buildDockerComposeConfig(services), buildRancherComposeConfig(services));
     }
 
@@ -131,7 +112,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             Map<String, Object> rancherServiceData = getServiceDataAsMap(service);
             Map<String, Object> composeServiceData = new HashMap<>();
             for (String rancherService : rancherServiceData.keySet()) {
-                ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByRancherName(rancherService);
+                ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(rancherService);
                 if (item != null && item.isDockerComposeProperty() == forDockerCompose) {
                     Object value = rancherServiceData.get(rancherService);
                     boolean export = false;
@@ -160,9 +141,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                             }
                         }
                         if (formattedValue != null) {
-                            composeServiceData.put(item.getComposeName().toLowerCase(), formattedValue);
+                            composeServiceData.put(item.getDockerName().toLowerCase(), formattedValue);
                         } else {
-                            composeServiceData.put(item.getComposeName().toLowerCase(), value);
+                            composeServiceData.put(item.getDockerName().toLowerCase(), value);
                         }
 
                     }
@@ -186,7 +167,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<String> servicesNames = new ArrayList<>();
         List<Service> translateToInstances = new ArrayList<>();
         List<? extends Integer> consumedServiceIds = (List<? extends Integer>) getServiceDataAsMap(service).get(
-                ServiceDiscoveryConfigItem.VOLUMESFROMSERVICE.getRancherName());
+                ServiceDiscoveryConfigItem.VOLUMESFROMSERVICE.getCattleName());
 
         if (consumedServiceIds != null) {
             for (Integer consumedServiceId : consumedServiceIds) {
@@ -206,7 +187,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         // 2. translate instances ids to names
         List<? extends Integer> instanceIds = (List<? extends Integer>) getServiceDataAsMap(service).get(
-                ServiceDiscoveryConfigItem.VOLUMESFROM.getRancherName());
+                ServiceDiscoveryConfigItem.VOLUMESFROM.getCattleName());
 
         if (instanceIds != null) {
             for (Integer instanceId : instanceIds) {
@@ -230,7 +211,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             }
         }
         if (!namesCombined.isEmpty()) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.VOLUMESFROM.getComposeName(), namesCombined);
+            composeServiceData.put(ServiceDiscoveryConfigItem.VOLUMESFROM.getDockerName(), namesCombined);
         }
 
         populateExternalLinksForService(service, composeServiceData, translateToInstances);
@@ -251,7 +232,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             }
         }
         if (!serviceLinks.isEmpty()) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.LINKS.getComposeName(), serviceLinks);
+            composeServiceData.put(ServiceDiscoveryConfigItem.LINKS.getDockerName(), serviceLinks);
         }
         populateExternalLinksForService(service, composeServiceData, externalLinksServices);
     }
@@ -263,7 +244,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         Map<String, String> instanceLinksWithNames = new LinkedHashMap<String, String>();
         Map<String, Object> instanceLinksWithIds = (Map<String, Object>) composeServiceData
                 .get(ServiceDiscoveryConfigItem.EXTERNALLINKS
-                .getComposeName());
+                .getDockerName());
         if (instanceLinksWithIds != null) {
             for (String linkName : instanceLinksWithIds.keySet()) {
                 Instance instance = objectManager.findOne(Instance.class, INSTANCE.ID,
@@ -286,49 +267,40 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             }
         }
         if (!instanceLinksWithNames.isEmpty()) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.EXTERNALLINKS.getComposeName(), instanceLinksWithNames);
+            composeServiceData.put(ServiceDiscoveryConfigItem.EXTERNALLINKS.getDockerName(), instanceLinksWithNames);
         }
     }
 
-    @Override
     @SuppressWarnings("unchecked")
-    public Map<String, Object> buildLaunchData(Service service) {
+    @Override
+    public Map<String, Object> buildLaunchData(Service service, Map<String, String> labels, String instanceName, List<Integer> volumesFromInstanceIds) {
         Map<String, Object> data = getServiceDataAsMap(service);
         Map<String, Object> launchConfigItems = new HashMap<>();
-        Set<Integer> volumesFromServices = new HashSet<>();
+
+        // convert compose to rancher name
         for (String key : data.keySet()) {
-            ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByRancherName(key);
+            ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(key);
             if (item != null && item.isLaunchConfigItem()) {
-                // special handling for volumesFromService and labels
-                if (item.getRancherName().equals(ServiceDiscoveryConfigItem.VOLUMESFROMSERVICE.getRancherName())) {
-                    List<Integer> serviceIds = (List<Integer>) data.get(key);
-                    for (Integer serviceId : serviceIds) {
-                        // get all instances for the service
-                        List<? extends ServiceExposeMap> serviceInstancesMap = mapDao.findNonRemoved(
-                                ServiceExposeMap.class,
-                                Service.class, serviceId);
-                        for (ServiceExposeMap map : serviceInstancesMap) {
-                            volumesFromServices.add(map.getInstanceId().intValue());
-                        }
-                    }
-                    continue;
-                }
                 launchConfigItems.put(key, data.get(key));
             }
         }
+        //populate name
+        if (instanceName != null) {
+            launchConfigItems.put("name", instanceName);
+        }
+        
+        // populate labels
+        launchConfigItems.put(ServiceDiscoveryConfigItem.LABELS.getCattleName(), labels);
 
-        Map<String, String> labelsStr = getServiceInstanceLabels(service);
-        launchConfigItems.put(ServiceDiscoveryConfigItem.LABELS.getRancherName(), labelsStr);
-
-        if (!volumesFromServices.isEmpty()) {
+        // process volumes from
+        if (volumesFromInstanceIds != null && !volumesFromInstanceIds.isEmpty()) {
             List<Integer> volumesFrom = (List<Integer>) launchConfigItems.get(ServiceDiscoveryConfigItem.VOLUMESFROM
-                    .getRancherName());
+                    .getCattleName());
             if (volumesFrom == null) {
                 volumesFrom = new ArrayList<Integer>();
             }
-            volumesFromServices.removeAll(volumesFrom);
-            volumesFrom.addAll(volumesFromServices);
-            launchConfigItems.put(ServiceDiscoveryConfigItem.VOLUMESFROM.getRancherName(), volumesFrom);
+            volumesFrom.addAll(volumesFromInstanceIds);
+            launchConfigItems.put(ServiceDiscoveryConfigItem.VOLUMESFROM.getCattleName(), volumesFrom);
         }
 
         return launchConfigItems;
@@ -336,16 +308,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, String> getServiceInstanceLabels(Service service) {
+    public Map<String, String> getServiceLabels(Service service) {
         Map<String, Object> data = getServiceDataAsMap(service);
-        Object labels = data.get(ServiceDiscoveryConfigItem.LABELS.getRancherName());
+        Object labels = data.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
         Map<String, String> labelsStr = new HashMap<>();
         if (labels != null) {
             labelsStr.putAll((HashMap<String, String>) labels);
         }
-        labelsStr.put(ServiceDiscoveryConstants.LABEL_SERVICE_NAME, service.getName());
-        labelsStr.put(ServiceDiscoveryConstants.LABEL_ENVIRONMENT_NAME,
-                objectManager.loadResource(Environment.class, service.getEnvironmentId()).getName());
         return labelsStr;
     }
 
@@ -395,8 +364,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return weights;
     }
 
-    @Override
-    public long getServiceNetworkId(Service service) {
+    protected long getServiceNetworkId(Service service) {
         Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
         if (network == null) {
             throw new RuntimeException(
@@ -406,69 +374,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return networkId;
     }
 
-    protected List<? extends String> getServiceInstancesNamesToAdd(Service service, int countToAdd) {
-        List<Integer> usedIds = getServiceInstanceUsedOrderIds(service);
-        List<String> serviceNames = new ArrayList<>();
-        // in situation when service with scale=3 has one container missing (it got destroyed outside of the
-        // service)
-        // and container names don't reflect the order, we should pick the least available number that is <=order
-        for (int i = 1; i < countToAdd + 1; i++) {
-            if (serviceNames.size() < countToAdd) {
-                if (!usedIds.contains(i)) {
-                    serviceNames.add(generateServiceInstanceName(service, i));
-                    usedIds.add(i);
-                }
-            }
-        }
-        // only after we got all "gap" names, get the rest
-        // first, figure out the next available
-        Collections.sort(usedIds);
-        int currentId = usedIds.get(usedIds.size() - 1) + 1;
-        while (serviceNames.size() < countToAdd) {
-            serviceNames.add(generateServiceInstanceName(service, currentId));
-            currentId++;
-        }
-        return serviceNames;
-    }
-
-    protected List<? extends String> getServiceInstancesNamesToRemove(Service service, int countToRemove) {
-        List<Integer> usedIds = getServiceInstanceUsedOrderIds(service);
-        List<String> serviceNames = new ArrayList<>();
-        Collections.sort(usedIds, Collections.reverseOrder());
-        List<? extends Instance> serviceInstances = exposeMapDao.listActiveServiceInstances(service.getId());
-        int originalScale = serviceInstances.size();
-        // in a situation when service instances names don't match the scale (user renamed the instance outside of the
-        // service, or destroyed the instance)
-        // we always try to remove the instances having names:
-        // a) that don't qualify for <environment>_<service> pattern
-        // b) have higher order in name (<environment>_<service>_4 should be removed prior to
-        // <environment>_<service>_3)
-        int currentCount = originalScale - countToRemove;
-        // a)
-        for (Instance serviceInstance : serviceInstances) {
-            if (currentCount < originalScale) {
-                if (!isServiceGeneratedName(service, serviceInstance)) {
-                    if (serviceInstance != null) {
-                        serviceNames.add(serviceInstance.getName());
-                        currentCount++;
-                    }
-                }
-            } else {
-                break;
-            }
-        }
-        // b)
-        for (Integer usedId : usedIds) {
-            if (currentCount < originalScale) {
-                String instanceName = generateServiceInstanceName(service, usedId);
-                serviceNames.add(instanceName);
-                currentCount++;
-            } else {
-                break;
-            }
-        }
-        return serviceNames;
-    }
 
     private boolean isServiceGeneratedName(Service service, Instance serviceInstance) {
         Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
@@ -482,7 +387,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return name;
     }
 
-    private List<Integer> getServiceInstanceUsedOrderIds(Service service) {
+    @Override
+    public List<Integer> getServiceInstanceUsedOrderIds(Service service) {
         Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
         // get all existing instances to check if the name is in use by the instance of the same service
         List<Integer> usedIds = new ArrayList<>();
@@ -502,8 +408,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return usedIds;
     }
 
-    @Override
-    public String getLoadBalancerName(Service service) {
+    protected String getLoadBalancerName(Service service) {
         Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
         return String.format("%s_%s", env.getName(), service.getName());
     }
@@ -521,218 +426,168 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void activateService(Service service, int scale) {
-        List<Instance> instancesToStart = new ArrayList<>();
-        Map<String, Object> launchConfigData = buildLaunchData(service);
-        Object registryCredentialId = launchConfigData.get(ServiceDiscoveryConfigItem.REGISTRYCREDENTIALID
-                .getRancherName());
-        Long imageId = getImage(String.valueOf(launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID)),
-                registryCredentialId != null ? (Integer) registryCredentialId : null);
-        List<Long> networkIds = getServiceNetworks(service);
-
-        List<? extends Instance> instances = exposeMapDao.listServiceInstances(service.getId());
-        
-        instancesToStart.addAll(instances);
-        if (instances.size() < scale) {
-            List<? extends String> instanceNames = getServiceInstancesNamesToAdd(service, scale - instances.size());
-            for (String instanceName : instanceNames) {
-                Instance newInstance = createServiceInstance(service, launchConfigData, imageId,
-                        networkIds,
-                        instanceName);
-                instancesToStart.add(newInstance);
-            }
-        }
-
-        startServiceInstances(instancesToStart);
-    }
-
-    private void startServiceInstances(List<Instance> instancesToStart) {
-        for (Instance instance : instancesToStart) {
-            scheduleServiceInstanceStart(instance);
-        }
-        for (Instance instance : instancesToStart) {
-            progress.checkPoint("start service instance " + instance.getName());
-            instance = resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
-                @Override
-                public boolean evaluate(Instance obj) {
-                    return InstanceConstants.STATE_RUNNING.equals(obj.getState());
-                }
-            });
-        }
-    }
-
-    protected void scheduleServiceInstanceStart(final Instance instance) {
-        if (InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
-            DeferredUtils.nest(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, instance, null);
-                    return null;
-                }
-            });
-        }
-    }
-
-    private List<Long> getServiceNetworks(Service service) {
+    public List<Long> getServiceNetworkIds(Service service) {
         List<Long> ntwkIds = new ArrayList<>();
         long networkId = getServiceNetworkId(service);
         ntwkIds.add(networkId);
         return ntwkIds;
     }
 
-    protected Long getImage(String imageUuid, Integer registryCredentialId) {
-        Image image;
-        try {
-            image = storageService.registerRemoteImage(imageUuid);
-            if (image == null) {
-                return null;
-            }
-            if (registryCredentialId != null) {
-                objectManager.setFields(image, IMAGE.REGISTRY_CREDENTIAL_ID, registryCredentialId);
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to get image [" + imageUuid + "]");
+    @Override
+    public void cleanupLoadBalancerService(Service service) {
+        // 1) remove load balancer
+        LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
+                LOAD_BALANCER.REMOVED, null);
+        if (lb != null) {
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_REMOVE, lb, null);
         }
-
-        return image == null ? null : image.getId();
-    }
-
-    protected Instance createServiceInstance(Service service, Map<String, Object> launchConfigData,
-            Long imageId,
-            List<Long> networkIds, String instanceName) {
-
-        Map<Object, Object> properties = new HashMap<Object, Object>();
-        properties.putAll(launchConfigData);
-        properties.put(INSTANCE.NAME, instanceName);
-        properties.put(INSTANCE.ACCOUNT_ID, service.getAccountId());
-        properties.put(INSTANCE.KIND, InstanceConstants.KIND_CONTAINER);
-        properties.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
-        properties.put(INSTANCE.IMAGE_ID, imageId);
-        return exposeMapDao.createServiceInstance(properties, service, instanceName);
     }
 
     @Override
-    public void activateLoadBalancerService(Service service, int scale) {
-        LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
-                LOAD_BALANCER.REMOVED, null);
-
-        List<? extends LoadBalancerHostMap> existingMaps = mapDao.findNonRemoved(LoadBalancerHostMap.class,
-                LoadBalancer.class, lb.getId());
-        List<LoadBalancerHostMap> allMaps = new ArrayList<>();
-        allMaps.addAll(existingMaps);
-        while (allMaps.size() < scale) {
-            LoadBalancerHostMap hostMap = lbService.addHostToLoadBalancer(lb);
-            allMaps.add(hostMap);
+    public void removeServiceMaps(Service service) {
+        // 1. remove all maps to the services consumed by service specified
+        for (ServiceConsumeMap map : consumeMapDao.findConsumedMapsToRemove(service.getId())) {
+            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+                    map, null);
         }
-        waitForLbUpdate(lb, allMaps);
-    }
 
-    private void waitForLbUpdate(LoadBalancer lb, List<? extends LoadBalancerHostMap> hostMaps) {
-        for (LoadBalancerHostMap hostMap : hostMaps) {
-            hostMap = resourceMonitor.waitFor(hostMap, new ResourcePredicate<LoadBalancerHostMap>() {
-                @Override
-                public boolean evaluate(LoadBalancerHostMap obj) {
-                    return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
-                }
-            });
+        // 2. remove all maps to the services consuming service specified
+        for (ServiceConsumeMap map : consumeMapDao.findConsumingMapsToRemove(service.getId())) {
+            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+                    map, null);
         }
     }
-
 
     @Override
-    public void deactivateLoadBalancerService(Service service) {
+    @SuppressWarnings("unchecked")
+    public void createLoadBalancerService(Service service) {
+        String lbName = getLoadBalancerName(service);
+        // 1. create load balancer config
+        Map<String, Object> lbConfigData = (Map<String, Object>) DataAccessor.field(service,
+                ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
+                jsonMapper,
+                Map.class);
+
+        if (lbConfigData == null) {
+            lbConfigData = new HashMap<String, Object>();
+        }
+
+        LoadBalancerConfig lbConfig = createDefaultLoadBalancerConfig(lbName, lbConfigData,
+                service);
+
+        // 2. add listeners to the config based on the ports info
+        Map<String, Object> launchConfigData = buildLaunchData(service, new HashMap<String, String>(), null, null);
+        createListeners(service, lbConfig, launchConfigData);
+
+        // 3. create a load balancer
+        createLoadBalancer(service, lbName, lbConfig);
+    }
+
+    private void createLoadBalancer(Service service, String lbName, LoadBalancerConfig lbConfig) {
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
-                LOAD_BALANCER.REMOVED, null);
+                LOAD_BALANCER.REMOVED, null, LOAD_BALANCER.ACCOUNT_ID, service.getAccountId());
         if (lb == null) {
+            Map<String, Object> launchConfigData = buildLaunchData(service, new HashMap<String, String>(), null, null);
+            Map<String, Object> data = new HashMap<>();
+            data.put("name", lbName);
+            data.put(LoadBalancerConstants.FIELD_LB_CONFIG_ID, lbConfig.getId());
+            data.put(LoadBalancerConstants.FIELD_LB_SERVICE_ID, service.getId());
+            data.put(LoadBalancerConstants.FIELD_LB_NETWORK_ID, getServiceNetworkId(service));
+            data.put(
+                    LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID,
+                    launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID));
+            data.put(
+                    LoadBalancerConstants.FIELD_LB_INSTANCE_URI_PREDICATE,
+                    DataAccessor.fields(service).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_URI_PREDICATE)
+                            .withDefault("delegate:///").as(
+                                    String.class));
+            data.put("accountId", service.getAccountId());
+            lb = objectManager.create(LoadBalancer.class, data);
+        }
+
+        objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_CREATE, lb, null);
+    }
+
+    private LoadBalancerConfig createDefaultLoadBalancerConfig(String defaultName,
+            Map<String, Object> lbConfigData, Service service) {
+        String name = lbConfigData.get("name") == null ? defaultName : lbConfigData.get("name")
+                .toString();
+        LoadBalancerConfig lbConfig = objectManager.findOne(LoadBalancerConfig.class,
+                LOAD_BALANCER_CONFIG.REMOVED, null,
+                LOAD_BALANCER_CONFIG.ACCOUNT_ID, service.getAccountId(),
+                LOAD_BALANCER_CONFIG.SERVICE_ID, service.getId());
+
+        if (lbConfig == null) {
+            lbConfigData.put("accountId", service.getAccountId());
+            lbConfigData.put("name", name);
+            lbConfigData.put("serviceId", service.getId());
+            lbConfig = objectManager.create(LoadBalancerConfig.class, lbConfigData);
+        }
+        objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_CONFIG_CREATE, lbConfig, null);
+        return lbConfig;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void createListeners(Service service, LoadBalancerConfig lbConfig, Map<String, Object> launchConfigData) {
+        // 1. create listeners
+        List<String> portDefs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
+        if (portDefs == null || portDefs.isEmpty()) {
             return;
         }
-        List<? extends LoadBalancerHostMap> maps = mapDao.findNonRemoved(LoadBalancerHostMap.class, LoadBalancer.class,
-                lb.getId());
-        for (LoadBalancerHostMap map : maps) {
-            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE, map,
-                    null);
-        }
-    }
 
-    @Override
-    public void deactivateService(Service service) {
-        List<Instance> instances = objectManager.mappedChildren(service, Instance.class);
-        if (!instances.isEmpty()) {
-            stopServiceInstances(instances);
-        }
-    }
+        Map<Integer, LoadBalancerListener> listeners = new HashMap<>();
 
-    private void stopServiceInstances(List<Instance> instances) {
-        for (Instance instance : instances) {
-            objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
-        }
-    }
-
-    @Override
-    public void scaleDownService(Service service, int requestedScale) {
-        // on scale up, skip
-        List<? extends Instance> serviceInstances = exposeMapDao.listServiceInstances(service.getId());
-        int originalScale = serviceInstances.size();
-        if (originalScale <= requestedScale) {
-            return;
-        }
-        // remove instances
-        int toRemove = originalScale - requestedScale;
-        List<? extends String> instanceNames = getServiceInstancesNamesToRemove(service, toRemove);
-        for (String instanceName : instanceNames) {
-            Instance instance = exposeMapDao.getActiveServiceInstance(service.getId(), instanceName);
-            if (instance != null) {
-                removeServiceInstance(instance);
+        for (String port : portDefs) {
+            PortSpec spec = new PortSpec(port);
+            if (!port.contains("tcp")) {
+                // default to http unless defined otherwise in the compose file
+                spec.setProtocol("http");
             }
-        }
-    }
 
-    private void removeServiceInstance(Instance instance) {
-        // 1) schedule remove for the instance
-        if (!(instance.getState().equals(CommonStatesConstants.REMOVED)
-        || instance.getState().equals(CommonStatesConstants.REMOVING))) {
-            try {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
-            } catch (ProcessCancelException e) {
-                Map<String, Object> data = new HashMap<>();
-                data.put(InstanceConstants.REMOVE_OPTION, true);
-                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                        data);
+            if (listeners.containsKey(spec.getPrivatePort())) {
+                continue;
             }
+
+            Integer publicPort = spec.getPublicPort();
+            int privatePort = spec.getPrivatePort();
+            if (publicPort == null) {
+                publicPort = privatePort;
+            }
+
+            LoadBalancerListener listenerObj = objectManager.findOne(LoadBalancerListener.class,
+                    LOAD_BALANCER_LISTENER.SERVICE_ID, service.getId(),
+                    LOAD_BALANCER_LISTENER.SOURCE_PORT, publicPort,
+                    LOAD_BALANCER_LISTENER.TARGET_PORT, privatePort,
+                    LOAD_BALANCER_LISTENER.REMOVED, null,
+                    LOAD_BALANCER_LISTENER.ACCOUNT_ID, service.getAccountId());
+
+            if (listenerObj == null) {
+                listenerObj = objectManager.create(LoadBalancerListener.class,
+                        LOAD_BALANCER_LISTENER.NAME, getLoadBalancerName(service) + "_" + publicPort,
+                        LOAD_BALANCER_LISTENER.ACCOUNT_ID,
+                        service.getAccountId(), LOAD_BALANCER_LISTENER.SOURCE_PORT, publicPort,
+                        LOAD_BALANCER_LISTENER.TARGET_PORT, privatePort,
+                        LOAD_BALANCER_LISTENER.SOURCE_PROTOCOL, spec.getProtocol(),
+                        LOAD_BALANCER_LISTENER.TARGET_PROTOCOL,
+                        spec.getProtocol(),
+                        LoadBalancerConstants.FIELD_LB_LISTENER_ALGORITHM, "roundrobin",
+                        LOAD_BALANCER_LISTENER.ACCOUNT_ID, service.getAccountId(),
+                        LOAD_BALANCER_LISTENER.SERVICE_ID, service.getId());
+            }
+            objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_LISTENER_CREATE, listenerObj, null);
+
+            listeners.put(listenerObj.getTargetPort(), listenerObj);
         }
 
-        // 2) remove the mapping
-        List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
-                objectManager.loadResource(Instance.class, instance.getId()),
-                ServiceExposeMap.class);
-        for (ServiceExposeMap map : maps) {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, map, null);
+        for (LoadBalancerListener listener : listeners.values()) {
+            lbService.addListenerToConfig(lbConfig, listener.getId());
         }
     }
 
     @Override
-    public void scaleDownLoadBalancerService(Service service, int requestedScale) {
-        LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
-                LOAD_BALANCER.REMOVED, null);
-
-        // lb can be already removed at this point if scaleDown is called by the cleanup for service.remove process
-        if (lb == null) {
-            return;
-        }
-
-        // on scale up, skip
-        List<? extends LoadBalancerHostMap> existingMaps = mapDao.findNonRemoved(LoadBalancerHostMap.class,
-                LoadBalancer.class, lb.getId());
-        int originalScale = existingMaps.size();
-        if (originalScale <= requestedScale) {
-            return;
-        }
-        // remove hosts
-        int toRemove = originalScale - requestedScale;
-        for (int i = originalScale - toRemove; i < originalScale; i++) {
-            LoadBalancerHostMap existingMap = existingMaps.get(i);
-            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE, existingMap,
-                    null);
-        }
+    public List<? extends Service> listEnvironmentServices(long environmentId) {
+        return objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, environmentId, SERVICE.REMOVED,
+                null);
     }
+
 }

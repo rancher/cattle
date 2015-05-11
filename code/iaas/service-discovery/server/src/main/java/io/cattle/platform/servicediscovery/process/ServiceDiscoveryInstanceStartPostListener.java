@@ -13,11 +13,8 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
-
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -67,17 +64,6 @@ public class ServiceDiscoveryInstanceStartPostListener extends AbstractObjectPro
                             instance.getId(), SERVICE_EXPOSE_MAP.SERVICE_ID, serviceId);
                 }
             }
-        } else {
-            // for regular, non lb instance, the instance->service map gets created as a part of the instance creation
-            // (within the same transaction), so it should exist at this point
-            List<? extends ServiceExposeMap> instanceServiceMap = mapDao.findNonRemoved(ServiceExposeMap.class,
-                    Instance.class,
-                    instance.getId());
-            if (instanceServiceMap.isEmpty()) {
-                // not a service instance
-                return null;
-            }
-            objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, instanceServiceMap.get(0), null);
         }
         return null;
     }
@@ -86,5 +72,4 @@ public class ServiceDiscoveryInstanceStartPostListener extends AbstractObjectPro
     public int getPriority() {
         return Priority.DEFAULT_OVERRIDE;
     }
-
 }

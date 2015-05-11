@@ -50,7 +50,7 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem LINKS = new ServiceDiscoveryConfigItem(null,
             "links", false, true);
 
-    // RANCHER PARAMETERS
+    // CATTLE PARAMETERS
     public static final ServiceDiscoveryConfigItem REGISTRYCREDENTIALID = new ServiceDiscoveryConfigItem("registryCredentialId",
             "registryCredentialId", true, false);
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale",
@@ -71,12 +71,12 @@ public class ServiceDiscoveryConfigItem {
     /**
      * Name as it appears in docker-compose file
      */
-    private String composeName;
+    private String dockerName;
 
     /**
-     * Name as it appears in rancher (can be diff from what defined in a config)
+     * Name as it appears in cattle (can be diff from what defined in a config)
      */
-    private String rancherName;
+    private String cattleName;
 
     /**
      * Defines whether the property is the launch config property
@@ -85,11 +85,11 @@ public class ServiceDiscoveryConfigItem {
 
     private boolean isDockerComposeProperty;
 
-    public ServiceDiscoveryConfigItem(String rancherName, String composeName, boolean isLaunchConfigItem,
+    public ServiceDiscoveryConfigItem(String cattleName, String dockerName, boolean isLaunchConfigItem,
             boolean isDockerComposeProperty) {
         super();
-        this.rancherName = rancherName;
-        this.composeName = composeName;
+        this.cattleName = cattleName;
+        this.dockerName = dockerName;
         this.isLaunchConfigItem = isLaunchConfigItem;
         this.isDockerComposeProperty = isDockerComposeProperty;
         supportedServiceConfigItems.add(this);
@@ -98,42 +98,42 @@ public class ServiceDiscoveryConfigItem {
     public ServiceDiscoveryConfigItem() {
     }
 
-    public ServiceDiscoveryConfigItem(String rancherName, String composeName) {
-        this(rancherName, composeName, true, true);
+    public ServiceDiscoveryConfigItem(String cattleName, String dockerName) {
+        this(cattleName, dockerName, true, true);
     }
 
     public static List<ServiceDiscoveryConfigItem> getSupportedLaunchConfigItems() {
         return supportedServiceConfigItems;
     }
 
-    public String getComposeName() {
-        return composeName;
+    public String getDockerName() {
+        return dockerName;
     }
 
     public boolean isLaunchConfigItem() {
         return isLaunchConfigItem;
     }
 
-    public String getRancherName() {
-        return rancherName;
+    public String getCattleName() {
+        return cattleName;
     }
 
     public boolean isDockerComposeProperty() {
         return isDockerComposeProperty;
     }
 
-    public static ServiceDiscoveryConfigItem getServiceConfigItemByComoposeName(String externalName) {
+    public static ServiceDiscoveryConfigItem getServiceConfigItemByDockerName(String externalName) {
         for (ServiceDiscoveryConfigItem serviceItem : supportedServiceConfigItems) {
-            if (serviceItem.getComposeName().equalsIgnoreCase(externalName)) {
+            if (serviceItem.getDockerName().equalsIgnoreCase(externalName)) {
                 return serviceItem;
             }
         }
         return null;
     }
 
-    public static ServiceDiscoveryConfigItem getServiceConfigItemByRancherName(String internalName) {
+    public static ServiceDiscoveryConfigItem getServiceConfigItemByCattleName(String internalName) {
         for (ServiceDiscoveryConfigItem serviceItem : supportedServiceConfigItems) {
-            if (serviceItem.getRancherName() != null && serviceItem.getRancherName().equalsIgnoreCase(internalName)) {
+            if (serviceItem.getCattleName() != null && serviceItem.getCattleName().equalsIgnoreCase(internalName)) {
                 return serviceItem;
             }
         }

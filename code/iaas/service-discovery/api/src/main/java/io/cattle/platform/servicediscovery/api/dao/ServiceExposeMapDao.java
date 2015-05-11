@@ -8,11 +8,9 @@ import io.cattle.platform.core.model.ServiceExposeMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public interface ServiceExposeMapDao {
-
-    List<? extends Instance> listActiveServiceInstances(long serviceId);
-
-    Instance getActiveServiceInstance(long serviceId, String instanceName);
 
     /**
      * this method is wrapped up in transaction. All instances will get created and scheduled for create inside one
@@ -23,17 +21,9 @@ public interface ServiceExposeMapDao {
      * @param instanceName
      * @return
      */
-    Instance createServiceInstance(Map<Object, Object> properties, Service service, String instanceName);
+    Pair<Instance, ServiceExposeMap> createServiceInstance(Map<Object, Object> properties, Service service, String instanceName);
 
     List<? extends Instance> listServiceInstances(long serviceId);
-
-    /**
-     * Lists maps for service instances that are in removed state
-     * 
-     * @param serviceId
-     * @return
-     */
-    List<? extends ServiceExposeMap> listServiceRemovedInstancesMaps(long serviceId);
 
     /**
      * this method updates service's instances' names based on the environment/service name. Invoked on the
@@ -52,5 +42,10 @@ public interface ServiceExposeMapDao {
     void updateEnvironmentName(Environment env);
 
     List<? extends ServiceExposeMap> getNonRemovedServiceInstanceMap(long serviceId);
+    
+    void updateScale(List<Service> services, Integer scale);
 
+    List<Service> collectSidekickServices(Service initialService, Map<String, String> initialSvcLabels);
+
+    ServiceExposeMap findInstanceExposeMap(Instance instance);
 }

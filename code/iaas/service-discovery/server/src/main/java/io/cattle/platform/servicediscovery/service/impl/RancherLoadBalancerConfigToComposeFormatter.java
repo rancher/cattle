@@ -10,7 +10,7 @@ public class RancherLoadBalancerConfigToComposeFormatter implements RancherConfi
 
     @Override
     public Object format(ServiceDiscoveryConfigItem item, Object valueToTransform) {
-        if (!item.getComposeName().equalsIgnoreCase(ServiceDiscoveryConfigItem.LB_CONGFIG.getComposeName())) {
+        if (!item.getDockerName().equalsIgnoreCase(ServiceDiscoveryConfigItem.LB_CONGFIG.getDockerName())) {
             return null;
         }
         valueToTransform = lowerCaseParameters(valueToTransform);

@@ -127,11 +127,11 @@ def test_deactivate_then_remove_lb_svc(super_client, admin_client):
     validate_add_host(host2, lb, super_client)
 
     # 2. deactivate service and validate that
-    # the hosts mappings are gone,
-    # but lb still present
+    # the hosts mappings are still around,
+    # and lb still present
     service = wait_success(super_client, service.deactivate())
-    validate_remove_host(host1, lb, super_client)
-    validate_remove_host(host2, lb, super_client)
+    validate_add_host(host1, lb, super_client)
+    validate_add_host(host2, lb, super_client)
 
     lb = super_client.reload(lb)
     assert lb.state == "active"
@@ -187,8 +187,7 @@ def test_targets(super_client, admin_client, sim_context, nsp):
 
     # create web, db lb services
     image_uuid = sim_context['imageUuid']
-    launch_config = {"imageUuid": image_uuid,
-                     "ports": [8081, '909:1001']}
+    launch_config = {"imageUuid": image_uuid}
     web_service = super_client. \
         create_service(name=random_str() + "web",
                        environmentId=env.id,
@@ -425,9 +424,9 @@ def test_labels(super_client, admin_client, sim_context, nsp):
                                                 ['8010:8010', '913:913'])
     lb_instance = _validate_lb_instance(host, lb, super_client, service)
     result_labels = {'affinity': "container==B", '!affinity': "container==C",
-                     'io.rancher.service.name': service_name,
-                     'io.rancher.environment.name': env.name}
-    assert lb_instance.labels == result_labels
+                     'io.rancher.service.name': service_name}
+
+    all(item in lb_instance.labels.items() for item in result_labels.items())
 
     # create service w/o labels, and validate that
     #  only one service label was set
@@ -450,9 +449,8 @@ def test_labels(super_client, admin_client, sim_context, nsp):
                                                 service, super_client,
                                                 ['8089:8089', '914:914'])
     lb_instance = _validate_lb_instance(host, lb, super_client, service)
-    result_labels = {'io.rancher.service.name': service_name,
-                     'io.rancher.environment.name': env.name}
-    assert lb_instance.labels == result_labels
+    result_labels = {'io.rancher.service.name': service_name}
+    all(item in lb_instance.labels.items() for item in result_labels.items())
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):

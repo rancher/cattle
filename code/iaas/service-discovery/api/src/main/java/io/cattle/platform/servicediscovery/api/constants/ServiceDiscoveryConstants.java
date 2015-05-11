@@ -12,10 +12,10 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_NETWORK_ID = "networkId";
     public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_SERVICE_IDS = "serviceIds";
-    public static final String FIELD_ACTIVATE_CONSUMED_SERVICES = "activateConsumedServices";
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
+    public static final String FIELD_RECONCILE_PROCESS_UUID = "reconcileProcessUuid";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -45,6 +45,8 @@ public class ServiceDiscoveryConstants {
     public static final String LINK_COMPOSE_CONFIG = "composeConfig";
 
     public static final String LABEL_SERVICE_NAME = "io.rancher.service.name";
+    public static final String LABEL_SERVICE_SIDEKICK = "io.rancher.service.sidekick";
+    public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
     public static final String LABEL_ENVIRONMENT_NAME = "io.rancher.environment.name";
 
 }
