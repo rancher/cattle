@@ -11,6 +11,7 @@ import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
+import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -23,6 +24,7 @@ import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.net.NetUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.IOException;
@@ -184,17 +186,53 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     void setNetwork(Map<String, Object> inspect, Instance instance) {
-        String networkKind = KIND_NETWORK;
-        if (BooleanUtils.toBoolean(getRancherNetworkLabel(inspect))) {
-            networkKind = KIND_HOSTONLY;
+        Network network = null;
+        Network rancherNetwork = networkDao.getNetworkForObject(instance, KIND_HOSTONLY);
+        String ip = getDockerIp(inspect);
+        if (StringUtils.isNotEmpty(ip) && isIpInNetwork(ip, rancherNetwork)) {
+            DataAccessor.fields(instance).withKey(FIELD_REQUESTED_IP_ADDRESS).set(ip);
+            network = rancherNetwork;
         }
-        Network network = networkDao.getNetworkForObject(instance, networkKind);
+
+        if (network == null && BooleanUtils.toBoolean(getRancherNetworkLabel(inspect))) {
+            network = rancherNetwork;
+        }
+
+        if (network == null) {
+            network = networkDao.getNetworkForObject(instance, KIND_NETWORK);
+        }
 
         if (network != null) {
             List<Long> netIds = new ArrayList<Long>();
             netIds.add(network.getId());
             DataAccessor.fields(instance).withKey(FIELD_NETWORK_IDS).set(netIds);
         }
+    }
+
+    boolean isIpInNetwork(String ipAddress, Network network) {
+        for (Subnet subnet : objectManager.children(network, Subnet.class)) {
+            if (subnet.getRemoved() == null) {
+                String startIp = NetUtils.getDefaultStartAddress(subnet.getNetworkAddress(), subnet.getCidrSize());
+                long start = NetUtils.ip2Long(startIp);
+                String endIp = NetUtils.getDefaultEndAddress(subnet.getNetworkAddress(), subnet.getCidrSize());
+                long end = NetUtils.ip2Long(endIp);
+                long ip = NetUtils.ip2Long(ipAddress);
+                if (start <= ip && ip <= end)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    String getDockerIp(Map<String, Object> inspect) {
+        if (inspect == null)
+            return null;
+
+        Object ip = CollectionUtils.getNestedValue(inspect, "NetworkSettings", "IPAddress");
+        if (ip != null)
+            return ip.toString();
+
+        return null;
     }
 
     @SuppressWarnings("unchecked")
