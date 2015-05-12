@@ -36,6 +36,9 @@ sed -i "s/PARENT_DNS/$DNS/" content-home/etc/cattle/dns/answers.json
 
 stage_files
 
-ip addr add 169.254.169.250/16 dev eth0 2>/dev/null || true
+ip addr add 169.254.169.250/32 dev eth0 2>/dev/null || true
+if ! ip route show | grep -q 169.254.169.254; then
+    ip route add 169.254.169.254/32 dev eth0 via $(ip route get 8.8.8.8 | grep via | awk '{print $3}')
+fi
 
 reload_dns
