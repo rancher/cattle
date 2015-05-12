@@ -621,7 +621,8 @@ def test_container_affinity(super_client, sim_context, sim_context2, network):
             networkIds=[network.id],
             startOnCreate=True,
             validHostIds=validHostIds,
-            labels={'io.rancher.scheduler.affinity:container{eq}' + c1.uuid: ''})
+            labels={
+                'io.rancher.scheduler.affinity:container{eq}' + c1.uuid: ''})
         wait_for_condition(
             super_client, c5,
             lambda x: x.state == 'running')
