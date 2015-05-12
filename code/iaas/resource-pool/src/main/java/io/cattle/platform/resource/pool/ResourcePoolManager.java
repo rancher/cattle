@@ -7,8 +7,6 @@ public interface ResourcePoolManager {
     static final String DEFAULT_QUALIFIER = "default";
     static final String GLOBAL = "global";
 
-    PooledResource allocateResource(Object pool, Object owner);
-
     PooledResource allocateOneResource(Object pool, Object owner, PooledResourceOptions options);
 
     List<PooledResource> allocateResource(Object pool, Object owner, PooledResourceOptions options);

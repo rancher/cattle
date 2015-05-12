@@ -30,15 +30,6 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     List<PooledResourceItemGeneratorFactory> factories;
 
     @Override
-    public PooledResource allocateResource(Object pool, Object owner) {
-        List<PooledResource> result = allocateResource(pool, owner, new PooledResourceOptions());
-        if (result == null || result.size() == 0) {
-            return null;
-        }
-        return result.get(0);
-    }
-
-    @Override
     public List<PooledResource> allocateResource(Object pool, Object owner, PooledResourceOptions options) {
         String qualifier = options.getQualifier();
         int count = options.getCount();
@@ -48,8 +39,11 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         String ownerType = getResourceType(owner);
         long ownerId = getResourceId(owner);
 
-        Map<Object, Object> keys = CollectionUtils.asMap((Object) RESOURCE_POOL.POOL_TYPE, poolType, (Object) RESOURCE_POOL.POOL_ID, poolId,
-                RESOURCE_POOL.QUALIFIER, qualifier, RESOURCE_POOL.OWNER_TYPE, ownerType, RESOURCE_POOL.OWNER_ID, ownerId);
+        Map<Object, Object> keys = CollectionUtils.asMap((Object) RESOURCE_POOL.POOL_TYPE, poolType,
+                (Object) RESOURCE_POOL.POOL_ID, poolId,
+                RESOURCE_POOL.QUALIFIER, qualifier,
+                RESOURCE_POOL.OWNER_TYPE, ownerType,
+                RESOURCE_POOL.OWNER_ID, ownerId);
 
         List<ResourcePool> resourcePools = new ArrayList<ResourcePool>(objectManager.find(ResourcePool.class, keys));
         List<PooledResource> result = new ArrayList<PooledResource>();
@@ -59,7 +53,7 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         }
 
         while (result.size() < count) {
-            String item = getItem(keys, pool, qualifier);
+            String item = getItem(keys, pool, qualifier, options.getRequestedItem());
 
             if (item == null) {
                 break;
@@ -104,10 +98,10 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     @Override
     public PooledResource allocateOneResource(Object pool, Object owner, PooledResourceOptions options) {
         List<PooledResource> resources = allocateResource(pool, owner, options);
-        return resources.size() == 0 ? null : resources.get(0);
+        return (resources == null || resources.size() == 0) ? null : resources.get(0);
     }
 
-    protected String getItem(Map<Object, Object> keys, Object pool, String qualifier) {
+    protected String getItem(Map<Object, Object> keys, Object pool, String qualifier, String tryItem) {
         PooledResourceItemGenerator generator = null;
 
         for (PooledResourceItemGeneratorFactory factory : factories) {
@@ -124,7 +118,13 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         }
 
         while (generator.hasNext()) {
-            String item = generator.next();
+            String item = null;
+            if (tryItem == null) {
+                item = generator.next();
+            } else {
+                item = tryItem;
+                tryItem = null;
+            }
             Map<Object, Object> newKeys = new HashMap<Object, Object>(keys);
             newKeys.put(RESOURCE_POOL.ITEM, item);
 
