@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 491747635;
+	private static final long serialVersionUID = 972299914;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -96,6 +96,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.SubnetVnetMapTable.SUBNET_VNET_MAP,
 			io.cattle.platform.core.model.tables.TaskTable.TASK,
 			io.cattle.platform.core.model.tables.TaskInstanceTable.TASK_INSTANCE,
+			io.cattle.platform.core.model.tables.UserPreferenceTable.USER_PREFERENCE,
 			io.cattle.platform.core.model.tables.VnetTable.VNET,
 			io.cattle.platform.core.model.tables.VolumeTable.VOLUME,
 			io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP,

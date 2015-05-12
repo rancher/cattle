@@ -324,6 +324,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.TaskInstanceTable TASK_INSTANCE = io.cattle.platform.core.model.tables.TaskInstanceTable.TASK_INSTANCE;
 
 	/**
+	 * The table cattle.user_preference
+	 */
+	public static final io.cattle.platform.core.model.tables.UserPreferenceTable USER_PREFERENCE = io.cattle.platform.core.model.tables.UserPreferenceTable.USER_PREFERENCE;
+
+	/**
 	 * The table cattle.vnet
 	 */
 	public static final io.cattle.platform.core.model.tables.VnetTable VNET = io.cattle.platform.core.model.tables.VnetTable.VNET;
