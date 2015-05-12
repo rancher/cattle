@@ -778,3 +778,77 @@ def test_container_label_affinity(
         for c in containers:
             if c is not None:
                 super_client.wait_success(super_client.delete(c))
+
+
+def test_volumes_from_constraint(super_client,
+                                 sim_context,
+                                 sim_context2,
+                                 sim_context3,
+                                 network):
+    image_uuid = sim_context['imageUuid']
+    host1 = sim_context['host']
+    host2 = sim_context2['host']
+    host3 = sim_context3['host']
+
+    valid_hosts = [host1.id, host2.id, host3.id]
+
+    containers = []
+    try:
+        # nominal condition.  start c1 before c2
+        c1 = super_client.create_container(imageUuid=image_uuid,
+                                           networkIds=[network.id],
+                                           startOnCreate=False,
+                                           validHostIds=valid_hosts)
+
+        c2 = super_client.create_container(imageUuid=image_uuid,
+                                           networkIds=[network.id],
+                                           startOnCreate=False,
+                                           validHostIds=valid_hosts,
+                                           dataVolumesFrom=[c1.id])
+
+        c1.start()
+        c2.start()
+
+        c1 = wait_for_condition(
+            super_client, c1,
+            lambda x: x.state == 'running')
+        containers.append(c1)
+
+        c2 = wait_for_condition(
+            super_client, c2,
+            lambda x: x.state == 'running')
+        containers.append(c2)
+
+        assert c1.hosts()[0].id == c2.hosts()[0].id
+
+        # less than ideal situation.  start c4 before c3
+        c3 = super_client.create_container(imageUuid=image_uuid,
+                                           networkIds=[network.id],
+                                           startOnCreate=False,
+                                           validHostIds=valid_hosts)
+
+        c4 = super_client.create_container(imageUuid=image_uuid,
+                                           networkIds=[network.id],
+                                           startOnCreate=False,
+                                           validHostIds=valid_hosts,
+                                           dataVolumesFrom=[c3.id])
+
+        c4.start()
+        c3.start()
+
+        c3 = wait_for_condition(
+            super_client, c3,
+            lambda x: x.state == 'running')
+        containers.append(c3)
+
+        c4 = wait_for_condition(
+            super_client, c4,
+            lambda x: x.state == 'running')
+        containers.append(c4)
+
+        assert c3.hosts()[0].id == c4.hosts()[0].id
+
+    finally:
+        for c in containers:
+            if c is not None:
+                super_client.wait_success(super_client.delete(c))
