@@ -182,6 +182,21 @@ def test_bad_host(user_sim_context, new_sim_context):
     assert e.value.error.code == 'InvalidReference'
 
 
+def test_requested_ip_address(super_client, client, user_sim_context,
+                              user_account):
+    create_agent_instance_nsp(super_client, user_sim_context)
+    host, agent_cli = sim_agent_and_host(user_sim_context)
+    external_id = random_str()
+    user_id = user_account.id
+    inspect = new_inspect(external_id)
+    inspect['NetworkSettings'] = {'IPAddress': '192.168.0.240'}
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, inspect=inspect)
+    container = super_client.reload(container)
+    assert container['data']['fields']['requestedIpAddress'] == '192.168.0.240'
+    assert container.nics()[0].network().kind == 'hostOnlyNetwork'
+
+
 def sim_agent_and_host(user_sim_context):
     agent_account = user_sim_context['agent'].account()
     user_agent_cli = _client_for_agent(agent_account.credentials()[0])
@@ -190,9 +205,12 @@ def sim_agent_and_host(user_sim_context):
 
 
 def create_native_container(client, host, external_id, user_agent_cli,
-                            user_account_id):
+                            user_account_id, inspect=None):
+    if not inspect:
+        inspect = new_inspect(external_id)
+
     create_event(host, external_id, user_agent_cli, client, user_account_id,
-                 'create', new_inspect(external_id))
+                 'create', inspect)
 
     def container_wait():
         containers = client.list_container(externalId=external_id)
