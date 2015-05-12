@@ -459,7 +459,7 @@ def test_host_affinity(super_client, sim_context, sim_context2, network):
             networkIds=[network.id],
             startOnCreate=True,
             validHostIds=validHostIds,
-            labels={'io.rancher.scheduler.constraint:size==huge': ''})
+            labels={'io.rancher.scheduler.constraint:size{eq}huge': ''})
         wait_for_condition(
             super_client, c,
             lambda x: x.state == 'running')
@@ -484,7 +484,7 @@ def test_host_affinity(super_client, sim_context, sim_context2, network):
             networkIds=[network.id],
             startOnCreate=True,
             validHostIds=validHostIds,
-            labels={'io.rancher.scheduler.constraint:size!=huge': ''})
+            labels={'io.rancher.scheduler.constraint:size{ne}huge': ''})
         wait_for_condition(
             super_client, c,
             lambda x: x.state == 'running')
@@ -514,8 +514,8 @@ def test_host_affinity(super_client, sim_context, sim_context2, network):
             startOnCreate=True,
             validHostIds=validHostIds,
             labels={
-                'io.rancher.scheduler.constraint:size==huge': '',
-                'io.rancher.scheduler.constraint:latency==~short': ''
+                'io.rancher.scheduler.constraint:size{eq}huge': '',
+                'io.rancher.scheduler.constraint:latency{ne~}short': ''
             })
         wait_for_condition(
             super_client, c,
@@ -541,7 +541,7 @@ def test_host_affinity(super_client, sim_context, sim_context2, network):
             networkIds=[network.id],
             startOnCreate=True,
             validHostIds=validHostIds,
-            labels={'io.rancher.scheduler.constraint:latency!=~long': ''})
+            labels={'io.rancher.scheduler.constraint:latency{ne~}long': ''})
         wait_for_condition(
             super_client, c,
             lambda x: x.state == 'running')
@@ -593,7 +593,7 @@ def test_container_affinity(super_client, sim_context, sim_context2, network):
             networkIds=[network.id],
             startOnCreate=True,
             validHostIds=validHostIds,
-            labels={'io.rancher.scheduler.affinity:container==' + name1: ''})
+            labels={'io.rancher.scheduler.affinity:container{eq}' + name1: ''})
         wait_for_condition(
             super_client, c3,
             lambda x: x.state == 'running')
@@ -621,7 +621,7 @@ def test_container_affinity(super_client, sim_context, sim_context2, network):
             networkIds=[network.id],
             startOnCreate=True,
             validHostIds=validHostIds,
-            labels={'io.rancher.scheduler.affinity:container==' + c1.uuid: ''})
+            labels={'io.rancher.scheduler.affinity:container{eq}' + c1.uuid: ''})
         wait_for_condition(
             super_client, c5,
             lambda x: x.state == 'running')
@@ -649,7 +649,7 @@ def test_container_affinity(super_client, sim_context, sim_context2, network):
             networkIds=[network.id],
             startOnCreate=True,
             validHostIds=validHostIds,
-            labels={'io.rancher.scheduler.affinity:container!=' + name1: ''})
+            labels={'io.rancher.scheduler.affinity:container{ne}' + name1: ''})
         wait_for_condition(
             super_client, c7,
             lambda x: x.state == 'running')
@@ -706,7 +706,7 @@ def test_container_label_affinity(
             startOnCreate=True,
             validHostIds=validHostIds,
             labels={
-                'io.rancher.scheduler.affinity:container_label:foo=='
+                'io.rancher.scheduler.affinity:container_label:foo{eq}'
                 + c1_label: ''}
         )
         wait_for_condition(
@@ -762,7 +762,7 @@ def test_container_label_affinity(
                 'affinity:container_label:foo!=' + c1_label: '',
             },
             labels={
-                'io.rancher.scheduler.affinity:container_label:foo!=~'
+                'io.rancher.scheduler.affinity:container_label:foo{ne~}'
                 + c4_label: ''
             }
         )

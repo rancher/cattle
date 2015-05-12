@@ -77,21 +77,21 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
 
                 if (affinityDef.startsWith(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL)) {
                     affinityDef = affinityDef.substring(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinition(affinityDef);
+                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.key)) {
                         constraints.add(new ContainerLabelAffinityConstraint(def, allocatorDao));
                     }
 
                 } else if (affinityDef.startsWith(ContainerAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER)) {
                     affinityDef = affinityDef.substring(ContainerAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinition(affinityDef);
+                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.value)) {
                         constraints.add(new ContainerAffinityConstraint(def, objectManager, instanceDao));
                     }
 
                 } else if (affinityDef.startsWith(HostAffinityConstraint.ENV_HEADER_AFFINITY_HOST_LABEL)) {
                     affinityDef = affinityDef.substring(HostAffinityConstraint.ENV_HEADER_AFFINITY_HOST_LABEL.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinition(affinityDef);
+                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.key)) {
                         constraints.add(new HostAffinityConstraint(def, allocatorDao));
                     }
@@ -114,21 +114,21 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
 
                 if (affinityDef.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL)) {
                     affinityDef = affinityDef.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinition(affinityDef);
+                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromLabel(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.key)) {
                         constraints.add(new ContainerLabelAffinityConstraint(def, allocatorDao));
                     }
 
                 } else if (affinityDef.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
                     affinityDef = affinityDef.substring(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinition(affinityDef);
+                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromLabel(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.value)) {
                         constraints.add(new ContainerAffinityConstraint(def, objectManager, instanceDao));
                     }
 
                 } else if (affinityDef.startsWith(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL)) {
                     affinityDef = affinityDef.substring(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinition(affinityDef);
+                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromLabel(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.key)) {
                         constraints.add(new HostAffinityConstraint(def, allocatorDao));
                     }
@@ -139,12 +139,24 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
         return constraints;
     }
 
-    private AffinityConstraintDefinition extractAffinitionConstraintDefinition(String definitionString) {
+    private AffinityConstraintDefinition extractAffinitionConstraintDefinitionFromEnv(String definitionString) {
         for (AffinityOps op : AffinityOps.values()) {
-            int i = definitionString.indexOf(op.symbol);
+            int i = definitionString.indexOf(op.envSymbol);
             if (i != -1) {
                 String key = definitionString.substring(0, i);
-                String value = definitionString.substring(i + op.symbol.length());
+                String value = definitionString.substring(i + op.envSymbol.length());
+                return new AffinityConstraintDefinition(op, key, value);
+            }
+        }
+        return null;
+    }
+
+    private AffinityConstraintDefinition extractAffinitionConstraintDefinitionFromLabel(String definitionString) {
+        for (AffinityOps op : AffinityOps.values()) {
+            int i = definitionString.indexOf(op.labelSymbol);
+            if (i != -1) {
+                String key = definitionString.substring(0, i);
+                String value = definitionString.substring(i + op.labelSymbol.length());
                 return new AffinityConstraintDefinition(op, key, value);
             }
         }

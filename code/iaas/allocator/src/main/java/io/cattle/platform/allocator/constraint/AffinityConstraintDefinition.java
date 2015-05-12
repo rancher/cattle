@@ -2,15 +2,17 @@ package io.cattle.platform.allocator.constraint;
 
 public class AffinityConstraintDefinition {
     public enum AffinityOps {
-        SOFT_EQ("==~"),
-        SOFT_NE("!=~"),
-        EQ("=="),
-        NE("!=");
+        SOFT_EQ("==~", "{eq~}"),
+        SOFT_NE("!=~", "{ne~}"),
+        EQ("==", "{eq}"),
+        NE("!=", "{ne}");
 
-        String symbol;
+        String envSymbol;
+        String labelSymbol;
 
-        private AffinityOps(String symbol) {
-            this.symbol = symbol;
+        private AffinityOps(String envSymbol, String labelSymbol) {
+            this.envSymbol = envSymbol;
+            this.labelSymbol = labelSymbol;
         }
     }
 
