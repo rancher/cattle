@@ -4,6 +4,8 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
@@ -33,7 +35,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         Map<Object, Object> criteria = new HashMap<>();
         criteria.put(ObjectMetaDataManager.NAME_FIELD, service.getName());
-        criteria.put(ObjectMetaDataManager.REMOVED_FIELD, null);
+        criteria.put(ObjectMetaDataManager.REMOVED_FIELD, new Condition(ConditionType.NULL));
         criteria.put(ServiceDiscoveryConstants.FIELD_ENVIRIONMENT_ID, service.getEnvironmentId());
 
         List<?> existingSvcs = rm.list(type, criteria, null);

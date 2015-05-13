@@ -10,6 +10,7 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.data.DnsEntryData;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.model.Instance;
@@ -167,6 +168,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(clientNic.REMOVED.isNull())
                         .and(targetNic.REMOVED.isNull())
                         .and(serviceConsumeMap.REMOVED.isNull())
+                        .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE))
                         .and(clientServiceExposeMap.REMOVED.isNull())
                         .and(targetServiceExposeMap.REMOVED.isNull())
                         .and(targetService.REMOVED.isNull())
