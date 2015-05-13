@@ -71,7 +71,17 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
     }
 
     protected ExitReason remove(Object obj, Map<String, Object> data) {
-        return getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, obj, data);
+        try {
+            return getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, obj, data);
+        } catch (ProcessCancelException e) {
+            Object state = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.STATE_FIELD);
+
+            if (CommonStatesConstants.PURGED.equals(state)) {
+                return null;
+            }
+
+            throw e;
+        }
     }
 
     protected ExitReason purge(Object obj, Map<String, Object> data) {
