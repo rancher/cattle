@@ -9,6 +9,7 @@
         "machine.virtualboxConfig" : "cr",
         "machine.digitaloceanConfig" : "cr",
         "machine.amazonec2Config" : "cr",
+        "machine.rackspace2Config" : "cr",
         "machine.packetConfig" : "cr",
 
         "virtualboxConfig" : "cr",
@@ -38,7 +39,18 @@
         "amazonec2Config.instanceType" : "cr",
         "amazonec2Config.rootSize" : "cr",
         "amazonec2Config.iamInstanceProfile" : "cr",
-        
+
+        "rackspaceConfig": "cr",
+        "rackspaceConfig.username": "cr",
+        "rackspaceConfig.apiKey": "cr",
+        "rackspaceConfig.region": "cr",
+        "rackspaceConfig.endpointType": "cr",
+        "rackspaceConfig.imageId": "cr",
+        "rackspaceConfig.flavorId": "cr",
+        "rackspaceConfig.sshUser": "cr",
+        "rackspaceConfig.sshPort": "cr",
+        "rackspaceConfig.dockerInstall": "cr",
+
         "packetConfig" : "cr",
         "packetConfig.apiKey" : "cr",
         "packetConfig.projectId" : "cr",
