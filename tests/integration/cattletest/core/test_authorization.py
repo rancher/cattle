@@ -783,6 +783,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'virtualboxConfig': 'r',
         'digitaloceanConfig': 'r',
         'amazonec2Config': 'r',
+        'rackspaceConfig': 'r',
         'packetConfig': 'r',
     })
 
@@ -795,6 +796,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'virtualboxConfig': 'r',
         'digitaloceanConfig': 'r',
         'amazonec2Config': 'r',
+        'rackspaceConfig': 'r',
         'packetConfig': 'r',
     })
 
@@ -807,6 +809,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
         'amazonec2Config': 'cr',
+        'rackspaceConfig': 'cr',
         'packetConfig': 'cr',
         })
 
@@ -821,6 +824,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
         'amazonec2Config': 'cr',
+        'rackspaceConfig': 'cr',
         'packetConfig': 'cr',
     })
 

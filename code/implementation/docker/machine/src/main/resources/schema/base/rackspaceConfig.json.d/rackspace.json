@@ -1,0 +1,42 @@
+{
+    "resourceFields": {
+        "username": {
+            "type": "string",
+            "nullable": false,
+            "required": true
+        },
+        "apiKey": {
+            "type": "string",
+            "nullable": false,
+            "required": true
+        },
+        "region": {
+            "type": "string",
+            "nullable": true
+        },
+        "endpointType": {
+            "type": "string",
+            "nullable": true
+        },
+        "imageId": {
+            "type": "string",
+            "nullable": true
+        },
+        "flavorId": {
+            "type": "string",
+            "nullable": true
+        },
+        "sshUser": {
+            "type": "string",
+            "nullable": true
+        },
+        "sshPort": {
+            "type": "string",
+            "nullable": true
+        },
+        "dockerInstall": {
+            "type": "string",
+            "nullable": true
+        }
+    }
+}
