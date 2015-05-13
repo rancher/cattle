@@ -61,7 +61,7 @@ public class HostPurge extends AbstractDefaultProcessHandler {
             purge(pool, state.getData());
         }
 
-        for (Instance instance : instanceDao.getNonRemovedInstanceOn(host)) {
+        for (Instance instance : instanceDao.getNonRemovedInstanceOn(host.getId())) {
             try {
                 execute(InstanceConstants.PROCESS_STOP, instance, state.getData());
             } catch (ProcessCancelException e) {

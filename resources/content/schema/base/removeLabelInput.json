@@ -1,0 +1,8 @@
+{
+    "collectionMethods" : [],
+    "resourceFields": {
+        "label": {
+            "type": "reference[label]"
+        }
+    }
+}

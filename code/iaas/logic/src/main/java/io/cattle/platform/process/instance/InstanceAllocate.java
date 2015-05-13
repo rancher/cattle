@@ -62,32 +62,35 @@ public class InstanceAllocate extends EventBasedProcessHandler {
         if (requestedHostId != null) {
             Host potentialCluster = objectManager.loadResource(Host.class, requestedHostId);
             if (objectManager.isKind(potentialCluster, ClusterConstants.KIND)) {
-                log.info("Instance [{}] requested for a cluster: [{}]", instance, potentialCluster);
-
-                // create instanceHostMap binding with cluster.
-                if (mapDao.findNonRemoved(InstanceHostMap.class, Host.class, requestedHostId, Instance.class, instance.getId()) == null) {
-                    objectManager.create(InstanceHostMap.class,
-                            INSTANCE_HOST_MAP.HOST_ID, requestedHostId,
-                            INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
-                }
-
-                // update nic with active subnet
-                Nic nic = nicDao.getPrimaryNic(instance);
-                Network network = objectManager.loadResource(Network.class, nic.getNetworkId());
-                if (network != null) {
-                    for (Subnet subnet : objectManager.children(network, Subnet.class)) {
-                        if (CommonStatesConstants.ACTIVE.equals(subnet.getState())) {
-                            nic.setSubnetId(subnet.getId());
-                            objectManager.persist(nic);
-                            break;
-                        }
-                    }
-                }
-
+                handleCluster(requestedHostId, instance, potentialCluster);
                 return postEvent(state, process, new HashMap<Object, Object>());
             }
         }
         return super.handle(state, process);
+    }
+
+    private void handleCluster(Long requestedHostId, Instance instance, Host cluster) {
+        log.info("Instance [{}] requested for a cluster: [{}]", instance, cluster);
+
+        // create instanceHostMap binding with cluster.
+        if (mapDao.findNonRemoved(InstanceHostMap.class, Host.class, requestedHostId, Instance.class, instance.getId()) == null) {
+            objectManager.create(InstanceHostMap.class,
+                    INSTANCE_HOST_MAP.HOST_ID, requestedHostId,
+                    INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
+        }
+
+        // update nic with active subnet
+        Nic nic = nicDao.getPrimaryNic(instance);
+        Network network = objectManager.loadResource(Network.class, nic.getNetworkId());
+        if (network != null) {
+            for (Subnet subnet : objectManager.children(network, Subnet.class)) {
+                if (CommonStatesConstants.ACTIVE.equals(subnet.getState())) {
+                    nic.setSubnetId(subnet.getId());
+                    objectManager.persist(nic);
+                    break;
+                }
+            }
+        }
     }
 
     @Override

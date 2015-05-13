@@ -9,6 +9,9 @@ import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 
 import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.Multimap;
 
 public interface AllocatorDao {
 
@@ -36,4 +39,7 @@ public interface AllocatorDao {
 
     List<Port> getUsedPortsForHostExcludingInstance(long hostId, long instanceId);
 
+    Map<String, String> getLabelsForHost(long hostId);
+
+    Multimap<String, String> getLabelsForContainersForHost(long hostId);
 }

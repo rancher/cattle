@@ -234,19 +234,30 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
             Pair<Class<?>, Relationship> left = rels.get(0);
             Pair<Class<?>, Relationship> right = rels.get(1);
 
+            String mapRightToLeftName = right.getRight().getPropertyName();
+            String mapLeftToRightName = left.getRight().getPropertyName();
+
             if (left.getLeft().equals(right.getLeft())) {
                 // This basically looks like a junction map to itself.
                 // Inspect the column names for extra info and use the link
-                // override
-                // to obtain a more meaningful link name
-                String mapRightToLeftName = right.getRight().getPropertyName();
+                // override to obtain a more meaningful link name
                 register(getLinkNameOverride(entry.getKey().getSimpleName(), mapRightToLeftName, mapRightToLeftName), entry.getKey(), left, right);
-
-                String mapLeftToRightName = left.getRight().getPropertyName();
                 register(getLinkNameOverride(entry.getKey().getSimpleName(), mapLeftToRightName, mapLeftToRightName), entry.getKey(), right, left);
             } else {
-                register(schemaFactory.getSchema(right.getLeft()).getPluralName(), entry.getKey(), left, right);
-                register(schemaFactory.getSchema(left.getLeft()).getPluralName(), entry.getKey(), right, left);
+                register(getLinkNameOverride(
+                            entry.getKey().getSimpleName(),
+                            mapRightToLeftName,
+                            schemaFactory.getSchema(right.getLeft()).getPluralName()
+                        ),
+                        entry.getKey(),
+                        left, right);
+                register(getLinkNameOverride(
+                            entry.getKey().getSimpleName(),
+                            mapLeftToRightName,
+                            schemaFactory.getSchema(left.getLeft()).getPluralName()
+                        ),
+                        entry.getKey(),
+                        right, left);
             }
         }
     }

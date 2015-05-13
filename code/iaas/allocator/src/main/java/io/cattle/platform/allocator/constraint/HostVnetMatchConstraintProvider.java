@@ -68,4 +68,8 @@ public class HostVnetMatchConstraintProvider implements AllocationConstraintsPro
         this.jsonMapper = jsonMapper;
     }
 
+    @Override
+    public boolean isCritical() {
+        return true;
+    }
 }

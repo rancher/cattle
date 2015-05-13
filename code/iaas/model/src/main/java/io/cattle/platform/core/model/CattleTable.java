@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 972299914;
+	private static final long serialVersionUID = 276845975;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -55,16 +55,19 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.GlobalLoadBalancerTable.GLOBAL_LOAD_BALANCER,
 			io.cattle.platform.core.model.tables.HostTable.HOST,
 			io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP,
+			io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP,
 			io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP,
 			io.cattle.platform.core.model.tables.ImageTable.IMAGE,
 			io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP,
 			io.cattle.platform.core.model.tables.InstanceTable.INSTANCE,
 			io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP,
+			io.cattle.platform.core.model.tables.InstanceLabelMapTable.INSTANCE_LABEL_MAP,
 			io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK,
 			io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS,
 			io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP,
 			io.cattle.platform.core.model.tables.IpAssociationTable.IP_ASSOCIATION,
 			io.cattle.platform.core.model.tables.IpPoolTable.IP_POOL,
+			io.cattle.platform.core.model.tables.LabelTable.LABEL,
 			io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER,
 			io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG,
 			io.cattle.platform.core.model.tables.LoadBalancerConfigListenerMapTable.LOAD_BALANCER_CONFIG_LISTENER_MAP,

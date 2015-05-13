@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class HostVnetMatchConstraint implements Constraint {
+public class HostVnetMatchConstraint extends HardConstraint implements Constraint {
 
     ObjectManager objectManager;
     AllocatorDao allocatorDao;

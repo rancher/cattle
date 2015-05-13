@@ -173,4 +173,16 @@
     <process:process name="snapshotstoragepoolmap.create" resourceType="snapshotStoragePoolMap" start="requested" transitioning="creating" done="created" />
     <process:process name="snapshotstoragepoolmap.remove" resourceType="snapshotStoragePoolMap" start="created,creating" transitioning="removing" done="removed" />
 
+    <!--  Label -->
+    <process:process name="label.create" resourceType="label" start="requested" transitioning="creating" done="created" />
+    <process:process name="label.remove" resourceType="label" start="created,creating" transitioning="removing" done="removed" />
+
+    <!-- Host label map -->
+    <process:process name="hostlabelmap.create" resourceType="hostLabelMap" start="requested" transitioning="creating" done="created" />
+    <process:process name="hostlabelmap.remove" resourceType="hostLabelMap" start="created,creating" transitioning="removing" done="removed" />
+
+    <!-- Instance label map -->
+    <process:process name="instancelabelmap.create" resourceType="instanceLabelMap" start="requested" transitioning="creating" done="created" />
+    <process:process name="instancelabelmap.remove" resourceType="instanceLabelMap" start="created,creating" transitioning="removing" done="removed" />
+
 </beans>

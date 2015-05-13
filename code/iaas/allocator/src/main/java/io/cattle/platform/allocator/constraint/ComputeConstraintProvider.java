@@ -47,4 +47,8 @@ public class ComputeConstraintProvider implements AllocationConstraintsProvider 
         this.mapDao = mapDao;
     }
 
+    @Override
+    public boolean isCritical() {
+        return true;
+    }
 }

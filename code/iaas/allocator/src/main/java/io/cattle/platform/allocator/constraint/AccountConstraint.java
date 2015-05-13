@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class AccountConstraint implements Constraint {
+public class AccountConstraint extends HardConstraint implements Constraint {
 
     /* Caches */
     Map<Long, Host> hosts = new HashMap<>();

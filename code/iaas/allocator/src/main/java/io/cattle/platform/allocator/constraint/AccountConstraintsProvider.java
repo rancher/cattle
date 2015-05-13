@@ -54,4 +54,8 @@ public class AccountConstraintsProvider implements AllocationConstraintsProvider
         }
     }
 
+    @Override
+    public boolean isCritical() {
+        return true;
+    }
 }

@@ -8,6 +8,7 @@ import io.cattle.platform.allocator.lock.AllocateResourceLock;
 import io.cattle.platform.allocator.lock.AllocateVolumesResourceLock;
 import io.cattle.platform.allocator.service.AllocationRequest.Type;
 import io.cattle.platform.allocator.util.AllocatorUtils;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
@@ -21,7 +22,10 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.metrics.util.MetricsUtil;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -220,7 +224,19 @@ public abstract class AbstractAllocator implements Allocator {
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                runAllocation(request, attempt);
+                do {
+                    runAllocation(request, attempt);
+                    if (attempt.getMatchedCandidate() == null) {
+                        // are there any soft constraints we can remove?
+                        List<Constraint> constraints = attempt.getConstraints();
+                        if (constraints.size() > 0 && !constraints.get(constraints.size() - 1).isHardConstraint()) {
+                            // not the best algorithm since ideally we still maximize # of soft constraints we can fulfill
+                            constraints.remove(constraints.size() - 1);
+                        } else {
+                            break;
+                        }
+                    }
+                } while (attempt.getMatchedCandidate() == null);
             }
         });
 
@@ -326,9 +342,28 @@ public abstract class AbstractAllocator implements Allocator {
     protected void populateConstraints(AllocationAttempt attempt, AllocationLog log) {
         List<Constraint> constraints = attempt.getConstraints();
 
-        for (AllocationConstraintsProvider provider : allocationConstraintProviders) {
-            provider.appendConstraints(attempt, log, constraints);
+        Instance instance = attempt.getInstance();
+        Long requestedHostId = null;
+        if (instance != null) {
+            requestedHostId = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID).as(Long.class);
         }
+
+        for (AllocationConstraintsProvider provider : allocationConstraintProviders) {
+            if (requestedHostId == null || provider.isCritical()) {
+                provider.appendConstraints(attempt, log, constraints);
+            }
+        }
+        Collections.sort(constraints, new Comparator<Constraint>() {
+            @Override
+            public int compare(Constraint o1, Constraint o2) {
+                if (o1 == o2) return 0;
+                if (o1 != null && o2 == null) return -1;
+                if (o1 == null && o2 != null) return 1;
+                if (o1.isHardConstraint() && o2.isHardConstraint()) return 0;
+                if (o1.isHardConstraint() && !o2.isHardConstraint()) return -1;
+                return 1;
+            }
+        });
     }
 
     protected abstract boolean supports(AllocationRequest request);

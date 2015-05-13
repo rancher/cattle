@@ -5,9 +5,12 @@ import static io.cattle.platform.core.model.tables.HostVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
-import static io.cattle.platform.core.model.tables.PortTable.PORT;
+import static io.cattle.platform.core.model.tables.PortTable.*;
+import static io.cattle.platform.core.model.tables.LabelTable.*;
+import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
@@ -23,6 +26,7 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.Label;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StoragePool;
@@ -34,6 +38,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +49,9 @@ import org.jooq.Condition;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
@@ -338,4 +346,47 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .fetchInto(Port.class);
     }
 
+    @Override
+    public Map<String, String> getLabelsForHost(long hostId) {
+        List<Label> labels = create()
+                .select(LABEL.fields())
+                    .from(LABEL)
+                    .join(HOST_LABEL_MAP)
+                        .on(LABEL.ID.eq(HOST_LABEL_MAP.LABEL_ID))
+                    .where(HOST_LABEL_MAP.HOST_ID.eq(hostId))
+                        .and(LABEL.REMOVED.isNull())
+                        .and(HOST_LABEL_MAP.REMOVED.isNull())
+                .fetchInto(Label.class);
+
+        Map<String, String> labelsMap = new HashMap<String, String>();
+        for (Label label: labels) {
+            labelsMap.put(label.getKey(), label.getValue());
+        }
+        return labelsMap;
+    }
+
+    @Override
+    public Multimap<String, String> getLabelsForContainersForHost(long hostId) {
+        List<Label> labels = create()
+                .select(LABEL.fields())
+                    .from(LABEL)
+                    .join(INSTANCE_LABEL_MAP)
+                        .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID))
+                    .join(INSTANCE_HOST_MAP)
+                        .on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                    .join(INSTANCE)
+                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                    .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId))
+                        .and(LABEL.REMOVED.isNull())
+                        .and(INSTANCE_LABEL_MAP.REMOVED.isNull())
+                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                        .and(INSTANCE.REMOVED.isNull())
+                .fetchInto(Label.class);
+
+        Multimap<String, String> labelsMap = HashMultimap.create();
+        for (Label label: labels) {
+            labelsMap.put(label.getKey(), label.getValue());
+        }
+        return labelsMap;
+    }
 }

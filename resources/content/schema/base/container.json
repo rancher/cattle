@@ -190,9 +190,17 @@
         }
     },
     "resourceActions": {
-        "logs":{
+        "logs": {
             "input":"containerLogs",
             "output":"hostAccess"
+        },
+        "addlabel": {
+            "input": "addLabelInput",
+            "output": "container"
+        },
+        "removelabel": {
+            "input": "removeLabelInput",
+            "output": "container"
         }
     }
 }

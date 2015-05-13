@@ -7,7 +7,7 @@ import io.cattle.platform.core.model.StoragePool;
 import java.util.Map;
 import java.util.Set;
 
-public class NegativeStoragePoolKindConstraint implements Constraint {
+public class NegativeStoragePoolKindConstraint extends HardConstraint implements Constraint {
 
     String kind;
 

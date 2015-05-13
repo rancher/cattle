@@ -42,4 +42,5 @@
     <include file="db/core-035.xml"/>
     <include file="db/core-036.xml"/>
     <include file="db/core-037.xml"/>
+    <include file="db/labels.xml"/>
 </databaseChangeLog>

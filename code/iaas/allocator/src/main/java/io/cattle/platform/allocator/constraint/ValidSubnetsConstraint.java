@@ -6,7 +6,7 @@ import io.cattle.platform.allocator.service.AllocationCandidate;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ValidSubnetsConstraint implements Constraint {
+public class ValidSubnetsConstraint extends HardConstraint implements Constraint {
 
     long nicId;
     Set<Long> subnets = new HashSet<Long>();

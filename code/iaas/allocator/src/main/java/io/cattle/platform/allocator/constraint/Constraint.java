@@ -7,4 +7,6 @@ public interface Constraint {
 
     boolean matches(AllocationAttempt attempt, AllocationCandidate candidate);
 
+    boolean isHardConstraint();
+
 }

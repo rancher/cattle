@@ -3,7 +3,7 @@ package io.cattle.platform.allocator.constraint;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 
-public class IsValidConstraint implements Constraint {
+public class IsValidConstraint extends HardConstraint implements Constraint {
 
     @Override
     public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
