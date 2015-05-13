@@ -14,4 +14,6 @@ public interface GenericMapDao {
 
     <T> T findToRemove(Class<T> mapType, Class<?> leftResourceType, long leftResourceId, Class<?> rightResourceType,
             long rightResourceId);
+
+    <T> List<? extends T> findNonPurged(Class<T> mapType, Class<?> resourceType, long resourceId);
 }

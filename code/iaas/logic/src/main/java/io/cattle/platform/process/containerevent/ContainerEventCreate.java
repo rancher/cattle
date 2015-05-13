@@ -1,6 +1,7 @@
 package io.cattle.platform.process.containerevent;
 
 import static io.cattle.platform.core.constants.CommonStatesConstants.*;
+import static io.cattle.platform.core.constants.ContainerEventConstants.*;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.core.constants.NetworkConstants.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -19,6 +20,7 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
@@ -50,18 +52,10 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     private static final String INSPECT_NAME = "Name";
     private static final String FIELD_DOCKER_INSPECT = "dockerInspect";
     private static final String INSPECT_CONFIG = "Config";
-    private static final String INSPECT_IMAGE = "Image";
     private static final String IMAGE_PREFIX = "docker:";
     private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
-    private static final String RANCHER_UUID = "io.rancher.container.uuid";
-    private static final String RANCHER_NETWORK = "io.rancher.container.network";
     private static final String RANCHER_UUID_ENV_VAR = "RANCHER_UUID=";
     private static final String RANCHER_NETWORK_ENV_VAR = "RANCHER_NETWORK=";
-    private static final String EVENT_CREATE = "create";
-    private static final String EVENT_STOP = "stop";
-    private static final String EVENT_START = "start";
-    private static final String EVENT_DIE = "die";
-    private static final String EVENT_DESTROY = "destroy";
 
     @Inject
     StorageService storageService;
@@ -78,6 +72,9 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     @Inject
     LockManager lockManager;
 
+    @Inject
+    ResourceMonitor resourceMonitor;
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         if (!MANAGE_NONRANCHER_CONTAINERS.get()) {
@@ -85,14 +82,15 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         }
 
         final ContainerEvent event = (ContainerEvent)state.getResource();
-
+        final Map<String, Object> data = state.getData();
         HandlerResult result = lockManager.lock(new ContainerEventInstanceLock(event.getAccountId(), event.getExternalId()), new LockCallback<HandlerResult>() {
             @Override
             public HandlerResult doWithLock() {
                 Map<String, Object> inspect = getInspect(event);
-                String rancherUuid = getRancherUuidLabel(inspect);
+                String rancherUuid = getRancherUuidLabel(inspect, data);
                 Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getAccountId(), rancherUuid, event.getExternalId());
-                if (instance != null && StringUtils.isNotEmpty(instance.getSystemContainer())) {
+                if ((instance != null && StringUtils.isNotEmpty(instance.getSystemContainer()))
+                                || StringUtils.isNotEmpty(getLabel(LABEL_RANCHER_SYSTEM_CONTAINER, inspect, data))) {
                     // System containers are not managed by container events
                     return null;
                 }
@@ -100,7 +98,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                 try {
                     String status = event.getExternalStatus();
                     if (status.equals(EVENT_CREATE) && instance == null) {
-                        scheduleInstance(event, instance, inspect);
+                        scheduleInstance(event, instance, inspect, data);
                         return null;
                     }
 
@@ -112,6 +110,11 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                     if (EVENT_START.equals(status)) {
                         if (STATE_CREATING.equals(state) || STATE_RUNNING.equals(state) || STATE_STARTING.equals(state) || STATE_RESTARTING.equals(status))
                             return null;
+
+                        if (STATE_STOPPING.equals(state)) {
+                            // handle docker restarts
+                            instance = resourceMonitor.waitForNotTransitioning(instance);
+                        }
 
                         objectProcessManager.scheduleProcessInstance(PROCESS_START, instance, makeData());
                     } else if (EVENT_STOP.equals(status) || EVENT_DIE.equals(status)) {
@@ -141,7 +144,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         return result;
     }
 
-    void scheduleInstance(final ContainerEvent event, Instance instance, final Map<String, Object> inspect) {
+    void scheduleInstance(ContainerEvent event, Instance instance, Map<String, Object> inspect, Map<String, Object> data) {
         final Long accountId = event.getAccountId();
         final String externalId = event.getExternalId();
 
@@ -150,9 +153,9 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         instance.setAccountId(accountId);
         instance.setExternalId(externalId);
         instance.setNativeContainer(true);
-        setName(inspect, instance);
-        setNetwork(inspect, instance);
-        setImage(inspect, instance);
+        setName(inspect, data, instance);
+        setNetwork(inspect, data, instance);
+        setImage(event, instance);
         setHost(event, instance);
         instance = objectManager.create(instance);
         objectProcessManager.scheduleProcessInstance(PROCESS_CREATE, instance, makeData());
@@ -179,13 +182,16 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         DataAccessor.fields(instance).withKey(FIELD_REQUESTED_HOST_ID).set(event.getHostId());
     }
 
-    void setName(Map<String, Object> inspect, Instance instance) {
-        String name = (String)inspect.get(INSPECT_NAME);
+    void setName(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
+        String name = DataAccessor.fromMap(data).withKey(CONTAINER_EVENT_SYNC_NAME).as(String.class);
+        if (StringUtils.isEmpty(name))
+            name = (String)inspect.get(INSPECT_NAME);
+
         name = name.replaceFirst("/", "");
         instance.setName(name);
     }
 
-    void setNetwork(Map<String, Object> inspect, Instance instance) {
+    void setNetwork(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
         Network network = null;
         Network rancherNetwork = networkDao.getNetworkForObject(instance, KIND_HOSTONLY);
         String ip = getDockerIp(inspect);
@@ -194,7 +200,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
             network = rancherNetwork;
         }
 
-        if (network == null && BooleanUtils.toBoolean(getRancherNetworkLabel(inspect))) {
+        if (network == null && BooleanUtils.toBoolean(getRancherNetworkLabel(inspect, data))) {
             network = rancherNetwork;
         }
 
@@ -235,10 +241,8 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
-    void setImage(Map<String, Object> inspect, Instance instance) {
-        Map<String, Object> config = (Map<String, Object>)inspect.get(INSPECT_CONFIG);
-        String imageUuid = (String)config.get(INSPECT_IMAGE);
+    void setImage(ContainerEvent event, Instance instance) {
+        String imageUuid = event.getExternalFrom();
 
         // Somewhat of a hack, but needed for testing against sim contexts
         if (!imageUuid.matches(IMAGE_KIND_PATTERN)) {
@@ -254,32 +258,42 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         instance.setImageId(image.getId());
     }
 
-    String getRancherUuidLabel(Map<String, Object> inspect) {
-        return getLabel(RANCHER_UUID, RANCHER_UUID_ENV_VAR, inspect);
+    String getRancherUuidLabel(Map<String, Object> inspect, Map<String, Object> data) {
+        return getLabel(LABEL_RANCHER_UUID, RANCHER_UUID_ENV_VAR, inspect, data);
     }
 
-    String getRancherNetworkLabel(Map<String, Object> inspect) {
-        return getLabel(RANCHER_NETWORK, RANCHER_NETWORK_ENV_VAR, inspect);
+    String getRancherNetworkLabel(Map<String, Object> inspect, Map<String, Object> data) {
+        return getLabel(RANCHER_NETWORK, RANCHER_NETWORK_ENV_VAR, inspect, data);
+    }
+
+    String getLabel(String labelKey, Map<String, Object> inspect, Map<String, Object> data) {
+        return getLabel(labelKey, null, inspect, data);
     }
 
     @SuppressWarnings("unchecked")
-    String getLabel(String labelKey, String envVarPrefix, Map<String, Object> inspect) {
-        if (inspect == null) {
+    String getLabel(String labelKey, String envVarPrefix, Map<String, Object> inspect, Map<String, Object> data) {
+        Map<String, Object> labelsFromData = CollectionUtils.toMap(DataAccessor.fromMap(data).withKey(CONTAINER_EVENT_SYNC_LABELS).get());
+        String label = labelsFromData.containsKey(labelKey) ? labelsFromData.get(labelKey).toString() : null;
+        if (StringUtils.isNotEmpty(label))
+            return label;
+
+        if (inspect == null)
             return null;
-        }
 
         Map<String, Object> config = (Map<String, Object>)inspect.get(INSPECT_CONFIG);
 
         Map<String, String> labels = CollectionUtils.toMap(config.get(INSPECT_LABELS));
-        String label = labels.get(labelKey);
+        label = labels.get(labelKey);
         if (StringUtils.isNotEmpty(label))
             return label;
 
+        if (envVarPrefix == null)
+            return null;
+
         List<String> envVars = (List<String>)CollectionUtils.toList(config.get(INSPECT_ENV));
         for (String envVar : envVars) {
-            if (envVar.startsWith(envVarPrefix)) {
+            if (envVar.startsWith(envVarPrefix))
                 return envVar.substring(envVarPrefix.length());
-            }
         }
         return null;
     }

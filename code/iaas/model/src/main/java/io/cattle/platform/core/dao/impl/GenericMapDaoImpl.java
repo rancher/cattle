@@ -99,6 +99,28 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
                 .fetch();
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> List<? extends T> findNonPurged(Class<T> mapType, Class<?> resourceType, long resourceId) {
+        String type = schemaFactory.getSchemaName(mapType);
+
+        Table<?> table = getTable(mapType);
+
+        Relationship reference = getRelationship(mapType, resourceType);
+        TableField<?, Object> referenceField = JooqUtils.getTableField(metaDataManager, type, reference.getPropertyName());
+        TableField<?, Object> state = JooqUtils.getTableField(metaDataManager, type, ObjectMetaDataManager.STATE_FIELD);
+
+        if ( referenceField == null || state == null ) {
+            throw new IllegalArgumentException("Type [" + mapType + "] is missing required reference or state column");
+        }
+
+        return (List<? extends T>)create()
+                .selectFrom(table)
+                .where(
+                referenceField.eq(resourceId)
+                .and(state.ne(CommonStatesConstants.PURGED)))
+                .fetch();
+    }
 
     protected <T> Table<?> getTable(Class<?> mapType) {
         Class<UpdatableRecord<?>> record = JooqUtils.getRecordClass(schemaFactory, mapType);

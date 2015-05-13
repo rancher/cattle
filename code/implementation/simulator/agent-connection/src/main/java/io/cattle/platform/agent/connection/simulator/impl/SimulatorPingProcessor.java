@@ -56,6 +56,12 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
             resources.add(instanceMap);
         }
 
+        String hostUuid = agent.getUuid() + "-" + 0;
+        Map<String, Object> hostUuidResource = new HashMap<String, Object>();
+        hostUuidResource.put(ObjectMetaDataManager.TYPE_FIELD, "hostUuid");
+        hostUuidResource.put(ObjectMetaDataManager.UUID_FIELD, hostUuid);
+        resources.add(hostUuidResource);
+
         pong.setOption(Ping.INSTANCES, true);
     }
 

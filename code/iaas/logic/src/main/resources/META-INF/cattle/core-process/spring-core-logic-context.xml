@@ -107,6 +107,10 @@
         </property>
     </bean>
 
+    <bean class="io.cattle.platform.process.instance.PostInstancePurge"
+        p:commandName="compute.instance.remove" >
+    </bean>
+
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:shouldContinue="true"
         p:name="AgentConnectionClose"

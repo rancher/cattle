@@ -736,6 +736,18 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     }
 
     @Override
+    public boolean isTransitioningState(Class<?> resourceType, String state) {
+        Schema schema = schemaFactory.getSchema(resourceType);
+        Set<String> states = transitioningStates.get(schema.getId());
+
+        if (states == null) {
+            return false;
+        }
+
+        return state != null && states.contains(state);
+    }
+
+    @Override
     public Map<String, ActionDefinition> getActionDefinitions(Object obj) {
         if (obj == null) {
             return null;
@@ -782,5 +794,4 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     public int getPriority() {
         return Priority.PRE;
     }
-
 }

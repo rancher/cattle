@@ -224,7 +224,7 @@ def create_native_container(client, host, external_id, user_agent_cli,
 def create_event(host, external_id, agent_cli, client, user_account_id, status,
                  inspect=None):
     timestamp = int(time.time())
-    image = 'busybox:latest'
+    image = 'sim:busybox:latest'
     event = agent_cli.create_container_event(
         reportedHostUuid=host.data.fields['reportedUuid'],
         externalId=external_id,
