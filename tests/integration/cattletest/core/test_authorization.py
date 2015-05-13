@@ -13,16 +13,16 @@ def test_user_client_access(clients):
         'superadmin': 145,
         'service': 93,
         'project': 71,
-        'admin': 96,
+        'admin': 97,
         'agent': 8,
-        'user': 74,
+        'user': 75,
         'agentRegister': 4,
         'test': 140,
-        'readAdmin': 96,
+        'readAdmin': 97,
         'token': 2,
-        'superadmin': 150,
-        'service': 96,
-        'project': 74,
+        'superadmin': 151,
+        'service': 97,
+        'project': 75,
     }
     for tuple in clients.items():
         assert typesLen[tuple[0]] == len(tuple[1].schema.types.items())
@@ -783,6 +783,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'virtualboxConfig': 'r',
         'digitaloceanConfig': 'r',
         'amazonec2Config': 'r',
+        'rackspaceConfig': 'r',
         'packetConfig': 'r',
     })
 
@@ -795,6 +796,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'virtualboxConfig': 'r',
         'digitaloceanConfig': 'r',
         'amazonec2Config': 'r',
+        'rackspaceConfig': 'r',
         'packetConfig': 'r',
     })
 
@@ -807,6 +809,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
         'amazonec2Config': 'cr',
+        'rackspaceConfig': 'cr',
         'packetConfig': 'cr',
         })
 
@@ -821,6 +824,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'virtualboxConfig': 'cr',
         'digitaloceanConfig': 'cr',
         'amazonec2Config': 'cr',
+        'rackspaceConfig': 'cr',
         'packetConfig': 'cr',
     })
 
