@@ -299,7 +299,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         for (String key : data.keySet()) {
             ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByRancherName(key);
             if (item != null && item.isLaunchConfigItem()) {
-                // special handling for volumesFromService
+                // special handling for volumesFromService and labels
                 if (item.getRancherName().equals(ServiceDiscoveryConfigItem.VOLUMESFROMSERVICE.getRancherName())) {
                     List<Integer> serviceIds = (List<Integer>) data.get(key);
                     for (Integer serviceId : serviceIds) {
@@ -317,6 +317,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             }
         }
 
+        Map<String, String> labelsStr = getServiceInstanceLabels(service);
+        launchConfigItems.put(ServiceDiscoveryConfigItem.LABELS.getRancherName(), labelsStr);
+
         if (!volumesFromServices.isEmpty()) {
             List<Integer> volumesFrom = (List<Integer>) launchConfigItems.get(ServiceDiscoveryConfigItem.VOLUMESFROM
                     .getRancherName());
@@ -329,6 +332,19 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         return launchConfigItems;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, String> getServiceInstanceLabels(Service service) {
+        Map<String, Object> data = getServiceDataAsMap(service);
+        Object labels = data.get(ServiceDiscoveryConfigItem.LABELS.getRancherName());
+        Map<String, String> labelsStr = new HashMap<>();
+        if (labels != null) {
+            labelsStr.putAll((HashMap<String, String>) labels);
+        }
+        labelsStr.put(ServiceDiscoveryConstants.LABEL_SERVICE_NAME, service.getName());
+        return labelsStr;
     }
 
     private String getInstanceName(Instance instance) {

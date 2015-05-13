@@ -28,9 +28,9 @@ import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +75,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     LoadBalancerDao lbDao;
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer) {
         List<Instance> result = new ArrayList<Instance>();
         Network network = ntwkDao.getNetworkForObject(loadBalancer, NetworkConstants.KIND_HOSTONLY);
@@ -99,6 +100,12 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                 String imageUUID = DataAccessor.fields(loadBalancer).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID).as(String.class);
 
                 Map<String, Object> params = new HashMap<>();
+                // currently we respect only labels parameter from instance launch config when create lb instance
+                Map<String, Object> launchConfigData = (Map<String, Object>) DataUtils.getFields(loadBalancer).get(
+                        "launchConfig");
+                if (launchConfigData != null && launchConfigData.get(InstanceConstants.FIELD_LABELS) != null) {
+                    params.put(InstanceConstants.FIELD_LABELS, launchConfigData.get(InstanceConstants.FIELD_LABELS));
+                }
                 List<Long> networkIds = new ArrayList<>();
                 networkIds.add(network.getId());
                 params.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
@@ -170,16 +177,6 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             }
         }
         return instances;
-    }
-
-    private List<LoadBalancerHostMap> populateHostMaps(LoadBalancer loadBalancer, LoadBalancerHostMap... hostMaps) {
-        List<LoadBalancerHostMap> hosts = new ArrayList<>();
-        if (hostMaps.length == 0) {
-            hosts.addAll(lbInstanceDao.getLoadBalancerHostMaps(loadBalancer.getId()));
-        } else {
-            hosts.addAll(Arrays.asList(hostMaps));
-        }
-        return hosts;
     }
 
     protected void start(final Instance agentInstance) {

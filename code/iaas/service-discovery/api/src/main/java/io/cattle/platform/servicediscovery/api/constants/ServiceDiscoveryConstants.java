@@ -44,4 +44,6 @@ public class ServiceDiscoveryConstants {
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
     public static final String LINK_COMPOSE_CONFIG = "composeConfig";
 
+    public static final String LABEL_SERVICE_NAME = "io.rancher.service.name";
+
 }

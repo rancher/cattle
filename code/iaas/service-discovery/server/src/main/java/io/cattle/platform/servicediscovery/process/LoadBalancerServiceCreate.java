@@ -21,6 +21,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
+import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.HashMap;
@@ -102,6 +103,11 @@ public class LoadBalancerServiceCreate extends AbstractObjectProcessHandler {
                             .withDefault("delegate:///").as(
                                     String.class));
             data.put("accountId", service.getAccountId());
+
+            Map<String, String> labelsStr = sdService.getServiceInstanceLabels(service);
+            launchConfigData.put(ServiceDiscoveryConfigItem.LABELS.getRancherName(), labelsStr);
+
+            data.put(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, launchConfigData);
             lb = objectManager.create(LoadBalancer.class, data);
         }
 

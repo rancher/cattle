@@ -20,7 +20,6 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
@@ -74,11 +73,10 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         final Instance instance = objectManager.create(Instance.class, props);
         objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
                 SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId());
-        DeferredUtils.nest(new Callable<Object>() {
+        DeferredUtils.nest(new Runnable() {
             @Override
-            public Object call() throws Exception {
+            public void run() {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, instance, null);
-                return null;
             }
         });
         return objectManager.reload(instance);
