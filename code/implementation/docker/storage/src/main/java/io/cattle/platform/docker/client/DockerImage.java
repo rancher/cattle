@@ -2,6 +2,8 @@ package io.cattle.platform.docker.client;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.netflix.config.DynamicStringProperty;
 
 public class DockerImage {
@@ -9,6 +11,7 @@ public class DockerImage {
     String id, repository, namespace, tag, server, serverAddress;
     private static final DynamicStringProperty INDEX_URL = ArchaiusUtil.getString("docker.index.url");
     private static final DynamicStringProperty INDEX_SERVER = ArchaiusUtil.getString("docker.index.server");
+    private static final String KIND_PREFIX = "docker:";
 
     public DockerImage(String id, String repository, String namespace, String tag, String server) {
         super();
@@ -31,6 +34,7 @@ public class DockerImage {
     }
 
     public static DockerImage parse(String id) {
+        id = StringUtils.removeStart(id, KIND_PREFIX);
         String namespace = null;
         String repo = null;
         String tag = null;
