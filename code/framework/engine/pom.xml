@@ -8,6 +8,11 @@
         <relativePath>../../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
+         <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-deferred</artifactId>

@@ -4,6 +4,7 @@ import static io.cattle.platform.core.constants.CommonStatesConstants.*;
 import static io.cattle.platform.core.constants.ContainerEventConstants.*;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.core.constants.NetworkConstants.*;
+import static io.cattle.platform.engine.process.ProcessInstanceConstants.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -121,7 +122,9 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                         if (STATE_STOPPED.equals(state) || STATE_STOPPING.equals(state))
                             return null;
 
-                        objectProcessManager.scheduleProcessInstance(PROCESS_STOP, instance, makeData());
+                        Map<String, Object> data = makeData();
+                        DataAccessor.fromMap(data).withKey(SKIP_DELEGATE_ON_CANCEL).set(true);
+                        objectProcessManager.scheduleProcessInstance(PROCESS_STOP, instance, data);
                     } else if (EVENT_DESTROY.equals(status)) {
                         if (REMOVED.equals(state) || REMOVING.equals(state) || PURGED.equals(state) || PURGING.equals(state))
                             return null;
@@ -169,7 +172,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     public static boolean isNativeDockerStart(ProcessState state) {
-        return DataAccessor.fromMap(state.getData()).withScope(ContainerEventCreate.class).withKey(PROCESS_DATA_NO_OP).withDefault(false).as(Boolean.class);
+        return DataAccessor.fromMap(state.getData()).withKey(PROCESS_DATA_NO_OP).withDefault(false).as(Boolean.class);
     }
 
     protected Map<String, Object> makeData() {
