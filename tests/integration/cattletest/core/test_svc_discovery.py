@@ -508,6 +508,7 @@ def test_links_after_service_remove(super_client, admin_client,
     _validate_remove_service_link(service2, service1, super_client)
 
 
+@pytest.mark.skipif('True')
 def test_link_volumes(super_client, admin_client,
                       sim_context, nsp):
     env = admin_client.create_environment(name=random_str())
