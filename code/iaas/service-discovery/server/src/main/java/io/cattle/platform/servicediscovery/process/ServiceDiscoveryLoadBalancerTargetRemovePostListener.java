@@ -22,9 +22,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
 /**
  * The handler is responsible for removing Service instance from the load balancer of the LB service consuming instance
  * service
@@ -48,37 +45,34 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-
-        List<Pair<Long, Long>> instancesToService = new ArrayList<>();
         ServiceConsumeMap consumeMap = (ServiceConsumeMap) state.getResource();
+
+        // no special handling for a regular service
+        Service lbService = objectManager.loadResource(Service.class, consumeMap.getServiceId());
+        if (!lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+            return null;
+        }
+        // get all the instances of the consumed service
+        List<Long> instanceIds = new ArrayList<>();
         List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
                 objectManager.loadResource(Service.class, consumeMap.getConsumedServiceId()),
                 ServiceExposeMap.class);
         for (ServiceExposeMap map : maps) {
-            instancesToService.add(new ImmutablePair<Long, Long>(map.getInstanceId(), maps.get(0)
-                    .getServiceId()));
+            instanceIds.add(map.getInstanceId());
         }
 
-        for (Pair<Long, Long> instanceServicePair : instancesToService) {
-            // get all the services consuming the current service
-            List<? extends ServiceConsumeMap> consumedByServicesMaps = consumeMapDao
-                    .findConsumingServices(instanceServicePair.getRight());
-            for (ServiceConsumeMap consumedByServiceMap : consumedByServicesMaps) {
-                Service lbService = objectManager.loadResource(Service.class, consumedByServiceMap.getServiceId());
-                if (!lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-                    continue;
-                }
-                // if the consuming service is of LB type, remove the instance from those load balancers
-                LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
-                        lbService.getId(),
-                        LOAD_BALANCER.REMOVED, null);
+        // unassign the lb targets
+        for (Long instanceId : instanceIds) {
+            LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
+                    lbService.getId(),
+                    LOAD_BALANCER.REMOVED, null);
 
-                if (lb != null) {
-                    // to handle the case when link was created/removed in the short period of time while lb service is
-                    // being created
-                    lbManager.removeTargetFromLoadBalancer(lb, instanceServicePair.getLeft());
-                }
+            if (lb != null) {
+                // to handle the case when link was created/removed in the short period of time while lb service is
+                // being created
+                lbManager.removeTargetFromLoadBalancer(lb, instanceId);
             }
+
         }
         return null;
     }
