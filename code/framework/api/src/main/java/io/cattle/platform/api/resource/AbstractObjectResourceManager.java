@@ -458,8 +458,14 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return false;
         }
 
-        if (!StringUtils.isBlank(state) && !state.equals(io.cattle.platform.object.util.ObjectUtils.getState(obj))) {
-            return false;
+        if (!StringUtils.isBlank(state)) {
+            if (!state.startsWith("!") && !state.equals(io.cattle.platform.object.util.ObjectUtils.getState(obj))){
+                return false;
+            }
+
+            if (state.startsWith("!") && state.substring(1).equals(io.cattle.platform.object.util.ObjectUtils.getState(obj))){
+                return false;
+            }
         }
 
         return true;
