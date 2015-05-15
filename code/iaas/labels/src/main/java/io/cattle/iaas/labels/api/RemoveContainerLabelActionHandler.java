@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.label;
+package io.cattle.iaas.labels.api;
 
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.LabelConstants;
