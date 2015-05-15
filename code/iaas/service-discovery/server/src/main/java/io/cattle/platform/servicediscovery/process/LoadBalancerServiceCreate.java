@@ -150,14 +150,14 @@ public class LoadBalancerServiceCreate extends AbstractObjectProcessHandler {
                 spec.setProtocol("http");
             }
 
-            if (listeners.containsKey(spec.getPrivatePort())) {
-                continue;
-            }
-            
             Integer publicPort = spec.getPublicPort();
             int privatePort = spec.getPrivatePort();
             if (publicPort == null) {
                 publicPort = privatePort;
+            }
+
+            if (listeners.containsKey(publicPort)) {
+                continue;
             }
 
             LoadBalancerListener listenerObj = objectManager.findOne(LoadBalancerListener.class,
@@ -182,7 +182,7 @@ public class LoadBalancerServiceCreate extends AbstractObjectProcessHandler {
             }
             objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_LISTENER_CREATE, listenerObj, null);
 
-            listeners.put(listenerObj.getTargetPort(), listenerObj);
+            listeners.put(publicPort, listenerObj);
         }
 
         for (LoadBalancerListener listener : listeners.values()) {
