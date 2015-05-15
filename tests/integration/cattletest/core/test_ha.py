@@ -10,7 +10,6 @@ def test_container_ha_default(client, super_client, user_sim_context):
                                 requestedHostId=user_sim_context['host'].id,
                                 name='simForgetImmediately')
     c = client.wait_success(c)
-    assert c.state == 'running'
 
     def do_ping():
         ping = one(super_client.list_task, name='agent.ping')
@@ -39,7 +38,6 @@ def test_container_ha_stop(super_client, sim_context):
                                       systemContainer='NetworkAgent',
                                       data={'simForgetImmediately': True})
     c = super_client.wait_success(c)
-    assert c.state == 'running'
 
     def do_ping():
         ping = one(super_client.list_task, name='agent.ping')
