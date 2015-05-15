@@ -160,6 +160,25 @@ def test_machine_driver_config(admin_client):
     assert packet_config == host.packetConfig
     assert host.driver == 'packet'
 
+    name = "test-%s" % random_str()
+    rackspace_config = {
+        "username": "username",
+        "apiKey": "apiKey",
+        "region": "region",
+        "endpointType": "endpointType",
+        "imageId": "imageId",
+        "flavorId": "flavorId",
+        "sshUser": "sshUser",
+        "sshPort": "sshPort",
+        "dockerInstall": "dockerInstall",
+    }
+    host = admin_client.create_machine(name=name,
+                                       rackspaceConfig=rackspace_config)
+    host = admin_client.wait_success(host)
+    assert host.state == 'active'
+    assert rackspace_config == host.rackspaceConfig
+    assert host.driver == 'rackspace'
+
 
 def test_machine_validation(admin_client):
     name = "test-%s" % random_str()
