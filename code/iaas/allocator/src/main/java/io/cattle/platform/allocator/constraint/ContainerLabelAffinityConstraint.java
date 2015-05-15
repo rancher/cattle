@@ -19,7 +19,6 @@ public class ContainerLabelAffinityConstraint implements Constraint {
     String labelKey;
     String labelValue;
 
-    // TODO: Might actually do an early lookup for host lists as an optimization
     public ContainerLabelAffinityConstraint(AffinityConstraintDefinition def, AllocatorDao allocatorDao) {
         this.op = def.op;
         this.labelKey = def.key;

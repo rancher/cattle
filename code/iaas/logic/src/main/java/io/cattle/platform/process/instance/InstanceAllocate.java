@@ -66,6 +66,9 @@ public class InstanceAllocate extends EventBasedProcessHandler {
                 return postEvent(state, process, new HashMap<Object, Object>());
             }
         }
+        if (mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()).size() > 0) {
+            return postEvent(state, process, new HashMap<Object, Object>());
+        }
         return super.handle(state, process);
     }
 

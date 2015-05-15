@@ -24,6 +24,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -225,14 +226,20 @@ public abstract class AbstractAllocator implements Allocator {
             @Override
             public void doWithLockNoResult() {
                 do {
-                    runAllocation(request, attempt);
+                    Set<Constraint> failedConstraints = runAllocation(request, attempt);
                     if (attempt.getMatchedCandidate() == null) {
-                        // are there any soft constraints we can remove?
-                        List<Constraint> constraints = attempt.getConstraints();
-                        if (constraints.size() > 0 && !constraints.get(constraints.size() - 1).isHardConstraint()) {
-                            // not the best algorithm since ideally we still maximize # of soft constraints we can fulfill
-                            constraints.remove(constraints.size() - 1);
-                        } else {
+                        boolean removed = false;
+                        // iterate over failed constraints and remove first soft constraint if any
+                        Iterator<Constraint> failedIter = failedConstraints.iterator();
+                        while (failedIter.hasNext() && !removed) {
+                            Constraint failedConstraint = failedIter.next();
+                            if (failedConstraint.isHardConstraint()) {
+                                continue;
+                            }
+                            attempt.getConstraints().remove(failedConstraint);
+                            removed = true;
+                        }
+                        if (!removed) {
                             break;
                         }
                     }
@@ -247,13 +254,15 @@ public abstract class AbstractAllocator implements Allocator {
         return true;
     }
 
-    protected void runAllocation(AllocationRequest request, AllocationAttempt attempt) {
+    protected Set<Constraint> runAllocation(AllocationRequest request, AllocationAttempt attempt) {
         logStart(attempt);
 
+        List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<Set<Constraint>>();
         Iterator<AllocationCandidate> iter = getCandidates(attempt);
         try {
             while (iter.hasNext()) {
                 AllocationCandidate candidate = iter.next();
+                Set<Constraint> failedConstraints = new HashSet<Constraint>();
                 attempt.getCandidates().add(candidate);
 
                 String prefix = String.format("[%s][%s]", attempt.getId(), candidate.getId());
@@ -265,6 +274,7 @@ public abstract class AbstractAllocator implements Allocator {
                     log.info("{}   checking candidate [{}] : {}", prefix, match, constraint);
                     if (!match) {
                         good = false;
+                        failedConstraints.add(constraint);
                     }
                 }
 
@@ -276,17 +286,60 @@ public abstract class AbstractAllocator implements Allocator {
 
                     if (recordCandidate(attempt, candidate)) {
                         attempt.setMatchedCandidate(candidate);
-                        return;
+                        return failedConstraints;
                     } else {
                         log.info("{}   can not record result", prefix);
                     }
                 }
+                candidateFailedConstraintSets.add(failedConstraints);
             }
+            return getWeakestConstraintSet(candidateFailedConstraintSets);
         } finally {
             if (iter != null) {
                 close(iter);
             }
         }
+    }
+
+    // ideally we want zero hard constraints and the fewest soft constraints
+    private Set<Constraint> getWeakestConstraintSet(List<Set<Constraint>> candidateFailedConstraintSets) {
+        if (candidateFailedConstraintSets == null || candidateFailedConstraintSets.isEmpty()) {
+            return Collections.emptySet();
+        }
+        Collections.sort(candidateFailedConstraintSets, new Comparator<Set<Constraint>>() {
+            @Override
+            public int compare(Set<Constraint> o1, Set<Constraint> o2) {
+                if (o1 == o2) return 0;
+                if (o1 != null && o2 == null) return 1;
+                if (o1 == null && o2 != null) return -1;
+
+                int[] o1NumOfHardAndSoftConstraints = getNumberOfConstraints(o1);
+                int[] o2NumOfHardAndSoftConstraints = getNumberOfConstraints(o2);
+
+                if (o1NumOfHardAndSoftConstraints[0] > o2NumOfHardAndSoftConstraints[0]) return 1;
+                if (o1NumOfHardAndSoftConstraints[0] < o2NumOfHardAndSoftConstraints[0]) return -1;
+                if (o1NumOfHardAndSoftConstraints[1] > o2NumOfHardAndSoftConstraints[1]) return 1;
+                if (o1NumOfHardAndSoftConstraints[1] < o2NumOfHardAndSoftConstraints[1]) return -1;
+                return 0;
+            }
+
+            private int[] getNumberOfConstraints(Set<Constraint> failedConstraints) {
+                int hard = 0;
+                int soft = 0;
+                Iterator<Constraint> iter = failedConstraints.iterator();
+                while (iter.hasNext()) {
+                    Constraint c = iter.next();
+                    if (c.isHardConstraint()) {
+                        hard++;
+                    } else {
+                        soft++;
+                    }
+                }
+                return new int[] { hard, soft };
+            }
+
+        });
+        return candidateFailedConstraintSets.get(0);
     }
 
     protected boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
