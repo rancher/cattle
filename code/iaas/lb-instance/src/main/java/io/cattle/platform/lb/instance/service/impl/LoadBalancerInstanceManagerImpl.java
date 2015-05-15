@@ -147,7 +147,8 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         return lbInstance;
     }
 
-    protected Agent getLoadBalancerAgent(LoadBalancer loadBalancer, LoadBalancerHostMap hostMap) {
+    @Override
+    public Agent getLoadBalancerAgent(LoadBalancer loadBalancer, LoadBalancerHostMap hostMap) {
         String uri = getUri(loadBalancer, hostMap);
         Agent lbAgent = agentInstanceDao.getAgentByUri(uri);
         return lbAgent;
