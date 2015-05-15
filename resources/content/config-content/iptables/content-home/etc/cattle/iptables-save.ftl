@@ -62,6 +62,9 @@ COMMIT
     </#list>
 </#if>
 
+<#list subnets as subnet >
+-A POSTROUTING -s ${subnet.gateway}/32 -o ${primaryNic} -j MASQUERADE
+</#list>
 COMMIT
 
 *mangle
