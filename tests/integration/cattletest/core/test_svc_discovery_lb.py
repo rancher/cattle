@@ -425,7 +425,8 @@ def test_labels(super_client, admin_client, sim_context, nsp):
                                                 ['8010:8010', '913:913'])
     lb_instance = _validate_lb_instance(host, lb, super_client, service)
     result_labels = {'affinity': "container==B", '!affinity': "container==C",
-                     'io.rancher.service.name': service_name}
+                     'io.rancher.service.name': service_name,
+                     'io.rancher.environment.name': env.name}
     assert lb_instance.labels == result_labels
 
     # create service w/o labels, and validate that
@@ -449,7 +450,8 @@ def test_labels(super_client, admin_client, sim_context, nsp):
                                                 service, super_client,
                                                 ['8089:8089', '914:914'])
     lb_instance = _validate_lb_instance(host, lb, super_client, service)
-    result_labels = {'io.rancher.service.name': service_name}
+    result_labels = {'io.rancher.service.name': service_name,
+                     'io.rancher.environment.name': env.name}
     assert lb_instance.labels == result_labels
 
 

@@ -344,6 +344,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             labelsStr.putAll((HashMap<String, String>) labels);
         }
         labelsStr.put(ServiceDiscoveryConstants.LABEL_SERVICE_NAME, service.getName());
+        labelsStr.put(ServiceDiscoveryConstants.LABEL_ENVIRONMENT_NAME,
+                objectManager.loadResource(Environment.class, service.getEnvironmentId()).getName());
         return labelsStr;
     }
 
