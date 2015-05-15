@@ -80,32 +80,12 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             }else {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
-            Account project = getObjectManager().loadResource(Account.class, id);
-            if (null == project) {
-                return null;
-            }
-            if (!authDao.hasAccessToProject(project.getId(), policy.getAccountId(),
-                    policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
-                if (project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)){
-                    throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
-                }
-            }
-            giveProjectAccess(project, policy);
+            Account project = giveProjectAccess(getObjectManager().loadResource(Account.class, id), policy);
             return Collections.singletonList(project);
         }
         if (criteria.get("uuid") != null) {
             String uuid = ((String) ((Condition) ((ArrayList) criteria.get("uuid")).get(0)).getValue());
-            Account project = authDao.getAccountByUuid(uuid);
-            if (project == null) {
-                throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
-            }
-            if (authDao.hasAccessToProject(project.getId(), policy.getAccountId(),
-                    policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
-               giveProjectAccess(project, policy);
-                return project;
-            } else {
-                throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
-            }
+            return giveProjectAccess(authDao.getAccountByUuid(uuid), policy);
         }
         boolean isAdmin;
         Object getAll = request.getRequestParams().get("all");
@@ -127,11 +107,23 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         return  projects;
     }
 
-    private void giveProjectAccess(Account project, Policy policy) {
+    private Account giveProjectAccess(Account project, Policy policy) {
+        if (project == null) {
+            throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
+        }
+        if (!authDao.hasAccessToProject(project.getId(), policy.getAccountId(),
+                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
+            throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
+        }
+        if (!project.getState().equals(CommonStatesConstants.ACTIVE) && !authDao.isProjectOwner(project.getId(), policy.getAccountId(),
+                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())){
+            throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
+        }
         if (authDao.isProjectOwner(project.getId(), policy.getAccountId(), policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
             DataAccessor.fields(project).withKey(ObjectMetaDataManager.CAPABILITIES_FIELD).set(Arrays.asList("owner"));
         }
         policy.grantObjectAccess(project);
+        return project;
     }
 
     @Override

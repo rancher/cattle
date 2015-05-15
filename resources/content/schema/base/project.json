@@ -12,6 +12,11 @@
         "capability" : "owner"
       }
     },
+    "activate" : {
+      "attributes" : {
+        "capability" : "owner"
+      }
+    },
     "update" : {
       "attributes" : {
         "capability" : "owner"

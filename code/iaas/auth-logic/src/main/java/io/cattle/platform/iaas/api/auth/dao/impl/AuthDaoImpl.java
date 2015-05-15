@@ -209,6 +209,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         query.addFrom(ACCOUNT);
         query.addJoin(PROJECT_MEMBER, PROJECT_MEMBER.PROJECT_ID.equal(ACCOUNT.ID));
         query.addConditions(allMembers);
+        query.addConditions(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE));
         query.setDistinct(true);
         projects.addAll(query.fetchInto(ACCOUNT));
         Map<Long, Account> returnProjects = new HashMap();
