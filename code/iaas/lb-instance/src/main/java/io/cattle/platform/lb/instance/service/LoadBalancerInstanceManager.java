@@ -26,4 +26,6 @@ public interface LoadBalancerInstanceManager {
 
     LoadBalancerHostMap getLoadBalancerHostMapForInstance(Instance lbInstance);
 
+    Agent getLoadBalancerAgent(LoadBalancer loadBalancer, LoadBalancerHostMap hostMap);
+
 }
