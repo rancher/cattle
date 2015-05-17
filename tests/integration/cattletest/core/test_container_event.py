@@ -25,8 +25,8 @@ def update_event_settings(request, super_client):
     request.addfinalizer(revert_settings)
 
 
-def test_container_event_create(client, user_sim_context, user_account):
-    # Submitting a 'create' containerEvent should result in a container
+def test_container_event_start(client, user_sim_context, user_account):
+    # Submitting a 'start' containerEvent should result in a container
     # being created.
     host, user_agent_cli = sim_agent_and_host(user_sim_context)
     external_id = random_str()
@@ -37,7 +37,7 @@ def test_container_event_create(client, user_sim_context, user_account):
     assert container.state == 'running'
 
 
-def test_container_event_stop(client, user_sim_context, user_account):
+def test_container_event_start_stop(client, user_sim_context, user_account):
     # Submitting a 'stop' or 'die' containerEvent should result in a
     # container resource being stopped.
     host, agent_cli = sim_agent_and_host(user_sim_context)
@@ -49,11 +49,16 @@ def test_container_event_stop(client, user_sim_context, user_account):
     assert container.state == 'running'
 
     create_event(host, external_id, agent_cli, client, user_id, 'stop')
-
     container = client.wait_success(container)
     assert container.state == 'stopped'
 
-    container = client.wait_success(container.start())
+    create_event(host, external_id, agent_cli, client, user_id, 'start')
+    container = client.wait_success(container)
+    assert container.state == 'running'
+
+    # Sending a start event on a running container should have no effect
+    create_event(host, external_id, agent_cli, client, user_id, 'start')
+    container = client.wait_success(container)
     assert container.state == 'running'
 
     create_event(host, external_id, agent_cli, client, user_id, 'die')
@@ -66,30 +71,23 @@ def test_container_event_stop(client, user_sim_context, user_account):
     assert container.state == 'stopped'
 
 
-def test_container_event_start(client, user_sim_context, user_account):
-    # Submitting a 'start' containerEvent should result in a container
-    # being started.
+@pytest.mark.skipif('True')
+def test_container_event_rapid_stop(client, user_sim_context, user_account):
+    # Tests a specific bug where if a 'stop` event came in before the container
+    # was finished starting, the container would be removed.
+    # TODO Stop skipping once the stop-defer-remove logic is refactored.
     host, agent_cli = sim_agent_and_host(user_sim_context)
     external_id = random_str()
     user_id = user_account.id
-
-    container = create_native_container(client, host, external_id,
-                                        agent_cli, user_id)
-    assert container.state == 'running'
+    create_event(host, external_id, agent_cli, client, user_id, 'start',
+                 new_inspect(external_id), wait_and_assert=False)
 
     create_event(host, external_id, agent_cli, client, user_id, 'stop')
 
-    container = client.wait_success(container)
-    assert container.state == 'stopped'
-
-    create_event(host, external_id, agent_cli, client, user_id, 'start')
-    container = client.wait_success(container)
-    assert container.state == 'running'
-
-    # Sending a start event to a running container should have no effect
-    create_event(host, external_id, agent_cli, client, user_id, 'start')
-    container = client.wait_success(container)
-    assert container.state == 'running'
+    containers = client.list_container(externalId=external_id)
+    assert len(containers) == 1
+    container = client.wait_success(containers[0])
+    assert container.state != 'removed'
 
 
 def test_container_event_destroy(client, user_sim_context, user_account):
@@ -160,7 +158,7 @@ def test_bad_agent(super_client, user_sim_context):
             externalId=random_str(),
             externalFrom='busybox:latest',
             externalTimestamp=int(time.time()),
-            externalStatus='create')
+            externalStatus='start')
     assert e.value.error.code == 'CantVerifyAgent'
 
 
@@ -178,7 +176,7 @@ def test_bad_host(user_sim_context, new_sim_context):
             externalId=random_str(),
             externalFrom='busybox:latest',
             externalTimestamp=int(time.time()),
-            externalStatus='create')
+            externalStatus='start')
     assert e.value.error.code == 'InvalidReference'
 
 
@@ -210,7 +208,7 @@ def create_native_container(client, host, external_id, user_agent_cli,
         inspect = new_inspect(external_id)
 
     create_event(host, external_id, user_agent_cli, client, user_account_id,
-                 'create', inspect)
+                 'start', inspect)
 
     def container_wait():
         containers = client.list_container(externalId=external_id)
@@ -222,7 +220,7 @@ def create_native_container(client, host, external_id, user_agent_cli,
 
 
 def create_event(host, external_id, agent_cli, client, user_account_id, status,
-                 inspect=None):
+                 inspect=None, wait_and_assert=True):
     timestamp = int(time.time())
     image = 'sim:busybox:latest'
     event = agent_cli.create_container_event(
@@ -233,27 +231,28 @@ def create_event(host, external_id, agent_cli, client, user_account_id, status,
         externalStatus=status,
         dockerInspect=inspect)
 
-    assert event.reportedHostUuid == host.data.fields['reportedUuid']
-    assert event.externalId == external_id
-    assert event.externalFrom == image
-    assert event.externalStatus == status
-    assert event.externalTimestamp == timestamp
+    if wait_and_assert:
+        assert event.reportedHostUuid == host.data.fields['reportedUuid']
+        assert event.externalId == external_id
+        assert event.externalFrom == image
+        assert event.externalStatus == status
+        assert event.externalTimestamp == timestamp
 
-    def event_wait():
-        try:
-            created = client.reload(event)
-            if created.state == 'created':
-                return event
-        except ApiError as e:
-            if e.error.status != 404:
-                raise e
+        def event_wait():
+            try:
+                created = client.reload(event)
+                if created.state == 'created':
+                    return event
+            except ApiError as e:
+                if e.error.status != 404:
+                    raise e
 
-    wait_for(event_wait)
-    event = client.reload(event)
+        wait_for(event_wait)
+        event = client.reload(event)
 
-    assert host.id == event.hostId
-    assert user_account_id == event.accountId
-    assert event.state == 'created'
+        assert host.id == event.hostId
+        assert user_account_id == event.accountId
+        assert event.state == 'created'
 
     return event
 

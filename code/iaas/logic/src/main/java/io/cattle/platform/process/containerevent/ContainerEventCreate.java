@@ -97,7 +97,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
                 try {
                     String status = event.getExternalStatus();
-                    if (status.equals(EVENT_CREATE) && instance == null) {
+                    if (status.equals(EVENT_START) && instance == null) {
                         scheduleInstance(event, instance, inspect, data);
                         return null;
                     }
@@ -169,7 +169,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     public static boolean isNativeDockerStart(ProcessState state) {
-        return DataAccessor.fromMap(state.getData()).withScope(ContainerEventCreate.class).withKey(PROCESS_DATA_NO_OP).withDefault(false).as(Boolean.class);
+        return DataAccessor.fromMap(state.getData()).withKey(PROCESS_DATA_NO_OP).withDefault(false).as(Boolean.class);
     }
 
     protected Map<String, Object> makeData() {
