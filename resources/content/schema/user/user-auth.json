@@ -57,6 +57,8 @@
         "container.memory" : "cr",
         "container.memorySwap" : "cr",
         "container.networkIds" : "cr",
+        "container.networkMode" : "cr",
+        "container.networkContainerId" : "cr",
         "container.ports" : "cr",
         "container.primaryIpAddress" : "r",
         "container.privileged" : "cr",
