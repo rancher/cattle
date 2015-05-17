@@ -54,3 +54,69 @@ def test_account_no_key(super_client):
     creds = account.credentials()
 
     assert len(creds) == 0
+
+
+def test_account_new_data(admin_user_client, super_client):
+    user = admin_user_client.create_account(kind='user')
+    user = admin_user_client.wait_success(user)
+
+    assert user.state == 'active'
+    assert user.defaultNetworkId is None
+    assert len(user.networks()) == 0
+
+    account = admin_user_client.create_account(kind='project')
+    account = admin_user_client.wait_success(account)
+
+    assert account.state == 'active'
+    assert account.defaultNetworkId is not None
+
+    networks = super_client.list_network(accountId=account.id)
+
+    by_kind = {}
+
+    for i in range(len(networks)):
+        network = super_client.wait_success(networks[i])
+        by_kind[networks[i].kind] = network
+        assert network.state == 'active'
+
+    assert len(networks) == 5
+    assert len(by_kind) == 5
+
+    assert 'dockerHost' in by_kind
+    assert 'dockerNone' in by_kind
+    assert 'dockerBridge' in by_kind
+    assert 'hostOnlyNetwork' in by_kind
+    assert 'dockerContainer' in by_kind
+
+    network = by_kind['hostOnlyNetwork']
+
+    assert network.id == account.defaultNetworkId
+
+    subnet = find_one(network.subnets)
+
+    assert subnet.state == 'active'
+    assert subnet.networkAddress == '10.42.0.0'
+    assert subnet.cidrSize == 16
+    assert subnet.gateway == '10.42.0.1'
+    assert subnet.startAddress == '10.42.0.2'
+    assert subnet.endAddress == '10.42.255.250'
+
+    nsp = find_one(network.networkServiceProviders)
+    nsp = super_client.wait_success(nsp)
+
+    assert nsp.state == 'active'
+    assert nsp.kind == 'agentInstanceProvider'
+
+    service_by_kind = {}
+    for service in nsp.networkServices():
+        service = super_client.wait_success(service)
+        service_by_kind[service.kind] = service
+
+    assert len(nsp.networkServices()) == 6
+    assert len(service_by_kind) == 6
+    assert 'dnsService' in service_by_kind
+    assert 'linkService' in service_by_kind
+    assert 'ipsecTunnelService' in service_by_kind
+    assert 'portService' in service_by_kind
+    assert 'hostNatGatewayService' in service_by_kind
+    assert 'healthCheckService' in service_by_kind

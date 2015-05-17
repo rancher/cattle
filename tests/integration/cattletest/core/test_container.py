@@ -704,3 +704,23 @@ def test_container_request_ip(super_client, sim_context, test_network):
 
         ip = container.nics()[0].ipAddresses()[0]
         super_client.wait_success(ip.deactivate())
+
+
+def test_container_network_modes(context, super_client):
+    client = context['client']
+
+    c = client.create_container(networkMode=None,
+                                imageUuid=context['imageUuid'])
+    c = super_client.wait_success(c)
+    assert c.state == 'running'
+    assert len(c.nics()) == 0
+
+    for i in [('host', 'dockerHost'), ('none', 'dockerNone'),
+              ('container', 'dockerContainer'), ('bridge', 'dockerBridge'),
+              ('managed', 'hostOnlyNetwork')]:
+        c = client.create_container(networkMode=i[0],
+                                    imageUuid=context['imageUuid'])
+        c = super_client.wait_success(c)
+        assert c.state == 'running'
+        assert len(c.nics()) == 1
+        assert c.nics()[0].network().kind == i[1]

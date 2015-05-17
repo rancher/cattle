@@ -63,14 +63,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
-        if (creds.size() == 0) {
-            creds = defaultCreds(instance, state.getData());
-        }
-
-        if (nicIds.size() == 0) {
-            nicIds = defaultNics(instance, nics, state.getData());
-        }
-
         HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds);
         result.shouldDelegate(shouldStart(instance));
 
@@ -198,13 +190,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         return createNicsFromIds(instance, nics, data, networkIds, subnetIds, vnetIds);
     }
 
-    protected Set<Long> defaultNics(Instance instance, List<Nic> nics, Map<String, Object> data) {
-        Account account = loadResource(Account.class, instance.getAccountId());
-        List<Long> networkIds = DataAccessor.fieldLongList(account, AccountConstants.FIELD_DEFAULT_NETWORK_IDS);
-
-        return createNicsFromIds(instance, nics, data, networkIds, null, null);
-    }
-
     protected Set<Long> createNicsFromIds(Instance instance, List<Nic> nics, Map<String, Object> data, List<Long> networkIds, List<Long> subnetIds,
             List<Long> vnetIds) {
         Set<Long> nicIds = new TreeSet<Long>();
@@ -300,13 +285,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         }
 
         return nicIds;
-    }
-
-    protected Set<Long> defaultCreds(Instance instance, Map<String, Object> data) {
-        Account account = loadResource(Account.class, instance.getAccountId());
-        List<Long> credIds = DataAccessor.fieldLongList(account, AccountConstants.FIELD_DEFAULT_CREDENTIAL_IDS);
-
-        return createCredsFromIds(credIds, instance, data);
     }
 
     protected Set<Long> createCreds(Instance instance, Map<String, Object> data) {

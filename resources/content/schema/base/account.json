@@ -1,11 +1,7 @@
 {
     "resourceFields": {
-        "defaultCredentialIds": {
-            "type" : "array[reference[credential]]",
-            "nullable" : true
-        },
-        "defaultNetworkIds": {
-            "type" : "array[reference[network]]",
+        "defaultNetworkId": {
+            "type" : "reference[network]",
             "nullable" : true
         }
     }

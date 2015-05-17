@@ -11,6 +11,8 @@ public class DockerInstanceConstants {
     public static final String FIELD_USER = "user";
     public static final String FIELD_MEMORY = "memory";
     public static final String FIELD_MEMORY_SWAP = "memorySwap";
+    public static final String FIELD_NETWORK_MODE = "networkMode";
+    public static final String FIELD_NETWORK_CONTAINER_ID = "networkContainerId";
     public static final String FIELD_CPU_SHARES = "cpuShares";
     public static final String FIELD_CPU_SET = "cpuSet";
     public static final String FIELD_TTY = "tty";

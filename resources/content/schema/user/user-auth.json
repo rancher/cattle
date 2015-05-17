@@ -17,6 +17,7 @@
         ".*\\.uuid" : "r",
 
         "account": "r",
+        "account.defaultNetworkId": "r",
 
         "apiKey" : "r",
         "apiKey.publicValue" : "r",

@@ -9,7 +9,8 @@
                 "managed",
                 "container"
             ],
-            "default": "bridge"
+            "default": "managed",
+            "nullable": true
         },
         "networkContainerId": {
             "type": "reference[container]",

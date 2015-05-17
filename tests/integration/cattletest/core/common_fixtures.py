@@ -924,3 +924,41 @@ def create_container(client, sim_context, **kw):
     args.update(kw)
 
     return client.create_container(**args)
+
+
+@pytest.fixture(scope='session')
+def context(admin_user_client, super_client):
+    account = admin_user_client.create_account(kind='project')
+    keys = admin_user_client.create_api_key(accountId=account.id)
+    assert keys.accountId == account.id
+
+    account = admin_user_client.wait_success(account)
+    assert account.state == 'active'
+
+    keys = admin_user_client.wait_success(keys)
+    assert keys.state == 'active'
+
+    client = cattle.from_env(url=cattle_url(),
+                             cache=False,
+                             access_key=keys.publicValue,
+                             secret_key=keys.secretValue)
+
+    account = client.reload(account)
+
+    uri = 'sim://' + random_str()
+    sim_context = kind_context(super_client, 'sim', uri=uri, uuid=uri,
+                               account=account)
+    sim_context['imageUuid'] = 'sim:{}'.format(random_num())
+
+    for i in ['host', 'pool', 'agent']:
+        obj = sim_context[i]
+        assert obj is not None
+        sim_context[i] = super_client.wait_success(obj)
+
+    sim_context['client'] = client
+    sim_context['project'] = account
+
+    nsp = super_client.list_network_service_provider(accountId=account.id)[0]
+    super_client.update(nsp, agentInstanceImageUuid='sim:test-nsp')
+
+    return sim_context
