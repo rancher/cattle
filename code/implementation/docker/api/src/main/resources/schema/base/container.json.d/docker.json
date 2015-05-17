@@ -5,6 +5,7 @@
             "options": [
                 "none",
                 "bridge",
+                "host",
                 "managed",
                 "container"
             ],
