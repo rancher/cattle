@@ -155,14 +155,14 @@ public class PingInstancesMonitorImplTest {
         String uuidZ = uuid("rancher-removed-host-stopped", false, false);
 
         // Container doesn't exist in rancher, running on host
-        String externalIdAA = setupSync("rancher-notexist-host-running", false, false, null, STATE_RUNNING); // no-op create
-        String externalIdBB = setupSync("rancher-notexist-host-running", true, false, null, STATE_RUNNING); // no-op create
+        String externalIdAA = setupSync("rancher-notexist-host-running", false, false, null, STATE_RUNNING); // no-op start
+        String externalIdBB = setupSync("rancher-notexist-host-running", true, false, null, STATE_RUNNING); // no-op start
         String externalIdCC = setupSync("rancher-notexist-host-running", false, true, null, STATE_RUNNING); // sysCon: force stop
         String externalIdDD = setupSync("rancher-notexist-host-running", true, true, null, STATE_RUNNING); // sysCon: force stop
 
-        // Container doesn't exist in rancher, stopped on host
-        String externalIdEE = setupSync("rancher-notexist-host-stopped", false, false, null, STATE_STOPPED); // no-op create
-        String externalIdFF = setupSync("rancher-notexist-host-stopped", true, false, null, STATE_STOPPED); // no-op create
+        // Container doesn't exist in rancher, stopped on host. User containers will be created via no-op start and be stopped in subsequent ping
+        String externalIdEE = setupSync("rancher-notexist-host-stopped", false, false, null, STATE_STOPPED); // no-op start
+        String externalIdFF = setupSync("rancher-notexist-host-stopped", true, false, null, STATE_STOPPED); // no-op start
         String externalIdGG = setupSync("rancher-notexist-host-stopped", false, true, null, STATE_STOPPED); // sysCon: do nothing
         String uuidGG = uuid("rancher-notexist-host-stopped", false, true);
         String externalIdHH = setupSync("rancher-notexist-host-stopped", true, true, null, STATE_STOPPED); // sysCon: do nothing
@@ -210,13 +210,13 @@ public class PingInstancesMonitorImplTest {
         assertDoNothing(externalIdY, uuidY);
         assertDoNothing(externalIdZ, uuidZ);
         
-        assertSyncAction(externalIdAA, EVENT_CREATE);
-        assertSyncAction(externalIdBB, EVENT_CREATE);
+        assertSyncAction(externalIdAA, EVENT_START);
+        assertSyncAction(externalIdBB, EVENT_START);
         assertSyncAction(externalIdCC, EVENT_INSTANCE_FORCE_STOP);
         assertSyncAction(externalIdDD, EVENT_INSTANCE_FORCE_STOP);
         
-        assertSyncAction(externalIdEE, EVENT_CREATE);
-        assertSyncAction(externalIdFF, EVENT_CREATE);
+        assertSyncAction(externalIdEE, EVENT_START);
+        assertSyncAction(externalIdFF, EVENT_START);
         assertDoNothing(externalIdGG, uuidGG);
         assertDoNothing(externalIdHH, uuidHH);
     }

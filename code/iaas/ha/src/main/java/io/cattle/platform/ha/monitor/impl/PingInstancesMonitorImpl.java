@@ -192,7 +192,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                 }
                 continue;
             }
-            addSyncAction(needsSynced, syncActions, ri, EVENT_CREATE, checkOnly);
+            addSyncAction(needsSynced, syncActions, ri, EVENT_START, checkOnly);
         }
 
         // Anything left in inRancher is in rancher, but not on the host.
