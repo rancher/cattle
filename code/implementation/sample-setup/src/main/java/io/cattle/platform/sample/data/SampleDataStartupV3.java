@@ -25,7 +25,7 @@ public class SampleDataStartupV3 extends AbstractSampleData {
         v2.start();
 
         toCreate.add(createByUuid(Account.class, "token", ACCOUNT.KIND, "token", ACCOUNT.NAME, "token"));
-        Account adminProject = createByUuid(Account.class, "adminProject", ACCOUNT.KIND, "project", ACCOUNT.NAME, "default project");
+        Account adminProject = createByUuid(Account.class, "adminProject", ACCOUNT.KIND, "project", ACCOUNT.NAME, "Default");
         toCreate.add(adminProject);
         toCreate.add(createByUuid(ProjectMember.class, "adminMember", PROJECT_MEMBER.ACCOUNT_ID,
                 adminProject.getId(), PROJECT_MEMBER.PROJECT_ID, adminProject.getId(),
