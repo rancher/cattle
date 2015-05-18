@@ -612,6 +612,10 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         Map<String, Relationship> result = new HashMap<String, Relationship>();
         Schema schema = schemaFactory.getSchema(type);
 
+        if (null == schema) {
+            return null;
+        }
+
         Map<String, List<Relationship>> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId()));
         if (relationships == null) {
             return result;
