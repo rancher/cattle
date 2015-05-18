@@ -1166,19 +1166,19 @@ def test_validate_labels(super_client, admin_client, sim_context, nsp):
     assert service2.state == "active"
 
     # check that labels defined in launch config + the internal label, are set
-    result_labels_1 = {'affinity': "container==B", '!affinity': "container==C",
+    result_labels_1 = {'affinity': 'container==B', '!affinity': "container==C",
                        'io.rancher.service.name': service_name1,
                        'io.rancher.environment.name': env.name}
     instance1 = _validate_compose_instance_start(super_client, service1,
                                                  env, "1")
-    all(item in instance1.labels for item in result_labels_1)
+    assert all(item in instance1.labels for item in result_labels_1) is True
 
     # check that only one internal label is set
     result_labels_2 = {'io.rancher.service.name': service_name2,
                        'io.rancher.environment.name': env.name}
     instance2 = _validate_compose_instance_start(super_client, service2,
                                                  env, "1")
-    all(item in instance2.labels for item in result_labels_2)
+    assert all(item in instance2.labels for item in result_labels_2) is True
 
 
 def test_sidekick_services_activate(super_client,

@@ -426,7 +426,8 @@ def test_labels(super_client, admin_client, sim_context, nsp):
     result_labels = {'affinity': "container==B", '!affinity': "container==C",
                      'io.rancher.service.name': service_name}
 
-    all(item in lb_instance.labels.items() for item in result_labels.items())
+    assert all(item in lb_instance.labels.items()
+               for item in result_labels.items()) is True
 
     # create service w/o labels, and validate that
     #  only one service label was set
@@ -450,7 +451,8 @@ def test_labels(super_client, admin_client, sim_context, nsp):
                                                 ['8089:8089', '914:914'])
     lb_instance = _validate_lb_instance(host, lb, super_client, service)
     result_labels = {'io.rancher.service.name': service_name}
-    all(item in lb_instance.labels.items() for item in result_labels.items())
+    assert all(item in lb_instance.labels.items()
+               for item in result_labels.items()) is True
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
