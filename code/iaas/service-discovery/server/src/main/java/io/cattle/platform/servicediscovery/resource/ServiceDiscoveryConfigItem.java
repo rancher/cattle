@@ -70,6 +70,10 @@ public class ServiceDiscoveryConfigItem {
             InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS,
             true, false);
 
+    public static final ServiceDiscoveryConfigItem EXTERNAL_IPS = new ServiceDiscoveryConfigItem(
+            ServiceDiscoveryConstants.FIELD_EXTERNALIPS,
+            "external_ips", false, false);
+
     /**
      * Name as it appears in docker-compose file
      */

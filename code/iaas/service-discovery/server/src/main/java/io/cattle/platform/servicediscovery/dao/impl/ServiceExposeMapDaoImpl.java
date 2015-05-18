@@ -42,10 +42,9 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
 
 
     @Override
-    public Pair<Instance, ServiceExposeMap> createServiceInstance(Map<Object, Object> properties, Service service, String instanceName) {
-        Map<String, Object> props = objectManager.convertToPropertiesFor(Instance.class,
-                properties);
-        Instance instance = objectManager.create(Instance.class, props);
+    public Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Service service,
+            String instanceName) {
+        final Instance instance = objectManager.create(Instance.class, properties);
         ServiceExposeMap exposeMap = createServiceInstanceMap(service, instance);
         return Pair.of(instance, exposeMap);
     }
@@ -164,8 +163,9 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
 
     @Override
     public ServiceExposeMap findInstanceExposeMap(Instance instance) {
-        // for regular, non lb instance, the instance->service map gets created as a part of the instance creation
-        // (within the same transaction), so it should exist at this point
+        if (instance == null) {
+            return null;
+        }
         List<? extends ServiceExposeMap> instanceServiceMap = mapDao.findNonRemoved(ServiceExposeMap.class,
                 Instance.class,
                 instance.getId());
@@ -175,4 +175,25 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         }
         return instanceServiceMap.get(0);
     }
+
+    @Override
+    public ServiceExposeMap createIpToServiceMap(Service service, String ipAddress) {
+        ServiceExposeMap map = getServiceIpExposeMap(service, ipAddress);
+        if (map == null) {
+            map = objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(),
+                    SERVICE_EXPOSE_MAP.IP_ADDRESS, ipAddress, SERVICE_EXPOSE_MAP.ACCOUNT_ID,
+                    service.getAccountId(), SERVICE_EXPOSE_MAP.HEALTH_STATE,
+                    ServiceDiscoveryConstants.FIELD_HEALTH_STATE_HEALTHY);
+        }
+        return map;
+    }
+
+    @Override
+    public ServiceExposeMap getServiceIpExposeMap(Service service, String ipAddress) {
+        return objectManager.findAny(ServiceExposeMap.class,
+                SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(),
+                SERVICE_EXPOSE_MAP.IP_ADDRESS, ipAddress,
+                SERVICE_EXPOSE_MAP.REMOVED, null);
+    }
+
 }

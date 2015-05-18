@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceExposeMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord> {
 
-	private static final long serialVersionUID = 1727358906;
+	private static final long serialVersionUID = 1897887919;
 
 	/**
 	 * The singleton instance of <code>cattle.service_expose_map</code>
@@ -95,6 +95,11 @@ public class ServiceExposeMapTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 * The column <code>cattle.service_expose_map.health_state</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, java.lang.String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
+
+    /**
+     * The column <code>cattle.service_expose_map.ip_address</code>.
+     */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, java.lang.String> IP_ADDRESS = createField("ip_address", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>cattle.service_expose_map</code> table reference

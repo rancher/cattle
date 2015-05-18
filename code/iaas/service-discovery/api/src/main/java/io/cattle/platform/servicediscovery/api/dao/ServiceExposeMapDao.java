@@ -21,7 +21,8 @@ public interface ServiceExposeMapDao {
      * @param instanceName
      * @return
      */
-    Pair<Instance, ServiceExposeMap> createServiceInstance(Map<Object, Object> properties, Service service, String instanceName);
+    Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Service service,
+            String instanceName);
 
     List<? extends Instance> listServiceInstances(long serviceId);
 
@@ -50,4 +51,8 @@ public interface ServiceExposeMapDao {
     ServiceExposeMap findInstanceExposeMap(Instance instance);
 
     ServiceExposeMap createServiceInstanceMap(Service service, Instance instance);
+
+    ServiceExposeMap createIpToServiceMap(Service service, String ipAddress);
+
+    ServiceExposeMap getServiceIpExposeMap(Service service, String ipAddress);
 }

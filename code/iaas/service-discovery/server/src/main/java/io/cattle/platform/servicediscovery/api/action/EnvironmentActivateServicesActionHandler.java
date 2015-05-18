@@ -6,6 +6,7 @@ import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -49,8 +50,7 @@ public class EnvironmentActivateServicesActionHandler implements ActionHandler {
     private void activateServices(List<? extends Service> services, Map<String, Object> data) {
         for (Service service : services) {
             if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
-                objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE,
-                            service, data);
+                objectProcessManager.scheduleStandardProcess(StandardProcess.ACTIVATE, service, data);
             }
         }
     }

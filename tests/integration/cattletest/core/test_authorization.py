@@ -2,15 +2,15 @@ from common_fixtures import *  # NOQA
 
 
 TYPE_LEN = {
-    'admin': 105,
+    'admin': 106,
     'agent': 8,
-    'user': 83,
+    'user': 84,
     'agentRegister': 4,
-    'readAdmin': 105,
+    'readAdmin': 106,
     'token': 2,
-    'superadmin': 159,
-    'service': 105,
-    'project': 83,
+    'superadmin': 160,
+    'service': 106,
+    'project': 84,
 }
 
 

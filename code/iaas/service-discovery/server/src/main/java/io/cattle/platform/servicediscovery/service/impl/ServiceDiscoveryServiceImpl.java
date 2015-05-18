@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import static io.cattle.platform.core.model.tables.HostTable.HOST;
+import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG;
 import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
@@ -18,6 +19,7 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.LoadBalancer;
@@ -39,7 +41,9 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.storage.service.StorageService;
 
+import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,6 +93,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     GenericResourceDao resourceDao;
+
+    @Inject
+    StorageService storageService;
 
     @Override
     public SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services) {
@@ -284,40 +291,41 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> buildLaunchData(Service service, Map<String, String> labels, String instanceName, List<Integer> volumesFromInstanceIds) {
-        Map<String, Object> data = getServiceDataAsMap(service);
+    public Map<String, Object> buildServiceInstanceLaunchData(Service service, Map<String, Object> deployParams) {
+        Map<String, Object> serviceData = getServiceDataAsMap(service);
         Map<String, Object> launchConfigItems = new HashMap<>();
 
-        // convert compose to rancher name
-        for (String key : data.keySet()) {
+        // 1. put all parameters retrieved through deployParams
+        if (deployParams != null) {
+            launchConfigItems.putAll(deployParams);
+        }
+
+        // 2. Get parameters defined on the service level (merge them with the ones defined in
+        for (String key : serviceData.keySet()) {
             ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(key);
             if (item != null && item.isLaunchConfigItem()) {
-                launchConfigItems.put(key, data.get(key));
-            }
-        }
-        //populate name
-        if (instanceName != null) {
-            launchConfigItems.put("name", instanceName);
-        }
-        
-        // populate labels
-        launchConfigItems.put(ServiceDiscoveryConfigItem.LABELS.getCattleName(), labels);
-
-        // process volumes from
-        if (volumesFromInstanceIds != null && !volumesFromInstanceIds.isEmpty()) {
-            List<Integer> volumesFrom = (List<Integer>) launchConfigItems.get(ServiceDiscoveryConfigItem.VOLUMESFROM
-                    .getCattleName());
-            if (volumesFrom == null) {
-                volumesFrom = new ArrayList<Integer>();
-            }
-            for (Integer volumesFromInstanceId : volumesFromInstanceIds) {
-                if (!volumesFrom.contains(volumesFromInstanceId)) {
-                    volumesFrom.add(volumesFromInstanceId);
+                Object dataObj = serviceData.get(key);
+                if (launchConfigItems.get(key) != null) {
+                    if (dataObj instanceof Map) {
+                        ((Map<Object, Object>) dataObj).putAll((Map<Object, Object>) launchConfigItems.get(key));
+                    } else if (dataObj instanceof List) {
+                        ((List<Object>) dataObj).addAll((List<Object>) launchConfigItems.get(key));
+                    }
                 }
+
+                launchConfigItems.put(key, dataObj);
             }
-            launchConfigItems.put(ServiceDiscoveryConfigItem.VOLUMESFROM.getCattleName(), volumesFrom);
         }
 
+        // 3. add extra parameters
+        Object registryCredentialId = serviceData.get(ServiceDiscoveryConfigItem.REGISTRYCREDENTIALID
+                .getCattleName());
+        Long imageId = getImage(String.valueOf(serviceData.get(InstanceConstants.FIELD_IMAGE_UUID)),
+                registryCredentialId != null ? (Integer) registryCredentialId : null);
+        launchConfigItems.put("accountId", service.getAccountId());
+        launchConfigItems.put("kind", InstanceConstants.KIND_CONTAINER);
+        launchConfigItems.put(InstanceConstants.FIELD_IMAGE_ID, imageId);
+        
         return launchConfigItems;
     }
 
@@ -346,9 +354,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         Map<String, Object> originalData = new HashMap<>();
         originalData.putAll(DataUtils.getFields(service));
         Map<String, Object> data = new HashMap<>();
-        data.putAll((Map<? extends String, ? extends Object>) originalData
-                .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG));
-        originalData.remove(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
+        Object launchConfigObj = originalData
+                .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
+        if (launchConfigObj != null) {
+            data.putAll((Map<? extends String, ? extends Object>) launchConfigObj);
+            originalData.remove(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
+        }
+
         data.putAll(originalData);
         return data;
     }
@@ -383,7 +395,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
         if (network == null) {
             throw new RuntimeException(
-                    "Unable to find a network to activate a service " + service);
+                    "Unable to find a network to activate a service " + service.getId());
         }
         long networkId = network.getId();
         return networkId;
@@ -491,7 +503,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 service);
 
         // 2. add listeners to the config based on the ports info
-        Map<String, Object> launchConfigData = buildLaunchData(service, new HashMap<String, String>(), null, null);
+        Map<String, Object> launchConfigData = buildServiceInstanceLaunchData(service, null);
         createListeners(service, lbConfig, launchConfigData);
 
         // 3. create a load balancer
@@ -502,7 +514,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
                 LOAD_BALANCER.REMOVED, null, LOAD_BALANCER.ACCOUNT_ID, service.getAccountId());
         if (lb == null) {
-            Map<String, Object> launchConfigData = buildLaunchData(service, new HashMap<String, String>(), null, null);
+            Map<String, Object> launchConfigData = buildServiceInstanceLaunchData(service, null);
             Map<String, Object> data = new HashMap<>();
             data.put("name", lbName);
             data.put(LoadBalancerConstants.FIELD_LB_CONFIG_ID, lbConfig.getId());
@@ -644,5 +656,23 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         int returnedNumber = defaultNumber > availableHostIds.size() ? availableHostIds.size() : defaultNumber;
 
         return availableHostIds.subList(0, returnedNumber);
+    }
+
+        
+    protected Long getImage(String imageUuid, Integer registryCredentialId) {
+        Image image;
+        try {
+            image = storageService.registerRemoteImage(imageUuid);
+            if (image == null) {
+                return null;
+            }
+            if (registryCredentialId != null) {
+                objectManager.setFields(image, IMAGE.REGISTRY_CREDENTIAL_ID, registryCredentialId);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to get image [" + imageUuid + "]");
+        }
+
+        return image == null ? null : image.getId();
     }
 }
