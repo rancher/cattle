@@ -5,6 +5,13 @@ def _process_names(processes):
     return set([x.processName for x in processes])
 
 
+def _still_processing(processes):
+    for p in processes:
+        if p.result == '' or p.result is None:
+            return True
+    return False
+
+
 def test_container_ha_default(client, super_client, user_sim_context):
     c = client.create_container(imageUuid=user_sim_context['imageUuid'],
                                 requestedHostId=user_sim_context['host'].id,
@@ -20,6 +27,9 @@ def test_container_ha_default(client, super_client, user_sim_context):
         if 'instance.stop' not in _process_names(processes):
             do_ping()
             return None
+        if _still_processing(processes):
+            return None
+
         return processes
 
     processes = wait_for(callback)
@@ -47,6 +57,8 @@ def test_container_ha_stop(super_client, sim_context):
         processes = process_instances(super_client, c, type='instance')
         if 'instance.stop' not in _process_names(processes):
             do_ping()
+            return None
+        if _still_processing(processes):
             return None
         return processes
 
@@ -77,6 +89,8 @@ def test_container_ha_restart(super_client, sim_context):
         if 'instance.start' not in _process_names(processes):
             do_ping()
             return None
+        if _still_processing(processes):
+            return None
         return processes
 
     processes = wait_for(callback)
@@ -106,6 +120,8 @@ def test_container_ha_remove(super_client, sim_context):
         processes = process_instances(super_client, c, type='instance')
         if 'instance.remove' not in _process_names(processes):
             do_ping()
+            return None
+        if _still_processing(processes):
             return None
         return processes
 
