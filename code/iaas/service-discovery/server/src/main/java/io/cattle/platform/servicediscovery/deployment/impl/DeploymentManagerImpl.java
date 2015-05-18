@@ -59,7 +59,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Inject
     ServiceConsumeMapDao consumeMapDao;
 
-    Map<Service, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = new HashMap<>();
+    Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = new HashMap<>();
 
     @Override
     public void activate(final Service service, final Map<String, Object> data) {
@@ -156,18 +156,18 @@ public class DeploymentManagerImpl implements DeploymentManager {
          */
 
         List<DeploymentUnit> deploymentUnits = new ArrayList<>();
-        Map<String, Map<Service, DeploymentUnitInstance>> uuidToInstances = new HashMap<>();
+        Map<String, Map<Long, DeploymentUnitInstance>> uuidToInstances = new HashMap<>();
         for (Service service : services) {
             List<DeploymentUnitInstance> deploymentUnitInstances = unitInstanceFactory
                     .collectServiceInstances(service, new DeploymentServiceContext());
             
             // group by uuid
             for (DeploymentUnitInstance deploymentUnitInstance : deploymentUnitInstances) {
-                Map<Service, DeploymentUnitInstance> serviceToInstanceMap = new HashMap<>();
+                Map<Long, DeploymentUnitInstance> serviceToInstanceMap = new HashMap<>();
                 if (uuidToInstances.get(deploymentUnitInstance.getUuid()) != null) {
                     serviceToInstanceMap = uuidToInstances.get(deploymentUnitInstance.getUuid());
                 }
-                serviceToInstanceMap.put(deploymentUnitInstance.getService(), deploymentUnitInstance);
+                serviceToInstanceMap.put(deploymentUnitInstance.getService().getId(), deploymentUnitInstance);
                 uuidToInstances.put(deploymentUnitInstance.getUuid(), serviceToInstanceMap);
             }
         }
@@ -213,7 +213,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         for (Service service : services) {
             List<Integer> usedNames = sdSvc.getServiceInstanceUsedOrderIds(service);
             svcInstanceIdGenerator
-                    .put(service,
+                    .put(service.getId(),
                             new DeploymentUnitInstanceIdGeneratorImpl(objectMgr.loadResource(
                                     Environment.class, service.getEnvironmentId()), service, usedNames));
         }

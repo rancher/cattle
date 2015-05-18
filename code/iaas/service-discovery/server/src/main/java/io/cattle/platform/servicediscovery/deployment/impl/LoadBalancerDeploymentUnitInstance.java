@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -66,7 +67,16 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance {
             launchConfig.put(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, launchConfigData);
             this.hostMap = context.lbService.addHostWLaunchConfigToLoadBalancer(lb, launchConfig);
             this.instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
-
+        } else if (this.instance != null) {
+            if (InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
+                DeferredUtils.nest(new Runnable() {
+                    @Override
+                    public void run() {
+                        context.objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, instance,
+                                null);
+                    }
+                });
+            }
         }
         return this;
     }
