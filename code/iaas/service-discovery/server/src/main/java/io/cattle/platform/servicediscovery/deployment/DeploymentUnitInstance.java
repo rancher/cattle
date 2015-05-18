@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +28,7 @@ public abstract class DeploymentUnitInstance {
         this.context = context;
         this.uuid = uuid;
         this.service = service;
-        this.labels = new HashMap<>();
+        this.labels = context.sdService.getServiceLabels(service);
         if (this.service != null) {
             this.labels.put(ServiceDiscoveryConstants.LABEL_SERVICE_NAME, this.service.getName());
             this.labels.put(ServiceDiscoveryConstants.LABEL_ENVIRONMENT_NAME,
