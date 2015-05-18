@@ -30,6 +30,7 @@
     <bean class="io.cattle.platform.allocator.constraint.PortsConstraintProvider" />
     <bean class="io.cattle.platform.allocator.constraint.AffinityConstraintsProvider" />
     <bean class="io.cattle.platform.allocator.constraint.VolumesFromConstraintProvider" />
+    <bean class="io.cattle.platform.allocator.constraint.NetworkContainerConstraintProvider" />
 
     <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
