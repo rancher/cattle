@@ -47,4 +47,4 @@ fi
 
 tox "$@" -e py27
 
-mysqldump cattle instance process_instance
+mysqldump cattle instance process_instance process_execution

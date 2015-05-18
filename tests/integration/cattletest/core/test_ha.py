@@ -27,12 +27,10 @@ def test_container_ha_default(client, super_client, user_sim_context):
         if 'instance.stop' not in _process_names(processes):
             do_ping()
             return None
-        if _still_processing(processes):
-            return None
 
         return processes
 
-    processes = wait_for(callback, timeout=180)
+    processes = wait_for(callback)
 
     c = client.wait_success(c)
     assert c.state == 'stopped'
