@@ -52,7 +52,7 @@ public class EnvironmentExportConfigActionHandler implements ActionHandler {
                 }
             }
         }
-        SimpleEntry<String, String> composeConfig = svcDiscoveryServer.buildConfig(toExport);
+        SimpleEntry<String, String> composeConfig = svcDiscoveryServer.buildComposeConfig(toExport);
         
         return new ComposeConfig(composeConfig.getKey(), composeConfig.getValue());
     }

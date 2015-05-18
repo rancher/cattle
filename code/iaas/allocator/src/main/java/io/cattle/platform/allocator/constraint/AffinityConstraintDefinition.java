@@ -14,6 +14,14 @@ public class AffinityConstraintDefinition {
             this.envSymbol = envSymbol;
             this.labelSymbol = labelSymbol;
         }
+
+        public String getEnvSymbol() {
+            return envSymbol;
+        }
+
+        public String getLabelSymbol() {
+            return labelSymbol;
+        }
     }
 
     AffinityOps op;

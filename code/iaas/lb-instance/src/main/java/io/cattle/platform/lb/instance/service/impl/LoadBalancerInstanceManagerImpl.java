@@ -93,7 +93,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                 }
             }
 
-            Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostMap);
+            Instance lbInstance = getLoadBalancerInstance(hostMap);
 
             if (lbInstance == null) {
 
@@ -101,7 +101,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
 
                 Map<String, Object> params = new HashMap<>();
                 // currently we respect only labels parameter from instance launch config when create lb instance
-                Map<String, Object> launchConfigData = (Map<String, Object>) DataUtils.getFields(loadBalancer).get(
+                Map<String, Object> launchConfigData = (Map<String, Object>) DataUtils.getFields(hostMap).get(
                         "launchConfig");
                 if (launchConfigData != null && launchConfigData.get(InstanceConstants.FIELD_LABELS) != null) {
                     params.put(InstanceConstants.FIELD_LABELS, launchConfigData.get(InstanceConstants.FIELD_LABELS));
@@ -138,7 +138,8 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     }
 
     @Override
-    public Instance getLoadBalancerInstance(LoadBalancer loadBalancer, LoadBalancerHostMap hostMap) {
+    public Instance getLoadBalancerInstance(LoadBalancerHostMap hostMap) {
+        LoadBalancer loadBalancer = objectManager.loadResource(LoadBalancer.class, hostMap.getLoadBalancerId());
         Agent lbAgent = getLoadBalancerAgent(loadBalancer, hostMap);
         Instance lbInstance = null;
         if (lbAgent != null) {
@@ -172,13 +173,14 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
         List<Instance> instances = new ArrayList<>();
         List<? extends LoadBalancerHostMap> hostMaps = lbInstanceDao.getLoadBalancerHostMaps(loadBalancer.getId());
         for (LoadBalancerHostMap hostMap : hostMaps) {
-            Instance lbInstance = getLoadBalancerInstance(loadBalancer, hostMap);
+            Instance lbInstance = getLoadBalancerInstance(hostMap);
             if (lbInstance != null) {
                 instances.add(lbInstance);
             }
         }
         return instances;
     }
+
 
     protected void start(final Instance agentInstance) {
         if (InstanceConstants.STATE_STOPPED.equals(agentInstance.getState())) {

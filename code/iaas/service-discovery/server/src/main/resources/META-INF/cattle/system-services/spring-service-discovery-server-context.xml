@@ -13,19 +13,17 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
         
        <bean class="io.cattle.platform.servicediscovery.process.ServiceUpdateActivate" />
-       <bean class="io.cattle.platform.servicediscovery.process.ServiceCleanupPreListener" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceUpdatePostListener" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceDeactivate" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceRemove" />
+       <bean class="io.cattle.platform.servicediscovery.process.ServiceCreate" />
        
        <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
-              <bean class="io.cattle.platform.servicediscovery.process.EnvironmentUpdatePostListener" />
+       <bean class="io.cattle.platform.servicediscovery.process.EnvironmentUpdatePostListener" />
        
        <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstancePurgePostListener" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceStartPostListener" />
        
-       <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceCreate" />
-       <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceRemove" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerRemovePostListener" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetAddPostListener" />
        <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetRemovePostListener" />
@@ -45,7 +43,9 @@
        <bean class="io.cattle.platform.servicediscovery.service.impl.RancherImageToComposeFormatter" />
        <bean class="io.cattle.platform.servicediscovery.service.impl.RancherRestartToComposeFormatter" />
        <bean class="io.cattle.platform.servicediscovery.service.impl.RancherLoadBalancerConfigToComposeFormatter" />
-
+       <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
+       <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnitInstanceFactoryImpl" />  
+      
        <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
        <bean class="io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl" /> 
 
@@ -54,6 +54,7 @@
             <tx:method name="createServiceInstance" isolation="READ_COMMITTED" />
             <tx:method name="updateServiceName" isolation="READ_COMMITTED" />
             <tx:method name="updateEnvironmentName" isolation="READ_COMMITTED" />
+            <tx:method name="updateReconcileProcessIds" isolation="READ_COMMITTED" />
         </tx:attributes>
     </tx:advice>
 

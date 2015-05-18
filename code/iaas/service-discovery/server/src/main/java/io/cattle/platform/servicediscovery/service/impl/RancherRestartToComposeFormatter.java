@@ -15,7 +15,7 @@ public class RancherRestartToComposeFormatter implements RancherConfigToComposeF
     @Override
     @SuppressWarnings("unchecked")
     public Object format(ServiceDiscoveryConfigItem item, Object valueToTransform) {
-        if (!item.getComposeName().equalsIgnoreCase(ServiceDiscoveryConfigItem.RESTART.getComposeName())) {
+        if (!item.getDockerName().equalsIgnoreCase(ServiceDiscoveryConfigItem.RESTART.getDockerName())) {
             return null;
         }
         // transform object to string as thats how policy is defined in docker-compose

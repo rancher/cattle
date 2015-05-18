@@ -67,7 +67,7 @@ public class LoadBalancerRemoveHostPostListener extends AbstractObjectProcessLog
     }
 
     protected void removeLoadBalancerInstance(LoadBalancer loadBalancer, LoadBalancerHostMap hostMap) {
-        Instance lbInstance = lbInstanceManager.getLoadBalancerInstance(loadBalancer, hostMap);
+        Instance lbInstance = lbInstanceManager.getLoadBalancerInstance(hostMap);
         if (lbInstance != null
                 && !(lbInstance.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || lbInstance.getState()
                         .equals(

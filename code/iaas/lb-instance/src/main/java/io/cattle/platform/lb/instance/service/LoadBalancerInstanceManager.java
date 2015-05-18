@@ -16,7 +16,7 @@ public interface LoadBalancerInstanceManager {
 
     LoadBalancer getLoadBalancerForInstance(Instance lbInstance);
 
-    Instance getLoadBalancerInstance(LoadBalancer loadBalancer, LoadBalancerHostMap hostMap);
+    Instance getLoadBalancerInstance(LoadBalancerHostMap hostMap);
 
     IpAddress getLoadBalancerInstanceIp(Instance lbInstance);
 

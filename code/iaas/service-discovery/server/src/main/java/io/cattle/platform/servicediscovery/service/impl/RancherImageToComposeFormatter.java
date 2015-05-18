@@ -7,7 +7,7 @@ public class RancherImageToComposeFormatter implements RancherConfigToComposeFor
 
     @Override
     public Object format(ServiceDiscoveryConfigItem item, Object valueToTransform) {
-        if (!item.getComposeName().equalsIgnoreCase(ServiceDiscoveryConfigItem.IMAGE.getComposeName())) {
+        if (!item.getDockerName().equalsIgnoreCase(ServiceDiscoveryConfigItem.IMAGE.getDockerName())) {
             return null;
         }
         if (valueToTransform.toString().startsWith(IMAGE_PREFIX)) {

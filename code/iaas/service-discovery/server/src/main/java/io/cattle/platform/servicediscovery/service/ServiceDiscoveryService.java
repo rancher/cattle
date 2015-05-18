@@ -11,36 +11,32 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public interface ServiceDiscoveryService {
 
-    SimpleEntry<String, String> buildConfig(List<? extends Service> services);
-
-    Map<String, Object> buildLaunchData(Service service);
+    SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services);
 
     int[] getWeights(int size, int total);
-
-    long getServiceNetworkId(Service service);
 
     String buildDockerComposeConfig(List<? extends Service> services);
 
     String buildRancherComposeConfig(List<? extends Service> services);
 
-    String getLoadBalancerName(Service service);
-
     Pair<Long, Long> getInstanceToServicePair(Instance instance);
 
-    void activateService(Service service, int scale);
-
-    void activateLoadBalancerService(Service service, int scale);
-
-    void deactivateLoadBalancerService(Service service);
-
-    void deactivateService(Service service);
-
-    void scaleDownService(Service service, int requestedScale);
-
-    void scaleDownLoadBalancerService(Service service, int requestedScale);
+    void cleanupLoadBalancerService(Service service);
 
     String generateServiceInstanceName(Service service, int finalOrder);
 
-    Map<String, String> getServiceInstanceLabels(Service service);
+    void createLoadBalancerService(Service service);
+
+    void removeServiceMaps(Service service);
+
+    Map<String, String> getServiceLabels(Service service);
+
+    List<? extends Service> listEnvironmentServices(long environmentId);
+
+    Map<String, Object> buildLaunchData(Service service, Map<String, String> labels, String instanceName, List<Integer> volumesFromInstanceIds);
+
+    List<Long> getServiceNetworkIds(Service service);
+
+    List<Integer> getServiceInstanceUsedOrderIds(Service service);
 
 }

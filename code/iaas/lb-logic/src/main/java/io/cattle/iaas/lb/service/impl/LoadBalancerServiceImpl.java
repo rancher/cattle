@@ -18,6 +18,8 @@ import io.cattle.platform.core.model.LoadBalancerTarget;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 
 public class LoadBalancerServiceImpl implements LoadBalancerService {
@@ -130,10 +132,10 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     }
 
     @Override
-    public LoadBalancerHostMap addHostToLoadBalancer(LoadBalancer lb) {
-        return resourceDao.createAndSchedule(LoadBalancerHostMap.class,
-                    LOAD_BALANCER_HOST_MAP.LOAD_BALANCER_ID, lb.getId(),
-                    LOAD_BALANCER_HOST_MAP.ACCOUNT_ID, lb.getAccountId());
+    public LoadBalancerHostMap addHostWLaunchConfigToLoadBalancer(LoadBalancer lb, Map<String, Object> data) {
+        data.put(LoadBalancerConstants.FIELD_LB_ID, lb.getId());
+        data.put("accountId", lb.getAccountId());
+        return resourceDao.createAndSchedule(LoadBalancerHostMap.class, data);
     }
 
 }
