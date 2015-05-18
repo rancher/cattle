@@ -26,7 +26,7 @@ public class LabelsServiceImpl implements LabelsService {
     ObjectManager objectManager;
 
     @Override
-    public Label getOrCreateLabel(Long accountId, String key, String value,
+    public Label getOrCreateLabel(long accountId, String key, String value,
             String type) {
         // best effort for not duplicating; TODO: Handle this better
         Label label = objectManager.findAny(Label.class,
@@ -48,7 +48,7 @@ public class LabelsServiceImpl implements LabelsService {
     }
 
     @Override
-    public void createContainerLabel(Long accountId, Long instanceId,
+    public void createContainerLabel(long accountId, long instanceId,
             String key, String value) {
         Label label = getOrCreateLabel(accountId, key, value, LabelConstants.CONTAINER_TYPE);
 
@@ -70,7 +70,7 @@ public class LabelsServiceImpl implements LabelsService {
     }
 
     @Override
-    public void createHostLabel(Long accountId, Long hostId, String key,
+    public void createHostLabel(long accountId, long hostId, String key,
             String value) {
         Label label = getOrCreateLabel(accountId, key, value, LabelConstants.HOST_TYPE);
 

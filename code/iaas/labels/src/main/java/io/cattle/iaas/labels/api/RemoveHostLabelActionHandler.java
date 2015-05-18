@@ -7,6 +7,7 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostLabelMap;
 import io.cattle.platform.core.model.Label;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -34,7 +35,7 @@ public class RemoveHostLabelActionHandler implements ActionHandler {
         // does cleanup
         HostLabelMap mapping = mapDao.findToRemove(HostLabelMap.class, Host.class, host.getId(), Label.class, labelId);
         if (mapping != null) {
-            processManager.scheduleProcessInstance("hostlabelmap.remove", mapping, null);
+            processManager.scheduleStandardProcess(StandardProcess.REMOVE, mapping, null);
         }
         return host;
     }

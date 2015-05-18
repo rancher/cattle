@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLabelMap;
 import io.cattle.platform.core.model.Label;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -73,7 +74,7 @@ public class SetContainerLabelsActionHandler implements ActionHandler {
             Label existingLabel = existingLabelLookupById.get(labelId);
             String newLabelValue = labelsFromInput.get(existingLabel.getKey());
             if (newLabelValue == null || !newLabelValue.equals(existingLabel.getValue())) {
-                processManager.scheduleProcessInstance("instancelabelmap.remove", mapping, null);
+                processManager.scheduleStandardProcess(StandardProcess.REMOVE, mapping, null);
             }
         }
 
