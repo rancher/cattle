@@ -32,7 +32,7 @@ def test_container_ha_default(client, super_client, user_sim_context):
 
         return processes
 
-    processes = wait_for(callback)
+    processes = wait_for(callback, timeout=180)
 
     c = client.wait_success(c)
     assert c.state == 'stopped'
@@ -62,7 +62,7 @@ def test_container_ha_stop(super_client, sim_context):
             return None
         return processes
 
-    processes = wait_for(callback)
+    processes = wait_for(callback, timeout=180)
 
     c = super_client.wait_success(c)
     assert c.state == 'stopped'
@@ -93,7 +93,7 @@ def test_container_ha_restart(super_client, sim_context):
             return None
         return processes
 
-    processes = wait_for(callback)
+    processes = wait_for(callback, timeout=180)
 
     c = super_client.wait_success(c)
     assert c.state == 'running'
@@ -125,7 +125,7 @@ def test_container_ha_remove(super_client, sim_context):
             return None
         return processes
 
-    processes = wait_for(callback)
+    processes = wait_for(callback, timeout=180)
 
     c = super_client.wait_success(c)
     assert c.state == 'removed'
