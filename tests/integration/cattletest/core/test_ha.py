@@ -6,6 +6,7 @@ def _process_names(processes):
 
 
 def test_container_ha_default(client, super_client, user_sim_context):
+    # Meaningless change
     c = client.create_container(imageUuid=user_sim_context['imageUuid'],
                                 requestedHostId=user_sim_context['host'].id,
                                 name='simForgetImmediately')
