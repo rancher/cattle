@@ -38,9 +38,5 @@ def test_container_ha_default(client, super_client, user_sim_context):
                                              'instance.stop'])
 
 
-def test_container_ha_stop(super_client, sim_context):
-    pass
-
-
 def process_executions(cli, id=None):
     return cli.list_process_execution(processInstanceId=id)
