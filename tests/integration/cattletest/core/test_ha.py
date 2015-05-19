@@ -24,7 +24,7 @@ def test_container_ha_default(client, super_client, user_sim_context):
 
     processes = wait_for(callback)
 
-    c = super_client.wait_success(c)
+    c = client.wait_success(c)
 
     for p in processes:
         print p
