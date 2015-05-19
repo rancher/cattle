@@ -27,7 +27,7 @@ def test_container_ha_default(client, super_client, user_sim_context):
 
     c = client.wait_success(c)
 
-    if c.state != 'stopped':
+    if True:
         logging.warn('test_container_ha_default debugging')
         for p in processes:
             logging.warn('ProcessInstance: %s' % p)
@@ -35,6 +35,7 @@ def test_container_ha_default(client, super_client, user_sim_context):
                 logging.warn('ProcessExecution: %s' % pe)
 
     assert c.state == 'stopped'
+    assert False
     assert _process_names(processes) == set(['instance.create',
                                              'instance.stop'])
 
