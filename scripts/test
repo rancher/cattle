@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 cd $(dirname $0)/..
 
@@ -46,4 +45,6 @@ if [ -e .tox ] && [ ! -e .tox/py27/include/python2.7 ]; then
     rm -rf .tox
 fi
 
-tox "$@"
+tox "$@" -e py27
+
+mysqldump cattle instance process_instance process_execution
