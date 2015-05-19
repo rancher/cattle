@@ -162,10 +162,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     Map<String, Object> getInspect(ContainerEvent event) {
-        Object obj = DataUtils.getFields(event).get(FIELD_DOCKER_INSPECT);
-        if (obj == null)
-            return null;
-        return CollectionUtils.toMap(obj);
+        return CollectionUtils.toMap(DataUtils.getFields(event).get(FIELD_DOCKER_INSPECT));
     }
 
     public static boolean isNativeDockerStart(ProcessState state) {
@@ -185,9 +182,10 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     void setName(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
         String name = DataAccessor.fromMap(data).withKey(CONTAINER_EVENT_SYNC_NAME).as(String.class);
         if (StringUtils.isEmpty(name))
-            name = (String)inspect.get(INSPECT_NAME);
+            name = DataAccessor.fromMap(inspect).withKey(INSPECT_NAME).as(String.class);
 
-        name = name.replaceFirst("/", "");
+        if (name != null)
+            name = name.replaceFirst("/", "");
         instance.setName(name);
     }
 
@@ -231,9 +229,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     String getDockerIp(Map<String, Object> inspect) {
-        if (inspect == null)
-            return null;
-
         Object ip = CollectionUtils.getNestedValue(inspect, "NetworkSettings", "IPAddress");
         if (ip != null)
             return ip.toString();
@@ -277,10 +272,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         if (StringUtils.isNotEmpty(label))
             return label;
 
-        if (inspect == null)
-            return null;
-
-        Map<String, Object> config = (Map<String, Object>)inspect.get(INSPECT_CONFIG);
+        Map<String, Object> config = CollectionUtils.toMap(inspect.get(INSPECT_CONFIG));
 
         Map<String, String> labels = CollectionUtils.toMap(config.get(INSPECT_LABELS));
         label = labels.get(labelKey);
