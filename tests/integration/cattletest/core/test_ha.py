@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+import logging
 
 
 def _process_names(processes):
@@ -25,8 +26,16 @@ def test_container_ha_default(client, super_client, user_sim_context):
     processes = wait_for(callback)
 
     c = client.wait_success(c)
-    assert c.state == 'stopped'
 
+    if True:
+        logging.warn('test_container_ha_default debugging')
+        for p in processes:
+            logging.warn('ProcessInstance: %s' % p)
+            for pe in process_executions(super_client, p.id):
+                logging.warn('ProcessExecution: %s' % pe)
+
+    assert c.state == 'stopped'
+    assert False
     assert _process_names(processes) == set(['instance.create',
                                              'instance.stop'])
 
@@ -118,3 +127,7 @@ def test_container_ha_remove(super_client, sim_context):
                                              'instance.restart',
                                              'instance.stop',
                                              'instance.remove'])
+
+
+def process_executions(cli, id=None):
+    return cli.list_process_execution(processInstanceId=id)
