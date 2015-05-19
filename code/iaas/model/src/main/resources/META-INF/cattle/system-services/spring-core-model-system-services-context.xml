@@ -22,6 +22,7 @@
     <bean class="io.cattle.platform.core.dao.impl.LoadBalancerDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.LoadBalancerTargetDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.ClusterHostMapDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.LabelsDaoImpl" />
 
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>

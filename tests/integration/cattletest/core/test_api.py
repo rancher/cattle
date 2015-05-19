@@ -290,7 +290,8 @@ def test_actions_based_on_state(admin_client, sim_context):
     assert c.state == 'running'
     assert set(c.actions.keys()) == set(['migrate', 'restart', 'stop',
                                          'update', 'execute', 'logs',
-                                         'addlabel', 'removelabel'])
+                                         'addlabel', 'removelabel',
+                                         'setlabels'])
 
 
 def test_include_user_not_auth_map(client, sim_context):

@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.label;
+package io.cattle.iaas.labels.api;
 
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.LabelConstants;
@@ -7,6 +7,7 @@ import io.cattle.platform.core.model.InstanceLabelMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Label;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -34,7 +35,7 @@ public class RemoveContainerLabelActionHandler implements ActionHandler {
         // does cleanup
         InstanceLabelMap mapping = mapDao.findToRemove(InstanceLabelMap.class, Instance.class, instance.getId(), Label.class, labelId);
         if (mapping != null) {
-            processManager.scheduleProcessInstance("instancelabelmap.remove", mapping, null);
+            processManager.scheduleStandardProcess(StandardProcess.REMOVE, mapping, null);
         }
         return instance;
     }

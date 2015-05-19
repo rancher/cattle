@@ -109,6 +109,9 @@
         "removeLabelInput" : "cr",
         "removeLabelInput.label" : "cr",
 
+        "setLabelsInput": "cr",
+        "setLabelsInput.labels": "cr",
+
         "hostAccess" : "r",
         "hostAccess.token" : "r",
         "hostAccess.url" : "r",
@@ -361,10 +364,10 @@
         "snapshot.volumeId" : "cr",
         "snapshot.managedVolumeUUID" : "r",
 
-        "label" : "crud",
+        "label" : "r",
         "label.type" : "",
-        "label.key" : "cru",
-        "label.value" : "cru",
+        "label.key" : "r",
+        "label.value" : "r",
 
         "end" : ""
     }

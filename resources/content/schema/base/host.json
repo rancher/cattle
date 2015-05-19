@@ -16,6 +16,10 @@
         "removelabel": {
             "input": "removeLabelInput",
             "output": "host"
+        },
+        "setlabels": {
+            "input": "setLabelsInput",
+            "output": "host"
         }
     }
 }

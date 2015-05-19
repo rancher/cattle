@@ -13,19 +13,20 @@ def test_user_client_access(clients):
         'superadmin': 145,
         'service': 93,
         'project': 71,
-        'admin': 97,
+        'admin': 98,
         'agent': 8,
-        'user': 75,
+        'user': 76,
         'agentRegister': 4,
         'test': 140,
-        'readAdmin': 97,
+        'readAdmin': 98,
         'token': 2,
-        'superadmin': 151,
-        'service': 97,
-        'project': 75,
+        'superadmin': 152,
+        'service': 98,
+        'project': 76,
     }
     for tuple in clients.items():
-        assert typesLen[tuple[0]] == len(tuple[1].schema.types.items())
+        assert tuple[0] == tuple[0] and \
+            typesLen[tuple[0]] == len(tuple[1].schema.types.items())
 
 
 def test_instance_link_auth(admin_user_client, user_client, project_client):

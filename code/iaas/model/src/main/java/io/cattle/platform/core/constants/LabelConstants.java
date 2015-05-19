@@ -8,4 +8,7 @@ public class LabelConstants {
     public static final String INPUT_LABEL_VALUE = "value";
 
     public static final String INPUT_LABEL = "label";
+
+    public static final String INPUT_LABELS = "labels";
+
 }

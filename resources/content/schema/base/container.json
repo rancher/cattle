@@ -201,6 +201,10 @@
         "removelabel": {
             "input": "removeLabelInput",
             "output": "container"
+        },
+        "setlabels": {
+            "input": "setLabelsInput",
+            "output": "container"
         }
     }
 }
