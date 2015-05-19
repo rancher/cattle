@@ -17,14 +17,14 @@ def test_container_ha_default(client, super_client, user_sim_context):
 
     def callback():
         processes = process_instances(super_client, c, type='instance')
-        do_ping()
         if 'instance.stop' not in _process_names(processes):
+            do_ping()
             return None
         return processes
 
     processes = wait_for(callback)
 
-    c = client.wait_success(c)
+    c = super_client.wait_success(c)
 
     for p in processes:
         print p
@@ -36,6 +36,10 @@ def test_container_ha_default(client, super_client, user_sim_context):
 
     assert _process_names(processes) == set(['instance.create',
                                              'instance.stop'])
+
+
+def test_container_ha_stop(super_client, sim_context):
+    pass
 
 
 def process_executions(cli, id=None):
