@@ -46,5 +46,3 @@ if [ -e .tox ] && [ ! -e .tox/py27/include/python2.7 ]; then
 fi
 
 tox "$@" -e py27
-
-mysqldump cattle instance process_instance process_execution
