@@ -124,58 +124,9 @@
                 <module>code/implementation/zookeeper</module>
                 <module>code/packaging/app</module>
                 <module>code/packaging/app-parent</module>
+                <module>code/packaging/app-intellij</module>
                 <module>code/packaging/dev</module>
                 <module>code/packaging/meta</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>intellij</id>
-            <modules>
-                <module>code/packaging/app-intellij</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>gdapi-java-server</id>
-            <activation>
-                <file>
-                    <exists>deps/gdapi-java-server/pom.xml</exists>
-                </file>
-            </activation>
-            <modules>
-                <module>deps/gdapi-java-server</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>jooq</id>
-            <activation>
-                <file>
-                    <exists>deps/jooq/pom.xml</exists>
-                </file>
-            </activation>
-            <modules>
-                <module>deps/jooq</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>liquibase</id>
-            <activation>
-                <file>
-                    <exists>deps/liquibase/pom.xml</exists>
-                </file>
-            </activation>
-            <modules>
-                <module>deps/liquibase</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>jedis</id>
-            <activation>
-                <file>
-                    <exists>deps/jedis/pom.xml</exists>
-                </file>
-            </activation>
-            <modules>
-                <module>deps/jedis</module>
             </modules>
         </profile>
         <profile>
