@@ -3,18 +3,28 @@ from cattle import ApiError
 from common_fixtures import *  # NOQA
 
 
-def _create_virtual_machine(client, sim_context, **kw):
+def _create_virtual_machine(client, context, **kw):
     args = {
-        'imageUuid': sim_context['imageUuid'],
-        'requestedHostId': sim_context['host'].id,
+        'accountId': context.project.id,
+        'imageUuid': context.image_uuid,
     }
     args.update(kw)
 
     return client.create_virtual_machine(**args)
 
 
-def test_virtual_machine_create_cpu_memory(super_client, sim_context):
-    vm = _create_virtual_machine(super_client, sim_context,
+@pytest.fixture(scope='module')
+def network(context):
+    return context.nsp.network()
+
+
+@pytest.fixture(scope='module')
+def subnet(network):
+    return network.subnets()[0]
+
+
+def test_virtual_machine_create_cpu_memory(super_client, context):
+    vm = _create_virtual_machine(super_client, context,
                                  vcpu=2, memoryMb=42)
 
     vm = super_client.wait_success(vm)
@@ -24,8 +34,8 @@ def test_virtual_machine_create_cpu_memory(super_client, sim_context):
     assert vm.memoryMb == 42
 
 
-def test_virtual_machine_create(super_client, sim_context):
-    vm = _create_virtual_machine(super_client, sim_context)
+def test_virtual_machine_create(super_client, context):
+    vm = _create_virtual_machine(super_client, context)
 
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -34,8 +44,8 @@ def test_virtual_machine_create(super_client, sim_context):
     assert vm.memoryMb is None
 
 
-def test_virtual_machine_create_null_network_id(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
+def test_virtual_machine_create_null_network_id(super_client, context):
+    image_uuid = context.image_uuid
     try:
         super_client.create_virtual_machine(imageUuid=image_uuid,
                                             networkIds=[None])
@@ -44,9 +54,9 @@ def test_virtual_machine_create_null_network_id(super_client, sim_context):
         assert e.error.code == 'NotNullable'
 
 
-def test_virtual_machine_n_ids_s_ids(super_client, sim_context,
+def test_virtual_machine_n_ids_s_ids(super_client, context,
                                      network, subnet):
-    image_uuid = sim_context['imageUuid']
+    image_uuid = context.image_uuid
     try:
         super_client.create_virtual_machine(imageUuid=image_uuid,
                                             networkIds=[network.id],
@@ -55,10 +65,9 @@ def test_virtual_machine_n_ids_s_ids(super_client, sim_context,
         assert e.error.code == 'NetworkIdsSubnetIdsMutuallyExclusive'
 
 
-def test_virtual_machine_network(super_client, sim_context, network,
-                                 subnet):
+def test_virtual_machine_network(super_client, context, network, subnet):
     subnet_plain_id = get_plain_id(super_client, subnet)
-    vm = _create_virtual_machine(super_client, sim_context,
+    vm = _create_virtual_machine(super_client, context,
                                  networkIds=[network.id])
 
     vm = super_client.wait_success(vm)
@@ -93,7 +102,7 @@ def test_virtual_machine_network(super_client, sim_context, network,
     assert ip_admin.role == 'primary'
 
     assert ip.address is not None
-    assert ip.address.startswith('192.168.0')
+    assert ip.address.startswith('10.42')
 
     assert vm.primaryIpAddress is not None
     assert vm.primaryIpAddress == ip.address
@@ -103,9 +112,9 @@ def test_virtual_machine_network(super_client, sim_context, network,
     assert ip.address in [x.item for x in addresses]
 
 
-def test_virtual_machine_subnet(super_client, sim_context, subnet, vnet):
+def test_virtual_machine_subnet(super_client, context, subnet):
     network = subnet.network()
-    vm = _create_virtual_machine(super_client, sim_context,
+    vm = _create_virtual_machine(super_client, context,
                                  subnetIds=[subnet.id])
 
     vm = super_client.wait_success(vm)
@@ -128,23 +137,24 @@ def test_virtual_machine_subnet(super_client, sim_context, subnet, vnet):
     ip = ips[0]
 
     assert ip.address is not None
-    assert ip.address.startswith('192.168.0')
+    assert ip.address.startswith('10.42')
 
     assert vm.primaryIpAddress is not None
     assert vm.primaryIpAddress == ip.address
 
 
-def test_virtual_machine_no_ip(super_client, sim_context):
-    network = super_client.create_network()
+def test_virtual_machine_no_ip(super_client, context):
+    account_id = context.project.id
+    network = super_client.create_network(accountId=account_id)
     subnet = super_client.create_subnet(networkAddress='192.168.0.0',
-                                        isPublic=True,
+                                        accountId=account_id,
                                         cidrSize='16',
                                         networkId=network.id,
                                         startAddress='192.168.0.3',
                                         endAddress='192.168.0.3')
     subnet = super_client.wait_success(subnet)
     assert subnet.state == 'active'
-    vm = _create_virtual_machine(super_client, sim_context,
+    vm = _create_virtual_machine(super_client, context,
                                  subnetIds=[subnet.id])
 
     vm = super_client.wait_success(vm)
@@ -152,7 +162,7 @@ def test_virtual_machine_no_ip(super_client, sim_context):
     assert vm.state == 'running'
     assert vm.primaryIpAddress == '192.168.0.3'
 
-    vm = _create_virtual_machine(super_client, sim_context,
+    vm = _create_virtual_machine(super_client, context,
                                  subnetIds=[subnet.id])
     vm = super_client.wait_transitioning(vm)
 
@@ -162,15 +172,15 @@ def test_virtual_machine_no_ip(super_client, sim_context):
         'Failed to allocate IP from subnet : IP allocation error'
 
 
-def test_virtual_machine_stop_subnet(super_client, sim_context, subnet, vnet):
-    vm = _create_virtual_machine(super_client, sim_context,
+def test_virtual_machine_stop_subnet(super_client, context, subnet):
+    vm = _create_virtual_machine(super_client, context,
                                  subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
     assert len(vm.nics()) == 1
     assert len(vm.nics()[0].ipAddresses()) == 1
-    assert vm.nics()[0].ipAddresses()[0].address.startswith('192.168')
+    assert vm.nics()[0].ipAddresses()[0].address.startswith('10.42')
 
     vm = super_client.wait_success(vm.stop())
 
@@ -183,20 +193,19 @@ def test_virtual_machine_stop_subnet(super_client, sim_context, subnet, vnet):
     ip_address = nic.ipAddresses()[0]
 
     assert ip_address.state == 'active'
-    assert ip_address.address.startswith('192.168')
+    assert ip_address.address.startswith('10.42')
     assert nic.state == 'inactive'
 
 
-def test_virtual_machine_remove_subnet(super_client, sim_context,
-                                       subnet, vnet):
-    vm = _create_virtual_machine(super_client, sim_context,
+def test_virtual_machine_remove_subnet(super_client, context, subnet):
+    vm = _create_virtual_machine(super_client, context,
                                  subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
     assert len(vm.nics()) == 1
     assert len(vm.nics()[0].ipAddresses()) == 1
-    assert vm.nics()[0].ipAddresses()[0].address.startswith('192.168')
+    assert vm.nics()[0].ipAddresses()[0].address.startswith('10.42')
 
     vm = super_client.wait_success(vm.stop(remove=True))
 
@@ -209,13 +218,13 @@ def test_virtual_machine_remove_subnet(super_client, sim_context,
     ip_address = nic.ipAddresses()[0]
 
     assert ip_address.state == 'active'
-    assert ip_address.address.startswith('192.168')
+    assert ip_address.address.startswith('10.42')
     assert nic.state == 'removed'
 
 
-def test_virtual_machine_purge_subnet(super_client, sim_context, subnet, vnet):
+def test_virtual_machine_purge_subnet(super_client, context, subnet):
     subnet_plain_id = get_plain_id(super_client, subnet)
-    vm = _create_virtual_machine(super_client, sim_context,
+    vm = _create_virtual_machine(super_client, context,
                                  subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -225,7 +234,7 @@ def test_virtual_machine_purge_subnet(super_client, sim_context, subnet, vnet):
     assert vm.primaryIpAddress in [x.item for x in addresses]
     assert len(vm.nics()) == 1
     assert len(vm.nics()[0].ipAddresses()) == 1
-    assert vm.nics()[0].ipAddresses()[0].address.startswith('192.168')
+    assert vm.nics()[0].ipAddresses()[0].address.startswith('10.42')
 
     vm = super_client.wait_success(vm.stop(remove=True))
 
@@ -238,7 +247,7 @@ def test_virtual_machine_purge_subnet(super_client, sim_context, subnet, vnet):
     ip_address = nic.ipAddresses()[0]
 
     assert ip_address.state == 'active'
-    assert ip_address.address.startswith('192.168')
+    assert ip_address.address.startswith('10.42')
     assert nic.state == 'removed'
 
     vm = super_client.wait_success(vm.purge())
@@ -267,10 +276,9 @@ def test_virtual_machine_purge_subnet(super_client, sim_context, subnet, vnet):
     assert vm.primaryIpAddress not in [x.item for x in addresses]
 
 
-def test_virtual_machine_restore_subnet(super_client, sim_context,
-                                        subnet, vnet):
+def test_virtual_machine_restore_subnet(super_client, context, subnet):
     subnet_plain_id = get_plain_id(super_client, subnet)
-    vm = _create_virtual_machine(super_client, sim_context,
+    vm = _create_virtual_machine(super_client, context,
                                  subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -289,7 +297,7 @@ def test_virtual_machine_restore_subnet(super_client, sim_context,
     nic = vm.nics()[0]
     ip_address = nic.ipAddresses()[0]
     address = ip_address.address
-    assert ip_address.address.startswith('192.168')
+    assert ip_address.address.startswith('10.42')
 
     vm = vm.restore()
     assert vm.state == 'restoring'
@@ -311,8 +319,8 @@ def test_virtual_machine_restore_subnet(super_client, sim_context,
     assert vm.nics()[0].ipAddresses()[0].address == address
 
 
-def test_virtual_machine_console(super_client, sim_context):
-    vm = _create_virtual_machine(super_client, sim_context)
+def test_virtual_machine_console(super_client, context):
+    vm = _create_virtual_machine(super_client, context)
     vm = super_client.wait_success(vm)
 
     assert vm.state == 'running'
@@ -334,8 +342,8 @@ def test_virtual_machine_console(super_client, sim_context):
     assert console.url == 'http://localhost/console'
 
 
-def test_virtual_machine_console_visibility(super_client, sim_context):
-    vm = _create_virtual_machine(super_client, sim_context)
+def test_virtual_machine_console_visibility(super_client, context):
+    vm = _create_virtual_machine(super_client, context)
     vm = super_client.wait_success(vm)
 
     assert vm.state == 'running'
@@ -354,35 +362,3 @@ def test_virtual_machine_console_visibility(super_client, sim_context):
 
     assert vm.state == 'stopped'
     assert 'console' not in vm
-
-
-def test_virtual_machine_account_defaults(super_client, sim_context):
-    key = 'io.cattle.platform.allocator.constraint.AccountConstraintsProvider'
-    data = {key: {'accountScoped': False}}
-    account = create_and_activate(super_client, 'account',
-                                  data=data,
-                                  kind='user')
-    cred = create_and_activate(super_client, 'credential',
-                               accountId=account.id)
-
-    network = create_and_activate(super_client, 'network')
-    assert network.accountId != account.id
-    network2 = create_and_activate(super_client, 'network')
-    assert network2.accountId != account.id
-
-    account = super_client.update(account, defaultCredentialIds=[cred.id],
-                                  defaultNetworkIds=[network.id, network2.id])
-    assert account.state == 'active'
-    assert account.defaultCredentialIds == [cred.id]
-    assert account.defaultNetworkIds == [network.id, network2.id]
-
-    vm = _create_virtual_machine(super_client, sim_context,
-                                 accountId=account.id)
-    vm = super_client.wait_success(vm)
-
-    assert vm.state == 'running'
-    assert len(vm.credentials()) == 1
-    assert vm.credentials()[0].id == cred.id
-
-    network_ids = set([x.networkId for x in vm.nics()])
-    assert network_ids == set([network.id, network2.id])

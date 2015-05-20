@@ -7,35 +7,22 @@ def _process_names(processes):
 
 
 @pytest.fixture(scope='session')
-def config_id(super_client):
-    default_lb_config = super_client. \
+def config_id(client):
+    default_lb_config = client. \
         create_loadBalancerConfig(name=random_str())
-    default_lb_config = super_client.wait_success(default_lb_config)
+    default_lb_config = client.wait_success(default_lb_config)
     return default_lb_config.id
 
 
-@pytest.fixture(scope='module')
-def nsp(super_client, sim_context):
-    nsp = create_agent_instance_nsp(super_client, sim_context)
-    create_and_activate(super_client, 'networkService',
-                        networkServiceProviderId=nsp.id,
-                        networkId=nsp.networkId)
+def test_add_host_to_lb(client, super_client, context, config_id):
+    host = context.host
 
-    return nsp
-
-
-def test_add_host_to_lb(admin_client, super_client, sim_context,
-                        config_id, nsp):
-    host = sim_context['host']
-
-    agent, lb, uri, instance = _create_lb_w_host(admin_client,
+    agent, lb, uri, instance = _create_lb_w_host(client,
                                                  config_id, host,
-                                                 sim_context,
-                                                 super_client,
-                                                 nsp)
+                                                 super_client)
 
     # verify the mapping
-    _validate_add_host(host, lb, super_client)
+    _validate_add_host(host, lb, client)
 
     # verify that the instance is set with requestedHost
     # and instance_triggered_stop flags
@@ -44,14 +31,13 @@ def test_add_host_to_lb(admin_client, super_client, sim_context,
     assert instance.instanceTriggeredStop == 'restart'
 
 
-def test_add_host_twice(admin_client, super_client, sim_context,
-                        config_id, nsp):
-    host = sim_context['host']
+def test_add_host_twice(client, context, config_id):
+    host = context.host
 
-    lb = _create_valid_lb(super_client, sim_context, config_id, nsp)
+    lb = _create_valid_lb(client, config_id)
 
     lb.addhost(hostId=host.id)
-    _validate_add_host(host, lb, super_client)
+    _validate_add_host(host, lb, client)
 
     with pytest.raises(ApiError) as e:
         lb.addhost(hostId=host.id)
@@ -61,15 +47,19 @@ def test_add_host_twice(admin_client, super_client, sim_context,
     assert e.value.error.fieldName == 'hostId'
 
 
-def test_remove_non_existing_host(admin_client, super_client, sim_context,
-                                  sim_context2, config_id, nsp):
-    host = sim_context['host']
-    host1 = sim_context2['host']
+def test_remove_non_existing_host(new_context):
+    client = new_context.client
+    config = client. \
+        create_loadBalancerConfig(name=random_str())
+    config = client.wait_success(config)
 
-    lb = _create_valid_lb(super_client, sim_context, config_id, nsp)
+    host = new_context.host
+    host1 = register_simulated_host(new_context)
+
+    lb = _create_valid_lb(client, config.id)
 
     lb.addhost(hostId=host.id)
-    _validate_add_host(host, lb, super_client)
+    _validate_add_host(host, lb, client)
 
     with pytest.raises(ApiError) as e:
         lb.removehost(hostId=host1.id)
@@ -79,145 +69,118 @@ def test_remove_non_existing_host(admin_client, super_client, sim_context,
     assert e.value.error.fieldName == 'hostId'
 
 
-def test_delete_host_from_lb(admin_client,
-                             sim_context, super_client,
-                             config_id, nsp):
-    host = sim_context['host']
+def test_delete_host_from_lb(client, context, super_client, config_id):
+    host = context.host
 
-    agent, lb, uri, instance = _create_lb_w_host(admin_client,
+    agent, lb, uri, instance = _create_lb_w_host(client,
                                                  config_id, host,
-                                                 sim_context,
-                                                 super_client,
-                                                 nsp)
+                                                 super_client)
 
     # remove the host from lb
     lb.removehost(hostId=host.id)
 
     # verify the cleanup was executed
-    _verify_host_map_cleanup(admin_client, host,
+    _verify_host_map_cleanup(client, host,
                              lb, super_client, uri, agent)
 
 
-def test_delete_host_from_lb_when_instance_stopped(admin_client,
-                                                   sim_context,
-                                                   super_client,
-                                                   config_id,
-                                                   nsp):
-    host = sim_context['host']
+def test_delete_host_from_lb_when_instance_stopped(client, context,
+                                                   super_client, config_id):
+    host = context.host
 
-    agent, lb, uri, instance = _create_lb_w_host(admin_client,
+    agent, lb, uri, instance = _create_lb_w_host(client,
                                                  config_id, host,
-                                                 sim_context,
-                                                 super_client,
-                                                 nsp)
+                                                 super_client)
 
     # stop the lb instance
-    instance = wait_success(super_client, instance)
+    instance = client.wait_success(instance)
     if instance.state == 'running':
-        instance = wait_success(super_client, instance.stop())
+        instance = client.wait_success(instance.stop())
         assert instance.state == 'stopped'
 
     # remove the host from lb
     lb.removehost(hostId=host.id)
 
     # verify the cleanup was executed
-    _verify_host_map_cleanup(admin_client, host,
+    _verify_host_map_cleanup(client, host,
                              lb, super_client, uri, agent)
 
 
-def test_delete_host_from_lb_when_instance_removed(admin_client,
-                                                   sim_context,
-                                                   super_client,
-                                                   config_id,
-                                                   nsp):
-    host = sim_context['host']
+def test_delete_host_from_lb_when_instance_removed(client, context,
+                                                   super_client, config_id):
+    host = context.host
 
-    agent, lb, uri, instance = _create_lb_w_host(admin_client,
+    agent, lb, uri, instance = _create_lb_w_host(client,
                                                  config_id, host,
-                                                 sim_context,
-                                                 super_client,
-                                                 nsp)
+                                                 super_client)
 
     # stop the lb instance
-    instance = wait_success(super_client, instance)
-    instance = wait_success(super_client, instance.stop())
+    instance = client.wait_success(instance)
+    instance = client.wait_success(instance.stop())
     assert instance.state == 'stopped'
 
     # remove the lb instance
-    instance = wait_success(super_client, instance.remove())
+    instance = client.wait_success(instance.remove())
     assert instance.state == 'removed'
 
     # remove the host from lb
     lb.removehost(hostId=host.id)
 
     # verify the cleanup was executed
-    _verify_host_map_cleanup(admin_client, host,
+    _verify_host_map_cleanup(client, host,
                              lb, super_client, uri, agent)
 
 
-def test_delete_host_from_lb_when_agent_inactive(admin_client,
-                                                 sim_context,
-                                                 super_client,
-                                                 config_id,
-                                                 nsp):
-    host = sim_context['host']
+def test_delete_host_from_lb_when_agent_inactive(client, context,
+                                                 super_client, config_id):
+    host = context.host
 
-    agent, lb, uri, instance = _create_lb_w_host(admin_client,
+    agent, lb, uri, instance = _create_lb_w_host(client,
                                                  config_id, host,
-                                                 sim_context,
-                                                 super_client,
-                                                 nsp)
+                                                 super_client)
 
     # deactivate the agent
-    agent = wait_success(super_client, agent.deactivate())
+    agent = super_client.wait_success(agent.deactivate())
     assert agent.state == 'inactive'
 
     # remove the host from lb
     lb.removehost(hostId=host.id)
 
     # verify the cleanup was executed
-    _verify_host_map_cleanup(admin_client, host,
+    _verify_host_map_cleanup(client, host,
                              lb, super_client, uri, agent)
 
 
-def test_delete_host_from_lb_when_agent_removed(admin_client,
-                                                sim_context,
-                                                super_client,
-                                                config_id,
-                                                nsp):
-    host = sim_context['host']
+def test_delete_host_from_lb_when_agent_removed(client, context,
+                                                super_client, config_id):
+    host = context.host
 
-    agent, lb, uri, instance = _create_lb_w_host(admin_client,
+    agent, lb, uri, instance = _create_lb_w_host(client,
                                                  config_id, host,
-                                                 sim_context,
-                                                 super_client,
-                                                 nsp)
+                                                 super_client)
 
     # deactivate the agent
-    agent = wait_success(super_client, agent.deactivate())
+    agent = super_client.wait_success(agent.deactivate())
     assert agent.state == 'inactive'
 
     # remove the agent
-    agent = wait_success(super_client, agent.remove())
+    agent = super_client.wait_success(agent.remove())
     assert agent.state == 'removed'
 
     # remove the host from lb
     lb.removehost(hostId=host.id)
 
     # verify the cleanup was executed
-    _verify_host_map_cleanup(admin_client, host,
+    _verify_host_map_cleanup(client, host,
                              lb, super_client, uri, agent)
 
 
-def test_delete_lb(admin_client, super_client, sim_context,
-                   config_id, nsp):
-    host = sim_context['host']
+def test_delete_lb(client, super_client, context, config_id):
+    host = context.host
 
-    agent, lb, uri, instance = _create_lb_w_host(admin_client,
+    agent, lb, uri, instance = _create_lb_w_host(client,
                                                  config_id, host,
-                                                 sim_context,
-                                                 super_client,
-                                                 nsp)
+                                                 super_client)
 
     # remove the lb
     super_client.delete(lb)
@@ -225,41 +188,42 @@ def test_delete_lb(admin_client, super_client, sim_context,
     assert lb.state == 'removed'
 
     # verify the cleanup was executed
-    _verify_host_map_cleanup(admin_client, host, lb,
+    _verify_host_map_cleanup(client, host, lb,
                              super_client, uri, agent)
 
 
-def test_set_hosts(admin_client,
-                   super_client,
-                   sim_context,
-                   new_sim_context,
-                   config_id, nsp):
-    host1 = new_sim_context['host']
-    host2 = sim_context['host']
+def test_set_hosts(new_context):
+    client = new_context.client
+    config = client. \
+        create_loadBalancerConfig(name=random_str())
+    config = client.wait_success(config)
 
-    lb = _create_valid_lb(super_client, sim_context, config_id, nsp)
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context)
+
+    lb = _create_valid_lb(client, config.id)
 
     # 1. Set hosts with 2 lbs
     lb = lb.sethosts(hostIds=[host1.id, host2.id])
-    lb = super_client.wait_success(lb)
+    lb = client.wait_success(lb)
 
     # VERIFICATION FOR HOST1
     # verify the mapping
-    _validate_add_host(host1, lb, super_client)
+    _validate_add_host(host1, lb, client)
 
     # VERIFICATION FOR HOST2
     # verify the mapping
-    _validate_add_host(host2, lb, super_client)
+    _validate_add_host(host2, lb, client)
 
     # 2. Remove the host from lb
     lb = lb.removehost(hostId=host1.id)
 
     # verify the cleanup was executed
-    validate_remove_host(host1, lb, super_client)
+    validate_remove_host(host1, lb, client)
 
     # 3. Re-add the host again
     lb = lb.sethosts(hostIds=[host1.id, host2.id])
-    host_maps = super_client. \
+    host_maps = client. \
         list_loadBalancerHostMap(loadBalancerId=lb.id,
                                  hostId=host1.id)
 
@@ -270,37 +234,28 @@ def test_set_hosts(admin_client,
         host_map = host_maps[1]
 
     wait_for_condition(
-        super_client, host_map, _resource_is_active,
+        client, host_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
 
 
-def _create_valid_lb(super_client, sim_context, config_id, nsp):
-    default_lb_config = super_client. \
-        create_loadBalancerConfig(name=random_str())
-    super_client.wait_success(default_lb_config)
-
-    im_id = sim_context['imageUuid']
-    test_lb = super_client. \
+def _create_valid_lb(client, config_id):
+    test_lb = client. \
         create_loadBalancer(name=random_str(),
-                            loadBalancerConfigId=config_id,
-                            loadBalancerInstanceImageUuid=im_id,
-                            loadBalancerInstanceUriPredicate='sim://',
-                            networkId=nsp.networkId)
-    test_lb = super_client.wait_success(test_lb)
+                            loadBalancerConfigId=config_id)
+    test_lb = client.wait_success(test_lb)
     return test_lb
 
 
-def _create_lb_w_host(admin_client, config_id, host,
-                      sim_context, super_client, nsp):
+def _create_lb_w_host(client, config_id, host, super_client):
     # create lb
-    lb = _create_valid_lb(super_client, sim_context, config_id, nsp)
+    lb = _create_valid_lb(client, config_id)
 
     # add host to lb
     lb.addhost(hostId=host.id)
-    host_map = _validate_add_host(host, lb, super_client)
+    host_map = _validate_add_host(host, lb, client)
 
     # verify that the agent got created
-    uri = 'sim://?lbId={}&hostMapId={}'. \
+    uri = 'delegate:///?lbId={}&hostMapId={}'. \
         format(get_plain_id(super_client, lb),
                get_plain_id(super_client, host_map))
     agents = super_client.list_agent(uri=uri)
@@ -315,15 +270,15 @@ def _create_lb_w_host(admin_client, config_id, host,
     return agent, lb, uri, instance
 
 
-def _verify_host_map_cleanup(admin_client, host,
+def _verify_host_map_cleanup(client, host,
                              lb, super_client, uri, agent):
     # verify the mapping is gone
-    validate_remove_host(host, lb, super_client)
+    validate_remove_host(host, lb, client)
 
     # verify that the lb instance is gone
     instances = super_client.list_instance(agentId=agent.id)
     if not instances:
-        instance = admin_client.wait_success(instances[0])
+        instance = client.wait_success(instances[0])
         assert instance.state == 'removed'
 
     # verify that the agent is gone
@@ -345,60 +300,52 @@ def _wait_until_agent_removed(uri, super_client, timeout=30):
     return agent
 
 
-def validate_remove_host(host, lb, super_client):
-    host_maps = super_client. \
+def validate_remove_host(host, lb, client):
+    host_maps = client. \
         list_loadBalancerHostMap(loadBalancerId=lb.id,
                                  hostId=host.id)
     assert len(host_maps) == 1
     host_map = host_maps[0]
     wait_for_condition(
-        super_client, host_map, _resource_is_removed,
+        client, host_map, _resource_is_removed,
         lambda x: 'State is: ' + x.state)
 
     return host_map
 
 
-def _add_listener_to_config(admin_client, config, super_client):
-    listener = admin_client.create_loadBalancerListener(name=random_str(),
-                                                        sourcePort='8080',
-                                                        targetPort='80',
-                                                        sourceProtocol='http',
-                                                        targetProtocol='tcp')
-    listener = admin_client.wait_success(listener)
+def _add_listener_to_config(client, config):
+    listener = client.create_loadBalancerListener(name=random_str(),
+                                                  sourcePort='8080',
+                                                  targetPort='80',
+                                                  sourceProtocol='http',
+                                                  targetProtocol='tcp')
+    listener = client.wait_success(listener)
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    _validate_add_listener(config, listener, super_client)
+    _validate_add_listener(config, listener, client)
     return config, listener
 
 
-def test_validate_ports(admin_client, super_client, sim_context, nsp):
-    # using super_client here because simulator required
-    # networkId to be passed in, and this field is available
-    #  only to super_client
-    host = sim_context['host']
+def test_validate_ports(client, super_client, context):
+    host = context.host
 
     # create config with 1 listener
-    config = super_client. \
+    config = client. \
         create_loadBalancerConfig(name=random_str())
-    super_client.wait_success(config)
-    config, listener = _add_listener_to_config(admin_client, config,
-                                               super_client)
+    client.wait_success(config)
+    config, listener = _add_listener_to_config(client, config)
 
     # create load balancer
-    im_id = sim_context['imageUuid']
-    lb = super_client. \
+    lb = client. \
         create_loadBalancer(name=random_str(),
-                            loadBalancerConfigId=config.id,
-                            loadBalancerInstanceImageUuid=im_id,
-                            loadBalancerInstanceUriPredicate='sim://',
-                            networkId=nsp.networkId)
-    lb = super_client.wait_success(lb)
+                            loadBalancerConfigId=config.id)
+    lb = client.wait_success(lb)
 
     # add host to lb
     lb.addhost(hostId=host.id)
 
     # verify that the lb instance/host_map got created
-    host_map = _validate_add_host(host, lb, super_client)
-    uri = 'sim://?lbId={}&hostMapId={}'. \
+    host_map = _validate_add_host(host, lb, client)
+    uri = 'delegate:///?lbId={}&hostMapId={}'. \
         format(get_plain_id(super_client, lb),
                get_plain_id(super_client, host_map))
     agents = super_client.list_agent(uri=uri)
@@ -414,7 +361,7 @@ def test_validate_ports(admin_client, super_client, sim_context, nsp):
     assert len(ports) == 1
 
     # remove listener; make sure that the port was removed
-    listener = admin_client.wait_success(admin_client.delete(listener))
+    listener = client.wait_success(client.delete(listener))
     assert listener.state == 'removed'
     ports = super_client.list_port(publicPort='8080', instanceId=instance.id)
     assert len(ports) == 1
@@ -423,9 +370,9 @@ def test_validate_ports(admin_client, super_client, sim_context, nsp):
         lambda x: 'State is: ' + x.state)
 
     # restart the instance and verify that the port didn't appear again
-    instance = wait_success(super_client, instance.stop())
+    instance = client.wait_success(instance.stop())
     assert instance.state == 'stopped'
-    instance = wait_success(super_client, instance.start())
+    instance = client.wait_success(instance.start())
     assert instance.state == 'running'
     ports = super_client.list_port(publicPort='8080', instanceId=instance.id)
     assert len(ports) == 1
@@ -433,24 +380,24 @@ def test_validate_ports(admin_client, super_client, sim_context, nsp):
 
     # re-add the listener, add target to lb
     # and verify that the port is back in
-    image_uuid = sim_context['imageUuid']
-    container = admin_client.create_container(imageUuid=image_uuid)
-    container = admin_client.wait_success(container)
+    image_uuid = context.image_uuid
+    container = client.create_container(imageUuid=image_uuid)
+    container = client.wait_success(container)
     lb = lb.addtarget(instanceId=container.id)
-    _validate_add_target(container, lb, super_client)
-    _add_listener_to_config(admin_client, config, super_client)
+    _validate_add_target(container, lb, client)
+    _add_listener_to_config(client, config)
     ports = super_client.list_port(publicPort='8080', instanceId=instance.id)
     assert len(ports) == 2
 
 
-def _validate_add_listener(config, listener, super_client):
-    lb_config_maps = super_client. \
+def _validate_add_listener(config, listener, client):
+    lb_config_maps = client. \
         list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
                                            loadBalancerConfigId=config.id)
     assert len(lb_config_maps) == 1
     config_map = lb_config_maps[0]
     wait_for_condition(
-        super_client, config_map, _resource_is_active,
+        client, config_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
 
 
@@ -462,25 +409,25 @@ def _resource_is_removed(resource):
     return resource.state == 'removed' or resource.removed is not None
 
 
-def _validate_add_host(host, lb, super_client):
-    host_maps = super_client. \
+def _validate_add_host(host, lb, client):
+    host_maps = client. \
         list_loadBalancerHostMap(loadBalancerId=lb.id,
                                  hostId=host.id)
     assert len(host_maps) == 1
     host_map = host_maps[0]
     wait_for_condition(
-        super_client, host_map, _resource_is_active,
+        client, host_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
     assert host_map.hostId == host.id
     return host_map
 
 
-def _validate_add_target(container1, lb, super_client):
-    target_maps = super_client. \
+def _validate_add_target(container1, lb, client):
+    target_maps = client. \
         list_loadBalancerTarget(loadBalancerId=lb.id,
                                 instanceId=container1.id)
     assert len(target_maps) == 1
     target_map = target_maps[0]
     wait_for_condition(
-        super_client, target_map, _resource_is_active,
+        client, target_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)

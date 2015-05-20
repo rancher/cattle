@@ -1,7 +1,7 @@
 from common_fixtures import *  # NOQA
-from test_docker import docker_context, TEST_IMAGE_UUID, if_docker
+from test_docker import docker_client, TEST_IMAGE_UUID, if_docker
 
-docker_context
+docker_client
 
 
 def _get_container_logs_ip(host):
@@ -22,10 +22,10 @@ def _get_container_logs_ip(host):
 
 
 @if_docker
-def test_logs_container(admin_client, docker_context):
+def test_logs_container(docker_client):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test', imageUuid=uuid)
-    container = admin_client.wait_success(container)
+    container = docker_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.wait_success(container)
 
     assert len(container.hosts()) == 1
 

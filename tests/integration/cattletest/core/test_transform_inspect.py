@@ -48,8 +48,7 @@ def test_transform_inspect_minimal(transform_url, client):
     assert len(container['devices']) == 0
 
 
-def test_transform_inspect_full(transform_url, client, admin_client,
-                                super_client):
+def test_transform_inspect_full(transform_url, client, super_client):
     inspect = inspect_payload('inspect_full.json')
     response = requests.post(transform_url, inspect,
                              auth=HTTPBasicAuth(client._access_key,

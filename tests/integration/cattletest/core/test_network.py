@@ -175,8 +175,7 @@ def test_ip_address_create_from_subnet(super_client, super_account, subnet):
     assert ip_address.networkId == ip_address.subnet().networkId
 
 
-def test_ip_address_create_no_address_available(super_client,
-                                                admin_account):
+def test_ip_address_create_no_address_available(super_client):
     network = super_client.create_network()
     subnet = super_client.create_subnet(networkAddress='192.168.0.0',
                                         cidrSize='16',

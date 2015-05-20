@@ -72,7 +72,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         for pi in client.list_process_instance(sort='startTime', order='desc',
                                                endTime_null=True,
-                                               limit=50):
+                                               limit=1000):
             print_pi(pi)
     else:
         pi = client.by_id_process_instance(sys.argv[1])

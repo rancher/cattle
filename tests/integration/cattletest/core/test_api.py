@@ -19,18 +19,18 @@ def test_agent_unique(super_client):
         pass
 
 
-def test_pagination(admin_client, sim_context):
+def test_pagination(context):
+    client = context.client
     name = random_str()
     containers = []
     for i in range(4):
-        c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                          name=name)
+        c = client.create_container(imageUuid=context.image_uuid, name=name)
         containers.append(c)
 
     for c in containers:
-        wait_success(admin_client, c)
+        client.wait_success(c)
 
-    r = admin_client.list_container(name=name)
+    r = client.list_container(name=name)
 
     assert len(r) == 4
     try:
@@ -39,7 +39,7 @@ def test_pagination(admin_client, sim_context):
         pass
 
     collected = {}
-    r = admin_client.list_container(name=name, limit=2)
+    r = client.list_container(name=name, limit=2)
     assert len(r) == 2
     assert r.pagination.next is not None
 
@@ -60,20 +60,21 @@ def test_pagination(admin_client, sim_context):
     assert len(collected) == 4
 
 
-def test_pagination_include(super_client, sim_context):
+def test_pagination_include(super_client, client, context):
+    host = context.host
     name = random_str()
     container_ids = []
     containers = []
-    host = sim_context['host']
     for i in range(5):
-        c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                          name=name,
-                                          requestedHostId=host.id)
+        c = client.create_container(imageUuid=context.image_uuid,
+                                    name=name,
+                                    requestedHostId=host.id)
+        c = super_client.reload(c)
         containers.append(c)
         container_ids.append(c.id)
 
     for c in containers:
-        wait_success(super_client, c)
+        client.wait_success(c)
 
     assert len(containers[0].instanceHostMaps()) == 1
     assert host.id == containers[0].instanceHostMaps()[0].host().id
@@ -137,23 +138,18 @@ def test_pagination_include(super_client, sim_context):
     assert len(maps) == len(maps_from_include)
 
 
-def test_include_left_join(admin_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-    container = admin_client.create_container(imageUuid=image_uuid,
-                                              startOnCreate=False)
-    container = wait_success(admin_client, container)
-
-    c = admin_client.by_id('container', container.id,
+def test_include_left_join(super_client, context):
+    container = context.create_container_no_success(startOnCreate=False)
+    container = context.wait_for_state(container, 'stopped')
+    c = super_client.by_id('container', container.id,
                            include='instanceHostMaps')
 
     assert container.id == c.id
 
 
-def test_include(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-    container = super_client.create_container(imageUuid=image_uuid,
-                                              name='include_test')
-    container = wait_success(super_client, container)
+def test_include(super_client, context):
+    container = context.create_container(name='include_test')
+    container = super_client.reload(container)
 
     for link_name in ['instanceHostMaps', 'instancehostmaps']:
         found = False
@@ -180,34 +176,30 @@ def test_include(super_client, sim_context):
         assert len(c.instanceHostMaps) == 1
 
 
-def test_limit(admin_client, sim_context):
-    result = admin_client.list_container()
+def test_limit(super_client):
+    result = super_client.list_container()
     assert result.pagination.limit == 100
 
-    result = admin_client.list_container(limit=105)
+    result = super_client.list_container(limit=105)
     assert result.pagination.limit == 105
 
-    result = admin_client.list_container(limit=1005)
+    result = super_client.list_container(limit=1005)
     assert result.pagination.limit == 1000
 
 
-def test_schema_boolean_default(admin_client):
-    con_schema = admin_client.schema.types['container']
-
+def test_schema_boolean_default(client):
+    con_schema = client.schema.types['container']
     assert isinstance(con_schema.resourceFields.startOnCreate.default, bool)
 
 
-def test_schema_self_link(admin_client):
-    con_schema = admin_client.schema.types['container']
-
+def test_schema_self_link(client):
+    con_schema = client.schema.types['container']
     assert con_schema.links.self is not None
     assert con_schema.links.self.startswith("http")
 
 
-def test_child_map_include(super_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-    container = super_client.create_container(imageUuid=image_uuid)
-    container = wait_success(super_client, container)
+def test_child_map_include(super_client, context):
+    container = context.create_container()
 
     cs = super_client.list_container(uuid=container.uuid, include='hosts')
 
@@ -225,23 +217,17 @@ def test_child_map_include(super_client, sim_context):
     assert found
 
 
-def test_child_map(super_client, admin_client, sim_context):
-    image_uuid = sim_context['imageUuid']
-    container = admin_client.create_container(imageUuid=image_uuid)
-    container = wait_success(admin_client, container)
+def test_child_map(super_client, context):
+    container = context.create_container()
 
     hosts = super_client.reload(container).hosts()
     assert len(hosts) == 1
     assert hosts[0].type == 'host'
 
 
-def test_fields_on_include(admin_client, sim_context):
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=sim_context['host'].id)
-    c = admin_client.wait_success(c)
-    assert c.state == 'running'
-
-    host = admin_client.by_id_host(sim_context['host'].id,
+def test_fields_on_include(super_client, context):
+    c = context.create_container()
+    host = super_client.by_id_host(context.host.id,
                                    include='instances')
 
     assert host is not None
@@ -259,8 +245,8 @@ def test_fields_on_include(admin_client, sim_context):
     assert found
 
 
-def test_state_enum(admin_client):
-    container_schema = admin_client.schema.types['container']
+def test_state_enum(super_client):
+    container_schema = super_client.schema.types['container']
     states = set([
         'creating',
         'migrating',
@@ -283,34 +269,26 @@ def test_state_enum(admin_client):
     assert states == set(container_schema.resourceFields['state'].options)
 
 
-def test_actions_based_on_state(admin_client, sim_context):
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=sim_context['host'].id)
-    c = admin_client.wait_success(c)
-    assert c.state == 'running'
+def test_actions_based_on_state(context):
+    c = context.create_container()
     assert set(c.actions.keys()) == set(['migrate', 'restart', 'stop',
                                          'update', 'execute', 'logs',
                                          'addlabel', 'removelabel',
                                          'setlabels'])
 
 
-def test_include_user_not_auth_map(client, sim_context):
+def test_include_user_not_auth_map(client):
     client.list_host(include='instances')
 
 
-def test_map_user_not_auth_map(client, sim_context):
-    c = client.create_container(imageUuid=sim_context['imageUuid'],
-                                requestedHostId=sim_context['host'].id)
-    c = client.wait_success(c)
-
-    assert c.state == 'running'
+def test_map_user_not_auth_map(context):
+    c = context.create_container()
     assert len(c.hosts()) == 1
 
 
-def test_role_option(admin_user_client, client, random_str, token_account):
+def test_role_option(admin_user_client, client, random_str, context):
     c = admin_user_client.create_api_key(name=random_str,
-                                         accountId=token_account.id)
-
+                                         accountId=context.account.id)
     c = admin_user_client.wait_success(c)
 
     assert c.state == 'active'

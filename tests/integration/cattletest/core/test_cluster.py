@@ -14,25 +14,24 @@ def _resource_is_active(resource):
     return resource.state == 'active'
 
 
-@pytest.mark.skipif('True')
-def test_cluster_add_remove_host_actions(admin_client, super_client,
-                                         sim_context, sim_context2):
-    host1 = sim_context['host']
+# @pytest.mark.skipif('True')
+def test_cluster_add_remove_host_actions(super_client, new_context):
+    host1 = super_client.reload(new_context.host)
+    account = new_context.project
     _clean_clusterhostmap_for_host(host1)
 
-    create_agent_instance_nsp(super_client, sim_context)
-
-    cluster = admin_client.create_cluster(
+    cluster = super_client.create_cluster(
+        accountId=account.id,
         name='testcluster1', port=9000)
 
     cluster = wait_for_condition(
-        admin_client, cluster, _resource_is_inactive,
+        super_client, cluster, _resource_is_inactive,
         lambda x: 'State is: ' + x.state)
 
     # Add one host to cluster
     cluster = cluster.addhost(hostId=str(host1.id))
     cluster = wait_for_condition(
-        admin_client, cluster,
+        super_client, cluster,
         lambda x: len(x.hosts()) == 1,
         lambda x: 'Number of hosts in cluster is: ' + len(x.hosts()))
 
@@ -43,7 +42,7 @@ def test_cluster_add_remove_host_actions(admin_client, super_client,
     # activate cluster
     cluster.activate()
     cluster = wait_for_condition(
-        admin_client, cluster, _resource_is_active,
+        super_client, cluster, _resource_is_active,
         lambda x: 'State is: ' + x.state)
 
     # verify that the agent got created
@@ -65,7 +64,7 @@ def test_cluster_add_remove_host_actions(admin_client, super_client,
 
     cluster = cluster.removehost(hostId=str(host1.id))
     cluster = wait_for_condition(
-        admin_client, cluster,
+        super_client, cluster,
         lambda x: len(x.hosts()) == 0,
         lambda x: 'Number of hosts in cluster is: ' + len(x.hosts()))
 
@@ -79,12 +78,12 @@ def test_cluster_add_remove_host_actions(admin_client, super_client,
     assert len(cluster.hosts()) == 1
 
     # Add 2nd host to cluster
-    host2 = sim_context2['host']
+    host2 = register_simulated_host(new_context)
 
     cluster = cluster.addhost(hostId=str(host2.id))
 
     cluster = wait_for_condition(
-        admin_client, cluster,
+        super_client, cluster,
         lambda x: len(x.hosts()) == 2,
         lambda x: 'Number of hosts in cluster is: ' + len(x.hosts()))
 
@@ -92,57 +91,53 @@ def test_cluster_add_remove_host_actions(admin_client, super_client,
     cluster = cluster.removehost(hostId=str(host2.id))
 
     cluster = wait_for_condition(
-        admin_client, cluster,
+        super_client, cluster,
         lambda x: len(x.hosts()) == 1,
         lambda x: len(x.hosts()))
 
 
 # temporarily skipping since this was inadvertently deleting the
 # real host causing downstream TFs
-@pytest.mark.skipif('True')
-def test_host_purge(admin_client, super_client):
-    new_context = create_sim_context(
-        super_client, 'simagent' + random_str(), ip='192.168.10.14',
-        public=True)
-
-    host1 = new_context['host']
+# @pytest.mark.skipif('True')
+def test_host_purge(super_client, new_context):
+    host1 = super_client.reload(new_context.host)
     _clean_clusterhostmap_for_host(host1)
 
-    cluster = admin_client.create_cluster(
+    cluster = super_client.create_cluster(
+        accountId=new_context.project.id,
         name='testcluster2', port=9000)
     cluster = wait_for_condition(
-        admin_client, cluster, _resource_is_inactive,
+        super_client, cluster, _resource_is_inactive,
         lambda x: 'State is: ' + x.state)
 
     cluster = cluster.addhost(hostId=str(host1.id))
-    host1 = admin_client.wait_success(host1.deactivate())
-    host1 = admin_client.wait_success(admin_client.delete(host1))
-    admin_client.wait_success(host1.purge())
+    host1 = super_client.wait_success(host1.deactivate())
+    host1 = super_client.wait_success(super_client.delete(host1))
+    super_client.wait_success(host1.purge())
 
     wait_for_condition(
-        admin_client, cluster, lambda x: len(x.hosts()) == 0)
+        super_client, cluster, lambda x: len(x.hosts()) == 0)
 
 
-@pytest.mark.skipif('True')
-def test_cluster_purge(admin_client, super_client, sim_context):
-    host1 = sim_context['host']
+# @pytest.mark.skipif('True')
+def test_cluster_purge(super_client, new_context):
+    host1 = super_client.reload(new_context.host)
     _clean_clusterhostmap_for_host(host1)
 
-    create_agent_instance_nsp(super_client, sim_context)
-
-    cluster = admin_client.create_cluster(
+    cluster = super_client.create_cluster(
+        accountId=new_context.project.id,
         name='testcluster3', port=9000)
     cluster = wait_for_condition(
-        admin_client, cluster, _resource_is_inactive,
+        super_client, cluster, _resource_is_inactive,
         lambda x: 'State is: ' + x.state)
 
     cluster = cluster.addhost(hostId=str(host1.id))
     cluster = wait_for_condition(
-        admin_client, cluster, lambda x: len(x.hosts()) == 1)
+        super_client, cluster, lambda x: len(x.hosts()) == 1)
 
     cluster.activate()
     cluster = wait_for_condition(
-        admin_client, cluster, _resource_is_active,
+        super_client, cluster, _resource_is_active,
         lambda x: 'State is: ' + x.state)
 
     # verify that the agent got created
@@ -158,35 +153,36 @@ def test_cluster_purge(admin_client, super_client, sim_context):
     assert len(agent_instances) == 1
 
     # deactivate, remove, and purge cluster
-    cluster = admin_client.wait_success(cluster.deactivate())
-    cluster = admin_client.wait_success(admin_client.delete(cluster))
-    cluster = admin_client.wait_success(cluster.purge())
+    cluster = super_client.wait_success(cluster.deactivate())
+    cluster = super_client.wait_success(super_client.delete(cluster))
+    cluster = super_client.wait_success(cluster.purge())
 
     # check no hosts is registered to this cluster
     wait_for_condition(
-        admin_client, cluster, lambda x: len(x.hosts()) == 0)
+        super_client, cluster, lambda x: len(x.hosts()) == 0)
 
     # verify that the agent is removed
     agents = super_client.list_agent(uri=uri)
     wait_for_condition(
-        admin_client, agents[0],
+        super_client, agents[0],
         lambda x: x.state == 'removed',
         lambda x: 'State is: ' + x.state)
 
     # verify that the agent instance is removed as well
     agent_instances = super_client.list_instance(agentId=agentId)
     wait_for_condition(
-        admin_client, agent_instances[0],
+        super_client, agent_instances[0],
         lambda x: x.state == 'removed',
         lambda x: 'State is: ' + x.state)
 
 
-@pytest.mark.skipif('True')
-def test_cluster_actions_invalid_host_ref(admin_client, sim_context):
-    host1 = sim_context['host']
+# @pytest.mark.skipif('True')
+def test_cluster_actions_invalid_host_ref(super_client, new_context):
+    host1 = super_client.reload(new_context.host)
     _clean_clusterhostmap_for_host(host1)
 
-    cluster = admin_client.create_cluster(
+    cluster = super_client.create_cluster(
+        accountId=new_context.project.id,
         name='testcluster4', port=9000)
 
     try:

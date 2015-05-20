@@ -1,16 +1,21 @@
 from common_fixtures import *  # NOQA
 
 
-def test_host_only_no_subset(super_client, client, sim_context):
-    network = super_client.create_host_only_network(hostVnetUri='docker:///',
+def test_host_only_no_subset(super_client, new_context):
+    client = new_context.client
+    account = new_context.project
+
+    network = super_client.create_host_only_network(accountId=account.id,
+                                                    hostVnetUri='docker:///',
                                                     isPublic=True)
     network = super_client.wait_success(network)
     assert network.state == 'active'
 
     assert client.by_id_network(network.id) is not None
 
-    c = client.create_container(networkIds=[network.id],
-                                imageUuid=sim_context['imageUuid'])
+    c = client.create_container(networkMode=None,
+                                networkIds=[network.id],
+                                imageUuid=new_context.image_uuid)
     c = client.wait_success(c)
     assert c.state == 'running'
     assert c.primaryIpAddress is None
@@ -39,21 +44,27 @@ def test_host_only_no_subset(super_client, client, sim_context):
     assert c.hosts()[0].id == vnet.hosts()[0].id
 
 
-def test_host_only_subnet(super_client, client, sim_context):
-    network = super_client.create_host_only_network(hostVnetUri='docker:///',
+def test_host_only_subnet(super_client, new_context):
+    account = new_context.project
+    client = new_context.client
+    network = super_client.create_host_only_network(accountId=account.id,
+                                                    hostVnetUri='docker:///',
                                                     isPublic=True)
     network = super_client.wait_success(network)
     assert network.state == 'active'
 
-    subnet = super_client.create_subnet(networkId=network.id,
+    subnet = super_client.create_subnet(accountId=account.id,
+                                        networkId=network.id,
                                         networkAddress='192.168.0.0')
     subnet = super_client.wait_success(subnet)
     assert subnet.state == 'active'
 
     assert client.by_id_network(network.id) is not None
 
-    c = client.create_container(networkIds=[network.id],
-                                imageUuid=sim_context['imageUuid'])
+    c = client.create_container(networkMode=None,
+                                networkIds=[network.id],
+                                imageUuid=new_context.image_uuid)
+
     c = client.wait_success(c)
     assert c.state == 'running'
     assert c.primaryIpAddress is not None
@@ -72,9 +83,14 @@ def test_host_only_subnet(super_client, client, sim_context):
     assert nic.vnetId is not None
 
 
-def test_host_only_3_hosts_subnet(super_client, sim_context,
-                                  sim_context2, sim_context3):
-    network = super_client.create_host_only_network(hostVnetUri='docker:///',
+def test_host_only_3_hosts_subnet(super_client, new_context):
+    account = new_context.project
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context)
+    host3 = register_simulated_host(new_context)
+
+    network = super_client.create_host_only_network(accountId=account.id,
+                                                    hostVnetUri='docker:///',
                                                     dynamicCreateVnet=True,
                                                     isPublic=True)
 
@@ -82,18 +98,20 @@ def test_host_only_3_hosts_subnet(super_client, sim_context,
     assert network.state == 'active'
     assert network.dynamicCreateVnet
 
-    subnet = super_client.create_subnet(networkId=network.id,
+    subnet = super_client.create_subnet(accountId=account.id,
+                                        networkId=network.id,
                                         networkAddress='192.168.0.0')
     subnet = super_client.wait_success(subnet)
     assert subnet.state == 'active'
 
     assert super_client.by_id_network(network.id) is not None
 
-    for i in [sim_context, sim_context2, sim_context3]:
-        host = i['host']
-        c = super_client.create_container(networkIds=[network.id],
+    for host in [host1, host2, host3]:
+        c = super_client.create_container(networkMode=None,
+                                          accountId=account.id,
+                                          networkIds=[network.id],
                                           requestedHostId=host.id,
-                                          imageUuid=sim_context['imageUuid'])
+                                          imageUuid=new_context.image_uuid)
         c = super_client.wait_success(c)
         assert c.state == 'running'
 
@@ -104,27 +122,42 @@ def test_host_only_3_hosts_subnet(super_client, sim_context,
     assert len(subnet.vnets()) == 3
 
 
-def test_host_only_3_hosts_same_phy(super_client, sim_context):
-    network = super_client.create_host_only_network(hostVnetUri='docker:///',
-                                                    dynamicCreateVnet=True,
-                                                    isPublic=True)
+# @pytest.mark.skipif('True')
+def test_host_only_3_hosts_same_phy(super_client, new_context):
+    account = new_context.project
+    network = super_client.create_host_only_network(accountId=account.id,
+                                                    hostVnetUri='docker:///',
+                                                    dynamicCreateVnet=True)
     network = super_client.wait_success(network)
     assert network.state == 'active'
     assert network.dynamicCreateVnet
 
-    subnet = super_client.create_subnet(networkId=network.id,
+    subnet = super_client.create_subnet(accountId=account.id,
+                                        networkId=network.id,
                                         networkAddress='192.168.0.0')
     subnet = super_client.wait_success(subnet)
     assert subnet.state == 'active'
 
+    agents = new_context.agent_client.list_agent()
+    assert len(agents) == 1
+    agent = super_client.wait_success(agents[0])
+    assert agent.state == 'active'
+    # Deactivate so there is just one agent in this account
+    agent.deactivate()
+
     scope = 'io.cattle.platform.agent.connection.simulator' \
             '.AgentConnectionSimulator'
     uri = 'sim://{}'.format(random_str())
-    agent = super_client.create_agent(uri=uri, data={
-        scope: {
-            'hosts': 3
-        }
-    })
+    pl_id = get_plain_id(super_client, account)
+    agent = super_client.create_agent(accountId=new_context.agent.id,
+                                      uri=uri,
+                                      data={
+                                          scope: {
+                                              'hosts': 3
+                                          },
+                                          'agentResourcesAccountId': pl_id,
+                                      })
+    # This will hang right here because there are two agents in this
     agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
@@ -133,16 +166,20 @@ def test_host_only_3_hosts_same_phy(super_client, sim_context):
             break
         time.sleep(0.5)
 
+    wait_for(lambda: len(agent.hosts()) == 3)
     assert len(agent.hosts()) == 3
 
     physical_host_id = agent.hosts()[0].physicalHostId
     for host in agent.hosts():
         host = super_client.wait_success(host)
+        assert host.accountId == account.id
         assert host.state == 'active'
         assert host.physicalHostId == physical_host_id
 
-        c = super_client.create_container(requestedHostId=host.id,
-                                          imageUuid=sim_context['imageUuid'],
+        c = super_client.create_container(networkMode=None,
+                                          accountId=account.id,
+                                          requestedHostId=host.id,
+                                          imageUuid=new_context.image_uuid,
                                           networkIds=[network.id])
         c = super_client.wait_success(c)
         assert c.state == 'running'

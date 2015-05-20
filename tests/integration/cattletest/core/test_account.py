@@ -10,7 +10,7 @@ def test_account_create(kind, admin_user_client, random_str):
     assert account.state == "registering"
     assert account.transitioning == "yes"
 
-    account = wait_success(admin_user_client, account)
+    account = admin_user_client.wait_success(account)
 
     assert account.transitioning == "no"
     assert account.state == "active"
@@ -61,14 +61,14 @@ def test_account_new_data(admin_user_client, super_client):
     user = admin_user_client.wait_success(user)
 
     assert user.state == 'active'
-    assert user.defaultNetworkId is None
+    assert super_client.reload(user).defaultNetworkId is None
     assert len(user.networks()) == 0
 
     account = admin_user_client.create_account(kind='project')
     account = admin_user_client.wait_success(account)
 
     assert account.state == 'active'
-    assert account.defaultNetworkId is not None
+    assert super_client.reload(account).defaultNetworkId is not None
 
     networks = super_client.list_network(accountId=account.id)
 
@@ -90,7 +90,7 @@ def test_account_new_data(admin_user_client, super_client):
 
     network = by_kind['hostOnlyNetwork']
 
-    assert network.id == account.defaultNetworkId
+    assert network.id == super_client.reload(account).defaultNetworkId
 
     subnet = find_one(network.subnets)
 
@@ -120,3 +120,12 @@ def test_account_new_data(admin_user_client, super_client):
     assert 'portService' in service_by_kind
     assert 'hostNatGatewayService' in service_by_kind
     assert 'healthCheckService' in service_by_kind
+
+
+def test_account_context_create(new_context):
+    assert new_context.client is not None
+    assert new_context.user_client is not None
+    assert new_context.project is not None
+    assert new_context.account is not None
+
+    assert len(new_context.user_client.list_project()) == 1

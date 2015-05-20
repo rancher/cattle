@@ -10,8 +10,8 @@ def _clean_hostlabelmaps_for_host(client, host):
         lambda x: 'Number of labels for host is: ' + len(x.labels()))
 
 
-def test_add_remove_host_label(super_client, sim_context):
-    host = sim_context['host']
+def test_add_remove_host_label(super_client, context):
+    host = context.host
     _clean_hostlabelmaps_for_host(super_client, host)
 
     host.addlabel(key='location', value='basement')
@@ -30,11 +30,11 @@ def test_add_remove_host_label(super_client, sim_context):
     assert len(host.labels()) == 0
 
 
-def test_add_remove_container_label(admin_client, sim_context):
-    host = sim_context['host']
-    image_uuid = sim_context['imageUuid']
+def test_add_remove_container_label(super_client, new_context):
+    host = new_context.host
+    image_uuid = new_context.image_uuid
 
-    c = admin_client.create_container(imageUuid=image_uuid,
+    c = super_client.create_container(imageUuid=image_uuid,
                                       requestedHostId=host.id)
     c.addlabel(key='func', value='web')
     assert c.instanceLabels()[0].key == 'func' \
@@ -51,23 +51,23 @@ def test_add_remove_container_label(admin_client, sim_context):
     c.removelabel(label=c.instanceLabels()[0].id)
 
     wait_for_condition(
-        admin_client, c,
+        super_client, c,
         lambda x: len(x.instanceLabels()) == 0,
         lambda x: 'Number of labels for container is: ' + len(x.labels()))
 
 
-def test_set_container_labels(admin_client, sim_context):
-    host = sim_context['host']
-    image_uuid = sim_context['imageUuid']
+def test_set_container_labels(client, context):
+    host = context.host
+    image_uuid = context.image_uuid
 
-    c = admin_client.create_container(imageUuid=image_uuid,
-                                      requestedHostId=host.id)
+    c = client.create_container(imageUuid=image_uuid,
+                                requestedHostId=host.id)
     labels = {'role': 'web',
               'size': '4'}
     c.setlabels(labels=labels)
 
     wait_for_condition(
-        admin_client, c,
+        client, c,
         lambda x: len(x.instanceLabels()) == 2,
         lambda x: 'Number of labels for container is: ' +
                   len(x.instanceLabels()))
@@ -78,7 +78,7 @@ def test_set_container_labels(admin_client, sim_context):
                   'nom': 'foobar'}
     c.setlabels(labels=new_labels)
     wait_for_condition(
-        admin_client, c,
+        client, c,
         lambda x: len(x.instanceLabels()) == 2,
         lambda x: 'Number of labels for container is: ' +
                   len(x.instanceLabels()))
@@ -86,16 +86,16 @@ def test_set_container_labels(admin_client, sim_context):
     _assert_labels(c.instanceLabels(), new_labels)
 
 
-def test_set_host_labels(super_client, sim_context):
-    host = sim_context['host']
-    _clean_hostlabelmaps_for_host(super_client, host)
+def test_set_host_labels(client, context):
+    host = context.host
+    _clean_hostlabelmaps_for_host(client, host)
 
     labels = {'location': 'closet',
               'cpus': '4'}
     host.setlabels(labels=labels)
 
     wait_for_condition(
-        super_client, host,
+        client, host,
         lambda x: len(x.labels()) == 2,
         lambda x: 'Number of labels for host is: ' + len(x.labels()))
 
@@ -105,7 +105,7 @@ def test_set_host_labels(super_client, sim_context):
                   'memory': '16gb'}
     host.setlabels(labels=new_labels)
     wait_for_condition(
-        super_client, host,
+        client, host,
         lambda x: len(x.labels()) == 2,
         lambda x: 'Number of labels for host is: ' + len(x.labels()))
 

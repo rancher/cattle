@@ -1,45 +1,29 @@
 from common_fixtures import *  # NOQA
 
 
-@pytest.fixture(scope='module')
-def link_network(super_client, sim_context):
-    nsp = create_agent_instance_nsp(super_client, sim_context)
-    create_and_activate(super_client, 'linkService',
-                        networkServiceProviderId=nsp.id,
-                        networkId=nsp.networkId)
+def test_link_instance_stop_start(super_client, client, context):
+    target1 = context.create_container(ports=['180', '122/udp'])
+    target2 = context.create_container(ports=['280', '222/udp'])
 
-    return super_client.by_id_network(nsp.networkId)
-
-
-def test_link_instance_stop_start(admin_user_client, admin_client, sim_context,
-                                  link_network):
-    target1 = create_sim_container(admin_client, sim_context,
-                                   ports=['180', '122/udp'],
-                                   networkIds=[link_network.id])
-    target2 = create_sim_container(admin_client, sim_context,
-                                   ports=['280', '222/udp'])
-
-    c = create_sim_container(admin_client, sim_context,
-                             networkIds=[link_network.id],
-                             instanceLinks={
-                                 'target1_link': target1.id,
-                                 'target2_link': target2.id})
+    c = context.create_container(instanceLinks={
+        'target1_link': target1.id,
+        'target2_link': target2.id})
 
     assert c.state == 'running'
 
     ports = set()
 
     for link in c.instanceLinks():
-        for port in admin_user_client.reload(link).data.fields.ports:
+        for port in super_client.reload(link).data.fields.ports:
             ports.add('{}:{}'.format(port.publicPort, port.privatePort))
 
     assert len(ports) > 0
 
     new_ports = set()
-    c = admin_client.wait_success(c.stop())
+    c = client.wait_success(c.stop())
     assert c.state == 'stopped'
 
-    for link in admin_user_client.reload(c).instanceLinks():
+    for link in super_client.reload(c).instanceLinks():
         assert len(link.data.fields.ports) == 2
         for port in link.data.fields.ports:
             new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
@@ -47,10 +31,10 @@ def test_link_instance_stop_start(admin_user_client, admin_client, sim_context,
     assert ports == new_ports
 
     new_ports = set()
-    c = admin_client.wait_success(c.start())
+    c = client.wait_success(c.start())
     assert c.state == 'running'
 
-    for link in admin_user_client.reload(c).instanceLinks():
+    for link in super_client.reload(c).instanceLinks():
         assert len(link.data.fields.ports) == 2
         for port in link.data.fields.ports:
             new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
@@ -71,26 +55,15 @@ def _find_agent_instance_ip(nsp, source):
     assert False, 'Failed to find agent instance for ' + source.id
 
 
-def test_link_create(admin_client, admin_user_client, super_client,
-                     sim_context, link_network):
-    target1 = create_sim_container(admin_client, sim_context,
-                                   ports=['180', '122/udp'],
-                                   networkIds=[link_network.id])
-    target2 = create_sim_container(admin_client, sim_context,
-                                   ports=['280', '222/udp'])
+def test_link_create(client, super_client, context):
+    target1 = context.create_container(ports=['180', '122/udp'])
+    target2 = context.create_container(ports=['280', '222/udp'])
 
-    c = create_sim_container(admin_client, sim_context,
-                             networkIds=[link_network.id],
-                             instanceLinks={
-                                 'target1_link': target1.id,
-                                 'target2_link': target2.id})
+    c = context.create_container(instanceLinks={
+        'target1_link': target1.id,
+        'target2_link': target2.id})
 
-    nsp = None
-    for test_nsp in link_network.networkServiceProviders():
-        if test_nsp.kind == 'agentInstanceProvider':
-            nsp = test_nsp
-
-    assert nsp is not None
+    assert c.state == 'running'
 
     assert len(c.instanceLinks()) == 2
     assert len(target1.targetInstanceLinks()) == 1
@@ -101,11 +74,11 @@ def test_link_create(admin_client, admin_user_client, super_client,
     assert names == set(['target1_link', 'target2_link'])
 
     for link in links:
-        link = admin_user_client.reload(link)
+        link = super_client.reload(link)
         assert link.state == 'active'
         assert len(resource_pool_items(super_client, link)) == 2
         assert link.instanceId == c.id
-        ip_address = _find_agent_instance_ip(nsp,
+        ip_address = _find_agent_instance_ip(context.nsp,
                                              super_client.reload(c))
 
         if link.linkName == 'target1_link':
@@ -134,30 +107,30 @@ def test_link_create(admin_client, admin_user_client, super_client,
                 else:
                     assert False
 
-    c = admin_client.wait_success(c.stop())
+    c = client.wait_success(c.stop())
     for link in c.instanceLinks():
         assert len(resource_pool_items(super_client, link)) == 2
 
-    c = admin_client.wait_success(c.remove())
+    c = client.wait_success(c.remove())
     for link in c.instanceLinks():
         assert len(resource_pool_items(super_client, link)) == 2
 
-    c = admin_client.wait_success(c.purge())
-    for link in admin_user_client.reload(c).instanceLinks():
+    c = client.wait_success(c.purge())
+    for link in super_client.reload(c).instanceLinks():
         assert len(link.data.fields.ports) > 0
         assert len(resource_pool_items(super_client, link)) == 2
 
     for link in c.instanceLinks():
-        link = admin_user_client.wait_success(link.purge())
+        link = super_client.wait_success(link.purge())
         assert len(link.data.fields.ports) == 0
         assert len(resource_pool_items(super_client, link)) == 0
 
 
-def test_link_update(admin_client, sim_context):
-    target1 = create_sim_container(admin_client, sim_context)
-    target2 = create_sim_container(admin_client, sim_context)
+def test_link_update(client, context):
+    target1 = context.create_container()
+    target2 = context.create_container()
 
-    c = create_sim_container(admin_client, sim_context, instanceLinks={
+    c = context.create_container(instanceLinks={
         'target1_link': target1.id,
     })
 
@@ -165,22 +138,22 @@ def test_link_update(admin_client, sim_context):
     assert link.targetInstanceId == target1.id
 
     link.targetInstanceId = target2.id
-    link = admin_client.update(link, link)
+    link = client.update(link, link)
     assert link.state == 'updating-active'
 
-    link = admin_client.wait_success(link)
+    link = client.wait_success(link)
     assert link.targetInstanceId == target2.id
     assert link.state == 'active'
 
 
-def test_link_remove_restore(admin_client, sim_context):
-    target1 = create_sim_container(admin_client, sim_context)
+def test_link_remove_restore(client, context):
+    target1 = context.create_container()
 
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      startOnCreate=False,
-                                      instanceLinks={
-                                          'target1_link': target1.id})
-    c = admin_client.wait_success(c)
+    c = client.create_container(imageUuid=context.image_uuid,
+                                startOnCreate=False,
+                                instanceLinks={
+                                    'target1_link': target1.id})
+    c = client.wait_success(c)
 
     links = c.instanceLinks()
     assert len(links) == 1
@@ -188,39 +161,39 @@ def test_link_remove_restore(admin_client, sim_context):
 
     assert link.state == 'inactive'
 
-    c = admin_client.wait_success(c.start())
-    link = admin_client.reload(link)
+    c = client.wait_success(c.start())
+    link = client.reload(link)
     assert c.state == 'running'
     assert link.state == 'active'
 
-    c = admin_client.wait_success(c.stop())
-    link = admin_client.reload(link)
+    c = client.wait_success(c.stop())
+    link = client.reload(link)
     assert c.state == 'stopped'
     assert link.state == 'inactive'
 
-    c = admin_client.wait_success(admin_client.delete(c))
-    link = admin_client.reload(link)
+    c = client.wait_success(client.delete(c))
+    link = client.reload(link)
     assert c.state == 'removed'
     assert link.state == 'inactive'
 
-    c = admin_client.wait_success(c.restore())
-    link = admin_client.reload(link)
+    c = client.wait_success(c.restore())
+    link = client.reload(link)
     assert c.state == 'stopped'
     assert link.state == 'inactive'
 
-    c = admin_client.wait_success(admin_client.delete(c))
-    link = admin_client.reload(link)
+    c = client.wait_success(client.delete(c))
+    link = client.reload(link)
     assert c.state == 'removed'
     assert link.state == 'inactive'
 
-    c = admin_client.wait_success(c.purge())
-    link = admin_client.reload(link)
+    c = client.wait_success(c.purge())
+    link = client.reload(link)
     assert c.state == 'purged'
     assert link.state == 'removed'
 
 
-def test_null_links(admin_client, sim_context):
-    c = create_sim_container(admin_client, sim_context, instanceLinks={
+def test_null_links(context):
+    c = context.create_container(instanceLinks={
         'null_link': None
     })
 
@@ -232,16 +205,16 @@ def test_null_links(admin_client, sim_context):
     assert links[0].targetInstanceId is None
 
 
-def test_link_timeout(admin_client, sim_context, link_network):
-    t = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      startOnCreate=False)
+def test_link_timeout(super_client, client, context):
+    t = client.create_container(imageUuid=context.image_uuid,
+                                startOnCreate=False)
 
-    c = admin_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      networkIds=[link_network.id],
+    c = super_client.create_container(accountId=context.project.id,
+                                      imageUuid=context.image_uuid,
                                       instanceLinks={'t': t.id},
                                       data={'linkWaitTime': 100})
 
-    c = admin_client.wait_transitioning(c)
+    c = client.wait_transitioning(c)
 
     msg = 'Timeout waiting for instance link t'
     assert c.state == 'removed'

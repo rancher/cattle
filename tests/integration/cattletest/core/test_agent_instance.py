@@ -1,30 +1,38 @@
 from common_fixtures import *  # NOQA
 
 
-def test_agent_instance_create(super_client, sim_context):
-    network = create_and_activate(super_client, 'network')
+def test_agent_instance_create(super_client, new_context):
+    account_id = new_context.project.id
+    network = create_and_activate(super_client, 'network',
+                                  accountId=account_id)
     vnet = create_and_activate(super_client, 'vnet',
+                               accountId=account_id,
                                networkId=network.id,
                                uri='test:///')
     ni = create_and_activate(super_client, 'agentInstanceProvider',
-                             networkId=network.id,
-                             agentInstanceImageUuid=sim_context['imageUuid'])
+                             accountId=account_id,
+                             networkId=network.id)
     ni2 = create_and_activate(super_client, 'agentInstanceProvider',
-                              networkId=network.id,
-                              agentInstanceImageUuid=sim_context['imageUuid'])
+                              accountId=account_id,
+                              networkId=network.id)
     network_service = create_and_activate(super_client, 'networkService',
+                                          accountId=account_id,
                                           networkServiceProviderId=ni.id,
                                           networkId=network.id)
     create_and_activate(super_client, 'networkService',
+                        accountId=account_id,
                         networkServiceProviderId=ni.id,
                         networkId=network.id)
     create_and_activate(super_client, 'networkService',
+                        accountId=account_id,
                         networkServiceProviderId=ni2.id,
                         networkId=network.id)
 
     assert network_service.networkServiceProvider().id == ni.id
 
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
+    c = super_client.create_container(networkMode=None,
+                                      imageUuid=new_context.image_uuid,
+                                      accountId=account_id,
                                       vnetIds=[vnet.id])
     c = super_client.wait_success(c)
     assert c.state == 'running'
@@ -61,33 +69,43 @@ def test_agent_instance_create(super_client, sim_context):
                 'agent-instance-scripts']) == items
 
 
-def test_agent_instance_two_vnet_create(super_client, sim_context,
-                                        sim_context2):
+def test_agent_instance_two_vnet_create(super_client, new_context):
+    host = new_context.host
+    host2 = register_simulated_host(new_context)
+    account_id = new_context.project.id
+
     network = create_and_activate(super_client, 'hostOnlyNetwork',
+                                  accountId=account_id,
                                   dynamicCreateVnet=True)
     subnet = create_and_activate(super_client, 'subnet',
+                                 accountId=account_id,
                                  networkAddress='192.168.0.0',
                                  networkId=network.id)
     nsip = create_and_activate(super_client, 'agentInstanceProvider',
-                               networkId=network.id,
-                               agentInstanceImageUuid=sim_context['imageUuid'])
+                               accountId=account_id,
+                               networkId=network.id)
     create_and_activate(super_client, 'networkService',
+                        accountId=account_id,
                         networkServiceProviderId=nsip.id,
                         networkId=network.id)
 
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=sim_context['host'].id,
+    c = super_client.create_container(networkMode=None,
+                                      imageUuid=new_context.image_uuid,
+                                      accountId=account_id,
+                                      requestedHostId=host.id,
                                       subnetIds=[subnet.id])
     c = super_client.wait_success(c)
     assert c.state == 'running'
-    assert c.hosts()[0].id == sim_context['host'].id
+    assert c.hosts()[0].id == host.id
 
-    c2 = super_client.create_container(imageUuid=sim_context2['imageUuid'],
-                                       requestedHostId=sim_context2['host'].id,
+    c2 = super_client.create_container(networkMode=None,
+                                       imageUuid=new_context.image_uuid,
+                                       accountId=account_id,
+                                       requestedHostId=host2.id,
                                        subnetIds=[subnet.id])
     c2 = super_client.wait_success(c2)
     assert c2.state == 'running'
-    assert c2.hosts()[0].id == sim_context2['host'].id
+    assert c2.hosts()[0].id == host2.id
 
     maps = nsip.networkServiceProviderInstanceMaps()
 

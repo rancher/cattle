@@ -11,35 +11,33 @@ def nsp(super_client, sim_context):
     return nsp
 
 
-def test_add_lb_w_host_and_target(super_client, admin_client, sim_context,
-                                  nsp):
+def test_add_lb_w_host_and_target(super_client, client, context):
     port = 88
     port1 = 101
     # add host
     agent, lb, uri, instance, config = _create_lb_w_host(super_client,
-                                                         admin_client,
-                                                         sim_context,
-                                                         port,
-                                                         nsp)
+                                                         client,
+                                                         context,
+                                                         port)
 
     # add target to a load balancer
-    image_uuid = sim_context['imageUuid']
-    container = admin_client.create_container(imageUuid=image_uuid,
-                                              startOnCreate=False)
-    container = admin_client.wait_success(container)
+    image_uuid = context.image_uuid
+    container = client.create_container(imageUuid=image_uuid,
+                                        startOnCreate=False)
+    container = client.wait_success(container)
     lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(container, lb, super_client)
+    validate_add_target(container, lb, client)
 
     # check the port (should be created along with the instance)
-    ports = super_client.list_port(publicPort=port,
-                                   instanceId=instance.id, state='active')
+    ports = client.list_port(publicPort=port,
+                             instanceId=instance.id, state='active')
     assert len(ports) == 1
 
     # start the instance and check the ports
     container = container.start()
-    container = admin_client.wait_success(container)
-    ports = super_client.list_port(publicPort=port,
-                                   instanceId=instance.id, state='active')
+    client.wait_success(container)
+    ports = client.list_port(publicPort=port,
+                             instanceId=instance.id, state='active')
     assert len(ports) == 1
     assert ports[0].state == 'active'
     assert ports[0].publicPort == port
@@ -50,101 +48,85 @@ def test_add_lb_w_host_and_target(super_client, admin_client, sim_context,
     # assert instance.state == 'running'
 
     # add listener to the config
-    listener = _create_valid_listener(super_client,
-                                      admin_client,
-                                      sim_context,
-                                      port1)
+    listener = _create_valid_listener(client, port1)
     # add listener to config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    validate_add_listener(config, listener, super_client)
+    validate_add_listener(config, listener, client)
     # check the port
-    ports = super_client.list_port(publicPort=port1, instanceId=instance.id)
+    ports = client.list_port(publicPort=port1, instanceId=instance.id)
     assert len(ports) == 1
     assert ports[0].state == 'active'
     assert ports[0].publicPort == port1
     assert ports[0].privatePort == port1
 
 
-def test_destroy_lb_instance(super_client, admin_client, sim_context, nsp):
+def test_destroy_lb_instance(super_client, client, context):
     port = 77
     # add host
     agent, lb, uri, instance, config = _create_lb_w_host(super_client,
-                                                         admin_client,
-                                                         sim_context,
-                                                         port, nsp)
+                                                         client,
+                                                         context,
+                                                         port)
     # add target to a load balancer
-    image_uuid = sim_context['imageUuid']
-    container = admin_client.create_container(imageUuid=image_uuid)
-    container = admin_client.wait_success(container)
+    image_uuid = context.image_uuid
+    container = client.create_container(imageUuid=image_uuid)
+    container = client.wait_success(container)
     lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(container, lb, super_client)
+    validate_add_target(container, lb, client)
 
     # destroy the lb instance
     # stop the lb instance
     if instance.state == 'running':
-        instance = wait_success(super_client, instance)
-        instance = wait_success(super_client, instance.stop())
+        instance = client.wait_success(instance)
+        instance = client.wait_success(instance.stop())
         assert instance.state == 'stopped'
 
     # remove the lb instance
-    instance = wait_success(super_client, instance.remove())
+    instance = client.wait_success(instance.remove())
     assert instance.state == 'removed'
 
     # check that the port is deactivated
-    ports = super_client.list_port(publicPort=port,
-                                   instanceId=instance.id, state='inactive')
+    ports = client.list_port(publicPort=port,
+                             instanceId=instance.id, state='inactive')
     assert len(ports) == 1
 
 
-def _create_valid_lb(super_client, admin_client, sim_context, listenerPort,
-                     nsp):
-    config = _create_config(super_client, admin_client, sim_context,
-                            listenerPort)
-    default_lb_config = super_client. \
+def _create_valid_lb(client, listenerPort):
+    config = _create_config(client, listenerPort)
+    default_lb_config = client. \
         create_loadBalancerConfig(name=random_str())
-    super_client.wait_success(default_lb_config)
+    client.wait_success(default_lb_config)
 
-    im_id = sim_context['imageUuid']
-    test_lb = super_client. \
-        create_loadBalancer(name=random_str(),
-                            loadBalancerConfigId=config.id,
-                            loadBalancerInstanceImageUuid=im_id,
-                            loadBalancerInstanceUriPredicate='sim://',
-                            networkId=nsp.networkId)
-    test_lb = super_client.wait_success(test_lb)
+    test_lb = client.create_loadBalancer(name=random_str(),
+                                         loadBalancerConfigId=config.id)
+    test_lb = client.wait_success(test_lb)
     return test_lb, config
 
 
-def _create_config(super_client, admin_client, sim_context, listenerPort):
+def _create_config(client, listenerPort):
     # create config
-    config = super_client. \
-        create_loadBalancerConfig(name=random_str())
-    config = super_client.wait_success(config)
+    config = client.create_loadBalancerConfig(name=random_str())
+    config = client.wait_success(config)
     # create listener
-    listener = _create_valid_listener(super_client,
-                                      admin_client,
-                                      sim_context,
-                                      listenerPort)
+    listener = _create_valid_listener(client, listenerPort)
     # add listener to config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    validate_add_listener(config, listener, super_client)
+    validate_add_listener(config, listener, client)
 
     return config
 
 
-def _create_lb_w_host(super_client, admin_client,
-                      sim_context, listenerPort, nsp):
-    host = sim_context['host']
+def _create_lb_w_host(super_client, client, context, listenerPort):
+    host = context.host
 
     # create lb
-    lb, config = _create_valid_lb(super_client, admin_client,
-                                  sim_context, listenerPort, nsp)
+    lb, config = _create_valid_lb(client, listenerPort)
 
     # add host to lb
     lb.addhost(hostId=host.id)
-    host_map = _validate_add_host(host, lb, super_client)
+    host_map = _validate_add_host(host, lb, client)
     # verify that the agent got created
-    uri = 'sim://?lbId={}&hostMapId={}'. \
+    uri = 'delegate:///?lbId={}&hostMapId={}'. \
         format(get_plain_id(super_client, lb),
                get_plain_id(super_client, host_map))
     agents = super_client.list_agent(uri=uri)
@@ -159,13 +141,12 @@ def _create_lb_w_host(super_client, admin_client,
     return agent, lb, uri, instance, config
 
 
-def _create_valid_listener(super_client, admin_client,
-                           sim_context, sourcePort):
-    listener = admin_client.create_loadBalancerListener(name=random_str(),
-                                                        sourcePort=sourcePort,
-                                                        sourceProtocol='http',
-                                                        targetProtocol='http')
-    listener = admin_client.wait_success(listener)
+def _create_valid_listener(client, sourcePort):
+    listener = client.create_loadBalancerListener(name=random_str(),
+                                                  sourcePort=sourcePort,
+                                                  sourceProtocol='http',
+                                                  targetProtocol='http')
+    listener = client.wait_success(listener)
     return listener
 
 
@@ -194,14 +175,14 @@ def _resource_is_removed(resource):
     return resource.state == 'removed'
 
 
-def validate_add_listener(config, listener, super_client):
-    lb_config_maps = super_client. \
+def validate_add_listener(config, listener, client):
+    lb_config_maps = client. \
         list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
                                            loadBalancerConfigId=config.id)
     assert len(lb_config_maps) == 1
     config_map = lb_config_maps[0]
     wait_for_condition(
-        super_client, config_map, _resource_is_active,
+        client, config_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
 
 
@@ -216,14 +197,13 @@ def validate_add_target(container1, lb, super_client):
         lambda x: 'State is: ' + x.state)
 
 
-def _validate_add_host(host, lb, super_client):
-    host_maps = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host.id)
+def _validate_add_host(host, lb, client):
+    host_maps = client.list_loadBalancerHostMap(loadBalancerId=lb.id,
+                                                hostId=host.id)
     assert len(host_maps) == 1
     host_map = host_maps[0]
     wait_for_condition(
-        super_client, host_map, _resource_is_active,
+        client, host_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
     assert host_map.hostId == host.id
     return host_map

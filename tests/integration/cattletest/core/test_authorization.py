@@ -1,32 +1,67 @@
 from common_fixtures import *  # NOQA
 
 
+TYPE_LEN = {
+    'admin': 98,
+    'agent': 8,
+    'user': 76,
+    'agentRegister': 4,
+    'readAdmin': 98,
+    'token': 2,
+    'superadmin': 152,
+    'service': 98,
+    'project': 76,
+}
+
+
+@pytest.fixture(scope='module')
+def clients(super_client, admin_user_client):
+    ret = {}
+    for k in TYPE_LEN.keys():
+        name = 'auth test {}'.format(k)
+        accounts = super_client.list_account(name=name)
+        if len(accounts) == 1:
+            api_keys = filter(lambda x: x.kind == 'apiKey',
+                              accounts[0].credentials())
+            if len(api_keys) == 1:
+                ret[k] = api_client(api_keys[0].publicValue,
+                                    api_keys[1].secretValue)
+                continue
+
+        context = create_context(admin_user_client, kind=k)
+        ret[k] = context.user_client
+
+    return ret
+
+
+@pytest.fixture(scope='module')
+def user_client(clients):
+    return clients['user']
+
+
+@pytest.fixture(scope='module')
+def project_client(clients):
+    return clients['project']
+
+
+@pytest.fixture(scope='module')
+def token_client(clients):
+    return clients['token']
+
+
+@pytest.fixture(scope='module')
+def agent_client(clients):
+    return clients['agent']
+
+
+@pytest.fixture(scope='module')
+def service_client(clients):
+    return clients['service']
+
+
 def test_user_client_access(clients):
-    typesLen = {
-        'admin': 93,
-        'agent': 8,
-        'user': 71,
-        'agentRegister': 4,
-        'test': 140,
-        'readAdmin': 93,
-        'token': 2,
-        'superadmin': 145,
-        'service': 93,
-        'project': 71,
-        'admin': 98,
-        'agent': 8,
-        'user': 76,
-        'agentRegister': 4,
-        'test': 140,
-        'readAdmin': 98,
-        'token': 2,
-        'superadmin': 152,
-        'service': 98,
-        'project': 76,
-    }
-    for tuple in clients.items():
-        assert tuple[0] == tuple[0] and \
-            typesLen[tuple[0]] == len(tuple[1].schema.types.items())
+    for kind, client in clients.items():
+        assert TYPE_LEN[kind] == len(client.schema.types.items())
 
 
 def test_instance_link_auth(admin_user_client, user_client, project_client):

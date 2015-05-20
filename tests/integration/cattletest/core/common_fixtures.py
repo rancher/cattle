@@ -6,21 +6,8 @@ import time
 import inspect
 from datetime import datetime, timedelta
 
-ACCESS_KEY = 0
-SECRET_KEY = 1
-ACCOUNT = 2
-PROJECT_ACCOUNT = 3
-CLIENT = 4
-PROJECT_CLIENT = 5
-
 NOT_NONE = object()
 DEFAULT_TIMEOUT = 90
-DEFAULT_AGENT_URI = 'ssh://root@localhost:22'
-DEFAULT_AGENT_UUID = 'test-agent'
-SLEEP_DELAY = 0.5
-ACCOUNT_LIST = ['admin', 'agent', 'user', 'agentRegister',
-                'readAdmin', 'token', 'superadmin', 'service', 'project']
-PROJECT_ACCOUNTS = {'admin': True, 'user': True}
 _SUPER_CLIENT = None
 
 
@@ -30,100 +17,250 @@ def cattle_url():
     return os.environ.get('CATTLE_URL', default_url)
 
 
-def _admin_client():
-    return cattle.from_env(url=cattle_url(),
-                           cache=False,
-                           access_key='admin',
-                           secret_key='adminpass')
-
-
-def _client_and_project(access_key, secret_key, create_project):
-    client = cattle.from_env(url=cattle_url(),
-                             cache=False,
-                             access_key=access_key,
-                             secret_key=secret_key)
-
-    if not create_project:
-        return client, client, None
-
-    projects = client.list_project()
-    if len(projects):
-        project = projects[0]
-        return client, client_for_project(project), project
-    else:
-        project = create_and_activate(client, 'project',
-                                      name='project for tests')
-        return client, client_for_project(project), project
+@pytest.fixture(scope='function')
+def new_context(admin_user_client, request):
+    ctx = create_context(admin_user_client, create_project=True,
+                         add_host=True)
+    request.addfinalizer(lambda: cleanup_context(admin_user_client, ctx))
+    return ctx
 
 
 @pytest.fixture(scope='session')
-def project_client(admin_client):
-    p = admin_client.list_project(name='test-project')
+def context(admin_user_client, request):
+    return new_context(admin_user_client, request)
 
-    if len(p) == 0:
-        p = admin_client.create_project(name='test-project')
-        p = admin_client.wait_success(p)
+
+@pytest.fixture(scope='session')
+def client(context):
+    return context.client
+
+
+@pytest.fixture(scope='session')
+def system_account(super_client):
+    return super_client.list_account(kind='system', uuid='system')[0]
+
+
+@pytest.fixture(scope='session')
+def super_account(super_client):
+    return super_client.list_account(kind='superadmin', uuid='superadmin')[0]
+
+
+@pytest.fixture(scope='session')
+def admin_user_client(super_client):
+    admin_account = super_client.list_account(kind='admin', uuid='admin')[0]
+    keys = super_client.list_api_key(accountId=admin_account.id)
+    if len(keys) == 0:
+        key = super_client.create_api_key(accountId=admin_account.id)
+        key = super_client.wait_success(key)
     else:
-        p = p[0]
+        key = keys[0]
 
-    return client_for_project(p)
-
-
-def client_for_project(project):
-    access_key = random_str()
-    secret_key = random_str()
-    active_cred = None
-    client = super_client(None)
-    for cred in client.list_api_key(accountId=project.id):
-        if cred.state == 'active' and cred.publicValue is not None:
-            active_cred = cred
-            break
-
-    if active_cred is None:
-        active_cred = client.create_api_key({
-            'accountId': project.id,
-            'publicValue': access_key,
-            'secretValue': secret_key
-        })
-
-    active_cred = wait_success(client, active_cred)
-    if active_cred.state != 'active':
-        wait_success(client, active_cred.activate())
-
-    return cattle.from_env(url=cattle_url(),
-                           cache=False,
-                           access_key=active_cred.publicValue,
-                           secret_key=active_cred.secretValue)
+    return api_client(key.publicValue, key.secretValue)
 
 
-def create_user(admin_client, user_name, kind=None):
+@pytest.fixture(scope='session')
+def super_client(request):
+    return _get_super_client(request)
+
+
+@pytest.fixture
+def random_str():
+    return 'random-{0}'.format(random_num())
+
+
+class Context(object):
+    def __init__(self, account=None, project=None, user_client=None,
+                 client=None, host=None, agent_client=None, agent=None):
+        self.account = account
+        self.project = project
+        self.agent = agent
+        self.user_client = user_client
+        self.agent_client = agent_client
+        self.client = client
+        self.host = host
+        self.image_uuid = 'sim:{}'.format(random_str())
+        self.nsp = self._get_nsp()
+        self.host_ip = self._get_host_ip()
+
+    def _get_nsp(self):
+        if self.client is None:
+            return None
+
+        networks = filter(lambda x: x.kind == 'hostOnlyNetwork' and
+                          x.accountId == self.project.id,
+                          self.client.list_network(kind='hostOnlyNetwork'))
+        assert len(networks) == 1
+        nsps = super_client(None).reload(networks[0]).networkServiceProviders()
+        assert len(nsps) == 1
+        return nsps[0]
+
+    def _get_host_ip(self):
+        if self.host is None:
+            return None
+
+        ips = self.host.ipAddresses()
+        assert len(ips) == 1
+        return ips[0]
+
+    def create_container(self, *args, **kw):
+        c = self.create_container_no_success(*args, **kw)
+        c = self.client.wait_success(c)
+        try:
+            if not kw['startOnCreate']:
+                assert c.state == 'stopped'
+                return c
+        except KeyError:
+            pass
+        assert c.state == 'running'
+        return c
+
+    def create_container_no_success(self, *args, **kw):
+        return self._create_container(self.client, *args, **kw)
+
+    def _create_container(self, client, *args, **kw):
+        if 'imageUuid' not in kw:
+            kw['imageUuid'] = self.image_uuid
+        c = client.create_container(*args, **kw)
+        # Make sure it's waited for and reloaded w/ project client
+        return self.client.wait_transitioning(c)
+
+    def super_create_container(self, *args, **kw):
+        c = self.super_create_container_no_success(*args, **kw)
+        return self.client.wait_success(c)
+
+    def super_create_container_no_success(self, *args, **kw):
+        kw['accountId'] = self.project.id
+        return self._create_container(super_client(None), *args, **kw)
+
+    def delete(self, obj):
+        if obj is None:
+            return
+        self.client.delete(obj)
+        self.client.wait_success(obj)
+
+    def wait_for_state(self, obj, state):
+        obj = self.client.wait_success(obj)
+        assert obj.state == state
+        return obj
+
+
+def create_context(admin_user_client, create_project=False, add_host=False,
+                   kind=None):
+    now = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+    name = 'Integration Test User {}'.format(now)
+    project_name = 'Integration Test Project {}'.format(now)
+
     if kind is None:
-        kind = user_name
+        kind = 'user'
 
-    password = user_name + 'pass'
-    account = create_type_by_uuid(admin_client, 'account', user_name,
-                                  kind=kind,
-                                  name=user_name)
+    account = admin_user_client.create_account(name=name, kind=kind)
+    account = admin_user_client.wait_success(account)
+    key = admin_user_client.create_api_key(accountId=account.id)
+    admin_user_client.wait_success(key)
+    user_client = api_client(key.publicValue, key.secretValue)
+    try:
+        account = user_client.reload(account)
+    except KeyError:
+        # The account type can't see the account obj
+        pass
 
-    active_cred = None
-    for cred in account.credentials():
-        if cred.kind == 'apiKey' and cred.publicValue == user_name \
-                and cred.secretValue == password:
-            active_cred = cred
-            break
+    project = None
+    project_client = None
+    agent_client = None
+    agent = None
 
-    if active_cred is None:
-        active_cred = admin_client.create_api_key({
-            'accountId': account.id,
-            'publicValue': user_name,
-            'secretValue': password
-        })
+    if create_project:
+        project = user_client.create_project(name=project_name)
+        project = user_client.wait_success(project)
+        # This is not proper yet because basic auth can't be used w/ Projects
+        project_key = admin_user_client.create_api_key(accountId=project.id)
+        admin_user_client.wait_success(project_key)
+        project_client = api_client(project_key.publicValue,
+                                    project_key.secretValue)
+        project = project_client.reload(project)
 
-    active_cred = wait_success(admin_client, active_cred)
-    if active_cred.state != 'active':
-        wait_success(admin_client, active_cred.activate())
+    if create_project and add_host:
+        host, agent, agent_client = \
+            register_simulated_host(project_client, return_agent=True)
+    else:
+        host = None
 
-    return [user_name, password, account]
+    return Context(account=account, project=project, user_client=user_client,
+                   client=project_client, host=host,
+                   agent_client=agent_client, agent=agent)
+
+
+def cleanup_context(admin_user_client, context):
+    purge_account(admin_user_client, context.project)
+    purge_account(admin_user_client, context.account)
+
+
+def purge_account(admin_user_client, account):
+    account = admin_user_client.reload(account)
+    for action in ['deactivate', 'remove', 'purge']:
+        if action not in account:
+            continue
+
+        try:
+            account = account[action]()
+            if action != 'purge':
+                admin_user_client.wait_success(account)
+        except:
+            pass
+
+
+def register_simulated_host(client_or_context, return_agent=False):
+    client = client_or_context
+    if isinstance(client_or_context, Context):
+        client = client_or_context.client
+
+    def do_ping():
+        ping = one(super_client(None).list_task, name='agent.ping')
+        ping.execute()
+
+    def check():
+        hosts = super_client(None).list_host(agentId=agents[0].id)
+        if len(hosts) > 0:
+            return hosts[0]
+        do_ping()
+
+    tokens = client.list_registration_token()
+    if len(tokens) == 0:
+        token = client.wait_success(client.create_registration_token())
+    else:
+        token = tokens[0]
+
+    c = api_client('registrationToken', token.token)
+    key = random_str()
+
+    # Now this where we hack things up to make it a simulator
+    s = super_client(None)
+    register = s.create_register(key=key,
+                                 accountId=token.accountId,
+                                 agentUriFormat='sim://%s')
+    # End hacking...
+
+    register = c.wait_success(register)
+    register = c.list_register(key=key)[0]
+
+    c = api_client(register.accessKey, register.secretKey)
+    agents = c.list_agent()
+
+    keys = s.list_credential(publicValue=register.accessKey)
+    assert len(keys) == 1
+
+    assert len(agents) == 1
+
+    s.update(agents[0], uri='sim://{}'.format(key))
+
+    host = wait_for(check)
+    host = client.wait_success(host)
+    s.wait_success(agents[0])
+
+    if return_agent:
+        return host, keys[0].account(), c
+    else:
+        return host
 
 
 def _is_valid_super_client(client):
@@ -134,16 +271,11 @@ def _is_valid_super_client(client):
         return False
 
 
-@pytest.fixture(scope='session')
-def super_client(request):
+def _get_super_client(request):
     global _SUPER_CLIENT
 
     if _SUPER_CLIENT is not None:
         return _SUPER_CLIENT
-
-    if request is not None:
-        request.addfinalizer(
-            lambda: delete_sim_instances(client))
 
     client = cattle.from_env(url=cattle_url(),
                              cache=False,
@@ -152,6 +284,9 @@ def super_client(request):
 
     if _is_valid_super_client(client):
         _SUPER_CLIENT = client
+        if request is not None:
+            request.addfinalizer(
+                lambda: delete_sim_instances(client))
         return client
 
     super_admin = find_one(client.list_account, name='superadmin')
@@ -179,253 +314,18 @@ def super_client(request):
                              secret_key=cred.secretValue)
 
     assert _is_valid_super_client(client)
-    _make_not_account_scoped(client, super_admin)
     _SUPER_CLIENT = client
+
+    if request is not None:
+        request.addfinalizer(
+            lambda: delete_sim_instances(client))
+
     return client
 
 
-def _make_not_account_scoped(super_client, account):
-    if account is None:
-        return None
-
-    # TODO: remove once data in tests is cleaned up
-    key = 'io.cattle.platform.allocator.constraint.AccountConstraintsProvider'
-    account = super_client.reload(account)
-    if account.data is None or key not in account.data:
-        data = account.data
-        if data is None:
-            data = {}
-        data[key] = {'accountScoped': False}
-        account = super_client.update(account, data=data)
-    return account
-
-
-@pytest.fixture(scope='session')
-def accounts(super_client):
-    result = {}
-    for user_name in ACCOUNT_LIST:
-        access_key, secret_key, account = create_user(super_client,
-                                                      user_name,
-                                                      kind=user_name)
-        client, project_client, project = \
-            _client_and_project(access_key,
-                                secret_key,
-                                user_name in PROJECT_ACCOUNTS)
-
-        if project_client is None:
-            project_client = client
-
-        if project is None:
-            project = account
-
-        account = _make_not_account_scoped(super_client, account)
-        project = _make_not_account_scoped(super_client, project)
-        result[user_name] = [access_key,
-                             secret_key,
-                             account,
-                             project,
-                             client,
-                             project_client]
-
-    system_account = super_client.list_account(kind='system', uuid='system')[0]
-    result['system'] = [None, None, system_account, system_account, None, None]
-
-    return result
-
-
-@pytest.fixture(scope='session')
-def clients(accounts):
-    clients = {}
-    for account in ACCOUNT_LIST:
-        clients[account] = accounts[account][CLIENT]
-    return clients
-
-
-@pytest.fixture(scope='session')
-def system_account(accounts):
-    return accounts['system'][PROJECT_ACCOUNT]
-
-
-@pytest.fixture(scope='session')
-def admin_account(accounts):
-    return accounts['admin'][PROJECT_ACCOUNT]
-
-
-@pytest.fixture(scope='session')
-def user_account(accounts):
-    return accounts['user'][PROJECT_ACCOUNT]
-
-
-@pytest.fixture(scope='session')
-def token_account(accounts):
-    return accounts['token'][PROJECT_ACCOUNT]
-
-
-@pytest.fixture(scope='session')
-def super_account(accounts):
-    return accounts['superadmin'][PROJECT_ACCOUNT]
-
-
-@pytest.fixture(scope='session')
-def client(accounts):
-    return accounts['user'][PROJECT_CLIENT]
-
-
-@pytest.fixture(scope='session')
-def user_client(accounts):
-    return accounts['user'][CLIENT]
-
-
-@pytest.fixture(scope='session')
-def admin_client(accounts):
-    return accounts['admin'][PROJECT_CLIENT]
-
-
-@pytest.fixture(scope='session')
-def admin_user_client(accounts):
-    return accounts['admin'][CLIENT]
-
-
-@pytest.fixture(scope='session')
-def token_client(accounts):
-    return accounts['token'][CLIENT]
-
-
-@pytest.fixture(scope='session')
-def agent_client(accounts):
-    return accounts['agent'][CLIENT]
-
-
-@pytest.fixture(scope='session')
-def service_client(accounts):
-    return accounts['service'][CLIENT]
-
-
-def create_sim_context(super_client, uuid, ip=None, account=None,
-                       public=False):
-    context = kind_context(super_client,
-                           'sim',
-                           external_pool=True,
-                           account=account,
-                           uri='sim://' + uuid,
-                           uuid=uuid,
-                           host_public=public)
-    context['imageUuid'] = 'sim:{}'.format(random_num())
-
-    host = context['host']
-
-    if len(host.ipAddresses()) == 0 and ip is not None:
-        ip = create_and_activate(super_client, 'ipAddress',
-                                 address=ip,
-                                 isPublic=public)
-        map = super_client.create_host_ip_address_map(hostId=host.id,
-                                                      ipAddressId=ip.id)
-        map = super_client.wait_success(map)
-        assert map.state == 'active'
-
-    if len(host.ipAddresses()):
-        context['hostIp'] = host.ipAddresses()[0]
-
-    return context
-
-
-@pytest.fixture(scope='session')
-def sim_context(request, super_client):
-    context = create_sim_context(super_client, 'simagent1', ip='192.168.10.10',
-                                 public=True)
-
-    return context
-
-
-@pytest.fixture(scope='session')
-def sim_context2(super_client):
-    return create_sim_context(super_client, 'simagent2', ip='192.168.10.11',
-                              public=True)
-
-
-@pytest.fixture(scope='session')
-def sim_context3(super_client):
-    return create_sim_context(super_client, 'simagent3', ip='192.168.10.12',
-                              public=True)
-
-
-@pytest.fixture
-def new_sim_context(super_client):
-    uri = 'sim://' + random_str()
-    sim_context = kind_context(super_client, 'sim', uri=uri, uuid=uri)
-    sim_context['imageUuid'] = 'sim:{}'.format(random_num())
-
-    for i in ['host', 'pool', 'agent']:
-        sim_context[i] = super_client.wait_success(sim_context[i])
-
-    host = sim_context['host']
-    pool = sim_context['pool']
-    agent = sim_context['agent']
-
-    assert host is not None
-    assert pool is not None
-    assert agent is not None
-
-    return sim_context
-
-
-@pytest.fixture(scope='session')
-def user_sim_context(super_client, user_account):
-    return create_sim_context(super_client, 'usersimagent', ip='192.168.11.1',
-                              account=user_account)
-
-
-@pytest.fixture(scope='session')
-def user_sim_context2(super_client, user_account):
-    return create_sim_context(super_client, 'usersimagent2', ip='192.168.11.2',
-                              account=user_account)
-
-
-@pytest.fixture(scope='session')
-def user_sim_context3(super_client, user_account):
-    return create_sim_context(super_client, 'usersimagent3', ip='192.168.11.3',
-                              account=user_account)
-
-
-def activate_resource(admin_client, obj):
+def activate_resource(client, obj):
     if obj.state == 'inactive':
-        obj = wait_success(admin_client, obj.activate())
-
-    return obj
-
-
-def find_by_uuid(admin_client, type, uuid, activate=True, **kw):
-    objs = admin_client.list(type, uuid=uuid)
-    assert len(objs) == 1
-
-    obj = wait_success(admin_client, objs[0])
-
-    if activate:
-        return activate_resource(admin_client, obj)
-
-    return obj
-
-
-def create_type_by_uuid(admin_client, type, uuid, activate=True, validate=True,
-                        **kw):
-    opts = dict(kw)
-    opts['uuid'] = uuid
-
-    objs = admin_client.list(type, uuid=uuid)
-    obj = None
-    if len(objs) == 0:
-        obj = admin_client.create(type, **opts)
-    else:
-        obj = objs[0]
-
-    obj = wait_success(admin_client, obj)
-    if activate and obj.state == 'inactive':
-        obj.activate()
-        obj = wait_success(admin_client, obj)
-
-    if validate:
-        for k, v in opts.items():
-            assert getattr(obj, k) == v
+        obj = client.wait_success(obj.activate())
 
     return obj
 
@@ -434,29 +334,15 @@ def random_num():
     return random.randint(0, 1000000)
 
 
-@pytest.fixture
-def random_str():
-    return 'random-{0}'.format(random_num())
-
-
 def wait_all_success(client, objs, timeout=DEFAULT_TIMEOUT):
     ret = []
     for obj in objs:
-        obj = wait_success(client, obj, timeout)
+        obj = client.wait_success(obj, timeout)
         ret.append(obj)
 
     return ret
 
 
-def wait_success(client, obj, timeout=DEFAULT_TIMEOUT):
-    return client.wait_success(obj, timeout=timeout)
-
-
-def wait_transitioning(client, obj, timeout=DEFAULT_TIMEOUT):
-    return client.wait_transitioning(obj, timeout=timeout)
-
-
-@pytest.fixture
 def wait_for_condition(client, resource, check_function, fail_handler=None,
                        timeout=DEFAULT_TIMEOUT):
     start = time.time()
@@ -508,81 +394,6 @@ def format_time(time):
     return (time - timedelta(microseconds=time.microsecond)).isoformat() + 'Z'
 
 
-def get_agent(admin_client, name, default_uri=DEFAULT_AGENT_URI,
-              default_agent_uuid=DEFAULT_AGENT_UUID, account=None):
-    name = name.upper()
-    uri_name = '{0}_URI'.format(name.upper())
-    uuid_name = '{0}_AGENT_UUID'.format(name.upper())
-
-    uri = os.getenv(uri_name, default_uri)
-    uuid = os.getenv(uuid_name, default_agent_uuid)
-
-    data = {}
-    if account is not None:
-        account_id = get_plain_id(admin_client, account)
-        data['agentResourcesAccountId'] = account_id
-
-    agent = create_type_by_uuid(admin_client, 'agent', uuid, validate=False,
-                                uri=uri, data=data)
-
-    if account is not None:
-        assert agent.data.agentResourcesAccountId == account_id
-
-    while len(agent.hosts()) == 0:
-        time.sleep(SLEEP_DELAY)
-
-    return agent
-
-
-def kind_context(admin_client, kind, external_pool=False,
-                 uri=DEFAULT_AGENT_URI,
-                 uuid=DEFAULT_AGENT_UUID,
-                 host_public=False,
-                 agent=None,
-                 account=None):
-    if agent is None:
-        kind_agent = get_agent(admin_client, kind, default_agent_uuid=uuid,
-                               default_uri=uri, account=account)
-    else:
-        kind_agent = agent
-
-    hosts = filter(lambda x: x.kind == kind and x.removed is None,
-                   kind_agent.hosts())
-    assert len(hosts) == 1
-    kind_host = activate_resource(admin_client, hosts[0])
-
-    if kind_host.isPublic != host_public:
-        kind_host = admin_client.update(kind_host, isPublic=host_public)
-
-    assert kind_host.isPublic == host_public
-    assert kind_host.accountId == kind_agent.accountId or \
-        get_plain_id(admin_client, kind_host.account()) == \
-        str(kind_agent.data.agentResourcesAccountId)
-
-    pools = kind_host.storagePools()
-    assert len(pools) == 1
-    kind_pool = activate_resource(admin_client, pools[0])
-
-    assert kind_pool.accountId == kind_agent.accountId or \
-        get_plain_id(admin_client, kind_pool.account()) == \
-        str(kind_agent.data.agentResourcesAccountId)
-
-    context = {
-        'host': kind_host,
-        'pool': kind_pool,
-        'agent': kind_agent
-    }
-
-    if external_pool:
-        pools = admin_client.list_storagePool(kind=kind, external=True)
-        assert len(pools) == 1
-        context['external_pool'] = activate_resource(admin_client, pools[0])
-
-        assert pools[0].accountId is not None
-
-    return context
-
-
 def assert_required_fields(method, **kw):
     method(**kw)
 
@@ -599,7 +410,11 @@ def assert_required_fields(method, **kw):
             assert e.error.fieldName == k
 
 
-def get_plain_id(admin_client, obj):
+def get_plain_id(admin_client, obj=None):
+    if obj is None:
+        obj = admin_client
+        admin_client = super_client(None)
+
     ret = admin_client.list(obj.type, uuid=obj.uuid, _plainId='true')
     assert len(ret) == 1
     return ret[0].id
@@ -631,39 +446,21 @@ def acc_id(client):
     return obj.account().id
 
 
-def delete_sim_instances(admin_client):
-    if admin_client is None:
-        return
+def delete_sim_instances(super_client):
+    for account in super_client.list_account():
+        if account.removed is not None:
+            continue
 
-    to_delete = []
-    to_delete.extend(admin_client.list_instance(state='running', limit=1000))
-    to_delete.extend(admin_client.list_instance(state='starting', limit=1000))
-    to_delete.extend(admin_client.list_instance(state='stopped', limit=1000))
-
-    for c in to_delete:
-        hosts = c.hosts()
-        if len(hosts) and hosts[0].kind == 'sim':
-            nsps = c.networkServiceProviders()
-            if len(nsps) > 0 and nsps[0].uuid == 'nsp-test-nsp':
-                continue
-
+        if account.name is not None and \
+                account.name.startswith("Integration Test"):
             try:
-                admin_client.delete(c)
+                account.deactivate()
             except:
                 pass
-
-    for state in ['active', 'reconnecting']:
-        for a in admin_client.list_agent(state=state, include='instances',
-                                         uri_like='delegate%'):
-            if not callable(a.instances):
-                for i in a.instances:
-                    try:
-                        if i.state != 'running' and len(i.hosts()) > 0 and \
-                                i.hosts()[0].agent().uri.startswith('sim://'):
-                            a.deactivate()
-                            break
-                    except:
-                        pass
+            try:
+                super_client.delete(account)
+            except:
+                pass
 
 
 def one(method, *args, **kw):
@@ -788,70 +585,6 @@ def find_count(count, method, *args, **kw):
     return ret
 
 
-def create_sim_container(admin_client, sim_context, *args, **kw):
-    c = admin_client.create_container(*args,
-                                      imageUuid=sim_context['imageUuid'],
-                                      **kw)
-    c = admin_client.wait_success(c)
-    assert c.state == 'running'
-
-    return c
-
-
-def create_agent_instance_nsp(admin_client, sim_context):
-    accountId = sim_context['host'].accountId
-    network = create_and_activate(admin_client, 'hostOnlyNetwork',
-                                  isPublic=True,
-                                  hostVnetUri='test:///',
-                                  dynamicCreateVnet=True,
-                                  accountId=accountId)
-
-    create_and_activate(admin_client, 'subnet',
-                        networkAddress='192.168.0.0',
-                        networkId=network.id,
-                        accountId=accountId)
-
-    return create_and_activate(admin_client, 'agentInstanceProvider',
-                               networkId=network.id,
-                               agentInstanceImageUuid=sim_context['imageUuid'],
-                               accountId=accountId)
-
-
-@pytest.fixture(scope='session')
-def test_network(super_client, sim_context):
-    network = create_type_by_uuid(super_client, 'hostOnlyNetwork',
-                                  'nsp-test-network',
-                                  isPublic=True,
-                                  hostVnetUri='test:///',
-                                  dynamicCreateVnet=True)
-
-    create_type_by_uuid(super_client, 'subnet',
-                        'nsp-test-subnet',
-                        networkAddress='192.168.0.0',
-                        networkId=network.id)
-
-    nsp = create_type_by_uuid(super_client, 'agentInstanceProvider',
-                              'nsp-test-nsp',
-                              networkId=network.id,
-                              agentInstanceImageUuid='sim:test-nsp')
-
-    create_type_by_uuid(super_client, 'portService',
-                        'nsp-test-port-service',
-                        networkId=network.id,
-                        networkServiceProviderId=nsp.id)
-
-    for i in nsp.instances():
-        i = super_client.wait_success(i)
-        if i.state != 'running':
-            super_client.wait_success(i.start())
-
-        agent = super_client.wait_success(i.agent())
-        if agent.state != 'active':
-            super_client.wait_success(agent.activate())
-
-    return network
-
-
 def resource_pool_items(admin_client, obj, type=None, qualifier=None):
     id = get_plain_id(admin_client, obj)
 
@@ -867,42 +600,6 @@ def resource_pool_items(admin_client, obj, type=None, qualifier=None):
                                                qualifier=qualifier)
 
 
-@pytest.fixture(scope='session')
-def network(super_client):
-    network = create_type_by_uuid(super_client, 'network', 'test_vm_network',
-                                  isPublic=True)
-
-    subnet = create_type_by_uuid(super_client, 'subnet', 'test_vm_subnet',
-                                 isPublic=True,
-                                 networkId=network.id,
-                                 networkAddress='192.168.0.0',
-                                 cidrSize=24)
-
-    vnet = create_type_by_uuid(super_client, 'vnet', 'test_vm_vnet',
-                               networkId=network.id,
-                               uri='fake://')
-
-    create_type_by_uuid(super_client, 'subnetVnetMap', 'test_vm_vnet_map',
-                        subnetId=subnet.id,
-                        vnetId=vnet.id)
-
-    return network
-
-
-@pytest.fixture(scope='session')
-def subnet(admin_client, network):
-    subnets = network.subnets()
-    assert len(subnets) == 1
-    return subnets[0]
-
-
-@pytest.fixture(scope='session')
-def vnet(admin_client, subnet):
-    vnets = subnet.vnets()
-    assert len(vnets) == 1
-    return vnets[0]
-
-
 def wait_setting_active(api_client, setting, timeout=45):
     start = time.time()
     setting = api_client.by_id_setting(setting.name)
@@ -916,49 +613,8 @@ def wait_setting_active(api_client, setting, timeout=45):
     return setting
 
 
-def create_container(client, sim_context, **kw):
-    args = {
-        'imageUuid': sim_context['imageUuid'],
-        'requestedHostId': sim_context['host'].id,
-        }
-    args.update(kw)
-
-    return client.create_container(**args)
-
-
-@pytest.fixture(scope='session')
-def context(admin_user_client, super_client):
-    account = admin_user_client.create_account(kind='project')
-    keys = admin_user_client.create_api_key(accountId=account.id)
-    assert keys.accountId == account.id
-
-    account = admin_user_client.wait_success(account)
-    assert account.state == 'active'
-
-    keys = admin_user_client.wait_success(keys)
-    assert keys.state == 'active'
-
-    client = cattle.from_env(url=cattle_url(),
-                             cache=False,
-                             access_key=keys.publicValue,
-                             secret_key=keys.secretValue)
-
-    account = client.reload(account)
-
-    uri = 'sim://' + random_str()
-    sim_context = kind_context(super_client, 'sim', uri=uri, uuid=uri,
-                               account=account)
-    sim_context['imageUuid'] = 'sim:{}'.format(random_num())
-
-    for i in ['host', 'pool', 'agent']:
-        obj = sim_context[i]
-        assert obj is not None
-        sim_context[i] = super_client.wait_success(obj)
-
-    sim_context['client'] = client
-    sim_context['project'] = account
-
-    nsp = super_client.list_network_service_provider(accountId=account.id)[0]
-    super_client.update(nsp, agentInstanceImageUuid='sim:test-nsp')
-
-    return sim_context
+def api_client(access_key, secret_key):
+    return cattle.from_env(url=cattle_url(),
+                           cache=False,
+                           access_key=access_key,
+                           secret_key=secret_key)
