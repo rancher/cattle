@@ -18,35 +18,38 @@ import java.util.UUID;
 public class DeploymentUnit {
 
     String uuid;
-    Map<Service, DeploymentUnitInstance> serviceToInstance = new HashMap<>();
+    Map<Long, DeploymentUnitInstance> serviceToInstance = new HashMap<>();
+    DeploymentServiceContext context;
 
     public DeploymentUnit() {
     }
 
-    public DeploymentUnit(String uuid, Map<Service, DeploymentUnitInstance> deploymentInstances,
+    public DeploymentUnit(String uuid, Map<Long, DeploymentUnitInstance> deploymentInstances,
             DeploymentServiceContext context) {
         this.uuid = uuid;
         serviceToInstance.putAll(deploymentInstances);
+        this.context = context;
     }
     
     public DeploymentUnit(List<Service> services,
-            Map<Service, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator,
+            Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator,
             DeploymentServiceContext context) {
         this.uuid = UUID.randomUUID().toString();
         this.createMissingUnitInstances(services, svcInstanceIdGenerator, context);
+        this.context = context;
     }
 
     public void createMissingUnitInstances(List<Service> services,
-            Map<Service, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator,
+            Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator,
             DeploymentServiceContext context) {
         for (Service service : services) {
-            if (!serviceToInstance.containsKey(service)) {
+            if (!serviceToInstance.containsKey(service.getId())) {
                 DeploymentUnitInstance deploymentUnitInstance = context.deploymentUnitInstanceFactory
                         .createDeploymentUnitInstance(uuid, service, 
                                 context.sdService.generateServiceInstanceName(service,
-                                        svcInstanceIdGenerator.get(service).getNextAvailableId()),
+                                        svcInstanceIdGenerator.get(service.getId()).getNextAvailableId()),
                                 null, context);
-                serviceToInstance.put(service, deploymentUnitInstance);
+                serviceToInstance.put(service.getId(), deploymentUnitInstance);
             }
         }
     }
@@ -92,8 +95,8 @@ public class DeploymentUnit {
          * If one of the containers service health is bad, then create another one (but don't delete the existing).
          * 
          */
-        for (Service service : serviceToInstance.keySet()) {
-            createInstance(serviceToInstance, service, false);
+        for (Long serviceId : serviceToInstance.keySet()) {
+            createInstance(serviceId);
         }
 
         for (DeploymentUnitInstance instance : serviceToInstance.values()) {
@@ -102,29 +105,30 @@ public class DeploymentUnit {
     }
 
     @SuppressWarnings("unchecked")
-    protected DeploymentUnitInstance createInstance(Map<Service, DeploymentUnitInstance> serviceToInstance,
-            Service service, boolean waitForStart) {
+    protected DeploymentUnitInstance createInstance(Long serviceId) {
         List<Integer> volumesFromInstanceIds = new ArrayList<>();
-        List<Integer> volumesFromServiceIds = DataAccessor.fields(service).withKey(
+        List<Integer> volumesFromServiceIds = DataAccessor
+                .fields(context.objectManager.loadResource(Service.class, serviceId)).withKey(
                 ServiceDiscoveryConfigItem.VOLUMESFROMSERVICE
                         .getCattleName()).withDefault(Collections.EMPTY_LIST).as(List.class);
         
         for (Integer volumesFromServiceId : volumesFromServiceIds) {
-            DeploymentUnitInstance volumesFromUnitInstance = getInstanceByServiceId(volumesFromServiceId.longValue());
-            if (volumesFromUnitInstance.getInstance() != null) {
-                // get instanceId from existing instance
-                volumesFromInstanceIds.add(volumesFromUnitInstance.getInstance().getId().intValue());
-            } else {
-                // request new instance creation, and put waitForStart=true
-                volumesFromUnitInstance = createInstance(serviceToInstance, volumesFromUnitInstance.getService(), true);
+            //check if the service is present in the service map (it can be referenced, but removed already)
+            DeploymentUnitInstance volumesFromUnitInstance = this.serviceToInstance
+                    .get(volumesFromServiceId.longValue());
+            if (volumesFromUnitInstance != null) {
+                if (volumesFromUnitInstance.getInstance() == null) {
+                    // request new instance creation
+                    volumesFromUnitInstance = createInstance(volumesFromUnitInstance.getService().getId());
+                }
+                // wait for start
+                volumesFromUnitInstance.waitForStart();
                 volumesFromInstanceIds.add(volumesFromUnitInstance.getInstance().getId().intValue());
             }
         }
-        serviceToInstance.get(service).start(volumesFromInstanceIds);
-        if (waitForStart) {
-            serviceToInstance.get(service).waitForStart();
-        }
-        return serviceToInstance.get(service);
+        this.serviceToInstance.get(serviceId).start(volumesFromInstanceIds);
+
+        return this.serviceToInstance.get(serviceId);
     }
 
     public boolean isStarted() {
@@ -154,14 +158,4 @@ public class DeploymentUnit {
     public Collection<DeploymentUnitInstance> getInstances() {
         return serviceToInstance.values();
     }
-
-    protected DeploymentUnitInstance getInstanceByServiceId(long serviceId) {
-        for (Service service : serviceToInstance.keySet()) {
-            if (service.getId().equals(serviceId)) {
-                return serviceToInstance.get(service);
-            }
-        }
-        return null;
-    }
-
 }

@@ -117,6 +117,32 @@ def _activate_svc_w_scale_two(admin_client, random_str, super_client):
     return host1, host2, lb, service, env
 
 
+def test_deactivate_then_activate_lb_svc(super_client, admin_client):
+    host1, host2, lb, service, env = _activate_svc_w_scale_two(admin_client,
+                                                               random_str(),
+                                                               super_client)
+
+    # 1. verify that all hosts mappings are created
+    validate_add_host(host1, lb, super_client)
+    validate_add_host(host2, lb, super_client)
+
+    # 2. deactivate service and validate that
+    # the hosts mappings are still around,
+    # and lb still present
+    service = wait_success(super_client, service.deactivate())
+    validate_add_host(host1, lb, super_client)
+    validate_add_host(host2, lb, super_client)
+
+    lb = super_client.reload(lb)
+    assert lb.state == "active"
+
+    # 3. activate service again
+    service = wait_success(super_client, service.activate())
+    assert service.state == 'active'
+    _validate_lb_instance(host1, lb, super_client, service)
+    _validate_lb_instance(host2, lb, super_client, service)
+
+
 def test_deactivate_then_remove_lb_svc(super_client, admin_client):
     host1, host2, lb, service, env = _activate_svc_w_scale_two(admin_client,
                                                                random_str(),
