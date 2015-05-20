@@ -23,7 +23,6 @@ import com.netflix.config.DynamicStringListProperty;
 public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPreListener, ProcessPostListener {
 
     private static final DynamicStringListProperty ITEMS = ArchaiusUtil.getList("agent.config.items");
-    public static final String REQUEST_KEY = "agentScripts";
 
     ConfigItemStatusManager statusManager;
     JsonMapper jsonMapper;
@@ -75,7 +74,8 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
             return;
         }
 
-        statusManager.waitFor(request);
+        // We don't want to wait anymore, we just assume it will eventually happen in the background
+        // statusManager.waitFor(request);
     }
 
     public ConfigItemStatusManager getStatusManager() {
