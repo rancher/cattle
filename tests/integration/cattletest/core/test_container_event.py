@@ -180,6 +180,23 @@ def test_bad_host(user_sim_context, new_sim_context):
     assert e.value.error.code == 'InvalidReference'
 
 
+def test_container_event_null_inspect(client, user_sim_context, user_account):
+    # Assert that the inspect can be null.
+    host, agent_cli = sim_agent_and_host(user_sim_context)
+    external_id = random_str()
+    user_id = user_account.id
+
+    create_event(host, external_id, agent_cli, client, user_id,
+                 'start', None)
+
+    def container_wait():
+        containers = client.list_container(externalId=external_id)
+        if len(containers) and containers[0].state != 'requested':
+            return containers[0]
+    container = wait_for(container_wait)
+    assert container is not None
+
+
 def test_requested_ip_address(super_client, client, user_sim_context,
                               user_account):
     create_agent_instance_nsp(super_client, user_sim_context)
