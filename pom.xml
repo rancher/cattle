@@ -103,7 +103,6 @@
                 <module>code/implementation/agent-connection-event</module>
                 <module>code/implementation/agent-connection-ssh</module>
                 <module>code/implementation/agent-instance-impl</module>
-                <module>code/implementation/docker/allocator</module>
                 <module>code/implementation/docker/api</module>
                 <module>code/implementation/docker/common</module>
                 <module>code/implementation/docker/compute</module>
@@ -121,7 +120,6 @@
                 <module>code/implementation/sample-setup</module>
                 <module>code/implementation/settings-api</module>
                 <module>code/implementation/simulator/agent-connection</module>
-                <module>code/implementation/simulator/allocator</module>
                 <module>code/implementation/simulator/storage</module>
                 <module>code/implementation/zookeeper</module>
                 <module>code/packaging/app</module>
