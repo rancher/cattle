@@ -7,12 +7,17 @@ import io.cattle.platform.api.pubsub.model.Subscribe;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.event.IaasEvents;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
@@ -24,6 +29,7 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -120,7 +126,9 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
 
         String type = request.getSchemaFactory().getSchemaName(Agent.class);
         ResourceManager rm = getLocator().getResourceManagerByType(type);
-        List<?> agents = rm.list(type, null, Pagination.limit(2));
+        List<?> agents = rm.list(type, CollectionUtils.asMap((Object)ObjectMetaDataManager.STATE_FIELD,
+                new Condition(new Condition(ConditionType.EQ, CommonStatesConstants.ACTIVE),
+                              new Condition(ConditionType.EQ, CommonStatesConstants.ACTIVATING))), Pagination.limit(2));
 
         if (agents.size() > 1) {
             throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "agentId");
