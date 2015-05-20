@@ -12,7 +12,6 @@ def create_env_and_svc(client, context):
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
-                                    networkId=nsp.networkId,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"

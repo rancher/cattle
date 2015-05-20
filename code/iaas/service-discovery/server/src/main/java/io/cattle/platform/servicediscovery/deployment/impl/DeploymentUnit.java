@@ -122,6 +122,7 @@ public class DeploymentUnit {
                     volumesFromUnitInstance = createInstance(volumesFromUnitInstance.getService().getId());
                 }
                 // wait for start
+                volumesFromUnitInstance.start(new ArrayList<Integer>());
                 volumesFromUnitInstance.waitForStart();
                 volumesFromInstanceIds.add(volumesFromUnitInstance.getInstance().getId().intValue());
             }
