@@ -170,7 +170,11 @@ def create_context(admin_user_client, create_project=False, add_host=False,
     agent = None
 
     if create_project:
-        project = user_client.create_project(name=project_name)
+        project = user_client.create_project(name=project_name, members=[{
+            'role': 'owner',
+            'externalId': acc_id(user_client),
+            'externalIdType': 'rancher_id'
+        }])
         project = user_client.wait_success(project)
         # This is not proper yet because basic auth can't be used w/ Projects
         project_key = admin_user_client.create_api_key(accountId=project.id)
