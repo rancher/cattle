@@ -37,13 +37,15 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
     protected ExitReason deactivateThenRemove(Object obj, Map<String, Object> data) {
         Object state = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.STATE_FIELD);
 
-        if (CommonStatesConstants.ACTIVE.equals(state)) {
-            getObjectProcessManager().executeStandardProcess(StandardProcess.DEACTIVATE, obj, data);
-            obj = getObjectManager().reload(obj);
-        }
-
         if (CommonStatesConstants.PURGED.equals(state)) {
             return null;
+        }
+
+        try {
+            getObjectProcessManager().executeStandardProcess(StandardProcess.DEACTIVATE, obj, data);
+            obj = getObjectManager().reload(obj);
+        } catch (ProcessCancelException e) {
+           // ignore
         }
 
         return getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, obj, data);
