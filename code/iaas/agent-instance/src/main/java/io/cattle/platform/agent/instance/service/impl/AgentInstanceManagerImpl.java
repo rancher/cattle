@@ -63,8 +63,13 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
             Instance agentInstance = agentInstanceDao.getAgentInstance(provider, nic);
 
             if (agentInstance == null) {
-                agentInstance = agentInstanceFactory.newBuilder().withNetworkServiceProvider(provider).withInstance(instance).withPrivileged(true).forVnetId(
-                        nic.getVnetId()).withSystemContainerType(SystemContainer.NetworkAgent).build();
+                agentInstance = agentInstanceFactory.newBuilder()
+                        .withNetworkServiceProvider(provider)
+                        .withInstance(instance)
+                        .withAccountId(instance.getAccountId())
+                        .withPrivileged(true).forVnetId(nic.getVnetId())
+                        .withSystemContainerType(SystemContainer.NetworkAgent)
+                        .build();
             } else {
                 start(agentInstance);
             }
