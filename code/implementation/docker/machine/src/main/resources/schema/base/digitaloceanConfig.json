@@ -14,8 +14,7 @@
         },
         "accessToken": {
             "type": "string",
-            "nullable": false,
-            "required": true
+            "nullable": false
         },
         "ipv6": {
             "type": "boolean",

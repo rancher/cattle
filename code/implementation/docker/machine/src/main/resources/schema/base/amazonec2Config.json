@@ -2,13 +2,11 @@
     "resourceFields": {
         "accessKey": {
             "type": "string",
-            "nullable": false,
-            "required": true
+            "nullable": false
         },
         "secretKey": {
             "type": "string",
-            "nullable": false,
-            "required": true
+            "nullable": false
         },
         "vpcId": {
             "type": "string",

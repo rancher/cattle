@@ -1,0 +1,10 @@
+{
+    "resourceFields": {
+        "accessKey": {
+            "required": true
+        },
+        "secretKey": {
+            "required": true
+        }
+    }
+}
