@@ -13,8 +13,6 @@ import javax.inject.Inject;
 
 public class SampleDataStartupV3 extends AbstractSampleData {
 
-    SampleDataStartupV2 v2;
-
     @Override
     protected String getName() {
         return "sampleDataVersion3";
@@ -22,8 +20,6 @@ public class SampleDataStartupV3 extends AbstractSampleData {
 
     @Override
     protected void populatedData(Account system, List<Object> toCreate) {
-        v2.start();
-
         toCreate.add(createByUuid(Account.class, "token", ACCOUNT.KIND, "token", ACCOUNT.NAME, "token"));
         Account adminProject = createByUuid(Account.class, "adminProject", ACCOUNT.KIND, "project", ACCOUNT.NAME, "Default");
         toCreate.add(adminProject);
@@ -33,14 +29,5 @@ public class SampleDataStartupV3 extends AbstractSampleData {
                 ProjectConstants.RANCHER_ID, PROJECT_MEMBER.ROLE, "owner"));
 
 
-    }
-
-    public SampleDataStartupV2 getV2() {
-        return v2;
-    }
-
-    @Inject
-    public void setV2(SampleDataStartupV2 v2) {
-        this.v2 = v2;
     }
 }
