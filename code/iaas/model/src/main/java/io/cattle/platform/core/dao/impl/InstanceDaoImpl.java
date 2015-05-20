@@ -32,6 +32,10 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                         .and(VOLUME.REMOVED.isNull()))
                         .fetchInto(Long.class);
 
+        if (poolIds.size() == 0) {
+            return false;
+        }
+
         for ( Long poolId : poolIds ) {
             List<?> result = create()
                     .select()
