@@ -55,11 +55,6 @@
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-libvirt-default-images</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-external-handler</artifactId>
             <version>${project.version}</version>
         </dependency>
