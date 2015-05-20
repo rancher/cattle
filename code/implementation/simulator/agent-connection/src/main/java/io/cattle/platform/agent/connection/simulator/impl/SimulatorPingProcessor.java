@@ -117,7 +117,23 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
              * will have to reorder then on insert
              */
             resources.add(host);
+
+            String ipAddress = DataAccessor.fromDataFieldOf(agent)
+                    .withScope(AgentConnectionSimulator.class)
+                    .withKey("ipAddress")
+                    .withDefault("192.168.0.21").as(String.class);
+            String ipUuid = agent.getUuid() + "-" + ipAddress;
+
+            Map<String, Object> ip = new HashMap<>();
+            ip.put(ObjectMetaDataManager.UUID_FIELD, ipUuid);
+            ip.put(ObjectMetaDataManager.KIND_FIELD, "sim");
+            ip.put(ObjectMetaDataManager.TYPE_FIELD, "ipAddress");
+            ip.put("address", ipAddress);
+            ip.put("hostUuid", hostUuid);
+
+            resources.add(ip);
         }
+
 
         if (addPhysicalHost) {
             /*
