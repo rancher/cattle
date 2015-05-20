@@ -1,5 +1,8 @@
 {
     "resourceFields": {
+        "kind": {
+            "default": "user"
+        },
         "defaultNetworkId": {
             "type" : "reference[network]",
             "nullable" : true
