@@ -580,6 +580,27 @@ def test_docker_volumes(client, admin_client, super_client, docker_context):
 
 
 @if_docker
+def test_volumes_from_more_than_one_container(client):
+    c = client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                dataVolumes=['/foo'])
+    client.wait_success(c)
+
+    c2 = client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                 dataVolumes=['/bar'])
+    client.wait_success(c2)
+
+    c3 = client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                 dataVolumesFrom=[c.id, c2.id])
+    c3 = client.wait_success(c3)
+
+    mounts = c3.mounts()
+    assert len(mounts) == 2
+    paths = ['/foo', '/bar']
+    for m in mounts:
+        assert m.path in paths
+
+
+@if_docker
 def test_container_fields(client, admin_client, super_client, docker_context):
     caps = ["SYS_MODULE", "SYS_RAWIO", "SYS_PACCT", "SYS_ADMIN",
             "SYS_NICE", "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG",
