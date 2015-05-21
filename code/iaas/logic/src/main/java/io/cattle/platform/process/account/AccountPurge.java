@@ -10,6 +10,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
@@ -85,7 +86,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             // ignore
         }
 
-        purge(account, data);
+        getObjectProcessManager().scheduleStandardProcess(StandardProcess.PURGE, account, data);
     }
 
 }
