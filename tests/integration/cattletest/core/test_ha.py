@@ -89,6 +89,8 @@ def test_container_ha_restart(super_client, new_context):
                                          'instance.stop',
                                          'instance.start'}
 
+    super_client.delete(c)
+
 
 def test_container_ha_remove(super_client, new_context):
     c = new_context.super_create_container(instanceTriggeredStop='remove',
