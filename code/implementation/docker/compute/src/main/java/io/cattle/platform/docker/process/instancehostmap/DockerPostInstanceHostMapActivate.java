@@ -1,9 +1,10 @@
 package io.cattle.platform.docker.process.instancehostmap;
 
-import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
-import static io.cattle.platform.core.model.tables.MountTable.MOUNT;
-import static io.cattle.platform.core.model.tables.PortTable.PORT;
+import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.MountTable.*;
+import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
+import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.PortConstants;
@@ -31,8 +32,8 @@ import io.cattle.platform.docker.process.dao.DockerComputeDao;
 import io.cattle.platform.docker.process.lock.DockerStoragePoolVolumeCreateLock;
 import io.cattle.platform.docker.process.util.DockerProcessUtils;
 import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
-import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.docker.transform.DockerInspectTransformVolume;
+import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -42,6 +43,7 @@ import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +81,8 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     ClusterHostMapDao clusterHostMapDao;
     @Inject
     DockerTransformer transformer;
+    @Inject
+    LabelsService labelsService;
 
     @Override
     public String[] getProcessNames() {
@@ -108,9 +112,20 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
         processVolumes(instance, host, state);
 
+        processLabels(instance);
+
         nativeDockerBackPopulate(instance);
 
         return null;
+    }
+
+    @SuppressWarnings({ "unchecked" })
+    void processLabels(Instance instance) {
+        Map<String, String> labels = (Map<String, String>)CollectionUtils.getNestedValue(instance.getData(), FIELD_DOCKER_INSPECT, "Config",
+                "Labels");
+        for (Map.Entry<String, String>label : labels.entrySet()) {
+            labelsService.createContainerLabel(instance.getAccountId(), instance.getId(), label.getKey(), label.getValue());
+        }
     }
 
     @SuppressWarnings({ "unchecked" })
