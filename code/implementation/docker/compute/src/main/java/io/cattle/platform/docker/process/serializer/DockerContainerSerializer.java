@@ -1,6 +1,6 @@
 package io.cattle.platform.docker.process.serializer;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
@@ -8,9 +8,10 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.serialization.ObjectTypeSerializerPostProcessor;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +40,8 @@ public class DockerContainerSerializer implements ObjectTypeSerializerPostProces
         List volumesFromContainerIds = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_VOLUMES_FROM).as(jsonMapper, List.class);
         List<Instance> containers = null;
         if (volumesFromContainerIds != null && !volumesFromContainerIds.isEmpty()) {
-            Map ids = new HashMap();
-            ids.put(INSTANCE.ID, volumesFromContainerIds);
-            containers = objectManager.find(Instance.class, ids);
+            Condition condition = new Condition(ConditionType.IN, volumesFromContainerIds);
+            containers = objectManager.find(Instance.class, INSTANCE.ID, condition);
         }
         if (containers == null)
             containers = new ArrayList<Instance>();
