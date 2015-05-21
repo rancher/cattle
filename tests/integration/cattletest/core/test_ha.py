@@ -23,8 +23,12 @@ def test_container_ha_default(super_client, new_context):
 
     processes = wait_for(callback)
 
-    c = client.wait_success(c)
+    c = wait_for_condition(client, c,
+                           lambda x: x.state == 'stopped',
+                           lambda x: 'State is: ' + x.state)
 
+    # TODO Remove this debugging block once we've seen this test not fail for
+    # a few weeks. So, anytime after 6/4/2015.
     if c.state != 'stopped':
         logging.warn('test_container_ha_default debugging')
         for p in processes:
@@ -32,7 +36,6 @@ def test_container_ha_default(super_client, new_context):
             for pe in process_executions(super_client, p.id):
                 logging.warn('ProcessExecution: %s' % pe)
 
-    assert c.state == 'stopped'
     assert _process_names(processes) == {'instance.create', 'instance.stop'}
 
 
@@ -54,8 +57,9 @@ def test_container_ha_stop(super_client, new_context):
 
     processes = wait_for(callback)
 
-    c = super_client.wait_success(c)
-    assert c.state == 'stopped'
+    wait_for_condition(super_client, c,
+                       lambda x: x.state == 'stopped',
+                       lambda x: 'State is: ' + x.state)
 
     assert _process_names(processes) == {'instance.create',
                                          'instance.restart',
@@ -81,8 +85,9 @@ def test_container_ha_restart(super_client, new_context):
 
     processes = wait_for(callback)
 
-    c = super_client.wait_success(c)
-    assert c.state == 'running'
+    wait_for_condition(super_client, c,
+                       lambda x: x.state == 'running',
+                       lambda x: 'State is: ' + x.state)
 
     assert _process_names(processes) == {'instance.create',
                                          'instance.restart',
@@ -109,8 +114,9 @@ def test_container_ha_remove(super_client, new_context):
 
     processes = wait_for(callback)
 
-    c = super_client.wait_success(c)
-    assert c.state == 'removed'
+    wait_for_condition(super_client, c,
+                       lambda x: x.state == 'removed',
+                       lambda x: 'State is: ' + x.state)
 
     assert _process_names(processes) == {'instance.create',
                                          'instance.restart',
