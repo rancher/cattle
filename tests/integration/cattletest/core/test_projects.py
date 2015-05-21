@@ -12,6 +12,7 @@ _USER_LIST = [
 
 PROJECTS = set([])
 
+
 @pytest.fixture(autouse=True, scope="session")
 def clean_up_projects(super_client, request):
     # This randomly times out, don't know why, disabling it
@@ -151,7 +152,8 @@ def all_owners(members):
 def user_clients(admin_user_client):
     clients = {}
     for user in _USER_LIST:
-        clients[user] = create_context(admin_user_client, kind='user').user_client
+        clients[user] = create_context(admin_user_client,
+                                       kind='user').user_client
     clients['admin'] = admin_user_client
     return clients
 
@@ -315,7 +317,7 @@ def test_change_roles(admin_user_client, user_clients, members):
     assert len(project.projectMembers()) == 2
     new_members = all_owners(get_plain_members(project.projectMembers()))
     project_from_member = user_clients['Member'].by_id('project',
-                                                          project.id)
+                                                       project.id)
     with pytest.raises(AttributeError) as e:
         project_from_member.setmembers(members=new_members)
     assert 'setmembers' in e.value.message
