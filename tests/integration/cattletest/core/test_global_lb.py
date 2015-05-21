@@ -3,96 +3,97 @@ from cattle import ApiError
 
 
 @pytest.fixture(scope='module')
-def config_id(admin_client):
-    default_lb_config = admin_client.\
+def config_id(context):
+    client = context.client
+    default_lb_config = client.\
         create_loadBalancerConfig(name=random_str())
-    default_lb_config = admin_client.wait_success(default_lb_config)
+    default_lb_config = client.wait_success(default_lb_config)
     return default_lb_config.id
 
 
-def create_glb_and_lb(admin_client, config_id):
+def create_glb_and_lb(client, config_id):
     # create global load balancer
-    glb = admin_client.create_globalLoadBalancer(name=random_str())
-    glb = admin_client.wait_success(glb)
+    glb = client.create_globalLoadBalancer(name=random_str())
+    glb = client.wait_success(glb)
     # create load balancer
-    lb = create_valid_lb(admin_client, config_id)
+    lb = create_valid_lb(client, config_id)
     return glb, lb
 
 
-def create_valid_lb(admin_client, config_id):
-    default_lb_config = admin_client.\
+def create_valid_lb(client, config_id):
+    default_lb_config = client.\
         create_loadBalancerConfig(name=random_str())
-    default_lb_config = admin_client.wait_success(default_lb_config)
+    client.wait_success(default_lb_config)
 
-    test_lb = admin_client.create_loadBalancer(name=random_str(),
-                                               loadBalancerConfigId=config_id)
-    test_lb = admin_client.wait_success(test_lb)
+    test_lb = client.create_loadBalancer(name=random_str(),
+                                         loadBalancerConfigId=config_id)
+    test_lb = client.wait_success(test_lb)
     return test_lb
 
 
 # test (C)
-def test_global_lb_create(admin_client):
-    glb = admin_client.create_globalLoadBalancer(name=random_str())
-    glb = admin_client.wait_success(glb)
+def test_global_lb_create(client):
+    glb = client.create_globalLoadBalancer(name=random_str())
+    glb = client.wait_success(glb)
 
     assert glb.state == 'active'
 
 
 # test (D)
-def test_global_lb_remove(admin_client):
+def test_global_lb_remove(client):
     # create global load balancer
-    glb = admin_client.create_globalLoadBalancer(name=random_str())
-    glb = admin_client.wait_success(glb)
+    glb = client.create_globalLoadBalancer(name=random_str())
+    glb = client.wait_success(glb)
 
     # delete newly created global load balancer
-    glb = admin_client.wait_success(admin_client.delete(glb))
-    glb = admin_client.wait_success(glb)
+    glb = client.wait_success(client.delete(glb))
+    glb = client.wait_success(glb)
 
     assert glb.state == "removed"
 
 
 # test (U)
-def test_global_lb_update(admin_client):
-    glb = admin_client.create_globalLoadBalancer(name=random_str())
-    glb = admin_client.wait_success(glb)
+def test_global_lb_update(client):
+    glb = client.create_globalLoadBalancer(name=random_str())
+    glb = client.wait_success(glb)
 
     # update the lb
-    glb = admin_client.update(glb, name='newName')
+    glb = client.update(glb, name='newName')
     assert glb.name == 'newName'
 
 
-def test_add_lb_to_glb(admin_client, config_id):
-    glb, lb = create_glb_and_lb(admin_client, config_id)
+def test_add_lb_to_glb(client, config_id):
+    glb, lb = create_glb_and_lb(client, config_id)
 
     # add load balancer to global load balancer
     glb = glb.addloadbalancer(loadBalancerId=lb.id, weight=3)
-    glb = admin_client.wait_success(glb)
+    glb = client.wait_success(glb)
 
-    lb = admin_client.list_loadBalancer(name=lb.name)
+    lb = client.list_loadBalancer(name=lb.name)
 
     assert lb[0].weight == 3
     assert lb[0].globalLoadBalancerId == glb.id
 
 
-def test_remove_lb_from_glb(admin_client, config_id):
-    glb, lb = create_glb_and_lb(admin_client, config_id)
+def test_remove_lb_from_glb(client, config_id):
+    glb, lb = create_glb_and_lb(client, config_id)
 
     # add lb to glb
     glb = glb.addloadbalancer(loadBalancerId=lb.id, weight=3)
-    glb = admin_client.wait_success(glb)
+    glb = client.wait_success(glb)
 
     # remove lb from glb
     glb = glb.removeloadbalancer(loadBalancerId=lb.id)
-    glb = admin_client.wait_success(glb)
+    glb = client.wait_success(glb)
 
-    lb = admin_client.list_loadBalancer(name=lb.name)
+    lb = client.list_loadBalancer(name=lb.name)
 
     assert lb[0].weight is None
     assert lb[0].globalLoadBalancerId is None
 
 
-def test_add_lb_to_glb_no_weight(admin_client, config_id):
-    glb, lb = create_glb_and_lb(admin_client, config_id)
+def test_add_lb_to_glb_no_weight(client, config_id):
+    glb, lb = create_glb_and_lb(client, config_id)
 
     # add load balancer to global load balancer without the weight
     with pytest.raises(ApiError) as e:
@@ -103,8 +104,8 @@ def test_add_lb_to_glb_no_weight(admin_client, config_id):
     assert e.value.error.fieldName == 'weight'
 
 
-def test_add_lb_to_glb_no_glb_id(admin_client, config_id):
-    glb, lb = create_glb_and_lb(admin_client, config_id)
+def test_add_lb_to_glb_no_glb_id(client, config_id):
+    glb, lb = create_glb_and_lb(client, config_id)
 
     # add load balancer to global load balancer without the weight
     with pytest.raises(ApiError) as e:

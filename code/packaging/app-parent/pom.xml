@@ -31,10 +31,9 @@
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-docker-allocator</artifactId>
+            <artifactId>cattle-iaas-simple-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-simulator-agent-connection</artifactId>
@@ -43,11 +42,6 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-simulator-storage</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-simulator-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

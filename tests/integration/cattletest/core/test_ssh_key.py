@@ -32,9 +32,10 @@ def test_create_ssh_key_with_value(super_client):
     assert 'pem' not in key.links
 
 
-def test_create_container(super_client, sim_context):
+def test_create_container(super_client, context):
     key = create_and_activate(super_client, 'sshKey')
-    c = create_sim_container(super_client, sim_context, credentialIds=[key.id])
+    c = context.super_create_container(credentialIds=[key.id])
+    c = super_client.reload(c)
 
     maps = c.credentialInstanceMaps()
     assert len(maps) == 1

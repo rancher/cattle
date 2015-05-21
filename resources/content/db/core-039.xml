@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <changeSet author="darren (generated)" id="dump1">
+        <addColumn tableName="instance">
+            <column name="network_container_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump2">
+        <addForeignKeyConstraint baseColumnNames="network_container_id" baseTableName="instance" constraintName="fk_instance__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+    </changeSet>
+</databaseChangeLog>

@@ -1,22 +1,27 @@
 from common_fixtures import *  # NOQA
 
 
-def test_register_create(admin_client, super_client):
-    assert_required_fields(admin_client.create_register,
+@pytest.fixture(scope='module')
+def service_client(admin_user_client):
+    return create_context(admin_user_client, kind='service').user_client
+
+
+def test_register_create(client, super_client):
+    assert_required_fields(client.create_register,
                            key='abc')
 
     key = random_str()
 
-    r = admin_client.create_register(key=key)
+    r = client.create_register(key=key)
     assert r.state == 'registering'
 
-    r = admin_client.wait_success(r)
+    r = client.wait_success(r)
     assert r.state == 'active'
     assert 'key' not in r
     assert 'accessKey' not in r
     assert 'secretKey' not in r
 
-    r = find_one(admin_client.list_register, key=key)
+    r = find_one(client.list_register, key=key)
     assert r.state == 'active'
     assert r.key == key
     assert r.accessKey is not None
@@ -36,13 +41,13 @@ def test_register_create(admin_client, super_client):
     assert agent.data.registrationKey == r.key
 
 
-def test_registration_token_create(admin_client):
-    assert_required_fields(admin_client.create_registration_token)
+def test_registration_token_create(client):
+    assert_required_fields(client.create_registration_token)
 
-    t = admin_client.create_registration_token()
+    t = client.create_registration_token()
     assert t.state == 'registering'
 
-    t = admin_client.wait_success(t)
+    t = client.wait_success(t)
     assert t.state == 'active'
 
     assert 'publicValue' not in t
@@ -52,8 +57,8 @@ def test_registration_token_create(admin_client):
     # Test that tokens don't change, need three just in case we get unlucky
     # and cross the rollover boundry time
     tokens = set()
-    tokens.add(admin_client.reload(t).token)
-    tokens.add(admin_client.reload(t).token)
+    tokens.add(client.reload(t).token)
+    tokens.add(client.reload(t).token)
 
     assert len(tokens) == 2 or len(tokens) == 1
 
@@ -109,9 +114,9 @@ def test_registration_token_list(service_client, client):
     assert token.registrationUrl == parts[-1]
 
 
-def test_service_create_token(service_client, client, user_account):
+def test_service_create_token(service_client, client, context):
     # Proves the service account can create a token on behalf of another user
-    account_id = user_account.id
+    account_id = context.project.id
 
     token = service_client.create_registration_token(accountId=account_id)
     token = service_client.wait_success(token)

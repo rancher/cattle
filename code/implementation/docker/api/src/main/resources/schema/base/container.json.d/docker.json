@@ -1,5 +1,21 @@
 {
     "resourceFields": {
+        "networkMode": {
+            "type": "enum",
+            "options": [
+                "none",
+                "bridge",
+                "host",
+                "managed",
+                "container"
+            ],
+            "default": "managed",
+            "nullable": true
+        },
+        "networkContainerId": {
+            "type": "reference[container]",
+            "nullable": true
+        },
         "dockerPorts": {
             "type": "map[string]"
         },

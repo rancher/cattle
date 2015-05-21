@@ -322,6 +322,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "native_container", nullable = false, precision = 1)
 	public java.lang.Boolean getNativeContainer();
 
+	/**
+	 * Setter for <code>cattle.instance.network_container_id</code>.
+	 */
+	public void setNetworkContainerId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.network_container_id</code>.
+	 */
+	@javax.persistence.Column(name = "network_container_id", precision = 19)
+	public java.lang.Long getNetworkContainerId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

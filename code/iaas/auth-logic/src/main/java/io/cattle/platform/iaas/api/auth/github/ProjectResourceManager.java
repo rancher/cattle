@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.inject.Inject;
 
@@ -216,7 +217,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
     protected void addLinks(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
         super.addLinks(obj, schemaFactory, schema, resource);
 
-        Map<String, URL> links = resource.getLinks();
+        Map<String, URL> links = new TreeMap<>();
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
 
         for ( Schema childSchema : schemaFactory.listSchemas() ) {
@@ -229,5 +230,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
                 links.put(childSchema.getPluralName(), link);
             }
         }
+
+        resource.getLinks().putAll(links);
     }
 }

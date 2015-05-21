@@ -25,7 +25,10 @@ def disable_go_machine_service(request, super_client):
 
 def test_register_physical_host(super_client):
     uri = 'sim://{}'.format(random_str())
-    agent = super_client.create_agent(uri=uri)
+    scope = 'io.cattle.platform.process.agent.AgentActivate'
+    agent = super_client.create_agent(uri=uri, data={
+        scope: {'waitForPing': True}
+    })
 
     agent = super_client.wait_success(agent)
     assert agent.state == 'active'
@@ -58,11 +61,13 @@ def test_register_physical_host(super_client):
 def test_register_multiple_physical_host(super_client):
     scope = 'io.cattle.platform.agent.connection.simulator' \
             '.AgentConnectionSimulator'
+    scope2 = 'io.cattle.platform.process.agent.AgentActivate'
     uri = 'sim://{}'.format(random_str())
     agent = super_client.create_agent(uri=uri, data={
         scope: {
             'hosts': 2
-        }
+        },
+        scope2: {'waitForPing': True}
     })
 
     agent = super_client.wait_success(agent)
@@ -102,11 +107,13 @@ def test_register_multiple_physical_host(super_client):
 def test_add_physical_host(super_client):
     scope = 'io.cattle.platform.agent.connection.simulator' \
             '.AgentConnectionSimulator'
+    scope2 = 'io.cattle.platform.process.agent.AgentActivate'
     uri = 'sim://{}'.format(random_str())
     agent = super_client.create_agent(uri=uri, data={
         scope: {
             'addPhysicalHost': False
-        }
+        },
+        scope2: {'waitForPing': True}
     })
 
     agent = super_client.wait_success(agent)

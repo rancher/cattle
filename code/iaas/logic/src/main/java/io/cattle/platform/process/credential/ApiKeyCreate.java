@@ -8,6 +8,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
 import java.security.SecureRandom;
@@ -22,10 +23,6 @@ import com.netflix.config.DynamicStringProperty;
 @Named
 public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessPreListener {
 
-    public static final DynamicStringProperty BAD_CHARACTERS = ArchaiusUtil.getString("process.credential.create.bad.characters");
-
-    final SecureRandom random = new SecureRandom();
-
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Credential credential = (Credential) state.getResource();
@@ -38,7 +35,7 @@ public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessP
         String secretValue = credential.getSecretValue();
 
         if (publicValue == null) {
-            String[] keys = generateKeys();
+            String[] keys = ApiKeyFilter.generateKeys();
             publicValue = keys[0];
             secretValue = keys[1];
         }
@@ -54,24 +51,6 @@ public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessP
 
     protected String getCredentialType() {
         return CredentialConstants.KIND_API_KEY;
-    }
-
-    protected String[] generateKeys() {
-        byte[] accessKey = new byte[10];
-        byte[] secretKey = new byte[128];
-
-        random.nextBytes(accessKey);
-        random.nextBytes(secretKey);
-
-        String accessKeyString = Hex.encodeHexString(accessKey);
-        String secretKeyString = Base64.encodeBase64String(secretKey).replaceAll(BAD_CHARACTERS.get(), "");
-
-        if (secretKeyString.length() < 40) {
-            /* Wow, this is terribly bad luck */
-            throw new IllegalStateException("Failed to create secretKey due to not enough good characters");
-        }
-
-        return new String[] { accessKeyString.substring(0, 20).toUpperCase(), secretKeyString.substring(0, 40) };
     }
 
     @Override

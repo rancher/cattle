@@ -2,10 +2,7 @@ from common_fixtures import *  # NOQA
 import time
 
 
-# sim_context is included to ensure that the simulator context creates
-# the first agent and thus the first external simulator pool
-def test_agent_create(super_client, sim_context):
-
+def test_agent_create(super_client):
     uri = "sim://" + str(time.time())
 
     agent = super_client.create_agent(uri=uri)
@@ -14,7 +11,7 @@ def test_agent_create(super_client, sim_context):
     assert agent.uri == uri
     assert agent.transitioning == "yes"
 
-    agent = wait_success(super_client, agent)
+    agent = super_client.wait_success(agent)
 
     assert agent.transitioning == "no"
     assert agent.state == "active"

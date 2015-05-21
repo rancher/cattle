@@ -18,6 +18,8 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
+import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 import java.util.List;
 
@@ -76,11 +78,16 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 
     @Override
     public List<? extends Network> getNetworksForAccount(long accountId, String kind) {
+        Condition kindCond = DSL.trueCondition();
+        if (kind != null) {
+            kindCond = NETWORK.KIND.equalIgnoreCase(kind);
+        }
+
         return create()
                 .select(NETWORK.fields())
                 .from(NETWORK)
                 .where(NETWORK.ACCOUNT_ID.eq(accountId)
-                        .and(NETWORK.KIND.equalIgnoreCase(kind))
+                        .and(kindCond)
                         .and(NETWORK.REMOVED.isNull()))
                 .fetchInto(NetworkRecord.class);
     }
@@ -107,6 +114,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 
         }
 
+        // TODO: remove
         // pass system network if account doesn't own any
         List<? extends Network> systemNetworks = getNetworksForAccount(accountDao.getSystemAccount()
                 .getId(), networkKind);

@@ -16,8 +16,7 @@ public class AccountConstants {
     public static final String OPTION_CREATE_APIKEY = "createApiKey";
     public static final String OPTION_CREATE_APIKEY_KIND = "createApiKeyKind";
 
-    public static final String FIELD_DEFAULT_CREDENTIAL_IDS = "defaultCredentialIds";
-    public static final String FIELD_DEFAULT_NETWORK_IDS = "defaultNetworkIds";
+    public static final String FIELD_DEFAULT_NETWORK_ID = "defaultNetworkId";
 
     public static final String ACCOUNT_DEACTIVATE = "account.deactivate";
     public static final String ACCOUNT_REMOVE = "account.remove";

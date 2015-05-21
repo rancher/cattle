@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = -1169353381;
+	private static final long serialVersionUID = 78606779;
 
 	/**
 	 * The singleton instance of <code>cattle.instance</code>
@@ -167,6 +167,11 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Boolean> NATIVE_CONTAINER = createField("native_container", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
+	 * The column <code>cattle.instance.network_container_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Long> NETWORK_CONTAINER_ID = createField("network_container_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.instance</code> table reference
 	 */
 	public InstanceTable() {
@@ -217,7 +222,7 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_INSTANCE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__OFFERING_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__ZONE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__AGENT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_INSTANCE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__OFFERING_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__ZONE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__AGENT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__INSTANCE_ID);
 	}
 
 	/**

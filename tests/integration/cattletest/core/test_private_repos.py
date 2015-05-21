@@ -103,11 +103,9 @@ def _crud_registry_credential(client):
     pass
 
 
-def test_crud_registry(admin_client, client):
-    _crud_registry(admin_client)
+def test_crud_registry(client):
     _crud_registry(client)
 
 
-def test_crud_registry_credential(admin_client, client):
-    _crud_registry_credential(admin_client)
+def test_crud_registry_credential(client):
     _crud_registry_credential(client)

@@ -2,6 +2,11 @@ from common_fixtures import *  # NOQA
 from gdapi import ApiError
 
 
+@pytest.fixture(scope='module')
+def user_client(context):
+    return context.user_client
+
+
 def _user_preference(client, name=None):
     if name is None:
         name = random_str()

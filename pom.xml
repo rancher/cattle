@@ -103,7 +103,6 @@
                 <module>code/implementation/agent-connection-event</module>
                 <module>code/implementation/agent-connection-ssh</module>
                 <module>code/implementation/agent-instance-impl</module>
-                <module>code/implementation/docker/allocator</module>
                 <module>code/implementation/docker/api</module>
                 <module>code/implementation/docker/common</module>
                 <module>code/implementation/docker/compute</module>
@@ -117,69 +116,17 @@
                 <module>code/implementation/host-api</module>
                 <module>code/implementation/host-only-network</module>
                 <module>code/implementation/host-stats</module>
-                <module>code/implementation/libvirt/allocator</module>
-                <module>code/implementation/libvirt/default-images</module>
                 <module>code/implementation/register</module>
                 <module>code/implementation/sample-setup</module>
                 <module>code/implementation/settings-api</module>
                 <module>code/implementation/simulator/agent-connection</module>
-                <module>code/implementation/simulator/allocator</module>
                 <module>code/implementation/simulator/storage</module>
                 <module>code/implementation/zookeeper</module>
                 <module>code/packaging/app</module>
                 <module>code/packaging/app-parent</module>
+                <module>code/packaging/app-intellij</module>
                 <module>code/packaging/dev</module>
                 <module>code/packaging/meta</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>intellij</id>
-            <modules>
-                <module>code/packaging/app-intellij</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>gdapi-java-server</id>
-            <activation>
-                <file>
-                    <exists>deps/gdapi-java-server/pom.xml</exists>
-                </file>
-            </activation>
-            <modules>
-                <module>deps/gdapi-java-server</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>jooq</id>
-            <activation>
-                <file>
-                    <exists>deps/jooq/pom.xml</exists>
-                </file>
-            </activation>
-            <modules>
-                <module>deps/jooq</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>liquibase</id>
-            <activation>
-                <file>
-                    <exists>deps/liquibase/pom.xml</exists>
-                </file>
-            </activation>
-            <modules>
-                <module>deps/liquibase</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>jedis</id>
-            <activation>
-                <file>
-                    <exists>deps/jedis/pom.xml</exists>
-                </file>
-            </activation>
-            <modules>
-                <module>deps/jedis</module>
             </modules>
         </profile>
         <profile>

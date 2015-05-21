@@ -10,52 +10,60 @@ import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.apache.commons.lang3.ObjectUtils;
 
 import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicIntProperty;
 
 public class Idempotent {
 
-    private static final String DISABLE = "_disable";
-    private static final String IN_EXCEPTION = "_inexception";
     private static final int LOOP_MAX = 1000;
 
-    private static final DynamicBooleanProperty RUN_MULTIPLE_TIMES = ArchaiusUtil.getBoolean("idempotent.reexecute");
-    private static final DynamicBooleanProperty ABORT_ON_CHANGE = ArchaiusUtil.getBoolean("idempotent.abort.on.change");
+    private static final DynamicBooleanProperty CHECKS = ArchaiusUtil.getBoolean("idempotent.checks");
+    private static final DynamicIntProperty LOOP_COUNT = ArchaiusUtil.getInt("idempotent.retry.count");
 
-    private static final ThreadLocal<Set<String>> IDEMPOTENT = new ManagedThreadLocal<Set<String>>();
+    private static final ThreadLocal<Set<String>> STACK_TRACES = new ManagedThreadLocal<Set<String>>() {
+        @Override
+        protected Set<String> initialValue() {
+            return new HashSet<>();
+        }
+    };
+    private static final ThreadLocal<Boolean> DISABLED = new ManagedThreadLocal<Boolean>();
+    private static final ThreadLocal<Long> LEVEL = new ManagedThreadLocal<Long>() {
+        @Override
+        protected Long initialValue() {
+            return new Long(0);
+        }
+    };
 
     public static <T> T execute(IdempotentExecution<T> execution) {
-        Set<String> traces = null;
+        if (!CHECKS.get() && Boolean.TRUE.equals(DISABLED.get())) {
+            return execution.execute();
+        }
 
+        long level = LEVEL.get();
         try {
-            if (ABORT_ON_CHANGE.get()) {
-                traces = new HashSet<String>();
-
-                if (IDEMPOTENT.get() == null) {
-                    IDEMPOTENT.set(traces);
-                }
-            }
-
+            LEVEL.set(level + 1);
             T result = null;
 
-            outer: for (int i = 0; i < 2; i++) {
-                for (int j = 0; j < LOOP_MAX; j++) {
+            int max = level > 0 ? 1 : LOOP_COUNT.get();
+            for (int i = 0; i < max; i++) {
+                for (int j = 0 ; j < LOOP_MAX; j++) {
                     try {
                         T resultAgain = execution.execute();
                         if (i == 0) {
                             result = resultAgain;
                         }
-                        if (isDisabled(traces) || isNested(traces) || !RUN_MULTIPLE_TIMES.get()) {
-                            break outer;
+
+                        if (Boolean.TRUE.equals(DISABLED.get())) {
+                            return resultAgain;
                         }
+
                         if (!ObjectUtils.equals(result, resultAgain)) {
                             throw new OperationNotIdemponent("Result [" + result + "] does not match second result [" + resultAgain + "]");
                         }
+                        i+=j;
                         break;
                     } catch (IdempotentRetryException e) {
-                        if (IDEMPOTENT.get() != traces)
-                            throw e;
-                        IDEMPOTENT.get().remove(IN_EXCEPTION);
                         if (j == LOOP_MAX - 1) {
-                            throw new IllegalStateException("Executed [" + execution + "] " + LOOP_MAX + " times and never completed traces [" + traces + "]");
+                            throw new IllegalStateException("Executed [" + execution + "] " + LOOP_MAX + " times and never completed");
                         }
                     }
                 }
@@ -63,59 +71,28 @@ public class Idempotent {
 
             return result;
         } finally {
-            if (traces != null && !isNested(traces)) {
-                IDEMPOTENT.remove();
-            }
-        }
-    }
-
-    protected static boolean isNested(Set<String> traces) {
-        return IDEMPOTENT.get() != traces;
-    }
-
-    public static <T> T change(IdempotentExecution<T> execution) {
-        Set<String> traces = IDEMPOTENT.get();
-        if (traces != null && !isDisabled(traces)) {
-            IdempotentRetryException e = new IdempotentRetryException();
-            String trace = ExceptionUtils.toString(e);
-            if (!traces.contains(trace)) {
-                traces.add(trace);
-                if (!IDEMPOTENT.get().contains(IN_EXCEPTION)) {
-                    IDEMPOTENT.get().add(IN_EXCEPTION);
-                    throw e;
-                }
-            }
-        }
-
-        return execution.execute();
-    }
-
-    protected static boolean isDisabled(Set<String> traces) {
-        return traces == null || traces.contains(DISABLE);
-    }
-
-    public static void disable(Runnable runnable) {
-        Set<String> traces = IDEMPOTENT.get();
-        boolean alreadyDisabled = traces != null && traces.contains(DISABLE);
-
-        if (!alreadyDisabled && traces != null) {
-            traces.add(DISABLE);
-        }
-
-        try {
-            runnable.run();
-        } finally {
-            if (!alreadyDisabled && traces != null) {
-                traces.remove(DISABLE);
-            }
+            LEVEL.set(level);
         }
     }
 
     public static void tempDisable() {
-        Set<String> traces = IDEMPOTENT.get();
-        if (traces != null) {
-            traces.add(DISABLE);
+        DISABLED.set(true);
+    }
+
+    public static <T> T change(IdempotentExecution<T> execution) {
+        if (!CHECKS.get() || LEVEL.get() < 1 || Boolean.TRUE.equals(DISABLED.get())) {
+            return execution.execute();
         }
+
+        Set<String> traces = STACK_TRACES.get();
+        IdempotentRetryException e = new IdempotentRetryException();
+        String trace = ExceptionUtils.toString(e);
+        if (!traces.contains(trace)) {
+            traces.add(trace);
+            throw e;
+        }
+
+        return execution.execute();
     }
 
 }

@@ -85,14 +85,9 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @Override
     public <T> T reload(T obj) {
-        final UpdatableRecord<?> record = JooqUtils.getRecordObject(obj);
+        UpdatableRecord<?> record = JooqUtils.getRecordObject(obj);
         record.attach(getConfiguration());
-        Idempotent.change(new IdempotentExecutionNoReturn() {
-            @Override
-            protected void executeNoResult() {
-                record.refresh();
-            }
-        });
+        record.refresh();
         return obj;
     }
 

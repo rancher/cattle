@@ -2,24 +2,24 @@ from common_fixtures import *  # NOQA
 from cattle import ApiError
 
 
-def test_lb_config_create_wo_listener(admin_client):
-    config = admin_client.create_loadBalancerConfig(name=random_str())
-    config = admin_client.wait_success(config)
+def test_lb_config_create_wo_listener(client):
+    config = client.create_loadBalancerConfig(name=random_str())
+    config = client.wait_success(config)
 
     assert config.state == 'active'
 
 
-def test_lb_config_add_listener(admin_client, super_client):
-    config, listener = _create_config_and_listener(admin_client)
+def test_lb_config_add_listener(client):
+    config, listener = _create_config_and_listener(client)
 
     # add listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
 
-    validate_add_listener(config, listener, super_client)
+    validate_add_listener(config, listener, client)
 
 
-def test_create_config_add_invalid_listener(admin_client):
-    config, listener = _create_config_and_listener(admin_client)
+def test_create_config_add_invalid_listener(client):
+    config, listener = _create_config_and_listener(client)
 
     with pytest.raises(ApiError) as e:
         config.addlistener(loadBalancerListenerId='dummy')
@@ -29,8 +29,8 @@ def test_create_config_add_invalid_listener(admin_client):
     assert e.value.error.fieldName == 'loadBalancerListenerId'
 
 
-def test_lb_config_add_listener_wo_listenerId(admin_client):
-    config, listener = _create_config_and_listener(admin_client)
+def test_lb_config_add_listener_wo_listenerId(client):
+    config, listener = _create_config_and_listener(client)
 
     # add listener to the config without specifying the id
     with pytest.raises(ApiError) as e:
@@ -41,24 +41,24 @@ def test_lb_config_add_listener_wo_listenerId(admin_client):
     assert e.value.error.fieldName == 'loadBalancerListenerId'
 
 
-def test_lb_config_remove_listener(admin_client, super_client):
-    config, listener = _create_config_and_listener(admin_client)
+def test_lb_config_remove_listener(client):
+    config, listener = _create_config_and_listener(client)
 
     # add listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
 
     assert config.state == 'active'
-    validate_add_listener(config, listener, super_client)
+    validate_add_listener(config, listener, client)
 
     # remove listener from the config
     config = config. \
         removelistener(loadBalancerListenerId=listener.id)
 
-    validate_remove_listener(config, listener, super_client)
+    validate_remove_listener(config, listener, client)
 
 
-def test_lb_config_delete_listener_wo_listenerId(admin_client):
-    config, listener = _create_config_and_listener(admin_client)
+def test_lb_config_delete_listener_wo_listenerId(client):
+    config, listener = _create_config_and_listener(client)
 
     # remove listener to the config without specifying the id
     with pytest.raises(ApiError) as e:
@@ -69,192 +69,190 @@ def test_lb_config_delete_listener_wo_listenerId(admin_client):
     assert e.value.error.fieldName == 'loadBalancerListenerId'
 
 
-def test_lb_config_update(admin_client):
-    config = admin_client.create_loadBalancerConfig(name='config1')
-    config = admin_client.wait_success(config)
+def test_lb_config_update(client):
+    config = client.create_loadBalancerConfig(name='config1')
+    config = client.wait_success(config)
 
-    config = admin_client.update(config, name='newName')
+    config = client.update(config, name='newName')
     assert config.name == 'newName'
 
 
-def test_lb_config_remove(admin_client):
-    config = admin_client.create_loadBalancerConfig(name=random_str())
-    config = admin_client.wait_success(config)
+def test_lb_config_remove(client):
+    config = client.create_loadBalancerConfig(name=random_str())
+    config = client.wait_success(config)
 
-    config = admin_client.wait_success(admin_client.delete(config))
+    config = client.wait_success(client.delete(config))
 
     assert config.state == 'removed'
 
 
-def validate_add_listener(config, listener, super_client):
-    lb_config_maps = super_client. \
+def validate_add_listener(config, listener, client):
+    lb_config_maps = client. \
         list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
                                            loadBalancerConfigId=config.id)
     assert len(lb_config_maps) == 1
     config_map = lb_config_maps[0]
     wait_for_condition(
-        super_client, config_map, _resource_is_active,
+        client, config_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
 
 
-def validate_remove_listener(config, listener, super_client):
-    lb_config_maps = super_client. \
+def validate_remove_listener(config, listener, client):
+    lb_config_maps = client. \
         list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
                                            loadBalancerConfigId=config.id)
     assert len(lb_config_maps) == 1
     config_map = lb_config_maps[0]
     wait_for_condition(
-        super_client, config_map, _resource_is_removed,
+        client, config_map, _resource_is_removed,
         lambda x: 'State is: ' + x.state)
 
 
-def test_lb_config_listener_remove(admin_client, super_client):
+def test_lb_config_listener_remove(client):
     # create config and listener
-    config, listener = _create_config_and_listener(admin_client)
+    config, listener = _create_config_and_listener(client)
 
     # add a listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    validate_add_listener(config, listener, super_client)
+    validate_add_listener(config, listener, client)
 
     # delete the listener
-    listener = admin_client.wait_success(admin_client.delete(listener))
+    listener = client.wait_success(client.delete(listener))
     assert listener.state == 'removed'
 
     # verify that the mapping is gone
-    validate_remove_listener(config, listener, super_client)
+    validate_remove_listener(config, listener, client)
 
 
-def create_two_configs_w_listener(admin_client, listener, super_client):
-    config1 = admin_client. \
+def create_two_configs_w_listener(client, listener):
+    config1 = client. \
         create_loadBalancerConfig(name=random_str())
-    config1 = admin_client.wait_success(config1)
+    config1 = client.wait_success(config1)
     config1 = config1. \
         addlistener(loadBalancerListenerId=listener.id)
-    validate_add_listener(config1, listener, super_client)
+    validate_add_listener(config1, listener, client)
 
-    config2 = admin_client. \
+    config2 = client. \
         create_loadBalancerConfig(name=random_str())
-    config2 = admin_client.wait_success(config2)
+    config2 = client.wait_success(config2)
     config2 = config2. \
         addlistener(loadBalancerListenerId=listener.id)
-    validate_add_listener(config2, listener, super_client)
+    validate_add_listener(config2, listener, client)
 
     return config1, config2
 
 
-def test_lb_listener_remove(admin_client, super_client):
+def test_lb_listener_remove(client):
     # create a listener
-    listener = _create_valid_listener(admin_client)
+    listener = _create_valid_listener(client)
 
     # create 2 configs, add listener to both of them
-    config1, config2 = create_two_configs_w_listener(admin_client,
-                                                     listener,
-                                                     super_client)
+    config1, config2 = create_two_configs_w_listener(client,
+                                                     listener)
 
     # delete the listener
-    listener = admin_client.wait_success(admin_client.delete(listener))
+    listener = client.wait_success(client.delete(listener))
     assert listener.state == 'removed'
 
     # verify that the mapping is gone for both configs
-    validate_remove_listener(config1, listener, super_client)
-    validate_remove_listener(config2, listener, super_client)
+    validate_remove_listener(config1, listener, client)
+    validate_remove_listener(config2, listener, client)
 
 
-def test_lb_config_remove_w_listeners(admin_client, super_client):
+def test_lb_config_remove_w_listeners(client):
     # create a listener
-    listener = _create_valid_listener(admin_client)
+    listener = _create_valid_listener(client)
 
     # create 2 configs, add listener to both of them
-    config1, config2 = create_two_configs_w_listener(admin_client,
-                                                     listener,
-                                                     super_client)
+    config1, config2 = create_two_configs_w_listener(client,
+                                                     listener)
 
     # delete the config
-    config1 = admin_client.wait_success(admin_client.delete(config1))
+    config1 = client.wait_success(client.delete(config1))
     assert config1.state == 'removed'
 
     # verify that the mapping is gone for config 1 and exists for config2
-    validate_remove_listener(config1, listener, super_client)
-    validate_add_listener(config2, listener, super_client)
+    validate_remove_listener(config1, listener, client)
+    validate_add_listener(config2, listener, client)
 
 
-def test_lb_config_remove_when_assigned(admin_client):
-    config = admin_client.create_loadBalancerConfig(name=random_str())
-    config = admin_client.wait_success(config)
+def test_lb_config_remove_when_assigned(client):
+    config = client.create_loadBalancerConfig(name=random_str())
+    config = client.wait_success(config)
 
-    lb = admin_client.create_loadBalancer(name='lb',
-                                          loadBalancerConfigId=config.id)
-    admin_client.wait_success(lb)
+    lb = client.create_loadBalancer(name='lb',
+                                    loadBalancerConfigId=config.id)
+    client.wait_success(lb)
 
     with pytest.raises(ApiError) as e:
-        admin_client.wait_success(admin_client.delete(config))
+        client.wait_success(client.delete(config))
 
     assert e.value.error.status == 409
     assert e.value.error.code == 'LoadBalancerConfigIsInUse'
 
 
-def test_lb_config_remove_when_used_by_removed_lb(admin_client):
-    config = admin_client.create_loadBalancerConfig(name=random_str())
-    config = admin_client.wait_success(config)
+def test_lb_config_remove_when_used_by_removed_lb(client):
+    config = client.create_loadBalancerConfig(name=random_str())
+    config = client.wait_success(config)
 
-    lb = admin_client.create_loadBalancer(name=random_str(),
-                                          loadBalancerConfigId=config.id)
-    lb = admin_client.wait_success(lb)
+    lb = client.create_loadBalancer(name=random_str(),
+                                    loadBalancerConfigId=config.id)
+    lb = client.wait_success(lb)
 
-    admin_client.wait_success(admin_client.delete(lb))
+    client.wait_success(client.delete(lb))
 
-    config = admin_client.wait_success(admin_client.delete(config))
+    config = client.wait_success(client.delete(config))
 
     assert config.state == "removed"
 
 
-def test_lb_config_set_listeners(admin_client, super_client):
-    config, listener1 = _create_config_and_listener(admin_client)
-    listener2 = _create_valid_listener(admin_client)
+def test_lb_config_set_listeners(client):
+    config, listener1 = _create_config_and_listener(client)
+    listener2 = _create_valid_listener(client)
 
     # set 2 listeners
     config = config.setlisteners(
         loadBalancerListenerIds=[listener1.id, listener2.id])
 
-    validate_add_listener(config, listener1, super_client)
-    validate_add_listener(config, listener2, super_client)
+    validate_add_listener(config, listener1, client)
+    validate_add_listener(config, listener2, client)
 
     # # set 1 listener
     config = config.setlisteners(loadBalancerListenerIds=[listener1.id])
 
-    validate_remove_listener(config, listener2, super_client)
-    validate_add_listener(config, listener1, super_client)
+    validate_remove_listener(config, listener2, client)
+    validate_add_listener(config, listener1, client)
 
     # set 0 listener
     config = config.setlisteners(loadBalancerListenerIds=[])
-    validate_remove_listener(config, listener1, super_client)
+    validate_remove_listener(config, listener1, client)
 
 
-def _create_valid_listener(admin_client):
-    listener = admin_client.create_loadBalancerListener(name=random_str(),
-                                                        sourcePort='8080',
-                                                        targetPort='80',
-                                                        sourceProtocol='http',
-                                                        targetProtocol='tcp')
-    listener = admin_client.wait_success(listener)
+def _create_valid_listener(client):
+    listener = client.create_loadBalancerListener(name=random_str(),
+                                                  sourcePort='8080',
+                                                  targetPort='80',
+                                                  sourceProtocol='http',
+                                                  targetProtocol='tcp')
+    listener = client.wait_success(listener)
     return listener
 
 
-def _create_config_and_listener(admin_client):
+def _create_config_and_listener(client):
     # create listener
-    listener = _create_valid_listener(admin_client)
+    listener = _create_valid_listener(client)
     # create config
-    config = admin_client.create_loadBalancerConfig(name=random_str())
-    config = admin_client.wait_success(config)
+    config = client.create_loadBalancerConfig(name=random_str())
+    config = client.wait_success(config)
     return config, listener
 
 
-def test_lb_config_add_listener_twice(admin_client, super_client):
-    config, listener = _create_config_and_listener(admin_client)
+def test_lb_config_add_listener_twice(client):
+    config, listener = _create_config_and_listener(client)
 
     # add listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    validate_add_listener(config, listener, super_client)
+    validate_add_listener(config, listener, client)
 
     with pytest.raises(ApiError) as e:
         config.addlistener(loadBalancerListenerId=listener.id)
@@ -264,8 +262,8 @@ def test_lb_config_add_listener_twice(admin_client, super_client):
     assert e.value.error.fieldName == 'loadBalancerListenerId'
 
 
-def test_lb_config_remove_invalid_listener(admin_client, super_client):
-    config, listener = _create_config_and_listener(admin_client)
+def test_lb_config_remove_invalid_listener(client):
+    config, listener = _create_config_and_listener(client)
 
     # remove non-existing listener
     with pytest.raises(ApiError) as e:
@@ -277,15 +275,15 @@ def test_lb_config_remove_invalid_listener(admin_client, super_client):
     assert e.value.error.fieldName == 'loadBalancerListenerId'
 
 
-def test_lb_config_add_conflicting_listener(admin_client, super_client):
-    config, listener = _create_config_and_listener(admin_client)
+def test_lb_config_add_conflicting_listener(client):
+    config, listener = _create_config_and_listener(client)
 
     # add listener to the config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    validate_add_listener(config, listener, super_client)
+    validate_add_listener(config, listener, client)
 
     # create duplicated listener, and try to add it to the config
-    listener = _create_valid_listener(admin_client)
+    listener = _create_valid_listener(client)
     with pytest.raises(ApiError) as e:
         config.addlistener(loadBalancerListenerId=listener.id)
     assert e.value.error.status == 422
@@ -293,13 +291,13 @@ def test_lb_config_add_conflicting_listener(admin_client, super_client):
     assert e.value.error.fieldName == 'sourcePort'
 
 
-def test_lb_config_create_w_healthCheck(admin_client):
+def test_lb_config_create_w_healthCheck(client):
     health_check = {"name": "check1", "responseTimeout": 3,
                     "interval": 4, "healthyThreshold": 5,
                     "unhealthyThreshold": 6, "requestLine": "index.html"}
-    config = admin_client.create_loadBalancerConfig(name=random_str(),
-                                                    healthCheck=health_check)
-    config = admin_client.wait_success(config)
+    config = client.create_loadBalancerConfig(name=random_str(),
+                                              healthCheck=health_check)
+    config = client.wait_success(config)
 
     assert config.state == 'active'
     assert config.healthCheck.name == "check1"
@@ -310,48 +308,48 @@ def test_lb_config_create_w_healthCheck(admin_client):
     assert config.healthCheck.requestLine == "index.html"
 
 
-def test_lb_config_create_disable_health_check(admin_client):
+def test_lb_config_create_disable_health_check(client):
     health_check = {"name": "policy1", "responseTimeout": 3,
                     "interval": 4, "healthyThreshold": 5,
                     "unhealthyThreshold": 6, "requestLine": "index.html"}
-    config = admin_client.create_loadBalancerConfig(name=random_str(),
-                                                    healthCheck=health_check)
-    config = admin_client.wait_success(config)
+    config = client.create_loadBalancerConfig(name=random_str(),
+                                              healthCheck=health_check)
+    config = client.wait_success(config)
     assert config.healthCheck is not None
 
-    config = admin_client.update(config, healthCheck=None)
-    config = admin_client.wait_success(config)
+    config = client.update(config, healthCheck=None)
+    config = client.wait_success(config)
     assert config.healthCheck is None
 
 
-def test_lb_config_create_update_health_check(admin_client):
+def test_lb_config_create_update_health_check(client):
     health_check = {"name": "check1", "responseTimeout": 3,
                     "interval": 4, "healthyThreshold": 5,
                     "unhealthyThreshold": 6, "requestLine": "index.html"}
-    config = admin_client.create_loadBalancerConfig(name=random_str(),
-                                                    healthCheck=health_check)
-    config = admin_client.wait_success(config)
+    config = client.create_loadBalancerConfig(name=random_str(),
+                                              healthCheck=health_check)
+    config = client.wait_success(config)
     assert config.healthCheck.name == "check1"
 
     health_check = {"name": "check2", "responseTimeout": 3,
                     "interval": 4, "healthyThreshold": 5,
                     "unhealthyThreshold": 6, "requestLine": "index.html"}
 
-    config = admin_client.update(config, healthCheck=health_check)
-    config = admin_client.wait_success(config)
+    config = client.update(config, healthCheck=health_check)
+    config = client.wait_success(config)
     assert config.healthCheck.name == "check2"
 
 
-def test_lb_config_create_w_app_policy(admin_client):
+def test_lb_config_create_w_app_policy(client):
     app_policy = {"name": "policy1", "cookie": "cookie1",
                   "maxLength": 4, "prefix": "true",
                   "requestLearn": "false", "timeout": 10,
                   "mode": "query_string"}
 
-    config = admin_client.\
+    config = client.\
         create_loadBalancerConfig(name=random_str(),
                                   appCookieStickinessPolicy=app_policy)
-    config = admin_client.wait_success(config)
+    config = client.wait_success(config)
 
     assert config.state == 'active'
     assert config.appCookieStickinessPolicy.name == "policy1"
@@ -363,23 +361,23 @@ def test_lb_config_create_w_app_policy(admin_client):
     assert config.appCookieStickinessPolicy.mode == "query_string"
 
     # disable policy
-    config = admin_client.\
+    config = client.\
         create_loadBalancerConfig(name=random_str(),
                                   appCookieStickinessPolicy=None)
-    config = admin_client.wait_success(config)
+    config = client.wait_success(config)
     assert config.appCookieStickinessPolicy is None
 
 
-def test_lb_config_create_w_lb_olicy(admin_client):
+def test_lb_config_create_w_lb_olicy(client):
     lb_policy = {"name": "policy2", "cookie": "cookie1",
                  "domain": ".test.com", "indirect": "true",
                  "nocache": "true", "postonly": "true",
                  "mode": "insert"}
 
-    config = admin_client.\
+    config = client.\
         create_loadBalancerConfig(name=random_str(),
                                   lbCookieStickinessPolicy=lb_policy)
-    config = admin_client.wait_success(config)
+    config = client.wait_success(config)
 
     assert config.state == 'active'
     assert config.lbCookieStickinessPolicy.name == "policy2"
@@ -391,10 +389,10 @@ def test_lb_config_create_w_lb_olicy(admin_client):
     assert config.lbCookieStickinessPolicy.mode == "insert"
 
     # disable policy
-    config = admin_client.\
+    config = client.\
         create_loadBalancerConfig(name=random_str(),
                                   lbCookieStickinessPolicy=None)
-    config = admin_client.wait_success(config)
+    config = client.wait_success(config)
     assert config.lbCookieStickinessPolicy is None
 
 

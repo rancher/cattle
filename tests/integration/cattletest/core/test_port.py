@@ -1,16 +1,13 @@
 from common_fixtures import *  # NOQA
 
 
-def test_container_port_create_start(client, admin_user_client,
-                                     sim_context, network):
-    image_uuid = sim_context['imageUuid']
-    host = sim_context['host']
-    host_ip = sim_context['hostIp'].address
+def test_container_port_create_start(client, super_client, context):
+    image_uuid = context.image_uuid
+    host = context.host
+    host_ip = context.host_ip.address
     assert host_ip is not None
 
     c = client.create_container(imageUuid=image_uuid,
-                                networkIds=[network.id],
-                                requestedHostId=host.id,
                                 startOnCreate=False,
                                 ports=[
                                     80,
@@ -22,7 +19,7 @@ def test_container_port_create_start(client, admin_user_client,
 
         assert c.state == 'stopped'
 
-        c_admin = client.update(c, requestedHostId=host.id)
+        c_admin = super_client.update(c, requestedHostId=host.id)
         assert c_admin.requestedHostId == host.id
 
         ports = c.ports()
@@ -53,7 +50,7 @@ def test_container_port_create_start(client, admin_user_client,
         assert count == 3
 
         c = client.wait_success(c.start())
-        assert admin_user_client.reload(c).hosts()[0].id == host.id
+        assert super_client.reload(c).hosts()[0].id == host.id
 
         for port in c.ports():
             assert port.state == 'active'
@@ -66,14 +63,12 @@ def test_container_port_create_start(client, admin_user_client,
             assert port.id not in [x.id for x in public_ip.privatePorts()]
             assert port.id not in [x.id for x in private_ip.publicPorts()]
     finally:
-        if c is not None:
-            client.wait_success(client.delete(c))
+        context.delete(c)
 
 
-def test_container_port_start(client, sim_context, network):
-    image_uuid = sim_context['imageUuid']
+def test_container_port_start(client, context):
+    image_uuid = context.image_uuid
     c = client.create_container(imageUuid=image_uuid,
-                                networkIds=[network.id],
                                 ports=[
                                     80,
                                     '8081:81',
@@ -114,22 +109,19 @@ def test_container_port_start(client, sim_context, network):
             client.wait_success(client.delete(c))
 
 
-def test_container_port_stop(admin_client, sim_context, network):
-    host = sim_context['host']
-    image_uuid = sim_context['imageUuid']
-    c = admin_client.create_container(imageUuid=image_uuid,
-                                      requestedHostId=host.id,
-                                      networkIds=[network.id],
-                                      ports=[
-                                          80,
-                                          '8081:81',
-                                          '8082:82/udp'])
+def test_container_port_stop(client, context):
+    image_uuid = context.image_uuid
+    c = client.create_container(imageUuid=image_uuid,
+                                ports=[
+                                    80,
+                                    '8081:81',
+                                    '8082:82/udp'])
     try:
         assert c.state == 'creating'
-        c = admin_client.wait_success(c)
+        c = client.wait_success(c)
         assert c.state == 'running'
 
-        c = admin_client.wait_success(c.stop())
+        c = client.wait_success(c.stop())
         assert c.state == 'stopped'
 
         ports = c.ports()
@@ -151,29 +143,27 @@ def test_container_port_stop(admin_client, sim_context, network):
 
         assert count == 3
     finally:
-        if c is not None:
-            admin_client.wait_success(admin_client.delete(c))
+        context.delete(c)
 
 
-def test_container_port_purge(admin_client, sim_context, network):
-    image_uuid = sim_context['imageUuid']
-    c = admin_client.create_container(imageUuid=image_uuid,
-                                      networkIds=[network.id],
-                                      ports=[
-                                          80,
-                                          '8081:81',
-                                          '8082:82/udp'])
+def test_container_port_purge(client, context):
+    image_uuid = context.image_uuid
+    c = client.create_container(imageUuid=image_uuid,
+                                ports=[
+                                    80,
+                                    '8081:81',
+                                    '8082:82/udp'])
 
     assert c.state == 'creating'
-    c = admin_client.wait_success(c)
+    c = client.wait_success(c)
     assert c.state == 'running'
 
-    c = admin_client.wait_success(c.stop(remove=True))
+    c = client.wait_success(c.stop(remove=True))
     assert c.state == 'removed'
 
     assert len(c.ports()) == 3
 
-    c = admin_client.wait_success(c.purge())
+    c = client.wait_success(c.purge())
     assert c.state == 'purged'
 
     count = 0
@@ -194,19 +184,17 @@ def test_container_port_purge(admin_client, sim_context, network):
             assert port.publicPort == 8082
 
 
-def test_port_validation(client, sim_context, network):
+def test_port_validation(client, context):
     try:
-        client.create_container(imageUuid=sim_context['imageUuid'],
+        client.create_container(imageUuid=context.image_uuid,
                                 ports=['a'])
         assert False
     except cattle.ApiError as e:
         assert e.error.code == 'PortWrongFormat'
 
 
-def test_ports_service(super_client, admin_client, sim_context, test_network):
-    c = create_sim_container(admin_client, sim_context,
-                             ports=['80'],
-                             networkIds=[test_network.id])
+def test_ports_service(super_client, client, context):
+    c = context.create_container(ports=['80'])
 
     try:
         agent = super_client.reload(c).hosts()[0].agent()
@@ -229,15 +217,14 @@ def test_ports_service(super_client, admin_client, sim_context, test_network):
 
         assert port.publicPort is None
 
-        port = admin_client.update(port, publicPort=12345)
+        port = client.update(port, publicPort=12345)
         assert port.state == 'updating-active'
         assert port.publicPort == 12345
 
-        port = admin_client.wait_success(port)
+        port = client.wait_success(port)
         assert port.state == 'active'
 
         new_item = super_client.reload(item)
         assert new_item.requestedVersion > item.requestedVersion
     finally:
-        if c is not None:
-            super_client.wait_success(super_client.delete(c))
+        context.delete(c)

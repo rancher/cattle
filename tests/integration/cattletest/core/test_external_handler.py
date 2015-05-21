@@ -25,11 +25,11 @@ def _get_extension(admin_client, extension_point_name, impl_name,
     return None
 
 
-def _disable_test_handlers(admin_client):
+def _disable_test_handlers(client):
     name = TEST_HANDLER_PREFIX + '%'
-    for h in admin_client.list_external_handler(state='active',
+    for h in client.list_external_handler(state='active',
                                                 name_like=name):
-        wait_success(admin_client, h.deactivate())
+        client.wait_success(h.deactivate())
 
 
 def test_external_handler(admin_user_client):
@@ -42,7 +42,7 @@ def test_external_handler(admin_user_client):
     assert h.get('processConfigs') is None
     assert h.data.fields.processConfigs == configs
 
-    h = wait_success(admin_user_client, h)
+    h = admin_user_client.wait_success(h)
 
     assert h.state == 'active'
     assert h.data.fields.processConfigs is None
@@ -66,7 +66,7 @@ def test_defaults(admin_user_client):
     configs = [{'name': 'instance.start'}]
     h = admin_user_client.create_external_handler(name=name,
                                                   processConfigs=configs)
-    h = wait_success(admin_user_client, h)
+    h = admin_user_client.wait_success(h)
     assert h.state == 'active'
 
     ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
@@ -88,7 +88,7 @@ def test_properties(admin_user_client):
                                                   timeoutMillis=2000,
                                                   retries=4,
                                                   priority=1234)
-    h = wait_success(admin_user_client, h)
+    h = admin_user_client.wait_success(h)
     assert h.state == 'active'
 
     ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
@@ -110,7 +110,7 @@ def test_pre_handler(admin_user_client):
                                                   timeoutMillis=2000,
                                                   retries=4,
                                                   priority=1234)
-    h = wait_success(admin_user_client, h)
+    h = admin_user_client.wait_success(h)
     assert h.state == 'active'
 
     ep = _get_extension(admin_user_client,
@@ -129,7 +129,7 @@ def test_post_handler(admin_user_client):
                                                   timeoutMillis=2000,
                                                   retries=4,
                                                   priority=1234)
-    h = wait_success(admin_user_client, h)
+    h = admin_user_client.wait_success(h)
     assert h.state == 'active'
 
     ep = _get_extension(admin_user_client,
@@ -145,41 +145,41 @@ def test_enabled_disable(admin_user_client):
     configs = [{'name': 'instance.start'}]
     h = admin_user_client.create_external_handler(name=name,
                                                   processConfigs=configs)
-    h = wait_success(admin_user_client, h)
+    h = admin_user_client.wait_success(h)
 
     ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
                         name)
     assert ep is not None
 
-    h = wait_success(admin_user_client, h.deactivate())
+    h = admin_user_client.wait_success(h.deactivate())
     ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
                         name)
     assert ep is None
 
-    h = wait_success(admin_user_client, h.activate())
+    h = admin_user_client.wait_success(h.activate())
     ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
                         name)
     assert ep is not None
 
-    wait_success(admin_user_client,
-                 h.externalHandlerProcesses()[0].deactivate())
+    admin_user_client.wait_success(
+        h.externalHandlerProcesses()[0].deactivate())
     ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
                         name)
     assert ep is None
 
-    wait_success(admin_user_client, h.externalHandlerProcesses()[0].activate())
+    admin_user_client.wait_success(h.externalHandlerProcesses()[0].activate())
     ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
                         name)
     assert ep is not None
 
-    wait_success(admin_user_client,
-                 h.externalHandlerExternalHandlerProcessMaps()[0].deactivate())
+    admin_user_client.wait_success(
+        h.externalHandlerExternalHandlerProcessMaps()[0].deactivate())
     ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
                         name)
     assert ep is None
 
-    wait_success(admin_user_client,
-                 h.externalHandlerExternalHandlerProcessMaps()[0].activate())
+    admin_user_client.wait_success(
+        h.externalHandlerExternalHandlerProcessMaps()[0].activate())
     ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
                         name)
     assert ep is not None
@@ -190,7 +190,7 @@ def test_event_name_comma(admin_user_client):
     configs = [{'name': 'pre.instance.start,instance.start'}]
     h = admin_user_client.create_external_handler(name=name,
                                                   processConfigs=configs)
-    h = wait_success(admin_user_client, h)
+    h = admin_user_client.wait_success(h)
 
     processes = [x.name for x in h.externalHandlerProcesses()]
 

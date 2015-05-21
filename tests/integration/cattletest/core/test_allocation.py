@@ -1,10 +1,11 @@
 from common_fixtures import *  # NOQA
 
 
-def test_compute_free(admin_client, super_client, sim_context):
+def test_compute_free(super_client, new_context):
+    admin_client = new_context.client
     count = 5
-    host = sim_context['host']
-    image_uuid = sim_context['imageUuid']
+    host = super_client.reload(new_context.host)
+    image_uuid = new_context.image_uuid
     start_free = host.computeFree
 
     assert start_free > count
@@ -12,6 +13,7 @@ def test_compute_free(admin_client, super_client, sim_context):
     containers = []
     for _ in range(count):
         c = admin_client.create_container(imageUuid=image_uuid,
+                                          networkMode='bridge',
                                           requestedHostId=host.id)
         containers.append(c)
 
@@ -23,41 +25,36 @@ def test_compute_free(admin_client, super_client, sim_context):
     for c in containers:
         c.stop(deallocateFromHost=True)
 
-    containers = wait_all_success(admin_client, containers)
+    wait_all_success(admin_client, containers)
 
     host = super_client.reload(host)
     assert host.computeFree == start_free
 
 
-def test_inactive_agent(super_client, sim_context):
-    agent = create_type_by_uuid(super_client, 'agent', 'inactive_test',
-                                uri='sim://inactive_test')
+def test_inactive_agent(super_client, new_context):
+    host = super_client.reload(new_context.host)
+    agent = host.agent()
 
-    agent = wait_success(super_client, agent)
-    host = agent.hosts()[0]
-
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=host.id)
-
-    c = wait_success(super_client, c)
+    c = new_context.create_container()
     assert c.state == 'running'
 
-    agent = wait_success(super_client, agent.deactivate())
+    agent = super_client.wait_success(agent.deactivate())
     assert agent.state == 'inactive'
 
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=host.id)
-
-    c = wait_transitioning(super_client, c)
+    c = new_context.create_container_no_success()
     assert c.transitioning == 'error'
     assert c.transitioningMessage == 'Failed to find a placement'
     assert c.state == 'removed'
 
 
-def test_spread(super_client, sim_context, sim_context2, sim_context3):
+def test_spread(super_client, new_context):
     count = 3
 
-    hosts = [sim_context['host'], sim_context2['host'], sim_context3['host']]
+    client = new_context.client
+    host2 = register_simulated_host(new_context.client)
+    host3 = register_simulated_host(new_context.client)
+
+    hosts = [new_context.host, host2, host3]
     hosts = wait_all_success(super_client, hosts)
     for h in hosts:
         assert h.state == 'active'
@@ -74,47 +71,27 @@ def test_spread(super_client, sim_context, sim_context2, sim_context3):
 
     containers = []
     for _ in range(len(hosts) * count):
-        c = super_client.create_container(imageUuid=sim_context['imageUuid'])
+        c = client.create_container(imageUuid=new_context.image_uuid,
+                                    networkMode='bridge')
         containers.append(c)
 
-    containers = wait_all_success(super_client, containers, timeout=60)
+    wait_all_success(super_client, containers, timeout=60)
 
     for i, h in enumerate(hosts):
         h = super_client.reload(h)
         assert counts[i] - count == h.computeFree
 
 
-def _get_test_allocation_host(admin_client):
-    name = 'allocation_test'
-    hosts = admin_client.list_host(name=name)
-
-    if len(hosts) == 0:
-        agent = create_type_by_uuid(admin_client, 'agent',
-                                    'allocation_test_agent',
-                                    uri='sim://' + name)
-        hosts = agent.hosts()
-
-    host = wait_success(admin_client, hosts[0])
-    host = admin_client.update(host, {
-        'computeFree': 1,
-        'name': name
-    })
-
-    return host
+def _set_one(super_client, new_context):
+    return super_client.update(new_context.host, computeFree=1)
 
 
-def test_allocation_failed_on_create(super_client, sim_context):
-    host = _get_test_allocation_host(super_client)
+def test_allocation_failed_on_create(super_client, new_context):
+    _set_one(super_client, new_context)
 
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=host.id)
-    c = wait_success(super_client, c)
-
-    assert c.state == 'running'
-
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=host.id)
-    c = wait_transitioning(super_client, c)
+    new_context.create_container(networkMode='bridge')
+    c = new_context.create_container_no_success(networkMode='bridge')
+    c = super_client.reload(c)
 
     assert c.state == 'removed'
     assert c.transitioning == 'error'
@@ -124,42 +101,38 @@ def test_allocation_failed_on_create(super_client, sim_context):
     assert c.volumes()[0].state == 'removed'
 
 
-def test_allocation_failed_on_start(super_client, sim_context):
-    host = _get_test_allocation_host(super_client)
+def test_allocation_failed_on_start(super_client, new_context):
+    _set_one(super_client, new_context)
+    client = new_context.client
 
-    c1 = c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                           requestedHostId=host.id)
-    c = wait_success(super_client, c)
-    assert c.state == 'running'
+    c1 = new_context.create_container(networkMode='bridge')
+    c1 = client.wait_success(super_client.reload(c1)
+                             .stop(deallocateFromHost=True))
+    assert c1.state == 'stopped'
 
-    c = wait_success(super_client, c.stop(deallocateFromHost=True))
-    assert c.state == 'stopped'
+    c2 = new_context.create_container(networkMode='bridge')
 
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'],
-                                      requestedHostId=host.id)
-    c = wait_success(super_client, c)
-    assert c.state == 'running'
-
-    c1 = wait_transitioning(super_client, c1.start())
+    c1 = client.wait_transitioning(c1.start())
     assert c1.state == 'stopped'
     assert c1.transitioning == 'error'
     assert c1.transitioningMessage == 'Failed to find a placement'
 
-    c = wait_success(super_client, c.stop(deallocateFromHost=True))
-    assert c.state == 'stopped'
+    c2 = client.wait_transitioning(super_client.reload(c2)
+                                   .stop(deallocateFromHost=True))
+    assert c2.state == 'stopped'
 
-    c1 = wait_success(super_client, c1.start())
+    c1 = client.wait_success(c1.start())
     assert c1.state == 'running'
     assert c1.transitioning == 'no'
     assert c1.transitioningMessage is None
 
 
-def test_host_vnet_association(super_client, sim_context,
-                               sim_context2, sim_context3):
-    image_uuid = sim_context['imageUuid']
-    host1 = sim_context['host']
-    host2 = sim_context2['host']
-    host3 = sim_context3['host']
+def test_host_vnet_association(super_client, new_context):
+    account = new_context.project
+    image_uuid = new_context.image_uuid
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context.client)
+    host3 = register_simulated_host(new_context.client)
 
     host1 = super_client.update(host1, computeFree=100000)
     host2 = super_client.update(host2, computeFree=100000)
@@ -167,57 +140,66 @@ def test_host_vnet_association(super_client, sim_context,
     for i in [host1, host2, host3]:
         assert i.computeFree == 100000
 
-    network = super_client.create_network()
-    vnet = super_client.create_vnet(networkId=network.id,
+    network = super_client.create_network(accountId=account.id)
+    vnet = super_client.create_vnet(accountId=account.id,
+                                    networkId=network.id,
                                     uri='sim://')
     vnet = super_client.wait_success(vnet)
 
     assert vnet.state == 'active'
 
-    subnet1 = super_client.create_subnet(networkAddress='192.168.0.0',
+    subnet1 = super_client.create_subnet(accountId=account.id,
+                                         networkAddress='192.168.0.0',
                                          cidrSize='16',
                                          networkId=network.id,
                                          startAddress='192.168.0.3',
                                          endAddress='192.168.0.5')
     subnet1 = super_client.wait_success(subnet1)
 
-    subnet2 = super_client.create_subnet(networkAddress='192.168.2.0',
+    subnet2 = super_client.create_subnet(accountId=account.id,
+                                         networkAddress='192.168.2.0',
                                          cidrSize='16',
                                          networkId=network.id,
                                          startAddress='192.168.2.3',
                                          endAddress='192.168.3.5')
     subnet2 = super_client.wait_success(subnet2)
 
-    subnet_map1 = super_client.create_subnet_vnet_map(subnetId=subnet1.id,
+    subnet_map1 = super_client.create_subnet_vnet_map(accountId=account.id,
+                                                      subnetId=subnet1.id,
                                                       vnetId=vnet.id)
     subnet_map1 = super_client.wait_success(subnet_map1)
     assert subnet_map1.state == 'active'
 
-    subnet_map2 = super_client.create_subnet_vnet_map(subnetId=subnet2.id,
+    subnet_map2 = super_client.create_subnet_vnet_map(accountId=account.id,
+                                                      subnetId=subnet2.id,
                                                       vnetId=vnet.id)
     subnet_map2 = super_client.wait_success(subnet_map2)
     assert subnet_map2.state == 'active'
 
-    vnet_map1 = super_client.create_host_vnet_map(hostId=host1.id,
+    vnet_map1 = super_client.create_host_vnet_map(accountId=account.id,
+                                                  hostId=host1.id,
                                                   vnetId=vnet.id)
     vnet_map1 = super_client.wait_success(vnet_map1)
     assert vnet_map1.state == 'active'
 
-    vnet_map2 = super_client.create_host_vnet_map(hostId=host2.id,
+    vnet_map2 = super_client.create_host_vnet_map(accountId=account.id,
+                                                  hostId=host2.id,
                                                   vnetId=vnet.id)
     vnet_map2 = super_client.wait_success(vnet_map2)
     assert vnet_map2.state == 'active'
 
     hosts = set()
     for _ in range(3):
-        vm = super_client.create_virtual_machine(subnetIds=[subnet1.id],
+        vm = super_client.create_virtual_machine(accountId=account.id,
+                                                 subnetIds=[subnet1.id],
                                                  imageUuid=image_uuid)
         vm = super_client.wait_success(vm)
         assert vm.state == 'running'
         hosts.add(vm.hosts()[0].id)
 
     for _ in range(3):
-        vm = super_client.create_virtual_machine(subnetIds=[subnet2.id],
+        vm = super_client.create_virtual_machine(accountId=account.id,
+                                                 subnetIds=[subnet2.id],
                                                  imageUuid=image_uuid)
         vm = super_client.wait_success(vm)
         assert vm.state == 'running'
@@ -228,24 +210,24 @@ def test_host_vnet_association(super_client, sim_context,
     assert host2.id in hosts
 
 
-def test_allocation_stay_associated_to_host(super_client, sim_context):
-    c = super_client.create_container(imageUuid=sim_context['imageUuid'])
-    c = super_client.wait_success(c)
-
-    assert c.state == 'running'
-
-    c = super_client.wait_success(c.stop())
+def test_allocation_stay_associated_to_host(super_client, context):
+    c = context.create_container()
+    c = context.client.wait_success(c.stop())
     assert c.state == 'stopped'
 
     assert len(c.hosts()) == 1
 
 
-def test_vnet_stickiness(super_client, sim_context, sim_context2,
-                         sim_context3):
-    image_uuid = sim_context['imageUuid']
-    host1 = sim_context['host']
-    host2 = sim_context2['host']
-    host3 = sim_context3['host']
+def test_vnet_stickiness(super_client, new_context):
+    account_id = new_context.project.id
+    network = super_client.list_network(accountId=account_id,
+                                        kind='hostOnlyNetwork')[0]
+    subnet = super_client.list_subnet(accountId=account_id)[0]
+
+    image_uuid = new_context.image_uuid
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context.client)
+    host3 = register_simulated_host(new_context.client)
     valid_hosts = [host1.id, host2.id, host3.id]
 
     host1 = super_client.update(host1, computeFree=100000)
@@ -254,20 +236,9 @@ def test_vnet_stickiness(super_client, sim_context, sim_context2,
     for i in [host1, host2, host3]:
         assert i.computeFree == 100000
 
-    network = create_and_activate(super_client, 'hostOnlyNetwork',
-                                  hostVnetUri='test:///',
-                                  dynamicCreateVnet=True)
-
-    subnet = create_and_activate(super_client, 'subnet',
-                                 networkAddress='192.168.0.0',
-                                 networkId=network.id)
-
     containers = []
     for _ in range(3):
-        c = super_client.create_container(imageUuid=image_uuid,
-                                          networkIds=[network.id],
-                                          validHostIds=valid_hosts)
-        c = super_client.wait_success(c)
+        c = super_client.reload(new_context.create_container())
         containers.append(c)
 
     actual_hosts = set()
@@ -278,12 +249,12 @@ def test_vnet_stickiness(super_client, sim_context, sim_context2,
     assert actual_hosts == set(valid_hosts)
     assert len(network.vnets()) == 3
     assert len(subnet.vnets()) == 3
-
     c1_host_id = c.hosts()[0].id
     c1_nic = c.nics()[0]
 
     for _ in range(3):
-        c = super_client.create_container(imageUuid=image_uuid,
+        c = super_client.create_container(accountId=account_id,
+                                          imageUuid=image_uuid,
                                           vnetIds=[c1_nic.vnetId])
         c = super_client.wait_success(c)
 
@@ -295,7 +266,8 @@ def test_vnet_stickiness(super_client, sim_context, sim_context2,
         assert nic.networkId == c1_nic.networkId
 
     for _ in range(3):
-        c = super_client.create_container(imageUuid=image_uuid,
+        c = super_client.create_container(accountId=account_id,
+                                          imageUuid=image_uuid,
                                           networkIds=[network.id],
                                           vnetIds=[c1_nic.vnetId])
         c = super_client.wait_success(c)
@@ -308,131 +280,76 @@ def test_vnet_stickiness(super_client, sim_context, sim_context2,
         assert nic.networkId == c1_nic.networkId
 
 
-def test_port_constraint(super_client, sim_context, sim_context2, network):
-    image_uuid = sim_context['imageUuid']
-
-    host1 = sim_context['host']
-    host2 = sim_context2['host']
+def test_port_constraint(new_context):
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context.client)
 
     containers = []
 
     try:
-        c = super_client.create_container(imageUuid=image_uuid,
-                                          networkIds=[network.id],
-                                          startOnCreate=True,
-                                          validHostIds=[host1.id],
-                                          ports=[
-                                              '8081:81/tcp'])
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
+        c = new_context.create_container(requestedHostId=host1.id,
+                                         ports=['8081:81/tcp'])
         containers.append(c)
 
         # try to deploy another container with same public port + protocol
-        c2 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           validHostIds=[host1.id],
-                                           startOnCreate=True,
-                                           ports=[
-                                               '8081:81/tcp'])
-        c2 = wait_transitioning(super_client, c2)
+        c2 = new_context\
+            .super_create_container_no_success(validHostIds=[host1.id],
+                                               ports=['8081:81/tcp'])
         assert c2.transitioning == 'error'
         assert c2.transitioningMessage == 'Failed to find a placement'
         assert c2.state == 'removed'
 
         # increase host pool and check whether allocator picks other host
-        c2 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           startOnCreate=True,
-                                           validHostIds=[
-                                               host1.id, host2.id],
-                                           ports=['8081:81/tcp'])
-        wait_for_condition(
-            super_client, c2,
-            lambda x: x.state == 'running')
+        c2 = new_context.super_create_container(validHostIds=[host1.id,
+                                                              host2.id],
+                                                ports=['8081:81/tcp'])
         containers.append(c2)
 
         # try different public port
-        c3 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           startOnCreate=True,
-                                           validHostIds=[host1.id],
-                                           ports=[
-                                               '8082:81/tcp'])
-        wait_for_condition(
-            super_client, c3,
-            lambda x: x.state == 'running')
+        c3 = new_context.super_create_container(validHostIds=[host1.id],
+                                                ports=['8082:81/tcp'])
         containers.append(c3)
 
         # try different protocol
-        c4 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           startOnCreate=True,
-                                           validHostIds=[host1.id],
-                                           ports=[
-                                               '8081:81/udp'])
-        wait_for_condition(
-            super_client, c4,
-            lambda x: x.state == 'running')
+        c4 = new_context.super_create_container(validHostIds=[host1.id],
+                                                ports=['8081:81/udp'])
         containers.append(c4)
 
-        c5 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           validHostIds=[host1.id],
-                                           startOnCreate=True,
-                                           ports=['8081:81/udp'])
-        c5 = wait_transitioning(super_client, c5)
+        c5 = new_context\
+            .super_create_container_no_success(validHostIds=[host1.id],
+                                               ports=['8081:81/udp'])
         assert c5.transitioning == 'error'
         assert c5.transitioningMessage == 'Failed to find a placement'
         assert c5.state == 'removed'
     finally:
         for c in containers:
             if c is not None:
-                super_client.wait_success(super_client.delete(c))
+                new_context.delete(c)
 
 
-def test_request_host_override(super_client, sim_context, network):
-    image_uuid = sim_context['imageUuid']
-    host = sim_context['host']
-
+def test_request_host_override(new_context):
+    host = new_context.host
     c = None
     c2 = None
 
     try:
-        c = super_client.create_container(imageUuid=image_uuid,
-                                          networkIds=[network.id],
-                                          startOnCreate=True,
-                                          validHostIds=[host.id],
-                                          ports=['8081:81/tcp'])
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
+        c = new_context.super_create_container(validHostIds=[host.id],
+                                               ports=['8081:81/tcp'])
 
         # try to deploy another container with same public port + protocol
         # however, explicitly specify requestedHostId
-        c2 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           validHostIds=[host.id],
-                                           requestedHostId=host.id,
-                                           startOnCreate=True,
-                                           ports=['8081:81/tcp'])
-        wait_for_condition(
-            super_client, c2,
-            lambda x: x.state == 'running')
-
+        c2 = new_context.super_create_container(requestedHostId=host.id,
+                                                ports=['8081:81/tcp'])
     finally:
         if c is not None:
-            super_client.wait_success(super_client.delete(c))
+            new_context.delete(c)
         if c2 is not None:
-            super_client.wait_success(super_client.delete(c2))
+            new_context.delete(c2)
 
 
-def test_host_affinity(super_client, sim_context, sim_context2, network):
-    image_uuid = sim_context['imageUuid']
-    host = sim_context['host']
-    host2 = sim_context2['host']
-
-    validHostIds = [host.id, host2.id]
+def test_host_affinity(new_context):
+    host = new_context.host
+    host2 = register_simulated_host(new_context)
 
     host.addlabel(key='size', value='huge')
     host.addlabel(key='latency', value='long')
@@ -442,277 +359,142 @@ def test_host_affinity(super_client, sim_context, sim_context2, network):
     containers = []
     try:
         # test affinity
-        c = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c = new_context.create_container(
             environment={'constraint:size==huge': ''})
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
         assert c.hosts()[0].id == host.id
         containers.append(c)
 
-        c = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c = new_context.create_container(
             labels={'io.rancher.scheduler.constraint:size{eq}huge': ''})
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
         assert c.hosts()[0].id == host.id
         containers.append(c)
 
         # test anti-affinity
-        c = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c = new_context.create_container(
             environment={'constraint:size!=huge': ''})
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
         assert c.hosts()[0].id == host2.id
         containers.append(c)
 
-        c = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c = new_context.create_container(
             labels={'io.rancher.scheduler.constraint:size{ne}huge': ''})
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
         assert c.hosts()[0].id == host2.id
         containers.append(c)
 
         # test soft affinity.
         # prefer size==huge, but latency==~short if possible
-        c = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c = new_context.create_container(
             environment={
                 'constraint:size==huge': '',
                 'constraint:latency==~short': ''
             })
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
         assert c.hosts()[0].id == host.id
         containers.append(c)
 
-        c = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c = new_context.create_container(
             labels={
                 'io.rancher.scheduler.constraint:size{eq}huge': '',
                 'io.rancher.scheduler.constraint:latency{ne~}short': ''
             })
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
         assert c.hosts()[0].id == host.id
         containers.append(c)
 
         # test soft anti-affinity
-        c = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c = new_context.create_container(
             environment={'constraint:latency!=~long': ''})
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
         assert c.hosts()[0].id == host2.id
         containers.append(c)
 
-        c = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c = new_context.create_container(
             labels={'io.rancher.scheduler.constraint:latency{ne~}long': ''})
-        wait_for_condition(
-            super_client, c,
-            lambda x: x.state == 'running')
         assert c.hosts()[0].id == host2.id
         containers.append(c)
-
     finally:
         for c in containers:
-            if c is not None:
-                super_client.wait_success(super_client.delete(c))
+            new_context.delete(c)
 
 
-def test_container_affinity(super_client, sim_context, sim_context2, network):
-    image_uuid = sim_context['imageUuid']
-    host = sim_context['host']
-    host2 = sim_context2['host']
+def test_container_affinity(new_context):
+    # Two hosts
+    register_simulated_host(new_context)
 
-    validHostIds = [host.id, host2.id]
     containers = []
     try:
         name1 = 'affinity' + random_str()
-        c1 = super_client.create_container(
-            imageUuid=image_uuid,
-            name=name1,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds)
-        wait_for_condition(
-            super_client, c1,
-            lambda x: x.state == 'running')
+        c1 = new_context.create_container(
+            name=name1)
         containers.append(c1)
 
-        c2 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c2 = new_context.create_container(
             environment={'affinity:container==' + name1: ''})
-        wait_for_condition(
-            super_client, c2,
-            lambda x: x.state == 'running')
         containers.append(c2)
 
         # check c2 is on same host as c1
         assert c2.hosts()[0].id == c1.hosts()[0].id
 
-        c3 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c3 = new_context.create_container(
             labels={'io.rancher.scheduler.affinity:container{eq}' + name1: ''})
-        wait_for_condition(
-            super_client, c3,
-            lambda x: x.state == 'running')
         containers.append(c3)
 
         # check c3 is on same host as c1
         assert c3.hosts()[0].id == c1.hosts()[0].id
 
-        c4 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c4 = new_context.create_container(
             environment={'affinity:container==' + c1.uuid: ''})
-        wait_for_condition(
-            super_client, c4,
-            lambda x: x.state == 'running')
         containers.append(c4)
 
         # check c4 is on same host as c1
         assert c4.hosts()[0].id == c1.hosts()[0].id
 
-        c5 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c5 = new_context.create_container(
             labels={
                 'io.rancher.scheduler.affinity:container{eq}' + c1.uuid: ''})
-        wait_for_condition(
-            super_client, c5,
-            lambda x: x.state == 'running')
         containers.append(c5)
 
         # check c5 is on same host as c1
         assert c5.hosts()[0].id == c1.hosts()[0].id
 
-        c6 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c6 = new_context.create_container(
             environment={'affinity:container!=' + name1: ''})
-        wait_for_condition(
-            super_client, c6,
-            lambda x: x.state == 'running')
         containers.append(c6)
 
         # check c6 is not on same host as c1
         assert c6.hosts()[0].id != c1.hosts()[0].id
 
-        c7 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c7 = new_context.create_container(
             labels={'io.rancher.scheduler.affinity:container{ne}' + name1: ''})
-        wait_for_condition(
-            super_client, c7,
-            lambda x: x.state == 'running')
         containers.append(c7)
 
         # check c7 is not on same host as c1
         assert c7.hosts()[0].id != c1.hosts()[0].id
-
     finally:
         for c in containers:
-            if c is not None:
-                super_client.wait_success(super_client.delete(c))
+            new_context.delete(c)
 
 
-def test_container_label_affinity(
-        super_client, sim_context, sim_context2, network):
-    image_uuid = sim_context['imageUuid']
-    host = sim_context['host']
-    host2 = sim_context2['host']
+def test_container_label_affinity(new_context):
+    # Two hosts
+    register_simulated_host(new_context)
 
-    validHostIds = [host.id, host2.id]
     containers = []
     try:
         c1_label = random_str()
-        c1 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c1 = new_context.create_container(
             labels={'foo': c1_label}
         )
-        wait_for_condition(
-            super_client, c1,
-            lambda x: x.state == 'running')
         containers.append(c1)
 
-        c2 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c2 = new_context.create_container(
             environment={'affinity:container_label:foo==' + c1_label: ''})
-        wait_for_condition(
-            super_client, c2,
-            lambda x: x.state == 'running')
         containers.append(c2)
 
         # check c2 is on same host as c1
         assert c2.hosts()[0].id == c1.hosts()[0].id
 
-        c3 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c3 = new_context.create_container(
             labels={
                 'io.rancher.scheduler.affinity:container_label:foo{eq}'
                 + c1_label: ''}
         )
-        wait_for_condition(
-            super_client, c3,
-            lambda x: x.state == 'running')
         containers.append(c3)
 
         # check c3 is on same host as c1
@@ -720,45 +502,27 @@ def test_container_label_affinity(
 
         c4_label = random_str()
 
-        c4 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c4 = new_context.create_container(
             environment={'affinity:container_label:foo!=' + c1_label: ''},
             labels={'foo': c4_label}
         )
-        wait_for_condition(
-            super_client, c4,
-            lambda x: x.state == 'running')
         containers.append(c4)
 
         # check c4 is not on same host as c1
         assert c4.hosts()[0].id != c1.hosts()[0].id
 
-        c5 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c5 = new_context.create_container(
             environment={
                 'affinity:container_label:foo!=' + c1_label: '',
                 'affinity:container_label:foo!=~' + c4_label: ''
             })
-        wait_for_condition(
-            super_client, c5,
-            lambda x: x.state == 'running')
         containers.append(c5)
 
         # since we just specified a soft anti-affinity to c4,
         # check c5 is on same host as c4
         assert c5.hosts()[0].id == c4.hosts()[0].id
 
-        c6 = super_client.create_container(
-            imageUuid=image_uuid,
-            networkIds=[network.id],
-            startOnCreate=True,
-            validHostIds=validHostIds,
+        c6 = new_context.create_container(
             environment={
                 'affinity:container_label:foo!=' + c1_label: '',
             },
@@ -767,88 +531,50 @@ def test_container_label_affinity(
                 + c4_label: ''
             }
         )
-        wait_for_condition(
-            super_client, c6,
-            lambda x: x.state == 'running')
         containers.append(c6)
 
         assert c6.hosts()[0].id == c4.hosts()[0].id
-
     finally:
         for c in containers:
-            if c is not None:
-                super_client.wait_success(super_client.delete(c))
+            new_context.delete(c)
 
 
-def test_volumes_from_constraint(super_client,
-                                 sim_context,
-                                 sim_context2,
-                                 sim_context3,
-                                 network):
-    image_uuid = sim_context['imageUuid']
-    host1 = sim_context['host']
-    host2 = sim_context2['host']
-    host3 = sim_context3['host']
-
-    valid_hosts = [host1.id, host2.id, host3.id]
+def test_volumes_from_constraint(new_context):
+    # Three hosts
+    register_simulated_host(new_context)
+    register_simulated_host(new_context)
 
     containers = []
     try:
         # nominal condition.  start c1 before c2
-        c1 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           startOnCreate=False,
-                                           validHostIds=valid_hosts)
+        c1 = new_context.create_container_no_success(startOnCreate=False)
 
-        c2 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           startOnCreate=False,
-                                           validHostIds=valid_hosts,
-                                           dataVolumesFrom=[c1.id])
+        c2 = new_context.create_container_no_success(startOnCreate=False,
+                                                     dataVolumesFrom=[c1.id])
 
-        c1.start()
-        c2.start()
+        c1 = c1.start()
+        c2 = c2.start()
+        c1 = new_context.wait_for_state(c1, 'running')
+        c2 = new_context.wait_for_state(c2, 'running')
 
-        c1 = wait_for_condition(
-            super_client, c1,
-            lambda x: x.state == 'running')
         containers.append(c1)
-
-        c2 = wait_for_condition(
-            super_client, c2,
-            lambda x: x.state == 'running')
         containers.append(c2)
 
         assert c1.hosts()[0].id == c2.hosts()[0].id
 
         # less than ideal situation.  start c4 before c3
-        c3 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           startOnCreate=False,
-                                           validHostIds=valid_hosts)
+        c3 = new_context.create_container_no_success(startOnCreate=False)
+        c4 = new_context.create_container_no_success(startOnCreate=False,
+                                                     dataVolumesFrom=[c3.id])
 
-        c4 = super_client.create_container(imageUuid=image_uuid,
-                                           networkIds=[network.id],
-                                           startOnCreate=False,
-                                           validHostIds=valid_hosts,
-                                           dataVolumesFrom=[c3.id])
-
-        c4.start()
-        c3.start()
-
-        c3 = wait_for_condition(
-            super_client, c3,
-            lambda x: x.state == 'running')
+        c4 = c4.start()
+        c3 = c3.start()
+        c4 = new_context.wait_for_state(c4, 'running')
+        c3 = new_context.wait_for_state(c3, 'running')
         containers.append(c3)
-
-        c4 = wait_for_condition(
-            super_client, c4,
-            lambda x: x.state == 'running')
         containers.append(c4)
 
         assert c3.hosts()[0].id == c4.hosts()[0].id
-
     finally:
         for c in containers:
-            if c is not None:
-                super_client.wait_success(super_client.delete(c))
+            new_context.delete(c)

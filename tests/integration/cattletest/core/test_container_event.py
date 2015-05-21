@@ -25,24 +25,36 @@ def update_event_settings(request, super_client):
     request.addfinalizer(revert_settings)
 
 
-def test_container_event_start(client, user_sim_context, user_account):
+@pytest.fixture(scope='module')
+def host(super_client, context):
+    return super_client.reload(context.host)
+
+
+@pytest.fixture(scope='module')
+def agent_cli(context):
+    return context.agent_client
+
+
+@pytest.fixture(scope='module')
+def user_id(context):
+    return context.project.id
+
+
+def test_container_event_create(client, host, agent_cli, user_id):
     # Submitting a 'start' containerEvent should result in a container
     # being created.
-    host, user_agent_cli = sim_agent_and_host(user_sim_context)
     external_id = random_str()
 
     container = create_native_container(client, host, external_id,
-                                        user_agent_cli, user_account.id)
+                                        agent_cli, user_id)
     assert container.nativeContainer is True
     assert container.state == 'running'
 
 
-def test_container_event_start_stop(client, user_sim_context, user_account):
+def test_container_event_start_stop(client, host, agent_cli, user_id):
     # Submitting a 'stop' or 'die' containerEvent should result in a
     # container resource being stopped.
-    host, agent_cli = sim_agent_and_host(user_sim_context)
     external_id = random_str()
-    user_id = user_account.id
 
     container = create_native_container(client, host, external_id,
                                         agent_cli, user_id)
@@ -82,6 +94,16 @@ def test_container_event_rapid_stop(client, user_sim_context, user_account):
     create_event(host, external_id, agent_cli, client, user_id, 'start',
                  new_inspect(external_id), wait_and_assert=False)
 
+
+def test_container_event_start(client, host, agent_cli, user_id):
+    # Submitting a 'start' containerEvent should result in a container
+    # being started.
+    external_id = random_str()
+
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id)
+    assert container.state == 'running'
+
     create_event(host, external_id, agent_cli, client, user_id, 'stop')
 
     containers = client.list_container(externalId=external_id)
@@ -90,12 +112,10 @@ def test_container_event_rapid_stop(client, user_sim_context, user_account):
     assert container.state != 'removed'
 
 
-def test_container_event_destroy(client, user_sim_context, user_account):
+def test_container_event_destroy(client, host, agent_cli, user_id):
     # Submitting a 'destroy' containerEvent should result in a container
     # being removed.
-    host, agent_cli = sim_agent_and_host(user_sim_context)
     external_id = random_str()
-    user_id = user_account.id
 
     container = create_native_container(client, host, external_id,
                                         agent_cli, user_id)
@@ -112,18 +132,11 @@ def test_container_event_destroy(client, user_sim_context, user_account):
     assert container.state == 'removed'
 
 
-def test_rancher_container_events(client, user_sim_context, user_account):
+def test_rancher_container_events(client, context, host, agent_cli, user_id):
     # A "normal" container (one created in Rancher) should also respond to
     # non-rancher container events
-    host, agent_cli = sim_agent_and_host(user_sim_context)
-    uuid = "sim:{}".format(random_num())
-    user_id = user_account.id
-
-    container = create_container(client, user_sim_context,
-                                 imageUuid=uuid,
-                                 name=random_str(),
-                                 startOnCreate=False)
-    container = client.wait_success(container)
+    container = context.create_container(name=random_str(),
+                                         startOnCreate=False)
     assert container.state == 'stopped'
 
     inspect = new_inspect(random_str())
@@ -147,11 +160,9 @@ def test_rancher_container_events(client, user_sim_context, user_account):
     assert container.state == 'removed'
 
 
-def test_bad_agent(super_client, user_sim_context):
+def test_bad_agent(super_client, host):
     # Even though super_client will have permissions to create the container
     # event, additional logic should assert that the creator is a valid agent.
-    host = user_sim_context['host']
-
     with pytest.raises(ApiError) as e:
         super_client.create_container_event(
             reportedHostUuid=host.data.fields['reportedUuid'],
@@ -162,16 +173,13 @@ def test_bad_agent(super_client, user_sim_context):
     assert e.value.error.code == 'CantVerifyAgent'
 
 
-def test_bad_host(user_sim_context, new_sim_context):
+def test_bad_host(host, new_context):
     # If a host doesn't belong to agent submitting the event, the request
     # should fail.
-    host = new_sim_context['host']
-
-    agent_account = user_sim_context['agent'].account()
-    user_agent_cli = _client_for_agent(agent_account.credentials()[0])
+    agent_cli = new_context.agent_client
 
     with pytest.raises(ApiError) as e:
-        user_agent_cli.create_container_event(
+        agent_cli.create_container_event(
             reportedHostUuid=host.data.fields['reportedUuid'],
             externalId=random_str(),
             externalFrom='busybox:latest',
@@ -180,11 +188,9 @@ def test_bad_host(user_sim_context, new_sim_context):
     assert e.value.error.code == 'InvalidReference'
 
 
-def test_container_event_null_inspect(client, user_sim_context, user_account):
+def test_container_event_null_inspect(client, host, agent_cli, user_id):
     # Assert that the inspect can be null.
-    host, agent_cli = sim_agent_and_host(user_sim_context)
     external_id = random_str()
-    user_id = user_account.id
 
     create_event(host, external_id, agent_cli, client, user_id,
                  'start', None)
@@ -197,18 +203,14 @@ def test_container_event_null_inspect(client, user_sim_context, user_account):
     assert container is not None
 
 
-def test_requested_ip_address(super_client, client, user_sim_context,
-                              user_account):
-    create_agent_instance_nsp(super_client, user_sim_context)
-    host, agent_cli = sim_agent_and_host(user_sim_context)
+def test_requested_ip_address(super_client, client, host, agent_cli, user_id):
     external_id = random_str()
-    user_id = user_account.id
     inspect = new_inspect(external_id)
-    inspect['NetworkSettings'] = {'IPAddress': '192.168.0.240'}
+    inspect['NetworkSettings'] = {'IPAddress': '10.42.0.240'}
     container = create_native_container(client, host, external_id,
                                         agent_cli, user_id, inspect=inspect)
     container = super_client.reload(container)
-    assert container['data']['fields']['requestedIpAddress'] == '192.168.0.240'
+    assert container['data']['fields']['requestedIpAddress'] == '10.42.0.240'
     assert container.nics()[0].network().kind == 'hostOnlyNetwork'
 
 

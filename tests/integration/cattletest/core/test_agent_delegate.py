@@ -3,34 +3,23 @@ from common_fixtures import *  # NOQA
 _IMAGE_UUID = 'sim:ai'
 
 
-def test_delegate_agent_create(client, super_client, sim_context,
-                               user_account):
-    network = create_and_activate(super_client, 'hostOnlyNetwork',
-                                  dynamicCreateVnet=True,
-                                  isPublic=True)
-    create_and_activate(super_client, 'subnet',
-                        networkId=network.id,
-                        networkAddress='192.168.1.0')
-    ni = create_and_activate(super_client, 'agentInstanceProvider',
-                             networkId=network.id,
-                             agentInstanceImageUuid=_IMAGE_UUID)
-    create_and_activate(super_client, 'networkService',
-                        networkServiceProviderId=ni.id,
-                        networkId=network.id)
-
-    c = client.create_container(imageUuid=sim_context['imageUuid'],
-                                networkIds=[network.id])
-    c = client.wait_success(c)
-    assert c.state == 'running'
+def test_delegate_agent_create(super_client, new_context):
+    c = new_context.create_container()
 
     c = super_client.reload(c)
 
+    network = c.nics()[0].network()
     vnets = network.vnets()
     assert len(vnets) == 1
 
+    nsps = super_client.\
+        list_network_service_provider(accountId=new_context.project.id)
+
+    assert len(nsps) == 1
+
     uri = 'delegate:///?vnetId={}&networkServiceProviderId={}'.format(
         get_plain_id(super_client, vnets[0]),
-        get_plain_id(super_client, ni))
+        get_plain_id(super_client, nsps[0]))
     agents = super_client.list_agent(uri=uri)
 
     assert len(agents) == 1
@@ -48,8 +37,7 @@ def test_delegate_agent_create(client, super_client, sim_context,
 
     assert instance.state == 'running'
     assert instance.kind == 'container'
-    assert instance.accountId == user_account.id
-    assert instance.image().name == _IMAGE_UUID
+    assert instance.accountId == new_context.project.id
     assert len(instance.nics()) == 1
     assert instance.nics()[0].vnetId == vnets[0].id
     assert instance.hosts()[0].physicalHost().id == \

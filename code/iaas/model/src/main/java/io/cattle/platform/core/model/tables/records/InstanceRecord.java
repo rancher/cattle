@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Instance {
 
-	private static final long serialVersionUID = -10854813;
+	private static final long serialVersionUID = -418559384;
 
 	/**
 	 * Setter for <code>cattle.instance.id</code>.
@@ -492,6 +492,23 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		return (java.lang.Boolean) getValue(27);
 	}
 
+	/**
+	 * Setter for <code>cattle.instance.network_container_id</code>.
+	 */
+	@Override
+	public void setNetworkContainerId(java.lang.Long value) {
+		setValue(28, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.instance.network_container_id</code>.
+	 */
+	@javax.persistence.Column(name = "network_container_id", precision = 19)
+	@Override
+	public java.lang.Long getNetworkContainerId() {
+		return (java.lang.Long) getValue(28);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -541,6 +558,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setRegistryCredentialId(from.getRegistryCredentialId());
 		setExternalId(from.getExternalId());
 		setNativeContainer(from.getNativeContainer());
+		setNetworkContainerId(from.getNetworkContainerId());
 	}
 
 	/**
@@ -566,7 +584,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Create a detached, initialised InstanceRecord
 	 */
-	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning, java.lang.String token, java.lang.String userdata, java.lang.String systemContainer, java.lang.Long registryCredentialId, java.lang.String externalId, java.lang.Boolean nativeContainer) {
+	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning, java.lang.String token, java.lang.String userdata, java.lang.String systemContainer, java.lang.Long registryCredentialId, java.lang.String externalId, java.lang.Boolean nativeContainer, java.lang.Long networkContainerId) {
 		super(io.cattle.platform.core.model.tables.InstanceTable.INSTANCE);
 
 		setValue(0, id);
@@ -597,5 +615,6 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setValue(25, registryCredentialId);
 		setValue(26, externalId);
 		setValue(27, nativeContainer);
+		setValue(28, networkContainerId);
 	}
 }

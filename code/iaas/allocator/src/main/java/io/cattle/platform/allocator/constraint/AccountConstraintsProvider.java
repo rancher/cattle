@@ -24,11 +24,6 @@ public class AccountConstraintsProvider implements AllocationConstraintsProvider
 
         Instance instance = attempt.getInstance();
         if (instance != null) {
-            //TODO: remove this condition once we have networks per user
-            if (instance.getSystemContainer() != null
-                    && instance.getSystemContainer().equalsIgnoreCase(SystemContainer.NetworkAgent.name())) {
-                return;
-            }
             account = objectManager.loadResource(Account.class, instance.getAccountId());
         }
 

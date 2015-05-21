@@ -8,6 +8,9 @@
             "type" : "string",
             "required" : true
         },
+        "agentUriFormat" : {
+            "type" : "string"
+        },
         "accessKey" : {
             "type" : "string"
         },

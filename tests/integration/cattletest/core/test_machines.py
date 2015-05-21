@@ -30,6 +30,22 @@ def update_ping_settings(request, super_client):
     request.addfinalizer(revert_settings)
 
 
+@pytest.fixture(scope='module')
+def machine_context(admin_user_client):
+    return create_context(admin_user_client, create_project=True,
+                          add_host=True)
+
+
+@pytest.fixture(scope='module')
+def admin_client(machine_context):
+    return machine_context.client
+
+
+@pytest.fixture(scope='module')
+def admin_account(machine_context):
+    return machine_context.project
+
+
 def test_machine_lifecycle(super_client, admin_client, admin_account,
                            update_ping_settings):
     name = random_str()
@@ -58,6 +74,8 @@ def test_machine_lifecycle(super_client, admin_client, admin_account,
 
     agent = super_client.create_agent(uri=uri, data=data)
     agent = super_client.wait_success(agent)
+
+    wait_for(lambda: len(agent.hosts()) == 1)
     hosts = agent.hosts()
 
     assert len(hosts) == 1

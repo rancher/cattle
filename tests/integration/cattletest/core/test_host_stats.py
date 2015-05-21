@@ -1,16 +1,16 @@
 from common_fixtures import *  # NOQA
-from test_docker import docker_context, TEST_IMAGE_UUID, if_docker
+from test_docker import docker_client, TEST_IMAGE_UUID, if_docker
 
 import requests
 
 # work around flake8 issue
-docker_context
+docker_client
 
 
 @if_docker
-def test_stats_host(docker_context, sim_context):
-    host = docker_context['host']
-    sim_host = sim_context['host']
+def test_stats_host(docker_client, context):
+    host = docker_client.list_host()[0]
+    sim_host = context.host
 
     assert 'stats' in host.links
     assert 'stats' not in sim_host.links
@@ -40,10 +40,10 @@ def _get_host_stats_ip(host):
 
 
 @if_docker
-def test_stats_container(admin_client, docker_context):
+def test_stats_container(docker_client):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test', imageUuid=uuid)
-    container = admin_client.wait_success(container)
+    container = docker_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.wait_success(container)
 
     assert container.state == 'running'
     assert len(container.hosts()) == 1

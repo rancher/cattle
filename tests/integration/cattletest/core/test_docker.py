@@ -1,8 +1,6 @@
 import re
-import time
 import uuid as py_uuid
 from common_fixtures import *  # NOQA
-from cattle import ApiError
 
 TEST_IMAGE = 'ibuildthecloud/helloworld'
 TEST_IMAGE_LATEST = TEST_IMAGE + ':latest'
@@ -13,42 +11,28 @@ if_docker = pytest.mark.skipif("os.environ.get('DOCKER_TEST') == 'false'",
 
 
 @pytest.fixture(scope='session')
-def docker_context(super_client):
+def docker_client(super_client):
     for host in super_client.list_host(state='active', remove_null=True,
                                        kind='docker'):
-        return kind_context(super_client, 'docker', external_pool=True,
-                            agent=host.agent())
+        keys = super_client.list_api_key(accountId=host.accountId)
+        if len(keys) == 0:
+            key = super_client.create_api_key(accountId=host.accountId)
+            key = super_client.wait_success(key)
+            keys = [key]
+
+        return api_client(keys[0].publicValue, keys[0].secretValue)
 
     raise Exception('Failed to find docker host, please register one')
 
 
 @if_docker
-def test_docker_image_create_vm(admin_client, super_client,
-                                docker_context):
+def test_docker_create_only(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test',
-                                              imageUuid=uuid,
-                                              startOnCreate=False)
-    container = wait_success(admin_client, container)
-
-    assert container.state == 'stopped'
-    admin_client.delete(container)
-
+    container = docker_client.create_container(name='test',
+                                               imageUuid=uuid,
+                                               startOnCreate=False)
     try:
-        super_client.create_virtual_machine(name='test',
-                                            imageUuid=uuid)
-    except ApiError, e:
-        assert e.error.code == 'InvalidImageInstanceKind'
-
-
-@if_docker
-def test_docker_create_only(admin_client, super_client, docker_context):
-    uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test',
-                                              imageUuid=uuid,
-                                              startOnCreate=False)
-    try:
-        container = wait_success(admin_client, container)
+        container = docker_client.wait_success(container)
 
         assert container is not None
         assert 'container' == container.type
@@ -62,8 +46,6 @@ def test_docker_create_only(admin_client, super_client, docker_context):
 
         assert len(image_mapping) == 1
         assert image_mapping[0].imageId == image.id
-        assert image_mapping[0].storagePoolId == \
-            docker_context['external_pool'].id
 
         assert not image.isPublic
         assert image.name == '{}'.format(image.data.dockerImage.fullName,
@@ -74,18 +56,18 @@ def test_docker_create_only(admin_client, super_client, docker_context):
         assert image.data.dockerImage.tag == 'latest'
     finally:
         if container is not None:
-            admin_client.wait_success(admin_client.delete(container))
+            docker_client.wait_success(docker_client.delete(container))
 
 
 @if_docker
-def test_docker_create_with_start(admin_client, super_client, docker_context):
+def test_docker_create_with_start(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.create_container(name='test', imageUuid=uuid)
 
     try:
         assert container.state == 'creating'
 
-        container = wait_success(super_client, container)
+        container = super_client.wait_success(container)
 
         assert container.state == 'running'
 
@@ -102,50 +84,47 @@ def test_docker_create_with_start(admin_client, super_client, docker_context):
 
         assert len(image_mapping) == 1
         assert image_mapping[0].imageId == image.id
-        assert image_mapping[0].storagePoolId == docker_context['pool'].id
     finally:
         if container is not None:
-            admin_client.wait_success(admin_client.delete(container))
+            docker_client.wait_success(docker_client.delete(container))
 
 
 @if_docker
-def test_docker_command(admin_client, super_client, docker_context):
+def test_docker_command(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test',
-                                              imageUuid=uuid,
-                                              command=['sleep', '42'])
+    container = docker_client.create_container(name='test',
+                                               imageUuid=uuid,
+                                               command=['sleep', '42'])
 
     try:
-        container = wait_success(super_client, container)
+        container = super_client.wait_success(container)
         assert container.data.dockerContainer.Command == 'sleep 42'
     finally:
         if container is not None:
-            admin_client.wait_success(admin_client.delete(container))
+            docker_client.wait_success(docker_client.delete(container))
 
 
 @if_docker
-def test_docker_command_args(admin_client, super_client, docker_context):
+def test_docker_command_args(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test',
-                                              imageUuid=uuid,
-                                              command=['sleep', '1', '2', '3'])
+    container = docker_client.create_container(name='test',
+                                               imageUuid=uuid,
+                                               command=['sleep', '1', '2',
+                                                        '3'])
 
     try:
-        container = wait_success(super_client, container)
+        container = super_client.wait_success(container)
         assert container.data.dockerContainer.Command == 'sleep 1 2 3'
     finally:
         if container is not None:
-            admin_client.wait_success(admin_client.delete(container))
+            docker_client.wait_success(docker_client.delete(container))
 
 
 @if_docker
-def test_short_lived_container(admin_client, super_client, docker_context):
-    network = find_one(super_client.list_network, uuid='managed-docker0')
-    container = admin_client.create_container(imageUuid="docker:tianon/true",
-                                              networkIds=[network.id])
-
+def test_short_lived_container(docker_client, super_client):
+    container = docker_client.create_container(imageUuid="docker:tianon/true")
     container = wait_for_condition(
-        admin_client, container,
+        docker_client, container,
         lambda x: x.state == 'stopped',
         lambda x: 'State is: ' + x.state)
 
@@ -154,13 +133,13 @@ def test_short_lived_container(admin_client, super_client, docker_context):
 
 
 @if_docker
-def test_docker_stop(admin_client, docker_context):
+def test_docker_stop(docker_client):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.create_container(name='test', imageUuid=uuid)
 
     assert container.state == 'creating'
 
-    container = wait_success(admin_client, container)
+    container = docker_client.wait_success(container)
 
     assert container.state == 'running'
 
@@ -168,52 +147,51 @@ def test_docker_stop(admin_client, docker_context):
     container = container.stop(timeout=0)
     assert container.state == 'stopping'
 
-    container = wait_success(admin_client, container)
+    container = docker_client.wait_success(container)
     delta = time.time() - start
     assert container.state == 'stopped'
     assert delta < 10
 
 
 @if_docker
-def test_docker_purge(admin_client, docker_context):
+def test_docker_purge(docker_client):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.create_container(name='test', imageUuid=uuid)
 
     assert container.state == 'creating'
 
-    container = wait_success(admin_client, container)
+    container = docker_client.wait_success(container)
 
     assert container.state == 'running'
 
     container = container.stop(timeout=0)
     assert container.state == 'stopping'
 
-    container = wait_success(admin_client, container)
+    container = docker_client.wait_success(container)
     assert container.state == 'stopped'
 
-    admin_client.delete(container)
+    docker_client.delete(container)
 
-    container = wait_success(admin_client, container)
+    container = docker_client.wait_success(container)
     assert container.state == 'removed'
 
-    container = wait_success(admin_client, container.purge())
+    container = docker_client.wait_success(container.purge())
     assert container.state == 'purged'
 
     volume = container.volumes()[0]
     assert volume.state == 'removed'
 
-    volume = wait_success(admin_client, volume.purge())
+    volume = docker_client.wait_success(volume.purge())
     assert volume.state == 'purged'
 
 
 @if_docker
-def test_docker_image_format(admin_client, super_client,
-                             docker_context):
+def test_docker_image_format(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = admin_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.create_container(name='test', imageUuid=uuid)
 
     try:
-        container = wait_success(admin_client, container)
+        container = docker_client.wait_success(container)
         container = super_client.reload(container)
 
         assert container.image().format == 'docker'
@@ -221,18 +199,18 @@ def test_docker_image_format(admin_client, super_client,
         assert container.volumes()[0].format == 'docker'
     finally:
         if container is not None:
-            admin_client.wait_success(admin_client.delete(container))
+            docker_client.wait_success(docker_client.delete(container))
 
 
 @if_docker
-def test_docker_ports_from_container_publish_all(client, admin_client,
-                                                 docker_context):
+def test_docker_ports_from_container_publish_all(docker_client):
     uuid = TEST_IMAGE_UUID
-    c = client.create_container(name='test',
-                                publishAllPorts=True,
-                                imageUuid=uuid)
+    c = docker_client.create_container(networkMode='bridge',
+                                       name='test',
+                                       publishAllPorts=True,
+                                       imageUuid=uuid)
 
-    c = client.wait_success(c)
+    c = docker_client.wait_success(c)
 
     assert c.state == 'running'
 
@@ -245,17 +223,16 @@ def test_docker_ports_from_container_publish_all(client, admin_client,
     assert port.publicIpAddressId is not None
     assert port.kind == 'imagePort'
 
-    client.wait_success(client.delete(c))
+    docker_client.wait_success(docker_client.delete(c))
 
 
 @if_docker
-def test_docker_ports_from_container_no_publish(client, admin_client,
-                                                docker_context):
+def test_docker_ports_from_container_no_publish(docker_client):
     uuid = TEST_IMAGE_UUID
-    c = client.create_container(name='test',
-                                imageUuid=uuid)
+    c = docker_client.create_container(name='test',
+                                       imageUuid=uuid)
 
-    c = client.wait_success(c)
+    c = docker_client.wait_success(c)
 
     assert c.state == 'running'
 
@@ -268,32 +245,29 @@ def test_docker_ports_from_container_no_publish(client, admin_client,
     assert port.publicIpAddressId is not None
     assert port.kind == 'imagePort'
 
-    client.wait_success(client.delete(c))
+    docker_client.wait_success(docker_client.delete(c))
 
 
 @if_docker
-def test_docker_ports_from_container(client, admin_client,
-                                     super_client, docker_context):
+def test_docker_ports_from_container(docker_client, super_client):
 
     def reload(x):
         return super_client.reload(x)
 
     _ = reload
 
-    network = super_client.create_network(isPublic=True)
-    network = super_client.wait_success(network)
     uuid = TEST_IMAGE_UUID
-    c = client.create_container(name='test',
-                                startOnCreate=False,
-                                publishAllPorts=True,
-                                networkIds=[network.id],
-                                imageUuid=uuid,
-                                ports=[
-                                    '8081',
-                                    '8082/tcp',
-                                    '8083/udp'])
+    c = docker_client.create_container(networkMode='bridge',
+                                       name='test',
+                                       startOnCreate=False,
+                                       publishAllPorts=True,
+                                       imageUuid=uuid,
+                                       ports=[
+                                           '8081',
+                                           '8082/tcp',
+                                           '8083/udp'])
 
-    c = client.wait_success(c)
+    c = docker_client.wait_success(c)
     assert c.state == 'stopped'
 
     count = 0
@@ -315,8 +289,10 @@ def test_docker_ports_from_container(client, admin_client,
 
     assert count == 3
 
-    c = client.wait_success(c.start())
+    c = docker_client.wait_success(c.start())
     assert c.state == 'running'
+
+    network = super_client.reload(c).nics()[0].network()
 
     count = 0
     ip = None
@@ -356,7 +332,7 @@ def test_docker_ports_from_container(client, admin_client,
 
     assert c.primaryIpAddress == privateIp.address
 
-    c = client.wait_success(c.stop(timeout=0))
+    c = docker_client.wait_success(c.stop(timeout=0))
     assert c.state == 'stopped'
 
     count = 0
@@ -369,7 +345,7 @@ def test_docker_ports_from_container(client, admin_client,
 
     assert count == 1
 
-    c = client.wait_success(c.start())
+    c = docker_client.wait_success(c.start())
     assert c.state == 'running'
 
     count = 0
@@ -382,67 +358,15 @@ def test_docker_ports_from_container(client, admin_client,
 
     assert count == 1
 
-    client.wait_success(client.delete(c))
+    docker_client.wait_success(docker_client.delete(c))
 
 
 @if_docker
-def test_agent_instance(admin_client, super_client, docker_context):
-    network = create_and_activate(super_client, 'hostOnlyNetwork',
-                                  hostVnetUri='bridge://docker0',
-                                  dynamicCreateVnet=True)
-
-    ni = create_and_activate(super_client, 'agentInstanceProvider',
-                             networkId=network.id)
-
-    create_and_activate(super_client, 'dnsService',
-                        networkId=network.id,
-                        networkServiceProviderId=ni.id)
-
-    c = super_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                      networkIds=[network.id])
-    # TODO: Figure out whats failing here
-    try:
-        c = super_client.wait_success(c, timeout=240)
-        assert c.state == 'running'
-
-        agent_instance = None
-        for nic in super_client.reload(network).nics():
-            instance = nic.instance()
-            if instance.agentId is not None:
-                agent_instance = instance
-                break
-
-        assert agent_instance is not None
-
-        agent_instance = super_client.wait_success(agent_instance)
-        assert agent_instance.state == 'running'
-
-        agent = super_client.wait_success(agent_instance.agent())
-        assert agent.state == 'active'
-    finally:
-        if agent is not None:
-            agent = super_client.wait_success(agent.deactivate())
-            super_client.delete(agent)
-            super_client.wait_success(agent)
-        if c is not None:
-            c = super_client.wait_success(c.stop(timeout=0))
-            super_client.delete(c)
-            super_client.wait_success(c)
-        if agent_instance is not None:
-            super_client.delete(agent_instance)
-            super_client.wait_success(agent_instance)
-
-
-@if_docker
-def test_no_port_override(admin_client, super_client, docker_context):
-    network = find_one(super_client.list_network, uuid='managed-docker0')
-
-    c = admin_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                      networkIds=[network.id],
-                                      ports=['8081:8080'])
+def test_no_port_override(docker_client, super_client):
+    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                       ports=['8081:8080'])
 
     try:
-        # TODO: Figure out why this takes so long
         c = super_client.wait_success(c, timeout=240)
 
         assert c.state == 'running'
@@ -458,7 +382,7 @@ def test_no_port_override(admin_client, super_client, docker_context):
 
 
 @if_docker
-def test_docker_volumes(client, admin_client, super_client, docker_context):
+def test_docker_volumes(docker_client, super_client):
 
     def reload(x):
         return super_client.reload(x)
@@ -472,14 +396,14 @@ def test_docker_volumes(client, admin_client, super_client, docker_context):
     baz_host_path = '/tmp/baz%s' % bind_mount_uuid
     baz_bind_mount = '%s:/baz:ro' % baz_host_path
 
-    c = admin_client.create_container(name="volumes_test",
-                                      imageUuid=uuid,
-                                      startOnCreate=False,
-                                      dataVolumes=['/foo',
-                                                   bar_bind_mount,
-                                                   baz_bind_mount])
+    c = docker_client.create_container(name="volumes_test",
+                                       imageUuid=uuid,
+                                       startOnCreate=False,
+                                       dataVolumes=['/foo',
+                                                    bar_bind_mount,
+                                                    baz_bind_mount])
 
-    c = admin_client.wait_success(c)
+    c = docker_client.wait_success(c)
     assert len(c.dataVolumes) == 3
     assert set(c.dataVolumes) == set(['/foo',
                                       bar_bind_mount,
@@ -534,11 +458,11 @@ def test_docker_volumes(client, admin_client, super_client, docker_context):
     assert baz_vol.isHostPath
     assert baz_host_path in baz_vol.uri
 
-    c2 = admin_client.create_container(name="volumes_from_test",
-                                       imageUuid=uuid,
-                                       startOnCreate=False,
-                                       dataVolumesFrom=[c.id])
-    c2 = admin_client.wait_success(c2)
+    c2 = docker_client.create_container(name="volumes_from_test",
+                                        imageUuid=uuid,
+                                        startOnCreate=False,
+                                        dataVolumesFrom=[c.id])
+    c2 = docker_client.wait_success(c2)
     assert len(c2.dataVolumesFrom) == 1
     assert set(c2.dataVolumesFrom) == set([c.id])
 
@@ -558,40 +482,40 @@ def test_docker_volumes(client, admin_client, super_client, docker_context):
     c.stop(remove=True, timeout=0)
     c2.stop(remove=True, timeout=0)
 
-    _check_path(foo_vol, True, super_client)
+    _check_path(foo_vol, True, docker_client, super_client)
     foo_vol = super_client.wait_success(foo_vol.deactivate())
     foo_vol = super_client.wait_success(foo_vol.remove())
     foo_vol = super_client.wait_success(foo_vol.purge())
-    _check_path(foo_vol, False, super_client)
+    _check_path(foo_vol, False, docker_client, super_client)
 
-    _check_path(bar_vol, True, super_client)
+    _check_path(bar_vol, True, docker_client, super_client)
     bar_vol = super_client.wait_success(bar_vol.deactivate())
     bar_vol = super_client.wait_success(bar_vol.remove())
     bar_vol = super_client.wait_success(bar_vol.purge())
     # Host bind mount. Wont actually delete the dir on the host.
-    _check_path(bar_vol, True, super_client)
+    _check_path(bar_vol, True, docker_client, super_client)
 
-    _check_path(baz_vol, True, super_client)
+    _check_path(baz_vol, True, docker_client, super_client)
     baz_vol = super_client.wait_success(baz_vol.deactivate())
     baz_vol = super_client.wait_success(baz_vol.remove())
     baz_vol = super_client.wait_success(baz_vol.purge())
     # Host bind mount. Wont actually delete the dir on the host.
-    _check_path(baz_vol, True, super_client)
+    _check_path(baz_vol, True, docker_client, super_client)
 
 
 @if_docker
-def test_volumes_from_more_than_one_container(client):
-    c = client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                dataVolumes=['/foo'])
-    client.wait_success(c)
+def test_volumes_from_more_than_one_container(docker_client):
+    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                       dataVolumes=['/foo'])
+    docker_client.wait_success(c)
 
-    c2 = client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                 dataVolumes=['/bar'])
-    client.wait_success(c2)
+    c2 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                        dataVolumes=['/bar'])
+    docker_client.wait_success(c2)
 
-    c3 = client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                 dataVolumesFrom=[c.id, c2.id])
-    c3 = client.wait_success(c3)
+    c3 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                        dataVolumesFrom=[c.id, c2.id])
+    c3 = docker_client.wait_success(c3)
 
     mounts = c3.mounts()
     assert len(mounts) == 2
@@ -600,8 +524,7 @@ def test_volumes_from_more_than_one_container(client):
         assert m.path in paths
 
 
-@if_docker
-def test_container_fields(client, admin_client, super_client, docker_context):
+def test_container_fields(docker_client, super_client):
     caps = ["SYS_MODULE", "SYS_RAWIO", "SYS_PACCT", "SYS_ADMIN",
             "SYS_NICE", "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG",
             "MKNOD", "AUDIT_WRITE", "AUDIT_CONTROL", "MAC_OVERRIDE",
@@ -616,24 +539,25 @@ def test_container_fields(client, admin_client, super_client, docker_context):
     expectedLxcConf = {"lxc.network.type": "veth"}
     restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
 
-    c = admin_client.create_container(name=test_name,
-                                      imageUuid=image_uuid,
-                                      capAdd=caps,
-                                      capDrop=caps,
-                                      dnsSearch=['8.8.8.8', '1.2.3.4'],
-                                      dns=['8.8.8.8', '1.2.3.4'],
-                                      privileged=True,
-                                      domainName="rancher.io",
-                                      memory=8000000,
-                                      memorySwap=16000000,
-                                      cpuSet="0,1",
-                                      stdinOpen=True,
-                                      tty=True,
-                                      entryPoint=["/bin/sh", "-c"],
-                                      lxcConf=expectedLxcConf,
-                                      cpuShares=400,
-                                      restartPolicy=restart_policy,
-                                      devices="/dev/null:/dev/xnull:rw")
+    c = docker_client.create_container(name=test_name,
+                                       imageUuid=image_uuid,
+                                       capAdd=caps,
+                                       capDrop=caps,
+                                       dnsSearch=['8.8.8.8', '1.2.3.4'],
+                                       dns=['8.8.8.8', '1.2.3.4'],
+                                       privileged=True,
+                                       domainName="rancher.io",
+                                       memory=8000000,
+                                       memorySwap=16000000,
+                                       cpuSet="0,1",
+                                       stdinOpen=True,
+                                       tty=True,
+                                       command=["true"],
+                                       entryPoint=["/bin/sh", "-c"],
+                                       lxcConf=expectedLxcConf,
+                                       cpuShares=400,
+                                       restartPolicy=restart_policy,
+                                       devices="/dev/null:/dev/xnull:rw")
 
     c = super_client.wait_success(c)
 
@@ -666,20 +590,20 @@ def test_container_fields(client, admin_client, super_client, docker_context):
 
 
 @if_docker
-def test_docker_mount_life_cycle(client, admin_client, docker_context):
+def test_docker_mount_life_cycle(docker_client):
     uuid = TEST_IMAGE_UUID
     bind_mount_uuid = py_uuid.uuid4().hex
     bar_host_path = '/tmp/bar%s' % bind_mount_uuid
     bar_bind_mount = '%s:/bar' % bar_host_path
 
-    c = admin_client.create_container(name="volumes_test",
-                                      imageUuid=uuid,
-                                      startOnCreate=False,
-                                      dataVolumes=['/foo',
-                                                   bar_bind_mount])
+    c = docker_client.create_container(name="volumes_test",
+                                       imageUuid=uuid,
+                                       startOnCreate=False,
+                                       dataVolumes=['/foo',
+                                                    bar_bind_mount])
 
-    c = admin_client.wait_success(c)
-    c = admin_client.wait_success(c.start())
+    c = docker_client.wait_success(c)
+    c = docker_client.wait_success(c.start())
 
     def check_mounts(container, expected_state=None, length=0):
         mounts = container.mounts()
@@ -691,26 +615,26 @@ def test_docker_mount_life_cycle(client, admin_client, docker_context):
 
     check_mounts(c, 'active', 2)
 
-    c = admin_client.wait_success(c.stop(remove=True, timeout=0))
+    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
     check_mounts(c, 'inactive', 2)
 
-    c = admin_client.wait_success(c.restore())
+    c = docker_client.wait_success(c.restore())
     assert c.state == 'stopped'
     check_mounts(c, 'inactive', 2)
 
-    c = admin_client.wait_success(c.start())
+    c = docker_client.wait_success(c.start())
     assert c.state == 'running'
     check_mounts(c, 'active', 2)
 
-    c = admin_client.wait_success(c.stop(remove=True, timeout=0))
-    c = admin_client.wait_success(c.purge())
+    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
+    c = docker_client.wait_success(c.purge())
     assert c.state == 'purged'
     check_mounts(c, 'removed', 2)
 
 
-def _check_path(volume, should_exist, super_client):
+def _check_path(volume, should_exist, client, super_client):
     path = _path_to_volume(volume)
-    c = super_client. \
+    c = client. \
         create_container(name="volume_check",
                          imageUuid="docker:cjellick/rancher-test-tools",
                          startOnCreate=False,
@@ -720,9 +644,9 @@ def _check_path(volume, should_exist, super_client):
                              '/var/lib/docker:/host/var/lib/docker',
                              '/tmp:/host/tmp'])
     c.start()
-    c = super_client.wait_success(c)
+    c = client.wait_success(c)
     if 'stop' in c:
-        c = super_client.wait_success(c.stop(timeout=1))
+        c = client.wait_success(c.stop(timeout=1))
 
     c = super_client.wait_success(c)
     assert c.state == 'stopped'
