@@ -12,7 +12,8 @@ create_dummy()
         ip link add dev $ARPDEV type dummy
     fi
 
-    ip link set dev $ARPDEV mtu $(</sys/class/net/${IFACE}/mtu) up
+    MTU=$(ip link show dev ${IFACE} | sed -n 's/.*mtu \([0-9][0-9]*\).*/\1/p')
+    ip link set dev $ARPDEV mtu ${MTU} up
 }
 
 create_dummy
