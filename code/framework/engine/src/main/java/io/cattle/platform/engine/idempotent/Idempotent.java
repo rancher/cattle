@@ -33,8 +33,12 @@ public class Idempotent {
         }
     };
 
+    public static boolean enabled() {
+        return CHECKS.get() && ! Boolean.TRUE.equals(DISABLED.get());
+    }
+
     public static <T> T execute(IdempotentExecution<T> execution) {
-        if (!CHECKS.get() && Boolean.TRUE.equals(DISABLED.get())) {
+        if (!Idempotent.enabled()) {
             return execution.execute();
         }
 
@@ -80,7 +84,7 @@ public class Idempotent {
     }
 
     public static <T> T change(IdempotentExecution<T> execution) {
-        if (!CHECKS.get() || LEVEL.get() < 1 || Boolean.TRUE.equals(DISABLED.get())) {
+        if (!Idempotent.enabled() || LEVEL.get() < 1) {
             return execution.execute();
         }
 

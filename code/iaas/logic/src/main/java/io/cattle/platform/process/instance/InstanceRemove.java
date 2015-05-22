@@ -27,8 +27,6 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance) state.getResource();
 
-        instanceStop.handle(state, process);
-
         Map<String, Object> result = new HashMap<String, Object>();
 
         network(instance, state.getData());

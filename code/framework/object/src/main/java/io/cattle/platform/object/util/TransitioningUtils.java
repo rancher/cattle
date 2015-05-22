@@ -1,8 +1,11 @@
 package io.cattle.platform.object.util;
 
+import static io.cattle.platform.object.meta.ObjectMetaDataManager.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +25,17 @@ public class TransitioningUtils {
         }
 
         return getTransitioningData(e.getTransitioningMessage(), e.getTransitioningInternalMessage());
+    }
+
+    public static Map<String, Object> getTransitioningErrorData(Object obj) {
+        String error = DataAccessor.fieldString(obj, TRANSITIONING_FIELD);
+        String message = DataAccessor.fieldString(obj, TRANSITIONING_MESSAGE_FIELD);
+
+        if (TRANSITIONING_ERROR.equals(error)) {
+            return CollectionUtils.asMap(TRANSITIONING_FIELD, error, TRANSITIONING_MESSAGE_FIELD, message);
+        }
+
+        return Collections.emptyMap();
     }
 
     public static Map<String, Object> getTransitioningData(String message, String internalMessage) {

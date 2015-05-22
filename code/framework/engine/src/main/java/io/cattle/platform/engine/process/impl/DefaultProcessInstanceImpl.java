@@ -2,6 +2,7 @@ package io.cattle.platform.engine.process.impl;
 
 import static io.cattle.platform.engine.process.ExitReason.*;
 import static io.cattle.platform.util.time.TimeUtils.*;
+
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.context.EngineContext;
@@ -369,6 +370,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 HandlerResult result = Idempotent.execute(new IdempotentExecution<HandlerResult>() {
                     @Override
                     public HandlerResult execute() {
+                        if (Idempotent.enabled()) {
+                            state.reload();
+                        }
                         return runHandler(processDefinition, state, context, handler);
                     }
                 });
@@ -552,17 +556,30 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected boolean setDone() {
         boolean chained = false;
-        ProcessState state = instanceContext.getState();
+        final ProcessState state = instanceContext.getState();
         String previousState = state.getState();
 
         if (chainProcess != null) {
-            LaunchConfiguration config = new LaunchConfiguration(chainProcess, record.getResourceType(), record.getResourceId(), state.getData());
+            final LaunchConfiguration config = new LaunchConfiguration(chainProcess, record.getResourceType(), record.getResourceId(), state.getData());
             config.setParentProcessState(state);
 
-            this.context.getProcessManager().scheduleProcessInstance(config);
-            log.info("Chained [{}] to [{}]", record.getProcessName(), chainProcess);
+            ExecutionExceptionHandler handler = this.context.getExceptionHandler();
 
-            state.reload();
+            Runnable run = new Runnable() {
+                @Override
+                public void run() {
+                    DefaultProcessInstanceImpl.this.context.getProcessManager().scheduleProcessInstance(config);
+                    log.info("Chained [{}] to [{}]", record.getProcessName(), chainProcess);
+                    state.reload();
+                }
+            };
+
+            if (handler == null) {
+                run.run();
+            } else {
+                handler.wrapChainSchedule(state, context, run);
+            }
+
             chained = true;
         }
 

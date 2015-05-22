@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.manager;
 import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -28,13 +29,11 @@ public class InstanceManager extends AbstractJooqResourceManager {
             return super.deleteInternal(type, id, obj, request);
         }
 
-        Instance instance = (Instance) obj;
-
-        if (InstanceConstants.STATE_RUNNING.equals(instance.getState())) {
+        try {
+            return super.deleteInternal(type, id, obj, request);
+        } catch (ProcessCancelException e) {
             scheduleProcess(InstanceConstants.PROCESS_STOP, obj, CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
             return getObjectManager().reload(obj);
-        } else {
-            return super.deleteInternal(type, id, obj, request);
         }
     }
 
