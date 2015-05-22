@@ -19,4 +19,9 @@ public class LoadBalancerInstanceDaoImpl extends AbstractJooqDao implements Load
     public List<? extends LoadBalancerHostMap> getLoadBalancerHostMaps(long lbId) {
         return mapDao.findToRemove(LoadBalancerHostMap.class, LoadBalancer.class, lbId);
     }
+
+    @Override
+    public List<? extends LoadBalancerHostMap> getNonRemovedLoadBalancerHostMaps(long lbId) {
+        return mapDao.findNonRemoved(LoadBalancerHostMap.class, LoadBalancer.class, lbId);
+    }
 }

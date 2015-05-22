@@ -59,8 +59,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Inject
     ServiceConsumeMapDao consumeMapDao;
 
-    Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = new HashMap<>();
-
     @Override
     public void activate(final Service service, final Map<String, Object> data) {
         if (service == null) {
@@ -87,6 +85,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 if (!needToReconcile) {
                     return;
                 }
+
                 activateServices(service, services);
                 activateDeploymentUnits(services, units, requestedScale);
             }
@@ -185,17 +184,17 @@ public class DeploymentManagerImpl implements DeploymentManager {
         units = deleteBadUnits(units);
         
         // get used service generated instance names - do it only after "bad" units are removed
-        populateServiceGeneratedInstancesUsedNames(services);
+        Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = populateServiceGeneratedInstancesUsedNames(services);
 
         /*
          * Create new units / remove old units to match the scale
          */
-        units = matchScale(services, units, requestedScale);
+        units = matchScale(services, units, requestedScale, svcInstanceIdGenerator);
 
         /*
          * Fill up the gaps in units
          */
-        fillUpMissingUnitInstances(services, units);
+        fillUpMissingUnitInstances(services, units,  svcInstanceIdGenerator);
 
         /*
          * Activate all the units
@@ -209,14 +208,16 @@ public class DeploymentManagerImpl implements DeploymentManager {
         cleanup(units);
     }
 
-    private void populateServiceGeneratedInstancesUsedNames(List<Service> services) {
+    private Map<Long, DeploymentUnitInstanceIdGenerator> populateServiceGeneratedInstancesUsedNames(
+            List<Service> services) {
+        Map<Long, DeploymentUnitInstanceIdGenerator> generator = new HashMap<>();
         for (Service service : services) {
             List<Integer> usedNames = sdSvc.getServiceInstanceUsedOrderIds(service);
-            svcInstanceIdGenerator
-                    .put(service.getId(),
+            generator.put(service.getId(),
                             new DeploymentUnitInstanceIdGeneratorImpl(objectMgr.loadResource(
                                     Environment.class, service.getEnvironmentId()), service, usedNames));
         }
+        return generator;
     }
 
     protected void cleanup(List<DeploymentUnit> units) {
@@ -247,7 +248,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return result;
     }
 
-    protected List<DeploymentUnit> matchScale(List<Service> services, List<DeploymentUnit> units, int requestedScale) {
+    protected List<DeploymentUnit> matchScale(List<Service> services, List<DeploymentUnit> units, int requestedScale,
+            Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
         /*
          * If there are too many units, call unit.remove() and delete the excess.
          * If there are not enough units, create new empty deployment units by call the factory
@@ -257,7 +259,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
          */
 
         if (units.size() < requestedScale) {
-            addMissingUnits(services, units, requestedScale);
+            addMissingUnits(services, units, requestedScale, svcInstanceIdGenerator);
         } else if (units.size() > requestedScale) {
             removeExtraUnits(units, requestedScale);
         }
@@ -276,14 +278,16 @@ public class DeploymentManagerImpl implements DeploymentManager {
         }
     }
 
-    private void addMissingUnits(List<Service> services, List<DeploymentUnit> units, int scale) {
+    private void addMissingUnits(List<Service> services, List<DeploymentUnit> units,
+            int scale, Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
         while (units.size() < scale) {
             DeploymentUnit unit = new DeploymentUnit(services, svcInstanceIdGenerator, new DeploymentServiceContext());
             units.add(unit);
         }
     }
 
-    private void fillUpMissingUnitInstances(List<Service> services, List<DeploymentUnit> units) {
+    private void fillUpMissingUnitInstances(List<Service> services, List<DeploymentUnit> units,
+            Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
         for (DeploymentUnit unit : units) {
             unit.createMissingUnitInstances(services, svcInstanceIdGenerator, new DeploymentServiceContext());
         }

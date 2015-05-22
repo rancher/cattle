@@ -25,4 +25,8 @@ public interface ObjectProcessManager {
 
     ExitReason executeProcess(String processName, Object resource, Map<String, Object> data);
 
+    void scheduleProcessInstanceAsync(String processName, Object resource, Map<String, Object> data);
+
+    void scheduleStandardProcessAsync(StandardProcess process, Object resource, Map<String, Object> data);
+
 }

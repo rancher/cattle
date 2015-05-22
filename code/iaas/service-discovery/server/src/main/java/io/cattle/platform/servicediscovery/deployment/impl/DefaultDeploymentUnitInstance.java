@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -55,17 +53,19 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance {
                 context.objectManager.loadResource(Instance.class, instance.getId()),
                 ServiceExposeMap.class);
         for (ServiceExposeMap map : maps) {
-            context.objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, map, null);
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, map, null);
         }
         // 2) schedule remove for the instance
         if (!(instance.getState().equals(CommonStatesConstants.REMOVED)
         || instance.getState().equals(CommonStatesConstants.REMOVING))) {
             try {
-                context.objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
+                        null);
             } catch (ProcessCancelException e) {
                 Map<String, Object> data = new HashMap<>();
                 data.put(InstanceConstants.REMOVE_OPTION, true);
-                context.objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
+                context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
+                        instance,
                         data);
             }
         }
@@ -94,22 +94,14 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance {
             this.instance = instanceMapPair.getLeft();
             this.exposeMap = instanceMapPair.getRight();
         }
-        DeferredUtils.nest(new Runnable() {
-            @Override
-            public void run() {
-                context.objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, instance, null);
-                context.objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, exposeMap, null);
-            }
-        });
+        context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
+                null);
+        context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
+                null);
+
         if (InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
-            DeferredUtils.nest(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    context.objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, instance,
-                            null);
-                    return null;
-                }
-            });
+            context.objectProcessManager.scheduleProcessInstanceAsync(
+                            InstanceConstants.PROCESS_START, instance, null);
         }
         this.instance = context.objectManager.reload(this.instance);
         return this;
@@ -129,7 +121,8 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance {
 
     @Override
     public void stop() {
-        context.objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
+        context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
+                null);
     }
 
     @Override

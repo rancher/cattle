@@ -299,7 +299,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (volumesFrom == null) {
                 volumesFrom = new ArrayList<Integer>();
             }
-            volumesFrom.addAll(volumesFromInstanceIds);
+            for (Integer volumesFromInstanceId : volumesFromInstanceIds) {
+                if (!volumesFrom.contains(volumesFromInstanceId)) {
+                    volumesFrom.add(volumesFromInstanceId);
+                }
+            }
             launchConfigItems.put(ServiceDiscoveryConfigItem.VOLUMESFROM.getCattleName(), volumesFrom);
         }
 

@@ -23,6 +23,7 @@ import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.lb.instance.dao.LoadBalancerInstanceDao;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.object.ObjectManager;
@@ -83,7 +84,8 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             throw new RuntimeException(
                     "Unable to find a network to start a load balancer " + loadBalancer);
         }
-        List<? extends LoadBalancerHostMap> hostMaps = lbInstanceDao.getLoadBalancerHostMaps(loadBalancer.getId());
+        List<? extends LoadBalancerHostMap> hostMaps = lbInstanceDao.getNonRemovedLoadBalancerHostMaps(loadBalancer
+                .getId());
         for (LoadBalancerHostMap hostMap : hostMaps) {
             if (hostMap.getHostId() != null) {
                 Host host = objectManager.loadResource(Host.class, hostMap.getHostId());
@@ -100,11 +102,17 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                 String imageUUID = DataAccessor.fields(loadBalancer).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID).as(String.class);
 
                 Map<String, Object> params = new HashMap<>();
-                // currently we respect only labels parameter from instance launch config when create lb instance
                 Map<String, Object> launchConfigData = (Map<String, Object>) DataUtils.getFields(hostMap).get(
                         "launchConfig");
-                if (launchConfigData != null && launchConfigData.get(InstanceConstants.FIELD_LABELS) != null) {
-                    params.put(InstanceConstants.FIELD_LABELS, launchConfigData.get(InstanceConstants.FIELD_LABELS));
+                if (launchConfigData != null) {
+                    // currently we respect only labels and volumesFrom parameters from the launch config
+                    if (launchConfigData.get(InstanceConstants.FIELD_LABELS) != null) {
+                        params.put(InstanceConstants.FIELD_LABELS, launchConfigData.get(InstanceConstants.FIELD_LABELS));
+                    }
+                    if (launchConfigData.get(DockerInstanceConstants.FIELD_VOLUMES_FROM) != null) {
+                        params.put(DockerInstanceConstants.FIELD_VOLUMES_FROM,
+                                launchConfigData.get(DockerInstanceConstants.FIELD_VOLUMES_FROM));
+                    }
                 }
                 List<Long> networkIds = new ArrayList<>();
                 networkIds.add(network.getId());
@@ -113,7 +121,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                     params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, hostMap.getHostId());
                 }
 
-                // set inital set of lb ports
+                // set initial set of lb ports
                 List<String> ports = getLbInstancePorts(lbInstance, loadBalancer);
                 if (!ports.isEmpty()) {
                     params.put(InstanceConstants.FIELD_PORTS, ports);

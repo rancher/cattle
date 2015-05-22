@@ -35,7 +35,7 @@ public class DeploymentUnitInstanceIdGeneratorImpl implements DeploymentUnitInst
             // in situation when service with scale=3 has one container missing (it got destroyed outside of the
             // service)
             // and container names don't reflect the order, we should pick the least available number that is <=order
-            for (int i = 1; i < usedIds.size(); i++) {
+            for (int i = 1; i <= usedIds.size(); i++) {
                 if (!usedIds.contains(i)) {
                     idToReturn = i;
                     break;

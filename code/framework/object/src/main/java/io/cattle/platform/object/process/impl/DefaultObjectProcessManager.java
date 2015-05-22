@@ -1,5 +1,6 @@
 package io.cattle.platform.object.process.impl;
 
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.LaunchConfiguration;
@@ -103,5 +104,27 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
     public ExitReason executeProcess(String processName, Object resource, Map<String, Object> data) {
         ProcessInstance pi = createProcessInstance(processName, resource, data);
         return pi.execute();
+    }
+
+    @Override
+    public void scheduleProcessInstanceAsync(final String processName, final Object resource,
+            final Map<String, Object> data) {
+        DeferredUtils.nest(new Runnable() {
+            @Override
+            public void run() {
+                scheduleProcessInstance(processName, resource, data);
+            }
+        });
+    }
+
+    @Override
+    public void scheduleStandardProcessAsync(final StandardProcess process, final Object resource,
+            final Map<String, Object> data) {
+        DeferredUtils.nest(new Runnable() {
+            @Override
+            public void run() {
+                scheduleStandardProcess(process, resource, data);
+            }
+        });
     }
 }

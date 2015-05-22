@@ -8,4 +8,5 @@ public interface LoadBalancerInstanceDao {
 
     List<? extends LoadBalancerHostMap> getLoadBalancerHostMaps(long lbId);
 
+    List<? extends LoadBalancerHostMap> getNonRemovedLoadBalancerHostMaps(long lbId);
 }

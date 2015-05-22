@@ -8,7 +8,8 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -49,9 +50,20 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance {
 
     @Override
     public void remove() {
-        context.objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
-                context.objectManager.reload(hostMap),
-                null);
+        // 1) remove the mapping
+        if (this.instance != null) {
+            List<? extends ServiceExposeMap> maps = context.objectManager.mappedChildren(
+                    context.objectManager.loadResource(Instance.class, this.instance.getId()),
+                    ServiceExposeMap.class);
+            for (ServiceExposeMap map : maps) {
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, map, null);
+            }
+        }
+
+        // 2) remove host map
+        context.objectProcessManager.scheduleProcessInstanceAsync(
+                LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
+                context.objectManager.reload(hostMap), null);
     }
 
     @Override
@@ -69,13 +81,8 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance {
             this.instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
         } else if (this.instance != null) {
             if (InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
-                DeferredUtils.nest(new Runnable() {
-                    @Override
-                    public void run() {
-                        context.objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, instance,
-                                null);
-                    }
-                });
+                context.objectProcessManager.scheduleProcessInstanceAsync(
+                        InstanceConstants.PROCESS_START, instance, null);
             }
         }
         return this;
@@ -96,13 +103,18 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance {
     @Override
     public void stop() {
         if (this.instance != null) {
-            context.objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
+            context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
+                    instance, null);
         }
     }
 
     @Override
     public boolean isStarted() {
-        return this.hostMap.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE);
+        boolean mapActive = this.hostMap.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE);
+        boolean instanceRunning = this.instance != null
+                && this.instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING);
+
+        return mapActive && instanceRunning;
     }
 
     @Override
