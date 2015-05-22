@@ -12,7 +12,9 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -63,11 +65,11 @@ public class HostPurge extends AbstractDefaultProcessHandler {
 
         for (Instance instance : instanceDao.getNonRemovedInstanceOn(host.getId())) {
             try {
-                execute(InstanceConstants.PROCESS_STOP, instance, state.getData());
+                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
             } catch (ProcessCancelException e) {
-                // ignore
+                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
+                        CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
             }
-            remove(instance, state.getData());
         }
 
         return null;

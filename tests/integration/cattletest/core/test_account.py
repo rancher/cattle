@@ -129,3 +129,61 @@ def test_account_context_create(new_context):
     assert new_context.account is not None
 
     assert len(new_context.user_client.list_project()) == 1
+
+
+def test_account_purge(super_client, new_context):
+    account_id = new_context.project.id
+    account = new_context.project
+    image_uuid = 'sim:{}'.format(random_num())
+    host = new_context.host
+    assert host.state == 'active'
+
+    # Create another host
+    host2 = register_simulated_host(new_context)
+    assert host2.state == 'active'
+
+    c1 = super_client.create_container(accountId=account_id,
+                                       imageUuid=image_uuid,
+                                       requestedHostId=host.id)
+    c1 = super_client.wait_success(c1)
+    assert c1.state == 'running'
+
+    c2 = super_client.create_container(accountId=account_id,
+                                       imageUuid=image_uuid,
+                                       requestedHostId=host.id)
+    c2 = super_client.wait_success(c2)
+    assert c2.state == 'running'
+
+    account = super_client.reload(account)
+    account = super_client.wait_success(account.deactivate())
+    account = super_client.wait_success(account.remove())
+    assert account.state == 'removed'
+    assert account.removed is not None
+
+    account = super_client.wait_success(account.purge())
+    assert account.state == 'purged'
+
+    host = super_client.wait_success(host)
+    assert host.removed is not None
+    assert host.state == 'purged'
+
+    host2 = super_client.wait_success(host2)
+    assert host2.removed is not None
+    assert host2.state == 'purged'
+
+    c1 = super_client.wait_success(c1)
+    assert c1.removed is not None
+    assert c1.state == 'removed'
+
+    c2 = super_client.wait_success(c2)
+    assert c2.removed is not None
+    assert c2.state == 'removed'
+
+    c1 = super_client.wait_success(c1.purge())
+    assert c1.state == 'purged'
+
+    volume = super_client.wait_success(c1.volumes()[0])
+    assert volume.state == 'removed'
+
+    volume = super_client.wait_success(volume.purge())
+    assert volume.state == 'purged'
