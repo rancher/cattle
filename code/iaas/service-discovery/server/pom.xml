@@ -62,7 +62,7 @@
             <artifactId>cattle-iaas-lb-instance</artifactId>
             <version>${project.version}</version>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-allocator</artifactId>
             <version>${project.version}</version>

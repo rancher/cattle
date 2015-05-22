@@ -18,6 +18,8 @@
 
     <bean class="io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl" />
 
+    <bean class="io.cattle.platform.allocator.service.AllocatorServiceImpl" />
+
     <extension:discover class="io.cattle.platform.allocator.service.Allocator" />
     <extension:discover class="io.cattle.platform.allocator.constraint.AllocationConstraintsProvider" />
 

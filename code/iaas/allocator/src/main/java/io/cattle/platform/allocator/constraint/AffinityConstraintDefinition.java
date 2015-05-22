@@ -33,4 +33,12 @@ public class AffinityConstraintDefinition {
         this.key = key;
         this.value = value;
     }
+
+    public String getKey() {
+        return this.key;
+    }
+
+    public String getValue() {
+        return this.value;
+    }
 }
