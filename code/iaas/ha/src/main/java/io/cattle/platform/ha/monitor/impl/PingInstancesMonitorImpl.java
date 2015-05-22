@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.netflix.config.DynamicLongProperty;
 
 public class PingInstancesMonitorImpl implements PingInstancesMonitor {
@@ -102,9 +103,18 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         long agentId = Long.parseLong(ping.getResourceId());
         Map<String, KnownInstance> knownInstances = instanceCache.getUnchecked(agentId);
 
-        AgentAndHost agentAndHost = hostCache.getUnchecked(new ImmutablePair<Long, String>(agentId, reportedInstances.hostUuid));
+        AgentAndHost agentAndHost = null;
+        try {
+            agentAndHost = hostCache.getUnchecked(new ImmutablePair<Long, String>(agentId, reportedInstances.hostUuid));
+        } catch (UncheckedExecutionException e) {
+            // CantFindAgentAndHostException can be ignored because the host may not exist yet. Rethrow all other exceptions.
+            if (!(e.getCause() instanceof CantFindAgentAndHostException)) {
+                throw e;
+            }
+        }
+
         if (agentAndHost == null) {
-            log.warn("Couldn't find host with uuid [{}] for agent [{}]", reportedInstances.hostUuid, agentId);
+            log.info("Couldn't find host with uuid [{}] for agent [{}]", reportedInstances.hostUuid, agentId);
             return;
         }
 
@@ -344,17 +354,20 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     }
 
     protected AgentAndHost loadAgentAndHostData(ImmutablePair<Long, String> agentIdAndHostUuid) {
-        if (agentIdAndHostUuid.left == null || StringUtils.isEmpty(agentIdAndHostUuid.right))
-            return null;
+        Long agentId = agentIdAndHostUuid.left;
+        String hostUuid = agentIdAndHostUuid.right;
 
-        Agent agent = objectManager.loadResource(Agent.class, agentIdAndHostUuid.left);
-        if (agent == null)
-            return null;
+        Agent agent = objectManager.loadResource(Agent.class, agentId);
+        Host host = null;
+        Map<String, Host> hosts = null;
+        if (agent != null) {
+            hosts = agentDao.getHosts(agent.getId());
+            host = hosts.get(hostUuid);
+        }
 
-        Map<String, Host> hosts = agentDao.getHosts(agent.getId());
-        Host host = hosts.get(agentIdAndHostUuid.right);
-        if (host == null)
-            return null;
+        if (agent == null || host == null)
+            throw new CantFindAgentAndHostException();
+
         return new AgentAndHost(agent.getAccountId(), host.getId());
     }
 
@@ -364,14 +377,18 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         }
         return monitorDao.getInstances(agentId.longValue());
     }
-}
 
-class AgentAndHost {
-    Long agentAccountId;
-    Long hostId;
+    private class AgentAndHost {
+        Long agentAccountId;
+        Long hostId;
 
-    AgentAndHost(Long agentAccountId, Long hostId) {
-        this.agentAccountId = agentAccountId;
-        this.hostId = hostId;
+        AgentAndHost(Long agentAccountId, Long hostId) {
+            this.agentAccountId = agentAccountId;
+            this.hostId = hostId;
+        }
+    }
+
+    private class CantFindAgentAndHostException extends IllegalArgumentException {
+        private static final long serialVersionUID = 1L;
     }
 }
