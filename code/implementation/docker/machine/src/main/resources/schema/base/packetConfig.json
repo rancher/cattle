@@ -2,13 +2,9 @@
     "resourceFields": {
         "apiKey": {
             "type": "string",
-            "nullable": false
+            "nullable": true
         },
-        "projectId": {
-            "type": "string",
-            "nullable": false
-        },
-        "os": {
+        "billingCycle": {
             "type": "string",
             "nullable": true
         },
@@ -16,11 +12,15 @@
             "type": "string",
             "nullable": true
         },
+        "os": {
+            "type": "string",
+            "nullable": true
+        },
         "plan": {
             "type": "string",
             "nullable": true
         },
-        "billingCycle": {
+        "projectId": {
             "type": "string",
             "nullable": true
         }

@@ -1,70 +1,50 @@
 {
     "resourceFields": {
-        "accessKey": {
+        "boot2dockerUrl": {
             "type": "string",
             "nullable": true
         },
-        "ami": {
+        "computeIp": {
             "type": "string",
             "nullable": true
         },
-        "iamInstanceProfile": {
+        "cpuCount": {
             "type": "string",
             "nullable": true
         },
-        "instanceType": {
+        "datacenter": {
             "type": "string",
             "nullable": true
         },
-        "monitoring": {
-            "type": "boolean",
-            "nullable": true
-        },
-        "privateAddressOnly": {
-            "type": "boolean",
-            "nullable": true
-        },
-        "region": {
+        "datastore": {
             "type": "string",
             "nullable": true
         },
-        "requestSpotInstance": {
-            "type": "boolean",
-            "nullable": true
-        },
-        "rootSize": {
+        "diskSize": {
             "type": "string",
             "nullable": true
         },
-        "secretKey": {
+        "memorySize": {
             "type": "string",
             "nullable": true
         },
-        "securityGroup": {
+        "network": {
             "type": "string",
             "nullable": true
         },
-        "sessionToken": {
+        "password": {
             "type": "string",
             "nullable": true
         },
-        "spotPrice": {
+        "pool": {
             "type": "string",
             "nullable": true
         },
-        "sshUser": {
+        "username": {
             "type": "string",
             "nullable": true
         },
-        "subnetId": {
-            "type": "string",
-            "nullable": true
-        },
-        "vpcId": {
-            "type": "string",
-            "nullable": true
-        },
-        "zone": {
+        "vcenter": {
             "type": "string",
             "nullable": true
         }

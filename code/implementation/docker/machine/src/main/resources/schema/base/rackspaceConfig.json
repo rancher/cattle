@@ -1,14 +1,10 @@
 {
     "resourceFields": {
-        "username": {
-            "type": "string",
-            "nullable": false
-        },
         "apiKey": {
             "type": "string",
-            "nullable": false
+            "nullable": true
         },
-        "region": {
+        "dockerInstall": {
             "type": "string",
             "nullable": true
         },
@@ -16,15 +12,15 @@
             "type": "string",
             "nullable": true
         },
-        "imageId": {
-            "type": "string",
-            "nullable": true
-        },
         "flavorId": {
             "type": "string",
             "nullable": true
         },
-        "sshUser": {
+        "imageId": {
+            "type": "string",
+            "nullable": true
+        },
+        "region": {
             "type": "string",
             "nullable": true
         },
@@ -32,7 +28,11 @@
             "type": "string",
             "nullable": true
         },
-        "dockerInstall": {
+        "sshUser": {
+            "type": "string",
+            "nullable": true
+        },
+        "username": {
             "type": "string",
             "nullable": true
         }

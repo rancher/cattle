@@ -1,54 +1,66 @@
 {
     "resourceFields": {
-        "accessKey": {
+        "authUrl": {
             "type": "string",
             "nullable": true
         },
-        "ami": {
+        "domainId": {
             "type": "string",
             "nullable": true
         },
-        "iamInstanceProfile": {
+        "domainName": {
             "type": "string",
             "nullable": true
         },
-        "instanceType": {
+        "endpointType": {
             "type": "string",
             "nullable": true
         },
-        "monitoring": {
+        "flavorId": {
+            "type": "string",
+            "nullable": true
+        },
+        "flavorName": {
+            "type": "string",
+            "nullable": true
+        },
+        "floatingipPool": {
+            "type": "string",
+            "nullable": true
+        },
+        "imageId": {
+            "type": "string",
+            "nullable": true
+        },
+        "imageName": {
+            "type": "string",
+            "nullable": true
+        },
+        "insecure": {
             "type": "boolean",
             "nullable": true
         },
-        "privateAddressOnly": {
-            "type": "boolean",
+        "netId": {
+            "type": "string",
+            "nullable": true
+        },
+        "netName": {
+            "type": "string",
+            "nullable": true
+        },
+        "password": {
+            "type": "string",
             "nullable": true
         },
         "region": {
             "type": "string",
             "nullable": true
         },
-        "requestSpotInstance": {
-            "type": "boolean",
-            "nullable": true
-        },
-        "rootSize": {
+        "secGroups": {
             "type": "string",
             "nullable": true
         },
-        "secretKey": {
-            "type": "string",
-            "nullable": true
-        },
-        "securityGroup": {
-            "type": "string",
-            "nullable": true
-        },
-        "sessionToken": {
-            "type": "string",
-            "nullable": true
-        },
-        "spotPrice": {
+        "sshPort": {
             "type": "string",
             "nullable": true
         },
@@ -56,15 +68,15 @@
             "type": "string",
             "nullable": true
         },
-        "subnetId": {
+        "tenantId": {
             "type": "string",
             "nullable": true
         },
-        "vpcId": {
+        "tenantName": {
             "type": "string",
             "nullable": true
         },
-        "zone": {
+        "username": {
             "type": "string",
             "nullable": true
         }

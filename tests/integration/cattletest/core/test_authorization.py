@@ -2,15 +2,15 @@ from common_fixtures import *  # NOQA
 
 
 TYPE_LEN = {
-    'admin': 100,
+    'admin': 105,
     'agent': 8,
-    'user': 78,
+    'user': 83,
     'agentRegister': 4,
-    'readAdmin': 100,
+    'readAdmin': 105,
     'token': 2,
-    'superadmin': 154,
-    'service': 100,
-    'project': 78,
+    'superadmin': 159,
+    'service': 105,
+    'project': 83,
 }
 
 
@@ -829,6 +829,11 @@ def test_machine(admin_user_client, user_client, service_client,
         'amazonec2Config': 'r',
         'rackspaceConfig': 'r',
         'packetConfig': 'r',
+        'softlayerConfig': 'r',
+        'vmwarevsphereConfig': 'r',
+        'exoscaleConfig': 'r',
+        'vmwarevcloudairConfig': 'r',
+        'openstackConfig': 'r',
     })
 
     auth_check(user_client.schema, 'machine', 'r', {
@@ -842,6 +847,11 @@ def test_machine(admin_user_client, user_client, service_client,
         'amazonec2Config': 'r',
         'rackspaceConfig': 'r',
         'packetConfig': 'r',
+        'softlayerConfig': 'r',
+        'vmwarevsphereConfig': 'r',
+        'exoscaleConfig': 'r',
+        'vmwarevcloudairConfig': 'r',
+        'openstackConfig': 'r',
     })
 
     auth_check(project_client.schema, 'machine', 'crd', {
@@ -855,6 +865,11 @@ def test_machine(admin_user_client, user_client, service_client,
         'amazonec2Config': 'cr',
         'rackspaceConfig': 'cr',
         'packetConfig': 'cr',
+        'softlayerConfig': 'cr',
+        'vmwarevsphereConfig': 'cr',
+        'exoscaleConfig': 'cr',
+        'vmwarevcloudairConfig': 'cr',
+        'openstackConfig': 'cr',
         })
 
     auth_check(service_client.schema, 'machine', 'crud', {
@@ -870,6 +885,11 @@ def test_machine(admin_user_client, user_client, service_client,
         'amazonec2Config': 'cr',
         'rackspaceConfig': 'cr',
         'packetConfig': 'cr',
+        'softlayerConfig': 'cr',
+        'vmwarevsphereConfig': 'cr',
+        'exoscaleConfig': 'cr',
+        'vmwarevcloudairConfig': 'cr',
+        'openstackConfig': 'cr',
     })
 
 

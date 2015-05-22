@@ -1,70 +1,58 @@
 {
     "resourceFields": {
-        "accessKey": {
+        "catalog": {
             "type": "string",
             "nullable": true
         },
-        "ami": {
+        "catalogitem": {
             "type": "string",
             "nullable": true
         },
-        "iamInstanceProfile": {
+        "computeid": {
             "type": "string",
             "nullable": true
         },
-        "instanceType": {
+        "cpuCount": {
             "type": "string",
             "nullable": true
         },
-        "monitoring": {
+        "dockerPort": {
+            "type": "string",
+            "nullable": true
+        },
+        "edgegateway": {
+            "type": "string",
+            "nullable": true
+        },
+        "memorySize": {
+            "type": "string",
+            "nullable": true
+        },
+        "orgvdcnetwork": {
+            "type": "string",
+            "nullable": true
+        },
+        "password": {
+            "type": "string",
+            "nullable": true
+        },
+        "provision": {
             "type": "boolean",
             "nullable": true
         },
-        "privateAddressOnly": {
-            "type": "boolean",
-            "nullable": true
-        },
-        "region": {
+        "publicip": {
             "type": "string",
             "nullable": true
         },
-        "requestSpotInstance": {
-            "type": "boolean",
-            "nullable": true
-        },
-        "rootSize": {
+        "sshPort": {
             "type": "string",
             "nullable": true
         },
-        "secretKey": {
+        "username": {
             "type": "string",
             "nullable": true
         },
-        "securityGroup": {
-            "type": "string",
-            "nullable": true
-        },
-        "sessionToken": {
-            "type": "string",
-            "nullable": true
-        },
-        "spotPrice": {
-            "type": "string",
-            "nullable": true
-        },
-        "sshUser": {
-            "type": "string",
-            "nullable": true
-        },
-        "subnetId": {
-            "type": "string",
-            "nullable": true
-        },
-        "vpcId": {
-            "type": "string",
-            "nullable": true
-        },
-        "zone": {
+        "vdcid": {
             "type": "string",
             "nullable": true
         }
