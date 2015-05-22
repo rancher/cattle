@@ -11,10 +11,11 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Map;
+
 import javax.inject.Named;
 
 @Named
@@ -58,12 +59,11 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             }
 
             try {
-                objectProcessManager.executeProcess(InstanceConstants.PROCESS_STOP, instance, null);
+                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
             } catch (ProcessCancelException e) {
-                // ignore
+                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
+                        CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
             }
-
-            remove(instance, null);
         }
 
         return null;
