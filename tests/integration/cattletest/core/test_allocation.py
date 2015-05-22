@@ -97,8 +97,12 @@ def test_allocation_failed_on_create(super_client, new_context):
     assert c.transitioning == 'error'
     assert c.transitioningMessage == 'Failed to find a placement'
 
-    assert c.allocationState == 'inactive'
+    assert c.allocationState == 'activating'
     assert c.volumes()[0].state == 'removed'
+
+    c = super_client.wait_success(super_client.reload(c.purge()))
+    assert c.state == 'purged'
+    assert c.allocationState == 'inactive'
 
 
 def test_allocation_failed_on_start(super_client, new_context):
