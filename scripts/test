@@ -46,4 +46,5 @@ if [ -e .tox ] && [ ! -e .tox/py27/include/python2.7 ]; then
     rm -rf .tox
 fi
 
-tox "$@"
+tox -e py27 -- -k test_account_create
+tox "$@" -- -n 6
