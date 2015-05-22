@@ -1,6 +1,7 @@
 package io.cattle.platform.engine.process.impl;
 
 import static io.cattle.platform.engine.process.ExitReason.*;
+import static io.cattle.platform.engine.process.ProcessInstanceConstants.*;
 import static io.cattle.platform.util.time.TimeUtils.*;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -45,6 +46,7 @@ import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.lock.util.LockUtils;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -227,6 +229,11 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected boolean shouldAbort(ProcessCancelException e) {
+        Boolean skipDelegate = (Boolean)CollectionUtils.getNestedValue(instanceContext.getState().getData(), SKIP_DELEGATE_ON_CANCEL);
+        if (skipDelegate != null && skipDelegate) {
+            return true;
+        }
+
         ProcessDefinition def = context.getProcessManager().getProcessDelegate(instanceContext.getProcessDefinition());
         if (def == null) {
             return true;
