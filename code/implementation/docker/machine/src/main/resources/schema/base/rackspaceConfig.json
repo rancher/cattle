@@ -2,13 +2,11 @@
     "resourceFields": {
         "username": {
             "type": "string",
-            "nullable": false,
-            "required": true
+            "nullable": false
         },
         "apiKey": {
             "type": "string",
-            "nullable": false,
-            "required": true
+            "nullable": false
         },
         "region": {
             "type": "string",

@@ -2,13 +2,11 @@
     "resourceFields": {
         "apiKey": {
             "type": "string",
-            "nullable": false,
-            "required": true
+            "nullable": false
         },
         "projectId": {
             "type": "string",
-            "nullable": false,
-            "required": true
+            "nullable": false
         },
         "os": {
             "type": "string",

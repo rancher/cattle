@@ -1,0 +1,24 @@
+{
+    "resourceFields": {
+        "virtualboxConfig": {
+            "type": "virtualboxConfig",
+            "nullable": true
+        },
+        "digitaloceanConfig": {
+            "type": "digitaloceanConfig",
+            "nullable": true
+        },
+        "amazonec2Config": {
+            "type": "amazonec2Config",
+            "nullable": true
+        },
+        "rackspaceConfig": {
+            "type": "rackspaceConfig",
+            "nullable": true
+        },
+        "packetConfig": {
+            "type": "packetConfig",
+            "nullable": true
+        }
+    }
+}
