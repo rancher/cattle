@@ -20,4 +20,13 @@ public class ObjectExecutionExceptionHandler implements ExecutionExceptionHandle
         }
     }
 
+    @Override
+    public void wrapChainSchedule(ProcessState state, ProcessServiceContext context, Runnable run) {
+        Map<String, Object> errorData = TransitioningUtils.getTransitioningErrorData(state.getResource());
+        run.run();
+        if (errorData.size() > 0) {
+            state.applyData(errorData);
+        }
+    }
+
 }

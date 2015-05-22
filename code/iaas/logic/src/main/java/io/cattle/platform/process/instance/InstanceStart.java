@@ -16,17 +16,16 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -138,7 +137,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
     protected HandlerResult stopOrRemove(ProcessState state, Instance instance, ExecutionException e) {
         if (InstanceCreate.isCreateStart(state) && !ContainerEventCreate.isNativeDockerStart(state) ) {
-            getObjectProcessManager().scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
+            getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
+                    CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
         } else {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
         }
