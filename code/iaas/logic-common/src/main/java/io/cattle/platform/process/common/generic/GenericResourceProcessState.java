@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,9 +72,14 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     @Override
     protected boolean setState(boolean transitioning, String oldState, String newState) {
         if (resource != null && transitioning && ObjectMetaDataManager.STATE_FIELD.equals(getStatesDefinition().getStateField())) {
-            DataAccessor.fields(resource).withKey(ObjectMetaDataManager.TRANSITIONING_FIELD).remove();
+            DataAccessor field = DataAccessor.fields(resource).withKey(ObjectMetaDataManager.TRANSITIONING_FIELD);
+            DataAccessor message = DataAccessor.fields(resource).withKey(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD);
 
-            DataAccessor.fields(resource).withKey(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD).remove();
+            for (DataAccessor accessor : new DataAccessor[] {field, message}) {
+                if (!StringUtils.isBlank(accessor.as(String.class))) {
+                    accessor.remove();
+                }
+            }
         }
 
         Object newResource = objectManager.setFields(resource, getStatesDefinition().getStateField(), newState);
