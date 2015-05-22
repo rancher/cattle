@@ -104,7 +104,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
                 labelData.put(LABEL.VALUE, labelValue);
                 labelData.put(LABEL.ACCOUNT_ID, instance.getAccountId());
                 labelData.put(LABEL.TYPE, LabelConstants.HOST_TYPE);
-                label = resourceDao.createAndSchedule(Label.class, objectManager.convertToPropertiesFor(Label.class, labelData));
+                label = resourceDao.create(Label.class, objectManager.convertToPropertiesFor(Label.class, labelData));
             }
 
             InstanceLabelMap mapping = objectManager.findAny(InstanceLabelMap.class,
