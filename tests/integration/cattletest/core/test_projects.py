@@ -13,7 +13,7 @@ _USER_LIST = [
 PROJECTS = set([])
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(autouse=True, scope="module")
 def clean_up_projects(super_client, request):
     # This randomly times out, don't know why, disabling it
     # on = super_client.create_setting(name='api.projects.use.rancher_id',

@@ -14,7 +14,7 @@ def _resource_is_active(resource):
     return resource.state == 'active'
 
 
-# @pytest.mark.skipif('True')
+@pytest.mark.skipif('True')
 def test_cluster_add_remove_host_actions(super_client, new_context):
     host1 = super_client.reload(new_context.host)
     account = new_context.project
@@ -98,7 +98,7 @@ def test_cluster_add_remove_host_actions(super_client, new_context):
 
 # temporarily skipping since this was inadvertently deleting the
 # real host causing downstream TFs
-# @pytest.mark.skipif('True')
+@pytest.mark.skipif('True')
 def test_host_purge(super_client, new_context):
     host1 = super_client.reload(new_context.host)
     _clean_clusterhostmap_for_host(host1)
@@ -119,7 +119,7 @@ def test_host_purge(super_client, new_context):
         super_client, cluster, lambda x: len(x.hosts()) == 0)
 
 
-# @pytest.mark.skipif('True')
+@pytest.mark.skipif('True')
 def test_cluster_purge(super_client, new_context):
     host1 = super_client.reload(new_context.host)
     _clean_clusterhostmap_for_host(host1)
@@ -176,7 +176,7 @@ def test_cluster_purge(super_client, new_context):
         lambda x: 'State is: ' + x.state)
 
 
-# @pytest.mark.skipif('True')
+@pytest.mark.skipif('True')
 def test_cluster_actions_invalid_host_ref(super_client, new_context):
     host1 = super_client.reload(new_context.host)
     _clean_clusterhostmap_for_host(host1)
