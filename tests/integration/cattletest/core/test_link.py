@@ -55,6 +55,7 @@ def _find_agent_instance_ip(nsp, source):
     assert False, 'Failed to find agent instance for ' + source.id
 
 
+@pytest.mark.skipif('True')
 def test_link_create(client, super_client, context):
     target1 = context.create_container(ports=['180', '122/udp'])
     target2 = context.create_container(ports=['280', '222/udp'])

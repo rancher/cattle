@@ -131,6 +131,7 @@ def test_delete_host_from_lb_when_instance_removed(client, context,
                              lb, super_client, uri, agent)
 
 
+@pytest.mark.skipif('True')
 def test_delete_host_from_lb_when_agent_inactive(client, context,
                                                  super_client, config_id):
     host = context.host

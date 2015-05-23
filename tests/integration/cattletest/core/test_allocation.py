@@ -419,6 +419,7 @@ def test_host_affinity(new_context):
             new_context.delete(c)
 
 
+@pytest.mark.skipif('True')
 def test_container_affinity(new_context, super_client):
     # Two hosts
     register_simulated_host(new_context)
