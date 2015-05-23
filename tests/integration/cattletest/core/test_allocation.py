@@ -420,7 +420,10 @@ def test_host_affinity(new_context):
 def test_container_affinity(new_context):
     # Two hosts
     register_simulated_host(new_context)
-
+    hosts = new_context.project.hosts()
+    assert len(hosts) == 2
+    assert hosts[0].state == 'active'
+    assert hosts[1].state == 'active'
     containers = []
     try:
         name1 = 'affinity' + random_str()
