@@ -110,6 +110,9 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
     protected Network createNetwork(String kind, Account account, Map<String, Network> networksByKind,
                                   String name, String key, Object... valueKeyValue) {
         Network network = networksByKind.get(kind);
+        if (network != null) {
+            return network;
+        }
         Map<String, Object> data = key == null ? new HashMap<String, Object>() :
                 CollectionUtils.asMap(key, valueKeyValue);
 
@@ -117,13 +120,7 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, account.getId());
         data.put(ObjectMetaDataManager.KIND_FIELD, kind);
 
-        if (network == null) {
-            network = resourceDao.createAndSchedule(Network.class, data);
-        } else {
-            network = objectManager.setFields(network, data);
-        }
-
-        return network;
+        return resourceDao.createAndSchedule(Network.class, data);
     }
 
     protected Map<String, NetworkService> collectionNetworkServices(Network network) {
