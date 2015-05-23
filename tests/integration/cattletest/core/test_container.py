@@ -148,7 +148,7 @@ def test_container_create_then_start(super_client, client, context):
     assert container.state == "starting"
     assert 'start' not in container
     assert 'stop' in container
-    assert 'remove' in container
+    assert 'remove' not in container
 
     _assert_running(super_client.wait_success(container))
 
