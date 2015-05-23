@@ -14,7 +14,7 @@ def _resource_is_active(resource):
     return resource.state == 'active'
 
 
-# @pytest.mark.skipif('True')
+@pytest.mark.skipif('True')
 def test_cluster_add_remove_host_actions(super_client, new_context):
     host1 = super_client.reload(new_context.host)
     account = new_context.project
@@ -30,10 +30,16 @@ def test_cluster_add_remove_host_actions(super_client, new_context):
 
     # Add one host to cluster
     cluster = cluster.addhost(hostId=str(host1.id))
+
+    def condition(cl):
+        maps = super_client.list_clusterHostMap(clusterId=cl.id,
+                                                state='created')
+        return len(maps) == 1
+
     cluster = wait_for_condition(
         super_client, cluster,
-        lambda x: len(x.hosts()) == 1,
-        lambda x: 'Number of hosts in cluster is: ' + len(x.hosts()))
+        condition,
+        lambda x: 'Number of hosts in cluster is: %s' % len(x.hosts()))
 
     assert cluster.hosts()[0].id == host1.id
     assert len(host1.clusters()) == 1
@@ -98,7 +104,7 @@ def test_cluster_add_remove_host_actions(super_client, new_context):
 
 # temporarily skipping since this was inadvertently deleting the
 # real host causing downstream TFs
-# @pytest.mark.skipif('True')
+@pytest.mark.skipif('True')
 def test_host_purge(super_client, new_context):
     host1 = super_client.reload(new_context.host)
     _clean_clusterhostmap_for_host(host1)
@@ -119,7 +125,7 @@ def test_host_purge(super_client, new_context):
         super_client, cluster, lambda x: len(x.hosts()) == 0)
 
 
-# @pytest.mark.skipif('True')
+@pytest.mark.skipif('True')
 def test_cluster_purge(super_client, new_context):
     host1 = super_client.reload(new_context.host)
     _clean_clusterhostmap_for_host(host1)
@@ -176,7 +182,7 @@ def test_cluster_purge(super_client, new_context):
         lambda x: 'State is: ' + x.state)
 
 
-# @pytest.mark.skipif('True')
+@pytest.mark.skipif('True')
 def test_cluster_actions_invalid_host_ref(super_client, new_context):
     host1 = super_client.reload(new_context.host)
     _clean_clusterhostmap_for_host(host1)
