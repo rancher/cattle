@@ -1,4 +1,21 @@
 from common_fixtures import *  # NOQA
+import time
+
+
+def test_sleep_1():
+    time.sleep(30)
+
+
+def test_sleep_2():
+    time.sleep(30)
+
+
+def test_sleep_3():
+    time.sleep(30)
+
+
+def test_sleep_4():
+    time.sleep(30)
 
 
 def test_link_instance_stop_start(super_client, client, context):
@@ -55,7 +72,6 @@ def _find_agent_instance_ip(nsp, source):
     assert False, 'Failed to find agent instance for ' + source.id
 
 
-@pytest.mark.skipif('True')
 def test_link_create(client, super_client, context):
     target1 = context.create_container(ports=['180', '122/udp'])
     target2 = context.create_container(ports=['280', '222/udp'])
