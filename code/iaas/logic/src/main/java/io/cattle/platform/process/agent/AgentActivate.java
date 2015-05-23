@@ -37,8 +37,8 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
         boolean waitFor = DataAccessor.fromDataFieldOf(agent)
                 .withScope(AgentActivate.class)
                 .withKey("waitForPing")
-                .withDefault(Boolean.FALSE)
-                .as(Boolean.class);
+                .withDefault(process.getName().equals(AgentConstants.PROCESS_RECONNECT))
+                        .as(Boolean.class);
 
         RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
         ListenableFuture<? extends Event> future = remoteAgent.call(AgentUtils.newPing(agent)
