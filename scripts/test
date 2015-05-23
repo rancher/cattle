@@ -47,4 +47,4 @@ if [ -e .tox ] && [ ! -e .tox/py27/include/python2.7 ]; then
 fi
 
 tox -e py27 -- -k test_account_create
-tox "$@" -- -n 4
+tox "$@"
