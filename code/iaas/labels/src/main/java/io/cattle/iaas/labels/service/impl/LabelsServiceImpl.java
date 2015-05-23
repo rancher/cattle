@@ -42,7 +42,7 @@ public class LabelsServiceImpl implements LabelsService {
             labelData.put(LABEL.ACCOUNT_ID, accountId);
 
             labelData.put(LABEL.TYPE, type);
-            label = resourceDao.createAndSchedule(Label.class, objectManager.convertToPropertiesFor(Label.class, labelData));
+            label = resourceDao.create(Label.class, objectManager.convertToPropertiesFor(Label.class, labelData));
         }
         return label;
     }
