@@ -30,6 +30,10 @@
         },
         "Hostname": "ahostname",
         "Image": "busybox",
+        "Labels": {
+          "io.rancher.labeltest.value": "val",
+          "io.rancher.labeltest.blank": ""
+        },
         "MacAddress": "",
         "Memory": 4194304,
         "MemorySwap": 0,

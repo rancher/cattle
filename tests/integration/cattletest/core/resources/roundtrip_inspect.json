@@ -33,6 +33,9 @@
         "CpuShares": 1024,
         "Domainname": "example.com",
         "Image": "ubuntu:14.04.1",
+        "Labels": {
+          "io.rancher.labeltest.value": "val"
+        },
         "ExposedPorts": null
       },
       "HostsPath": "/mnt/sda1/var/lib/docker/containers/30ad6d9ca7238f6d0e6e311e6487368596855725bd87629353ac1bcf5487d8c3/hosts",
