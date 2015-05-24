@@ -52,7 +52,7 @@ DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/regis
 
 ./wait-for-hosts
 
-./test || {
+./test -- -n 2 || {
     echo Test failed
     cat /tmp/run.log
     echo Test failed
@@ -70,7 +70,7 @@ export CATTLE_TEST_HTTP_PORT=8082
 export CATTLE_TEST_URL=http://localhost:8082/v1/schemas
 
 run ./run --background
-./test -e py27 -- core/test_virtual_machine.py core/test_container.py || {
+./test -e py27 -- -n 2 core/test_virtual_machine.py core/test_container.py || {
     echo Test failed
     cat /tmp/run.log
     echo Test failed
