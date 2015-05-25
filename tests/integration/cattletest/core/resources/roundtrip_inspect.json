@@ -85,7 +85,7 @@
           "AUDIT_WRITE"
         ],
         "ContainerIDFile": "",
-        "NetworkMode": "",
+        "NetworkMode": "bridge",
         "Links": null,
         "IpcMode": "",
         "LxcConf": null,

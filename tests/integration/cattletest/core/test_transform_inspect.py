@@ -17,8 +17,8 @@ def transform_url(client):
 def test_transform_inspect_minimal(transform_url, client):
     response = requests.post(transform_url,
                              '{"Id": "an-id", '
-                             '"Config": {"Image": "image" }, '
-                             '"HostConfig": {}}',
+                             '"Config": {"Image": "image", "NetworkDisabled": '
+                             'true }, "HostConfig": {}}',
                              auth=HTTPBasicAuth(client._access_key,
                                                 client._secret_key))
     assert response.status_code == 200
@@ -47,6 +47,7 @@ def test_transform_inspect_minimal(transform_url, client):
     assert container['restartPolicy'] is None
     assert len(container['devices']) == 0
     assert len(container['labels']) == 0
+    assert container['networkMode'] == 'none'
 
 
 def test_transform_inspect_full(transform_url, client, super_client):
@@ -86,6 +87,7 @@ def test_transform_inspect_full(transform_url, client, super_client):
     assert container['publishAllPorts'] is False
     assert container['dns'] == ['10.42.1.2']
     assert container['dnsSearch'] == ['search.dns.com']
+    assert container['networkMode'] == 'bridge'
     assert len(container['capAdd']) == 1
     assert 'NET_ADMIN' in container['capAdd']
     assert len(container['capDrop']) == 1
@@ -163,6 +165,41 @@ def test_transform_inspect_rountrip(transform_url, client):
     assert container['restartPolicy'] == orig_container['restartPolicy']
     assert container['devices'] == orig_container['devices']
     assert container['labels'] == orig_container['labels']
+    assert container['networkMode'] == orig_container['networkMode']
+
+
+def test_network_modes(transform_url, client):
+    auth = HTTPBasicAuth(client._access_key, client._secret_key)
+
+    inspect_template = '{"Id": "an-id", "Config": {"Image": "image"}, ' \
+                       '"HostConfig": {"NetworkMode": "%s"}}'
+
+    inspect = inspect_template % 'host'
+    response = requests.post(transform_url, inspect, auth=auth)
+    container = response.json()
+    assert container['networkMode'] == 'host'
+
+    inspect = inspect_template % 'bridge'
+    response = requests.post(transform_url, inspect, auth=auth)
+    container = response.json()
+    assert container['networkMode'] == 'bridge'
+
+    inspect = inspect_template % ''  # Empty defaults to bridge
+    response = requests.post(transform_url, inspect, auth=auth)
+    container = response.json()
+    assert container['networkMode'] == 'bridge'
+
+    inspect = '{"Id": "an-id", "Config": {"Image": "image", ' \
+              '"NetworkDisabled": true}, "HostConfig": {}}'
+    response = requests.post(transform_url, inspect, auth=auth)
+    container = response.json()
+    assert container['networkMode'] == 'none'
+
+    inspect = inspect_template % 'container:foobar'
+    response = requests.post(transform_url, inspect, auth=auth)
+    assert response.status_code == 422
+    resp = response.json()
+    assert resp['code'] == 'InvalidOption'
 
 
 def inspect_payload(name):

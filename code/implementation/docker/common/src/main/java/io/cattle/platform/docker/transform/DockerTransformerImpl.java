@@ -2,10 +2,14 @@ package io.cattle.platform.docker.transform;
 
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
+import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,10 +127,35 @@ public class DockerTransformerImpl implements DockerTransformer {
         setRestartPolicy(instance, hostConfig.getRestartPolicy());
         setDevices(instance, hostConfig.getDevices());
         setLabels(instance, fromInspect);
+        setNetworkMode(instance, containerConfig, hostConfig);
 
-        // Currently not implemented: Network, VolumesFrom, Links, SecurityOpt, ExtraHosts
+        // Currently not implemented: VolumesFrom, Links, SecurityOpt, ExtraHosts
         // Consider: AttachStdin, AttachStdout, AttachStderr, StdinOnce,
-        // NetworkDisabled
+    }
+
+    void setNetworkMode(Instance instance, ContainerConfig containerConfig, HostConfig hostConfig) {
+        if(DataAccessor.fields(instance).withKey(FIELD_NETWORK_MODE).get() != null)
+            return;
+
+        String netMode = null;
+        if (containerConfig.isNetworkDisabled()) {
+            netMode = NETWORK_MODE_NONE;
+        } else {
+            String inspectNetMode = hostConfig.getNetworkMode();
+            if (NETWORK_MODE_BRIDGE.equals(inspectNetMode) || NETWORK_MODE_HOST.equals(inspectNetMode)){
+                netMode = inspectNetMode;
+            }else if (StringUtils.isBlank(inspectNetMode)) {
+                netMode = NETWORK_MODE_BRIDGE;
+            } else if (StringUtils.startsWith(inspectNetMode, NETWORK_MODE_CONTAINER)) {
+                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_OPTION,
+                        "Transformer API does not support container network mode.", null);
+            } else {
+                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_OPTION, 
+                        "Unrecognized network mode: " + inspectNetMode, null);
+            }
+        }
+
+        setField(instance, FIELD_NETWORK_MODE, netMode);
     }
 
     @SuppressWarnings({ "rawtypes" })

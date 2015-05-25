@@ -83,18 +83,6 @@ def test_container_event_start_stop(client, host, agent_cli, user_id):
     assert container.state == 'stopped'
 
 
-@pytest.mark.skipif('True')
-def test_container_event_rapid_stop(client, user_sim_context, user_account):
-    # Tests a specific bug where if a 'stop` event came in before the container
-    # was finished starting, the container would be removed.
-    # TODO Stop skipping once the stop-defer-remove logic is refactored.
-    host, agent_cli = sim_agent_and_host(user_sim_context)
-    external_id = random_str()
-    user_id = user_account.id
-    create_event(host, external_id, agent_cli, client, user_id, 'start',
-                 new_inspect(external_id), wait_and_assert=False)
-
-
 def test_container_event_start(client, host, agent_cli, user_id):
     # Submitting a 'start' containerEvent should result in a container
     # being started.
@@ -212,6 +200,66 @@ def test_requested_ip_address(super_client, client, host, agent_cli, user_id):
     container = super_client.reload(container)
     assert container['data']['fields']['requestedIpAddress'] == '10.42.0.240'
     assert container.nics()[0].network().kind == 'hostOnlyNetwork'
+
+
+def test_container_event_net_none(client, host, agent_cli, user_id):
+    external_id = random_str()
+    inspect = new_inspect(external_id)
+    inspect['Config']['NetworkDisabled'] = True
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, inspect=inspect)
+    assert container['networkMode'] == 'none'
+
+
+def test_container_event_net_host(client, host, agent_cli, user_id):
+    external_id = random_str()
+    inspect = new_inspect(external_id)
+    inspect['HostConfig'] = {'NetworkMode': 'host'}
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, inspect=inspect)
+    assert container['networkMode'] == 'host'
+
+
+def test_container_event_net_bridge(client, host, agent_cli, user_id):
+    external_id = random_str()
+    inspect = new_inspect(external_id)
+    inspect['HostConfig'] = {'NetworkMode': 'bridge'}
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, inspect=inspect)
+    assert container['networkMode'] == 'bridge'
+
+
+def test_container_event_net_blank(client, host, agent_cli, user_id):
+    external_id = random_str()
+    inspect = new_inspect(external_id)
+    inspect['HostConfig'] = {'NetworkMode': ''}
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, inspect=inspect)
+    assert container['networkMode'] == 'bridge'
+
+
+def test_container_event_net_container(client, host, agent_cli, user_id):
+    target_external_id = random_str()
+    target = create_native_container(client, host, target_external_id,
+                                     agent_cli, user_id)
+    external_id = random_str()
+    inspect = new_inspect(external_id)
+    inspect['HostConfig'] = {'NetworkMode': 'container:%s' % target.externalId}
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, inspect=inspect)
+    assert container['networkMode'] == 'container'
+    assert container['networkContainerId'] == target.id
+
+
+def test_container_event_net_container_not_found(client, host, agent_cli,
+                                                 user_id):
+    external_id = random_str()
+    inspect = new_inspect(external_id)
+    inspect['HostConfig'] = {'NetworkMode': 'container:wont-be-found'}
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, inspect=inspect)
+    assert container['networkMode'] == 'none'
+    assert container['networkContainerId'] is None
 
 
 def sim_agent_and_host(user_sim_context):

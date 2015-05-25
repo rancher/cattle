@@ -2,6 +2,7 @@ package io.cattle.platform.process.containerevent;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.ContainerEventTable.*;
+import static io.cattle.platform.process.containerevent.ContainerEventCreate.*;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ContainerEvent;
@@ -49,6 +50,7 @@ public class ContainerEventPreCreate extends AbstractObjectProcessLogic implemen
         if ( host.getAccountId().equals(resourceAccId) ) {
             Map<Object, Object> newFields = new HashMap<Object, Object>();
             newFields.put(CONTAINER_EVENT.ACCOUNT_ID, host.getAccountId());
+            DataAccessor.fromMap(state.getData()).withScope(ContainerEventCreate.class).withKey(AGENT_ID).set(host.getAgentId());
             return new HandlerResult(newFields);
         }
 
