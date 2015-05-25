@@ -8,6 +8,7 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
+    <bean id="DefaultEnvironmentConfig" class="io.cattle.platform.archaius.sources.DefaultTransformedEnvironmentProperties" />
     <bean id="EnvironmentConfig" class="io.cattle.platform.archaius.sources.TransformedEnvironmentProperties" />
     <bean id="SystemConfig" class="io.cattle.platform.archaius.sources.NamedSystemConfiguration" />
     <bean id="CattleLocalFileConfig" factory-bean="CattleLocalFileConfigFactory" factory-method="getConfiguration" />
