@@ -41,9 +41,9 @@ public class AgentInstanceLinkActivate extends AbstractObjectProcessHandler {
     private static final DynamicLongProperty WAIT_TIME = ArchaiusUtil.getLong("instance.link.target.wait.time.millis");
     private static final Logger log = LoggerFactory.getLogger(AgentInstanceLinkActivate.class);
 
+    @Inject
     AgentInstanceManager agentInstanceManager;
-    JsonMapper jsonMapper;
-    ResourcePoolManager resourcePoolManager;
+    @Inject
     ResourceMonitor resourceMonitor;
 
     @Override
@@ -93,82 +93,12 @@ public class AgentInstanceLinkActivate extends AbstractObjectProcessHandler {
         }
 
         List<PortSpec> result = new ArrayList<PortSpec>();
-        Map<Integer, PortSpec> assigned = new HashMap<Integer, PortSpec>();
-        Map<Integer, Port> portsByPrivatePort = new HashMap<Integer, Port>();
-
-        for (Port port : ports) {
-            if (port.getPrivatePort() != null) {
-                portsByPrivatePort.put(port.getPrivatePort(), port);
-            }
-        }
-
-        for (PortSpec spec : DataAccessor.fields(link).withKey(InstanceLinkConstants.FIELD_PORTS).withDefault(new ArrayList<PortSpec>()).asList(jsonMapper,
-                PortSpec.class)) {
-            if (spec.getPublicPort() != null) {
-                assigned.put(spec.getPublicPort(), spec);
-                if (portsByPrivatePort.remove(spec.getPrivatePort()) != null) {
-                    result.add(spec);
-                }
-            }
-        }
-
-        List<PooledResource> portItems = resourcePoolManager.allocateResource(info.getNetworkService(), link, new PooledResourceOptions().withCount(
-                ports.size()).withQualifier(ResourcePoolConstants.LINK_PORT));
-
-        if (portItems == null) {
-            throw new ExecutionException("Port allocation error", "No port available", link);
-        }
 
         String ipAddress = info.getIpAddress().getAddress();
-        for (int i = 0; i < ports.size(); i++) {
-            int publicPort = Integer.parseInt(portItems.get(i).getName());
-            PortSpec spec = assigned.remove(publicPort);
-
-            if (spec == null && portsByPrivatePort.size() > 0) {
-                Port port = portsByPrivatePort.values().iterator().next();
-                portsByPrivatePort.remove(port.getPrivatePort());
-                spec = new PortSpec(ipAddress, publicPort, port);
-                result.add(spec);
-            }
+        for (Port port : ports) {
+            result.add(new PortSpec(ipAddress, port.getPrivatePort(), port));
         }
 
         return new HandlerResult(InstanceLinkConstants.FIELD_PORTS, result).withShouldContinue(true);
     }
-
-    public AgentInstanceManager getAgentInstanceManager() {
-        return agentInstanceManager;
-    }
-
-    @Inject
-    public void setAgentInstanceManager(AgentInstanceManager agentInstanceManager) {
-        this.agentInstanceManager = agentInstanceManager;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ResourcePoolManager getResourcePoolManager() {
-        return resourcePoolManager;
-    }
-
-    @Inject
-    public void setResourcePoolManager(ResourcePoolManager resourcePoolManager) {
-        this.resourcePoolManager = resourcePoolManager;
-    }
-
-    public ResourceMonitor getResourceMonitor() {
-        return resourceMonitor;
-    }
-
-    @Inject
-    public void setResourceMonitor(ResourceMonitor resourceMonitor) {
-        this.resourceMonitor = resourceMonitor;
-    }
-
 }

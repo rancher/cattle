@@ -76,7 +76,6 @@ def test_link_create(client, super_client, context):
     for link in links:
         link = super_client.reload(link)
         assert link.state == 'active'
-        assert len(resource_pool_items(super_client, link)) == 2
         assert link.instanceId == c.id
         ip_address = _find_agent_instance_ip(context.nsp,
                                              super_client.reload(c))
@@ -106,24 +105,6 @@ def test_link_create(client, super_client, context):
                     assert port.protocol == 'udp'
                 else:
                     assert False
-
-    c = client.wait_success(c.stop())
-    for link in c.instanceLinks():
-        assert len(resource_pool_items(super_client, link)) == 2
-
-    c = client.wait_success(c.remove())
-    for link in c.instanceLinks():
-        assert len(resource_pool_items(super_client, link)) == 2
-
-    c = client.wait_success(c.purge())
-    for link in super_client.reload(c).instanceLinks():
-        assert len(link.data.fields.ports) > 0
-        assert len(resource_pool_items(super_client, link)) == 2
-
-    for link in c.instanceLinks():
-        link = super_client.wait_success(link.purge())
-        assert len(link.data.fields.ports) == 0
-        assert len(resource_pool_items(super_client, link)) == 0
 
 
 def test_link_update(client, context):

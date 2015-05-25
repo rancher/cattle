@@ -3,7 +3,6 @@
 . ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
 OUTPUT=content-home/etc/cattle/subnet-bridge-gateway
-ARPTABLES=content-home/etc/cattle/host-nat-gateway-arptables
 
 subnet_bridge_gateway()
 {
@@ -47,35 +46,6 @@ gateway()
             ip addr add ${GATEWAY}/${SUBNET##*/} dev $BRIDGE
         fi
     done
-}
-
-setup_arptables()
-{
-    arptables-save | grep -v CATTLE > $ARPTABLES
-    cat << EOF >> $ARPTABLES
-
-*filter
-:CATTLE_INPUT -
-
--A INPUT -j CATTLE_INPUT
-EOF
-
-    subnet_bridge_gateway | while read SUBNET BRIDGE GATEWAY; do
-        if [ -z "$GATEWAY" ]; then
-            continue
-        fi
-
-        MAC=$(ip link show dev docker0 | grep 'link/ether' | awk '{print $2}')
-        if [ -z "$MAC" ]; then
-            continue
-        fi
-
-        cat << EOF >> $ARPTABLES
--A CATTLE_INPUT --opcode Reply -s ${GATEWAY}/32 --source-mac ! $MAC -j DROP
-EOF
-    done
-
-    apply_config arptables-restore ${ARPTABLES##content-home/}
 }
 
 setup_routes()
@@ -148,7 +118,6 @@ setup_ips()
 
 gateway
 setup_routes
-setup_arptables
 setup_ips
 
 stage_files
