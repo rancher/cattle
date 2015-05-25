@@ -3,7 +3,6 @@ package io.cattle.platform.configitem.context.dao.impl;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
@@ -16,11 +15,11 @@ import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
+
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
 import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
 import io.cattle.platform.configitem.context.data.HostPortForwardData;
 import io.cattle.platform.configitem.context.data.HostRouteData;
-import io.cattle.platform.configitem.context.data.InstanceLinkData;
 import io.cattle.platform.configitem.context.data.IpAssociationData;
 import io.cattle.platform.configitem.context.data.NetworkClientData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -31,7 +30,6 @@ import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
@@ -41,7 +39,6 @@ import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.tables.HostTable;
-import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NetworkServiceTable;
@@ -63,7 +60,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDao {
@@ -202,45 +198,6 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
         }
 
         return result;
-    }
-
-    @Override
-    public List<InstanceLinkData> getLinks(Instance instance) {
-        MultiRecordMapper<InstanceLinkData> mapper = new MultiRecordMapper<InstanceLinkData>() {
-            @Override
-            protected InstanceLinkData map(List<Object> input) {
-                return new InstanceLinkData((InstanceLink)input.get(0), (IpAddress)input.get(1));
-            }
-        };
-
-        InstanceLinkTable instanceLink = mapper.add(INSTANCE_LINK);
-        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
-        NicTable clientNic = NIC.as("client_nic");
-        NicTable targetNic = NIC.as("target_nic");
-
-        return create()
-                .select(mapper.fields())
-                .from(NIC)
-                .join(clientNic)
-                    .on(NIC.VNET_ID.eq(clientNic.VNET_ID))
-                .join(instanceLink)
-                    .on(instanceLink.INSTANCE_ID.eq(clientNic.INSTANCE_ID))
-                .join(targetNic)
-                    .on(targetNic.INSTANCE_ID.eq(instanceLink.TARGET_INSTANCE_ID))
-                .join(IP_ADDRESS_NIC_MAP)
-                    .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(targetNic.ID))
-                .join(ipAddress)
-                    .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(ipAddress.ID))
-                .where(NIC.INSTANCE_ID.eq(instance.getId())
-                        .and(NIC.VNET_ID.isNotNull())
-                        .and(NIC.REMOVED.isNull())
-                        .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
-                        .and(ipAddress.REMOVED.isNull())
-                        .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
-                        .and(clientNic.REMOVED.isNull())
-                        .and(targetNic.REMOVED.isNull())
-                        .and(instanceLink.REMOVED.isNull()))
-                .fetch().map(mapper);
     }
 
     @Override
