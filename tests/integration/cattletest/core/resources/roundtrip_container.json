@@ -156,6 +156,9 @@
     "name": "on-failure"
   },
   "startOnCreate": true,
+  "labels": {
+    "io.rancher.labeltest.value": "val"
+  },
   "stdinOpen": false,
   "systemContainer": null,
   "token": "9uKx0H8520ikSHnvY9qoDRQ1VMMNW5HxcYeQpAuCG4159MHth8CXJgiRTKMj9loi1qGFFW36YHqtZjovQ63fA",

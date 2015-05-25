@@ -46,6 +46,7 @@ def test_transform_inspect_minimal(transform_url, client):
     assert len(container['capDrop']) == 0
     assert container['restartPolicy'] is None
     assert len(container['devices']) == 0
+    assert len(container['labels']) == 0
 
 
 def test_transform_inspect_full(transform_url, client, super_client):
@@ -94,6 +95,9 @@ def test_transform_inspect_full(transform_url, client, super_client):
     assert restart_pol['maximumRetryCount'] == 10
     assert len(container['devices']) == 1
     assert '/dev/null:/dev/xnull:rwm' in container['devices']
+    assert len(container['labels']) == 2
+    assert container['labels']['io.rancher.labeltest.value'] == 'val'
+    assert container['labels']['io.rancher.labeltest.blank'] == ''
 
     # Load with admin so that we can see the data field
     response = requests.post(transform_url, inspect,
@@ -108,6 +112,8 @@ def test_transform_inspect_full(transform_url, client, super_client):
 
 
 def test_transform_inspect_rountrip(transform_url, client):
+    # Asserts that the container json returned by the transform api matches
+    # the json for a container created in rancher
     inspect = inspect_payload('roundtrip_inspect.json')
     response = requests.post(transform_url, inspect,
                              auth=HTTPBasicAuth(client._access_key,
@@ -156,6 +162,7 @@ def test_transform_inspect_rountrip(transform_url, client):
     assert container['capDrop'] == orig_container['capDrop']
     assert container['restartPolicy'] == orig_container['restartPolicy']
     assert container['devices'] == orig_container['devices']
+    assert container['labels'] == orig_container['labels']
 
 
 def inspect_payload(name):

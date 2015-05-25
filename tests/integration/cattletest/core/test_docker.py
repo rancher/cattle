@@ -633,6 +633,40 @@ def test_docker_mount_life_cycle(docker_client):
     check_mounts(c, 'removed', 2)
 
 
+@if_docker
+def test_docker_labels(docker_client):
+    image_uuid = 'docker:ranchertest/labelled:v0.1.0'
+
+    c = docker_client.create_container(name="labels_test",
+                                       imageUuid=image_uuid,
+                                       labels={'io.rancher.testlabel.'
+                                               'fromapi': 'yes'})
+    c = docker_client.wait_success(c)
+
+    def labels_callback():
+        labels = c.instanceLabels()
+        if len(labels) >= 4:
+            return labels
+        return None
+
+    labels = wait_for(labels_callback)
+
+    actual_labels = {}
+    for l in labels:
+        actual_labels[l.key] = l.value
+
+    expected_labels = {
+        'io.rancher.testlabel': 'value1',
+        'io.rancher.testlabel.space': 'value 1',
+        'io.rancher.testlabel.fromapi': 'yes',
+        'io.rancher.container.uuid': c.uuid,
+        'io.rancher.container.ip': c.primaryIpAddress + '/16',
+    }
+    assert actual_labels == expected_labels
+
+    docker_client.wait_success(docker_client.delete(c))
+
+
 def _check_path(volume, should_exist, client, super_client):
     path = _path_to_volume(volume)
     c = client. \

@@ -5,6 +5,7 @@ import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,13 +122,33 @@ public class DockerTransformerImpl implements DockerTransformer {
         setCapField(instance, FIELD_CAP_DROP, hostConfig.getCapDrop());
         setRestartPolicy(instance, hostConfig.getRestartPolicy());
         setDevices(instance, hostConfig.getDevices());
+        setLabels(instance, fromInspect);
 
         // Currently not implemented: Network, VolumesFrom, Links, SecurityOpt, ExtraHosts
         // Consider: AttachStdin, AttachStdout, AttachStderr, StdinOnce,
         // NetworkDisabled
     }
 
-    private void setImage(Instance instance, String image) {
+    @SuppressWarnings({ "rawtypes" })
+    void setLabels(Instance instance, Map<String, Object> fromInspect) {
+        // Labels not yet implemented in docker-java. Need to use the raw map
+        Object l = CollectionUtils.getNestedValue(fromInspect, "Config", "Labels");
+        Map<String, String> cleanedLabels = new HashMap<String, String>();
+        if (l instanceof Map) {
+            Map labels = (Map)l;
+            for (Object key : labels.keySet()) {
+                if (key == null)
+                    continue;
+                Object value = labels.get(key);
+                if (value == null)
+                    value = "";
+                cleanedLabels.put(key.toString(), value.toString());
+            }
+        }
+        setField(instance, FIELD_LABELS, cleanedLabels);
+    }
+
+    void setImage(Instance instance, String image) {
         if (!image.matches(IMAGE_KIND_PATTERN)) {
             image = IMAGE_PREFIX + image;
         }
