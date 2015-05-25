@@ -35,6 +35,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private static final String CLIENT_SECRET = "clientSecret";
     private static final String ALLOWED_USERS = "allowedUsers";
     private static final String ALLOWED_ORGS = "allowedOrganizations";
+    private static final String HOSTNAME = "hostname";
 
     private static final String GITHUB_CONFIG = "githubconfig";
     private static final String AUTH_HEADER = "Authorization";
@@ -45,12 +46,14 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private static final String CLIENT_SECRET_SETTING = "api.auth.github.client.secret";
     private static final String ALLOWED_USERS_SETTING = "api.auth.github.allowed.users";
     private static final String ALLOWED_ORGS_SETTING = "api.auth.github.allowed.orgs";
+    private static final String HOSTNAME_SETTING = "api.github.domain";
 
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean(SECURITY_SETTING);
     private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString(CLIENT_ID_SETTING);
     private static final DynamicStringProperty ACCESS_MODE = ArchaiusUtil.getString(ACCESSMODE_SETTING);
     private static final DynamicStringProperty GITHUB_ALLOWED_USERS = ArchaiusUtil.getString(ALLOWED_USERS_SETTING);
     private static final DynamicStringProperty GITHUB_ALLOWED_ORGS = ArchaiusUtil.getString(ALLOWED_ORGS_SETTING);
+    private static final DynamicStringProperty GITHUB_HOSTNAME = ArchaiusUtil.getString(HOSTNAME_SETTING);
 
     private JsonMapper jsonMapper;
     private ObjectManager objectManager;
@@ -71,6 +74,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);
         String access_token = githubUtils.validateAndFetchGithubToken(token);
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
+        createOrUpdateSetting(HOSTNAME_SETTING, config.get(HOSTNAME));
         createOrUpdateSetting(SECURITY_SETTING, config.get(ENABLED));
         createOrUpdateSetting(CLIENT_ID_SETTING, config.get(CLIENT_ID));
         createOrUpdateSetting(CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
@@ -91,6 +95,10 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         if (config.get(ACCESSMODE) != null) {
             accessMode = (String) config.get(ACCESSMODE);
         }
+        String hostname = currentConfig.getHostname();
+        if (config.get(HOSTNAME) != null) {
+            hostname = (String) config.get(HOSTNAME);
+        }
         String clientId = currentConfig.getClientId();
         if (config.get(CLIENT_ID) != null) {
             clientId = (String) config.get(CLIENT_ID);
@@ -103,7 +111,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         if (config.get(ALLOWED_ORGS) != null) {
             allowedOrgs = (List<String>) config.get(ALLOWED_ORGS);
         }
-        return new GithubConfig(enabled, accessMode, clientId, allowedUsers, allowedOrgs);
+        return new GithubConfig(enabled, accessMode, clientId, allowedUsers, allowedOrgs, hostname);
     }
 
     protected List<String> appendUserIds(List<String> usernames, String token) {
@@ -161,9 +169,10 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         boolean enabled = SECURITY.get();
         String clientId = GITHUB_CLIENT_ID.get();
         String accessMode = ACCESS_MODE.get();
+        String hostname = GITHUB_HOSTNAME.get();
         List<String> allowedUsers = getAccountNames(fromCommaSeparatedString(GITHUB_ALLOWED_USERS.get()));
         List<String> allowedOrgs = getAccountNames(fromCommaSeparatedString(GITHUB_ALLOWED_ORGS.get()));
-        return new GithubConfig(enabled, accessMode, clientId, allowedUsers, allowedOrgs);
+        return new GithubConfig(enabled, accessMode, clientId, allowedUsers, allowedOrgs, hostname);
     }
 
     private List<String> getAccountNames(List<String> accountInfos) {

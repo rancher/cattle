@@ -38,6 +38,12 @@ public class GithubUtils {
     public static final String TEAM_SCOPE = "github_team";
     public static final String ORG_SCOPE = "github_org";
     public static final String USER_SCOPE = "github_user";
+
+    private static final DynamicStringProperty GITHUB_HOSTNAME = ArchaiusUtil.getString("api.github.domain");
+    private static final String GITHUB_DEFAULT_HOSTNAME = "github.com";
+    private static final String GHE_API = "/api/v3";
+    private static final String GITHUB_API = "api.github.com";
+    private static final String SCHEME = "https://";
     private TokenService tokenService;
 
 
@@ -197,5 +203,41 @@ public class GithubUtils {
             strings.add(element);
         }
         return strings;
+    }
+
+    public String getURL(GithubClientEndpoints val) {
+        String hostName;
+        String apiEndpoint;
+        if (StringUtils.isBlank(GITHUB_HOSTNAME.get())){
+            hostName = SCHEME + GITHUB_DEFAULT_HOSTNAME;
+            apiEndpoint = SCHEME + GITHUB_API;
+        } else{
+            hostName = SCHEME + GITHUB_HOSTNAME.get();
+            apiEndpoint = SCHEME + GITHUB_HOSTNAME.get() + GHE_API;
+        }
+        String toReturn;
+        switch (val){
+            case API:
+                toReturn = apiEndpoint;
+                break;
+            case TOKEN:
+                toReturn = hostName + "/login/oauth/access_token";
+                break;
+            case USERS:
+                toReturn = apiEndpoint + "/users/";
+                break;
+            case ORGS:
+                toReturn = apiEndpoint + "/orgs/";
+                break;
+            case USER_INFO:
+                toReturn = apiEndpoint + "/user";
+                break;
+            case ORG_INFO:
+                toReturn = apiEndpoint + "/user/orgs";
+                break;
+            default:
+                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "GithubClient", "Attempted to get invalid Api endpoint.", null);
+        }
+        return toReturn;
     }
 }
