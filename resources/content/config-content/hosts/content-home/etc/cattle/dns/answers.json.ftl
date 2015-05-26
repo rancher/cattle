@@ -6,7 +6,7 @@
     },
 <#if dnsEntries?? >
     <#list dnsEntries as dnsEntry>
-        <#if dnsEntry.resolve?has_content>
+        <#if dnsEntry.resolve?has_content && dnsEntry.sourceIpAddress.address??>
     "${dnsEntry.sourceIpAddress.address}": {
             <#if (dnsEntry.instance.data.fields.dns)?? && dnsEntry.instance.data.fields.dns?has_content >
         "recurse": [
