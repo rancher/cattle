@@ -196,3 +196,101 @@ def test_cluster_actions_invalid_host_ref(super_client, new_context):
         assert False
     except cattle.ApiError as e:
         assert e.error.code == 'InvalidReference'
+
+
+def test_cert_creation(admin_client, super_client, sim_context):
+    host1 = sim_context['host']
+    _clean_clusterhostmap_for_host(host1)
+
+    create_agent_instance_nsp(super_client, sim_context)
+
+    cluster = super_client.create_cluster(
+        name='testcluster5', port=9000, accountId=host1.accountId)
+
+    cluster = wait_for_condition(
+        admin_client, cluster, _resource_is_inactive,
+        lambda x: 'State is: ' + x.state)
+
+    # Add hosts to cluster
+    cluster = cluster.addhost(hostId=str(host1.id))
+
+    cluster = wait_for_condition(
+        admin_client, cluster,
+        lambda x: len(x.hosts()) == 1,
+        lambda x: 'Number of hosts in cluster is: ' + len(x.hosts()))
+
+    # activate cluster
+    cluster.activate()
+    cluster = wait_for_condition(
+        admin_client, cluster, _resource_is_active,
+        lambda x: 'State is: ' + x.state,
+        180)
+
+    # check ca cert
+    certs = super_client.list_certificate(
+        accountId=host1.accountId,
+        name='CA',
+        certChain=None,
+        removed=None)
+    assert len(certs) == 1
+    ca = certs[0]
+    assert ca.certChain is None
+    assert ca.key is not None
+    assert ca.cert is not None
+
+    # check docker sslAgent cert
+    certs = super_client.list_certificate(
+        accountId=host1.accountId,
+        name='server',
+        certChain=ca.cert,
+        removed=None)
+    assert len(certs) == 1
+
+    # check cluster cert
+    certs = super_client.list_certificate(
+        accountId=host1.accountId,
+        name='cluster',
+        certChain=ca.cert,
+        removed=None)
+    assert len(certs) == 1
+
+    # check client cert
+    certs = super_client.list_certificate(
+        accountId=host1.accountId,
+        name='client',
+        certChain=ca.cert,
+        removed=None)
+    assert len(certs) == 1
+
+    # check sslAgent instance
+
+    # verify that the agent got created
+    uri = 'sim:///?hostId={}&ssl=true'. \
+        format(get_plain_id(super_client, host1))
+    agents = super_client.list_agent(uri=uri, removed=None)
+    assert len(agents) == 1
+
+    # verify that the agent instance got created
+    agent_instances = super_client.list_instance(
+        agentId=agents[0].id,
+        state='running')
+    assert len(agent_instances) == 1
+
+    # check cluster instance
+
+    # verify that the agent got created
+    uri = 'sim:///?clusterId={}&managingHostId={}'. \
+        format(get_plain_id(super_client, cluster),
+               get_plain_id(super_client, host1))
+    agents = super_client.list_agent(uri=uri, removed=None)
+    assert len(agents) == 1
+
+    # verify that the agent instance got created
+    agent_instances = super_client.list_instance(
+        agentId=agents[0].id,
+        state='running')
+    assert len(agent_instances) == 1
+
+# TODO: Create a test with 2 hosts.  Unfortunately, the
+# requirement is that they both have IP addresses and
+# they're both part of the same account.

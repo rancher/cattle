@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "host", schema = "cattle")
-public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.HostRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Boolean>, io.cattle.platform.core.model.Host {
+public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.HostRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long>, io.cattle.platform.core.model.Host {
 
-	private static final long serialVersionUID = -428538042;
+	private static final long serialVersionUID = 351429415;
 
 	/**
 	 * Setter for <code>cattle.host.id</code>.
@@ -322,6 +322,23 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 		return (java.lang.Boolean) getValue(17);
 	}
 
+	/**
+	 * Setter for <code>cattle.host.certificate_id</code>.
+	 */
+	@Override
+	public void setCertificateId(java.lang.Long value) {
+		setValue(18, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.host.certificate_id</code>.
+	 */
+	@javax.persistence.Column(name = "certificate_id", precision = 19)
+	@Override
+	public java.lang.Long getCertificateId() {
+		return (java.lang.Long) getValue(18);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -335,23 +352,23 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	}
 
 	// -------------------------------------------------------------------------
-	// Record18 type implementation
+	// Record19 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Boolean> fieldsRow() {
-		return (org.jooq.Row18) super.fieldsRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row19) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Boolean> valuesRow() {
-		return (org.jooq.Row18) super.valuesRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long> valuesRow() {
+		return (org.jooq.Row19) super.valuesRow();
 	}
 
 	/**
@@ -502,6 +519,14 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field19() {
+		return io.cattle.platform.core.model.tables.HostTable.HOST.CERTIFICATE_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -640,6 +665,14 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@Override
 	public java.lang.Boolean value18() {
 		return getIsPublic();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value19() {
+		return getCertificateId();
 	}
 
 	/**
@@ -808,7 +841,16 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public HostRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.Long value15, java.lang.Long value16, java.lang.Long value17, java.lang.Boolean value18) {
+	public HostRecord value19(java.lang.Long value) {
+		setCertificateId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public HostRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.Long value15, java.lang.Long value16, java.lang.Long value17, java.lang.Boolean value18, java.lang.Long value19) {
 		return this;
 	}
 
@@ -839,6 +881,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 		setZoneId(from.getZoneId());
 		setPhysicalHostId(from.getPhysicalHostId());
 		setIsPublic(from.getIsPublic());
+		setCertificateId(from.getCertificateId());
 	}
 
 	/**
@@ -864,7 +907,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	/**
 	 * Create a detached, initialised HostRecord
 	 */
-	public HostRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String uri, java.lang.Long computeFree, java.lang.Long computeTotal, java.lang.Long agentId, java.lang.Long zoneId, java.lang.Long physicalHostId, java.lang.Boolean isPublic) {
+	public HostRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String uri, java.lang.Long computeFree, java.lang.Long computeTotal, java.lang.Long agentId, java.lang.Long zoneId, java.lang.Long physicalHostId, java.lang.Boolean isPublic, java.lang.Long certificateId) {
 		super(io.cattle.platform.core.model.tables.HostTable.HOST);
 
 		setValue(0, id);
@@ -885,5 +928,6 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 		setValue(15, zoneId);
 		setValue(16, physicalHostId);
 		setValue(17, isPublic);
+		setValue(18, certificateId);
 	}
 }

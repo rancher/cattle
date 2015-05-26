@@ -26,7 +26,7 @@ import com.netflix.config.DynamicStringProperty;
 
 @Named
 public class ClusterInfoFactory extends AbstractAgentBaseContextFactory {
-    static final DynamicStringProperty CLUSTER_INSECUREDOCKER_PORT = ArchaiusUtil.getString("cluster.insecuredocker.port");
+    static final DynamicStringProperty CLUSTER_SECUREDOCKER_PORT = ArchaiusUtil.getString("cluster.securedocker.port");
 
     @Inject
     ClusterHostMapDao clusterHostMapDao;
@@ -56,19 +56,19 @@ public class ClusterInfoFactory extends AbstractAgentBaseContextFactory {
                 continue;
             }
             IpAddress ipAddress = clusterHostMapDao.getIpAddressForHost(hostId);
-            hostPorts.add(ipAddress.getAddress() + ":" + CLUSTER_INSECUREDOCKER_PORT.getValue());
+            hostPorts.add(ipAddress.getAddress() + ":" + CLUSTER_SECUREDOCKER_PORT.getValue());
         }
 
         context.getData().put("clusterServerPort", clusterServerPort);
         context.getData().put("discoverySpec", discoverySpec);
         context.getData().put("hosts", hostPorts);
 
-        Long certificateId = DataAccessor.fields(cluster).withKey(ClusterConstants.CERT_REFERENCE).as(Long.class);
-        if (certificateId != null) {
-            Certificate certs = objectManager.loadResource(Certificate.class, certificateId);
-            context.getData().put("cert", certs.getCert());
-            context.getData().put("ca", certs.getCertChain());
-            context.getData().put("key", certs.getKey());
+        Long certificateId = cluster.getCertificateId();
+        Certificate certs = objectManager.loadResource(Certificate.class, certificateId);
+        if (certs != null) {
+            context.getData().put("clusterCrt", certs.getCert());
+            context.getData().put("caCrt", certs.getCertChain());
+            context.getData().put("clusterKey", certs.getKey());
         }
     }
 

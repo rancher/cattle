@@ -5,7 +5,8 @@ public class InstanceConstants {
     public enum SystemContainer {
         NetworkAgent,
         LoadBalancerAgent,
-        ClusterAgent;       // swarm
+        ClusterAgent,       // swarm
+        SslAgent;           // socat
     }
 
     public static final String TYPE = "instance";
@@ -35,6 +36,7 @@ public class InstanceConstants {
     public static final String FIELD_VOLUME_OFFERING_IDS = "volumeOfferingIds";
     public static final String FIELD_COMPUTE_TRIES = "computeTries";
     public static final String FIELD_LABELS = "labels";
+    public static final String FIELD_DATA_VOLUMES = "dataVolumes";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 
