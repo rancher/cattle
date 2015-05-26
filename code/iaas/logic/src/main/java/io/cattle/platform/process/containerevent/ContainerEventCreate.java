@@ -146,8 +146,14 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                         try {
                             objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
                         } catch (ProcessCancelException e) {
-                            data.put(REMOVE_OPTION, true);
-                            objectProcessManager.scheduleProcessInstance(PROCESS_STOP, instance, data);
+                            if (STATE_STOPPING.equals(state)) {
+                                // handle docker forced stop and remove
+                                instance = resourceMonitor.waitForNotTransitioning(instance);
+                                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
+                            } else {
+                                data.put(REMOVE_OPTION, true);
+                                objectProcessManager.scheduleProcessInstance(PROCESS_STOP, instance, data);
+                            }
                         }
                     }
                 } catch (ProcessCancelException e) {
