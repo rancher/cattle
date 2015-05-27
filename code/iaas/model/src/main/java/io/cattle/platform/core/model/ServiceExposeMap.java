@@ -146,6 +146,28 @@ public interface ServiceExposeMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "instance_id", precision = 19)
 	public java.lang.Long getInstanceId();
 
+	/**
+	 * Setter for <code>cattle.service_expose_map.account_id</code>.
+	 */
+	public void setAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	public java.lang.Long getAccountId();
+
+	/**
+	 * Setter for <code>cattle.service_expose_map.health_state</code>.
+	 */
+	public void setHealthState(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", nullable = false, length = 128)
+	public java.lang.String getHealthState();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

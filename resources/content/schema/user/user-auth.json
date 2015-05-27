@@ -266,6 +266,7 @@
         "loadBalancerHealthCheck.healthyThreshold" : "cru",
         "loadBalancerHealthCheck.unhealthyThreshold" : "cru",
         "loadBalancerHealthCheck.requestLine" : "cru",
+        "loadBalancerHealthCheck.port" : "cru",
 
         "loadBalancerAppCookieStickinessPolicy" : "r",
         "loadBalancerAppCookieStickinessPolicy.cookie" : "cru",
@@ -344,6 +345,7 @@
         "service.scale" : "cru",
         "service.dataVolumesFromService" : "cr",
         "service.launchConfig" : "cr",
+        "service.healthCheck" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceId" : "cr",
@@ -370,6 +372,18 @@
         "label.type" : "",
         "label.key" : "r",
         "label.value" : "r",
+
+        "instanceHealthCheck" : "cr",
+        "instanceHealthCheck.responseTimeout" : "cr",
+        "instanceHealthCheck.interval" : "cr",
+        "instanceHealthCheck.healthyThreshold" : "cr",
+        "instanceHealthCheck.unhealthyThreshold" : "cr",
+        "instanceHealthCheck.requestLine" : "cr",
+        "instanceHealthCheck.port" : "cr",
+
+        "serviceExposeMap" : "r",
+        "serviceExposeMap.instanceId" : "r",
+        "serviceExposeMap.serviceId" : "r",
 
         "end" : ""
     }

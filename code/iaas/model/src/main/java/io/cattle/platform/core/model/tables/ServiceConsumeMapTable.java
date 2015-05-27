@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceConsumeMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord> {
 
-	private static final long serialVersionUID = 2101068164;
+	private static final long serialVersionUID = -1749720843;
 
 	/**
 	 * The singleton instance of <code>cattle.service_consume_map</code>
@@ -87,6 +87,11 @@ public class ServiceConsumeMapTable extends org.jooq.impl.TableImpl<io.cattle.pl
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord, java.lang.Long> CONSUMED_SERVICE_ID = createField("consumed_service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.service_consume_map.account_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.service_consume_map</code> table reference
 	 */
 	public ServiceConsumeMapTable() {
@@ -137,7 +142,7 @@ public class ServiceConsumeMapTable extends org.jooq.impl.TableImpl<io.cattle.pl
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_CONSUME_MAP__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_CONSUME_MAP__CONSUMED_SERVICE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_CONSUME_MAP__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_CONSUME_MAP__CONSUMED_SERVICE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_CONSUME_MAP__ACCOUNT_ID);
 	}
 
 	/**

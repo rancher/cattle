@@ -48,4 +48,6 @@ public interface ServiceExposeMapDao {
     List<Service> collectSidekickServices(Service initialService, Map<String, String> initialSvcLabels);
 
     ServiceExposeMap findInstanceExposeMap(Instance instance);
+
+    ServiceExposeMap createServiceInstanceMap(Service service, Instance instance);
 }

@@ -2,15 +2,15 @@ from common_fixtures import *  # NOQA
 
 
 TYPE_LEN = {
-    'admin': 98,
+    'admin': 100,
     'agent': 8,
-    'user': 76,
+    'user': 78,
     'agentRegister': 4,
-    'readAdmin': 98,
+    'readAdmin': 100,
     'token': 2,
-    'superadmin': 152,
-    'service': 98,
-    'project': 76,
+    'superadmin': 154,
+    'service': 100,
+    'project': 78,
 }
 
 
@@ -1035,6 +1035,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'launchConfig': 'r',
         'accountId': 'r',
         'data': 'r',
+        'healthCheck': 'r'
+
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1044,6 +1046,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'dataVolumesFromService': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
+        'healthCheck': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1053,6 +1056,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'dataVolumesFromService': 'cr',
         'launchConfig': 'cr',
         'accountId': 'r',
+        'healthCheck': 'cr'
     })
 
 
@@ -1086,6 +1090,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'accountId': 'r',
         'data': 'r',
         'loadBalancerConfig': 'r',
+        'healthCheck': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1096,6 +1101,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'r',
         'accountId': 'r',
         'loadBalancerConfig': 'r',
+        'healthCheck': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1106,4 +1112,5 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'cr',
         'accountId': 'r',
         'loadBalancerConfig': 'cr',
+        'healthCheck': 'cr'
     })

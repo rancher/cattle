@@ -73,7 +73,8 @@ public class SetServiceLinksActionHandler implements ActionHandler {
             if (map == null) {
                 map = objectManager.create(ServiceConsumeMap.class,
                         SERVICE_CONSUME_MAP.SERVICE_ID,
-                        service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId);
+                        service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId,
+                        SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId());
             }
             objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
                     map, null);
