@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
+import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.auth.impl.OptionCallback;
 import io.cattle.platform.api.auth.impl.PolicyOptions;
@@ -11,7 +12,6 @@ import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -48,8 +48,8 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
     ResourceManagerLocator locator;
 
     @Override
-    public Policy getPolicy(final AccountAccess accountAccess, ApiRequest request) {
-        PolicyOptions policyOptions = optionsFactory.getOptions(accountAccess.getAccount());
+    public Policy getPolicy(final Account account, Account authenticatedAsAccount, Set<ExternalId> externalIds, ApiRequest request) {
+        PolicyOptions policyOptions = optionsFactory.getOptions(account);
 
         boolean apply = false;
         final SubscriptionStyle accountStyle = SubscriptionUtils.getSubscriptionStyle(policyOptions);
@@ -57,7 +57,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         /* This boolean logic could be optimized but this seems more readable. */
         if (accountStyle == SubscriptionStyle.RAW) {
             apply = true;
-        } else if (accountStyle == SubscriptionStyle.QUALIFIED && AccountConstants.AGENT_KIND.equals(accountAccess.getAccount().getKind())) {
+        } else if (accountStyle == SubscriptionStyle.QUALIFIED && AccountConstants.AGENT_KIND.equals(account.getKind())) {
             apply = true;
         }
 
@@ -66,7 +66,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         }
 
         final PolicyOptionsWrapper options = new PolicyOptionsWrapper(policyOptions);
-        AccountPolicy policy = new AccountPolicy(accountAccess, options);
+        AccountPolicy policy = new AccountPolicy(account, authenticatedAsAccount, externalIds, options);
 
         options.addCallback(Policy.AGENT_ID, new OptionCallback() {
             @Override
@@ -94,7 +94,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
                 String agentId = options.getOption(Policy.AGENT_ID);
 
                 if (agentId == null) {
-                    log.error("Failed to determine the proper agent ID for subscription for account [{}]", accountAccess.getAccount().getId());
+                    log.error("Failed to determine the proper agent ID for subscription for account [{}]", account.getId());
                     throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
                 }
 
