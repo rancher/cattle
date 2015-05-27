@@ -45,6 +45,7 @@
       "networkIds": [
         2
       ],
+      "networkMode": "bridge",
       "dataVolumesFrom": [],
       "command": "echo yo",
       "capDrop": [
@@ -155,6 +156,7 @@
     "maximumRetryCount": 5,
     "name": "on-failure"
   },
+  "networkMode": "bridge",
   "startOnCreate": true,
   "labels": {
     "io.rancher.labeltest.value": "val"

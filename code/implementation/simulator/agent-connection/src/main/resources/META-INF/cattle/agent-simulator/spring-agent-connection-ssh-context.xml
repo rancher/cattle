@@ -22,5 +22,6 @@
     <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorFailedProcessor" />
     <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorPingProcessor" />
     <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorStartStopProcessor" />
+    <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorInstanceInspectProcessor" />
 
 </beans>

@@ -4,6 +4,10 @@ import static io.cattle.platform.core.constants.CommonStatesConstants.*;
 import static io.cattle.platform.core.constants.ContainerEventConstants.*;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.core.constants.NetworkConstants.*;
+import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
+import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
+import io.cattle.platform.agent.AgentLocator;
+import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -17,6 +21,9 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.process.StandardProcess;
@@ -30,7 +37,6 @@ import io.cattle.platform.util.net.NetUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +46,17 @@ import javax.inject.Named;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
 
 @Named
 public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
+    public static final String AGENT_ID = "agentId";
+    public static final String INSTANCE_INSPECT_EVENT_NAME = "compute.instance.inspect";
+    private static final String INSTANCE_INSPECT_DATA_NAME = "instanceInspect";
     private static final DynamicBooleanProperty MANAGE_NONRANCHER_CONTAINERS = ArchaiusUtil.getBoolean("manage.nonrancher.containers");
     private static final String INSPECT_ENV = "Env";
     private static final String INSPECT_LABELS = "Labels";
@@ -56,6 +67,8 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
     private static final String RANCHER_UUID_ENV_VAR = "RANCHER_UUID=";
     private static final String RANCHER_NETWORK_ENV_VAR = "RANCHER_NETWORK=";
+
+    private static final Logger log = LoggerFactory.getLogger(ContainerEventCreate.class);
 
     @Inject
     StorageService storageService;
@@ -75,6 +88,9 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     @Inject
     ResourceMonitor resourceMonitor;
 
+    @Inject
+    AgentLocator agentLocator;
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         if (!MANAGE_NONRANCHER_CONTAINERS.get()) {
@@ -86,11 +102,11 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         HandlerResult result = lockManager.lock(new ContainerEventInstanceLock(event.getAccountId(), event.getExternalId()), new LockCallback<HandlerResult>() {
             @Override
             public HandlerResult doWithLock() {
-                Map<String, Object> inspect = getInspect(event);
+                Map<String, Object> inspect = getInspect(event, data);
                 String rancherUuid = getRancherUuidLabel(inspect, data);
                 Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getAccountId(), rancherUuid, event.getExternalId());
                 if ((instance != null && StringUtils.isNotEmpty(instance.getSystemContainer()))
-                                || StringUtils.isNotEmpty(getLabel(LABEL_RANCHER_SYSTEM_CONTAINER, inspect, data))) {
+                        || StringUtils.isNotEmpty(getLabel(LABEL_RANCHER_SYSTEM_CONTAINER, inspect, data))) {
                     // System containers are not managed by container events
                     return null;
                 }
@@ -130,8 +146,14 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                         try {
                             objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
                         } catch (ProcessCancelException e) {
-                            data.put(REMOVE_OPTION, true);
-                            objectProcessManager.scheduleProcessInstance(PROCESS_STOP, instance, data);
+                            if (STATE_STOPPING.equals(state)) {
+                                // handle docker forced stop and remove
+                                instance = resourceMonitor.waitForNotTransitioning(instance);
+                                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
+                            } else {
+                                data.put(REMOVE_OPTION, true);
+                                objectProcessManager.scheduleProcessInstance(PROCESS_STOP, instance, data);
+                            }
                         }
                     }
                 } catch (ProcessCancelException e) {
@@ -161,8 +183,38 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         objectProcessManager.scheduleProcessInstance(PROCESS_CREATE, instance, makeData());
     }
 
-    Map<String, Object> getInspect(ContainerEvent event) {
-        return CollectionUtils.toMap(DataUtils.getFields(event).get(FIELD_DOCKER_INSPECT));
+    private Map<String, Object> getInspect(ContainerEvent event, Map<String, Object> data) {
+        Object inspectObj = DataUtils.getFields(event).get(FIELD_DOCKER_INSPECT);
+        if (inspectObj == null) {
+            Event inspectEvent = newInspectEvent(null, event.getExternalId());
+            inspectObj = callAgentForInspect(data, inspectEvent);
+        }
+        return CollectionUtils.toMap(inspectObj);
+    }
+
+    private Object callAgentForInspect(Map<String, Object> data, Event inspectEvent) {
+        Long agentId = DataAccessor.fromMap(data).withScope(ContainerEventCreate.class).withKey(AGENT_ID).as(Long.class);
+        Object inspect = null;
+        if (agentId != null) {
+            RemoteAgent agent = agentLocator.lookupAgent(agentId);
+            Event result = agent.callSync(inspectEvent, new EventCallOptions(0, 3000L));
+            inspect = CollectionUtils.getNestedValue(result.getData(), INSTANCE_INSPECT_DATA_NAME);
+        }
+        return inspect;
+    }
+
+    private Event newInspectEvent(String containerName, String containerId) {
+        Map<String, Object> inspectEventData = new HashMap<String, Object>();
+        Map<String, Object> reqData = CollectionUtils.asMap("kind", "docker");
+        if (StringUtils.isNotEmpty(containerId))
+            reqData.put("id", containerId);
+        if (StringUtils.isNotEmpty(containerName))
+            reqData.put("name", containerName);
+
+        inspectEventData.put(INSTANCE_INSPECT_DATA_NAME, reqData);
+        EventVO<Object> inspectEvent = EventVO.newEvent(INSTANCE_INSPECT_EVENT_NAME).withData(inspectEventData);
+        inspectEvent.setResourceType(INSTANCE_INSPECT_DATA_NAME);
+        return inspectEvent;
     }
 
     public static boolean isNativeDockerStart(ProcessState state) {
@@ -190,27 +242,99 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     void setNetwork(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
-        Network network = null;
-        Network rancherNetwork = networkDao.getNetworkForObject(instance, KIND_HOSTONLY);
+        String networkMode = checkNoneNetwork(inspect);
+
+        if (networkMode == null) {
+            String inspectNetMode = getInspectNetworkMode(inspect);
+            networkMode = checkHostNetwork(inspectNetMode);
+
+            if (networkMode == null)
+                networkMode = checkContainerNetwork(inspectNetMode, instance, data);
+
+            if (networkMode == null)
+                networkMode = checkBridgeOrManagedNetwork(inspectNetMode, inspect, data, instance);
+        }
+
+        if (networkMode == null) {
+            log.warn("Could not determine network mode for container [externalId: {}]. Using none networking.", instance.getExternalId());
+            networkMode = NETWORK_MODE_NONE;
+        }
+
+        DataAccessor.fields(instance).withKey(FIELD_NETWORK_MODE).set(networkMode);
+    }
+
+    private String getInspectNetworkMode(Map<String, Object> inspect) {
+        Object tempNM = CollectionUtils.getNestedValue(inspect, "HostConfig", "NetworkMode");
+        String inspectNetMode = tempNM == null ? "" : tempNM.toString();
+        return inspectNetMode;
+    }
+
+    private String checkNoneNetwork(Map<String, Object> inspect) {
+        Object netDisabledObj = CollectionUtils.getNestedValue(inspect, "Config", "NetworkDisabled");
+        if (Boolean.TRUE.equals(netDisabledObj)) {
+            return NETWORK_MODE_NONE;
+        }
+        return null;
+    }
+
+    private String checkHostNetwork(String inspectNetMode) {
+        if (NETWORK_MODE_HOST.equals(inspectNetMode)) {
+            return inspectNetMode;
+        }
+        return null;
+    }
+
+    /*
+     * If mode is container, will attempt to look up the corresponding container in rancher. If it is found, will also ahve the side effect of setting
+     * networkContainerId on the instance.
+     */
+    private String checkContainerNetwork(String inspectNetMode, Instance instance, Map<String, Object> data) {
+        if (!StringUtils.startsWith(inspectNetMode, NETWORK_MODE_CONTAINER))
+            return null;
+
+        String[] parts = StringUtils.split(inspectNetMode, ":", 2);
+        String targetContainer = null;
+        if (parts.length == 2) {
+            targetContainer = parts[1];
+            Instance netFromInstance = instanceDao.getInstanceByUuidOrExternalId(instance.getAccountId(), targetContainer, targetContainer);
+            if (netFromInstance == null) {
+                Event inspectEvent = newInspectEvent(targetContainer, targetContainer);
+                Object inspectObj = callAgentForInspect(data, inspectEvent);
+                Map<String, Object> inspect = CollectionUtils.toMap(inspectObj);
+                String uuid = getRancherUuidLabel(inspect, null);
+                String externalId = inspect.get("Id") != null ? inspect.get("Id").toString() : null;
+                netFromInstance = instanceDao.getInstanceByUuidOrExternalId(instance.getAccountId(), uuid, externalId);
+            }
+
+            if (netFromInstance != null) {
+                DataAccessor.fields(instance).withKey(FIELD_NETWORK_CONTAINER_ID).set(netFromInstance.getId());
+                return NETWORK_MODE_CONTAINER;
+            }
+        }
+
+        log.warn("Problem configuring container networking for container [externalId: {}]. Could not find target container: [{}].", instance.getExternalId(),
+                targetContainer);
+
+        return null;
+    }
+
+    /*
+     * If mode is bridge, will check to see if managed networking or native docker bridge networking should be configured. Can have the side effect of setting
+     * the requestedIp field on the instance, if it is appropriate to do so.
+     */
+    private String checkBridgeOrManagedNetwork(String inspectNetMode, Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
+        if (!NETWORK_MODE_BRIDGE.equals(inspectNetMode) && StringUtils.isNotEmpty(inspectNetMode))
+            return null;
+
         String ip = getDockerIp(inspect);
-        if (StringUtils.isNotEmpty(ip) && isIpInNetwork(ip, rancherNetwork)) {
+        if (StringUtils.isNotEmpty(ip) && isIpInNetwork(ip, networkDao.getNetworkForObject(instance, KIND_HOSTONLY))) {
             DataAccessor.fields(instance).withKey(FIELD_REQUESTED_IP_ADDRESS).set(ip);
-            network = rancherNetwork;
+            return NETWORK_MODE_MANAGED;
         }
-
-        if (network == null && BooleanUtils.toBoolean(getRancherNetworkLabel(inspect, data))) {
-            network = rancherNetwork;
+        if (BooleanUtils.toBoolean(getRancherNetworkLabel(inspect, data))) {
+            return NETWORK_MODE_MANAGED;
         }
-
-        if (network == null) {
-            network = networkDao.getNetworkForObject(instance, KIND_NETWORK);
-        }
-
-        if (network != null) {
-            List<Long> netIds = new ArrayList<Long>();
-            netIds.add(network.getId());
-            DataAccessor.fields(instance).withKey(FIELD_NETWORK_IDS).set(netIds);
-        }
+        return NETWORK_MODE_BRIDGE;
     }
 
     boolean isIpInNetwork(String ipAddress, Network network) {
