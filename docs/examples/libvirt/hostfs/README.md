@@ -12,4 +12,4 @@ You can add whatever you want to the custom template, this example will setup a 
 After you start/restart a VM using this configuration, refer to the data.libvirt.xml property of the virtual machine to ensure that your changes ended up in the libvirt domain XML.
 
   [1]: http://docs.cattle.io/en/latest/config/cattle-home.html
-  [2]: https://github.com/cattleio/cattle/blob/master/code/agent/src/agents/pyagent/cattle/plugins/libvirt/default_template.tmpl
+  [2]: https://github.com/rancherio/cattle/blob/master/code/agent/src/agents/pyagent/cattle/plugins/libvirt/default_template.tmpl

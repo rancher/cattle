@@ -13,7 +13,7 @@ For a simple installation you have two basic things that need to be setup, the m
 1. Download
 ***********
 
-If you are installing using Docker, you do not need to download anything.  If you are just running Java manually, then you must download the :file:`cattle.jar` from the `Releases Page <https://github.com/cattleio/cattle/releases>`_
+If you are installing using Docker, you do not need to download anything.  If you are just running Java manually, then you must download the :file:`cattle.jar` from the `Releases Page <https://github.com/rancherio/cattle/releases>`_
 
 2. Management Server Installation
 *********************************

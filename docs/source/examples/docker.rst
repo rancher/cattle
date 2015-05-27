@@ -8,7 +8,7 @@ To get a basic overview of how Docker works we will use Docker to deploy a simpl
 .. image:: https://docs.google.com/drawings/d/1jXfAGAb2h0oYGZlRh-ihFWGp2bPvI4M2drOaV3ESrHc/pub?w=402&h=219
    :align: center
 
-The application will we be deploying is Cattle itself and additionally log aggregation with Logstash/Elasticsearch and Kibana for the UI.  The full script to run all of the below commands is `cattle-scripts.zip download <https://github.com/cattleio/cattle/tree/master#2-download>`_ in docker-example.sh.
+The application will we be deploying is Cattle itself and additionally log aggregation with Logstash/Elasticsearch and Kibana for the UI.  The full script to run all of the below commands is `cattle-scripts.zip download <https://github.com/rancherio/cattle/tree/master#2-download>`_ in docker-example.sh.
 
 Launch Logstash/Elastisearch
 ****************************
@@ -29,7 +29,7 @@ We will now launch Kibana and link it to the embedded Elasticsearch.
 
     docker run -d -p 80 --name kibana --link logstash:es cattle/kibana
 
-You can run :command:`docker ps` to see which port Kibana is running on.  You can use gist https://gist.github.com/cattleio/5d0ae8b4dd408ff8181a as a sample dashboard.
+You can run :command:`docker ps` to see which port Kibana is running on.  You can use gist https://gist.github.com/rancherio/5d0ae8b4dd408ff8181a as a sample dashboard.
 
 .. image:: kibana-gist.png
    :align: center
