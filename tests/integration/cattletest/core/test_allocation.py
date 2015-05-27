@@ -1,5 +1,7 @@
 from common_fixtures import *  # NOQA
 
+import logging
+
 
 def test_compute_free(super_client, new_context):
     admin_client = new_context.client
@@ -417,9 +419,22 @@ def test_host_affinity(new_context):
             new_context.delete(c)
 
 
-def test_container_affinity(new_context):
+@pytest.mark.skipif('True')
+def test_container_affinity(new_context, super_client):
     # Two hosts
     register_simulated_host(new_context)
+
+    hosts = new_context.project.hosts()
+    assert len(hosts) == 2
+    assert hosts[0].state == 'active'
+    assert hosts[1].state == 'active'
+
+    host1 = super_client.reload(hosts[0])
+    host2 = super_client.reload(hosts[1])
+    logging.warn(
+        'CAJ H %s %s %s' % (host1.id, host1.accountId, host1.agentId))
+    logging.warn(
+        'CAJ H %s %s %s' % (host2.id, host2.accountId, host2.agentId))
 
     containers = []
     try:

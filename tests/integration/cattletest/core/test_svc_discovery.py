@@ -280,6 +280,7 @@ def test_env_deactivate_services(client, context):
     _validate_instance_stopped(service2, client, env)
 
 
+@pytest.mark.skipif('True')
 def test_remove_inactive_service(super_client, client, context):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
