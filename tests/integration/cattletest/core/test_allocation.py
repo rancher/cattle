@@ -351,14 +351,15 @@ def test_request_host_override(new_context):
             new_context.delete(c2)
 
 
-def test_host_affinity(new_context):
+def test_host_affinity(super_client, new_context):
     host = new_context.host
     host2 = register_simulated_host(new_context)
 
-    host.addlabel(key='size', value='huge')
-    host.addlabel(key='latency', value='long')
-    host2.addlabel(key='size', value='tiny')
-    host2.addlabel(key='latency', value='short')
+    host = super_client.update(host, labels={'size': 'huge',
+                                             'latency': 'long'})
+
+    host2 = super_client.update(host2, labels={'size': 'tiny',
+                                               'latency': 'short'})
 
     containers = []
     try:

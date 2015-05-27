@@ -6,20 +6,13 @@
         "apiProxy": {
             "type" : "string",
             "nullable" : true
-        }
-    },
-    "resourceActions": {
-        "addlabel": {
-            "input": "addLabelInput",
-            "output": "host"
         },
-        "removelabel": {
-            "input": "removeLabelInput",
-            "output": "host"
-        },
-        "setlabels": {
-            "input": "setLabelsInput",
-            "output": "host"
+        "labels": {
+            "type": "map[string]",
+            "create": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     }
 }

@@ -1,24 +1,27 @@
-package io.cattle.iaas.labels.api;
+package io.cattle.platform.process.host;
 
 import io.cattle.iaas.labels.service.LabelsService;
-import io.cattle.platform.api.action.ActionHandler;
-import io.cattle.platform.core.constants.LabelConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostLabelMap;
 import io.cattle.platform.core.model.Label;
-import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.process.ProcessInstance;
+import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.DataAccessor;
-import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
-public class SetHostLabelsActionHandler implements ActionHandler {
+@Named
+public class HostUpdate extends AbstractDefaultProcessHandler {
 
     @Inject
     GenericMapDao mapDao;
@@ -27,27 +30,14 @@ public class SetHostLabelsActionHandler implements ActionHandler {
     LabelsDao labelsDao;
 
     @Inject
-    ObjectProcessManager processManager;
-
-    @Inject
     LabelsService labelsService;
 
     @Override
-    public String getName() {
-        return "host.setlabels";
-    }
-
-    @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
-        Host host = (Host) obj;
-
-        // are locks automatically applied for actions or just for process changes.  i'm guessing
-        // just for process changes.
-        //return lockManager.lock(new , callback)
-        // TODO: wrap into DB transaction
+    public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        final Host host = (Host) state.getResource();
 
         @SuppressWarnings("unchecked")
-        Map<String, String> labelsFromInput = DataAccessor.fromMap(request.getRequestObject()).withKey(LabelConstants.INPUT_LABELS).as(Map.class);
+        Map<String, String> labelsFromInput = DataAccessor.fields(host).withKey(HostConstants.FIELD_LABELS).as(Map.class);
 
         List<Label> existing = labelsDao.getLabelsForHost(host.getId());
         List<? extends HostLabelMap> existingInstanceMappings = mapDao.findNonRemoved(HostLabelMap.class, Host.class, host.getId());
@@ -73,11 +63,11 @@ public class SetHostLabelsActionHandler implements ActionHandler {
             Label existingLabel = existingLabelLookupById.get(labelId);
             String newLabelValue = labelsFromInput.get(existingLabel.getKey());
             if (newLabelValue == null || !newLabelValue.equals(existingLabel.getValue())) {
-                processManager.scheduleProcessInstance("hostlabelmap.remove", mapping, null);
+                objectProcessManager.scheduleProcessInstance("hostlabelmap.remove", mapping, null);
             }
         }
 
-        return host;
+        return null;
     }
 
 }

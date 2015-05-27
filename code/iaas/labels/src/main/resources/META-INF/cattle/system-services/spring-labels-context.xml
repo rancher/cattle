@@ -13,14 +13,6 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <bean class="io.cattle.iaas.labels.service.impl.LabelsServiceImpl" />
-
-    <bean class="io.cattle.iaas.labels.api.AddHostLabelActionHandler" />
-    <bean class="io.cattle.iaas.labels.api.RemoveHostLabelActionHandler" />
-
-    <bean class="io.cattle.iaas.labels.api.AddContainerLabelActionHandler" />
-    <bean class="io.cattle.iaas.labels.api.RemoveContainerLabelActionHandler" />
-
     <bean class="io.cattle.iaas.labels.api.SetContainerLabelsActionHandler" />
-    <bean class="io.cattle.iaas.labels.api.SetHostLabelsActionHandler" />
 
 </beans>

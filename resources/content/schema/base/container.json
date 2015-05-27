@@ -194,14 +194,6 @@
             "input":"containerLogs",
             "output":"hostAccess"
         },
-        "addlabel": {
-            "input": "addLabelInput",
-            "output": "container"
-        },
-        "removelabel": {
-            "input": "removeLabelInput",
-            "output": "container"
-        },
         "setlabels": {
             "input": "setLabelsInput",
             "output": "container"

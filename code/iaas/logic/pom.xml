@@ -79,5 +79,10 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-iaas-labels</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
