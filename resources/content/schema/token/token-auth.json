@@ -12,6 +12,7 @@
         "token.code": "cr",
         "token.userType": "r",
         "token.defaultProject": "r",
-        "token.accountId": "r"
+        "token.accountId": "r",
+        "token.hostname": "r"
     }
 }

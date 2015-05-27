@@ -23,6 +23,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
     private static final String TOKEN = "token";
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString("api.auth.github.client.id");
+    private static final DynamicStringProperty GITHUB_HOSTNAME = ArchaiusUtil.getString("api.github.domain");
 
     public List<TokenHandler> getTokenHandlers() {
         return tokenHandlers;
@@ -65,6 +66,6 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return new Token(SECURITY.get(), GITHUB_CLIENT_ID.get());
+        return new Token(SECURITY.get(), GITHUB_CLIENT_ID.get(), GITHUB_HOSTNAME.get());
     }
 }

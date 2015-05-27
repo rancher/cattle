@@ -99,7 +99,8 @@ def test_token_auth(token_client):
         'security': 'r',
         'teams': 'r',
         'userType': 'r',
-        'accountId': 'r'
+        'accountId': 'r',
+        'hostname': 'r'
     })
 
 
@@ -113,7 +114,8 @@ def test_github_auth(admin_user_client, user_client, project_client):
         'allowedUsers': 'cr',
         'clientId': 'cr',
         'clientSecret': 'cr',
-        'accessMode': 'cr'
+        'accessMode': 'cr',
+        'hostname': 'cr'
     })
 
 

@@ -9,6 +9,8 @@ import java.util.List;
 public class Token {
 
     private final String jwt;
+    private final String hostname
+            ;
     private String code;
     private final String user;
     private final List<String> orgs;
@@ -22,6 +24,7 @@ public class Token {
                  String accountId) {
         this.jwt = jwt;
         this.user = username;
+        this.hostname = null;
         this.orgs = orgs;
         this.teams = teams;
         this.security = security;
@@ -30,7 +33,7 @@ public class Token {
         this.accountId = accountId;
     }
 
-    public Token(Boolean security, String clientId) {
+    public Token(Boolean security, String clientId, String hostName) {
         this.jwt = null;
         this.user = null;
         this.orgs = null;
@@ -39,6 +42,7 @@ public class Token {
         this.clientId = clientId;
         this.userType = null;
         this.accountId = null;
+        this.hostname = hostName;
     }
 
     @Field(nullable = true)
@@ -89,5 +93,10 @@ public class Token {
     @Field(nullable = true)
     public String getAccountId() {
         return accountId;
+    }
+
+    @Field(nullable = true)
+    public String getHostname() {
+        return hostname;
     }
 }
