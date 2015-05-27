@@ -1,11 +1,12 @@
 package io.cattle.platform.iaas.api.auth.github.resource;
 
+import io.cattle.platform.iaas.api.auth.github.constants.GithubConstants;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import java.util.List;
 
-@Type(name = "token")
+@Type(name = GithubConstants.TOKEN)
 public class Token {
 
     private final String jwt;

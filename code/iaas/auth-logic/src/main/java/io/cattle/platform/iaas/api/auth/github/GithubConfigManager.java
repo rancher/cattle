@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth.github;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.iaas.api.auth.github.constants.GithubConstants;
 import io.cattle.platform.iaas.api.auth.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.github.resource.GithubConfig;
 import io.cattle.platform.json.JsonMapper;
@@ -37,8 +38,6 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private static final String ALLOWED_ORGS = "allowedOrganizations";
     private static final String HOSTNAME = "hostname";
 
-    private static final String GITHUB_CONFIG = "githubconfig";
-
     private static final String SECURITY_SETTING = "api.security.enabled";
     private static final String ACCESSMODE_SETTING = "api.auth.github.access.mode";
     private static final String CLIENT_ID_SETTING = "api.auth.github.client.id";
@@ -67,7 +66,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     @SuppressWarnings("unchecked")
     @Override
     protected Object createInternal(String type, ApiRequest request) {
-        if (!StringUtils.equals(GITHUB_CONFIG, request.getType())) {
+        if (!StringUtils.equals(GithubConstants.GITHUBCONFIG, request.getType())) {
             return null;
         }
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);

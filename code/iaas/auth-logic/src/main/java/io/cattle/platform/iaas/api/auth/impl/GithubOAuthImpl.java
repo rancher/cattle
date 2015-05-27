@@ -1,9 +1,7 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
-import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
-import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.github.GithubUtils;
 import io.cattle.platform.iaas.api.auth.github.constants.GithubConstants;
 import io.cattle.platform.util.type.Priority;
@@ -16,8 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 public class GithubOAuthImpl implements AccountLookup, Priority {
 
     @Inject
-    private AuthDao authDao;
-    @Inject
     private GithubUtils githubUtils;
 
     @Override
@@ -27,7 +23,7 @@ public class GithubOAuthImpl implements AccountLookup, Priority {
 
     @Override
     public Account getAccount(ApiRequest request) {
-        if (StringUtils.equals("token", request.getType())) {
+        if (StringUtils.equals(GithubConstants.TOKEN, request.getType())) {
             return null;
         }
         githubUtils.findAndSetJWT();

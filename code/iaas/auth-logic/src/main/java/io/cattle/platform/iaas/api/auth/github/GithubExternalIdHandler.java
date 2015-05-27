@@ -78,7 +78,7 @@ public class GithubExternalIdHandler implements ExternalIdHandler {
             try {
                 jwt =  ProjectConstants.AUTH_TYPE + githubTokenHandler.getGithubToken(accessToken).getJwt();
             } catch (IOException e) {
-                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "FailedToMakeJWT", "", null);
+                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.JWT_CREATION_FAILED, "", null);
             }
         }
         if ( jwt != null && !jwt.isEmpty()){

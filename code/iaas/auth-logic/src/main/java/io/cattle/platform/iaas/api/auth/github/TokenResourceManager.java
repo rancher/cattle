@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.github;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.iaas.api.auth.TokenHandler;
+import io.cattle.platform.iaas.api.auth.github.constants.GithubConstants;
 import io.cattle.platform.iaas.api.auth.github.resource.Token;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -20,7 +21,6 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class TokenResourceManager extends AbstractNoOpResourceManager {
-    private static final String TOKEN = "token";
     private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString("api.auth.github.client.id");
     private static final DynamicStringProperty GITHUB_HOSTNAME = ArchaiusUtil.getString("api.github.domain");
@@ -43,7 +43,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object createInternal(String type, ApiRequest request) {
-        if (!StringUtils.equals(TOKEN, request.getType())) {
+        if (!StringUtils.equals(GithubConstants.TOKEN, request.getType())) {
             return null;
         }
         try {
