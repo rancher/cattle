@@ -8,7 +8,7 @@ To get a basic overview of how Docker in Cattle works we will use Cattle to depl
 .. image:: https://docs.google.com/drawings/d/1jXfAGAb2h0oYGZlRh-ihFWGp2bPvI4M2drOaV3ESrHc/pub?w=402&h=219
    :align: center
 
-The application will we be deploying is Cattle itself and additionally log aggregation with Logstash/Elasticsearch and Kibana for the UI.  The full script to run all of the below commands is `cattle-scripts.zip download <https://github.com/cattleio/cattle/tree/master#2-download>`_ in cattle-example.py.
+The application will we be deploying is Cattle itself and additionally log aggregation with Logstash/Elasticsearch and Kibana for the UI.  The full script to run all of the below commands is `cattle-scripts.zip download <https://github.com/rancherio/cattle/tree/master#2-download>`_ in cattle-example.py.
 
 **NOTE: Cattle doesn't currently have native support for links but the semantics of links can be easily mimiced on the client side.  The link() function referenced in the following sections is a small python function to emulate the functionality of Docker links across hosts.  The source of the link() function is in the common.py file.**
 
@@ -102,7 +102,7 @@ You can run hit http://localhost:8080/v1/containers?name=kibana and you should s
         "dockerIp": "172.17.0.8",
     }
 
-You can use gist https://gist.github.com/cattleio/5d0ae8b4dd408ff8181a as a sample dashboard.
+You can use gist https://gist.github.com/rancherio/5d0ae8b4dd408ff8181a as a sample dashboard.
 
 .. image:: kibana-gist.png
    :align: center

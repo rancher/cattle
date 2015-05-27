@@ -3,7 +3,7 @@
 Adding a hypervisor
 ===================
 
-Add a new hypervisor is relatively straight forward.  You just need to subscribe to and handle 7 agent events.  Refer to the inline comments in https://github.com/cattleio/cattle/blob/master/docs/examples/handler-bash/hypervisor.sh.  The events you must handle are as follows:
+Add a new hypervisor is relatively straight forward.  You just need to subscribe to and handle 7 agent events.  Refer to the inline comments in https://github.com/rancherio/cattle/blob/master/docs/examples/handler-bash/hypervisor.sh.  The events you must handle are as follows:
 
 **storage.image.activate**:  Download and make the image ready for use on this hypervisor.
 
