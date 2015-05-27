@@ -2,4 +2,5 @@ cattle==0.4.0
 websocket-client==0.23.0
 
 flake8
-pytest==2.3.5
+pytest==2.7.1
+pytest-xdist
