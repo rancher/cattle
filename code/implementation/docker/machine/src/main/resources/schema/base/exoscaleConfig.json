@@ -1,30 +1,34 @@
 {
     "resourceFields": {
-        "accessToken": {
+        "apiKey": {
             "type": "string",
             "nullable": true
         },
-        "backups": {
-            "type": "boolean",
+        "apiSecretKey": {
+            "type": "string",
+            "nullable": true
+        },
+        "availabilityZone": {
+            "type": "string",
+            "nullable": true
+        },
+        "diskSize": {
+            "type": "string",
             "nullable": true
         },
         "image": {
             "type": "string",
             "nullable": true
         },
-        "ipv6": {
-            "type": "boolean",
-            "nullable": true
-        },
-        "privateNetworking": {
-            "type": "boolean",
-            "nullable": true
-        },
-        "region": {
+        "instanceProfile": {
             "type": "string",
             "nullable": true
         },
-        "size": {
+        "securityGroup": {
+            "type": "string",
+            "nullable": true
+        },
+        "url": {
             "type": "string",
             "nullable": true
         }

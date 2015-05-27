@@ -1,23 +1,43 @@
 {
     "resourceFields": {
-        "virtualboxConfig": {
-            "type": "virtualboxConfig",
+        "amazonec2Config": {
+            "type": "amazonec2Config",
             "nullable": true
         },
         "digitaloceanConfig": {
             "type": "digitaloceanConfig",
             "nullable": true
         },
-        "amazonec2Config": {
-            "type": "amazonec2Config",
+        "exoscaleConfig": {
+            "type": "exoscaleConfig",
+            "nullable": true
+        },
+        "openstackConfig": {
+            "type": "openstackConfig",
+            "nullable": true
+        },
+        "packetConfig": {
+            "type": "packetConfig",
             "nullable": true
         },
         "rackspaceConfig": {
             "type": "rackspaceConfig",
             "nullable": true
         },
-        "packetConfig": {
-            "type": "packetConfig",
+        "softlayerConfig": {
+            "type": "softlayerConfig",
+            "nullable": true
+        },
+        "virtualboxConfig": {
+            "type": "virtualboxConfig",
+            "nullable": true
+        },
+        "vmwarevcloudairConfig": {
+            "type": "vmwarevcloudairConfig",
+            "nullable": true
+        },
+        "vmwarevsphereConfig": {
+            "type": "vmwarevsphereConfig",
             "nullable": true
         }
     }

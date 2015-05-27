@@ -1,70 +1,62 @@
 {
     "resourceFields": {
-        "accessKey": {
+        "apiEndpoint": {
             "type": "string",
             "nullable": true
         },
-        "ami": {
+        "apiKey": {
             "type": "string",
             "nullable": true
         },
-        "iamInstanceProfile": {
+        "cpu": {
             "type": "string",
             "nullable": true
         },
-        "instanceType": {
+        "diskSize": {
             "type": "string",
             "nullable": true
         },
-        "monitoring": {
+        "domain": {
+            "type": "string",
+            "nullable": true
+        },
+        "hostname": {
+            "type": "string",
+            "nullable": true
+        },
+        "hourlyBilling": {
             "type": "boolean",
             "nullable": true
         },
-        "privateAddressOnly": {
+        "image": {
+            "type": "string",
+            "nullable": true
+        },
+        "localDisk": {
             "type": "boolean",
+            "nullable": true
+        },
+        "memory": {
+            "type": "string",
+            "nullable": true
+        },
+        "privateNetOnly": {
+            "type": "boolean",
+            "nullable": true
+        },
+        "privateVlanId": {
+            "type": "string",
+            "nullable": true
+        },
+        "publicVlanId": {
+            "type": "string",
             "nullable": true
         },
         "region": {
             "type": "string",
             "nullable": true
         },
-        "requestSpotInstance": {
-            "type": "boolean",
-            "nullable": true
-        },
-        "rootSize": {
-            "type": "string",
-            "nullable": true
-        },
-        "secretKey": {
-            "type": "string",
-            "nullable": true
-        },
-        "securityGroup": {
-            "type": "string",
-            "nullable": true
-        },
-        "sessionToken": {
-            "type": "string",
-            "nullable": true
-        },
-        "spotPrice": {
-            "type": "string",
-            "nullable": true
-        },
-        "sshUser": {
-            "type": "string",
-            "nullable": true
-        },
-        "subnetId": {
-            "type": "string",
-            "nullable": true
-        },
-        "vpcId": {
-            "type": "string",
-            "nullable": true
-        },
-        "zone": {
+        "user": {
             "type": "string",
             "nullable": true
         }

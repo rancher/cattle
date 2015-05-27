@@ -1,6 +1,10 @@
 {
     "resourceFields": {
-        "memory": {
+        "boot2dockerUrl": {
+            "type": "string",
+            "nullable": true
+        },
+        "cpuCount": {
             "type": "string",
             "nullable": true
         },
@@ -8,7 +12,11 @@
             "type": "string",
             "nullable": true
         },
-        "boot2dockerUrl": {
+        "importBoot2dockerVm": {
+            "type": "string",
+            "nullable": true
+        },
+        "memory": {
             "type": "string",
             "nullable": true
         }

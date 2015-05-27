@@ -16,11 +16,16 @@
         </property>
         <property name="typeNames">
             <set>
-                <value>virtualboxConfig,parent=baseMachineConfig</value>
-                <value>digitaloceanConfig,parent=baseMachineConfig</value>
-                <value>amazonec2Config,parent=baseMachineConfig</value>
-                <value>rackspaceConfig,parent=baseMachineConfig</value>
-                <value>packetConfig,parent=baseMachineConfig</value>
+                <value>amazonec2Config,parent=baseMachineConfig</value>  
+                <value>digitaloceanConfig,parent=baseMachineConfig</value>  
+                <value>exoscaleConfig,parent=baseMachineConfig</value>  
+                <value>openstackConfig,parent=baseMachineConfig</value>  
+                <value>packetConfig,parent=baseMachineConfig</value>  
+                <value>rackspaceConfig,parent=baseMachineConfig</value>  
+                <value>softlayerConfig,parent=baseMachineConfig</value>  
+                <value>virtualboxConfig,parent=baseMachineConfig</value>  
+                <value>vmwarevcloudairConfig,parent=baseMachineConfig</value>  
+                <value>vmwarevsphereConfig,parent=baseMachineConfig</value>  
             </set>
         </property>
     </bean>
