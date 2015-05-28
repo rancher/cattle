@@ -1,5 +1,6 @@
 package io.cattle.platform.docker.storage;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.docker.client.DockerImage;
@@ -26,7 +27,7 @@ public class DockerImageCredentialLookup implements ImageCredentialLookup {
                 continue;
             }
             StoragePool registry = ((StoragePool) item);
-            if (!(registry.getKind().equalsIgnoreCase(REGISTRY))){
+            if (!(registry.getKind().equalsIgnoreCase(REGISTRY)) || !registry.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)){
                 continue;
             }
             if (serverAddress.equalsIgnoreCase((String) CollectionUtils.getNestedValue(registry.getData(), "fields", "serverAddress"))) {
@@ -43,7 +44,7 @@ public class DockerImageCredentialLookup implements ImageCredentialLookup {
                 continue;
             }
             Credential credential = (Credential) cred;
-            if (!credential.getKind().equalsIgnoreCase(REGISTRY_CREDENTIAL)){
+            if (!credential.getKind().equalsIgnoreCase(REGISTRY_CREDENTIAL) || !credential.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)){
                 continue;
             }
             if (credential.getRegistryId().equals(registryId)){
