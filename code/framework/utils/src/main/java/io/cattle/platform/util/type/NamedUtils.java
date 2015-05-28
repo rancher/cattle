@@ -30,4 +30,11 @@ public class NamedUtils {
         }
         return name.replaceAll("([a-z])([A-Z])", "$1.$2").toLowerCase();
     }
+
+    public static String toUnderscoreSeparated(String name) {
+        if (name == null) {
+            return name;
+        }
+        return name.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+    }
 }
