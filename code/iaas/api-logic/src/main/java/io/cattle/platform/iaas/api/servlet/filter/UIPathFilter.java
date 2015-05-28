@@ -5,8 +5,10 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.inject.Inject;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -27,6 +29,7 @@ public class UIPathFilter implements Filter {
     public static final DynamicStringProperty STATIC_INDEX_HTML = ArchaiusUtil.getString("api.ui.index");
 
     private static final Logger log = LoggerFactory.getLogger(UIPathFilter.class);
+    private static final String INDEX = "index.html";
 
     private byte[] indexCached = null;
 
@@ -49,21 +52,29 @@ public class UIPathFilter implements Filter {
 
     protected void reloadIndex() {
         String url = STATIC_INDEX_HTML.get();
+        URL inputUrl;
+        InputStream is = null;
 
-        if (url != null && url.startsWith("http")) {
-            InputStream is = null;
-
-            try {
-                is = new URL(url).openConnection().getInputStream();
-                indexCached = IOUtils.toByteArray(is);
-            } catch (IOException e) {
-                log.error("Failed to load UI from [{}]", url, e);
-                return;
-            } finally {
-                IOUtils.closeQuietly(is);
+        try {
+            if (url != null && url.startsWith("http") && url.endsWith("index.html")) {
+                inputUrl = new URL(url);
+            } else {
+                inputUrl = UIPathFilter.class.getClassLoader().getResource(INDEX);
             }
-        } else {
-            indexCached = null;
+
+            is = inputUrl.openConnection().getInputStream();
+            byte[] bytes = IOUtils.toByteArray(is);
+
+            if (url != null && !url.endsWith("index.html")) {
+                bytes = new String(bytes, "UTF-8").replaceAll("%PREFIX%", url).getBytes();
+            }
+
+            indexCached = bytes;
+        } catch (IOException e) {
+            log.error("Failed to load UI from [{}]", url, e);
+            return;
+        } finally {
+            IOUtils.closeQuietly(is);
         }
     }
 
