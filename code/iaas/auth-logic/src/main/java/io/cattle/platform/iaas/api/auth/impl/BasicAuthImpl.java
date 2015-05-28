@@ -1,8 +1,10 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
+import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.util.type.Priority;
@@ -37,26 +39,26 @@ public class BasicAuthImpl implements AccountLookup, Priority {
     AdminAuthLookUp adminAuthLookUp;
 
     @Override
-    public Account getAccount(ApiRequest request) {
+    public AccountAccess getAccountAccess(ApiRequest request) {
         String[] auth = getUsernamePassword(request.getServletContext().getRequest().getHeader(AUTH_HEADER));
         if (auth == null){
             return null;
         }
         Account account = authDao.getAccountByKeys(auth[0], auth[1]);
+        AccountAccess accountAccess = null;
         if (account != null){
-            return account;
+            accountAccess = new AccountAccess(account, null);
+            accountAccess.getExternalIds().add(new ExternalId(String.valueOf(accountAccess.getAccount().getId()), ProjectConstants.RANCHER_ID));
         } else if (auth[0].toLowerCase().startsWith(ProjectConstants.OAUTH_BASIC.toLowerCase()) && SECURITY.get()) {
             String[] splits = auth[0].split("=");
             String projectId = splits.length == 2 ? splits[1] : null;
-            request.setAttribute(ProjectConstants.PROJECT_HEADER, projectId);
-            account = githubOAuth.getAccountAccess(ProjectConstants.AUTH_TYPE + auth[1], request);
+            accountAccess = githubOAuth.getAccountAccess(ProjectConstants.AUTH_TYPE + auth[1], projectId, request);
         } else if (auth[0].toLowerCase().startsWith(ProjectConstants.OAUTH_BASIC.toLowerCase()) && !SECURITY.get()) {
             String[] splits = auth[0].split("=");
             String projectId = splits.length == 2 ? splits[1] : null;
-            request.setAttribute(ProjectConstants.PROJECT_HEADER, projectId);
-            account = adminAuthLookUp.getAccount(request);
+            accountAccess = adminAuthLookUp.getAccountAccess(projectId);
         }
-        return account;
+        return accountAccess;
     }
 
     @Override

@@ -1,8 +1,8 @@
 package io.cattle.platform.iaas.api.request.handler;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.iaas.api.auth.github.GithubClientEndpoints;
 import io.cattle.platform.iaas.api.auth.github.GithubUtils;
-import io.cattle.platform.iaas.api.auth.github.constants.GithubConstants;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractResponseGenerator;
@@ -21,21 +21,35 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicStringProperty;
+
 public class GithubProxy extends AbstractResponseGenerator {
 
-    @Inject
+    private static final String AUTH_HEADER = "Authorization";
+
+    private static final DynamicBooleanProperty ALLOW_GITHUB_REDIRECT = ArchaiusUtil.getBoolean("api.allow.github.proxy");
+    private static final DynamicStringProperty GITHUB_API_BASE = ArchaiusUtil.getString("api.github.base.url");
+
     GithubUtils githubUtils;
 
     @Override
     protected void generate(final ApiRequest request) throws IOException {
-        if (request.getRequestVersion() == null || !GithubConstants.ALLOW_GITHUB_REDIRECT.get())
+        if (request.getRequestVersion() == null || !ALLOW_GITHUB_REDIRECT.get())
             return;
 
         if (!StringUtils.equals("github", request.getRequestVersion())) {
             return;
         }
-        String accessToken = githubUtils.getAccessToken();
 
+        String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);
+        if (StringUtils.isEmpty(token)) {
+            token = request.getServletContext().getRequest().getParameter("token");
+            if (StringUtils.isEmpty(token)) {
+                throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
+            }
+        }
+        String accessToken = githubUtils.validateAndFetchGithubToken(token);
         if (StringUtils.isEmpty(accessToken)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
@@ -63,5 +77,10 @@ public class GithubProxy extends AbstractResponseGenerator {
                 return null;
             }
         });
+    }
+
+    @Inject
+    public void setGithubUtils(GithubUtils githubUtils) {
+        this.githubUtils = githubUtils;
     }
 }

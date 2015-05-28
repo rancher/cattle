@@ -3,6 +3,9 @@ package io.cattle.platform.iaas.api.auth.github;
 import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractObjectResourceManager;
+import io.cattle.platform.api.utils.ApiUtils;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
@@ -24,9 +27,16 @@ import java.util.*;
 
 import javax.inject.Inject;
 
+import org.apache.commons.collections.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.netflix.config.DynamicBooleanProperty;
+
 public class ProjectMemberResourceManager extends AbstractObjectResourceManager {
+
+
+    private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
+    private static final DynamicBooleanProperty USE_RANCHER_IDS = ArchaiusUtil.getBoolean("api.projects.use.rancher_id");
 
     @Inject
     JsonMapper jsonMapper;
@@ -91,48 +101,44 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED);
     }
 
-    public List<ProjectMember> setMembers(Account project, List<Map<String, String>> members) {
+    public List<ProjectMember> setMembers(Account project, List<Map<String, String>> membersProvided) {
+        List<Map<String, String>> members = membersProvided;
         List<ProjectMember> membersCreated = new ArrayList<>();
         Set<Member> membersTransformed = new HashSet<>();
 
-        if ((members == null || members.isEmpty())){
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Project Members must not be empty", null);
+        if ((members == null || members.isEmpty()) && (!SECURITY.get() || USE_RANCHER_IDS.get())){
+            members = new ArrayList<>();
+            Map<String, String> newMember = new HashMap<>();
+            String accountId = (String) ApiContext.getContext().getIdFormatter()
+                    .formatId(objectManager.getType(Account.class), ApiUtils.getPolicy().getAccountId());
+            newMember.put("externalId", accountId);
+            newMember.put("externalIdType", ProjectConstants.RANCHER_ID);
+            newMember.put("role", ProjectConstants.OWNER);
+            members.add(newMember);
         }
-
-        for (Map<String, String> newMember : members) {
-            if (newMember.get("externalId") == null || newMember.get("externalIdType") == null || newMember.get("role") == null) {
-                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Project Member format invalid", null);
-            }
-        }
-        for (Map<String, String> newMember : members) {
-            ExternalId givenExternalId = new ExternalId(newMember.get("externalId"), newMember.get("externalIdType"));
-            ExternalId newExternalId = null;
-            for (ExternalIdHandler externalIdHandler: externalIdHandlers){
-                newExternalId = externalIdHandler.transform(givenExternalId);
-                if(newExternalId != null){
-                    break;
+        if (members != null) {
+            for (Map<String, String> newMember : members) {
+                if (newMember.get("externalId") == null || newMember.get("externalIdType") == null || newMember.get("role") == null) {
+                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Project Member format invalid", null);
                 }
             }
-            if (newExternalId != null){
-                membersTransformed.add(new Member(newExternalId, newMember.get("role")));
-            } else {
-                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidExternalIdType", "External Id Type Not supported.", null);
+            for (Map<String, String> newMember : members) {
+                ExternalId givenExternalId = new ExternalId(newMember.get("externalId"), newMember.get("externalIdType"));
+                ExternalId newExternalId = null;
+                for (ExternalIdHandler externalIdHandler: externalIdHandlers){
+                    newExternalId = externalIdHandler.transform(givenExternalId);
+                    if(newExternalId != null){
+                        break;
+                    }
+                }
+                if (newExternalId != null){
+                    membersTransformed.add(new Member(newExternalId, newMember.get("role")));
+                } else {
+                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidExternalIdType", "External Id Type Not supported.", null);
+                }
             }
+            membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed));
         }
-
-        boolean hasOwner = false;
-        for(Member member: membersTransformed){
-            if (member.getRole().equalsIgnoreCase("owner")){
-                hasOwner = true;
-            }
-        }
-
-        if (!hasOwner){
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Project Members list does not have an owner.", null);
-
-        }
-        membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed));
-
         for (ProjectMember member: membersCreated) {
             untransform(member);
         }

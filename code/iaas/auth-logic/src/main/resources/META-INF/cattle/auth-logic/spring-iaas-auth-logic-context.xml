@@ -16,12 +16,6 @@
         <property name="tokenHandlers" value="#{extensionManager.list('token.handler')}" />
     </bean>
 
-    <bean class="io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator" >
-        <property name="externalIdHandlers" value="#{extensionManager.list('external.id.handler')}" />
-        <property name="accountLookups" value="#{extensionManager.list('account.lookup')}" />
-        <property name="authorizationProviders" value="#{extensionManager.list('authorization.provider')}" />
-    </bean>
-
     <bean class="io.cattle.platform.iaas.api.auth.github.GithubTokenHandler" />
 
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />

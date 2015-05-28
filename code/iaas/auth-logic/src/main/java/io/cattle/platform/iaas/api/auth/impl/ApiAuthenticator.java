@@ -1,13 +1,11 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
-import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
-import io.cattle.platform.iaas.api.auth.ExternalIdHandler;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -18,13 +16,10 @@ import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,34 +34,30 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
     AuthDao authDao;
     List<AccountLookup> accountLookups;
-    List<ExternalIdHandler> externalIdHandlers;
     List<AuthorizationProvider> authorizationProviders;
     @Inject
     ObjectManager objectManager;
+
     @Override
     public void handle(ApiRequest request) throws IOException {
         if (ApiContext.getContext().getPolicy() != null) {
             return;
         }
 
-        Account authenticatedAsAccount = getAccount(request);
-        if (authenticatedAsAccount == null) {
+        AccountAccess accountAccess = getAccountAccess(request);
+        if (accountAccess == null) {
             throwUnauthorizated();
         }
 
-        Set<ExternalId> externalIds = getExternalIds(authenticatedAsAccount);
-
-        Account account = getAccountRequested(authenticatedAsAccount, externalIds, request);
-
-        Policy policy = getPolicy(account, authenticatedAsAccount, externalIds, request);
+        Policy policy = getPolicy(accountAccess, request);
         if (policy == null) {
-            log.error("Failed to find policy for [{}]", account.getId());
+            log.error("Failed to find policy for [{}]", accountAccess.getAccount().getId());
             throwUnauthorizated();
         }
 
-        SchemaFactory schemaFactory = getSchemaFactory(account, policy, request);
+        SchemaFactory schemaFactory = getSchemaFactory(accountAccess.getAccount(), policy, request);
         if (schemaFactory == null) {
-            log.error("Failed to find a schema for account type [{}]", account.getKind());
+            log.error("Failed to find a schema for account type [{}]", accountAccess.getAccount().getKind());
             if (SECURITY.get()) {
                 throwUnauthorizated();
             }
@@ -87,11 +78,11 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         ApiContext.getContext().setPolicy(policy);
     }
 
-    protected Policy getPolicy(Account account, Account authenticatedAsAccount, Set<ExternalId> externalIds, ApiRequest request) {
+    protected Policy getPolicy(AccountAccess account, ApiRequest request) {
         Policy policy = null;
 
         for (AuthorizationProvider auth : authorizationProviders) {
-            policy = auth.getPolicy(account, authenticatedAsAccount, externalIds, request);
+            policy = auth.getPolicy(account, request);
             if (policy != null) {
                 break;
             }
@@ -113,18 +104,18 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         return factory;
     }
 
-    protected Account getAccount(ApiRequest request) {
-        Account account = null;
+    protected AccountAccess getAccountAccess(ApiRequest request) {
+        AccountAccess accountAccess = null;
 
         for (AccountLookup lookup : accountLookups) {
-            account = lookup.getAccount(request);
-            if (account != null) {
+            accountAccess = lookup.getAccountAccess(request);
+            if (accountAccess != null) {
                 break;
             }
         }
 
-        if (account != null) {
-            return account;
+        if (accountAccess != null) {
+            return accountAccess;
         }
 
         if (SECURITY.get()) {
@@ -135,59 +126,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             }
         }
 
-        return account;
-    }
-
-    private Set<ExternalId> getExternalIds(Account account) {
-        Set<ExternalId> externalIds = new HashSet<>();
-
-        for (ExternalIdHandler externalIdHandler : externalIdHandlers) {
-            externalIds.addAll(externalIdHandler.getExternalIds(account));
-        }
-
-        return externalIds;
-    }
-
-    private Account getAccountRequested(Account authenticatedAsAccount, Set<ExternalId> externalIds, ApiRequest request) {
-        Account project;
-
-        String projectId = request.getServletContext().getRequest().getHeader(ProjectConstants.PROJECT_HEADER);
-        if (projectId == null || projectId.isEmpty()) {
-            projectId = request.getServletContext().getRequest().getParameter("projectId");
-        }
-        if (projectId == null || projectId.isEmpty()) {
-            projectId = (String) request.getAttribute(ProjectConstants.PROJECT_HEADER);
-        }
-
-        if (projectId == null || projectId.isEmpty()) {
-            return authenticatedAsAccount;
-        }
-
-        String unobfuscatedId;
-
-        try {
-            unobfuscatedId = ApiContext.getContext().getIdFormatter().parseId(projectId);
-        } catch (NumberFormatException e) {
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "projectId header format is incorrect " + projectId, null);
-        }
-
-        if (StringUtils.isEmpty(unobfuscatedId)) {
-            return null;
-        }
-        try{
-            project = authDao.getAccountById(new Long(unobfuscatedId));
-            if (authenticatedAsAccount.getId() == project.getId()){
-                return authenticatedAsAccount;
-            }
-        } catch (NumberFormatException e){
-            throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
-        }
-        Policy tempPolicy = getPolicy(authenticatedAsAccount, authenticatedAsAccount, externalIds, request);
-        if (project != null && authDao.hasAccessToProject(project.getId(), authenticatedAsAccount.getId(),
-                tempPolicy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), externalIds)) {
-            return project;
-        }
-        return null;
+        return accountAccess;
     }
 
     public AuthDao getAuthDao() {
@@ -215,15 +154,6 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     @Inject
     public void setAccountLookups(List<AccountLookup> accountLookups) {
         this.accountLookups = accountLookups;
-    }
-
-    public List<ExternalIdHandler> getExternalIdHandlers() {
-        return externalIdHandlers;
-    }
-
-    @Inject
-    public void setExternalIdHandlers(List<ExternalIdHandler> externalIdHandlers) {
-        this.externalIdHandlers = externalIdHandlers;
     }
 
 }
