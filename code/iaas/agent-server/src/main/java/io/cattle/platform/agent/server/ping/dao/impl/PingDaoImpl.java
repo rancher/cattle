@@ -25,6 +25,7 @@ public class PingDaoImpl extends AbstractJooqDao implements PingDao {
                 .selectFrom(AGENT)
                 .where(
                         AGENT.STATE.eq(CommonStatesConstants.ACTIVE)
+                        .and(AGENT.URI.notLike("delegate://%"))
                         .and(groupCondition()))
                         .fetch();
     }
