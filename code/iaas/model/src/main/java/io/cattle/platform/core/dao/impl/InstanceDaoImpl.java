@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
@@ -68,12 +69,13 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     @Override
     public Instance getInstanceByUuidOrExternalId(Long accountId, String uuid, String externalId) {
         Instance instance = null;
-        Condition accountCondition = INSTANCE.ACCOUNT_ID.eq(accountId).and(INSTANCE.REMOVED.isNull());
+        Condition condition = INSTANCE.ACCOUNT_ID.eq(accountId).and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGED,
+                CommonStatesConstants.PURGING));
 
         if(StringUtils.isNotEmpty(uuid)) {
             instance = create()
                     .selectFrom(INSTANCE)
-                    .where(accountCondition
+                    .where(condition
                     .and(INSTANCE.UUID.eq(uuid)))
                     .fetchAny();
         }
@@ -81,7 +83,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         if (instance == null && StringUtils.isNotEmpty(externalId)) {
             instance = create()
                     .selectFrom(INSTANCE)
-                    .where(accountCondition
+                    .where(condition
                     .and(INSTANCE.EXTERNAL_ID.eq(externalId)))
                     .fetchAny();
         }
