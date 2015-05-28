@@ -1,0 +1,11 @@
+{
+     "resourceFields": {
+        "healthState": {
+            "type": "enum",
+            "options" : [
+                "healthy",
+                "unhealthy"
+            ]
+        }
+    }
+}
