@@ -66,6 +66,7 @@
                 <value>subnetIpPool,parent=ipPool</value>
                 <value>virtualMachine,parent=instance</value>
                 <value>loadBalancerService,parent=service</value>
+                <value>externalService,parent=service</value>
             </set>
         </property>
     </bean>

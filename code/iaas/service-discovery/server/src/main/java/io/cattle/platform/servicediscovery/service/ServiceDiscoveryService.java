@@ -34,7 +34,7 @@ public interface ServiceDiscoveryService {
 
     List<? extends Service> listEnvironmentServices(long environmentId);
 
-    Map<String, Object> buildLaunchData(Service service, Map<String, String> labels, String instanceName, List<Integer> volumesFromInstanceIds);
+    Map<String, Object> buildServiceInstanceLaunchData(Service service, Map<String, Object> deployParams);
 
     List<Long> getServiceNetworkIds(Service service);
 

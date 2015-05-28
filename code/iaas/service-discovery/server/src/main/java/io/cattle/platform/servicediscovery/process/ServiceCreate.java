@@ -29,7 +29,7 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
         if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
             sdService.createLoadBalancerService(service);
         }
-        // no special handling for non-load balancer service
+
         return null;
     }
 

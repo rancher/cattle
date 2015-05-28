@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
 import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Environment;
@@ -14,16 +15,14 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
-import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFactory;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
+import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
+import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlannerFactory;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
-import io.cattle.platform.storage.service.StorageService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,9 +54,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Inject
     GenericMapDao mpDao;
     @Inject
-    StorageService storageSvc;
-    @Inject
     ServiceConsumeMapDao consumeMapDao;
+    @Inject
+    ServiceDeploymentPlannerFactory deploymentPlannerFactory;
+    @Inject
+    AllocatorService allocatorSvc;
 
     @Override
     public void activate(final Service service, final Map<String, Object> data) {
@@ -69,30 +70,28 @@ public class DeploymentManagerImpl implements DeploymentManager {
         lockManager.lock(createLock(services), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
+                
                 // get existing deployment units
-                List<DeploymentUnit> units = collectDeploymentUnits(services);
-                int requestedScale = 0;
-                for (Service service : services) {
-                    int scale = DataAccessor.fieldInteger(service,
-                            ServiceDiscoveryConstants.FIELD_SCALE);
-                    if (scale > requestedScale) {
-                        requestedScale = scale;
-                    }
-                }
+                List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
+                        new DeploymentServiceContext());
+                ServiceDeploymentPlanner planner = deploymentPlannerFactory.createServiceDeploymentPlanner(services,
+                        units, new DeploymentServiceContext());
+
                 // don't process if there is no need to reconcile
-                boolean needToReconcile = needToReconcile(services, units, requestedScale);
+                boolean needToReconcile = needToReconcile(services, units, planner);
 
                 if (!needToReconcile) {
                     return;
                 }
 
                 activateServices(service, services);
-                activateDeploymentUnits(services, units, requestedScale);
+                activateDeploymentUnits(services, units, planner);
             }
         });
     }
 
-    private boolean needToReconcile(final List<Service> services, final List<DeploymentUnit> units, final int requestedScale) {
+    private boolean needToReconcile(final List<Service> services, final List<DeploymentUnit> units,
+            final ServiceDeploymentPlanner planner) {
         for (Service service : services) {
             if (service.getState().equals(CommonStatesConstants.INACTIVE)) {
                 return true;
@@ -100,13 +99,13 @@ public class DeploymentManagerImpl implements DeploymentManager {
         }
 
         boolean needToReconcile = false;
-        if (units.size() == requestedScale) {
+        if (!planner.needToReconcileDeployment()) {
             for (DeploymentUnit unit : units) {
                 if (unit.isError()) {
                     needToReconcile = true;
                     break;
                 }
-                if (unit.getInstances().size() != services.size()) {
+                if (!unit.isComplete()) {
                     needToReconcile = true;
                     break;
                 }
@@ -114,7 +113,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     needToReconcile = true;
                     break;
                 }
-                if (unit.needsCleanup()) {
+                if (unit.isHealthy()) {
                     needToReconcile = true;
                     break;
                 }
@@ -148,67 +147,31 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return new ServicesSidekickLock(services);
     }
 
-    protected List<DeploymentUnit> collectDeploymentUnits(List<Service> services) {
-        /*
-         * returns a list of deployment units. Each deployment unit will have a uuid = 'io.rancher.deployment.unit'
-         * label value
-         */
-
-        List<DeploymentUnit> deploymentUnits = new ArrayList<>();
-        Map<String, Map<Long, DeploymentUnitInstance>> uuidToInstances = new HashMap<>();
-        for (Service service : services) {
-            List<DeploymentUnitInstance> deploymentUnitInstances = unitInstanceFactory
-                    .collectServiceInstances(service, new DeploymentServiceContext());
-            
-            // group by uuid
-            for (DeploymentUnitInstance deploymentUnitInstance : deploymentUnitInstances) {
-                Map<Long, DeploymentUnitInstance> serviceToInstanceMap = new HashMap<>();
-                if (uuidToInstances.get(deploymentUnitInstance.getUuid()) != null) {
-                    serviceToInstanceMap = uuidToInstances.get(deploymentUnitInstance.getUuid());
-                }
-                serviceToInstanceMap.put(deploymentUnitInstance.getService().getId(), deploymentUnitInstance);
-                uuidToInstances.put(deploymentUnitInstance.getUuid(), serviceToInstanceMap);
-            }
-        }
-        for (String uuid : uuidToInstances.keySet()) {
-            deploymentUnits.add(new DeploymentUnit(uuid, uuidToInstances.get(uuid), new DeploymentServiceContext()));
-        }
-
-        return deploymentUnits;
-    }
-
-    protected void activateDeploymentUnits(List<Service> services, List<DeploymentUnit> units, int requestedScale) {
+    protected void activateDeploymentUnits(List<Service> services, List<DeploymentUnit> units,
+            ServiceDeploymentPlanner planner) {
         /*
          * Delete invalid units
          */
         units = deleteBadUnits(units);
-        
-        // get used service generated instance names - do it only after "bad" units are removed
-        Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = populateServiceGeneratedInstancesUsedNames(services);
 
         /*
-         * Create new units / remove old units to match the scale
+         * Ask the planner to deploy more units/ remove extra units
          */
-        units = matchScale(services, units, requestedScale, svcInstanceIdGenerator);
-
-        /*
-         * Fill up the gaps in units
-         */
-        fillUpMissingUnitInstances(services, units,  svcInstanceIdGenerator);
+        units = planner.deploy();
 
         /*
          * Activate all the units
          */
-        startUnits(units);
+        startUnits(units, services);
 
         /*
          * Delete the units that have a bad health
          */
 
-        cleanup(units);
+        cleanupUnhealthyUnits(units);
     }
 
-    private Map<Long, DeploymentUnitInstanceIdGenerator> populateServiceGeneratedInstancesUsedNames(
+    private Map<Long, DeploymentUnitInstanceIdGenerator> populateUsedNames(
             List<Service> services) {
         Map<Long, DeploymentUnitInstanceIdGenerator> generator = new HashMap<>();
         for (Service service : services) {
@@ -220,17 +183,18 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return generator;
     }
 
-    protected void cleanup(List<DeploymentUnit> units) {
+    protected void cleanupUnhealthyUnits(List<DeploymentUnit> units) {
         for (DeploymentUnit unit : units) {
-            if (unit.needsCleanup()) {
-                unit.cleanup();
+            if (unit.isHealthy()) {
+                unit.remove();
             }
         }
     }
 
-    protected void startUnits(List<DeploymentUnit> units) {
+    protected void startUnits(List<DeploymentUnit> units, List<Service> services) {
+        Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = populateUsedNames(services);
         for (DeploymentUnit unit : units) {
-            unit.start();
+            unit.start(svcInstanceIdGenerator);
         }
     }
 
@@ -248,50 +212,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return result;
     }
 
-    protected List<DeploymentUnit> matchScale(List<Service> services, List<DeploymentUnit> units, int requestedScale,
-            Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
-        /*
-         * If there are too many units, call unit.remove() and delete the excess.
-         * If there are not enough units, create new empty deployment units by call the factory
-         * and passing in the services and an empty list for instances.
-         * 
-         * NOTE: We don't actually start services hereed
-         */
-
-        if (units.size() < requestedScale) {
-            addMissingUnits(services, units, requestedScale, svcInstanceIdGenerator);
-        } else if (units.size() > requestedScale) {
-            removeExtraUnits(units, requestedScale);
-        }
-
-        return units;
-    }
-
-    private void removeExtraUnits(List<DeploymentUnit> units, int scale) {
-        // delete units
-        int i = units.size() - 1;
-        while (units.size() > scale) {
-            DeploymentUnit toRemove = units.get(i);
-            toRemove.remove();
-            units.remove(i);
-            i--;
-        }
-    }
-
-    private void addMissingUnits(List<Service> services, List<DeploymentUnit> units,
-            int scale, Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
-        while (units.size() < scale) {
-            DeploymentUnit unit = new DeploymentUnit(services, svcInstanceIdGenerator, new DeploymentServiceContext());
-            units.add(unit);
-        }
-    }
-
-    private void fillUpMissingUnitInstances(List<Service> services, List<DeploymentUnit> units,
-            Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
-        for (DeploymentUnit unit : units) {
-            unit.createMissingUnitInstances(services, svcInstanceIdGenerator, new DeploymentServiceContext());
-        }
-    }
 
     @Override
     public void deactivate(final Service service) {
@@ -300,7 +220,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void doWithLockNoResult() {
                 // in deactivate, we don't care about the sidekicks, and deactivate only requested service
-                List<DeploymentUnit> units = collectDeploymentUnits(Arrays.asList(service));
+                List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
+                        Arrays.asList(service), new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
                     unit.stop();
                 }
@@ -315,7 +236,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void doWithLockNoResult() {
                 // in remove, we don't care about the sidekicks, and remove only requested service
-                List<DeploymentUnit> units = collectDeploymentUnits(Arrays.asList(service));
+                List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
+                        Arrays.asList(service), new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
                     unit.remove();
                 }
@@ -332,7 +254,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public ServiceExposeMapDao exposeMapDao = expMapDao;
         final public LoadBalancerInstanceManager lbInstanceMgr = lbMgr;
         final public LoadBalancerService lbService = lbSvc;
-        final public StorageService storageService = storageSvc;
-        final DeploymentUnitInstanceFactory deploymentUnitInstanceFactory = unitInstanceFactory;
+        final public DeploymentUnitInstanceFactory deploymentUnitInstanceFactory = unitInstanceFactory;
+        final public AllocatorService allocatorService = allocatorSvc;
     }
 }

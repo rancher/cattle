@@ -6,7 +6,6 @@ import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.IpAddress;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,16 +31,20 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
         dnsEntries.addAll(dnsInfoDao.getServiceHostDnsData(instance));
         // 3. retrieve self service links
         dnsEntries.addAll(dnsInfoDao.getSelfServiceLinks(instance));
-        // 4. aggregate the links based on the source ip address
+
+        // 4. retrieve external service links
+        dnsEntries.addAll(dnsInfoDao.getExternalServiceDnsData(instance));
+
+        // 5. aggregate the links based on the source ip address
         Map<String, DnsEntryData> processedDnsEntries = new HashMap<>();
         for (DnsEntryData dnsEntry : dnsEntries) {
-            Map<String, List<IpAddress>> resolve = new HashMap<>();
+            Map<String, List<String>> resolve = new HashMap<>();
             DnsEntryData newData = null;
             if (processedDnsEntries.containsKey(dnsEntry.getSourceIpAddress().getAddress())) {
                 newData = processedDnsEntries.get(dnsEntry.getSourceIpAddress().getAddress());
                 resolve = newData.getResolve();
                 for (String dnsName : dnsEntry.getResolve().keySet()) {
-                    Set<IpAddress> ips = new HashSet<>();
+                    Set<String> ips = new HashSet<>();
                     if (resolve.containsKey(dnsName)) {
                         ips.addAll(resolve.get(dnsName));
                     }

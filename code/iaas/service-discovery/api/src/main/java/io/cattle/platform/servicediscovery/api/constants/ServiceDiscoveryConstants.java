@@ -5,7 +5,8 @@ public class ServiceDiscoveryConstants {
 
     public enum KIND {
         SERVICE,
-        LOADBALANCERSERVICE
+        LOADBALANCERSERVICE,
+        EXTERNALSERVICE
     }
 
 
@@ -16,7 +17,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
-    public static final String FIELD_RECONCILE_PROCESS_UUID = "reconcileProcessUuid";
+    public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
 
     public static final String FIELD_HEALTH_STATE_HEALTHY = "healthy";
     public static final String FIELD_HEALTH_STATE_UNHEALTHY = "unhealthy";
@@ -45,6 +46,8 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_SET_SERVICE_LINKS = "service." + ACTION_SERVICE_SET_SERVICE_LINKS;
     public static final String PROCESS_SERVICE_EXPOSE_MAP_UPDATE_HEALTHY = "serviceexposemap.updatehealthy";
     public static final String PROCESS_SERVICE_EXPOSE_MAP_UPDATE_UNHEALTHY = "serviceexposemap.updateunhealthy";
+    public static final String PROCESS_SERVICE_EXPOSE_MAP_CREATE = "serviceexposemap.create";
+    public static final String PROCESS_SERVICE_EXPOSE_MAP_REMOVE = "serviceexposemap.remove";
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
@@ -54,5 +57,7 @@ public class ServiceDiscoveryConstants {
     public static final String LABEL_SERVICE_SIDEKICK = "io.rancher.service.sidekick";
     public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
     public static final String LABEL_ENVIRONMENT_NAME = "io.rancher.environment.name";
+    public static final String LABEL_SERVICE_GLOBAL = "io.rancher.service.global";
+    public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
 
 }

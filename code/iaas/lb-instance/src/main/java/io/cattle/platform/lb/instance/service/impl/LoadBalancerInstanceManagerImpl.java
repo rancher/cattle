@@ -76,7 +76,6 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     LoadBalancerDao lbDao;
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer) {
         List<Instance> result = new ArrayList<Instance>();
         Network network = ntwkDao.getNetworkForObject(loadBalancer, NetworkConstants.KIND_HOSTONLY);
@@ -99,21 +98,22 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
 
             if (lbInstance == null) {
 
-                String imageUUID = DataAccessor.fields(loadBalancer).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID).as(String.class);
+                String imageUUID = DataAccessor.fields(loadBalancer).
+                        withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID).as(String.class);
 
                 Map<String, Object> params = new HashMap<>();
-                Map<String, Object> launchConfigData = (Map<String, Object>) DataUtils.getFields(hostMap).get(
-                        "launchConfig");
-                if (launchConfigData != null) {
-                    // currently we respect only labels and volumesFrom parameters from the launch config
-                    if (launchConfigData.get(InstanceConstants.FIELD_LABELS) != null) {
-                        params.put(InstanceConstants.FIELD_LABELS, launchConfigData.get(InstanceConstants.FIELD_LABELS));
-                    }
-                    if (launchConfigData.get(DockerInstanceConstants.FIELD_VOLUMES_FROM) != null) {
+                Map<String, Object> data = DataUtils.getFields(hostMap);
+                // currently we respect only labels/volumesFrom/requestedHostId parameters from the launch config
+                if (data.get(InstanceConstants.FIELD_LABELS) != null) {
+                    params.put(InstanceConstants.FIELD_LABELS, data.get(InstanceConstants.FIELD_LABELS));
+                } else if (data.get(DockerInstanceConstants.FIELD_VOLUMES_FROM) != null) {
                         params.put(DockerInstanceConstants.FIELD_VOLUMES_FROM,
-                                launchConfigData.get(DockerInstanceConstants.FIELD_VOLUMES_FROM));
-                    }
+                            data.get(DockerInstanceConstants.FIELD_VOLUMES_FROM));
+                } else if (data.get(InstanceConstants.FIELD_REQUESTED_HOST_ID) != null) {
+                    params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID,
+                            data.get(InstanceConstants.FIELD_REQUESTED_HOST_ID));
                 }
+
                 List<Long> networkIds = new ArrayList<>();
                 networkIds.add(network.getId());
                 params.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);

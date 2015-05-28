@@ -216,12 +216,12 @@ def test_targets(client, context):
     web_instances = client. \
         list_container(name=env.name + "_" + web_service.name + "_" + "1")
     assert len(web_instances) == 1
-    _validate_add_target(web_instances[0], client)
+    _validate_add_target_instance(web_instances[0], client)
 
     db_instances = client. \
         list_container(name=env.name + "_" + db_service.name + "_" + "1")
     assert len(db_instances) == 1
-    _validate_add_target(db_instances[0], client)
+    _validate_add_target_instance(db_instances[0], client)
 
     # remove link and make sure that the target map is gone
     lb_service.removeservicelink(serviceId=db_service.id)
@@ -229,7 +229,80 @@ def test_targets(client, context):
     db_instance = client.reload(db_instances[0])
     assert db_instance.state == 'running'
 
-    _validate_remove_target(db_instance, client)
+    _validate_remove_target_instance(db_instance, client)
+
+
+def test_target_ips(client, context):
+    host = context.host
+    user_account_id = host.accountId
+    env = client.create_environment(name=random_str(),
+                                    accountId=user_account_id)
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    # create web, db lb services
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    web_ips = ["72.22.16.5", '72.22.16.6']
+    web_service = client. \
+        create_externalService(name=random_str() + "web",
+                               environmentId=env.id,
+                               launchConfig=launch_config,
+                               externalIpAddresses=web_ips)
+
+    web_service = client.wait_success(web_service)
+
+    db_ips = ["192.168.0.9", '192.168.0.10']
+    db_service = client. \
+        create_externalService(name=random_str() + "db",
+                               environmentId=env.id,
+                               launchConfig=launch_config,
+                               externalIpAddresses=db_ips)
+
+    db_service = client.wait_success(db_service)
+
+    lb_launch_config = {"imageUuid": image_uuid,
+                        "ports": [1010, '111:111']}
+    lb_service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=lb_launch_config,
+                                   accountId=user_account_id,
+                                   loadBalancerInstanceUriPredicate='sim://')
+    lb_service = client.wait_success(lb_service)
+    assert lb_service.state == "inactive"
+
+    # map web service to lb service - early binding,
+    # before services are activated
+    lb_service = lb_service.addservicelink(serviceId=web_service.id)
+
+    # activate web and lb services
+    lb_service = client.wait_success(lb_service.activate(), 120)
+    _validate_lb_service_activate(env, host, lb_service, client,
+                                  ['1010:1010', '111:111'])
+    web_service = client.wait_success(web_service.activate(), 120)
+    assert web_service.state == "active"
+    db_service = client.wait_success(db_service.activate(), 120)
+    assert db_service.state == "active"
+
+    # bind db and lb services after service is activated
+    lb_service.addservicelink(serviceId=db_service.id)
+
+    # verify that ips of db and web services were added to lb
+    _validate_add_target_ip("72.22.16.5", client)
+    _validate_add_target_ip("72.22.16.6", client)
+    _validate_add_target_ip("192.168.0.9", client)
+    _validate_add_target_ip("192.168.0.10", client)
+
+    # remove link and make sure that the db targets are gone
+    lb_service.removeservicelink(serviceId=db_service.id)
+    _validate_remove_target_ip("192.168.0.9", client)
+    _validate_remove_target_ip("192.168.0.10", client)
+
+    # remove web service and validate that the web targets are gone
+    client.wait_success(web_service.remove())
+    _validate_remove_target_ip("72.22.16.5", client)
+    _validate_remove_target_ip("72.22.16.6", client)
 
 
 def test_create_svc_with_lb_config(context, client):
@@ -384,7 +457,7 @@ def test_labels(super_client, client, context):
                for item in result_labels.items()) is True
 
     # create service w/o labels, and validate that
-    #  only one service label was set
+    # only one service label was set
     service_name = random_str()
     launch_config = {"imageUuid": image_uuid,
                      "ports": [8089, '914:914']}
@@ -539,7 +612,8 @@ def _wait_until_map_created(config_id, listener, client, timeout=30):
     return lb_config_maps
 
 
-def _wait_until_target_map_created(super_client, container, timeout=30):
+def _wait_until_target_instance_map_created(super_client,
+                                            container, timeout=30):
     start = time.time()
     target_maps = super_client. \
         list_loadBalancerTarget(instanceId=container.id)
@@ -552,8 +626,8 @@ def _wait_until_target_map_created(super_client, container, timeout=30):
     return target_maps
 
 
-def _validate_add_target(container, super_client):
-    target_maps = _wait_until_target_map_created(super_client, container)
+def _validate_add_target_ip(ip, super_client):
+    target_maps = _wait_until_target_ip_map_created(super_client, ip)
     assert len(target_maps) == 1
     target_map = target_maps[0]
     wait_for_condition(
@@ -561,7 +635,7 @@ def _validate_add_target(container, super_client):
         lambda x: 'State is: ' + x.state)
 
 
-def _validate_remove_target(container, super_client):
+def _validate_remove_target_instance(container, super_client):
     target_maps = super_client. \
         list_loadBalancerTarget(instanceId=container.id)
     assert len(target_maps) == 1
@@ -569,3 +643,36 @@ def _validate_remove_target(container, super_client):
     wait_for_condition(
         super_client, target_map, _resource_is_removed,
         lambda x: 'State is: ' + x.state)
+
+
+def _validate_remove_target_ip(ip, super_client):
+    target_maps = super_client. \
+        list_loadBalancerTarget(ipAddress=ip)
+    assert len(target_maps) == 1
+    target_map = target_maps[0]
+    wait_for_condition(
+        super_client, target_map, _resource_is_removed,
+        lambda x: 'State is: ' + x.state)
+
+
+def _validate_add_target_instance(container, super_client):
+    target_maps = _wait_until_target_instance_map_created(super_client,
+                                                          container)
+    assert len(target_maps) == 1
+    target_map = target_maps[0]
+    wait_for_condition(
+        super_client, target_map, _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+
+def _wait_until_target_ip_map_created(super_client, ip, timeout=30):
+    start = time.time()
+    target_maps = super_client. \
+        list_loadBalancerTarget(ipAddress=ip)
+    while len(target_maps) == 0:
+        time.sleep(.5)
+        target_maps = super_client. \
+            list_loadBalancerTarget(ipAddress=ip)
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for map creation'
+    return target_maps

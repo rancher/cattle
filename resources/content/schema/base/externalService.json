@@ -1,0 +1,9 @@
+{
+    "resourceFields": {
+        "externalIpAddresses": {
+            "type": "array[string]",
+            "required": true,
+            "nullable": false
+        }
+    }
+}

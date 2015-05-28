@@ -166,7 +166,18 @@ public interface ServiceExposeMap extends java.io.Serializable {
 	 * Getter for <code>cattle.service_expose_map.health_state</code>.
 	 */
 	@javax.persistence.Column(name = "health_state", nullable = false, length = 128)
-	public java.lang.String getHealthState();
+    public java.lang.String getHealthState();
+
+    /*
+     * Setter for <code>cattle.service_expose_map.ip_address</code>.
+     */
+	public void setIpAddress(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.ip_address</code>.
+	 */
+	@javax.persistence.Column(name = "ip_address", length = 255)
+	public java.lang.String getIpAddress();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

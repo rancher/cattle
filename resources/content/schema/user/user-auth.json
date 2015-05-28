@@ -384,6 +384,14 @@
         "serviceExposeMap" : "r",
         "serviceExposeMap.instanceId" : "r",
         "serviceExposeMap.serviceId" : "r",
+        "serviceExposeMap.ipAddress" : "r",
+
+        "externalService" : "r",
+        "externalService.externalIpAddresses" : "cr",
+        "externalService.launchConfig" : "",
+        "externalService.dataVolumesFromService" : "",
+        "externalService.scale" : "",
+        "externalService.healthCheck" : "",
 
         "end" : ""
     }

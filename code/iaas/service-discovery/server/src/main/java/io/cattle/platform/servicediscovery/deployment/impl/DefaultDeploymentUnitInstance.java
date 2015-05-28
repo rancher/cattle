@@ -1,39 +1,36 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
+import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
-import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance {
+public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implements InstanceUnit {
     protected String instanceName;
-    protected ServiceExposeMap exposeMap;
+    protected Instance instance;
 
     public DefaultDeploymentUnitInstance() {
         super(null, null, null);
     }
 
-    public DefaultDeploymentUnitInstance(String uuid, Service service,
-            String instanceName,
-            Instance instance, DeploymentServiceContext context) {
-        super(uuid, service, context);
+    public DefaultDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
+            Service service,
+            String instanceName, Instance instance, Map<String, String> labels) {
+        super(context, uuid, service);
         this.instanceName = instanceName;
         this.instance = instance;
         if (this.instance != null) {
@@ -48,49 +45,38 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance {
 
     @Override
     public void remove() {
-        // 1) remove the mapping
+        // 1) schedule remove for the instance
+        // removal instance is scheduled ahead of map removal, to avoid situation when map removal is scheduled, but
+        // removal scheduling fails by some reason
+        if (!(instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
+                CommonStatesConstants.REMOVING))) {
+            try {
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
+                        null);
+            } catch (ProcessCancelException e) {
+                context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
+                        instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
+                                InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
+            }
+        }
+
+        // 2) remove the mapping
         List<? extends ServiceExposeMap> maps = context.objectManager.mappedChildren(
                 context.objectManager.loadResource(Instance.class, instance.getId()),
                 ServiceExposeMap.class);
         for (ServiceExposeMap map : maps) {
             context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, map, null);
         }
-        // 2) schedule remove for the instance
-        if (!(instance.getState().equals(CommonStatesConstants.REMOVED)
-        || instance.getState().equals(CommonStatesConstants.REMOVING))) {
-            try {
-                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
-                        null);
-            } catch (ProcessCancelException e) {
-                Map<String, Object> data = new HashMap<>();
-                data.put(InstanceConstants.REMOVE_OPTION, true);
-                context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
-                        instance,
-                        data);
-            }
-        }
     }
 
     @Override
-    public DeploymentUnitInstance start(List<Integer> volumesFromInstancesIds) {
-        if (this.instance == null) {
-            Map<String, Object> launchConfigData = context.sdService.buildLaunchData(service, labels, instanceName,
-                    volumesFromInstancesIds);
-            Object registryCredentialId = launchConfigData.get(ServiceDiscoveryConfigItem.REGISTRYCREDENTIALID
-                    .getCattleName());
-            Long imageId = getImage(String.valueOf(launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID)),
-                    registryCredentialId != null ? (Integer) registryCredentialId : null);
-            List<Long> networkIds = context.sdService.getServiceNetworkIds(service);
-
-            Map<Object, Object> properties = new HashMap<Object, Object>();
-            properties.putAll(launchConfigData);
-            properties.put(INSTANCE.ACCOUNT_ID, service.getAccountId());
-            properties.put(INSTANCE.KIND, InstanceConstants.KIND_CONTAINER);
-            properties.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
-            properties.put(INSTANCE.IMAGE_ID, imageId);
-            Pair<Instance, ServiceExposeMap> instanceMapPair = context.exposeMapDao.createServiceInstance(properties,
-                    service,
-                    instanceName);
+    public DeploymentUnitInstance start(Map<String, Object> deployParams) {
+        if (createNew()) {
+            deployParams.put("name", this.instanceName);
+            Map<String, Object> launchConfigData = context.sdService.buildServiceInstanceLaunchData(service,
+                    deployParams);
+            Pair<Instance, ServiceExposeMap> instanceMapPair = context.exposeMapDao.createServiceInstance(launchConfigData,
+                    service, this.instanceName);
             this.instance = instanceMapPair.getLeft();
             this.exposeMap = instanceMapPair.getRight();
         }
@@ -108,6 +94,11 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance {
     }
 
     @Override
+    public boolean createNew() {
+        return this.instance == null;
+    }
+
+    @Override
     public DeploymentUnitInstance waitForStart() {
         this.instance = context.resourceMonitor.waitFor(context.objectManager.reload(this.instance),
                 new ResourcePredicate<Instance>() {
@@ -121,8 +112,10 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance {
 
     @Override
     public void stop() {
-        context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
-                null);
+        if (this.instance != null && this.instance.getState().equals(InstanceConstants.STATE_RUNNING)) {
+            context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
+                    null);
+        }
     }
 
     @Override
@@ -131,26 +124,8 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance {
     }
 
     @Override
-    public boolean needsCleanup() {
-        // TODO implement when healthcheck comes in
-        return false;
-    }
-
-    protected Long getImage(String imageUuid, Integer registryCredentialId) {
-        Image image;
-        try {
-            image = context.storageService.registerRemoteImage(imageUuid);
-            if (image == null) {
-                return null;
-            }
-            if (registryCredentialId != null) {
-                context.objectManager.setFields(image, IMAGE.REGISTRY_CREDENTIAL_ID, registryCredentialId);
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to get image [" + imageUuid + "]");
-        }
-
-        return image == null ? null : image.getId();
+    public Instance getInstance() {
+        return instance;
     }
 }
 
