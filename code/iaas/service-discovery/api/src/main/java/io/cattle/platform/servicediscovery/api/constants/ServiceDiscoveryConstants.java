@@ -20,9 +20,6 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
 
-    public static final String FIELD_HEALTH_STATE_HEALTHY = "healthy";
-    public static final String FIELD_HEALTH_STATE_UNHEALTHY = "unhealthy";
-
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
     public static final String ACTION_SERVICE_ADD_SERVICE_LINK = "addservicelink";
@@ -45,8 +42,6 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_CONSUME_MAP_REMOVE = "serviceconsumemap.remove";
     public static final String PROCESS_SERVICE_UPDATE = "service.update";
     public static final String PROCESS_SERVICE_SET_SERVICE_LINKS = "service." + ACTION_SERVICE_SET_SERVICE_LINKS;
-    public static final String PROCESS_SERVICE_EXPOSE_MAP_UPDATE_HEALTHY = "serviceexposemap.updatehealthy";
-    public static final String PROCESS_SERVICE_EXPOSE_MAP_UPDATE_UNHEALTHY = "serviceexposemap.updateunhealthy";
     public static final String PROCESS_SERVICE_EXPOSE_MAP_CREATE = "serviceexposemap.create";
     public static final String PROCESS_SERVICE_EXPOSE_MAP_REMOVE = "serviceexposemap.remove";
 

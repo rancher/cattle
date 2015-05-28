@@ -109,6 +109,16 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.GlobalLoadBalancerTable GLOBAL_LOAD_BALANCER = io.cattle.platform.core.model.tables.GlobalLoadBalancerTable.GLOBAL_LOAD_BALANCER;
 
 	/**
+	 * The table cattle.healthcheck_instance
+	 */
+	public static final io.cattle.platform.core.model.tables.HealthcheckInstanceTable HEALTHCHECK_INSTANCE = io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
+
+	/**
+	 * The table cattle.healthcheck_instance_host_map
+	 */
+	public static final io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable HEALTHCHECK_INSTANCE_HOST_MAP = io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
+
+	/**
 	 * The table cattle.host
 	 */
 	public static final io.cattle.platform.core.model.tables.HostTable HOST = io.cattle.platform.core.model.tables.HostTable.HOST;
@@ -287,11 +297,6 @@ public class Tables {
 	 * The table cattle.service_consume_map
 	 */
 	public static final io.cattle.platform.core.model.tables.ServiceConsumeMapTable SERVICE_CONSUME_MAP = io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
-
-	/**
-	 * The table cattle.service_expose_host_map
-	 */
-	public static final io.cattle.platform.core.model.tables.ServiceExposeHostMapTable SERVICE_EXPOSE_HOST_MAP = io.cattle.platform.core.model.tables.ServiceExposeHostMapTable.SERVICE_EXPOSE_HOST_MAP;
 
 	/**
 	 * The table cattle.service_expose_map

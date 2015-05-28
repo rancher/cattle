@@ -53,8 +53,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     public ServiceExposeMap createServiceInstanceMap(Service service, final Instance instance) {
             return objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
                     SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(), SERVICE_EXPOSE_MAP.ACCOUNT_ID,
-                    service.getAccountId(), SERVICE_EXPOSE_MAP.HEALTH_STATE,
-                ServiceDiscoveryConstants.FIELD_HEALTH_STATE_HEALTHY);
+                service.getAccountId());
     }
 
     @Override
@@ -182,8 +181,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         if (map == null) {
             map = objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(),
                     SERVICE_EXPOSE_MAP.IP_ADDRESS, ipAddress, SERVICE_EXPOSE_MAP.ACCOUNT_ID,
-                    service.getAccountId(), SERVICE_EXPOSE_MAP.HEALTH_STATE,
-                    ServiceDiscoveryConstants.FIELD_HEALTH_STATE_HEALTHY);
+                    service.getAccountId());
         }
         return map;
     }

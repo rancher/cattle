@@ -40,9 +40,7 @@ backend ${publicPort}_backend
         balance roundrobin
         <#if healthCheckEntry.healthCheck.responseTimeout??>timeout check ${healthCheckEntry.healthCheck.responseTimeout}</#if>
         <#if healthCheckEntry.healthCheck.requestLine?? && healthCheckEntry.healthCheck.requestLine?has_content>option httpchk ${healthCheckEntry.healthCheck.requestLine}</#if>
-        <#list healthCheckEntry.targetIpAddresses as target>
-    	server ${target.address} ${target.address}:${healthCheckEntry.healthCheck.port} check port ${healthCheckEntry.healthCheck.port}<#if healthCheckEntry.healthCheck.interval??> inter ${healthCheckEntry.healthCheck.interval}</#if><#if healthCheckEntry.healthCheck.healthyThreshold??> rise ${healthCheckEntry.healthCheck.healthyThreshold}</#if><#if healthCheckEntry.healthCheck.unhealthyThreshold??> fall ${healthCheckEntry.healthCheck.unhealthyThreshold}</#if>
-		</#list>
+        server ${healthCheckEntry.targetIpAddress.address} ${healthCheckEntry.targetIpAddress.address}:${healthCheckEntry.healthCheck.port} check port ${healthCheckEntry.healthCheck.port}<#if healthCheckEntry.healthCheck.interval??> inter ${healthCheckEntry.healthCheck.interval}</#if><#if healthCheckEntry.healthCheck.healthyThreshold??> rise ${healthCheckEntry.healthCheck.healthyThreshold}</#if><#if healthCheckEntry.healthCheck.unhealthyThreshold??> fall ${healthCheckEntry.healthCheck.unhealthyThreshold}</#if>
 <#assign publicPort = publicPort + 1>
 </#list>
 <#else>

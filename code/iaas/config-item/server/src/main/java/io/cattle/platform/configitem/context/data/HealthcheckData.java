@@ -1,11 +1,11 @@
 package io.cattle.platform.configitem.context.data;
 
+import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.model.IpAddress;
-import io.cattle.platform.core.model.Service;
 
 public class HealthcheckData {
     IpAddress targetIpAddress;
-    Service service;
+    InstanceHealthCheck healthCheck;
 
     public HealthcheckData() {
     }
@@ -18,11 +18,11 @@ public class HealthcheckData {
         this.targetIpAddress = targetIpAddress;
     }
 
-    public Service getService() {
-        return service;
+    public InstanceHealthCheck getHealthCheck() {
+        return healthCheck;
     }
 
-    public void setService(Service service) {
-        this.service = service;
+    public void setHealthCheck(InstanceHealthCheck healthCheck) {
+        this.healthCheck = healthCheck;
     }
 }

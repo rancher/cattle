@@ -18,7 +18,6 @@ import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.List;
@@ -47,10 +46,6 @@ public class ServiceDiscoveryInstanceStartPostListener extends AbstractObjectPro
 
     @Inject
     ResourceMonitor resourceMonitor;
-
-    @Inject
-    ServiceDiscoveryService sdService;
-
 
     @Override
     public String[] getProcessNames() {
@@ -105,9 +100,6 @@ public class ServiceDiscoveryInstanceStartPostListener extends AbstractObjectPro
                     return CommonStatesConstants.ACTIVE.equals(obj.getState());
                 }
             });
-
-            // 3. Schedule for healtcheck
-            sdService.registerForHealthCheck(instanceServiceMap);
         }
 
         return null;

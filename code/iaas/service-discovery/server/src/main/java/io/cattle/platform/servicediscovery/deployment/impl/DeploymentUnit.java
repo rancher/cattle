@@ -162,10 +162,10 @@ public class DeploymentUnit {
         return true;
     }
 
-    public boolean isHealthy() {
+    public boolean isUnhealthy() {
         // returns list of instances that need cleanup (having bad health)
         for (DeploymentUnitInstance instance : serviceToInstance.values()) {
-            if (instance.isHealthy()) {
+            if (instance.isUnhealthy()) {
                 return true;
             }
         }

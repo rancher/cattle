@@ -187,6 +187,14 @@
         "labels": {
             "type": "map[string]",
             "create": true
+        },
+         "healthCheck": {
+            "type": "instanceHealthCheck",
+            "nullable": true
+        },
+         "healthState": {
+            "type": "enum",
+            "options" : [ "healthy", "unhealthy", "updating-healthy", "updating-unhealthy" ]
         }
     },
     "resourceActions": {

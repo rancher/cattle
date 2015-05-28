@@ -91,6 +91,8 @@
     <process:process name="instance.allocate" resourceType="instance" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="instance.deallocate" resourceType="instance" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
     <process:process name="instance.restart" resourceType="instance" start="running" transitioning="restarting" done="running" />
+    <process:process name="instance.updatehealthy" resourceType="instance" stateField="healthState" start="healthy,unhealthy" transitioning="updating-healthy" done="healthy" />
+    <process:process name="instance.updateunhealthy" resourceType="instance" stateField="healthState" start="healthy,unhealthy" transitioning="updating-unhealthy" done="unhealthy" />
 
     <!-- Volume -->
     <process:defaultProcesses resourceType="volume" />
@@ -155,16 +157,18 @@
     <!-- Service Discovery Service/Instance map -->
     <process:process name="serviceexposemap.create" resourceType="serviceExposeMap" start="requested" transitioning="activating" done="active" />
     <process:process name="serviceexposemap.remove" resourceType="serviceExposeMap" start="active,activating, requested" transitioning="removing" done="removed" />
-    <process:process name="serviceexposemap.updatehealthy" resourceType="serviceExposeMap" stateField="healthState" start="healthy,unhealthy" transitioning="updating-healthy" done="healthy" />
-    <process:process name="serviceexposemap.updateunhealthy" resourceType="serviceExposeMap" stateField="healthState" start="healthy,unhealthy" transitioning="updating-unhealthy" done="unhealthy" />
     
     <!-- Service Discovery Service/Service map -->
     <process:process name="serviceconsumemap.create" resourceType="serviceConsumeMap" start="requested" transitioning="activating" done="active" />
     <process:process name="serviceconsumemap.remove" resourceType="serviceConsumeMap" start="active,activating" transitioning="removing" done="removed" />
     
-    <!-- Service Discovery ServiceExpose/Host map -->
-    <process:process name="serviceexposehostmap.create" resourceType="serviceExposeHostMap" start="requested" transitioning="activating" done="active" />
-    <process:process name="serviceexposehostmap.remove" resourceType="serviceExposeHostMap" start="active,activating" transitioning="removing" done="removed" />
+      <!-- Instance healthcheck -->
+    <process:process name="healthcheckinstance.create" resourceType="healthcheckInstance" start="requested" transitioning="activating" done="active" />
+    <process:process name="healthcheckinstance.remove" resourceType="healthcheckInstance" start="active,activating" transitioning="removing" done="removed" />
+    
+    <!-- Instnace Healthcheck/Host map -->
+    <process:process name="healthcheckinstancehostmap.create" resourceType="healthcheckInstanceHostMap" start="requested" transitioning="activating" done="active" />
+    <process:process name="healthcheckinstancehostmap.remove" resourceType="healthcheckInstanceHostMap" start="active,activating" transitioning="removing" done="removed" />
     
     <!-- Container Event -->
     <process:process name="containerevent.create" resourceType="containerEvent" start="requested" transitioning="creating" done="created" />

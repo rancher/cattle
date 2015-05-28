@@ -33,10 +33,6 @@
             "type": "container",
             "create": true,
             "required": true
-        },
-         "healthCheck": {
-            "type": "instanceHealthCheck",
-            "nullable": true
         }
     },
     "resourceActions" : {

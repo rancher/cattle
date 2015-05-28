@@ -81,4 +81,9 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
         return this.exposeMap != null && this.exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE);
     }
 
+    @Override
+    public boolean isUnhealthy() {
+        return false;
+    }
+
 }

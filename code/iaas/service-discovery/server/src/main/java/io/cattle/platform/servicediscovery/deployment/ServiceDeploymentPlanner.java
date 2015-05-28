@@ -28,7 +28,7 @@ public abstract class ServiceDeploymentPlanner {
 
         if (units != null) {
             for (DeploymentUnit unit : units) {
-                if (unit.isHealthy()) {
+                if (unit.isUnhealthy()) {
                     unhealthyUnits.add(unit);
                 } else {
                     healthyUnits.add(unit);

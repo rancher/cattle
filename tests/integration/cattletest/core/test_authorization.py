@@ -8,7 +8,7 @@ TYPE_LEN = {
     'agentRegister': 4,
     'readAdmin': 105,
     'token': 2,
-    'superadmin': 158,
+    'superadmin': 159,
     'service': 105,
     'project': 83,
 }
@@ -347,7 +347,9 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
-        'labels': 'r'
+        'labels': 'r',
+        'healthCheck': 'r',
+        'healthState': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -394,7 +396,9 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
-        'labels': 'r'
+        'labels': 'r',
+        'healthCheck': 'r',
+        'healthState': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -441,7 +445,9 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
-        'labels': 'cr'
+        'labels': 'cr',
+        'healthCheck': 'cr',
+        'healthState': 'r',
     })
 
 
@@ -1058,7 +1064,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'launchConfig': 'r',
         'accountId': 'r',
         'data': 'r',
-        'healthCheck': 'r'
 
     })
 
@@ -1069,7 +1074,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'dataVolumesFromService': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
-        'healthCheck': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1079,7 +1083,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'dataVolumesFromService': 'cr',
         'launchConfig': 'cr',
         'accountId': 'r',
-        'healthCheck': 'cr'
     })
 
 
@@ -1113,7 +1116,6 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'accountId': 'r',
         'data': 'r',
         'loadBalancerConfig': 'r',
-        'healthCheck': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1124,7 +1126,6 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'r',
         'accountId': 'r',
         'loadBalancerConfig': 'r',
-        'healthCheck': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1135,5 +1136,4 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'cr',
         'accountId': 'r',
         'loadBalancerConfig': 'cr',
-        'healthCheck': 'cr'
     })
