@@ -14,6 +14,7 @@
                 <value>io.cattle.platform.docker.api.model.ContainerExec</value>
                 <value>io.cattle.platform.docker.api.model.ContainerLogs</value>
                 <value>io.cattle.platform.docker.api.model.HostAccess</value>
+                <value>io.cattle.platform.docker.api.model.DockerBuild</value>
             </list>
         </property>
     </bean>

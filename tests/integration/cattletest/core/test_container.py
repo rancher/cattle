@@ -22,6 +22,24 @@ def test_conatiner_simple_start(context):
     context.create_container()
 
 
+def test_container_build(super_client, context, client):
+    container = context.create_container(build={
+        'dockerfile': 'test/Dockerfile',
+        'remote': 'http://example.com',
+        'rm': True,
+    })
+
+    assert container.build.dockerfile == 'test/Dockerfile'
+    assert container.build.remote == 'http://example.com'
+    assert container.build.rm
+
+    image = super_client.reload(container).image()
+    assert image.data.fields.build.dockerfile == 'test/Dockerfile'
+    assert image.data.fields.build.remote == 'http://example.com'
+    assert image.data.fields.build.tag == context.image_uuid
+    assert image.data.fields.build.rm
+
+
 def test_container_create_only(super_client, client):
     uuid = "sim:{}".format(random_num())
     container = client.create_container(imageUuid=uuid,

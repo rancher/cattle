@@ -89,6 +89,29 @@ def test_docker_create_with_start(docker_client, super_client):
 
 
 @if_docker
+def test_docker_build(docker_client, super_client):
+    uuid = 'image-' + random_str()
+    url = 'https://github.com/rancherio/tiny-build/raw/master/build.tar'
+    container = docker_client.create_container(name='test',
+                                               imageUuid='docker:' + uuid,
+                                               build={
+                                                   'context': url,
+                                               })
+
+    try:
+        assert container.state == 'creating'
+        container = super_client.wait_success(container)
+
+        # This builds tianon/true which just dies
+        assert container.state == 'running' or container.state == 'stopped'
+        assert container.transitioning == 'no'
+        assert container.data.dockerContainer.Image == uuid + ':latest'
+    finally:
+        if container is not None:
+            docker_client.wait_success(docker_client.delete(container))
+
+
+@if_docker
 def test_docker_command(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
     container = docker_client.create_container(name='test',
@@ -680,6 +703,24 @@ def test_container_odd_fields(super_client, docker_client):
 
     assert c.data.dockerInspect.HostConfig.LogConfig == {'Type': 'json-file',
                                                          'Config': None}
+
+
+@if_docker
+def test_container_bad_build(super_client, docker_client):
+    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                       build={
+                                           'context': None,
+                                           'remote': None
+                                       })
+    c = docker_client.wait_success(c)
+
+    assert c.state == 'running'
+    assert c.pidMode is None
+    assert c.build == {'context': None, 'remote': None}
+
+    c = super_client.reload(c)
+
+    assert c.data.dockerInspect.Config.Image == TEST_IMAGE_LATEST
 
 
 def _check_path(volume, should_exist, client, super_client):

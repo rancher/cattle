@@ -457,12 +457,13 @@ def delete_sim_instances(super_client):
 
         if account.name is not None and \
                 account.name.startswith("Integration Test"):
+            account = super_client.wait_success(account)
             try:
-                account.deactivate()
-            except:
-                pass
-            try:
-                super_client.delete(account)
+                if account.removed is None:
+                    if account.state == 'active':
+                        account = \
+                            super_client.wait_success(account.deactivate())
+                    super_client.delete(account)
             except:
                 pass
 

@@ -218,6 +218,10 @@
         "readOnly": {
             "type": "boolean",
             "default": false
+	},
+        "build": {
+            "type": "dockerBuild",
+            "nullable": true
         }
     },
     "resourceActions": {
