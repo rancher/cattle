@@ -384,6 +384,7 @@
         "serviceExposeMap" : "r",
         "serviceExposeMap.instanceId" : "r",
         "serviceExposeMap.serviceId" : "r",
+        "serviceExposeMap.healthState" : "r",
 
         "end" : ""
     }
