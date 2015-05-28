@@ -243,7 +243,6 @@ public class GithubUtils {
     }
 
     public String getAccessToken() {
-        findAndSetJWT();
         return (String) DataAccessor.fields(getAccountFromJWT()).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get();
     }
 }
