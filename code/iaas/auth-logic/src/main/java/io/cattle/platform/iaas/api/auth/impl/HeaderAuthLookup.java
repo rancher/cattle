@@ -1,16 +1,19 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
-import static io.cattle.platform.core.model.tables.AccountTable.*;
+
+import static io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
+import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+
+import java.util.HashSet;
 
 import javax.inject.Inject;
 
@@ -26,7 +29,7 @@ public class HeaderAuthLookup implements AccountLookup, Priority {
     AuthorizationProvider adminAuthProvider;
 
     @Override
-    public AccountAccess getAccountAccess(ApiRequest request) {
+    public Account getAccount(ApiRequest request) {
         if (!ENABLED.get()) {
             return null;
         }
@@ -37,21 +40,17 @@ public class HeaderAuthLookup implements AccountLookup, Priority {
             return null;
         }
 
-        AccountAccess admin = adminLookup.getAccountAccess(request);
+        Account admin = adminLookup.getAccount(request);
         if (admin == null) {
             return null;
         }
 
-        Policy policy = adminAuthProvider.getPolicy(admin, request);
+        Policy policy = adminAuthProvider.getPolicy(admin, admin, new HashSet<ExternalId>(), request);
         if (!policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS)) {
             return null;
         }
-        AccountAccess accountAccess= null;
         Account account=  objectManager.findOne(Account.class, ACCOUNT.UUID, header, ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
-        if (account != null){
-            accountAccess = new AccountAccess(account, null);
-        }
-        return accountAccess;
+        return account;
     }
 
     @Override

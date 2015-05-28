@@ -102,26 +102,30 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         }
         List<Account> projects = authDao.getAccessibleProjects(policy.getExternalIds(),
             isAdmin, policy.getAccountId());
+        List<Account> projectsFiltered = new ArrayList<>();
         for (Account project: projects){
-            giveProjectAccess(project, policy);
+            projectsFiltered.add(giveProjectAccess(project, policy));
         }
-        return  projects;
+        return  projectsFiltered;
     }
 
     private Account giveProjectAccess(Account project, Policy policy) {
         if (project == null) {
-            throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
+            return null;
         }
         if (!authDao.hasAccessToProject(project.getId(), policy.getAccountId(),
                 policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
-            throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
+            return null;
         }
-        if (!project.getState().equals(CommonStatesConstants.ACTIVE) && !authDao.isProjectOwner(project.getId(), policy.getAccountId(),
-                policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())){
-            throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
+        boolean isOwner = authDao.isProjectOwner(project.getId(), policy.getAccountId(), policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy
+                .getExternalIds());
+        if (!project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) && !isOwner){
+            return null;
         }
-        if (authDao.isProjectOwner(project.getId(), policy.getAccountId(), policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getExternalIds())) {
-            DataAccessor.fields(project).withKey(ObjectMetaDataManager.CAPABILITIES_FIELD).set(Arrays.asList("owner"));
+        if (isOwner) {
+            DataAccessor.fields(project).withKey(ObjectMetaDataManager.CAPABILITIES_FIELD).set(Arrays.asList(ProjectConstants.OWNER));
+        } else {
+            DataAccessor.fields(project).withKey(ObjectMetaDataManager.CAPABILITIES_FIELD).set(Arrays.asList(ProjectConstants.MEMBER));
         }
         policy.grantObjectAccess(project);
         return project;

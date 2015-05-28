@@ -209,7 +209,6 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         query.addFrom(ACCOUNT);
         query.addJoin(PROJECT_MEMBER, PROJECT_MEMBER.PROJECT_ID.equal(ACCOUNT.ID));
         query.addConditions(allMembers);
-        query.addConditions(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE));
         query.setDistinct(true);
         projects.addAll(query.fetchInto(ACCOUNT));
         Map<Long, Account> returnProjects = new HashMap();
@@ -343,7 +342,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     public void ensureAllProjectsHaveNonRancherIdMembers(ExternalId externalId) {
         //This operation is expensive if there are alot of projects and members however this is
         //only called when auth is being turned on. In most cases this will only be called once.
-        Member newMember = new Member(externalId, "owner");
+        Member newMember = new Member(externalId, ProjectConstants.OWNER);
         Set<ExternalId> externalIds = new HashSet<>();
         externalIds.add(new ExternalId(String.valueOf(getAdminAccount().getId()), ProjectConstants.RANCHER_ID));
         List<Account> allProjects = getAccessibleProjects(externalIds, true, null);
