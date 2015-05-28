@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.resource;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.util.type.NamedUtils;
 
@@ -50,6 +51,9 @@ public class ServiceDiscoveryConfigItem {
             "external_links");
     public static final ServiceDiscoveryConfigItem LINKS = new ServiceDiscoveryConfigItem(null,
             "links", false, true);
+    public static final ServiceDiscoveryConfigItem NETWORKMODE = new ServiceDiscoveryConfigItem(
+            DockerInstanceConstants.FIELD_NETWORK_MODE,
+            "net");
 
     // CATTLE PARAMETERS
     public static final ServiceDiscoveryConfigItem REGISTRYCREDENTIALID = new ServiceDiscoveryConfigItem("registryCredentialId",
