@@ -74,13 +74,15 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);
         String access_token = githubUtils.validateAndFetchGithubToken(token);
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
-        createOrUpdateSetting(HOSTNAME_SETTING, config.get(HOSTNAME));
-        createOrUpdateSetting(SECURITY_SETTING, config.get(ENABLED));
-        createOrUpdateSetting(CLIENT_ID_SETTING, config.get(CLIENT_ID));
-        createOrUpdateSetting(CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
-        createOrUpdateSetting(ACCESSMODE_SETTING, config.get(ACCESSMODE));
-        createOrUpdateSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(ALLOWED_USERS), access_token), ","));
-        createOrUpdateSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(ALLOWED_ORGS), access_token), ","));
+        changeSetting(HOSTNAME_SETTING, config.get(HOSTNAME));
+        changeSetting(SECURITY_SETTING, config.get(ENABLED));
+        changeSetting(CLIENT_ID_SETTING, config.get(CLIENT_ID));
+        if (config.get(CLIENT_SECRET) != null){
+            changeSetting(CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
+        }
+        changeSetting(ACCESSMODE_SETTING, config.get(ACCESSMODE));
+        changeSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(ALLOWED_USERS), access_token), ","));
+        changeSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(ALLOWED_ORGS), access_token), ","));
         return currentGithubConfig(config);
     }
 
@@ -145,15 +147,23 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         return appendedList;
     }
 
-    private void createOrUpdateSetting(String name, Object value) {
-        if (null == value || null == name) {
+    private void changeSetting(String name, Object value) {
+        if (name == null) {
             return;
         }
         Setting setting = objectManager.findOne(Setting.class, "name", name);
-        if (null == setting) {
-            objectManager.create(Setting.class, "name", name, "value", value);
+        if (value == null) {
+            if (setting != null) {
+                objectManager.delete(setting);
+            } else{
+                return;
+            }
         } else {
-            objectManager.setFields(setting, "value", value);
+            if (null == setting) {
+                objectManager.create(Setting.class, "name", name, "value", value);
+            } else {
+                objectManager.setFields(setting, "value", value);
+            }
         }
         DeferredUtils.defer(new Runnable() {
 
