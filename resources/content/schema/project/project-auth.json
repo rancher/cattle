@@ -13,6 +13,7 @@
         "container" : "crud",
         "containerExec" : "cr",
         "containerLogs":"cr",
+        "dnsService" : "crud",
         "environment" : "crud",
         "externalService" : "crud",
         "globalLoadBalancer" : "crud",

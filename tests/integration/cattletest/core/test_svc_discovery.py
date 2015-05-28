@@ -1328,7 +1328,6 @@ def test_external_service(client, context):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
-
     # create service1 as a regular service
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -1380,8 +1379,9 @@ def test_global_service(new_context):
     host2 = register_simulated_host(new_context)
 
     # add labels to the hosts
-    host1.addlabel(key='io.rancher.service.global', value='random')
-    host2.addlabel(key='io.rancher.service.global', value='random')
+    labels = {'io.rancher.service.global': 'random'}
+    host1 = client.update(host1, labels=labels)
+    host2 = client.update(host2, labels=labels)
 
     # create environment and services
     env = client.create_environment(name=random_str())
@@ -1427,8 +1427,55 @@ def test_global_service(new_context):
     assert instance1.hosts()[0].id != instance2.hosts()[0].id
 
 
-def _wait_compose_instance_start(client, service,
-                                 env, number, timeout=30):
+def test_dns_service(super_client, client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    # create 1 app service, 1 dns service and 2 web services
+    # app service would link to dns, and dns to the web services
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    web1 = client.create_service(name=random_str(),
+                                 environmentId=env.id,
+                                 launchConfig=launch_config)
+    web1 = client.wait_success(web1)
+
+    web2 = client.create_service(name=random_str(),
+                                 environmentId=env.id,
+                                 launchConfig=launch_config)
+    web2 = client.wait_success(web2)
+
+    app = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    app = client.wait_success(app)
+
+    dns = client.create_dnsService(name='tata',
+                                   environmentId=env.id)
+    dns = client.wait_success(dns)
+
+    env.activateservices()
+    web1 = client.wait_success(web1, 120)
+    web2 = client.wait_success(web2)
+    app = client.wait_success(app)
+    dns = client.wait_success(dns)
+    assert web1.state == 'active'
+    assert web2.state == 'active'
+    assert app.state == 'active'
+    assert dns.state == 'active'
+
+    dns = app.addservicelink(serviceId=web1.id)
+    _validate_add_service_link(dns, web1, super_client)
+
+    dns = app.addservicelink(serviceId=web2.id)
+    _validate_add_service_link(dns, web2, super_client)
+
+    app = app.addservicelink(serviceId=dns.id)
+    _validate_add_service_link(app, dns, super_client)
+
+
+def _wait_compose_instance_start(client, service, env, number, timeout=30):
     start = time.time()
     instances = client. \
         list_container(name=env.name + "_" + service.name + "_" + number,

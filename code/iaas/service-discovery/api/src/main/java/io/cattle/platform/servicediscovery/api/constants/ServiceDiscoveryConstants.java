@@ -6,7 +6,8 @@ public class ServiceDiscoveryConstants {
     public enum KIND {
         SERVICE,
         LOADBALANCERSERVICE,
-        EXTERNALSERVICE
+        EXTERNALSERVICE,
+        DNSSERVICE
     }
 
 
