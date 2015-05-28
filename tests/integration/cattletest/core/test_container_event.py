@@ -100,6 +100,28 @@ def test_container_event_start(client, host, agent_cli, user_id):
     assert container.state != 'removed'
 
 
+def test_container_event_remove_start(client, host, agent_cli, user_id):
+    # If a container is removed and then an event comes in for the container,
+    # the event should be ignored.
+    external_id = random_str()
+
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id)
+    assert container.state == 'running'
+
+    container = client.wait_success(container.stop())
+    assert container.state == 'stopped'
+    container = client.wait_success(container.remove())
+    assert container.state == 'removed'
+
+    create_event(host, external_id, agent_cli, client, user_id, 'start')
+    container = client.wait_success(container)
+    assert container.state == 'removed'
+
+    containers = client.list_container(externalId=external_id)
+    assert len(containers) == 1
+
+
 def test_container_event_destroy(client, host, agent_cli, user_id):
     # Submitting a 'destroy' containerEvent should result in a container
     # being removed.

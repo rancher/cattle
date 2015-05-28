@@ -118,7 +118,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                         return null;
                     }
 
-                    if (instance == null) {
+                    if (instance == null || instance.getRemoved() != null) {
                         return null;
                     }
 
