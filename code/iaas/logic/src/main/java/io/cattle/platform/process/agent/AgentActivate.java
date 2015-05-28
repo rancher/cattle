@@ -5,6 +5,7 @@ import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.util.AgentUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
+import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -18,6 +19,8 @@ import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.config.DynamicIntProperty;
@@ -46,7 +49,15 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
                 .withOption(Ping.RESOURCES, true), new EventCallOptions(PING_RETRY.get(), PING_TIMEOUT.get()));
 
         if (waitFor) {
-            AsyncUtils.get(future);
+            try {
+                AsyncUtils.get(future);
+            } catch (TimeoutException e) {
+                if (StringUtils.startsWith(agent.getUri(), "delegate://")) {
+                    // ignore
+                } else {
+                    throw e;
+                }
+            }
         }
 
         return new HandlerResult();
