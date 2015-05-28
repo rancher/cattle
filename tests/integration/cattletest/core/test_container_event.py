@@ -284,6 +284,32 @@ def test_container_event_net_container_not_found(client, host, agent_cli,
     assert container['networkContainerId'] is None
 
 
+def test_container_event_image_and_reg_cred(client, host, agent_cli, user_id,
+                                            super_client):
+    server = 'server{0}.io'.format(random_num())
+    registry = client.create_registry(serverAddress=server,
+                                      name=random_str())
+    registry = client.wait_success(registry)
+    reg_cred = client.create_registry_credential(
+        registryId=registry.id,
+        email='test@rancher.com',
+        publicValue='rancher',
+        secretValue='rancher')
+    registry_credential = client.wait_success(reg_cred)
+    name = server + '/rancher/authorized:latest'
+    image_uuid = 'docker:' + name
+    external_id = random_str()
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, image=image_uuid)
+    assert container.nativeContainer is True
+    assert container.state == 'running'
+    container = super_client.wait_success(container)
+    assert container.registryCredentialId == registry_credential.id
+    image = container.image()
+    assert image.name == name
+    assert image.registryCredentialId == registry_credential.id
+
+
 def sim_agent_and_host(user_sim_context):
     agent_account = user_sim_context['agent'].account()
     user_agent_cli = _client_for_agent(agent_account.credentials()[0])
@@ -292,12 +318,12 @@ def sim_agent_and_host(user_sim_context):
 
 
 def create_native_container(client, host, external_id, user_agent_cli,
-                            user_account_id, inspect=None):
+                            user_account_id, inspect=None, image=None):
     if not inspect:
         inspect = new_inspect(external_id)
 
     create_event(host, external_id, user_agent_cli, client, user_account_id,
-                 'start', inspect)
+                 'start', inspect, image=image)
 
     def container_wait():
         containers = client.list_container(externalId=external_id)
@@ -309,9 +335,11 @@ def create_native_container(client, host, external_id, user_agent_cli,
 
 
 def create_event(host, external_id, agent_cli, client, user_account_id, status,
-                 inspect=None, wait_and_assert=True):
+                 inspect=None, wait_and_assert=True,
+                 image=None):
     timestamp = int(time.time())
-    image = 'sim:busybox:latest'
+    if (image is None):
+        image = 'sim:busybox:latest'
     event = agent_cli.create_container_event(
         reportedHostUuid=host.data.fields['reportedUuid'],
         externalId=external_id,

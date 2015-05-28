@@ -12,7 +12,6 @@
 
     <bean class="io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter" >
         <property name="schemaFactory" ref="CoreSchemaFactory" />
-        <property name="imageCredentialLookups" value="#{extensionManager.list('image.credential.lookup')}" />
     </bean>
 
 </beans>

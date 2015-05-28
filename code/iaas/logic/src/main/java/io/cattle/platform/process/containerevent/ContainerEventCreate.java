@@ -368,13 +368,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
             imageUuid = IMAGE_PREFIX + imageUuid;
         }
         DataAccessor.fields(instance).withKey(FIELD_IMAGE_UUID).set(imageUuid);
-        Image image = null;
-        try {
-            image = storageService.registerRemoteImage(imageUuid);
-        } catch (IOException e) {
-            throw new ExecutionException("Unable to create image.", e);
-        }
-        instance.setImageId(image.getId());
     }
 
     String getRancherUuidLabel(Map<String, Object> inspect, Map<String, Object> data) {

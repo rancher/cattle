@@ -8,4 +8,5 @@ public class CredentialConstants {
 
     public static final String LINK_PEM_FILE = "pem";
 
+    public static final String KIND_REGISTRY_CREDENTIAL = "registryCredential";
 }

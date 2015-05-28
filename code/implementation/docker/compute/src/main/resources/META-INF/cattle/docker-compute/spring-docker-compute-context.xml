@@ -8,7 +8,9 @@
 
     <bean class="io.cattle.platform.docker.process.dao.impl.DockerComputeDaoImpl" />
 
-    <bean class="io.cattle.platform.docker.process.instance.DockerInstancePreCreate" />
+    <bean class="io.cattle.platform.docker.process.instance.DockerInstancePreCreate">
+        <property name="imageCredentialLookups" value="#{extensionManager.list('image.credential.lookup')}" />
+    </bean>
     <bean class="io.cattle.platform.docker.process.account.DockerAccountCreate" />
     <bean class="io.cattle.platform.docker.process.instancehostmap.DockerPostInstanceHostMapActivate" />
     <bean class="io.cattle.platform.docker.process.serializer.DockerContainerSerializer" />

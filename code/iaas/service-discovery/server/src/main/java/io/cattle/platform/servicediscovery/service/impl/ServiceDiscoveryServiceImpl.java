@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
-import static io.cattle.platform.core.model.tables.ImageTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.*;
 import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.*;
@@ -15,7 +14,6 @@ import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
-import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
@@ -36,9 +34,7 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
-import io.cattle.platform.storage.service.StorageService;
 
-import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,9 +75,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     JsonMapper jsonMapper;
-
-    @Inject
-    StorageService storageService;
 
     @Inject
     AllocatorService allocatorService;
@@ -315,13 +308,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         // 3. add extra parameters
-        Object registryCredentialId = serviceData.get(ServiceDiscoveryConfigItem.REGISTRYCREDENTIALID
-                .getCattleName());
-        Long imageId = getImage(String.valueOf(serviceData.get(InstanceConstants.FIELD_IMAGE_UUID)),
-                registryCredentialId != null ? (Integer) registryCredentialId : null);
         launchConfigItems.put("accountId", service.getAccountId());
         launchConfigItems.put("kind", InstanceConstants.KIND_CONTAINER);
-        launchConfigItems.put(InstanceConstants.FIELD_IMAGE_ID, imageId);
         
         return launchConfigItems;
     }
@@ -592,23 +580,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public List<? extends Service> listEnvironmentServices(long environmentId) {
         return objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, environmentId, SERVICE.REMOVED,
                 null);
-    }
-
-    protected Long getImage(String imageUuid, Integer registryCredentialId) {
-        Image image;
-        try {
-            image = storageService.registerRemoteImage(imageUuid);
-            if (image == null) {
-                return null;
-            }
-            if (registryCredentialId != null) {
-                objectManager.setFields(image, IMAGE.REGISTRY_CREDENTIAL_ID, registryCredentialId);
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to get image [" + imageUuid + "]");
-        }
-
-        return image == null ? null : image.getId();
     }
 
     public List<Service> getServicesFor(Object obj) {

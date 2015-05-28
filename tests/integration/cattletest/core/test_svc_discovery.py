@@ -51,8 +51,6 @@ def test_activate_single_service(client, context):
                                              launchConfig=launch_config)
     consumed_service = client.wait_success(consumed_service)
 
-    reg_cred = _create_registry_credential(client)
-
     launch_config = {"imageUuid": image_uuid,
                      "command": ['sleep', '42'],
                      "environment": {'TEST_FILE': "/etc/testpath.conf"},
@@ -78,7 +76,6 @@ def test_activate_single_service(client, context):
                      "instanceLinks": {
                          'container2_link':
                              container2.id},
-                     "registryCredentialId": reg_cred.id,
                      "requestedHostId": host.id,
                      "healthCheck": health_check}
 
@@ -159,7 +156,6 @@ def test_activate_single_service(client, context):
     assert container.hostname == "test"
     assert container.user == "test"
     assert container.state == "running"
-    assert container.registryCredentialId == reg_cred.id
     assert container.cpuSet == "2"
     assert container.requestedHostId == host.id
     assert container.healthState == 'healthy'
@@ -1498,6 +1494,42 @@ def test_dns_service(super_client, client, context):
     _validate_add_service_link(app, dns, super_client)
 
 
+def test_svc_container_reg_cred_and_image(client, super_client):
+    server = 'server{0}.io'.format(random_num())
+    registry = client.create_registry(serverAddress=server,
+                                      name=random_str())
+    registry = client.wait_success(registry)
+    reg_cred = client.create_registry_credential(
+        registryId=registry.id,
+        email='test@rancher.com',
+        publicValue='rancher',
+        secretValue='rancher')
+    registry_credential = client.wait_success(reg_cred)
+    name = server + '/rancher/authorized:latest'
+    image_uuid = 'docker:' + name
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    launch_config = {"imageUuid": image_uuid}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=1)
+    service = client.wait_success(service)
+    service.activate()
+    service = client.wait_success(service, 120)
+    instances = client. \
+        list_container(name=env.name + "_" + service.name + "_" + "1")
+    assert len(instances) == 1
+    container = instances[0]
+    container = super_client.wait_success(container)
+    assert container.registryCredentialId == registry_credential.id
+    image = container.image()
+    assert image.name == name
+    assert image.registryCredentialId == registry_credential.id
+
+
 def _wait_compose_instance_start(client, service, env, number, timeout=30):
     start = time.time()
     instances = client. \
@@ -1590,33 +1622,6 @@ def _get_instance_for_service(super_client, serviceId):
     for mapping in instance_service_maps:
         instances.append(mapping.instance())
     return instances
-
-
-def _create_registry_credential(admin_client):
-    registry = _create_registry(admin_client)
-    reg_cred = admin_client.create_registry_credential(
-        registryId=registry.id,
-        email='test@rancher.com',
-        publicValue='wizardofmath+whisper',
-        secretValue='W0IUYDBM2VORHM4DTTEHSMKLXGCG3KD3IT081QWWTZA11R9DZS2DDPP72'
-                    '48NUTT6')
-    assert reg_cred is not None
-    assert reg_cred.email == 'test@rancher.com'
-    assert reg_cred.kind == 'registryCredential'
-    assert reg_cred.registryId == registry.id
-    assert reg_cred.publicValue == 'wizardofmath+whisper'
-    assert 'secretValue' not in reg_cred
-
-    return reg_cred
-
-
-def _create_registry(admin_client):
-    registry = admin_client.create_registry(serverAddress='quay.io',
-                                            name='Quay')
-    assert registry.serverAddress == 'quay.io'
-    assert registry.name == 'Quay'
-
-    return registry
 
 
 def _resource_is_stopped(resource):

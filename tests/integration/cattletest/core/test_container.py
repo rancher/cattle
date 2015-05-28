@@ -82,13 +82,7 @@ def test_container_create_only(super_client, client):
     })
     image_mappings = image.imageStoragePoolMaps()
 
-    assert len(image_mappings) == 1
-
-    image_mapping = super_client.wait_success(image_mappings[0])
-    assert_fields(image_mapping, {
-        "imageId": image.id,
-        "state": "inactive",
-    })
+    assert len(image_mappings) == 0
 
     return client.reload(container)
 
@@ -230,7 +224,7 @@ def test_container_stop(client, super_client, context):
     })
 
     image_mappings = image.imageStoragePoolMaps()
-    assert len(image_mappings) == 2
+    assert len(image_mappings) == 1
     # for image_mapping in image_mappings:
     #    assert_fields(image_mapping, {
     #        # TODO: Why isn't this active

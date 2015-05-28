@@ -11,7 +11,6 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.storage.pool.AbstractKindBasedStoragePoolDriver;
 import io.cattle.platform.storage.pool.StoragePoolDriver;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +31,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
     }
 
     @Override
-    protected boolean populateExtenalImageInternal(StoragePool pool, String uuid, Image image) throws IOException {
+    protected boolean populateImageInternal(String uuid, Image image) {
         DockerImage dockerImage = DockerImage.parse(stripKindPrefix(uuid));
 
         if (dockerImage == null) {
@@ -43,7 +42,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
 
         Map<String, Object> data = image.getData();
         if (data == null) {
-            data = new HashMap<String, Object>();
+            data = new HashMap<>();
             image.setData(data);
         }
 

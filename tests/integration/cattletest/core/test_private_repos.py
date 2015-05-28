@@ -38,7 +38,7 @@ def _create_registry_credential(client):
 
 
 @if_docker
-def _test_create_container_with_registry_credential(client, docker_context):
+def test_create_container_with_registry_credential(client, context):
     reg_cred = _create_registry_credential(client)
     uuid = TEST_IMAGE_UUID
     container = client.create_container(name='test',
@@ -109,3 +109,27 @@ def test_crud_registry(client):
 
 def test_crud_registry_credential(client):
     _crud_registry_credential(client)
+
+
+def test_container_image_and_registry_credential(client,
+                                                 super_client):
+    server = 'server{0}.io'.format(random_num())
+    registry = client.create_registry(serverAddress=server,
+                                      name=random_str())
+    registry = client.wait_success(registry)
+    reg_cred = client.create_registry_credential(
+        registryId=registry.id,
+        email='test@rancher.com',
+        publicValue='rancher',
+        secretValue='rancher')
+    registry_credential = client.wait_success(reg_cred)
+    name = server + '/rancher/authorized:latest'
+    image_uuid = 'docker:' + name
+    container = client.create_container(imageUuid=image_uuid,
+                                        name="test",
+                                        startOnCreate=False)
+    container = super_client.wait_success(container)
+    assert container.registryCredentialId == registry_credential.id
+    image = container.image()
+    assert image.name == name
+    assert image.registryCredentialId == registry_credential.id
