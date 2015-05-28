@@ -14,20 +14,18 @@ import java.util.Set;
 public class DefaultPolicy implements Policy {
 
     long accountId;
-    long authenticatedAsAccountId;
     String name;
     Set<ExternalId> externalIds;
     PolicyOptions options;
 
     @SuppressWarnings("unchecked")
     public DefaultPolicy() {
-        this(Policy.NO_ACCOUNT, Policy.NO_ACCOUNT, null, Collections.EMPTY_SET, new NoPolicyOptions());
+        this(Policy.NO_ACCOUNT, null, Collections.EMPTY_SET, new NoPolicyOptions());
     }
 
-    public DefaultPolicy(long accountId, long authenticatedAsAccountId, String name, Set<ExternalId> externalIds, PolicyOptions options) {
+    public DefaultPolicy(long accountId, String name, Set<ExternalId> externalIds, PolicyOptions options) {
         super();
         this.accountId = accountId;
-        this.authenticatedAsAccountId = authenticatedAsAccountId;
         this.externalIds = externalIds;
         this.options = options;
         this.name = name;
@@ -67,11 +65,6 @@ public class DefaultPolicy implements Policy {
     @Override
     public long getAccountId() {
         return accountId;
-    }
-
-    @Override
-    public long getAuthenticatedAsAccountId() {
-        return authenticatedAsAccountId;
     }
 
     @Override

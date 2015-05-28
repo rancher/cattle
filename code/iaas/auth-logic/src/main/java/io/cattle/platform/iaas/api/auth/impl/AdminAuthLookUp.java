@@ -1,8 +1,10 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
+import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.util.type.Priority;
@@ -26,7 +28,7 @@ public class AdminAuthLookUp implements AccountLookup, Priority {
     AuthDao authDao;
 
     @Override
-    public Account getAccount(ApiRequest request) {
+    public AccountAccess getAccountAccess(ApiRequest request) {
         if (SECURITY.get()){
             return null;
         }
@@ -34,8 +36,40 @@ public class AdminAuthLookUp implements AccountLookup, Priority {
         if (StringUtils.equals("true", authHeader)) {
             return null;
         }
-        return authDao.getAdminAccount();
+        String projectId = request.getServletContext().getRequest().getHeader(ProjectConstants.PROJECT_HEADER);
+        if (projectId == null || projectId.isEmpty()) {
+            projectId = request.getServletContext().getRequest().getParameter("projectId");
+        }
+        return getAccountAccessInternal(projectId);
     }
+
+    private AccountAccess getAccountAccessInternal(String projectId){
+        Account admin = authDao.getAdminAccount();
+        if (admin == null){
+            return null;
+        }
+        if (projectId != null && !projectId.isEmpty()) {
+            String id = ApiContext.getContext().getIdFormatter().parseId(projectId);
+            try {
+                admin = authDao.getAccountById(Long.valueOf(id));
+            } catch (NumberFormatException e){
+            }
+        }
+
+        if (admin == null){
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
+        }
+
+        AccountAccess accountAccess = new AccountAccess(admin, null);
+        accountAccess.getExternalIds().add(new ExternalId(String.valueOf(admin.getId()), ProjectConstants.RANCHER_ID));
+
+        return accountAccess;
+    }
+
+    public AccountAccess getAccountAccess(String projectId){
+        return  getAccountAccessInternal(projectId);
+    }
+
     @Override
     public boolean challenge(ApiRequest request) {
         return false;
