@@ -98,12 +98,13 @@
         "credential.publicValue" : "r",
         "credential.secretValue" : "r",
 
-        "host" : "r",
+        "host" : "ru",
         "host.agentId" : "r",
         "host.computeTotal" : "r",
         "host.info" : "r",
         "host.physicalHostId" : "r",
         "host.zoneId" : "ru",
+        "host.labels" : "ru",
 
         "addLabelInput" : "cr",
         "addLabelInput.key" : "cr",

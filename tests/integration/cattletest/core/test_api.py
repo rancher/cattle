@@ -273,7 +273,6 @@ def test_actions_based_on_state(context):
     c = context.create_container()
     assert set(c.actions.keys()) == set(['migrate', 'restart', 'stop',
                                          'update', 'execute', 'logs',
-                                         'addlabel', 'removelabel',
                                          'setlabels'])
 
 

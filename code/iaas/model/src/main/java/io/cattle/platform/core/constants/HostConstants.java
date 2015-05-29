@@ -10,7 +10,9 @@ public class HostConstants {
     public static final String FIELD_HOST_UUID = "hostUuid";
     public static final String FIELD_INFO = "info";
     public static final String FIELD_API_PROXY = "apiProxy";
+    public static final String FIELD_LABELS = "labels";
 
     public static final String PROCESS_REMOVE = "host.remove";
+    public static final String PROCESS_UPDATE = "host.update";
 
 }

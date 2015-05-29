@@ -2,15 +2,15 @@ from common_fixtures import *  # NOQA
 
 
 TYPE_LEN = {
-    'admin': 106,
+    'admin': 104,
     'agent': 8,
-    'user': 84,
+    'user': 82,
     'agentRegister': 4,
-    'readAdmin': 106,
+    'readAdmin': 104,
     'token': 2,
-    'superadmin': 160,
-    'service': 106,
-    'project': 84,
+    'superadmin': 158,
+    'service': 104,
+    'project': 82,
 }
 
 
@@ -174,21 +174,23 @@ def test_project_member_auth(admin_user_client, user_client, project_client):
 
 
 def test_host_auth(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'host', 'r', {
+    auth_check(admin_user_client.schema, 'host', 'ru', {
         'accountId': 'r',
-        'apiProxy': 'r',
+        'apiProxy': 'ru',
         'agentId': 'r',
         'computeTotal': 'r',
         'data': 'r',
         'physicalHostId': 'r',
         'info': 'r',
+        'labels': 'ru'
     })
 
-    auth_check(user_client.schema, 'host', 'r', {
+    auth_check(user_client.schema, 'host', 'ru', {
         'accountId': 'r',
         'computeTotal': 'r',
         'physicalHostId': 'r',
         'info': 'r',
+        'labels': 'ru'
     })
 
     auth_check(project_client.schema, 'host', 'rud', {
@@ -196,6 +198,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'computeTotal': 'r',
         'physicalHostId': 'r',
         'info': 'r',
+        'labels': 'ru'
     })
 
 

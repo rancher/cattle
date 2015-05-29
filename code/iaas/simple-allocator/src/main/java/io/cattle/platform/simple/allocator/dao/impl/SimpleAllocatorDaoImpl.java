@@ -55,7 +55,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                     .on(AGENT.ID.eq(HOST.AGENT_ID))
                 .where(
                     AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
-                    .and(HOST.STATE.eq(CommonStatesConstants.ACTIVE))
+                    .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
                     .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
                     .and(getQueryOptionCondition(options)))
                 .orderBy(SPREAD.get() ? HOST.COMPUTE_FREE.desc() : HOST.COMPUTE_FREE.asc())

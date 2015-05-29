@@ -41,8 +41,6 @@
                 <value>addRemoveLoadBalancerListenerInput</value>
                 <value>addRemoveLoadBalancerTargetInput</value>
                 <value>addRemoveServiceLinkInput</value>
-                <value>addLabelInput</value>
-                <value>removeLabelInput</value>
                 <value>setLabelsInput</value>
                 <value>apiKey,parent=credential</value>
                 <value>cluster,parent=host</value>
