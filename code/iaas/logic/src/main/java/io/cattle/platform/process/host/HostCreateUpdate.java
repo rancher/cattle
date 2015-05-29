@@ -11,7 +11,8 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.cattle.platform.util.type.Priority;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class HostUpdate extends AbstractDefaultProcessHandler {
+public class HostCreateUpdate extends AbstractObjectProcessHandler implements Priority {
 
     @Inject
     GenericMapDao mapDao;
@@ -33,11 +34,20 @@ public class HostUpdate extends AbstractDefaultProcessHandler {
     LabelsService labelsService;
 
     @Override
+    public String[] getProcessNames() {
+        return new String[] { HostConstants.PROCESS_CREATE, HostConstants.PROCESS_UPDATE };
+    }
+
+    @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Host host = (Host) state.getResource();
 
         @SuppressWarnings("unchecked")
-        Map<String, String> labelsFromInput = DataAccessor.fields(host).withKey(HostConstants.FIELD_LABELS).as(Map.class);
+        Map<String, String> labelsField = DataAccessor.fields(host).withKey(HostConstants.FIELD_LABELS).as(Map.class);
+
+        if (labelsField == null) {
+            return null;
+        }
 
         List<Label> existing = labelsDao.getLabelsForHost(host.getId());
         List<? extends HostLabelMap> existingInstanceMappings = mapDao.findNonRemoved(HostLabelMap.class, Host.class, host.getId());
@@ -49,7 +59,7 @@ public class HostUpdate extends AbstractDefaultProcessHandler {
             existingLabels.put(existingLabel.getKey(), existingLabel.getValue());
             existingLabelLookupById.put(existingLabel.getId(), existingLabel);
         }
-        for (Map.Entry<String, String> inputEntry : labelsFromInput.entrySet()) {
+        for (Map.Entry<String, String> inputEntry : labelsField.entrySet()) {
             String existingValue = existingLabels.get(inputEntry.getKey());
             if (existingValue == null || !existingValue.equals(inputEntry.getValue())) {
                 labelsService.createHostLabel(
@@ -61,7 +71,7 @@ public class HostUpdate extends AbstractDefaultProcessHandler {
         for (HostLabelMap mapping : existingInstanceMappings) {
             Long labelId = mapping.getLabelId();
             Label existingLabel = existingLabelLookupById.get(labelId);
-            String newLabelValue = labelsFromInput.get(existingLabel.getKey());
+            String newLabelValue = labelsField.get(existingLabel.getKey());
             if (newLabelValue == null || !newLabelValue.equals(existingLabel.getValue())) {
                 objectProcessManager.scheduleProcessInstance("hostlabelmap.remove", mapping, null);
             }
@@ -70,4 +80,8 @@ public class HostUpdate extends AbstractDefaultProcessHandler {
         return null;
     }
 
+    @Override
+    public int getPriority() {
+        return Priority.DEFAULT;
+    }
 }
