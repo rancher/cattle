@@ -19,6 +19,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
+    public static final String FIELD_NETWORKSERVICE = "networkServiceId";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

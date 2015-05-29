@@ -126,8 +126,18 @@ public class DeploymentUnit {
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected DeploymentUnitInstance createInstance(Long serviceId) {
+        List<Integer> volumesFromInstanceIds = getVolumesFromInstancesIds(serviceId);
+        Integer networkContainerId = getNetworkContainerId(serviceId);
+        
+        this.serviceToInstance.get(serviceId).start(
+                populateDeployParams(this.serviceToInstance.get(serviceId), volumesFromInstanceIds, networkContainerId));
+
+        return this.serviceToInstance.get(serviceId);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected List<Integer> getVolumesFromInstancesIds(Long serviceId) {
         List<Integer> volumesFromInstanceIds = new ArrayList<>();
         List<Integer> volumesFromServiceIds = DataAccessor
                 .fields(context.objectManager.loadResource(Service.class, serviceId)).withKey(
@@ -148,11 +158,30 @@ public class DeploymentUnit {
                 volumesFromInstanceIds.add(((InstanceUnit) volumesFromUnitInstance).getInstance().getId().intValue());
             }
         }
-        
-        this.serviceToInstance.get(serviceId).start(
-                populateDeployParams(this.serviceToInstance.get(serviceId), volumesFromInstanceIds));
+        return volumesFromInstanceIds;
+    }
 
-        return this.serviceToInstance.get(serviceId);
+    protected Integer getNetworkContainerId(Long serviceId) {
+        Integer networkContainerId = null;
+        Integer networkServiceId = DataAccessor
+                .fields(context.objectManager.loadResource(Service.class, serviceId)).withKey(
+                        ServiceDiscoveryConstants.FIELD_NETWORKSERVICE).as(Integer.class);
+
+        if (networkServiceId != null) {
+            // check if the service is present in the service map (it can be referenced, but removed already)
+            DeploymentUnitInstance networkFromUnitInstance = serviceToInstance.get(networkServiceId.longValue());
+            if (networkFromUnitInstance != null && networkFromUnitInstance instanceof InstanceUnit) {
+                if (((InstanceUnit) networkFromUnitInstance).getInstance() == null) {
+                    // request new instance creation
+                    networkFromUnitInstance = createInstance(networkFromUnitInstance.getService().getId());
+                }
+                // wait for start
+                networkFromUnitInstance.start(new HashMap<String, Object>());
+                networkFromUnitInstance.waitForStart();
+                networkContainerId = ((InstanceUnit) networkFromUnitInstance).getInstance().getId().intValue();
+            }
+        }
+        return networkContainerId;
     }
 
     public boolean isStarted() {
@@ -179,7 +208,7 @@ public class DeploymentUnit {
     }
 
     protected Map<String, Object> populateDeployParams(DeploymentUnitInstance instance,
-            List<Integer> volumesFromInstanceIds) {
+            List<Integer> volumesFromInstanceIds, Integer networkContainerId) {
         Map<String, Object> deployParams = new HashMap<>();
         Map<String, String> instanceLabels = getLabels(instance);
         deployParams.put(InstanceConstants.FIELD_LABELS, instanceLabels);
@@ -189,6 +218,10 @@ public class DeploymentUnit {
         Object hostId = instanceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
         if (hostId != null) {
             deployParams.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, hostId);
+        }
+
+        if (networkContainerId != null) {
+            deployParams.put(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID, networkContainerId);
         }
         return deployParams;
     }

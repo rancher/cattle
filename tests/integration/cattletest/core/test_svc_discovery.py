@@ -1530,6 +1530,60 @@ def test_svc_container_reg_cred_and_image(client, super_client):
     assert image.registryCredentialId == registry_credential.id
 
 
+def test_network_from_service(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": {'io.rancher.service.sidekick': "random"}}
+    service1 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config,
+                                     scale=2)
+    service1 = client.wait_success(service1)
+    assert service1.launchConfig.networkMode == 'managed'
+
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": {'io.rancher.service.sidekick': "random"},
+                     "networkMode": "container"}
+    service2 = client. \
+        create_service(name=random_str(),
+                       environmentId=env.id,
+                       launchConfig=launch_config,
+                       networkServiceId=service1.id,
+                       scale=2)
+    service2 = client.wait_success(service2)
+    assert service2.launchConfig.networkMode == 'container'
+
+    service1 = client.wait_success(service1.activate(), 120)
+    service2 = client.wait_success(service2, 120)
+
+    assert service1.state == "active"
+    assert service2.state == "active"
+
+    # 2. validate instances
+    s11_container = _validate_compose_instance_start(client,
+                                                     service1, env, "1")
+    s12_container = _validate_compose_instance_start(client,
+                                                     service1, env, "2")
+    s21_container = _validate_compose_instance_start(client,
+                                                     service2, env, "1")
+    s22_container = _validate_compose_instance_start(client,
+                                                     service2, env, "2")
+
+    assert s21_container.networkContainerId is not None
+    assert s22_container.networkContainerId is not None
+    assert s21_container.networkContainerId != s22_container.networkContainerId
+    assert s21_container.networkContainerId in [s11_container.id,
+                                                s12_container.id]
+    assert s21_container.networkMode == 'container'
+    assert s22_container.networkMode == 'container'
+    assert s11_container.networkMode == 'managed'
+    assert s12_container.networkMode == 'managed'
+
+
 def _wait_compose_instance_start(client, service, env, number, timeout=30):
     start = time.time()
     instances = client. \

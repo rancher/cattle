@@ -23,6 +23,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -156,11 +157,30 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (forDockerCompose) {
                 populateLinksForService(service, servicesToExportIds, composeServiceData);
                 populateVolumesForService(service, servicesToExportIds, composeServiceData);
+                populateNetworkForService(service, servicesToExportIds, composeServiceData);
             }
             
             data.put(service.getName(), composeServiceData);
         }
         return data;
+    }
+
+    private void populateNetworkForService(Service service,
+            Collection<Long> servicesToExportIds, Map<String, Object> composeServiceData) {
+        Object networkMode = composeServiceData.get(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName());
+        if (networkMode != null) {
+            if (networkMode.equals(DockerNetworkConstants.NETWORK_MODE_CONTAINER)) {
+                Integer targetServiceId = DataAccessor
+                        .fieldInteger(service, ServiceDiscoveryConstants.FIELD_NETWORKSERVICE);
+                if (targetServiceId != null && servicesToExportIds.contains(Long.valueOf(targetServiceId))) {
+                    Service targetService = objectManager.loadResource(Service.class, Long.valueOf(targetServiceId));
+                    composeServiceData.put(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName(),
+                            DockerNetworkConstants.NETWORK_MODE_CONTAINER + ":" + targetService.getName());
+                }
+            } else if (networkMode.equals(DockerNetworkConstants.NETWORK_MODE_MANAGED)) {
+                composeServiceData.remove(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName());
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
