@@ -962,28 +962,30 @@ def test_service_rename(client, context):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
 
-    service = client.create_service(name=random_str(),
+    service1 = client.create_service(name=random_str(),
                                     environmentId=env.id,
                                     launchConfig=launch_config,
                                     scale=2)
-    service = client.wait_success(service)
+    service1 = client.wait_success(service1)
 
     # activate service
-    service.activate()
-    service = client.wait_success(service, 120)
-    assert service.state == "active"
+    service1.activate()
+    service1 = client.wait_success(service1, 120)
+    assert service1.state == "active"
 
-    _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "2")
+    _validate_compose_instance_start(client, service1, env, "1")
+    _validate_compose_instance_start(client, service1, env, "2")
 
     # update name and validate that the service name got
-    # updated as well as its instances
+    # updated, all old instances weren't renamed,
+    # and the new instance got created with the new name
     new_name = "newname"
-    service = client.update(service, scale=3, name=new_name)
-    service = client.wait_success(service)
-    assert service.name == new_name
-    _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "2")
+    service2 = client.update(service1, scale=3, name=new_name)
+    service2 = client.wait_success(service2)
+    assert service2.name == new_name
+    _validate_compose_instance_start(client, service1, env, "1")
+    _validate_compose_instance_start(client, service1, env, "2")
+    _validate_compose_instance_start(client, service2, env, "1")
 
 
 def test_env_rename(client, context):
@@ -1018,11 +1020,11 @@ def test_env_rename(client, context):
     _validate_compose_instance_start(client, service_2, env, "1")
 
     # update env name and validate that the
-    # env name got updated as well as all instances
+    # env name got updated, but instances have old names
     new_name = "newname"
-    env = client.update(env, name=new_name)
-    env = client.wait_success(env)
-    assert env.name == new_name
+    env_updated = client.update(env, name=new_name)
+    env_updated = client.wait_success(env_updated)
+    assert env_updated.name == new_name
     _validate_compose_instance_start(client, service_1, env, "1")
     _validate_compose_instance_start(client, service_1, env, "2")
     _validate_compose_instance_start(client, service_2, env, "1")

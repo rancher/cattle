@@ -16,7 +16,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class DnsServiceNicLookup extends AbstractJooqDao implements InstanceNicLookup {
+public class ConsumedServiceNicLookup extends AbstractJooqDao implements InstanceNicLookup {
     @Inject
     ObjectManager objectManager;
 
@@ -31,12 +31,7 @@ public class DnsServiceNicLookup extends AbstractJooqDao implements InstanceNicL
 
         Service service = (Service) obj;
 
-        // hardcoding the value to mvn projects cross reference
-        if (!service.getKind().equalsIgnoreCase("dnsService")) {
-            return null;
-        }
-
-        // get the nics of the instances of the services consuming the DNS service
+        // get the nics of the instances of the services consuming the current service
         return create().
                 select(NIC.fields()).
                 from(NIC)
