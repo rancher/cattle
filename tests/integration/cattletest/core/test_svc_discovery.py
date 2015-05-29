@@ -524,7 +524,7 @@ def test_link_volumes(client, context):
         create_service(name=random_str(),
                        environmentId=env.id,
                        launchConfig=launch_config,
-                       dataVolumesFromService=[service1.id])
+                       dataVolumesFromServiceIds=[service1.id])
 
     service2 = client.wait_success(service2)
     service2 = client.wait_success(service2.activate(), 120)
@@ -557,14 +557,14 @@ def test_volumes_service_links_scale_one(client, context):
         create_service(name=random_str(),
                        environmentId=env.id,
                        launchConfig=launch_config,
-                       dataVolumesFromService=[service1.id])
+                       dataVolumesFromServiceIds=[service1.id])
     service2 = client.wait_success(service2)
 
     service3 = client. \
         create_service(name=random_str(),
                        environmentId=env.id,
                        launchConfig=launch_config,
-                       dataVolumesFromService=[service1.id, service2.id])
+                       dataVolumesFromServiceIds=[service1.id, service2.id])
     service3 = client.wait_success(service3)
 
     service1 = client.wait_success(service1.activate(), 120)
@@ -611,7 +611,7 @@ def test_volumes_service_links_scale_two(client, context):
         create_service(name=random_str(),
                        environmentId=env.id,
                        launchConfig=launch_config,
-                       dataVolumesFromService=[service1.id],
+                       dataVolumesFromServiceIds=[service1.id],
                        scale=2)
     service2 = client.wait_success(service2)
 
@@ -963,9 +963,9 @@ def test_service_rename(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                    environmentId=env.id,
-                                    launchConfig=launch_config,
-                                    scale=2)
+                                     environmentId=env.id,
+                                     launchConfig=launch_config,
+                                     scale=2)
     service1 = client.wait_success(service1)
 
     # activate service
@@ -1414,7 +1414,7 @@ def test_global_service(new_context):
     assert instance1.hosts()[0].id != instance2.hosts()[0].id
 
     # destroy the instance, reactivate the service and check
-    #  both hosts got instances
+    # both hosts got instances
     _instance_remove(instance2, client)
     service = client.wait_success(service.deactivate())
     assert service.state == "inactive"

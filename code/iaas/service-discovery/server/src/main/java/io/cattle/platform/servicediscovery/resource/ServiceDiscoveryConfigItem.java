@@ -28,7 +28,7 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem VOLUMESFROM = new ServiceDiscoveryConfigItem("dataVolumesFrom",
             "volumes_from");
     public static final ServiceDiscoveryConfigItem VOLUMESFROMSERVICE = new ServiceDiscoveryConfigItem(
-            "dataVolumesFromService",
+            "dataVolumesFromServiceIds",
             "volumes_from");
     public static final ServiceDiscoveryConfigItem ENVIRONMENT = new ServiceDiscoveryConfigItem("environment", "environment");
     public static final ServiceDiscoveryConfigItem DNS = new ServiceDiscoveryConfigItem("dns", "dns");
