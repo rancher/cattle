@@ -15,6 +15,7 @@ import io.cattle.platform.object.ObjectManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,6 +69,23 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     @Override
+    public void mergeLabels(Map<String, String> srcMap, Map<String, String> destMap) {
+        if (srcMap == null || destMap == null) {
+            return;
+        }
+        for (Map.Entry<String, String> entry : srcMap.entrySet()) {
+            String destValue = destMap.get(entry.getKey());
+            if (StringUtils.isEmpty(destValue)) {
+                destMap.put(entry.getKey(), entry.getValue());
+            } else if (StringUtils.isEmpty(entry.getValue())) {
+                continue;
+            } else {
+                destMap.put(entry.getKey(), destValue + "," + entry.getValue());
+            }
+        }
+    }
+
+    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<Constraint> extractConstraintsFromEnv(Map env) {
         List<Constraint> constraints = new ArrayList<Constraint>();
@@ -108,37 +126,40 @@ public class AllocatorServiceImpl implements AllocatorService {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<Constraint> extractConstraintsFromLabels(Map labels) {
         List<Constraint> constraints = new ArrayList<Constraint>();
-        if (labels != null) {
-            Set<String> affinityDefinitions = labels.keySet();
-            for (String affinityDef : affinityDefinitions) {
-                if (affinityDef == null) {
-                    continue;
+        if (labels == null) {
+            return constraints;
+        }
+
+        Iterator<Map.Entry> iter = labels.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry affinityDef = iter.next();
+            String key = (String)affinityDef.getKey();
+            String valueStr = (String)affinityDef.getValue();
+
+            String opStr = "";
+            if (key.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL)) {
+                opStr = key.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
+                List<AffinityConstraintDefinition> defs = extractAffinitionConstraintDefinitionFromLabel(opStr, valueStr, true);
+                for (AffinityConstraintDefinition def: defs) {
+                    constraints.add(new ContainerLabelAffinityConstraint(def, allocatorDao));
                 }
 
-                if (affinityDef.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL)) {
-                    affinityDef = affinityDef.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromLabel(affinityDef);
-                    if (def != null && !StringUtils.isEmpty(def.getKey())) {
-                        constraints.add(new ContainerLabelAffinityConstraint(def, allocatorDao));
-                    }
+            } else if (key.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
+                opStr = key.substring(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER.length());
+                List<AffinityConstraintDefinition> defs = extractAffinitionConstraintDefinitionFromLabel(opStr, valueStr, false);
+                for (AffinityConstraintDefinition def: defs) {
+                    constraints.add(new ContainerAffinityConstraint(def, objectManager, instanceDao));
+                }
 
-                } else if (affinityDef.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
-                    affinityDef = affinityDef.substring(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromLabel(affinityDef);
-                    if (def != null && !StringUtils.isEmpty(def.getValue())) {
-                        constraints.add(new ContainerAffinityConstraint(def, objectManager, instanceDao));
-                    }
-
-                } else if (affinityDef.startsWith(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL)) {
-                    affinityDef = affinityDef.substring(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromLabel(affinityDef);
-                    if (def != null && !StringUtils.isEmpty(def.getKey())) {
-                        constraints.add(new HostAffinityConstraint(def, allocatorDao));
-                    }
-
+            } else if (key.startsWith(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL)) {
+                opStr = key.substring(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL.length());
+                List<AffinityConstraintDefinition> defs = extractAffinitionConstraintDefinitionFromLabel(opStr, valueStr, true);
+                for (AffinityConstraintDefinition def: defs) {
+                    constraints.add(new HostAffinityConstraint(def, allocatorDao));
                 }
             }
         }
+
         return constraints;
     }
 
@@ -154,15 +175,36 @@ public class AllocatorServiceImpl implements AllocatorService {
         return null;
     }
 
-    private AffinityConstraintDefinition extractAffinitionConstraintDefinitionFromLabel(String definitionString) {
+    private List<AffinityConstraintDefinition> extractAffinitionConstraintDefinitionFromLabel(String opStr, String valueStr, boolean keyValuePairs) {
+        List<AffinityConstraintDefinition> defs = new ArrayList<AffinityConstraintDefinition>();
+
+        AffinityOps affinityOp = null;
         for (AffinityOps op : AffinityOps.values()) {
-            int i = definitionString.indexOf(op.getLabelSymbol());
-            if (i != -1) {
-                String key = definitionString.substring(0, i);
-                String value = definitionString.substring(i + op.getLabelSymbol().length());
-                return new AffinityConstraintDefinition(op, key, value);
+            if (op.getLabelSymbol().equals(opStr)) {
+                affinityOp = op;
+                break;
             }
         }
-        return null;
+        if (affinityOp == null) {
+            return defs;
+        }
+
+        if (StringUtils.isEmpty(valueStr)) {
+            return defs;
+        }
+
+        String[] values = valueStr.split(",");
+        for (String value : values) {
+            if (StringUtils.isEmpty(value)) {
+                continue;
+            }
+            if (keyValuePairs && value.indexOf('=') != -1) {
+                String[] pair = value.split("=");
+                defs.add(new AffinityConstraintDefinition(affinityOp, pair[0], pair[1]));
+            } else {
+                defs.add(new AffinityConstraintDefinition(affinityOp, null, value));
+            }
+        }
+        return defs;
     }
 }

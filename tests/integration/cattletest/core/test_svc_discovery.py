@@ -1510,8 +1510,8 @@ def test_service_affinity_rules(super_client, new_context):
     launch_config = {
         "imageUuid": image_uuid,
         "labels": {
-            "io.rancher.scheduler.affinity:container_label:" +
-            "io.rancher.service.name{ne}" + service_name: ""
+            "io.rancher.scheduler.affinity:container_label_ne":
+            "io.rancher.service.name=" + service_name
         }
     }
 
@@ -1538,8 +1538,8 @@ def test_service_affinity_rules(super_client, new_context):
     launch_config2 = {
         "imageUuid": image_uuid,
         "labels": {
-            "io.rancher.scheduler.affinity:container_label:" +
-            "io.rancher.service.name{eq~}" + service_name2: ""
+            "io.rancher.scheduler.affinity:container_label_soft":
+            "io.rancher.service.name=" + service_name2
         }
     }
 

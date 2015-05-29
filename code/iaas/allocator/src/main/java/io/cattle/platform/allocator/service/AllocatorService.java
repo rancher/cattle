@@ -7,12 +7,18 @@ import java.util.Map;
 
 public interface AllocatorService {
 
-    public List<Long> getHostsForGlobalService(Long accountId, Map<String, String> labels);
+    List<Long> getHostsForGlobalService(Long accountId, Map<String, String> labels);
+
+    /**
+     * Add labels from 'srcMap' to 'destMap'.  If key already exists in destMap, either
+     * overwrite or merge depending on whether the key is an affinity rule or not
+     */
+    void mergeLabels(Map<String, String> srcMap, Map<String, String> destMap);
 
     @SuppressWarnings("rawtypes")
-    public List<Constraint> extractConstraintsFromEnv(Map env);
+    List<Constraint> extractConstraintsFromEnv(Map env);
 
     @SuppressWarnings("rawtypes")
-    public List<Constraint> extractConstraintsFromLabels(Map labels);
+    List<Constraint> extractConstraintsFromLabels(Map labels);
 
 }

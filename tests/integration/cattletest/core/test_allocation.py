@@ -370,7 +370,7 @@ def test_host_affinity(super_client, new_context):
         containers.append(c)
 
         c = new_context.create_container(
-            labels={'io.rancher.scheduler.constraint:size{eq}huge': ''})
+            labels={'io.rancher.scheduler.affinity:host_label': 'size=huge'})
         assert c.hosts()[0].id == host.id
         containers.append(c)
 
@@ -381,7 +381,8 @@ def test_host_affinity(super_client, new_context):
         containers.append(c)
 
         c = new_context.create_container(
-            labels={'io.rancher.scheduler.constraint:size{ne}huge': ''})
+            labels={'io.rancher.scheduler.affinity:host_label_ne':
+                    'size=huge'})
         assert c.hosts()[0].id == host2.id
         containers.append(c)
 
@@ -397,8 +398,9 @@ def test_host_affinity(super_client, new_context):
 
         c = new_context.create_container(
             labels={
-                'io.rancher.scheduler.constraint:size{eq}huge': '',
-                'io.rancher.scheduler.constraint:latency{ne~}short': ''
+                'io.rancher.scheduler.affinity:host_label': 'size=huge',
+                'io.rancher.scheduler.affinity:host_label_soft_ne':
+                    'latency=short'
             })
         assert c.hosts()[0].id == host.id
         containers.append(c)
@@ -410,7 +412,8 @@ def test_host_affinity(super_client, new_context):
         containers.append(c)
 
         c = new_context.create_container(
-            labels={'io.rancher.scheduler.constraint:latency{ne~}long': ''})
+            labels={'io.rancher.scheduler.affinity:host_label_soft_ne':
+                    'latency=long'})
         assert c.hosts()[0].id == host2.id
         containers.append(c)
     finally:
@@ -437,7 +440,7 @@ def test_container_affinity(new_context):
         assert c2.hosts()[0].id == c1.hosts()[0].id
 
         c3 = new_context.create_container(
-            labels={'io.rancher.scheduler.affinity:container{eq}' + name1: ''})
+            labels={'io.rancher.scheduler.affinity:container': name1})
         containers.append(c3)
 
         # check c3 is on same host as c1
@@ -452,7 +455,7 @@ def test_container_affinity(new_context):
 
         c5 = new_context.create_container(
             labels={
-                'io.rancher.scheduler.affinity:container{eq}' + c1.uuid: ''})
+                'io.rancher.scheduler.affinity:container': c1.uuid})
         containers.append(c5)
 
         # check c5 is on same host as c1
@@ -466,7 +469,7 @@ def test_container_affinity(new_context):
         assert c6.hosts()[0].id != c1.hosts()[0].id
 
         c7 = new_context.create_container(
-            labels={'io.rancher.scheduler.affinity:container{ne}' + name1: ''})
+            labels={'io.rancher.scheduler.affinity:container_ne': name1})
         containers.append(c7)
 
         # check c7 is not on same host as c1
@@ -497,8 +500,8 @@ def test_container_label_affinity(new_context):
 
         c3 = new_context.create_container(
             labels={
-                'io.rancher.scheduler.affinity:container_label:foo{eq}'
-                + c1_label: ''}
+                'io.rancher.scheduler.affinity:container_label':
+                    'foo=' + c1_label}
         )
         containers.append(c3)
 
@@ -532,8 +535,8 @@ def test_container_label_affinity(new_context):
                 'affinity:container_label:foo!=' + c1_label: '',
             },
             labels={
-                'io.rancher.scheduler.affinity:container_label:foo{ne~}'
-                + c4_label: ''
+                'io.rancher.scheduler.affinity:container_label_soft_ne':
+                'foo=' + c4_label
             }
         )
         containers.append(c6)

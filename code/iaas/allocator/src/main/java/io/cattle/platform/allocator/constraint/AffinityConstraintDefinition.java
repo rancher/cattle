@@ -2,10 +2,10 @@ package io.cattle.platform.allocator.constraint;
 
 public class AffinityConstraintDefinition {
     public enum AffinityOps {
-        SOFT_EQ("==~", "{eq~}"),
-        SOFT_NE("!=~", "{ne~}"),
-        EQ("==", "{eq}"),
-        NE("!=", "{ne}");
+        SOFT_NE("!=~", "_soft_ne"),
+        SOFT_EQ("==~", "_soft"),
+        NE("!=", "_ne"),
+        EQ("==", "");
 
         String envSymbol;
         String labelSymbol;
