@@ -35,7 +35,10 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
         // 4. retrieve external service links
         dnsEntries.addAll(dnsInfoDao.getExternalServiceDnsData(instance));
 
-        // 5. aggregate the links based on the source ip address
+        // 5. get dns service links
+        dnsEntries.addAll(dnsInfoDao.getDnsServiceLinks(instance));
+
+        // 6. aggregate the links based on the source ip address
         Map<String, DnsEntryData> processedDnsEntries = new HashMap<>();
         for (DnsEntryData dnsEntry : dnsEntries) {
             Map<String, List<String>> resolve = new HashMap<>();

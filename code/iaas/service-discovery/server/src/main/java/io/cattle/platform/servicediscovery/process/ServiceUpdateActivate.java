@@ -40,6 +40,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         }
 
         deploymentMgr.activate(service, state.getData());
+
         return null;
     }
 }

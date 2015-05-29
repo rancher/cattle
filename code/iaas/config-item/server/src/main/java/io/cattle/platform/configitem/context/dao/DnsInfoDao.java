@@ -13,4 +13,6 @@ public interface DnsInfoDao {
     List<DnsEntryData> getSelfServiceLinks(Instance instance);
 
     List<DnsEntryData> getExternalServiceDnsData(Instance instance);
+
+    List<DnsEntryData> getDnsServiceLinks(Instance instance);
 }

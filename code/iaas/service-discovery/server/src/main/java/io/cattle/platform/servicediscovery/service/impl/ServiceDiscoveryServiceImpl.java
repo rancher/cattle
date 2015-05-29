@@ -354,10 +354,10 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         Map<String, Object> originalData = new HashMap<>();
         originalData.putAll(DataUtils.getFields(service));
         Map<String, Object> data = new HashMap<>();
-        Object launchConfigObj = originalData
+        Object launchConfig = originalData
                 .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
-        if (launchConfigObj != null) {
-            data.putAll((Map<? extends String, ? extends Object>) launchConfigObj);
+        if (launchConfig != null) {
+            data.putAll((Map<? extends String, ? extends Object>) launchConfig);
             originalData.remove(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
         }
 

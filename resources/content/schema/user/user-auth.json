@@ -394,6 +394,12 @@
         "externalService.scale" : "",
         "externalService.healthCheck" : "",
 
+        "dnsService" : "r",
+        "dnsService.launchConfig" : "",
+        "dnsService.dataVolumesFromService" : "",
+        "dnsService.scale" : "",
+        "dnsService.healthCheck" : "",
+
         "end" : ""
     }
 }

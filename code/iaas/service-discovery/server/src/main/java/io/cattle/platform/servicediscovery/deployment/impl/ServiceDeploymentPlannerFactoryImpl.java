@@ -23,7 +23,8 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
         Map<String, String> serviceLabels = context.sdService.getServiceLabels(service);
         String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
 
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
             return new ExternalServiceDeploymentPlanner(services, units, context);
         } else if (globalService != null) {
             return new GlobalServiceDeploymentPlanner(services, units, context);
