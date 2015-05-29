@@ -1442,6 +1442,86 @@ def _wait_compose_instance_start(client, service,
             assert 'Timeout waiting for instance to become running.'
 
 
+def test_service_affinity_rules(super_client, new_context):
+    register_simulated_host(new_context)
+    register_simulated_host(new_context)
+
+    client = new_context.client
+
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = new_context.image_uuid
+    name = random_str()
+    service_name = "service" + name
+
+    # test anti-affinity
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label:" +
+            "io.rancher.service.name{ne}" + service_name: ""
+        }
+    }
+
+    service = client.create_service(name=service_name,
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=3)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    # check that all containers are on different hosts
+    instances = _get_instance_for_service(super_client, service.id)
+
+    assert len(instances) == 3
+    assert instances[0].hosts()[0].id != instances[1].hosts()[0].id
+    assert instances[1].hosts()[0].id != instances[2].hosts()[0].id
+    assert instances[2].hosts()[0].id != instances[0].hosts()[0].id
+
+    # test soft-affinity
+    service_name2 = "service2" + name
+    launch_config2 = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label:" +
+            "io.rancher.service.name{eq~}" + service_name2: ""
+        }
+    }
+
+    service2 = client.create_service(name=service_name2,
+                                     environmentId=env.id,
+                                     launchConfig=launch_config2,
+                                     scale=3)
+    service2 = client.wait_success(service2)
+    assert service2.state == "inactive"
+
+    service2 = service2.activate()
+    service2 = client.wait_success(service2, 120)
+    assert service2.state == "active"
+
+    # check that all containers are on the same host
+    instances = _get_instance_for_service(super_client, service2.id)
+
+    assert len(instances) == 3
+    assert instances[0].hosts()[0].id == instances[1].hosts()[0].id
+    assert instances[1].hosts()[0].id == instances[2].hosts()[0].id
+    assert instances[2].hosts()[0].id == instances[0].hosts()[0].id
+
+
+def _get_instance_for_service(super_client, serviceId):
+    instances = []
+    instance_service_maps = super_client. \
+        list_serviceExposeMap(serviceId=serviceId)
+    for mapping in instance_service_maps:
+        instances.append(mapping.instance())
+    return instances
+
+
 def _create_registry_credential(admin_client):
     registry = _create_registry(admin_client)
     reg_cred = admin_client.create_registry_credential(

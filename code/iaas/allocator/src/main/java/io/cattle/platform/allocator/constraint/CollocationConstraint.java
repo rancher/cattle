@@ -30,9 +30,6 @@ public class CollocationConstraint extends HardConstraint implements Constraint 
             if (maps.size() > 0) {
                 Long hostId = maps.get(0).getHostId();
                 if (hostId == null) {
-                    // dependent instance hasn't been allocated yet.
-                    // TODO: Not sure if this will work, but fail to retry later (hopefully, that instance will
-                    // have been allocated by then).
                     throw new RuntimeException("Dependent instance not allocated yet: " + instanceId);
                 }
                 if (!hostIds.contains(hostId)) {
