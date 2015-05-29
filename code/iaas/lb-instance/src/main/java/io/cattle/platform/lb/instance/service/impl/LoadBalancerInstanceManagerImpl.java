@@ -106,10 +106,14 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                 // currently we respect only labels/volumesFrom/requestedHostId parameters from the launch config
                 if (data.get(InstanceConstants.FIELD_LABELS) != null) {
                     params.put(InstanceConstants.FIELD_LABELS, data.get(InstanceConstants.FIELD_LABELS));
-                } else if (data.get(DockerInstanceConstants.FIELD_VOLUMES_FROM) != null) {
+                }
+
+                if (data.get(DockerInstanceConstants.FIELD_VOLUMES_FROM) != null) {
                         params.put(DockerInstanceConstants.FIELD_VOLUMES_FROM,
                             data.get(DockerInstanceConstants.FIELD_VOLUMES_FROM));
-                } else if (data.get(InstanceConstants.FIELD_REQUESTED_HOST_ID) != null) {
+                }
+
+                if (data.get(InstanceConstants.FIELD_REQUESTED_HOST_ID) != null) {
                     params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID,
                             data.get(InstanceConstants.FIELD_REQUESTED_HOST_ID));
                 }
