@@ -200,6 +200,16 @@ public class DockerTransformerTest {
     }
 
     @Test
+    public void testTransformVolumesEmpty() {
+        Map<String, Object> inspect = new HashMap<String, Object>();
+        Map<String, Object> hostConfig = new HashMap<String, Object>();
+        inspect.put("HostConfig", hostConfig);
+        DockerTransformerImpl transformer = transformer();
+        List<DockerInspectTransformVolume> vols = transformer.transformVolumes(inspect);
+        assertTrue(vols.isEmpty());
+    }
+
+    @Test
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testTransformInternal() {
         DockerTransformerImpl transformer = transformer();

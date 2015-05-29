@@ -49,7 +49,13 @@ public class DockerTransformerImpl implements DockerTransformer {
     public List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect) {
         InspectContainerResponse inspect = transformInspect(fromInspect);
         HostConfig hostConfig = inspect.getHostConfig();
-        VolumeBind[] volumeBinds = inspect.getVolumes();
+        VolumeBind[] volumeBinds = null;
+        try {
+            volumeBinds = inspect.getVolumes();
+        } catch (NullPointerException e) {
+            // A bug in docker-java can cause this.
+            volumeBinds = new VolumeBind[0];
+        }
         Set<String> binds = bindSet(hostConfig.getBinds());
         Map<String, String> rw = rwMap((Map<String, Boolean>)fromInspect.get("VolumesRW"));
         List<DockerInspectTransformVolume> volumes = new ArrayList<DockerInspectTransformVolume>();
