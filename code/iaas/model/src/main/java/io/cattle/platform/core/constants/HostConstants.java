@@ -13,6 +13,7 @@ public class HostConstants {
     public static final String FIELD_LABELS = "labels";
 
     public static final String PROCESS_REMOVE = "host.remove";
+    public static final String PROCESS_CREATE = "host.create";
     public static final String PROCESS_UPDATE = "host.update";
 
 }
