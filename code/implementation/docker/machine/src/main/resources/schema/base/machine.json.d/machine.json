@@ -21,6 +21,10 @@
         "extractedConfig": {
             "type": "string",
             "nullable": true
+        },
+        "labels": {
+            "type": "map[string]",
+            "nullable": true
         }
     }
 }
