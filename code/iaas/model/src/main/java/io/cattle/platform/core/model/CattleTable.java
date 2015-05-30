@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 1533846694;
+	private static final long serialVersionUID = -1398742330;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -53,6 +53,8 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.ExternalHandlerProcessTable.EXTERNAL_HANDLER_PROCESS,
 			io.cattle.platform.core.model.tables.GenericObjectTable.GENERIC_OBJECT,
 			io.cattle.platform.core.model.tables.GlobalLoadBalancerTable.GLOBAL_LOAD_BALANCER,
+			io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE,
+			io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP,
 			io.cattle.platform.core.model.tables.HostTable.HOST,
 			io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP,
 			io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP,
@@ -89,7 +91,6 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL,
 			io.cattle.platform.core.model.tables.ServiceTable.SERVICE,
 			io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP,
-			io.cattle.platform.core.model.tables.ServiceExposeHostMapTable.SERVICE_EXPOSE_HOST_MAP,
 			io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP,
 			io.cattle.platform.core.model.tables.SettingTable.SETTING,
 			io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT,

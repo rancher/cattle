@@ -7,11 +7,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class RancherLoadBalancerConfigToComposeFormatter implements RancherConfigToComposeFormatter {
+public class RancherGenericMapToComposeFormatter implements RancherConfigToComposeFormatter {
 
     @Override
     public Object format(ServiceDiscoveryConfigItem item, Object valueToTransform) {
-        if (!item.getDockerName().equalsIgnoreCase(ServiceDiscoveryConfigItem.LB_CONGFIG.getDockerName())) {
+        if (!(item.getDockerName().equalsIgnoreCase(ServiceDiscoveryConfigItem.LB_CONGFIG.getDockerName()) || item
+                .getDockerName().equals(ServiceDiscoveryConfigItem.HEALTHCHECK.getDockerName()))) {
             return null;
         }
         valueToTransform = lowerCaseParameters(valueToTransform);

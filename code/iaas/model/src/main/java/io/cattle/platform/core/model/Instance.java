@@ -333,6 +333,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "network_container_id", precision = 19)
 	public java.lang.Long getNetworkContainerId();
 
+	/**
+	 * Setter for <code>cattle.instance.health_state</code>.
+	 */
+	public void setHealthState(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.instance.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 128)
+	public java.lang.String getHealthState();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

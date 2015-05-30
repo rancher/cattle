@@ -59,9 +59,14 @@
             <artifactId>cattle-iaas-cluster-logic</artifactId>
             <version>${project.version}</version>
         </dependency>
-            <dependency>
+        <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-service-discovery-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-iaas-healthcheck</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

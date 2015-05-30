@@ -50,6 +50,8 @@
         "container.entryPoint" : "cr",
         "container.environment" : "cr",
         "container.firstRunning" : "r",
+        "container.healthCheck" : "cr",
+        "container.healthState" : "r",
         "container.hostname" : "cr",
         "container.imageUuid" : "cr",
         "container.instanceLinks" : "cr",
@@ -346,7 +348,6 @@
         "service.scale" : "cru",
         "service.dataVolumesFromService" : "cr",
         "service.launchConfig" : "cr",
-        "service.healthCheck" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceId" : "cr",

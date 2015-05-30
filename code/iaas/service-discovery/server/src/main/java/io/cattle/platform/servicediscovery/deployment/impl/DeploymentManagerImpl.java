@@ -113,7 +113,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     needToReconcile = true;
                     break;
                 }
-                if (unit.isHealthy()) {
+                if (unit.isUnhealthy()) {
                     needToReconcile = true;
                     break;
                 }
@@ -185,7 +185,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     protected void cleanupUnhealthyUnits(List<DeploymentUnit> units) {
         for (DeploymentUnit unit : units) {
-            if (unit.isHealthy()) {
+            if (unit.isUnhealthy()) {
                 unit.remove();
             }
         }

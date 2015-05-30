@@ -42,7 +42,7 @@
        <bean class="io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl" />
        <bean class="io.cattle.platform.servicediscovery.service.impl.RancherImageToComposeFormatter" />
        <bean class="io.cattle.platform.servicediscovery.service.impl.RancherRestartToComposeFormatter" />
-       <bean class="io.cattle.platform.servicediscovery.service.impl.RancherLoadBalancerConfigToComposeFormatter" />
+       <bean class="io.cattle.platform.servicediscovery.service.impl.RancherGenericMapToComposeFormatter" />
        <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
        <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnitInstanceFactoryImpl" />
        <bean class="io.cattle.platform.servicediscovery.deployment.impl.ServiceDeploymentPlannerFactoryImpl" />

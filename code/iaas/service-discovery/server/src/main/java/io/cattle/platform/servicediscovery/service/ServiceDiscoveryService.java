@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.service;
 
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceExposeMap;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
@@ -39,7 +38,5 @@ public interface ServiceDiscoveryService {
     List<Long> getServiceNetworkIds(Service service);
 
     List<Integer> getServiceInstanceUsedOrderIds(Service service);
-
-    void registerForHealthCheck(ServiceExposeMap serviceExposeMap);
 
 }

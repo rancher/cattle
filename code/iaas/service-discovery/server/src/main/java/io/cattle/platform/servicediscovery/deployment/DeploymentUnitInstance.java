@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.deployment;
 
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
 import java.util.Map;
@@ -33,13 +32,7 @@ public abstract class DeploymentUnitInstance {
 
     public abstract boolean isStarted();
 
-    public boolean isHealthy() {
-        if (this.exposeMap != null) {
-            return this.exposeMap.getHealthState().equalsIgnoreCase(
-                    ServiceDiscoveryConstants.FIELD_HEALTH_STATE_UNHEALTHY);
-        }
-        return false;
-    }
+    public abstract boolean isUnhealthy();
 
     public String getUuid() {
         return uuid;

@@ -158,19 +158,8 @@ public interface ServiceExposeMap extends java.io.Serializable {
 	public java.lang.Long getAccountId();
 
 	/**
-	 * Setter for <code>cattle.service_expose_map.health_state</code>.
+	 * Setter for <code>cattle.service_expose_map.ip_address</code>.
 	 */
-	public void setHealthState(java.lang.String value);
-
-	/**
-	 * Getter for <code>cattle.service_expose_map.health_state</code>.
-	 */
-	@javax.persistence.Column(name = "health_state", nullable = false, length = 128)
-    public java.lang.String getHealthState();
-
-    /*
-     * Setter for <code>cattle.service_expose_map.ip_address</code>.
-     */
 	public void setIpAddress(java.lang.String value);
 
 	/**
