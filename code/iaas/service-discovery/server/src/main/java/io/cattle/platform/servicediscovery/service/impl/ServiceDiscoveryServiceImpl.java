@@ -9,7 +9,6 @@ import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANC
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.allocator.service.AllocatorService;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -619,7 +618,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, environmentId, SERVICE.REMOVED,
                 null);
     }
-        
+
     protected Long getImage(String imageUuid, Integer registryCredentialId) {
         Image image;
         try {
@@ -636,4 +635,10 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         return image == null ? null : image.getId();
     }
+
+    @Override
+    public List<? extends Service> getActiveGlobalServices(long accountId) {
+        return exposeMapDao.getGlobalServices(accountId);
+    }
+
 }

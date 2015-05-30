@@ -55,4 +55,6 @@ public interface ServiceExposeMapDao {
     ServiceExposeMap createIpToServiceMap(Service service, String ipAddress);
 
     ServiceExposeMap getServiceIpExposeMap(Service service, String ipAddress);
+
+    List<? extends Service> getGlobalServices(long accountId);
 }

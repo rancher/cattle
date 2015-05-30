@@ -36,11 +36,28 @@ public class AllocatorServiceImpl implements AllocatorService {
     ObjectManager objectManager;
 
     @Override
-    public List<Long> getHostsForGlobalService(Long accountId, Map<String, String> labels) {
-        List<Long> acceptableHostIds = new ArrayList<Long>();
-
+    public List<Long> getHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
         List<Host> hosts = objectManager.find(Host.class, HOST.ACCOUNT_ID, accountId, HOST.STATE, CommonStatesConstants.ACTIVE, HOST.REMOVED, null);
-        List<Constraint> constraints = extractConstraintsFromLabels(labels);
+
+        List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
+
+        List<Long> acceptableHostIds = new ArrayList<Long>();
+        for (Host host : hosts) {
+            if (hostSatisfiesHostAffinity(host.getId(), hostAffinityConstraints)) {
+                acceptableHostIds.add(host.getId());
+            }
+        }
+        return acceptableHostIds;
+    }
+
+    @Override
+    public boolean hostSatisfiesHostAffinity(long hostId, Map<String, String> labelConstraints) {
+        List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
+        return hostSatisfiesHostAffinity(hostId, hostAffinityConstraints);
+    }
+
+    private List<Constraint> getHostAffinityConstraintsFromLabels(Map<String, String> labelConstraints) {
+        List<Constraint> constraints = extractConstraintsFromLabels(labelConstraints);
 
         List<Constraint> hostConstraints = new ArrayList<Constraint>();
         for (Constraint constraint : constraints) {
@@ -48,24 +65,20 @@ public class AllocatorServiceImpl implements AllocatorService {
                 hostConstraints.add(constraint);
             }
         }
+        return hostConstraints;
+    }
 
-        for (Host host : hosts) {
-            boolean acceptable = true;
-            for (Constraint constraint: hostConstraints) {
-                AllocationCandidate candidate = new AllocationCandidate();
-                Set<Long> hostIds = new HashSet<Long>();
-                hostIds.add(host.getId());
-                candidate.setHosts(hostIds);
-                if (!constraint.matches(null, candidate)) {
-                    acceptable = false;
-                    break;
-                }
-            }
-            if (acceptable) {
-                acceptableHostIds.add(host.getId());
+    private boolean hostSatisfiesHostAffinity(long hostId, List<Constraint> hostAffinityConstraints) {
+        for (Constraint constraint: hostAffinityConstraints) {
+            AllocationCandidate candidate = new AllocationCandidate();
+            Set<Long> hostIds = new HashSet<Long>();
+            hostIds.add(hostId);
+            candidate.setHosts(hostIds);
+            if (!constraint.matches(null, candidate)) {
+                return false;
             }
         }
-        return acceptableHostIds;
+        return true;
     }
 
     @Override

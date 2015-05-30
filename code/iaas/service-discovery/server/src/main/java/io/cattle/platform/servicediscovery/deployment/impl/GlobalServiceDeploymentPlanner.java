@@ -17,12 +17,15 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
     public GlobalServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units, DeploymentServiceContext context) {
         super(services, units, context);
-        Map<String, String> globalLabels = new HashMap<>();
-        globalLabels.put(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL, null);
-        this.hostIds = context.allocatorService.getHostsForGlobalService(services.get(0).getAccountId(), globalLabels);
+        // TODO: Do we really need to iterate or is there just one service that we're dealing with here?
+        for (Service service : services) {
+            List<Long> hostIdsToDeployService =
+                    context.allocatorService.getHostsSatisfyingHostAffinity(service.getAccountId(), context.sdService.getServiceLabels(service));
+            hostIds.addAll(hostIdsToDeployService);
+        }
         for (DeploymentUnit unit : units) {
-            Map<String, String> unitLables = unit.getLabels();
-            String hostId = unitLables.get(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+            Map<String, String> unitLabels = unit.getLabels();
+            String hostId = unitLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
             hostToUnits.put(Long.valueOf(hostId), unit);
         }
     }

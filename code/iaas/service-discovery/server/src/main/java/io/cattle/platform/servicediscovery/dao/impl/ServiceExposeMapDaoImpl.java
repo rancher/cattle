@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.dao.impl;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Environment;
@@ -10,6 +11,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord;
+import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -194,4 +196,14 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 SERVICE_EXPOSE_MAP.REMOVED, null);
     }
 
+    @Override
+    public List<? extends Service> getGlobalServices(long accountId) {
+        return create()
+                .select(SERVICE.fields())
+                .from(SERVICE)
+                .where(SERVICE.ACCOUNT_ID.eq(accountId))
+                .and(SERVICE.REMOVED.isNull())
+                .and(SERVICE.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, CommonStatesConstants.UPDATING_ACTIVE))
+                .fetchInto(ServiceRecord.class);
+    }
 }
