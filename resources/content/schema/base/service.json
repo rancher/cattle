@@ -17,7 +17,7 @@
         "networkId":{
             "type": "reference[network]"
         },
-        "dataVolumesFromService": {
+        "dataVolumesFromServiceIds": {
             "type" : "array[reference[service]]",
             "nullable" : true
         },
