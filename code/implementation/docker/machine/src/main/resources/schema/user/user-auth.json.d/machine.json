@@ -5,6 +5,7 @@
         "machine.driver" : "r",
         "machine.authCertificateAuthority" : "r",
         "machine.authKey" : "r",
+        "machine.labels": "r",
         "machine.extractedConfig" : "",
         
         "end" : ""

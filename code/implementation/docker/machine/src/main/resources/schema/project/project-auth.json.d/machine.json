@@ -6,6 +6,7 @@
         "machine.authCertificateAuthority" : "cr",
         "machine.authKey" : "cr",
         "machine.extractedConfig" : "",
+        "machine.labels": "cr",
         
         "end" : ""
     }
