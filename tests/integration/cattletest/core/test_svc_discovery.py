@@ -963,9 +963,9 @@ def test_service_rename(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                    environmentId=env.id,
-                                    launchConfig=launch_config,
-                                    scale=2)
+                                     environmentId=env.id,
+                                     launchConfig=launch_config,
+                                     scale=2)
     service1 = client.wait_success(service1)
 
     # activate service

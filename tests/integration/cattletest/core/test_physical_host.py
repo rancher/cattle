@@ -33,14 +33,8 @@ def test_register_physical_host(super_client):
     agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
+    wait_for(lambda: len(agent.hosts()) == 1)
     hosts = agent.hosts()
-
-    for _ in range(10):
-        hosts = agent.hosts()
-        if len(hosts) == 0:
-            time.sleep(0.5)
-        else:
-            break
 
     assert len(hosts) == 1
     host = hosts[0]
@@ -73,14 +67,8 @@ def test_register_multiple_physical_host(super_client):
     agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
+    wait_for(lambda: len(agent.hosts()) == 2)
     hosts = agent.hosts()
-
-    for _ in range(10):
-        hosts = agent.hosts()
-        if len(hosts) == 0:
-            time.sleep(0.5)
-        else:
-            break
 
     assert len(hosts) == 2
     host1 = hosts[0]
@@ -119,14 +107,8 @@ def test_add_physical_host(super_client):
     agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
+    wait_for(lambda: len(agent.hosts()) == 1)
     hosts = agent.hosts()
-
-    for _ in range(10):
-        hosts = agent.hosts()
-        if len(hosts) == 0:
-            time.sleep(0.5)
-        else:
-            break
 
     assert len(hosts) == 1
     host1 = hosts[0]
