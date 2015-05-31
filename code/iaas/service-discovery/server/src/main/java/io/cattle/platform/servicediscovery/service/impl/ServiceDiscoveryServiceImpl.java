@@ -8,6 +8,8 @@ import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOA
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -89,6 +91,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     StorageService storageService;
+
+    @Inject
+    AllocatorService allocatorService;
 
     @Override
     public SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services) {
@@ -300,7 +305,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 Object dataObj = serviceData.get(key);
                 if (launchConfigItems.get(key) != null) {
                     if (dataObj instanceof Map) {
-                        ((Map<Object, Object>) dataObj).putAll((Map<Object, Object>) launchConfigItems.get(key));
+                        // unfortunately, need to make an except for labels due to the merging aspect of the values
+                        if (item == ServiceDiscoveryConfigItem.LABELS) {
+                            allocatorService.mergeLabels((Map<String, String>)launchConfigItems.get(key), (Map<String, String>)dataObj);
+                        } else {
+                            ((Map<Object, Object>) dataObj).putAll((Map<Object, Object>) launchConfigItems.get(key));
+                        }
                     } else if (dataObj instanceof List) {
                         ((List<Object>) dataObj).addAll((List<Object>) launchConfigItems.get(key));
                     }

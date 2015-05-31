@@ -10,7 +10,7 @@ import java.util.Set;
 
 public class HostAffinityConstraint implements Constraint {
     public static final String ENV_HEADER_AFFINITY_HOST_LABEL = "constraint:";
-    public static final String LABEL_HEADER_AFFINITY_HOST_LABEL = "io.rancher.scheduler." + ENV_HEADER_AFFINITY_HOST_LABEL;
+    public static final String LABEL_HEADER_AFFINITY_HOST_LABEL = "io.rancher.scheduler.affinity:host_label";
 
     AllocatorDao allocatorDao;
 

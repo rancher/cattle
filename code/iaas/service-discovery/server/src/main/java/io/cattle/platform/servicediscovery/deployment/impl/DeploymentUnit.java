@@ -205,11 +205,9 @@ public class DeploymentUnit {
         /*
          * Put affinity constraint on every instance to let allocator know that they should go to the same host
          */
-        labels.put(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL
-                + ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT + AffinityOps.SOFT_EQ.getLabelSymbol()
-                + this.uuid,
-                null);
-
+        // TODO: Might change labels into a Multimap or add a service function to handle merging
+        String containerLabelSoftAffinityKey = ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL + AffinityOps.SOFT_EQ.getLabelSymbol();
+        labels.put(containerLabelSoftAffinityKey, ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT + "=" + this.uuid);
         labels.putAll(this.unitLabels);
 
         return labels;

@@ -11,7 +11,7 @@ import com.google.common.collect.Multimap;
 
 public class ContainerLabelAffinityConstraint implements Constraint {
     public static final String ENV_HEADER_AFFINITY_CONTAINER_LABEL = "affinity:container_label:";
-    public static final String LABEL_HEADER_AFFINITY_CONTAINER_LABEL = "io.rancher.scheduler." + ENV_HEADER_AFFINITY_CONTAINER_LABEL;
+    public static final String LABEL_HEADER_AFFINITY_CONTAINER_LABEL = "io.rancher.scheduler.affinity:container_label";
 
     AllocatorDao allocatorDao;
 
