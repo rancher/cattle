@@ -284,7 +284,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> buildServiceInstanceLaunchData(Service service, Map<String, Object> deployParams) {
-        Map<String, Object> serviceData = getServiceDataAsMap(service);
+        Map<String, Object> serviceData = getLaunchConfigDataAsMap(service);
         Map<String, Object> launchConfigItems = new HashMap<>();
 
         // 1. put all parameters retrieved through deployParams
@@ -294,24 +294,22 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         // 2. Get parameters defined on the service level (merge them with the ones defined in
         for (String key : serviceData.keySet()) {
-            ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(key);
-            if (item != null && item.isLaunchConfigItem()) {
-                Object dataObj = serviceData.get(key);
-                if (launchConfigItems.get(key) != null) {
-                    if (dataObj instanceof Map) {
-                        // unfortunately, need to make an except for labels due to the merging aspect of the values
-                        if (item == ServiceDiscoveryConfigItem.LABELS) {
-                            allocatorService.mergeLabels((Map<String, String>)launchConfigItems.get(key), (Map<String, String>)dataObj);
-                        } else {
-                            ((Map<Object, Object>) dataObj).putAll((Map<Object, Object>) launchConfigItems.get(key));
-                        }
-                    } else if (dataObj instanceof List) {
-                        ((List<Object>) dataObj).addAll((List<Object>) launchConfigItems.get(key));
+            Object dataObj = serviceData.get(key);
+            if (launchConfigItems.get(key) != null) {
+                if (dataObj instanceof Map) {
+                    // unfortunately, need to make an except for labels due to the merging aspect of the values
+                    if (key.equalsIgnoreCase(InstanceConstants.FIELD_LABELS)) {
+                        allocatorService.mergeLabels((Map<String, String>) launchConfigItems.get(key),
+                                (Map<String, String>) dataObj);
+                    } else {
+                        ((Map<Object, Object>) dataObj).putAll((Map<Object, Object>) launchConfigItems.get(key));
                     }
+                } else if (dataObj instanceof List) {
+                    ((List<Object>) dataObj).addAll((List<Object>) launchConfigItems.get(key));
                 }
-
-                launchConfigItems.put(key, dataObj);
             }
+
+            launchConfigItems.put(key, dataObj);
         }
 
         // 3. add extra parameters
@@ -329,7 +327,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, String> getServiceLabels(Service service) {
-        Map<String, Object> data = getServiceDataAsMap(service);
+        Map<String, Object> data = getLaunchConfigDataAsMap(service);
         Object labels = data.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
         Map<String, String> labelsStr = new HashMap<>();
         if (labels != null) {
@@ -360,6 +358,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         data.putAll(originalData);
         return data;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getLaunchConfigDataAsMap(Service service) {
+        return (Map<String, Object>) DataAccessor.fields(service)
+                .withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                .as(Map.class);
     }
 
     @Override
