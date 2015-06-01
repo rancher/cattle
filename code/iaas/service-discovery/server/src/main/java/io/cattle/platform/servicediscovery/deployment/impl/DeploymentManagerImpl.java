@@ -21,6 +21,8 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFactory;
@@ -255,10 +257,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     @Override
     public void activateGlobalServicesForHost(long accountId, long hostId) {
-        List<? extends Service> services = expMapDao.getGlobalServices(accountId);
+        List<? extends Service> services = expMapDao.getActiveServices(accountId);
         for (Service service: services) {
             Map<String, String> serviceLabels = sdSvc.getServiceLabels(service);
-            if (allocatorSvc.hostSatisfiesHostAffinity(hostId, serviceLabels)) {
+            if (serviceLabels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL) &&
+                    allocatorSvc.hostSatisfiesHostAffinity(hostId, serviceLabels)) {
                 activate(service);
             }
         }
