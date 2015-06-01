@@ -1,0 +1,27 @@
+{
+  "collectionMethods": [
+    "GET",
+    "POST"
+  ],
+  "resourceMethods": [
+    "GET"
+  ],
+  "resourceFields": {
+    "id": {
+    },
+    "externalTimestamp": {
+      "required": true,
+      "nullable": false,
+      "create": true
+    },
+    "hostId": {
+      "create": true
+    },
+    "healthcheckUuid": {
+      "create": true
+    },
+    "reportedHealth": {
+      "create": true
+    }
+  }
+}

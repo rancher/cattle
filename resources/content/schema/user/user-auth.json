@@ -401,6 +401,13 @@
         "dnsService.scale" : "",
         "dnsService.healthCheck" : "",
 
+        "serviceEvent" : "r",
+        "serviceEvent.instanceId" : "r",
+        "serviceEvent.externalTimestamp" : "r",
+        "serviceEvent.hostId" : "r",
+        "serviceEvent.healthcheckUuid" : "r",
+        "serviceEvent.reportedHealth" : "r",
+
         "end" : ""
     }
 }

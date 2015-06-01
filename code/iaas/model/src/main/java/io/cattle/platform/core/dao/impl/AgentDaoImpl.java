@@ -4,6 +4,8 @@ import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,8 +38,6 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
 
     @Override
     public Map<String, Host> getHosts(long agentId) {
-        Map<String,Host> hosts = new HashMap<>();
-
         List<? extends Host> hostList = create()
                 .select(HOST.fields())
                 .from(HOST)
@@ -45,6 +45,12 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
                         HOST.AGENT_ID.eq(agentId)
                         .and(HOST.REMOVED.isNull()))
                         .fetchInto(HostRecord.class);
+
+        return groupByReportedUUid(hostList);
+    }
+
+    public Map<String, Host> groupByReportedUUid(List<? extends Host> hostList) {
+        Map<String,Host> hosts = new HashMap<>();
 
         for ( Host host : hostList ) {
             String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
@@ -56,6 +62,23 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
         }
 
         return hosts;
+    }
+
+    @Override
+    public Map<String, Host> getHostsForDelegate(long agentId) {
+        List<? extends Host> hostList = create()
+                .select(HOST.fields())
+                .from(HOST)
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                .join(INSTANCE)
+                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(
+                        INSTANCE.AGENT_ID.eq(agentId)
+                                .and(HOST.REMOVED.isNull()))
+                .fetchInto(HostRecord.class);
+
+        return groupByReportedUUid(hostList);
     }
 
     @Override

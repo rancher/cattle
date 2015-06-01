@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HealthcheckInstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord> {
 
-	private static final long serialVersionUID = -1979433718;
+	private static final long serialVersionUID = -840925307;
 
 	/**
 	 * The singleton instance of <code>cattle.healthcheck_instance</code>
@@ -137,7 +137,7 @@ public class HealthcheckInstanceTable extends org.jooq.impl.TableImpl<io.cattle.
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE__ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE__INSTANCE_ID);
 	}
 
 	/**

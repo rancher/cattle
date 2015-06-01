@@ -6,7 +6,7 @@ import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPostListener;
+import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class InstanceHealtcheckRegister extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
+public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
     @Inject
     JsonMapper jsonMapper;
 

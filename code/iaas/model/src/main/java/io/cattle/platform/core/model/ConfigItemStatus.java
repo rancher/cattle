@@ -105,17 +105,6 @@ public interface ConfigItemStatus extends java.io.Serializable {
 	public java.lang.Long getAgentId();
 
 	/**
-	 * Setter for <code>cattle.config_item_status.service_id</code>.
-	 */
-	public void setServiceId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.config_item_status.service_id</code>.
-	 */
-	@javax.persistence.Column(name = "service_id", precision = 19)
-	public java.lang.Long getServiceId();
-
-	/**
 	 * Setter for <code>cattle.config_item_status.account_id</code>.
 	 */
 	public void setAccountId(java.lang.Long value);
@@ -125,6 +114,17 @@ public interface ConfigItemStatus extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "account_id", precision = 19)
 	public java.lang.Long getAccountId();
+
+	/**
+	 * Setter for <code>cattle.config_item_status.service_id</code>.
+	 */
+	public void setServiceId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.config_item_status.service_id</code>.
+	 */
+	@javax.persistence.Column(name = "service_id", precision = 19)
+	public java.lang.Long getServiceId();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

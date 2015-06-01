@@ -2,11 +2,17 @@ package io.cattle.platform.servicediscovery.deployment.impl;
 
 import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.configitem.events.ConfigUpdate;
+import io.cattle.platform.configitem.model.Client;
+import io.cattle.platform.configitem.model.ItemVersion;
+import io.cattle.platform.configitem.request.ConfigUpdateRequest;
+import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -15,7 +21,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFactory;
@@ -29,10 +34,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 public class DeploymentManagerImpl implements DeploymentManager {
+
+    private static final String RECONCILE = "reconcile";
+
     @Inject
     LockManager lockManager;
     @Inject
@@ -52,13 +59,13 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Inject
     ServiceExposeMapDao expMapDao;
     @Inject
-    GenericMapDao mpDao;
-    @Inject
-    ServiceConsumeMapDao consumeMapDao;
-    @Inject
     ServiceDeploymentPlannerFactory deploymentPlannerFactory;
     @Inject
     AllocatorService allocatorSvc;
+    @Inject
+    ConfigItemStatusManager itemManager;
+    @Inject
+    EventService eventService;
 
     @Override
     public void activate(final Service service) {
@@ -255,6 +262,36 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 activate(service);
             }
         }
+    }
+
+    public void reconcileServicesFor(Object obj) {
+        for (Service service : sdSvc.getServicesFor(obj)) {
+            ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Service.class, service.getId());
+            request.addItem("reconcile");
+
+            itemManager.updateConfig(request);
+        }
+    }
+
+    @Override
+    public void serviceUpdate(ConfigUpdate update) {
+        final Client client = new Client(Service.class, new Long(update.getResourceId()));
+        reconcileForClient(update, client, new Runnable() {
+            @Override
+            public void run() {
+                Service service = objectMgr.loadResource(Service.class, client.getResourceId());
+                if (service != null) {
+                    activate(service);
+                }
+            }
+        });
+    }
+
+    protected void reconcileForClient(ConfigUpdate update, Client client, Runnable run) {
+        ItemVersion itemVersion = itemManager.getRequestedVersion(client, RECONCILE);
+        run.run();
+        itemManager.setApplied(client, RECONCILE, itemVersion);
+        eventService.publish(EventVO.reply(update));
     }
 
     public final class DeploymentServiceContext {

@@ -41,7 +41,7 @@ public class ContainerEventFilter extends AbstractDefaultResourceManagerFilter {
         ContainerEvent event = request.proxyRequestObject(ContainerEvent.class);
 
         Policy policy = ApiUtils.getPolicy();
-        Agent agent = objectManager.findOne(Agent.class, AGENT.ACCOUNT_ID, policy.getAccountId());
+        Agent agent = objectManager.loadResource(Agent.class, policy.getOption(Policy.AGENT_ID));
 
         if ( agent == null ) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);

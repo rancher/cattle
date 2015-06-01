@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.server.impl;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.registry.ConfigItemRegistry;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
@@ -19,7 +20,11 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicStringListProperty;
+
 public class ConfigItemServerImpl implements ConfigItemServer, InitializationTask {
+
+    private static final DynamicStringListProperty PRELOAD = ArchaiusUtil.getList("config.item.name.preload");
 
     private static final Logger log = LoggerFactory.getLogger(ConfigItemServerImpl.class);
 
@@ -124,6 +129,10 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
                         }
                     }
                     versionManager.setItemSourceVersion(item.getName(), item.getSourceRevision());
+                }
+
+                for (String item : PRELOAD.get()) {
+                    versionManager.setItemSourceVersion(item, "");
                 }
             }
         });
