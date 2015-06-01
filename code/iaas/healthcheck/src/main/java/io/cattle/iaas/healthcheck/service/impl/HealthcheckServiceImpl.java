@@ -202,7 +202,9 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         // 4) place inferiorHostId to the end of the list
         if (inferiorHostId != null) {
             availableHostIds.remove(inferiorHostId);
-            availableHostIds.add(inferiorHostId);
+            if (availableHostIds.isEmpty()) {
+                availableHostIds.add(inferiorHostId);
+            }
         }
 
         // 5) Figure out the final number of hosts
