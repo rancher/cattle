@@ -2,14 +2,14 @@ package io.cattle.platform.servicediscovery.deployment;
 
 import io.cattle.platform.core.model.Service;
 
-import java.util.Map;
-
 public interface DeploymentManager {
 
-    void activate(Service service, Map<String, Object> data);
+    void activate(Service service);
 
     void deactivate(Service service);
 
     void remove(Service service);
+
+    void activateGlobalServicesForHost(long accountId, long hostId);
 
 }

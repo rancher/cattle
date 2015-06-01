@@ -61,7 +61,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     AllocatorService allocatorSvc;
 
     @Override
-    public void activate(final Service service, final Map<String, Object> data) {
+    public void activate(final Service service) {
         if (service == null) {
             return;
         }
@@ -244,6 +244,17 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 sdSvc.removeServiceMaps(service);
             }
         });
+    }
+
+    @Override
+    public void activateGlobalServicesForHost(long accountId, long hostId) {
+        List<? extends Service> services = expMapDao.getGlobalServices(accountId);
+        for (Service service: services) {
+            Map<String, String> serviceLabels = sdSvc.getServiceLabels(service);
+            if (allocatorSvc.hostSatisfiesHostAffinity(hostId, serviceLabels)) {
+                activate(service);
+            }
+        }
     }
 
     public final class DeploymentServiceContext {

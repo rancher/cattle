@@ -53,7 +53,7 @@ public class ServiceDiscoveryConstants {
     public static final String LABEL_SERVICE_SIDEKICK = "io.rancher.service.sidekick";
     public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
     public static final String LABEL_ENVIRONMENT_NAME = "io.rancher.environment.name";
-    public static final String LABEL_SERVICE_GLOBAL = "io.rancher.service.global";
+    public static final String LABEL_SERVICE_GLOBAL = "io.rancher.scheduler.global";
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
 
 }

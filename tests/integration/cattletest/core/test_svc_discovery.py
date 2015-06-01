@@ -1382,17 +1382,21 @@ def test_global_service(new_context):
     host2 = register_simulated_host(new_context)
 
     # add labels to the hosts
-    labels = {'io.rancher.service.global': 'random'}
+    labels = {'group': 'web'}
     host1 = client.update(host1, labels=labels)
-    host2 = client.update(host2, labels=labels)
 
     # create environment and services
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
     image_uuid = new_context.image_uuid
-    launch_config = {"imageUuid": image_uuid,
-                     "labels": {'io.rancher.service.global': "random"}}
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            'io.rancher.scheduler.global': 'true',
+            'io.rancher.scheduler.affinity:host_label': 'group=web'
+        }
+    }
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
                                     launchConfig=launch_config)
@@ -1403,19 +1407,35 @@ def test_global_service(new_context):
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
 
-    # 2. verify that the instance was started on each host
+    # 2. verify that the instance was started on host1
     instance1 = _validate_compose_instance_start(client,
                                                  service, env, "1")
+    instance1_host = instance1.hosts()[0].id
+    assert instance1_host == host1.id
+
+    # verify 2nd instance isn't running
+    assert len(client.list_container(
+        name=env.name + "_" + service.name + "_2")) == 0
+
+    # update host2 with label group=web
+    host2 = client.update(host2, labels=labels)
+
+    # wait for 2nd instance to start up
+    wait_for(
+        lambda: len(client.list_container(
+            name=env.name + "_" + service.name + "_2",
+            state="running")) > 0
+    )
     instance2 = _validate_compose_instance_start(client,
                                                  service, env, "2")
 
-    instance1_host = instance1.hosts()[0].id
-    assert instance1_host == host1.id or instance1_host == host2.id
-    assert instance1.hosts()[0].id != instance2.hosts()[0].id
+    # confirm 2nd instance is on host2
+    instance2_host = instance2.hosts()[0].id
+    assert instance2_host == host2.id
 
     # destroy the instance, reactivate the service and check
     #  both hosts got instances
-    _instance_remove(instance2, client)
+    _instance_remove(instance1, client)
     service = client.wait_success(service.deactivate())
     assert service.state == "inactive"
     service = client.wait_success(service.activate())
