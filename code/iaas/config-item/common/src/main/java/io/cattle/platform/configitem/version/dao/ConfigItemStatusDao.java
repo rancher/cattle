@@ -26,6 +26,6 @@ public interface ConfigItemStatusDao {
 
     ItemVersion getRequestedItemVersion(Client client, String itemName);
 
-    Map<Long, List<String>> findOutOfSync(boolean migration);
+    Map<Client, List<String>> findOutOfSync(boolean migration);
 
 }

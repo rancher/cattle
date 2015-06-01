@@ -9,7 +9,6 @@ import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.exception.ConfigTimeoutException;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.ItemVersion;
-import io.cattle.platform.configitem.model.impl.DefaultClient;
 import io.cattle.platform.configitem.request.ConfigUpdateItem;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
@@ -19,6 +18,7 @@ import io.cattle.platform.core.model.ConfigItemStatus;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventProgress;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.RetryCallback;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -54,10 +53,20 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigItemStatusManagerImpl.class);
 
+    @Inject
     ConfigItemStatusDao configItemStatusDao;
+
+    @Inject
     ObjectManager objectManager;
+
+    @Inject
     AgentLocator agentLocator;
+
+    @Inject
     ScopedConfig scopedConfig;
+
+    @Inject
+    EventService eventService;
 
     protected Map<String, ConfigItemStatus> getStatus(ConfigUpdateRequest request) {
         Map<String, ConfigItemStatus> statuses = new HashMap<String, ConfigItemStatus>();
@@ -75,7 +84,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             throw new IllegalArgumentException("Client is null on request [" + request + "]");
         }
 
-        Client client = new DefaultClient(Agent.class, request.getAgentId());
+        Client client = request.getClient();
         Map<String, ConfigItemStatus> statuses = getStatus(request);
         List<ConfigUpdateItem> toTrigger = new ArrayList<ConfigUpdateItem>();
 
@@ -117,11 +126,10 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             return;
         }
 
-        final RemoteAgent agent = agentLocator.lookupAgent(request.getAgentId());
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                request.setUpdateFuture(agent.call(event, defaultOptions(request)));
+                request.setUpdateFuture(call(request.getClient(), event, defaultOptions(request)));
             }
         };
 
@@ -154,15 +162,16 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     }
 
     protected ConfigUpdate getEvent(ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
-        String url = scopedConfig.getConfigUrl(Agent.class, request.getAgentId());
+        Client client = request.getClient();
+        String url = scopedConfig.getConfigUrl(client.getResourceType(), client.getResourceId());
 
         if (items.size() == 0) {
-            return new ConfigUpdate(url, Collections.<ConfigUpdateItem> emptyList());
+            return new ConfigUpdate(client.getEventName(), url, Collections.<ConfigUpdateItem> emptyList());
         }
 
-        ConfigUpdate event = new ConfigUpdate(url, items);
+        ConfigUpdate event = new ConfigUpdate(client.getEventName(), url, items);
 
-        event.withResourceType(objectManager.getType(Agent.class)).withResourceId(Long.toString(request.getAgentId()));
+        event.withResourceType(objectManager.getType(client.getResourceType())).withResourceId(Long.toString(client.getResourceId()));
 
         return event;
     }
@@ -180,11 +189,9 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             return AsyncUtils.done();
         }
 
-        RemoteAgent agent = agentLocator.lookupAgent(request.getAgentId());
-
         ListenableFuture<? extends Event> future = request.getUpdateFuture();
         if (future == null) {
-            future = agent.call(event, defaultOptions(request));
+            future = call(request.getClient(), event, defaultOptions(request));
         }
 
         return Futures.transform(future, new Function<Event, Object>() {
@@ -202,7 +209,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     }
 
     protected List<ConfigUpdateItem> getNeedsUpdating(ConfigUpdateRequest request, boolean checkVersions) {
-        Client client = new DefaultClient(Agent.class, request.getAgentId());
+        Client client = request.getClient();
         Map<String, ConfigItemStatus> statuses = getStatus(request);
         List<ConfigUpdateItem> toTrigger = new ArrayList<ConfigUpdateItem>();
 
@@ -242,29 +249,35 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         AsyncUtils.get(whenReady(request));
     }
 
+    protected ListenableFuture<? extends Event> call(Client client, Event event, EventCallOptions options) {
+        if (client.getResourceType() == Agent.class) {
+            RemoteAgent agent = agentLocator.lookupAgent(client.getResourceId());
+            return agent.call(event, options);
+        }
+
+        return eventService.call(event, options);
+    }
+
     @Override
     public void sync(final boolean migration) {
-        Map<Long, List<String>> items = configItemStatusDao.findOutOfSync(migration);
+        Map<Client, List<String>> items = configItemStatusDao.findOutOfSync(migration);
 
         boolean first = true;
-        for (final Map.Entry<Long, List<String>> entry : items.entrySet()) {
-            final Long agentId = entry.getKey();
-
-            final ConfigUpdateRequest request = new ConfigUpdateRequest(agentId).withMigration(migration);
+        for (final Map.Entry<Client, List<String>> entry : items.entrySet()) {
+            final Client client = entry.getKey();
+            final ConfigUpdateRequest request = new ConfigUpdateRequest(client).withMigration(migration);
 
             for (String item : entry.getValue()) {
                 request.addItem(item).withApply(false).withIncrement(false).withCheckInSyncOnly(true);
             }
 
-            RemoteAgent agent = agentLocator.lookupAgent(agentId);
-
-            log.info("Requesting {} of item(s) {} on agent [{}]", migration ? "migration" : "update", entry.getValue(), agentId);
+            log.info("Requesting {} of item(s) {} on [{}]", migration ? "migration" : "update", entry.getValue(), client);
 
             if (first && migration && BLOCK.get()) {
                 waitFor(request);
             } else {
                 Event event = getEvent(request);
-                ListenableFuture<? extends Event> future = agent.call(event, defaultOptions(request).withRetry(0));
+                ListenableFuture<? extends Event> future = call(client, event, defaultOptions(request).withRetry(0));
                 Futures.addCallback(future, new FutureCallback<Event>() {
                     @Override
                     public void onSuccess(Event result) {
@@ -274,9 +287,9 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
                     @Override
                     public void onFailure(Throwable t) {
                         if (t instanceof TimeoutException) {
-                            log.info("Timeout {} item(s) {} on agent [{}]", migration ? "migrating" : "updating", entry.getValue(), agentId);
+                            log.info("Timeout {} item(s) {} on [{}]", migration ? "migrating" : "updating", entry.getValue(), client);
                         } else {
-                            log.error("Error {} item(s) {} on agent [{}]", migration ? "migrating" : "updating", entry.getValue(), agentId, t);
+                            log.error("Error {} item(s) {} on [{}]", migration ? "migrating" : "updating", entry.getValue(), client, t);
                         }
                     }
                 });
@@ -333,42 +346,6 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     @Override
     public ItemVersion getRequestedVersion(Client client, String itemName) {
         return configItemStatusDao.getRequestedItemVersion(client, itemName);
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public ConfigItemStatusDao getConfigItemStatusDao() {
-        return configItemStatusDao;
-    }
-
-    @Inject
-    public void setConfigItemStatusDao(ConfigItemStatusDao configItemStatusDao) {
-        this.configItemStatusDao = configItemStatusDao;
-    }
-
-    public AgentLocator getAgentLocator() {
-        return agentLocator;
-    }
-
-    @Inject
-    public void setAgentLocator(AgentLocator agentLocator) {
-        this.agentLocator = agentLocator;
-    }
-
-    public ScopedConfig getScopedConfig() {
-        return scopedConfig;
-    }
-
-    @Inject
-    public void setScopedConfig(ScopedConfig scopedConfig) {
-        this.scopedConfig = scopedConfig;
     }
 
 }

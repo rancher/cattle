@@ -12,9 +12,11 @@ import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItem;
 import io.cattle.platform.core.model.ConfigItemStatus;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
@@ -32,6 +34,7 @@ import javax.inject.Inject;
 
 import org.jooq.Condition;
 import org.jooq.Record2;
+import org.jooq.TableField;
 import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +90,7 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
             create()
                 .insertInto(CONFIG_ITEM_STATUS,
                         CONFIG_ITEM_STATUS.NAME,
-                        CONFIG_ITEM_STATUS.AGENT_ID,
+                        getResourceField(client),
                         CONFIG_ITEM_STATUS.REQUESTED_VERSION,
                         CONFIG_ITEM_STATUS.REQUESTED_UPDATED)
                 .values(
@@ -100,6 +103,20 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
         } catch ( DataAccessException e ) {
             return e;
         }
+    }
+
+    protected TableField<ConfigItemStatusRecord, Long> getResourceField(Client client) {
+        if ( client.getResourceType() == Agent.class ) {
+            return CONFIG_ITEM_STATUS.AGENT_ID;
+        }
+        if ( client.getResourceType() == Service.class ) {
+            return CONFIG_ITEM_STATUS.SERVICE_ID;
+        }
+        if ( client.getResourceType() == Account.class ) {
+            return CONFIG_ITEM_STATUS.ACCOUNT_ID;
+        }
+
+        throw new IllegalArgumentException("Unsupported client type [" + client.getResourceType() + "]");
     }
 
     @Override
@@ -147,13 +164,8 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
     }
 
     protected Condition targetObjectCondition(Client client) {
-        if ( client.getResourceType() != Agent.class ) {
-            throw new IllegalArgumentException("Only Agent.class is supported for Client type");
-        }
-
-        return CONFIG_ITEM_STATUS.AGENT_ID.eq(client.getResourceId());
+        return getResourceField(client).eq(client.getResourceId());
     }
-
 
     @Override
     public void setItemSourceVersion(String name, String sourceRevision) {
@@ -224,11 +236,12 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
     }
 
     @Override
-    public Map<Long, List<String>> findOutOfSync(boolean migration) {
-        Map<Long,List<String>> result = new HashMap<Long, List<String>>();
+    public Map<Client, List<String>> findOutOfSync(boolean migration) {
+        Map<Client, List<String>> result = new HashMap<>();
 
         for ( ConfigItemStatus status : (migration ? migrationItems() : outOfSyncItems()) ) {
-            CollectionUtils.addToMap(result, status.getAgentId(), status.getName(), ArrayList.class);
+            Client client = new Client(status);
+            CollectionUtils.addToMap(result, client, status.getName(), ArrayList.class);
         }
 
         return result;
@@ -238,10 +251,10 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
         return create()
                 .select(CONFIG_ITEM_STATUS.fields())
                 .from(CONFIG_ITEM_STATUS)
-                .join(AGENT)
-                    .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID))
-                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION)
-                        .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING)))
+                .leftOuterJoin(AGENT)
+                    .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID)
+                            .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING)))
+                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION))
                 .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
@@ -251,13 +264,13 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
         return create()
                 .select(CONFIG_ITEM_STATUS.fields())
                 .from(CONFIG_ITEM_STATUS)
-                .join(AGENT)
-                    .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID))
+                .leftOuterJoin(AGENT)
+                    .on(AGENT.ID.eq(CONFIG_ITEM_STATUS.AGENT_ID)
+                            .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING)))
                 .join(CONFIG_ITEM)
                     .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
                 .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
-                        .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
-                        .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING)))
+                        .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION)))
                 .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);

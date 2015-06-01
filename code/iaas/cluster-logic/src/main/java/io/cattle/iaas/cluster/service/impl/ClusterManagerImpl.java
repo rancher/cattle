@@ -271,7 +271,7 @@ public class ClusterManagerImpl implements ClusterManager {
 
     private ConfigUpdateRequest before(ConfigUpdateRequest request, Agent agent) {
         if (request == null) {
-            request = new ConfigUpdateRequest(agent.getId());
+            request = ConfigUpdateRequest.forResource(Agent.class, agent.getId());
             for (String item : CONFIG_ITEMS.get()) {
                 request.addItem(item)
                         .withApply(true)

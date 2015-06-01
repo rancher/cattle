@@ -9,6 +9,8 @@ public class IaasEvents {
     public static final String AGENT_REQUEST = "agent.request";
     public static final String AGENT_CLOSE = "agent.close";
     public static final String CONFIG_UPDATE = "config.update";
+    public static final String SERVICE_UPDATE = "service.update";
+    public static final String GLOBAL_SERVICE_UPDATE = "global.service.update";
     public static final String RESOURCE_CHANGE = "resource.change";
 
     public static final String ACCOUNT_QUALIFIER = "account";

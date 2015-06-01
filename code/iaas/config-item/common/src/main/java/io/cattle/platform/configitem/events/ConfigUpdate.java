@@ -2,18 +2,20 @@ package io.cattle.platform.configitem.events;
 
 import io.cattle.platform.configitem.request.ConfigUpdateItem;
 import io.cattle.platform.eventing.model.EventVO;
-import io.cattle.platform.iaas.event.IaasEvents;
 
 import java.util.List;
 
 public class ConfigUpdate extends EventVO<ConfigUpdateData> {
 
+
+    /**
+     * Do not use this constructor, only used for JSON unmarshalling
+     */
     public ConfigUpdate() {
-        setName(IaasEvents.CONFIG_UPDATE);
     }
 
-    public ConfigUpdate(String url, List<ConfigUpdateItem> items) {
-        this();
+    public ConfigUpdate(String eventName, String url, List<ConfigUpdateItem> items) {
+        setName(eventName);
         ConfigUpdateData updateData = new ConfigUpdateData();
         updateData.setItems(items);
         updateData.setConfigUrl(url);

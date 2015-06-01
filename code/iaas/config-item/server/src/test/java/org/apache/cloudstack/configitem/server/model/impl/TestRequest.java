@@ -1,6 +1,6 @@
 package org.apache.cloudstack.configitem.server.model.impl;
 
-import io.cattle.platform.configitem.model.impl.DefaultClient;
+import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.server.model.impl.AbstractRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -13,7 +13,7 @@ public class TestRequest extends AbstractRequest {
 
     public TestRequest() {
         setItemName("testitem");
-        setClient(new DefaultClient(String.class, 123));
+        setClient(new Client(String.class, 123));
     }
 
     public String getResponseContent() throws IOException {
