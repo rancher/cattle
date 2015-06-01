@@ -3,7 +3,6 @@ package io.cattle.platform.configitem.server.agentinclude.impl;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.context.impl.AbstractAgentBaseContextFactory;
 import io.cattle.platform.configitem.model.Client;
-import io.cattle.platform.configitem.model.impl.DefaultClient;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.server.agentinclude.AgentIncludeMap;
 import io.cattle.platform.configitem.server.model.ConfigItem;
@@ -54,8 +53,8 @@ public class AgentPackagesContextFactory extends AbstractAgentBaseContextFactory
             return;
         }
 
-        Client client = new DefaultClient(Agent.class, agent.getId());
-        ConfigUpdateRequest request = new ConfigUpdateRequest(client.getResourceId()).withDeferredTrigger(true);
+        Client client = new Client(Agent.class, agent.getId());
+        ConfigUpdateRequest request = new ConfigUpdateRequest(client).withDeferredTrigger(true);
 
         for (String itemName : REQUIRED.get()) {
             if (!statusManager.isAssigned(client, itemName)) {

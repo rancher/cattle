@@ -39,7 +39,7 @@ public class ConfigTimeoutException extends TimeoutException {
             names.add(item.getName());
         }
 
-        return String.format("Timeout waiting for agent [%s] to update %s", request.getAgentId(), names);
+        return String.format("Timeout waiting for [%s] to update %s", request.getClient(), names);
     }
 
     public ConfigUpdateRequest getRequest() {

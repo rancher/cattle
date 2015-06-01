@@ -78,7 +78,7 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
 
         if (!versionManager.isAssigned(req.getClient(), req.getItemName())) {
             if (item.isDynamicallyApplied()) {
-                ConfigUpdateRequest updateRequest = new ConfigUpdateRequest(req.getClient().getResourceId()).withDeferredTrigger(true);
+                ConfigUpdateRequest updateRequest = new ConfigUpdateRequest(req.getClient()).withDeferredTrigger(true);
                 updateRequest.addItem(req.getItemName());
                 versionManager.updateConfig(updateRequest);
             } else {

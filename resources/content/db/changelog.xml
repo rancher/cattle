@@ -47,4 +47,5 @@
     <include file="db/core-040.xml"/>
     <include file="db/core-041.xml"/>
     <include file="db/core-042.xml"/>
+    <include file="db/core-043.xml"/>
 </databaseChangeLog>

@@ -39,7 +39,7 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
 
         ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, contextId);
         if (request == null) {
-            request = new ConfigUpdateRequest(agent.getId());
+            request = ConfigUpdateRequest.forResource(Agent.class, agent.getId());
             ConfigUpdateRequestUtils.setWaitFor(request);
             if (assignBase) {
                 assignBaseItems(provider, request, agent, processInstance);
@@ -76,7 +76,7 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
             String context = getContext(processInstance, otherAgent);
             ConfigUpdateRequest otherRequest = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, context);
             if (otherRequest == null) {
-                otherRequest = new ConfigUpdateRequest(otherAgent.getId());
+                otherRequest = ConfigUpdateRequest.forResource(Agent.class, otherAgent.getId());
                 setItems(otherRequest, apply, increment);
 
                 statusManager.updateConfig(otherRequest);

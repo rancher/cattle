@@ -58,7 +58,7 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
 
     protected ConfigUpdateRequest before(ConfigUpdateRequest request, Agent agent) {
         if (request == null) {
-            request = new ConfigUpdateRequest(agent.getId());
+            request = ConfigUpdateRequest.forResource(Agent.class, agent.getId());
             for (String item : ITEMS.get()) {
                 request.addItem(item).withIncrement(false).setCheckInSyncOnly(true);
             }

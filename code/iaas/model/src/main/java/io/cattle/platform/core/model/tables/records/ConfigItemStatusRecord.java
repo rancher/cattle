@@ -13,9 +13,9 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "config_item_status", schema = "cattle", uniqueConstraints = {
 	@javax.persistence.UniqueConstraint(columnNames = {"name", "agent_id"})
 })
-public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record8<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date, java.util.Date, java.lang.Long>, io.cattle.platform.core.model.ConfigItemStatus {
+public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date, java.util.Date, java.lang.Long, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.ConfigItemStatus {
 
-	private static final long serialVersionUID = 88693405;
+	private static final long serialVersionUID = 2146699014;
 
 	/**
 	 * Setter for <code>cattle.config_item_status.id</code>.
@@ -154,6 +154,40 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		return (java.lang.Long) getValue(7);
 	}
 
+	/**
+	 * Setter for <code>cattle.config_item_status.service_id</code>.
+	 */
+	@Override
+	public void setServiceId(java.lang.Long value) {
+		setValue(8, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.config_item_status.service_id</code>.
+	 */
+	@javax.persistence.Column(name = "service_id", precision = 19)
+	@Override
+	public java.lang.Long getServiceId() {
+		return (java.lang.Long) getValue(8);
+	}
+
+	/**
+	 * Setter for <code>cattle.config_item_status.account_id</code>.
+	 */
+	@Override
+	public void setAccountId(java.lang.Long value) {
+		setValue(9, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.config_item_status.account_id</code>.
+	 */
+	@javax.persistence.Column(name = "account_id", precision = 19)
+	@Override
+	public java.lang.Long getAccountId() {
+		return (java.lang.Long) getValue(9);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -167,23 +201,23 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	}
 
 	// -------------------------------------------------------------------------
-	// Record8 type implementation
+	// Record10 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row8<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date, java.util.Date, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row8) super.fieldsRow();
+	public org.jooq.Row10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date, java.util.Date, java.lang.Long, java.lang.Long, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row10) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row8<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date, java.util.Date, java.lang.Long> valuesRow() {
-		return (org.jooq.Row8) super.valuesRow();
+	public org.jooq.Row10<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date, java.util.Date, java.lang.Long, java.lang.Long, java.lang.Long> valuesRow() {
+		return (org.jooq.Row10) super.valuesRow();
 	}
 
 	/**
@@ -254,6 +288,22 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field9() {
+		return io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS.SERVICE_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field10() {
+		return io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS.ACCOUNT_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -312,6 +362,22 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	@Override
 	public java.lang.Long value8() {
 		return getAgentId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value9() {
+		return getServiceId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value10() {
+		return getAccountId();
 	}
 
 	/**
@@ -390,7 +456,25 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ConfigItemStatusRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.Long value4, java.lang.String value5, java.util.Date value6, java.util.Date value7, java.lang.Long value8) {
+	public ConfigItemStatusRecord value9(java.lang.Long value) {
+		setServiceId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ConfigItemStatusRecord value10(java.lang.Long value) {
+		setAccountId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ConfigItemStatusRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.Long value4, java.lang.String value5, java.util.Date value6, java.util.Date value7, java.lang.Long value8, java.lang.Long value9, java.lang.Long value10) {
 		return this;
 	}
 
@@ -411,6 +495,8 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		setRequestedUpdated(from.getRequestedUpdated());
 		setAppliedUpdated(from.getAppliedUpdated());
 		setAgentId(from.getAgentId());
+		setServiceId(from.getServiceId());
+		setAccountId(from.getAccountId());
 	}
 
 	/**
@@ -436,7 +522,7 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	/**
 	 * Create a detached, initialised ConfigItemStatusRecord
 	 */
-	public ConfigItemStatusRecord(java.lang.Long id, java.lang.String name, java.lang.Long requestedVersion, java.lang.Long appliedVersion, java.lang.String sourceVersion, java.util.Date requestedUpdated, java.util.Date appliedUpdated, java.lang.Long agentId) {
+	public ConfigItemStatusRecord(java.lang.Long id, java.lang.String name, java.lang.Long requestedVersion, java.lang.Long appliedVersion, java.lang.String sourceVersion, java.util.Date requestedUpdated, java.util.Date appliedUpdated, java.lang.Long agentId, java.lang.Long serviceId, java.lang.Long accountId) {
 		super(io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS);
 
 		setValue(0, id);
@@ -447,5 +533,7 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		setValue(5, requestedUpdated);
 		setValue(6, appliedUpdated);
 		setValue(7, agentId);
+		setValue(8, serviceId);
+		setValue(9, accountId);
 	}
 }

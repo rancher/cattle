@@ -605,6 +605,7 @@ def test_config_item_status_auth(admin_user_client, user_client,
 
     auth_check(admin_user_client.schema, 'configItemStatus', 'ru', {
         'agentId': 'r',
+        'accountId': 'r',
         'appliedUpdated': 'r',
         'appliedVersion': 'ru',
         'requestedUpdated': 'r',

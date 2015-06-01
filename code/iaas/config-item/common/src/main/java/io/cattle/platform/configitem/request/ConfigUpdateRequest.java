@@ -1,15 +1,12 @@
 package io.cattle.platform.configitem.request;
 
 import io.cattle.platform.configitem.model.Client;
-import io.cattle.platform.configitem.model.impl.DefaultClient;
-import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.model.Event;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -18,17 +15,23 @@ public class ConfigUpdateRequest {
 
     boolean migration = false;
     boolean deferredTrigger = false;
-    long agentId;
     Client client;
     List<ConfigUpdateItem> items = new ArrayList<ConfigUpdateItem>();
     Map<String, Object> attributes = new HashMap<String, Object>();
     ListenableFuture<? extends Event> updateFuture;
 
+    /**
+     * Do not use this constructor, only here for JSON marshalling
+     */
     public ConfigUpdateRequest() {
     }
 
-    public ConfigUpdateRequest(long agentId) {
-        setAgentId(agentId);
+    public ConfigUpdateRequest(Client client) {
+        this.client = client;
+    }
+
+    public static ConfigUpdateRequest forResource(Class<?> type, Long resourceId) {
+        return new ConfigUpdateRequest(new Client(type, resourceId));
     }
 
     public ConfigUpdateItem addItem(String name) {
@@ -59,16 +62,6 @@ public class ConfigUpdateRequest {
         return this;
     }
 
-    public long getAgentId() {
-        return agentId;
-    }
-
-    public void setAgentId(long agentId) {
-        this.agentId = agentId;
-        this.client = new DefaultClient(Agent.class, agentId);
-    }
-
-    @XmlTransient
     public Client getClient() {
         return client;
     }
@@ -117,7 +110,7 @@ public class ConfigUpdateRequest {
             message.append(item.getName());
         }
 
-        message.append("] on agent [").append(agentId).append("]");
+        message.append("] on [").append(client).append("]");
 
         return message.toString();
     }

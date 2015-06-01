@@ -56,7 +56,7 @@ public class AgentInstanceInstanceStart extends AbstractObjectProcessLogic imple
         ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, this);
 
         if (request == null) {
-            request = new ConfigUpdateRequest(agent.getId());
+            request = ConfigUpdateRequest.forResource(Agent.class, agent.getId());
 
             for (String item : APPLY.get()) {
                 request.addItem(item).withApply(true).withIncrement(false).withCheckInSyncOnly(true);
