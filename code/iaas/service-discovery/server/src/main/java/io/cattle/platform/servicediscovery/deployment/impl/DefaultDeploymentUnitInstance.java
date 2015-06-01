@@ -1,7 +1,7 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -133,8 +133,8 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     public boolean isUnhealthy() {
         if (this.instance != null) {
             return this.instance.getHealthState() != null && (this.instance.getHealthState().equalsIgnoreCase(
-                    HealthcheckService.HEALTH_STATE_UNHEALTHY) || this.instance.getHealthState().equalsIgnoreCase(
-                            HealthcheckService.HEALTH_STATE_UPDATING_UNHEALTHY));
+                    HealthcheckConstants.HEALTH_STATE_UNHEALTHY) || this.instance.getHealthState().equalsIgnoreCase(
+                    HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY));
         }
         return false;
     }

@@ -169,7 +169,7 @@
     <!-- Instnace Healthcheck/Host map -->
     <process:process name="healthcheckinstancehostmap.create" resourceType="healthcheckInstanceHostMap" start="requested" transitioning="activating" done="active" />
     <process:process name="healthcheckinstancehostmap.remove" resourceType="healthcheckInstanceHostMap" start="active,activating" transitioning="removing" done="removed" />
-    
+
     <!-- Container Event -->
     <process:process name="containerevent.create" resourceType="containerEvent" start="requested" transitioning="creating" done="created" />
     <process:process name="containerevent.remove" resourceType="containerEvent" start="created,creating" transitioning="removing" done="removed" />
@@ -194,5 +194,9 @@
     <!-- Instance label map -->
     <process:process name="instancelabelmap.create" resourceType="instanceLabelMap" start="requested" transitioning="creating" done="created" />
     <process:process name="instancelabelmap.remove" resourceType="instanceLabelMap" start="created,creating" transitioning="removing" done="removed" />
+
+    <!-- Service Event -->
+    <process:process name="serviceevent.create" resourceType="serviceEvent" start="requested" transitioning="creating" done="created" />
+    <process:process name="serviceevent.remove" resourceType="serviceEvent" start="created,creating" transitioning="removing" done="removed" />
 
 </beans>

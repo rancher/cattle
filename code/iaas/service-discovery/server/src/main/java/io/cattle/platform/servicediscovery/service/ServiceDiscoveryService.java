@@ -7,8 +7,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 public interface ServiceDiscoveryService {
 
     SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services);
@@ -18,8 +16,6 @@ public interface ServiceDiscoveryService {
     String buildDockerComposeConfig(List<? extends Service> services);
 
     String buildRancherComposeConfig(List<? extends Service> services);
-
-    Pair<Long, Long> getInstanceToServicePair(Instance instance);
 
     void cleanupLoadBalancerService(Service service);
 
@@ -35,9 +31,10 @@ public interface ServiceDiscoveryService {
 
     Map<String, Object> buildServiceInstanceLaunchData(Service service, Map<String, Object> deployParams);
 
-    List<Long> getServiceNetworkIds(Service service);
-
     List<Integer> getServiceInstanceUsedOrderIds(Service service);
 
     List<? extends Service> getActiveGlobalServices(long accountId);
+
+    List<Service> getServicesFor(Object obj);
+
 }

@@ -13,6 +13,8 @@ public interface AgentDao {
 
     Map<String, Host> getHosts(long agentId);
 
+    Map<String, Host> getHostsForDelegate(long agentId);
+
     Map<String, StoragePool> getStoragePools(long agentId);
 
     Map<String, PhysicalHost> getPhysicalHosts(long agentId);

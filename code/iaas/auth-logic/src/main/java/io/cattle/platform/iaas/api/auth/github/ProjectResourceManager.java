@@ -225,7 +225,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
 
         for ( Schema childSchema : schemaFactory.listSchemas() ) {
-            if ( ! schema.getCollectionMethods().contains(Schema.Method.GET.toString()) ) {
+            if ( ! childSchema.getCollectionMethods().contains(Schema.Method.GET.toString()) ) {
                 continue;
             }
 

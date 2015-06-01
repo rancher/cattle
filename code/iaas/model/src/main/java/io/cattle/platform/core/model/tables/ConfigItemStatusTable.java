@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord> {
 
-	private static final long serialVersionUID = -2061705268;
+	private static final long serialVersionUID = 1298801116;
 
 	/**
 	 * The singleton instance of <code>cattle.config_item_status</code>
@@ -67,14 +67,14 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>cattle.config_item_status.service_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
 	 * The column <code>cattle.config_item_status.account_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.config_item_status.service_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>cattle.config_item_status</code> table reference
@@ -127,7 +127,7 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__NAME, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__AGENT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__NAME, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__AGENT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__SERVICE_ID);
 	}
 
 	/**

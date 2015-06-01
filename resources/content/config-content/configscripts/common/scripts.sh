@@ -178,6 +178,23 @@ add_route_table()
     fi
 }
 
+reload_haproxy()
+{
+    # enable haproxy
+    sed -i -e 's/ENABLED=0/ENABLED=1/g' /etc/default/haproxy
+
+    if [ ! -f /var/run/haproxy.pid ]; then
+        return 0
+    fi
+
+    # apply new config
+    if haproxy -p /var/run/haproxy.pid -f /etc/healthcheck/healthcheck.cfg -sf $(cat /var/run/haproxy.pid); then
+        return 0
+    else
+        return 1
+    fi
+}
+
 check_debug
 docker_env
 script_env

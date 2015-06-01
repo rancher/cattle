@@ -1,19 +1,18 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
-import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG;
-import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
-import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.ImageTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.*;
+import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.*;
+import static io.cattle.platform.core.model.tables.LoadBalancerTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
-import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Image;
@@ -33,6 +32,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
+import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -42,24 +42,19 @@ import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
-
-    @Inject
-    GenericMapDao mapDao;
 
     @Inject
     ServiceConsumeMapDao consumeMapDao;
@@ -86,13 +81,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     JsonMapper jsonMapper;
 
     @Inject
-    GenericResourceDao resourceDao;
-
-    @Inject
     StorageService storageService;
 
     @Inject
     AllocatorService allocatorService;
+
+    @Inject
+    ServiceDao serviceDao;
 
     @Override
     public SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services) {
@@ -443,26 +438,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public Pair<Long, Long> getInstanceToServicePair(Instance instance) {
-        List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
-                objectManager.loadResource(Instance.class, instance.getId()),
-                ServiceExposeMap.class);
-        if (maps.isEmpty()) {
-            // handle only instances that are the part of the service
-            return null;
-        }
-        return new ImmutablePair<Long, Long>(instance.getId(), maps.get(0).getServiceId());
-    }
-
-    @Override
-    public List<Long> getServiceNetworkIds(Service service) {
-        List<Long> ntwkIds = new ArrayList<>();
-        long networkId = getServiceNetworkId(service);
-        ntwkIds.add(networkId);
-        return ntwkIds;
-    }
-
-    @Override
     public void cleanupLoadBalancerService(Service service) {
         // 1) remove load balancer
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
@@ -639,6 +614,19 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public List<? extends Service> getActiveGlobalServices(long accountId) {
         return exposeMapDao.getGlobalServices(accountId);
+    }
+
+    public List<Service> getServicesFor(Object obj) {
+        List<? extends Service> dbResult = null;
+        if (obj instanceof Instance) {
+            dbResult = serviceDao.findServicesFor((Instance) obj);
+        }
+
+        if (dbResult == null) {
+            return Collections.emptyList();
+        }
+
+        return new ArrayList<>(dbResult);
     }
 
 }

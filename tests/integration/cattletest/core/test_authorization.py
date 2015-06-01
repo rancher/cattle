@@ -1060,6 +1060,47 @@ def test_container_events(admin_user_client, user_client, agent_client,
     })
 
 
+def test_service_events(admin_user_client, user_client, agent_client,
+                        project_client):
+    auth_check(admin_user_client.schema, 'serviceEvent', 'r', {
+        'externalTimestamp': 'r',
+        'hostId': 'r',
+        'instanceId': 'r',
+        'accountId': 'r',
+        'healthcheckUuid': 'r',
+        'reportedHostUuid': 'r',
+        'reportedHealth': 'r',
+        'data': 'r',
+    })
+
+    auth_check(user_client.schema, 'serviceEvent', 'r', {
+        'externalTimestamp': 'r',
+        'hostId': 'r',
+        'instanceId': 'r',
+        'accountId': 'r',
+        'healthcheckUuid': 'r',
+        'reportedHostUuid': 'r',
+        'reportedHealth': 'r',
+    })
+
+    auth_check(project_client.schema, 'serviceEvent', 'r', {
+        'externalTimestamp': 'r',
+        'hostId': 'r',
+        'instanceId': 'r',
+        'accountId': 'r',
+        'healthcheckUuid': 'r',
+        'reportedHostUuid': 'r',
+        'reportedHealth': 'r',
+    })
+
+    auth_check(agent_client.schema, 'serviceEvent', 'cr', {
+        'externalTimestamp': 'cr',
+        'healthcheckUuid': 'cr',
+        'reportedHostUuid': 'cr',
+        'reportedHealth': 'cr',
+    })
+
+
 def test_svc_discovery_service(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'service', 'r', {
         'name': 'r',
