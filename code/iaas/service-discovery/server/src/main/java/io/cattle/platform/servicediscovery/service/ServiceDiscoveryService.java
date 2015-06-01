@@ -33,8 +33,6 @@ public interface ServiceDiscoveryService {
 
     List<Integer> getServiceInstanceUsedOrderIds(Service service);
 
-    List<? extends Service> getActiveGlobalServices(long accountId);
-
     List<Service> getServicesFor(Object obj);
 
 }

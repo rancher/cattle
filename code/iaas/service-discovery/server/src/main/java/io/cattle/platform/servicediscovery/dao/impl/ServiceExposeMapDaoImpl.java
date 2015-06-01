@@ -197,7 +197,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public List<? extends Service> getGlobalServices(long accountId) {
+    public List<? extends Service> getActiveServices(long accountId) {
         return create()
                 .select(SERVICE.fields())
                 .from(SERVICE)

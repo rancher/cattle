@@ -611,11 +611,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return image == null ? null : image.getId();
     }
 
-    @Override
-    public List<? extends Service> getActiveGlobalServices(long accountId) {
-        return exposeMapDao.getGlobalServices(accountId);
-    }
-
     public List<Service> getServicesFor(Object obj) {
         List<? extends Service> dbResult = null;
         if (obj instanceof Instance) {

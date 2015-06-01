@@ -87,13 +87,19 @@ public class AllocatorServiceImpl implements AllocatorService {
             return;
         }
         for (Map.Entry<String, String> entry : srcMap.entrySet()) {
-            String destValue = destMap.get(entry.getKey());
-            if (StringUtils.isEmpty(destValue)) {
-                destMap.put(entry.getKey(), entry.getValue());
-            } else if (StringUtils.isEmpty(entry.getValue())) {
-                continue;
+            if (entry.getKey().startsWith("io.rancher.scheduler.affinity")) {
+                // merge labels
+                String destValue = destMap.get(entry.getKey());
+                if (StringUtils.isEmpty(destValue)) {
+                    destMap.put(entry.getKey(), entry.getValue());
+                } else if (StringUtils.isEmpty(entry.getValue())) {
+                    continue;
+                } else if (!destValue.contains(entry.getValue())) {
+                    destMap.put(entry.getKey(), destValue + "," + entry.getValue());
+                }
             } else {
-                destMap.put(entry.getKey(), destValue + "," + entry.getValue());
+                // overwrite label value
+                destMap.put(entry.getKey(), entry.getValue());
             }
         }
     }
