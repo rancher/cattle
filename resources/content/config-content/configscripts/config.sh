@@ -58,6 +58,20 @@ if [ "${CATTLE_CONFIG_FLOCKER}" != "$LOCK" ]; then
     exit $?
 fi
 
+purge_old()
+{
+    local exclude=current
+    local dir=$1
+
+    if [ -e $dir/current ]; then
+        exclude="${exclude}|$(<$dir/current)"
+    fi
+
+    for i in $(ls -t $dir | grep -Ev "$exclude" | sed 1,10d); do
+        info Removing $i
+        rm -rf "$dir/$i"
+    done
+}
 
 download()
 {
@@ -74,6 +88,8 @@ download()
     local name=$1
     local current
     local archive_version
+
+    purge_old ${DOWNLOAD}/$name || true
 
     if [ "$FORCE" != "true" ] && [ -e "${DOWNLOAD}/$name/current" ]; then
         current=$(<${DOWNLOAD}/$name/current)
