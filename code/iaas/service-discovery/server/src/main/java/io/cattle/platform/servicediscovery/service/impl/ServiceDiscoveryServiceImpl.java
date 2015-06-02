@@ -336,11 +336,23 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     private Map<String, Object> getServiceDataAsMap(Service service) {
         Map<String, Object> originalData = new HashMap<>();
         originalData.putAll(DataUtils.getFields(service));
+
         Map<String, Object> data = new HashMap<>();
+
         Object launchConfig = originalData
                 .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
         if (launchConfig != null) {
-            data.putAll((Map<? extends String, ? extends Object>) launchConfig);
+            Map<String, Object> configMap = (Map<String, Object>)launchConfig;
+            data.putAll(configMap);
+
+            Object labels = configMap.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
+            if (labels != null) {
+                Map<String, String> labelsMap = new HashMap<String, String>();
+                labelsMap.putAll((Map<String, String>)labels);
+
+                // overwrite with a copy of the map
+                configMap.put(ServiceDiscoveryConfigItem.LABELS.getCattleName(), labelsMap);
+            }
             originalData.remove(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
         }
 

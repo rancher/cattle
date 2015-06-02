@@ -1,20 +1,14 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.model.Tables.INSTANCE_LABEL_MAP;
-import static io.cattle.platform.core.model.Tables.LABEL;
 import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.LabelConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
-import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceLabelMap;
-import io.cattle.platform.core.model.Label;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Vnet;
@@ -32,7 +26,6 @@ import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +37,9 @@ import javax.inject.Named;
 
 @Named
 public class InstanceCreate extends AbstractDefaultProcessHandler {
+
+    @Inject
+    LabelsService labelsService;
 
     @Inject
     GenericResourceDao resourceDao;
@@ -92,33 +88,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
             String labelKey = labelEntry.getKey();
             String labelValue = labelEntry.getValue();
 
-            Label label = objectManager.findAny(Label.class,
-                    LABEL.KEY, labelKey,
-                    LABEL.VALUE, labelValue,
-                    LABEL.ACCOUNT_ID, instance.getAccountId(),
-                    LABEL.REMOVED, null);
-            if (label == null) {
-                Map<Object, Object> labelData = new HashMap<>();
-                labelData.put(LABEL.NAME, labelKey + "=" + labelValue);
-                labelData.put(LABEL.KEY, labelKey);
-                labelData.put(LABEL.VALUE, labelValue);
-                labelData.put(LABEL.ACCOUNT_ID, instance.getAccountId());
-                labelData.put(LABEL.TYPE, LabelConstants.HOST_TYPE);
-                label = resourceDao.createAndSchedule(Label.class, objectManager.convertToPropertiesFor(Label.class, labelData));
-            }
-
-            InstanceLabelMap mapping = objectManager.findAny(InstanceLabelMap.class,
-                    INSTANCE_LABEL_MAP.LABEL_ID, label.getId(),
-                    INSTANCE_LABEL_MAP.INSTANCE_ID, instance.getId(),
-                    INSTANCE_LABEL_MAP.ACCOUNT_ID, instance.getAccountId(),
-                    INSTANCE_LABEL_MAP.REMOVED, null);
-            if (mapping == null) {
-                Map<Object, Object> mappingData = new HashMap<>();
-                mappingData.put(INSTANCE_LABEL_MAP.LABEL_ID, label.getId());
-                mappingData.put(INSTANCE_LABEL_MAP.INSTANCE_ID, instance.getId());
-                mappingData.put(INSTANCE_LABEL_MAP.ACCOUNT_ID, instance.getAccountId());
-                resourceDao.createAndSchedule(InstanceLabelMap.class, objectManager.convertToPropertiesFor(InstanceLabelMap.class, mappingData));
-            }
+            labelsService.createContainerLabel(instance.getAccountId(), instance.getId(), labelKey, labelValue);
         }
     }
 
