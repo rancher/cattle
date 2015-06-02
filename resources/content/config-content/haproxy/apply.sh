@@ -4,4 +4,4 @@
 
 stage_files
 
-reload_haproxy
+reload_haproxy /etc/haproxy/haproxy.cfg

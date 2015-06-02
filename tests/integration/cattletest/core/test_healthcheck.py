@@ -11,8 +11,13 @@ def test_health_check_create_instance(super_client, context, client):
     container = super_client.reload(container)
     hci = find_one(container.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = container.hosts()[0].agent()
+    agent = None
+    for map in container.hosts()[0].instanceHostMaps():
+        c = map.instance()
+        if c.agentId is not None:
+            agent = c.agent()
 
+    assert agent is not None
     assert hcihm.healthState == 'unhealthy'
 
     ts = int(time.time())

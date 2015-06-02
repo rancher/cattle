@@ -1,12 +1,15 @@
 package io.cattle.iaas.healthcheck.process;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceEventTable.*;
 
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
+import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
@@ -16,6 +19,8 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
+
+import java.util.List;
 
 public class ServiceEventPreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
@@ -30,6 +35,30 @@ public class ServiceEventPreCreate extends AbstractObjectProcessLogic implements
         Agent agent = objectManager.findOne(Agent.class, AGENT.ACCOUNT_ID, event.getAccountId());
 
         if (agent == null || event.getExternalTimestamp() == null) {
+            return null;
+        }
+
+        Instance instance = null;
+
+        for (Instance check : objectManager.find(Instance.class, INSTANCE.AGENT_ID, agent.getId())) {
+            if (check.getRemoved() == null) {
+                instance = check;
+                break;
+            }
+        }
+
+        if (instance == null) {
+            return null;
+        }
+
+        List<Host> hosts = objectManager.mappedChildren(instance, Host.class);
+        if (hosts.size() == 0) {
+            return null;
+        }
+
+        agent = objectManager.loadResource(Agent.class, hosts.get(0).getAgentId());
+
+        if (agent == null) {
             return null;
         }
 

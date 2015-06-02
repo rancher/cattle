@@ -1,19 +1,19 @@
 global
-	log 127.0.0.1 local0
+    log 127.0.0.1 local0
     log 127.0.0.1 local1 notice
     maxconn 4096
     maxpipes 1024
-	chroot /var/lib/haproxy
-	user haproxy
-	group haproxy
-	daemon
+    chroot /var/lib/haproxy
+    user haproxy
+    group haproxy
+    daemon
     stats socket /var/run/haproxy.sock mode 600 level admin
     stats timeout 2m
 
 defaults
-	log	global
-	mode	tcp
-	option	tcplog
+    log	global
+    mode	tcp
+    option	tcplog
     option  dontlognull
     option  redispatch
     option forwardfor

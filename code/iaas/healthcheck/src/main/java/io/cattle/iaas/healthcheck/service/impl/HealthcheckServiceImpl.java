@@ -77,13 +77,11 @@ public class HealthcheckServiceImpl implements HealthcheckService {
     }
 
     protected boolean shouldUpdate(HealthcheckInstanceHostMap hcihm, long externalTimestamp, boolean healthy) {
-        Long timestamp = hcihm.getExternalTimestamp();
-
-        if (timestamp == null) {
+        if (hcihm.getExternalTimestamp() == null) {
             return true;
         }
 
-        if (timestamp.longValue() < externalTimestamp) {
+        if (externalTimestamp < hcihm.getExternalTimestamp()) {
             return false;
         }
 
