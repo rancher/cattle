@@ -6,4 +6,4 @@ chmod +x content/etc/init.d/haproxy-monitor
 
 stage_files
 
-reload_haproxy
+reload_haproxy /etc/healthcheck/healthcheck.cfg

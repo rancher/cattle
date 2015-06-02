@@ -63,6 +63,10 @@ purge_old()
     local exclude=current
     local dir=$1
 
+    if [ ! -d $dir ]; then
+        return 0
+    fi
+
     if [ -e $dir/current ]; then
         exclude="${exclude}|$(<$dir/current)"
     fi

@@ -14,6 +14,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.IpAddress;
@@ -28,6 +29,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.inject.Inject;
 
@@ -63,7 +65,7 @@ public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements Healthche
 
         IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
         InstanceTable targetInstance = mapper.add(INSTANCE);
-        HealthcheckInstanceHostMapTable healthcheckInstanceMap = mapper.add(HEALTHCHECK_INSTANCE_HOST_MAP);
+        HealthcheckInstanceHostMapTable healthcheckInstanceHostMap = mapper.add(HEALTHCHECK_INSTANCE_HOST_MAP);
         NicTable targetNic = NIC.as("target_nic");
         
         List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class,
@@ -77,11 +79,11 @@ public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements Healthche
                 .select(mapper.fields())
                 .from(NIC)
                 .join(targetNic)
-                .on(NIC.VNET_ID.eq(targetNic.VNET_ID))
+                .on(NIC.NETWORK_ID.eq(targetNic.NETWORK_ID))
                 .join(HEALTHCHECK_INSTANCE)
                 .on(HEALTHCHECK_INSTANCE.INSTANCE_ID.eq(targetNic.INSTANCE_ID))
-                .join(healthcheckInstanceMap)
-                .on(healthcheckInstanceMap.HEALTHCHECK_INSTANCE_ID.eq(HEALTHCHECK_INSTANCE.ID))
+                .join(healthcheckInstanceHostMap)
+                .on(healthcheckInstanceHostMap.HEALTHCHECK_INSTANCE_ID.eq(HEALTHCHECK_INSTANCE.ID))
                 .join(IP_ADDRESS_NIC_MAP)
                 .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(targetNic.ID))
                 .join(ipAddress)
@@ -89,8 +91,8 @@ public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements Healthche
                 .join(targetInstance)
                 .on(HEALTHCHECK_INSTANCE.INSTANCE_ID.eq(targetInstance.ID))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
-                        .and(healthcheckInstanceMap.HOST_ID.eq(hostId))
-                        .and(NIC.VNET_ID.isNotNull())
+                        .and(healthcheckInstanceHostMap.HOST_ID.eq(hostId))
+                        .and(NIC.NETWORK_ID.isNotNull())
                         .and(NIC.REMOVED.isNull())
                         .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                         .and(ipAddress.REMOVED.isNull())

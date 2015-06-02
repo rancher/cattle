@@ -79,6 +79,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
         lockManager.lock(createLock(services), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
+                if (service.getState().equals(CommonStatesConstants.INACTIVE)) {
+                    return;
+                }
                 
                 // get existing deployment units
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
@@ -139,6 +142,10 @@ public class DeploymentManagerImpl implements DeploymentManager {
          */
         try {
             for (Service service : services) {
+                if (service.getId().equals(initialService.getId())) {
+                    continue;
+                }
+
                 if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
                     objectProcessMgr.scheduleStandardProcess(StandardProcess.ACTIVATE, service, null);
                 } else if (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
