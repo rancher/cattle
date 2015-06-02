@@ -2,15 +2,15 @@ from common_fixtures import *  # NOQA
 
 
 TYPE_LEN = {
-    'admin': 105,
-    'agent': 8,
-    'user': 83,
+    'admin': 106,
+    'agent': 9,
+    'user': 84,
     'agentRegister': 4,
-    'readAdmin': 105,
+    'readAdmin': 106,
     'token': 2,
-    'superadmin': 159,
-    'service': 105,
-    'project': 83,
+    'superadmin': 160,
+    'service': 106,
+    'project': 84,
 }
 
 
@@ -1068,7 +1068,6 @@ def test_service_events(admin_user_client, user_client, agent_client,
         'instanceId': 'r',
         'accountId': 'r',
         'healthcheckUuid': 'r',
-        'reportedHostUuid': 'r',
         'reportedHealth': 'r',
         'data': 'r',
     })
@@ -1079,7 +1078,6 @@ def test_service_events(admin_user_client, user_client, agent_client,
         'instanceId': 'r',
         'accountId': 'r',
         'healthcheckUuid': 'r',
-        'reportedHostUuid': 'r',
         'reportedHealth': 'r',
     })
 
@@ -1089,14 +1087,12 @@ def test_service_events(admin_user_client, user_client, agent_client,
         'instanceId': 'r',
         'accountId': 'r',
         'healthcheckUuid': 'r',
-        'reportedHostUuid': 'r',
         'reportedHealth': 'r',
     })
 
     auth_check(agent_client.schema, 'serviceEvent', 'cr', {
         'externalTimestamp': 'cr',
         'healthcheckUuid': 'cr',
-        'reportedHostUuid': 'cr',
         'reportedHealth': 'cr',
     })
 
