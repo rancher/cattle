@@ -168,6 +168,17 @@ public interface ServiceExposeMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "ip_address", length = 255)
 	public java.lang.String getIpAddress();
 
+	/**
+	 * Setter for <code>cattle.service_expose_map.dns_prefix</code>.
+	 */
+	public void setDnsPrefix(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.dns_prefix</code>.
+	 */
+	@javax.persistence.Column(name = "dns_prefix", length = 128)
+	public java.lang.String getDnsPrefix();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

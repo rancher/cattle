@@ -17,16 +17,16 @@ public interface DeploymentUnitInstanceFactory {
      * @param instanceName
      * @param instanceObj TODO
      * @param labels TODO
-     * 
+     * @param launchConfigName TODO
      * @return
      */
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
-            Service service, String instanceName, Object instanceObj, Map<String, String> labels);
+            Service service, String instanceName, Object instanceObj, Map<String, String> labels, String launchConfigName);
 
     /**
-     * @param services
+     * @param service TODO
      * @param context TODO
      * @return list of deployment units per service
      */
-    public List<DeploymentUnit> collectDeploymentUnits(List<Service> services, DeploymentServiceContext context);
+    public List<DeploymentUnit> collectDeploymentUnits(List<Service> service, DeploymentServiceContext context);
 }

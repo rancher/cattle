@@ -57,9 +57,6 @@
     <tx:advice id="ServiceExposeMapDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="createServiceInstance" isolation="READ_COMMITTED" />
-            <tx:method name="updateServiceName" isolation="READ_COMMITTED" />
-            <tx:method name="updateEnvironmentName" isolation="READ_COMMITTED" />
-            <tx:method name="updateReconcileProcessIds" isolation="READ_COMMITTED" />
         </tx:attributes>
     </tx:advice>
 

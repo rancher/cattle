@@ -18,7 +18,7 @@ public interface ServiceDiscoveryService {
 
     void cleanupLoadBalancerService(Service service);
 
-    String generateServiceInstanceName(Service service, int finalOrder);
+    String generateServiceInstanceName(Service service, String launchConfigName, int finalOrder);
 
     void createLoadBalancerService(Service service);
 
@@ -28,10 +28,14 @@ public interface ServiceDiscoveryService {
 
     List<? extends Service> listEnvironmentServices(long environmentId);
 
-    Map<String, Object> buildServiceInstanceLaunchData(Service service, Map<String, Object> deployParams);
+    Map<String, Object> buildServiceInstanceLaunchData(Service service, Map<String, Object> deployParams, String launchConfigName);
 
-    List<Integer> getServiceInstanceUsedOrderIds(Service service);
+    List<Integer> getServiceInstanceUsedOrderIds(Service service, String launchConfigName);
 
     List<Service> getServicesFor(Object obj);
+
+    List<String> getServiceLaunchConfigNames(Service service);
+
+    Object getLaunchConfigObject(Service service, String launchConfigName, String objectName);
 
 }

@@ -10,7 +10,6 @@ public class ServiceDiscoveryConstants {
         DNSSERVICE
     }
 
-
     public static final String FIELD_SCALE = "scale";
     public static final String FIELD_NETWORK_ID = "networkId";
     public static final String FIELD_SERVICE_ID = "serviceId";
@@ -19,9 +18,11 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
-    public static final String FIELD_NETWORKSERVICE = "networkServiceId";
     public static final String FIELD_SERVICE_LINKS = "serviceLinks";
     public static final String FIELD_SERVICE_LINK_NAME = "name";
+    public static final String FIELD_NETWORK_LAUNCH_CONFIG = "networkLaunchConfig";
+    public static final String FIELD_SECONDARY_LAUNCH_CONFIGS = "secondaryLaunchConfigs";
+    public static final String FIELD_DATA_VOLUMES_LAUNCH_CONFIG = "dataVolumesFromLaunchConfigs";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -53,10 +54,12 @@ public class ServiceDiscoveryConstants {
     public static final String LINK_COMPOSE_CONFIG = "composeConfig";
 
     public static final String LABEL_SERVICE_NAME = "io.rancher.service.name";
-    public static final String LABEL_SERVICE_SIDEKICK = "io.rancher.service.sidekick";
     public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
     public static final String LABEL_ENVIRONMENT_NAME = "io.rancher.environment.name";
     public static final String LABEL_SERVICE_GLOBAL = "io.rancher.scheduler.global";
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
+    public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
+
+    public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
 
 }

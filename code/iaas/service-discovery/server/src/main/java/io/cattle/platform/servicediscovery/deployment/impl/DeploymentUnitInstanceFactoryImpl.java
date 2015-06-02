@@ -37,27 +37,27 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     
     @Override
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
-            Service service, String instanceName, Object instanceObj, Map<String, String> labels) {
+            Service service, String instanceName, Object instanceObj, Map<String, String> labels, String launchConfigName) {
         if (service.getKind().equalsIgnoreCase(KIND.SERVICE.name())) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
             }
             return new DefaultDeploymentUnitInstance(context, uuid, service,
-                    instanceName, instance, labels);
+                    instanceName, instance, labels, launchConfigName);
         } else if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
             LoadBalancerHostMap hostMap = null;
             if (instanceObj != null) {
                 hostMap = (LoadBalancerHostMap) instanceObj;
             }
-            return new LoadBalancerDeploymentUnitInstance(uuid, service,
-                    hostMap, context, labels);
+            return new LoadBalancerDeploymentUnitInstance(context, uuid,
+                    service, hostMap, labels, launchConfigName);
         } else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
             String ip = null;
             if (instanceObj != null) {
                 ip = (String) instanceObj;
             }
-            return new ExternalDeploymentUnitInstance(uuid, service, context, ip);
+            return new ExternalDeploymentUnitInstance(uuid, service, context, ip, launchConfigName);
         }
         return null;
     }
@@ -66,7 +66,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @Override
     public List<DeploymentUnit> collectDeploymentUnits(List<Service> services, DeploymentServiceContext context) {
         /*
-         * 1. find all containers related to the services through the serviceexposemaps for regular service, and
+         * 1. find all containers related to the service through the serviceexposemaps for regular service, and
          * loadBalancerHostMap for the lb service. Then group all the objects
          * by the label 'io.rancher.deployment.unit'. When containers are deployed through service discovery that
          * label will be placed on them.
@@ -76,6 +76,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         
         Map<String, Map<String, String>> uuidToLabels = new HashMap<>();
         Map<String, List<DeploymentUnitInstance>> uuidToInstances = new HashMap<>();
+        List<DeploymentUnit> units = new ArrayList<>();
 
         for (Service service : services) {
             if (service.getKind().equalsIgnoreCase(KIND.SERVICE.name())) {
@@ -85,13 +86,11 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             } else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
                 collectExternalServiceInstances(context, uuidToLabels, uuidToInstances, service);
             }
-        }
-
-        List<DeploymentUnit> units = new ArrayList<>();
-        for (String uuid : uuidToInstances.keySet()) {
-            DeploymentUnit unit = new DeploymentUnit(context, uuid, services, uuidToInstances.get(uuid),
-                    uuidToLabels.get(uuid));
-            units.add(unit);
+            for (String uuid : uuidToInstances.keySet()) {
+                DeploymentUnit unit = new DeploymentUnit(context, uuid, services, uuidToInstances.get(uuid),
+                        uuidToLabels.get(uuid));
+                units.add(unit);
+            }
         }
 
         return units;
@@ -123,7 +122,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             Service service, String externalIp) {
         String uuid = UUID.randomUUID().toString();
         DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, uuid, service, null,
-                externalIp, null);
+                externalIp, null, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         addToDeploymentUnitList(uuidToLabels, uuidToInstances, new HashMap<String, String>(), uuid,
                 unitInstance);
     }
@@ -145,8 +144,11 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
                     : (Map<String, String>) data.get(InstanceConstants.FIELD_LABELS);
             String deploymentUnitUUID = instanceLabels
                     .get(ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT);
+            String launchConfigName = instanceLabels
+                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG);
+
             DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, deploymentUnitUUID, service, null, hostMap,
-                    instanceLabels);
+                    instanceLabels, launchConfigName);
 
             addToDeploymentUnitList(uuidToLabels, uuidToInstances, instanceLabels, deploymentUnitUUID,
                     unitInstance);
@@ -164,10 +166,11 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
                     .withKey(InstanceConstants.FIELD_LABELS).withDefault(Collections.EMPTY_MAP).as(Map.class);
             String deploymentUnitUUID = instanceLabels
                     .get(ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT);
+            String launchConfigName = instanceLabels
+                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG);
 
             DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, deploymentUnitUUID,
-                    service,
-                    serviceContainer.getName(), serviceContainer, instanceLabels);
+                    service, serviceContainer.getName(), serviceContainer, instanceLabels, launchConfigName);
 
             addToDeploymentUnitList(uuidToLabels, uuidToInstances, instanceLabels, deploymentUnitUUID,
                     unitInstance);

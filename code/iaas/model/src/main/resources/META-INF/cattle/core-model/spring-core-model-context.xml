@@ -67,6 +67,8 @@
                 <value>loadBalancerService,parent=service</value>
                 <value>externalService,parent=service</value>
                 <value>dnsService,parent=service</value>
+                <value>launchConfig,parent=container</value>
+                <value>secondaryLaunchConfig,parent=launchConfig</value>
             </set>
         </property>
     </bean>

@@ -1383,31 +1383,28 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'name': 'r',
         'environmentId': 'r',
         'scale': 'r',
-        'dataVolumesFromService': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
         'data': 'r',
-        'networkServiceId': 'r'
+        'secondaryLaunchConfigs': 'r'
     })
 
     auth_check(user_client.schema, 'service', 'r', {
         'name': 'r',
         'environmentId': 'r',
         'scale': 'r',
-        'dataVolumesFromService': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
-        'networkServiceId': 'r'
+        'secondaryLaunchConfigs': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
         'name': 'cru',
         'environmentId': 'cr',
         'scale': 'cru',
-        'dataVolumesFromService': 'cr',
         'launchConfig': 'cr',
         'accountId': 'r',
-        'networkServiceId': 'cr'
+        'secondaryLaunchConfigs': 'cr'
     })
 
 
@@ -1436,32 +1433,26 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'name': 'r',
         'environmentId': 'r',
         'scale': 'r',
-        'dataVolumesFromService': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
         'data': 'r',
         'loadBalancerConfig': 'r',
-        'networkServiceId': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
         'name': 'r',
         'environmentId': 'r',
         'scale': 'r',
-        'dataVolumesFromService': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
         'loadBalancerConfig': 'r',
-        'networkServiceId': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
         'name': 'cru',
         'environmentId': 'cr',
         'scale': 'cru',
-        'dataVolumesFromService': 'cr',
         'launchConfig': 'cr',
         'accountId': 'r',
         'loadBalancerConfig': 'cr',
-        'networkServiceId': 'cr'
     })

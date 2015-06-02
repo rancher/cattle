@@ -15,12 +15,14 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     List<Long> hostIds = new ArrayList<>();
     Map<Long, DeploymentUnit> hostToUnits = new HashMap<>();
 
-    public GlobalServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units, DeploymentServiceContext context) {
+    public GlobalServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
+            DeploymentServiceContext context) {
         super(services, units, context);
         // TODO: Do we really need to iterate or is there just one service that we're dealing with here?
         for (Service service : services) {
             List<Long> hostIdsToDeployService =
-                    context.allocatorService.getHostsSatisfyingHostAffinity(service.getAccountId(), context.sdService.getServiceLabels(service));
+                    context.allocatorService.getHostsSatisfyingHostAffinity(service.getAccountId(),
+                            context.sdService.getServiceLabels(service));
             hostIds.addAll(hostIdsToDeployService);
         }
         for (DeploymentUnit unit : units) {

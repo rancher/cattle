@@ -19,9 +19,10 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     protected String ipAddress;
     List<String> serviceExternalIps;
 
+
     @SuppressWarnings("unchecked")
-    protected ExternalDeploymentUnitInstance(String uuid, Service service, DeploymentServiceContext context, String ipAddress) {
-        super(context, uuid, service);
+    protected ExternalDeploymentUnitInstance(String uuid, Service service, DeploymentServiceContext context, String ipAddress, String launchConfigName) {
+        super(context, uuid, service, launchConfigName);
         this.ipAddress = ipAddress;
         this.exposeMap = context.exposeMapDao.getServiceIpExposeMap(service, ipAddress);
         this.serviceExternalIps = DataAccessor.fields(service)

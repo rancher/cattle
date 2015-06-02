@@ -27,9 +27,6 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem VOLUMES = new ServiceDiscoveryConfigItem("dataVolumes", "volumes");
     public static final ServiceDiscoveryConfigItem VOLUMESFROM = new ServiceDiscoveryConfigItem("dataVolumesFrom",
             "volumes_from");
-    public static final ServiceDiscoveryConfigItem VOLUMESFROMSERVICE = new ServiceDiscoveryConfigItem(
-            "dataVolumesFromService",
-            "volumes_from");
     public static final ServiceDiscoveryConfigItem ENVIRONMENT = new ServiceDiscoveryConfigItem("environment", "environment");
     public static final ServiceDiscoveryConfigItem DNS = new ServiceDiscoveryConfigItem("dns", "dns");
     public static final ServiceDiscoveryConfigItem CAPADD = new ServiceDiscoveryConfigItem("capAdd", "cap_add");
@@ -56,12 +53,10 @@ public class ServiceDiscoveryConfigItem {
             "net");
 
     // CATTLE PARAMETERS
-    public static final ServiceDiscoveryConfigItem REGISTRYCREDENTIALID = new ServiceDiscoveryConfigItem("registryCredentialId",
-            "registryCredentialId", true, false);
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale",
             false, false);
     public static final ServiceDiscoveryConfigItem CPU_SET = new ServiceDiscoveryConfigItem("cpuSet",
-            "cpuSet", true, false);
+            "cpu_set", true, false);
     public static final ServiceDiscoveryConfigItem REQUESTED_HOST_ID = new ServiceDiscoveryConfigItem(
             InstanceConstants.FIELD_REQUESTED_HOST_ID, InstanceConstants.FIELD_REQUESTED_HOST_ID,
             true, false);
@@ -82,10 +77,6 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem EXTERNAL_IPS = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_EXTERNALIPS,
             "external_ips", false, false);
-
-    public static final ServiceDiscoveryConfigItem NETWORKCONTAINER = new ServiceDiscoveryConfigItem(
-            DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID, DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
-            true, false);
 
     /**
      * Name as it appears in docker-compose file

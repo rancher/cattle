@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.api.dao;
 
-import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -26,27 +25,7 @@ public interface ServiceExposeMapDao {
 
     List<? extends Instance> listServiceInstances(long serviceId);
 
-    /**
-     * this method updates service's instances' names based on the environment/service name. Invoked on the
-     * service name change
-     * 
-     * @param service
-     */
-    void updateServiceName(Service service);
-
-    /**
-     * this method updates environment's instances' names based on the environment/service name. Invoked on the
-     * environment name change
-     * 
-     * @param environment
-     */
-    void updateEnvironmentName(Environment env);
-
     List<? extends ServiceExposeMap> getNonRemovedServiceInstanceMap(long serviceId);
-    
-    void updateScale(List<Service> services, Integer scale);
-
-    List<Service> collectSidekickServices(Service initialService, Map<String, String> initialSvcLabels);
 
     ServiceExposeMap findInstanceExposeMap(Instance instance);
 
