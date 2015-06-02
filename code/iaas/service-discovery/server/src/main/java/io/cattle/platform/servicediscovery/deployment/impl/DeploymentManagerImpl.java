@@ -212,6 +212,10 @@ public class DeploymentManagerImpl implements DeploymentManager {
         for (DeploymentUnit unit : units) {
             unit.start(svcInstanceIdGenerator);
         }
+
+        for (DeploymentUnit unit : units) {
+            unit.waitForStart();
+        }
     }
 
     protected List<DeploymentUnit> deleteBadUnits(List<DeploymentUnit> units) {
