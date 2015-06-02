@@ -196,7 +196,6 @@ public class DeploymentUnit {
     protected Map<String, String> getLabels(DeploymentUnitInstance instance) {
         Service service = instance.getService();
         Map<String, String> labels = new HashMap<>();
-        labels.putAll(context.sdService.getServiceLabels(service));
         labels.put(ServiceDiscoveryConstants.LABEL_SERVICE_NAME, service.getName());
         labels.put(ServiceDiscoveryConstants.LABEL_ENVIRONMENT_NAME,
                 context.objectManager.loadResource(Environment.class, service.getEnvironmentId()).getName());

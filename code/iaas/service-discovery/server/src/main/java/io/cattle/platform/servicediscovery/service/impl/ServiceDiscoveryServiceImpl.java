@@ -310,7 +310,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     }
                 }
 
-                launchConfigItems.put(key, dataObj);
+                if (dataObj != null) {
+                    launchConfigItems.put(key, dataObj);
+                }
             }
         }
 
