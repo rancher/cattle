@@ -1,6 +1,17 @@
 from common_fixtures import *  # NOQA
 
 
+def _get_agent_for_container(container):
+    agent = None
+    for map in container.hosts()[0].instanceHostMaps():
+        c = map.instance()
+        if c.agentId is not None:
+            agent = c.agent()
+
+    assert agent is not None
+    return agent
+
+
 def test_health_check_create_instance(super_client, context, client):
     container = context.create_container(healthCheck={
         'port': 80,
@@ -11,14 +22,9 @@ def test_health_check_create_instance(super_client, context, client):
     container = super_client.reload(container)
     hci = find_one(container.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = None
-    for map in container.hosts()[0].instanceHostMaps():
-        c = map.instance()
-        if c.agentId is not None:
-            agent = c.agent()
+    agent = _get_agent_for_container(container)
 
-    assert agent is not None
-    assert hcihm.healthState == 'unhealthy'
+    assert hcihm.healthState == 'healthy'
 
     ts = int(time.time())
     se = super_client.create_service_event(accountId=agent.accountId,
@@ -55,9 +61,9 @@ def test_health_check_create_service(super_client, context, client):
     container = super_client.reload(exposeMap.instance())
     hci = find_one(container.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = container.hosts()[0].agent()
+    agent = _get_agent_for_container(container)
 
-    assert hcihm.healthState == 'unhealthy'
+    assert hcihm.healthState == 'healthy'
 
     ts = int(time.time())
     se = super_client.create_service_event(accountId=agent.accountId,
