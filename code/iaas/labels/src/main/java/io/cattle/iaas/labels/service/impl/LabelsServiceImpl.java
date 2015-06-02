@@ -36,7 +36,6 @@ public class LabelsServiceImpl implements LabelsService {
                 LABEL.REMOVED, null);
         if (label == null) {
             Map<Object, Object> labelData = new HashMap<>();
-            labelData.put(LABEL.NAME, key + "=" + value);
             labelData.put(LABEL.KEY, key);
             labelData.put(LABEL.VALUE, value);
             labelData.put(LABEL.ACCOUNT_ID, accountId);
