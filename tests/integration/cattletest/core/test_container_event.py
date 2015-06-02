@@ -180,7 +180,7 @@ def test_bad_agent(super_client, host):
             externalFrom='busybox:latest',
             externalTimestamp=int(time.time()),
             externalStatus='start')
-    assert e.value.error.code == 'CantVerifyAgent'
+    assert e.value.error.code == 'MissingRequired'
 
 
 def test_bad_host(host, new_context):
