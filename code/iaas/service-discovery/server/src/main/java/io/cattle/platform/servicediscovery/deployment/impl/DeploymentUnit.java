@@ -118,7 +118,9 @@ public class DeploymentUnit {
         for (Long serviceId : serviceToInstance.keySet()) {
             createInstance(serviceId);
         }
-
+    }
+    
+    public void waitForStart(){
         for (DeploymentUnitInstance instance : serviceToInstance.values()) {
             instance.waitForStart();
         }
