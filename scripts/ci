@@ -23,9 +23,21 @@ if [ -x "$(which wrapdocker)" ]; then
     docker info
 fi
 
+echo_dot()
+{
+    trap "exit 0" TERM
+    echo -n " "
+    while true; do
+        echo -n .
+        sleep 1
+    done
+}
+
 run()
 {
-    echo Running "$@"
+    echo -n Running "$@"
+    echo_dot 2>/dev/null &
+    DOT_PID=$!
 
     "$@" > /tmp/${1}.log || {
         echo "$@" failed
@@ -33,6 +45,9 @@ run()
         echo "$@" failed
         exit 1
     }
+
+    kill $DOT_PID
+    echo
 }
 
 # Background to start the Docker pulls
@@ -40,7 +55,7 @@ run()
 
 run ./bootstrap
 run ./clean
-CI=true MAVEN_ARGS='-B -q' ./build
+CI=true MAVEN_ARGS='-B -q' run ./build
 
 run ./run --background
 
