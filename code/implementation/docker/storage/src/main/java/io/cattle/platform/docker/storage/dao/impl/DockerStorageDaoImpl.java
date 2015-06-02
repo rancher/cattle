@@ -6,7 +6,6 @@ import javax.inject.Inject;
 
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.docker.constants.DockerStoragePoolConstants;
-import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
 import io.cattle.platform.docker.storage.dao.DockerStorageDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;

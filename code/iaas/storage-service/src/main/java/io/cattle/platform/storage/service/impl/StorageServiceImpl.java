@@ -1,69 +1,53 @@
 package io.cattle.platform.storage.service.impl;
 
-import io.cattle.platform.core.dao.StoragePoolDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Image;
-import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.storage.pool.StoragePoolDriver;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.storage.service.dao.ImageDao;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
 
 public class StorageServiceImpl implements StorageService {
 
+    @Inject
     ObjectManager objectManager;
     List<StoragePoolDriver> drivers;
-    StoragePoolDao storagePoolDao;
+    @Inject
+    GenericResourceDao genericResourceDao;
+    @Inject
     ImageDao imageDao;
-    LockManager lockManager;
 
     @Override
-    public Image registerRemoteImage(final String uuid) throws IOException {
+    public Image registerRemoteImage(final String uuid) {
         if (uuid == null) {
             return null;
         }
         return populateNewRecord(uuid);
     }
 
-    protected Image populateNewRecord(String uuid) throws IOException {
+    @Override
+    public boolean isValidUUID(String uuid) {
         Image image = objectManager.newRecord(Image.class);
-
-        StoragePool foundPool = null;
-
-        for (StoragePool pool : storagePoolDao.findExternalActivePools()) {
-            for (StoragePoolDriver driver : drivers) {
-                if (driver.supportsPool(pool)) {
-                    if (driver.populateExtenalImage(pool, uuid, image)) {
-                        foundPool = pool;
-                        break;
-                    }
-                }
+        for (StoragePoolDriver driver : drivers) {
+            if (driver.populateImage(uuid, image)) {
+                return true;
             }
         }
+        return false;
+    }
 
-        if (foundPool != null) {
-            return persistAndCreate(uuid, image, foundPool);
+    protected Image populateNewRecord(String uuid) {
+        Image image = objectManager.newRecord(Image.class);
+        for (StoragePoolDriver driver : drivers) {
+            if (driver.populateImage(uuid, image)) {
+                break;
+            }
         }
-
-        return null;
-    }
-
-    protected Image persistAndCreate(final String uuid, final Image image, final StoragePool pool) {
-        return imageDao.persistAndAssociateImage(image, pool);
-    }
-
-    public StoragePoolDao getStoragePoolDao() {
-        return storagePoolDao;
-    }
-
-    @Inject
-    public void setStoragePoolDao(StoragePoolDao storagePoolDao) {
-        this.storagePoolDao = storagePoolDao;
+        return genericResourceDao.createAndSchedule(image);
     }
 
     public List<StoragePoolDriver> getDrivers() {
@@ -73,33 +57,6 @@ public class StorageServiceImpl implements StorageService {
     @Inject
     public void setDrivers(List<StoragePoolDriver> drivers) {
         this.drivers = drivers;
-    }
-
-    public ImageDao getImageDao() {
-        return imageDao;
-    }
-
-    @Inject
-    public void setImageDao(ImageDao imageDao) {
-        this.imageDao = imageDao;
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
 }

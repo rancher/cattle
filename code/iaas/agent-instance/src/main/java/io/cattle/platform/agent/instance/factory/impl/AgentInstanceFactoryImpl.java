@@ -84,7 +84,6 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(INSTANCE.ACCOUNT_ID, getAccountId(builder));
         properties.put(INSTANCE.AGENT_ID, agent.getId());
         properties.put(InstanceConstants.FIELD_IMAGE_UUID, builder.getImageUuid());
-        properties.put(INSTANCE.IMAGE_ID, getImage(agent, builder));
         properties.put(INSTANCE.NAME, builder.getName());
         properties.put(INSTANCE.ZONE_ID, agent.getZoneId());
         properties.put(INSTANCE.KIND, builder.getInstanceKind());
@@ -100,17 +99,6 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     protected void addAdditionalProperties(Map<Object, Object> properties, Agent agent, AgentInstanceBuilderImpl builder) {
-    }
-
-    protected Long getImage(Agent agent, AgentInstanceBuilderImpl builder) {
-        Image image;
-        try {
-            image = storageService.registerRemoteImage(builder.getImageUuid());
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to get image [" + builder.getImageUuid() + "]");
-        }
-
-        return image == null ? null : image.getId();
     }
 
     protected Object getVnetIds(Agent agent, AgentInstanceBuilderImpl builder) {

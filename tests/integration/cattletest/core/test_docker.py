@@ -44,8 +44,7 @@ def test_docker_create_only(docker_client, super_client):
             image.imageStoragePoolMaps()
         )
 
-        assert len(image_mapping) == 1
-        assert image_mapping[0].imageId == image.id
+        assert len(image_mapping) == 0
 
         assert not image.isPublic
         assert image.name == '{}'.format(image.data.dockerImage.fullName,

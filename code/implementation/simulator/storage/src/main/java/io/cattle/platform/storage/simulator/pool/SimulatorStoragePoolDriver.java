@@ -1,7 +1,6 @@
 package io.cattle.platform.storage.simulator.pool;
 
 import io.cattle.platform.core.model.Image;
-import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.storage.pool.AbstractKindBasedStoragePoolDriver;
 import io.cattle.platform.storage.pool.StoragePoolDriver;
 
@@ -15,9 +14,7 @@ public class SimulatorStoragePoolDriver extends AbstractKindBasedStoragePoolDriv
     }
 
     @Override
-    protected boolean populateExtenalImageInternal(StoragePool pool, String uuid, Image image) {
-        // image.setUuid(uuid);
-        // image.setIsPublic(true);
+    protected boolean populateImageInternal(String uuid, Image image) {
         image.setName(uuid);
         image.setFormat(SIM_FORMAT);
 

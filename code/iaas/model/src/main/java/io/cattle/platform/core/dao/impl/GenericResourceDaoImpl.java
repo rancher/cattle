@@ -30,6 +30,13 @@ public class GenericResourceDaoImpl implements GenericResourceDao {
     }
 
     @Override
+    public <T> T createAndSchedule(T o) {
+        T obj = objectManager.create(o);
+        processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, null);
+        return objectManager.reload(o);
+    }
+
+    @Override
     public <T> T create(Class<T> clz, Map<String, Object> properties) {
         T obj = objectManager.create(clz, properties);
         processManager.executeStandardProcess(StandardProcess.CREATE, obj, properties);

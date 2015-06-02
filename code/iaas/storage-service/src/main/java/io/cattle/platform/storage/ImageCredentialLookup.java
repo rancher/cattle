@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface ImageCredentialLookup {
 
-    Credential getDefaultCredential(String uuid, List<?> storagePools, List<?> credentials);
+    Credential getDefaultCredential(String uuid, long currentAccount);
 }
