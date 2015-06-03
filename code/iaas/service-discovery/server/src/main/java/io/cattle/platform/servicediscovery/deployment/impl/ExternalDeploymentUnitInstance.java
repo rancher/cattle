@@ -29,7 +29,7 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     }
 
     @Override
-    public void remove() {
+    protected void removeUnitInstance() {
         return;
     }
 
