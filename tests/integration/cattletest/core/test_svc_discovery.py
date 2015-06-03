@@ -1372,7 +1372,89 @@ def test_external_service(client, context):
     assert service2.state == "removed"
 
 
+def test_service_spread_deployment(super_client, new_context):
+    client = new_context.client
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context)
+
+    super_client.update(host1, { 'computeFree': 1000000 })
+    super_client.update(host2, { 'computeFree': 1000000 })
+
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=2)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    # activate services
+    env.activateservices()
+    service = client.wait_success(service, 120)
+    assert service.state == "active"
+
+    # since both hosts should have equal compute_free, the
+    # containers should be spread across the hosts
+    instance1 = _validate_compose_instance_start(client,
+                                                 service, env, "1")
+    instance1_host = instance1.hosts()[0].id
+
+    instance2 = _validate_compose_instance_start(client,
+                                                 service, env, "2")
+    instance2_host = instance2.hosts()[0].id
+    assert instance1_host != instance2_host
+
+
 def test_global_service(new_context):
+    client = new_context.client
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context)
+
+    # add labels to the hosts
+    labels = {'group': 'web'}
+    host1 = client.update(host1, labels=labels)
+    host2 = client.update(host2, labels=labels)
+
+    # create environment and services
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    image_uuid = new_context.image_uuid
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            'io.rancher.scheduler.global': 'true',
+            'io.rancher.scheduler.affinity:host_label': 'group=web'
+        }
+    }
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    # 1. verify that the service was activated
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    # 2. verify that the instance was started on host1
+    instance1 = _validate_compose_instance_start(client,
+                                                 service, env, "1")
+    instance1_host = instance1.hosts()[0].id
+
+    # 3. verify that the instance was started on host2
+    instance2 = _validate_compose_instance_start(client,
+                                                 service, env, "2")
+    instance2_host = instance2.hosts()[0].id
+    assert instance1_host != instance2_host
+
+
+def test_global_service_update_label(new_context):
     client = new_context.client
     host1 = new_context.host
     host2 = register_simulated_host(new_context)
