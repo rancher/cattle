@@ -83,6 +83,10 @@ public class ServiceDiscoveryConfigItem {
             ServiceDiscoveryConstants.FIELD_EXTERNALIPS,
             "external_ips", false, false);
 
+    public static final ServiceDiscoveryConfigItem NETWORKCONTAINER = new ServiceDiscoveryConfigItem(
+            DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID, DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
+            true, false);
+
     /**
      * Name as it appears in docker-compose file
      */

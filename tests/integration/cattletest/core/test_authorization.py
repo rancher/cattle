@@ -1106,7 +1106,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'launchConfig': 'r',
         'accountId': 'r',
         'data': 'r',
-
+        'networkServiceId': 'r'
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1116,6 +1116,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'dataVolumesFromService': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
+        'networkServiceId': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1125,6 +1126,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'dataVolumesFromService': 'cr',
         'launchConfig': 'cr',
         'accountId': 'r',
+        'networkServiceId': 'cr'
     })
 
 
@@ -1158,6 +1160,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'accountId': 'r',
         'data': 'r',
         'loadBalancerConfig': 'r',
+        'networkServiceId': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1168,6 +1171,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'r',
         'accountId': 'r',
         'loadBalancerConfig': 'r',
+        'networkServiceId': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1178,4 +1182,5 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'cr',
         'accountId': 'r',
         'loadBalancerConfig': 'cr',
+        'networkServiceId': 'cr'
     })

@@ -21,6 +21,10 @@
             "type" : "array[reference[service]]",
             "nullable" : true
         },
+        "networkServiceId": {
+            "type" : "reference[service]",
+            "nullable" : true
+        },
         "name":{
             "required": true,
             "validChars": "a-zA-Z0-9-",

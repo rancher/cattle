@@ -347,6 +347,7 @@
         "service.environmentId" : "cr",
         "service.scale" : "cru",
         "service.dataVolumesFromService" : "cr",
+        "service.networkServiceId" : "cr",
         "service.launchConfig" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
@@ -394,12 +395,14 @@
         "externalService.dataVolumesFromService" : "",
         "externalService.scale" : "",
         "externalService.healthCheck" : "",
+        "externalService.networkServiceId" : "",
 
         "dnsService" : "r",
         "dnsService.launchConfig" : "",
         "dnsService.dataVolumesFromService" : "",
         "dnsService.scale" : "",
         "dnsService.healthCheck" : "",
+        "dnsService.networkServiceId" : "",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",
