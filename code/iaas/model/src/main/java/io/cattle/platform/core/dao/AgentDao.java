@@ -18,4 +18,7 @@ public interface AgentDao {
     Map<String, StoragePool> getStoragePools(long agentId);
 
     Map<String, PhysicalHost> getPhysicalHosts(long agentId);
+
+    Agent getHostAgentForDelegate(long agentId);
+
 }

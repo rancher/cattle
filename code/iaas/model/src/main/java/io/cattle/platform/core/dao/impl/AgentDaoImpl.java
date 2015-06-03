@@ -19,6 +19,7 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
+import io.cattle.platform.core.model.tables.records.AgentRecord;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.PhysicalHostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
@@ -132,5 +133,19 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
         }
 
         return hosts;
+    }
+
+    @Override
+    public Agent getHostAgentForDelegate(long agentId) {
+        List<? extends Agent> result = create().select(AGENT.fields())
+                .from(AGENT)
+                .join(HOST)
+                    .on(HOST.AGENT_ID.eq(AGENT.ID))
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                .join(INSTANCE)
+                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(INSTANCE.AGENT_ID.eq(agentId)).fetchInto(AgentRecord.class);
+        return result.size() == 0 ? null : result.get(0);
     }
 }
