@@ -41,11 +41,8 @@ public class ContainerEventFilter extends AbstractDefaultResourceManagerFilter {
         ContainerEvent event = request.proxyRequestObject(ContainerEvent.class);
 
         Policy policy = ApiUtils.getPolicy();
+        /* Will never return null, MissingRequired will be thrown if missing */
         Agent agent = objectManager.loadResource(Agent.class, policy.getOption(Policy.AGENT_ID));
-
-        if ( agent == null ) {
-            throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
-        }
 
         Map<String, Host> hosts = agentDao.getHosts(agent.getId());
         Host host = hosts.get(event.getReportedHostUuid());
