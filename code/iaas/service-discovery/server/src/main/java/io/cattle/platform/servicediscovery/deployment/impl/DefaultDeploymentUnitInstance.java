@@ -73,9 +73,9 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     @Override
     public DeploymentUnitInstance start(Map<String, Object> deployParams) {
         if (createNew()) {
-            deployParams.put("name", this.instanceName);
             Map<String, Object> launchConfigData = context.sdService.buildServiceInstanceLaunchData(service,
                     deployParams);
+            launchConfigData.put("name", this.instanceName);
             Pair<Instance, ServiceExposeMap> instanceMapPair = context.exposeMapDao.createServiceInstance(launchConfigData,
                     service, this.instanceName);
             this.instance = instanceMapPair.getLeft();
