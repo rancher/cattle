@@ -1,10 +1,10 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
+import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.AccountAccess;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -17,6 +17,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -55,19 +56,19 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     }
 
     @Override
-    public Policy getPolicy(AccountAccess accountAccess, ApiRequest request) {
-        PolicyOptionsWrapper options = new PolicyOptionsWrapper(optionsFactory.getOptions(accountAccess.getAccount()));
-        AccountPolicy policy = new AccountPolicy(accountAccess, options);
+    public Policy getPolicy(Account account, Account authenticatedAsAccount, Set<ExternalId> externalIds, ApiRequest request) {
+        PolicyOptionsWrapper options = new PolicyOptionsWrapper(optionsFactory.getOptions(account));
+        AccountPolicy policy = new AccountPolicy(account, authenticatedAsAccount, externalIds, options);
 
         String kind = getRole(policy, request);
         if (kind != null) {
             options = new PolicyOptionsWrapper(optionsFactory.getOptions(kind));
-            policy = new AccountPolicy(accountAccess, options);
+            policy = new AccountPolicy(account, authenticatedAsAccount, externalIds, options);
         }
 
         if (SubscriptionUtils.getSubscriptionStyle(policy) == SubscriptionStyle.QUALIFIED) {
             options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER, IaasEvents.ACCOUNT_QUALIFIER);
-            options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER_VALUE, Long.toString(accountAccess.getAccount().getId()));
+            options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER_VALUE, Long.toString(account.getId()));
         }
 
         return policy;
@@ -85,11 +86,7 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     }
 
     public static SubscriptionStyle getSubscriptionStyle(Account account, AchaiusPolicyOptionsFactory optionsFactory) {
-        AccountAccess accountAccess= null;
-        if (account != null){
-            accountAccess = new AccountAccess(account, null);
-        }
-        Policy tempPolicy = new AccountPolicy(accountAccess, optionsFactory.getOptions(account));
+        Policy tempPolicy = new AccountPolicy(account, account, null, optionsFactory.getOptions(account));
         return SubscriptionUtils.getSubscriptionStyle(tempPolicy);
     }
 

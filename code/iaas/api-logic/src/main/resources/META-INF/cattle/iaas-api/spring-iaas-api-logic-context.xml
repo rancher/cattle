@@ -46,10 +46,6 @@
     <bean class="io.cattle.platform.iaas.api.request.handler.ExtendedBodyParserRequestHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler" />
     <bean class="io.cattle.platform.iaas.api.request.handler.ConfigurableRequestOptionsParser" />
-    <bean class="io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator" >
-        <property name="accountLookups" value="#{extensionManager.list('account.lookup')}" />
-        <property name="authorizationProviders" value="#{extensionManager.list('authorization.provider')}" />
-    </bean>
     <bean class="io.cattle.platform.api.handler.AddClientIpHeader" />
     <bean class="io.cattle.platform.iaas.api.request.handler.IdFormatterRequestHandler" >
         <property name="plainFormatter">

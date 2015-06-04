@@ -38,7 +38,6 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private static final String HOSTNAME = "hostname";
 
     private static final String GITHUB_CONFIG = "githubconfig";
-    private static final String AUTH_HEADER = "Authorization";
 
     private static final String SECURITY_SETTING = "api.security.enabled";
     private static final String ACCESSMODE_SETTING = "api.auth.github.access.mode";
@@ -71,8 +70,6 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         if (!StringUtils.equals(GITHUB_CONFIG, request.getType())) {
             return null;
         }
-        String token = request.getServletContext().getRequest().getHeader(AUTH_HEADER);
-        String access_token = githubUtils.validateAndFetchGithubToken(token);
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
         changeSetting(HOSTNAME_SETTING, config.get(HOSTNAME));
         changeSetting(SECURITY_SETTING, config.get(ENABLED));
@@ -81,8 +78,8 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
             changeSetting(CLIENT_SECRET_SETTING, config.get(CLIENT_SECRET));
         }
         changeSetting(ACCESSMODE_SETTING, config.get(ACCESSMODE));
-        changeSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(ALLOWED_USERS), access_token), ","));
-        changeSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(ALLOWED_ORGS), access_token), ","));
+        changeSetting(ALLOWED_USERS_SETTING, StringUtils.join(appendUserIds((List<String>) config.get(ALLOWED_USERS)), ","));
+        changeSetting(ALLOWED_ORGS_SETTING, StringUtils.join(appendOrgIds((List<String>) config.get(ALLOWED_ORGS)), ","));
         return currentGithubConfig(config);
     }
 
@@ -116,14 +113,14 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         return new GithubConfig(enabled, accessMode, clientId, allowedUsers, allowedOrgs, hostname);
     }
 
-    protected List<String> appendUserIds(List<String> usernames, String token) {
+    protected List<String> appendUserIds(List<String> usernames) {
         if (usernames == null) {
             return null;
         }
         List<String> appendedList = new ArrayList<>();
 
         for (String username : usernames) {
-            GithubAccountInfo userInfo = client.getUserIdByName(username, token);
+            GithubAccountInfo userInfo = client.getUserIdByName(username);
             if (userInfo == null) {
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidUsername", "Invalid username: " + username, null);
             }
@@ -132,13 +129,13 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         return appendedList;
     }
 
-    protected List<String> appendOrgIds(List<String> orgs, String token) {
+    protected List<String> appendOrgIds(List<String> orgs) {
         if (orgs == null) {
             return null;
         }
         List<String> appendedList = new ArrayList<>();
         for (String org : orgs) {
-            GithubAccountInfo orgInfo = client.getOrgIdByName(org, token);
+            GithubAccountInfo orgInfo = client.getOrgIdByName(org);
             if (orgInfo == null) {
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidOrganization", "Invalid organization: " + org, null);
             }
@@ -202,7 +199,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
 
     protected List<String> fromCommaSeparatedString(String string) {
         if (StringUtils.isEmpty(string)) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         List<String> strings = new ArrayList<String>();
         String[] splitted = string.split(",");

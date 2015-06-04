@@ -3,7 +3,10 @@ package io.cattle.platform.iaas.api.auth.github;
 import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.iaas.api.auth.github.constants.GithubConstants;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -35,15 +38,6 @@ public class GithubUtils {
     private static final DynamicStringProperty WHITELISTED_ORGS = ArchaiusUtil.getString("api.auth.github.allowed.orgs");
     private static final DynamicStringProperty WHITELISTED_USERS = ArchaiusUtil.getString("api.auth.github.allowed.users");
 
-    public static final String TEAM_SCOPE = "github_team";
-    public static final String ORG_SCOPE = "github_org";
-    public static final String USER_SCOPE = "github_user";
-
-    private static final DynamicStringProperty GITHUB_HOSTNAME = ArchaiusUtil.getString("api.github.domain");
-    private static final String GITHUB_DEFAULT_HOSTNAME = "github.com";
-    private static final String GHE_API = "/api/v3";
-    private static final String GITHUB_API = "api.github.com";
-    private static final String SCHEME = "https://";
     private TokenService tokenService;
 
 
@@ -52,39 +46,40 @@ public class GithubUtils {
     @Inject
     AuthDao authDao;
 
-    public String validateAndFetchGithubToken(String token) {
-        Map<String, Object> jsonData = getJsonData(token);
+    public Account getAccountFromJWT() {
+        Map<String, Object> jsonData = getJsonData();
         if (jsonData == null) {
             return null;
         }
-        return ObjectUtils.toString(jsonData.get("access_token"), null);
-    }
-
-    public String validateAndFetchAccountIdFromToken(String token) {
-        Map<String, Object> jsonData = getJsonData(token);
-        if (jsonData == null) {
+        String accountId = ObjectUtils.toString(jsonData.get(GithubConstants.ACCOUNT_ID), null);
+        if (null == accountId) {
             return null;
         }
-        return ObjectUtils.toString(jsonData.get("account_id"), null);
+        return authDao.getAccountByExternalId(accountId, GithubConstants.USER_SCOPE);
     }
 
-    @SuppressWarnings("unchecked")
-    public Set<ExternalId> externalIds(String token) {
-        Map<String, Object> jsonData = getJsonData(token);
+    public Set<ExternalId> externalIds() {
+        Map<String, Object> jsonData = getJsonData();
+        if (jsonData == null){
+            return new HashSet<>();
+        }
         return externalIds(jsonData);
     }
 
     private Set<ExternalId> externalIds(Map<String, Object> jsonData) {
+        Set<ExternalId> externalIds = new HashSet<>();
+        if (jsonData == null){
+            return externalIds;
+        }
         List<String> teamIds = (List<String>) CollectionUtils.toList(jsonData.get("team_ids"));
         List<String> orgIds = (List<String>) CollectionUtils.toList(jsonData.get("org_ids"));
-        String accountId = ObjectUtils.toString(jsonData.get("account_id"), null);
-        Set<ExternalId> externalIds = new HashSet<>();
-        externalIds.add(new ExternalId(accountId , USER_SCOPE, (String) jsonData.get("username")));
+        String accountId = ObjectUtils.toString(jsonData.get(GithubConstants.ACCOUNT_ID), null);
+        externalIds.add(new ExternalId(accountId , GithubConstants.USER_SCOPE, (String) jsonData.get("username")));
         for (String teamId: teamIds){
-            externalIds.add(new ExternalId(teamId, TEAM_SCOPE));
+            externalIds.add(new ExternalId(teamId, GithubConstants.TEAM_SCOPE));
         }
         for (String orgId: orgIds){
-            externalIds.add(new ExternalId(orgId, ORG_SCOPE));
+            externalIds.add(new ExternalId(orgId, GithubConstants.ORG_SCOPE));
         }
         return  externalIds;
     }
@@ -123,34 +118,47 @@ public class GithubUtils {
         return jsonData;
     }
 
+    private Map<String, Object> getJsonData(){
+        return getJsonData(getJWT());
+    }
+
+    public String getJWT(){
+        ApiRequest request = ApiContext.getContext().getApiRequest();
+        String jwt = (String) request.getAttribute(GithubConstants.GITHUB_JWT);
+        if (StringUtils.isNotBlank(jwt) && !jwt.toLowerCase().startsWith(ProjectConstants.AUTH_TYPE)){
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, ValidationErrorCodes.INVALID_FORMAT,
+                    "Token malformed after retrieval.", null);
+        }
+        return jwt;
+    }
+    public void findAndSetJWT() {
+        ApiRequest request = ApiContext.getContext().getApiRequest();
+        String jwt = (String) request.getAttribute(GithubConstants.GITHUB_JWT);
+        if (jwt == null && StringUtils.isBlank(jwt)){
+            jwt = request.getServletContext().getRequest().getHeader(ProjectConstants.AUTH_HEADER);
+        }
+        if (StringUtils.isEmpty(jwt) || !jwt.toLowerCase().startsWith(ProjectConstants.AUTH_TYPE)){
+            jwt = request.getServletContext().getRequest().getParameter("token");
+            if (StringUtils.isNotBlank(jwt) && !jwt.toLowerCase().startsWith(ProjectConstants.AUTH_TYPE)){
+                jwt = ProjectConstants.AUTH_TYPE + jwt;
+            }
+        }
+        if (getJsonData(jwt) != null){
+            request.setAttribute(GithubConstants.GITHUB_JWT, jwt);
+        }
+    }
+
     @Inject
     public void setJwtTokenService(TokenService tokenService) {
         this.tokenService = tokenService;
     }
 
     public Set<ExternalId> getExternalIds() {
-        Set<ExternalId> externalIds = externalIds(getToken());
-        return externalIds;
-    }
-
-    public String getToken() {
-        ApiRequest request = ApiContext.getContext().getApiRequest();
-        String token = request.getServletContext().getRequest().getHeader(ProjectConstants.AUTH_HEADER);
-        if (StringUtils.isEmpty(token) || !token.toLowerCase().startsWith(ProjectConstants.AUTH_TYPE)) {
-            token = request.getServletContext().getRequest().getParameter("token");
-            if (StringUtils.isEmpty(token)) {
-                token = (String) request.getServletContext().getRequest().getAttribute(ProjectConstants.OAUTH_BASIC);
-                if (token.isEmpty()) {
-                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, ValidationErrorCodes.MISSING_REQUIRED,
-                            "There is no github token present.", null);
-                }
-            }
-        }
-        return token;
+        return externalIds();
     }
 
     public String getTeamOrgById(String id) {
-        Map<String, Object> jsonData = getJsonData(getToken());
+        Map<String, Object> jsonData = getJsonData();
         Map<String, String> teamToOrg = (Map<String, String>) jsonData.get("teamToOrg");
         return  teamToOrg.get(id);
     }
@@ -208,15 +216,15 @@ public class GithubUtils {
     public String getURL(GithubClientEndpoints val) {
         String hostName;
         String apiEndpoint;
-        if (StringUtils.isBlank(GITHUB_HOSTNAME.get())){
-            hostName = SCHEME + GITHUB_DEFAULT_HOSTNAME;
-            apiEndpoint = SCHEME + GITHUB_API;
-        } else{
-            hostName = SCHEME + GITHUB_HOSTNAME.get();
-            apiEndpoint = SCHEME + GITHUB_HOSTNAME.get() + GHE_API;
+        if (StringUtils.isBlank(GithubConstants.GITHUB_HOSTNAME.get())) {
+            hostName = GithubConstants.SCHEME + GithubConstants.GITHUB_DEFAULT_HOSTNAME;
+            apiEndpoint = GithubConstants.SCHEME + GithubConstants.GITHUB_API;
+        } else {
+            hostName = GithubConstants.SCHEME + GithubConstants.GITHUB_HOSTNAME.get();
+            apiEndpoint = GithubConstants.SCHEME + GithubConstants.GITHUB_HOSTNAME.get() + GithubConstants.GHE_API;
         }
         String toReturn;
-        switch (val){
+        switch (val) {
             case API:
                 toReturn = apiEndpoint;
                 break;
@@ -239,5 +247,10 @@ public class GithubUtils {
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "GithubClient", "Attempted to get invalid Api endpoint.", null);
         }
         return toReturn;
+    }
+
+    public String getAccessToken() {
+        findAndSetJWT();
+        return (String) DataAccessor.fields(getAccountFromJWT()).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get();
     }
 }
