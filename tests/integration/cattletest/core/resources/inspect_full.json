@@ -78,15 +78,12 @@
         "DnsSearch": [
             "search.dns.com"
         ],
-        "ExtraHosts": [
-            "host:1.1.1.1",
-            "host:2.2.2.2"
-        ],
+        "ExtraHosts": null,
         "IpcMode": "",
         "Links": null,
         "LxcConf": [],
         "NetworkMode": "bridge",
-        "PidMode": "host",
+        "PidMode": "",
         "PortBindings": {
             "1111/tcp": [
                 {
@@ -97,21 +94,12 @@
         },
         "Privileged": true,
         "PublishAllPorts": false,
-        "ReadonlyRootfs": true,
+        "ReadonlyRootfs": false,
         "RestartPolicy": {
             "MaximumRetryCount": 10,
             "Name": "on-failure"
         },
-        "SecurityOpt": [
-            "label:foo",
-            "label:bar"
-        ],
-        "LogConfig": {
-            "Type": "syslog",
-            "Config": {
-                "tag": "value"
-            }
-        },
+        "SecurityOpt": null,
         "VolumesFrom": null
     },
     "HostnamePath": "/mnt/sda1/var/lib/docker/containers/f13e0c667453e85c0409022127f750abe4ea4e517a970b22cff523def62acc28/hostname",

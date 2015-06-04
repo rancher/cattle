@@ -213,7 +213,7 @@ def test_docker_ports_from_container_publish_all(docker_client):
 
     assert c.state == 'running'
 
-    ports = c.ports_link()
+    ports = c.ports()
     assert len(ports) == 1
     port = ports[0]
 
@@ -235,7 +235,7 @@ def test_docker_ports_from_container_no_publish(docker_client):
 
     assert c.state == 'running'
 
-    ports = c.ports_link()
+    ports = c.ports()
     assert len(ports) == 1
     port = ports[0]
 
@@ -270,7 +270,7 @@ def test_docker_ports_from_container(docker_client, super_client):
     assert c.state == 'stopped'
 
     count = 0
-    for port in c.ports_link():
+    for port in c.ports():
         count += 1
         assert port.kind == 'userPort'
         assert port.publicPort is None
@@ -296,7 +296,7 @@ def test_docker_ports_from_container(docker_client, super_client):
     count = 0
     ip = None
     privateIp = None
-    for port in c.ports_link():
+    for port in c.ports():
         count += 1
         assert port.privateIpAddressId is not None
         privateIp = port.privateIpAddress()
@@ -369,7 +369,7 @@ def test_no_port_override(docker_client, super_client):
         c = super_client.wait_success(c, timeout=240)
 
         assert c.state == 'running'
-        ports = c.ports_link()
+        ports = c.ports()
 
         assert len(ports) == 1
         assert ports[0].kind == 'userPort'
