@@ -1,7 +1,9 @@
 package io.cattle.platform.docker.machine.process;
 
-import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
-import static io.cattle.platform.docker.machine.constants.MachineConstants.*;
+import static io.cattle.platform.core.model.tables.PhysicalHostTable.PHYSICAL_HOST;
+import static io.cattle.platform.docker.machine.constants.MachineConstants.CONFIG_FIELD_SUFFIX;
+import static io.cattle.platform.docker.machine.constants.MachineConstants.DRIVER_FIELD;
+import static io.cattle.platform.docker.machine.constants.MachineConstants.MACHINE_KIND;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
@@ -37,6 +39,8 @@ public class MachinePreCreate extends AbstractObjectProcessLogic implements Proc
         if (StringUtils.isEmpty(physHost.getExternalId())) {
             String externalId = UUID.randomUUID().toString();
             newFields.put(PHYSICAL_HOST.EXTERNAL_ID, externalId);
+        } else {
+            newFields.put(PHYSICAL_HOST.EXTERNAL_ID, physHost.getExternalId());
         }
 
         Map<String, Object> fields = DataUtils.getFields(physHost);
@@ -48,11 +52,7 @@ public class MachinePreCreate extends AbstractObjectProcessLogic implements Proc
             }
         }
 
-        if (!newFields.isEmpty()) {
-            return new HandlerResult(newFields);
-        }
-
-        return null;
+        return new HandlerResult(newFields);
     }
 
     @Override
