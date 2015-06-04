@@ -9,7 +9,7 @@
             "nullable": true,
             "create": true
         },
-        "directory": {
+        "workingDir": {
             "type": "string",
             "create": true,
             "nullable": true,
@@ -188,13 +188,35 @@
             "type": "map[string]",
             "create": true
         },
-         "healthCheck": {
+        "healthCheck": {
             "type": "instanceHealthCheck",
             "nullable": true
         },
-         "healthState": {
+        "healthState": {
             "type": "enum",
             "options" : [ "healthy", "unhealthy", "updating-healthy", "updating-unhealthy" ]
+        },
+        "securityOpt": {
+            "type": "array[string]",
+            "nullable": true
+        },
+        "logConfig": {
+            "type": "logConfig",
+            "nullable": true
+        },
+        "pidMode": {
+            "type": "enum",
+            "options": [
+                "host"
+            ]
+        },
+        "extraHosts": {
+            "type": "array[string]",
+            "nullable": true
+        },
+        "readOnly": {
+            "type": "boolean",
+            "default": false
         }
     },
     "resourceActions": {
