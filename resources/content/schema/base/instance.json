@@ -38,7 +38,8 @@
         "ports": {
             "type": "array[string]",
             "create": true,
-            "nullable": true
+            "nullable": true,
+            "includeInList": false
         },
         "subnetIds" : {
             "type" : "array[reference[subnet]]",

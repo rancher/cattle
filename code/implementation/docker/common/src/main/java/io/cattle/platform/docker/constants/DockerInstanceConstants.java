@@ -17,6 +17,7 @@ public class DockerInstanceConstants {
     public static final String FIELD_CPU_SET = "cpuSet";
     public static final String FIELD_TTY = "tty";
     public static final String FIELD_STDIN_OPEN = "stdinOpen";
+    public static final String FIELD_DIRECTORY = "directory";
     public static final String FIELD_COMMAND = "command";
     public static final String FIELD_ENTRY_POINT = "entryPoint";
     public static final String FIELD_DATA_VOLUMES = "dataVolumes";
@@ -28,12 +29,6 @@ public class DockerInstanceConstants {
     public static final String FIELD_CAP_DROP = "capDrop";
     public static final String FIELD_RESTART_POLICY = "restartPolicy";
     public static final String FIELD_DEVICES = "devices";
-    public static final String FIELD_WORKING_DIR = "workingDir";
-    public static final String FIELD_SECURITY_OPT = "securityOpt";
-    public static final String FIELD_LOG_CONFIG = "logConfig";
-    public static final String FIELD_PID_MODE = "pidMode";
-    public static final String FIELD_EXTRA_HOSTS = "extraHosts";
-    public static final String FIELD_READ_ONLY = "readOnly";
 
     public static final String EVENT_FIELD_VOLUMES_FROM = "dataVolumesFromContainers";
 

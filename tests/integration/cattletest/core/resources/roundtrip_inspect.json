@@ -90,13 +90,7 @@
         "IpcMode": "",
         "LxcConf": null,
         "PortBindings": null,
-        "LogConfig": {
-            "Type": "syslog",
-            "Config": {
-                "tag": "value"
-            }
-        },
-        "SecurityOpt": ["label:foo", "label:bar"],
+        "SecurityOpt": null,
         "CapAdd": [
           "AUDIT_CONTROL"
         ],
@@ -108,7 +102,7 @@
           "MaximumRetryCount": 5,
           "Name": "on-failure"
         },
-        "ReadonlyRootfs": true,
+        "ReadonlyRootfs": false,
         "Devices": [
           {
             "PathInContainer": "/dev/xsdc",
@@ -130,8 +124,8 @@
           "8.8.4.4",
           "2.2.2.2"
         ],
-        "ExtraHosts": ["host:1.1.1.1", "host:2.2.2.2"],
-        "PidMode": "host",
+        "ExtraHosts": null,
+        "PidMode": "",
         "DnsSearch": [
           "prod.example.com"
         ],

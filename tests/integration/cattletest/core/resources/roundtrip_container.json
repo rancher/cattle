@@ -79,7 +79,7 @@
         "/bin/sh",
         "-c"
       ],
-      "workingDir": null,
+      "directory": null,
       "capAdd": [
         "AUDIT_CONTROL"
       ],
@@ -106,16 +106,6 @@
       "dockerIp": ""
     }
   },
-  "securityOpt": ["label:foo", "label:bar"],
-  "logConfig": {
-    "type": "syslog",
-    "config": {
-      "tag": "value"
-    }
-  },
-  "pidMode": "host",
-  "extraHosts": ["host:1.1.1.1", "host:2.2.2.2"],
-  "readOnly": true,
   "dataVolumes": [
     "/oncontainer",
     "/var:/var/incontainer",
@@ -128,7 +118,7 @@
     "/dev/null:/dev/xnull:wm",
     "/dev/stdin:/dev/xstdin:m"
   ],
-  "workingDir": null,
+  "directory": null,
   "dns": [
     "8.8.4.4",
     "2.2.2.2"
