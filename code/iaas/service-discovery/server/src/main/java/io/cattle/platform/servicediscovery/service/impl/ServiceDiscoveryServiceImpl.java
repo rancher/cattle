@@ -321,8 +321,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     ((List<Object>) dataObj).addAll((List<Object>) launchConfigItems.get(key));
                 }
             }
-
-            launchConfigItems.put(key, dataObj);
+            if (dataObj != null) {
+                launchConfigItems.put(key, dataObj);
+            }
         }
 
         // 3. add extra parameters
@@ -382,9 +383,21 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> getLaunchConfigDataAsMap(Service service) {
-        return (Map<String, Object>) DataAccessor.fields(service)
+        Map<String, Object> launchConfig = (Map<String, Object>) DataAccessor.fields(service)
                 .withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
                 .as(Map.class);
+        Map<String, Object> data = new HashMap<>();
+        data.putAll(launchConfig);
+
+        Object labels = data.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
+        if (labels != null) {
+            Map<String, String> labelsMap = new HashMap<String, String>();
+            labelsMap.putAll((Map<String, String>)labels);
+
+            // overwrite with a copy of the map
+            data.put(ServiceDiscoveryConfigItem.LABELS.getCattleName(), labelsMap);
+        }
+        return data;
     }
 
     @Override
