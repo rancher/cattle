@@ -10,7 +10,6 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.EventVO;
@@ -269,32 +268,24 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     @Override
     public void activateGlobalServicesForHost(long accountId, long hostId) {
-
-        class DeferredServiceActivate implements Runnable {
-            Service service;
-
-            public DeferredServiceActivate(Service service) {
-                this.service = service;
-            }
-
-            @Override
-            public void run() {
-                activate(service);
-            }
-        }
-
         List<? extends Service> services = expMapDao.getActiveServices(accountId);
+        List<Service> activeGlobalServices = new ArrayList<Service>();
         for (Service service: services) {
             Map<String, String> serviceLabels = sdSvc.getServiceLabels(service);
             if (serviceLabels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL) &&
                     allocatorSvc.hostSatisfiesHostAffinity(hostId, serviceLabels)) {
-                DeferredUtils.defer(new DeferredServiceActivate(service));
+                activeGlobalServices.add(service);
             }
         }
+        reconcileServices(activeGlobalServices);
     }
 
     public void reconcileServicesFor(Object obj) {
-        for (Service service : sdSvc.getServicesFor(obj)) {
+        reconcileServices(sdSvc.getServicesFor(obj));
+    }
+
+    private void reconcileServices(List<Service> services) {
+        for (Service service : services) {
             ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Service.class, service.getId());
             request.addItem("reconcile");
 
