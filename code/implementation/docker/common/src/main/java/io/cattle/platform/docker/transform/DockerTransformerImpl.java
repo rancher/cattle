@@ -3,6 +3,8 @@ package io.cattle.platform.docker.transform;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
+
+import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
@@ -105,37 +107,55 @@ public class DockerTransformerImpl implements DockerTransformer {
 
         instance.setExternalId(inspect.getId());
         instance.setKind(KIND_CONTAINER);
-        instance.setHostname((String)fixEmptyValue(containerConfig.getHostName()));
         setName(instance, inspect);
-        setField(instance, FIELD_DOMAIN_NAME, containerConfig.getDomainName());
-        setField(instance, FIELD_USER, containerConfig.getUser());
-        setField(instance, FIELD_MEMORY, containerConfig.getMemoryLimit());
-        setField(instance, FIELD_MEMORY_SWAP, containerConfig.getMemorySwap());
-        setField(instance, FIELD_CPU_SHARES, containerConfig.getCpuShares());
-        setField(instance, FIELD_CPU_SET, containerConfig.getCpuset());
-        setField(instance, FIELD_TTY, containerConfig.isTty());
-        setField(instance, FIELD_STDIN_OPEN, containerConfig.isStdinOpen());
-        setImage(instance, containerConfig.getImage());
-        setField(instance, FIELD_DIRECTORY, containerConfig.getWorkingDir());
-        setEnvironment(instance, containerConfig.getEnv());
-        setCommand(instance, containerConfig.getCmd());
-        setListField(instance, FIELD_ENTRY_POINT, containerConfig.getEntrypoint());
 
-        setVolumes(instance, containerConfig.getVolumes(), hostConfig.getBinds());
-        setPorts(instance, safeGetExposedPorts(containerConfig), hostConfig.getPortBindings());
-        setField(instance, FIELD_PRIVILEGED, hostConfig.isPrivileged());
-        setField(instance, FIELD_PUBLISH_ALL_PORTS, hostConfig.isPublishAllPorts());
-        setLxcConf(instance, hostConfig.getLxcConf());
-        setListField(instance, FIELD_DNS, hostConfig.getDns());
-        setListField(instance, FIELD_DNS_SEARCH, hostConfig.getDnsSearch());
-        setCapField(instance, FIELD_CAP_ADD, hostConfig.getCapAdd());
-        setCapField(instance, FIELD_CAP_DROP, hostConfig.getCapDrop());
-        setRestartPolicy(instance, hostConfig.getRestartPolicy());
-        setDevices(instance, hostConfig.getDevices());
+        if (containerConfig != null) {
+            instance.setHostname((String) fixEmptyValue(containerConfig.getHostName()));
+            setField(instance, FIELD_MEMORY, containerConfig.getMemoryLimit());
+            setField(instance, FIELD_CPU_SET, containerConfig.getCpuset());
+            setField(instance, FIELD_CPU_SHARES, containerConfig.getCpuShares());
+            setField(instance, FIELD_MEMORY_SWAP, containerConfig.getMemorySwap());
+            setField(instance, FIELD_DOMAIN_NAME, containerConfig.getDomainName());
+            setField(instance, FIELD_USER, containerConfig.getUser());
+            setField(instance, FIELD_TTY, containerConfig.isTty());
+            setField(instance, FIELD_STDIN_OPEN, containerConfig.isStdinOpen());
+            setImage(instance, containerConfig.getImage());
+            setField(instance, FIELD_WORKING_DIR, containerConfig.getWorkingDir());
+            setEnvironment(instance, containerConfig.getEnv());
+            setCommand(instance, containerConfig.getCmd());
+            setListField(instance, FIELD_ENTRY_POINT, containerConfig.getEntrypoint());
+        }
+
+        if (containerConfig != null && hostConfig != null) {
+            setVolumes(instance, containerConfig.getVolumes(), hostConfig.getBinds());
+            setPorts(instance, safeGetExposedPorts(containerConfig), hostConfig.getPortBindings());
+            setNetworkMode(instance, containerConfig, hostConfig);
+        }
+
+        if (hostConfig != null) {
+            setField(instance, FIELD_PRIVILEGED, hostConfig.isPrivileged());
+            setField(instance, FIELD_PUBLISH_ALL_PORTS, hostConfig.isPublishAllPorts());
+            setLxcConf(instance, hostConfig.getLxcConf());
+            setListField(instance, FIELD_DNS, hostConfig.getDns());
+            setListField(instance, FIELD_DNS_SEARCH, hostConfig.getDnsSearch());
+            setCapField(instance, FIELD_CAP_ADD, hostConfig.getCapAdd());
+            setCapField(instance, FIELD_CAP_DROP, hostConfig.getCapDrop());
+            setRestartPolicy(instance, hostConfig.getRestartPolicy());
+            setDevices(instance, hostConfig.getDevices());
+        }
+
+        setField(instance, FIELD_SECURITY_OPT, fromInspect, "HostConfig", "SecurityOpt");
+        setField(instance, FIELD_PID_MODE, fromInspect, "HostConfig", "PidMode");
+        setField(instance, FIELD_READ_ONLY, fromInspect, "HostConfig", "ReadonlyRootfs");
+        setField(instance, FIELD_EXTRA_HOSTS, fromInspect, "HostConfig", "ExtraHosts");
+        setFieldIfNotEmpty(instance, FIELD_CPU_SHARES, fromInspect, "HostConfig", "CpuShares");
+        setFieldIfNotEmpty(instance, FIELD_CPU_SET, fromInspect, "HostConfig", "CpusetCpus");
+        setFieldIfNotEmpty(instance, FIELD_MEMORY, fromInspect, "HostConfig", "Memory");
+        setFieldIfNotEmpty(instance, FIELD_MEMORY_SWAP, fromInspect, "HostConfig", "MemorySwap");
+        setLogConfig(instance, fromInspect);
         setLabels(instance, fromInspect);
-        setNetworkMode(instance, containerConfig, hostConfig);
 
-        // Currently not implemented: VolumesFrom, Links, SecurityOpt, ExtraHosts
+        // Currently not implemented: VolumesFrom, Links,
         // Consider: AttachStdin, AttachStdout, AttachStderr, StdinOnce,
     }
 
@@ -165,6 +185,39 @@ public class DockerTransformerImpl implements DockerTransformer {
     }
 
     @SuppressWarnings({ "rawtypes" })
+    void setField(Instance instance, String field, Map<String, Object> fromInspect, String... keys) {
+        Object l = CollectionUtils.getNestedValue(fromInspect, keys);
+        setField(instance, field, l);
+    }
+
+    @SuppressWarnings({ "rawtypes" })
+    void setFieldIfNotEmpty(Instance instance, String field, Map<String, Object> fromInspect, String... keys) {
+        Object l = CollectionUtils.getNestedValue(fromInspect, keys);
+        if (!isEmptyValue(l)) {
+            setField(instance, field, l);
+        }
+    }
+
+    void setLogConfig(Instance instance, Map<String, Object> fromInspect) {
+        Object type = CollectionUtils.getNestedValue(fromInspect, "HostConfig", "LogConfig", "Type");
+        Object config = CollectionUtils.getNestedValue(fromInspect, "HostConfig", "LogConfig", "Config");
+
+        if (type == null && config == null) {
+            return;
+        }
+
+        LogConfig logConfig = new LogConfig();
+        if (type != null) {
+            logConfig.setDriver(type.toString());
+        }
+        if (config instanceof Map) {
+            logConfig.setConfig((Map<String, String>)config);
+        }
+
+        setField(instance, FIELD_LOG_CONFIG, logConfig);
+    }
+
+    @SuppressWarnings({ "rawtypes" })
     void setLabels(Instance instance, Map<String, Object> fromInspect) {
         // Labels not yet implemented in docker-java. Need to use the raw map
         Object l = CollectionUtils.getNestedValue(fromInspect, "Config", "Labels");
@@ -184,7 +237,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     }
 
     void setImage(Instance instance, String image) {
-        if (!image.matches(IMAGE_KIND_PATTERN)) {
+        if (StringUtils.isNotBlank(image) && !image.matches(IMAGE_KIND_PATTERN)) {
             image = IMAGE_PREFIX + image;
         }
 
@@ -275,9 +328,12 @@ public class DockerTransformerImpl implements DockerTransformer {
             Binding[] bindings = portBindings == null || portBindings.getBindings() == null ? null : portBindings.getBindings().get(ep);
             if (bindings != null && bindings.length > 0) {
                 for (Binding b : bindings) {
-                    if (b.getHostPort() != null) {
+                    // HostPort should really be a string, not an int.  Somehow empty string becomes 0
+                    if (b.getHostPort() != null && b.getHostPort() != 0) {
                         String fullPort = b.getHostPort() + ":" + port;
                         ports.add(fullPort);
+                    } else {
+                        ports.add(port);
                     }
                 }
             } else {
@@ -356,6 +412,15 @@ public class DockerTransformerImpl implements DockerTransformer {
             return new HashMap();
         }
         return fieldValue;
+    }
+
+    @SuppressWarnings({ "rawtypes", "unused" })
+    private boolean isEmptyValue(Object fieldValue) {
+        return fieldValue == null ||
+                (fieldValue instanceof String && StringUtils.isEmpty((String) fieldValue)) ||
+                (fieldValue instanceof Number && ((Number) fieldValue).longValue() == 0L) ||
+                (fieldValue instanceof List && fieldValue == null) ||
+                (fieldValue instanceof Map && fieldValue == null);
     }
 
     InspectContainerResponse transformInspect(Map<String, Object> inspect) {
