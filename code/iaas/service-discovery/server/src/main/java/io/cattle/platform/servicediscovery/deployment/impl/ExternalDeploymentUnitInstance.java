@@ -4,28 +4,34 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.deferred.util.DeferredUtils;
-import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
-import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     protected String ipAddress;
+    List<String> serviceExternalIps;
 
+    @SuppressWarnings("unchecked")
     protected ExternalDeploymentUnitInstance(String uuid, Service service, DeploymentServiceContext context, String ipAddress) {
         super(context, uuid, service);
         this.ipAddress = ipAddress;
         this.exposeMap = context.exposeMapDao.getServiceIpExposeMap(service, ipAddress);
+        this.serviceExternalIps = DataAccessor.fields(service)
+                .withKey(ServiceDiscoveryConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
+                .as(List.class);
     }
 
     @Override
     public boolean isError() {
-        return false;
+        return !serviceExternalIps.contains(this.ipAddress);
     }
 
     @Override
@@ -35,14 +41,7 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
 
     @Override
     public void stop() {
-        // try to remove first
-        try {
-            context.objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, this.exposeMap, null);
-        } catch (ProcessCancelException e) {
-            context.objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, this.exposeMap,
-                    ProcessUtils.chainInData(new HashMap<String, Object>(),
-                            StandardProcess.DEACTIVATE.toString(), StandardProcess.REMOVE.toString()));
-        }
+        super.remove();
     }
 
     @Override

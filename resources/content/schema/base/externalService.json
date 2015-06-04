@@ -3,7 +3,10 @@
         "externalIpAddresses": {
             "type": "array[string]",
             "required": true,
-            "nullable": false
+            "nullable": false,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     }
 }
