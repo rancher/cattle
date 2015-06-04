@@ -179,6 +179,25 @@ def test_machine_driver_config(admin_client):
     assert host.driver == 'packet'
 
     name = "test-%s" % random_str()
+    azure_config = {
+        "dockerPort": "dockerPort",
+        "image": "image",
+        "location": "location",
+        "password": "password",
+        "publishSettingsFile": "publishSettingsFile",
+        "size": "size",
+        "subscriptionId": "subscriptionId",
+        "subscriptionCert": "subscriptionCert",
+        "username": "username",
+    }
+    host = admin_client.create_machine(name=name,
+                                       azureConfig=azure_config)
+    host = admin_client.wait_success(host)
+    assert host.state == 'active'
+    assert azure_config == host.azureConfig
+    assert host.driver == 'azure'
+
+    name = "test-%s" % random_str()
     rackspace_config = {
         "username": "username",
         "apiKey": "apiKey",

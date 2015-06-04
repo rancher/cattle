@@ -4,6 +4,10 @@
             "type": "amazonec2Config",
             "nullable": true
         },
+        "azureConfig": {
+            "type": "azureConfig",
+            "nullable": true
+        },
         "digitaloceanConfig": {
             "type": "digitaloceanConfig",
             "nullable": true

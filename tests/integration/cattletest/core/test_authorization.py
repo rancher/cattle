@@ -2,15 +2,15 @@ from common_fixtures import *  # NOQA
 
 
 TYPE_LEN = {
-    'admin': 106,
+    'admin': 107,
     'agent': 9,
-    'user': 84,
+    'user': 85,
     'agentRegister': 4,
-    'readAdmin': 106,
+    'readAdmin': 107,
     'token': 2,
-    'superadmin': 160,
-    'service': 106,
-    'project': 84,
+    'superadmin': 161,
+    'service': 107,
+    'project': 85,
 }
 
 
@@ -845,6 +845,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'exoscaleConfig': 'r',
         'vmwarevcloudairConfig': 'r',
         'openstackConfig': 'r',
+        'azureConfig': 'r',
     })
 
     auth_check(user_client.schema, 'machine', 'r', {
@@ -864,6 +865,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'exoscaleConfig': 'r',
         'vmwarevcloudairConfig': 'r',
         'openstackConfig': 'r',
+        'azureConfig': 'r',
     })
 
     auth_check(project_client.schema, 'machine', 'crd', {
@@ -883,6 +885,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'exoscaleConfig': 'cr',
         'vmwarevcloudairConfig': 'cr',
         'openstackConfig': 'cr',
+        'azureConfig': 'cr',
         })
 
     auth_check(service_client.schema, 'machine', 'crud', {
@@ -904,6 +907,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'exoscaleConfig': 'cr',
         'vmwarevcloudairConfig': 'cr',
         'openstackConfig': 'cr',
+        'azureConfig': 'cr',
     })
 
 

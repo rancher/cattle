@@ -17,6 +17,7 @@
         <property name="typeNames">
             <set>
                 <value>amazonec2Config,parent=baseMachineConfig</value>  
+                <value>azureConfig,parent=baseMachineConfig</value>  
                 <value>digitaloceanConfig,parent=baseMachineConfig</value>  
                 <value>exoscaleConfig,parent=baseMachineConfig</value>  
                 <value>openstackConfig,parent=baseMachineConfig</value>  
