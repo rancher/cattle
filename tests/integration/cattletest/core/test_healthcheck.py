@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from cattle import ApiError
 
 
 def _get_agent_for_container(container):
@@ -66,8 +67,8 @@ def test_health_check_create_service(super_client, context, client):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    exposeMap = find_one(service.serviceExposeMaps)
-    container = super_client.reload(exposeMap.instance())
+    expose_map = find_one(service.serviceExposeMaps)
+    container = super_client.reload(expose_map.instance())
     hci = find_one(container.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
     agent = _get_agent_for_container(container)
@@ -95,7 +96,7 @@ def test_health_check_create_service(super_client, context, client):
     wait_for(lambda: len(service.serviceExposeMaps()) > 1)
 
 
-def test_health_check_bad_healthcheck(super_client, context, client):
+def test_health_check_bad_external_timestamp(super_client, context, client):
     env = client.create_environment(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
@@ -107,23 +108,26 @@ def test_health_check_bad_healthcheck(super_client, context, client):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    exposeMap = find_one(service.serviceExposeMaps)
-    container = super_client.reload(exposeMap.instance())
+    expose_map = find_one(service.serviceExposeMaps)
+    container = super_client.reload(expose_map.instance())
     hci = find_one(container.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = container.hosts()[0].agent()
-    creds = agent.account().credentials()
+    agent = _get_agent_for_container(container)
+    agent_client = _get_agent_client(agent)
 
-    api_key = [x for x in creds if x.kind == 'agentApiKey'][0]
-    agent_client = api_client(api_key.publicValue, api_key.secretValue)
+    assert hcihm.healthState == 'healthy'
 
-    assert hcihm.healthState == 'unhealthy'
+    with pytest.raises(ApiError) as e:
+        agent_client.create_service_event(reportedHealth='Something Bad',
+                                          healthcheckUuid=hcihm.uuid)
+    assert e.value.error.code == 'MissingRequired'
+    assert e.value.error.fieldName == 'externalTimestamp'
 
-    se = agent_client.create_service_event(reportedHealth='Something Bad',
-                                           healthcheckUuid=hcihm.uuid)
 
+def test_health_check_bad_agent(super_client, context, client):
+    # Create another host to get the agent from that host
+    host2 = super_client.reload(register_simulated_host(context))
 
-def test_health_check_bad_healthcheck(super_client, context, client):
     env = client.create_environment(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
@@ -135,17 +139,23 @@ def test_health_check_bad_healthcheck(super_client, context, client):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    exposeMap = find_one(service.serviceExposeMaps)
-    container = super_client.reload(exposeMap.instance())
+    expose_map = find_one(service.serviceExposeMaps)
+    container = super_client.reload(expose_map.instance())
     hci = find_one(container.healthcheckInstances)
-    hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = container.hosts()[0].agent()
-    creds = agent.account().credentials()
+    hcihm = None
+    for h in hci.healthcheckInstanceHostMaps():
+        if h.hostId != host2.id:
+            hcihm = h
+            break
 
-    api_key = [x for x in creds if x.kind == 'agentApiKey'][0]
-    agent_client = api_client(api_key.publicValue, api_key.secretValue)
+    assert hcihm.hostId != host2.id
+    agent_client = _get_agent_client(host2.agent())
 
-    assert hcihm.healthState == 'unhealthy'
+    assert hcihm.healthState == 'healthy'
 
-    se = agent_client.create_service_event(reportedHealth='Something Bad',
-                                           healthcheckUuid=hcihm.uuid)
+    ts = int(time.time())
+    with pytest.raises(ApiError) as e:
+        agent_client.create_service_event(externalTimestamp=ts,
+                                          reportedHealth='Something Bad',
+                                          healthcheckUuid=hcihm.uuid)
+    assert e.value.error.code == 'CantVerifyHealthcheck'

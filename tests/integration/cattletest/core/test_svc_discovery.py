@@ -1377,8 +1377,8 @@ def test_service_spread_deployment(super_client, new_context):
     host1 = new_context.host
     host2 = register_simulated_host(new_context)
 
-    super_client.update(host1, { 'computeFree': 1000000 })
-    super_client.update(host2, { 'computeFree': 1000000 })
+    super_client.update(host1, {'computeFree': 1000000})
+    super_client.update(host2, {'computeFree': 1000000})
 
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
