@@ -24,6 +24,14 @@
         <name>logback.output.console</name>
     </define>
 
+    <define name="logstashFile" class="io.cattle.platform.logback.ArchaiusProperty" >
+        <name>logback.output.logstash.file</name>
+    </define>
+
+    <define name="logstashConsole" class="io.cattle.platform.logback.ArchaiusProperty" >
+        <name>logback.output.logstash.console</name>
+    </define>
+
     <define name="pattern" class="io.cattle.platform.logback.ArchaiusProperty" >
         <name>logback.pattern</name>
     </define>
@@ -75,6 +83,12 @@
     <define name="serverId" class="io.cattle.platform.logback.ServerIdProperty" />
 
     <jmxConfigurator/>
+
+    <if condition='property("logstashConsole").equals("true")' >
+        <then>
+            <include resource="logback/logback-logstash-console.xml" />
+        </then>
+    </if>
 
     <if condition='property("logstashFile").equals("true")' >
         <then>
