@@ -10,6 +10,7 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.EventVO;
@@ -268,12 +269,26 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     @Override
     public void activateGlobalServicesForHost(long accountId, long hostId) {
+
+        class DeferredServiceActivate implements Runnable {
+            Service service;
+
+            public DeferredServiceActivate(Service service) {
+                this.service = service;
+            }
+
+            @Override
+            public void run() {
+                activate(service);
+            }
+        }
+
         List<? extends Service> services = expMapDao.getActiveServices(accountId);
         for (Service service: services) {
             Map<String, String> serviceLabels = sdSvc.getServiceLabels(service);
             if (serviceLabels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL) &&
                     allocatorSvc.hostSatisfiesHostAffinity(hostId, serviceLabels)) {
-                activate(service);
+                DeferredUtils.defer(new DeferredServiceActivate(service));
             }
         }
     }

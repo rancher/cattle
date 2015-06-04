@@ -1528,6 +1528,54 @@ def test_global_service_update_label(new_context):
     assert instance1.hosts()[0].id != instance2.hosts()[0].id
 
 
+def test_global_add_host(new_context):
+    client = new_context.client
+    host1 = new_context.host
+
+    # create environment and services
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    image_uuid = new_context.image_uuid
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            'io.rancher.scheduler.global': 'true'
+        }
+    }
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    # 1. verify that the service was activated
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    # 2. verify that the instance was started on host1
+    instance1 = _validate_compose_instance_start(client,
+                                                 service, env, "1")
+    instance1_host = instance1.hosts()[0].id
+    assert instance1_host == host1.id
+
+    # register new host
+    host2 = register_simulated_host(new_context)
+
+    # wait for 2nd instance to start up
+    wait_for(
+        lambda: len(client.list_container(
+            name=env.name + "_" + service.name + "_2",
+            state="running")) > 0
+    )
+    instance2 = _validate_compose_instance_start(client,
+                                                 service, env, "2")
+
+    # confirm 2nd instance is on host2
+    instance2_host = instance2.hosts()[0].id
+    assert instance2_host == host2.id
+
+
 def test_dns_service(super_client, client, context):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
