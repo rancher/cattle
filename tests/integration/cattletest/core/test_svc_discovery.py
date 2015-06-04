@@ -70,7 +70,7 @@ def test_activate_single_service(client, context):
                      "cpuShares": 400,
                      "cpuSet": "2",
                      "restartPolicy": restart_policy,
-                     "directory": "/",
+                     "workingDir": "/",
                      "hostname": "test",
                      "user": "test",
                      "instanceLinks": {
@@ -104,7 +104,7 @@ def test_activate_single_service(client, context):
     assert service.launchConfig.entryPoint == ["/bin/sh", "-c"]
     assert service.launchConfig.cpuShares == 400
     assert service.launchConfig.restartPolicy == restart_policy
-    assert service.launchConfig.directory == "/"
+    assert service.launchConfig.workingDir == "/"
     assert service.launchConfig.hostname == "test"
     assert service.launchConfig.user == "test"
     assert len(service.launchConfig.instanceLinks) == 1
@@ -137,7 +137,7 @@ def test_activate_single_service(client, context):
     assert container.command == ['sleep', '42']
     assert len(container.instanceLinks()) == 1
     assert len(container.environment) == 1
-    assert len(container.ports()) == 2
+    assert len(container.ports_link()) == 2
     assert len(container.dataVolumes) == 1
     assert set(container.dataVolumesFrom) == set([container1.id])
     assert container.capAdd == caps
@@ -152,7 +152,7 @@ def test_activate_single_service(client, context):
     assert container.entryPoint == ["/bin/sh", "-c"]
     assert container.cpuShares == 400
     assert container.restartPolicy == restart_policy
-    assert container.directory == "/"
+    assert container.workingDir == "/"
     assert container.hostname == "test"
     assert container.user == "test"
     assert container.state == "running"
