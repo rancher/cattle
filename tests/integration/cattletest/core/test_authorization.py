@@ -1,19 +1,6 @@
 from common_fixtures import *  # NOQA
 
 
-TYPE_LEN = {
-    'admin': 107,
-    'agent': 9,
-    'user': 85,
-    'agentRegister': 4,
-    'readAdmin': 107,
-    'token': 2,
-    'superadmin': 161,
-    'service': 107,
-    'project': 85,
-}
-
-
 @pytest.fixture(scope='module')
 def user_client(admin_user_client):
     return create_context(admin_user_client, create_project=False,
@@ -410,23 +397,23 @@ def test_project_member_auth(admin_user_client, user_client, project_client):
 
 
 def test_host_auth(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'host', 'ru', {
+    auth_check(admin_user_client.schema, 'host', 'r', {
         'accountId': 'r',
-        'apiProxy': 'ru',
+        'apiProxy': 'r',
         'agentId': 'r',
         'computeTotal': 'r',
         'data': 'r',
         'physicalHostId': 'r',
         'info': 'r',
-        'labels': 'ru'
+        'labels': 'r'
     })
 
-    auth_check(user_client.schema, 'host', 'ru', {
+    auth_check(user_client.schema, 'host', 'r', {
         'accountId': 'r',
         'computeTotal': 'r',
         'physicalHostId': 'r',
         'info': 'r',
-        'labels': 'ru'
+        'labels': 'r'
     })
 
     auth_check(project_client.schema, 'host', 'rud', {
