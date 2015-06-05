@@ -686,22 +686,22 @@ def _check_path(volume, should_exist, client, super_client):
     path = _path_to_volume(volume)
     c = client. \
         create_container(name="volume_check",
-                         imageUuid="docker:cjellick/rancher-test-tools",
-                         startOnCreate=False,
+                         imageUuid="docker:ranchertest/volume-test:v0.1.0",
+                         networkMode=None,
                          environment={'TEST_PATH': path},
                          command='/opt/tools/check_path_exists.sh',
                          dataVolumes=[
                              '/var/lib/docker:/host/var/lib/docker',
                              '/tmp:/host/tmp'])
-    c.start()
-    c = client.wait_success(c)
-    if 'stop' in c:
-        c = client.wait_success(c.stop(timeout=1))
 
     c = super_client.wait_success(c)
+    assert c.state == 'running'
+
+    c = super_client.wait_success(c.stop())
     assert c.state == 'stopped'
 
     code = c.data.dockerInspect.State.ExitCode
+
     if should_exist:
         # The exit code of the container should be a 10 if the path existed
         assert code == 10
