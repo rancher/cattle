@@ -127,9 +127,9 @@ def test_add_physical_host(super_client):
 
     hosts = agent.hosts()
     assert len(hosts) == 1
-    assert hosts[0].physicalHostId is not None
+    wait_for(lambda: agent.hosts()[0].physicalHostId is not None, timeout=5)
 
-    phys_host = hosts[0].physicalHost()
+    phys_host = agent.hosts()[0].physicalHost()
     assert phys_host is not None
     phys_host = super_client.wait_success(phys_host)
     assert phys_host.state == 'active'
