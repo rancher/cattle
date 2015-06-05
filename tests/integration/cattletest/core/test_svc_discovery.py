@@ -399,7 +399,7 @@ def test_create_duplicated_services(client, context):
     assert e.value.error.fieldName == 'name'
 
 
-def test_service_add_remove_service_link(client, super_client, context):
+def test_service_add_remove_service_link(client, context):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
@@ -419,21 +419,21 @@ def test_service_add_remove_service_link(client, super_client, context):
 
     # link service2 to service1
     service1 = service1.addservicelink(serviceId=service2.id)
-    _validate_add_service_link(service1, service2, super_client)
+    _validate_add_service_link(service1, service2, client)
 
     # remove service link
     service1 = service1.removeservicelink(serviceId=service2.id)
-    _validate_remove_service_link(service1, service2, super_client)
+    _validate_remove_service_link(service1, service2, client)
 
     # validate adding link with the name
     service1 = service1.addservicelink(serviceId=service2.id, name='mylink')
-    service_maps = super_client. \
+    service_maps = client. \
         list_serviceConsumeMap(serviceId=service1.id,
                                consumedServiceId=service2.id, name='mylink')
     assert len(service_maps) == 1
 
 
-def test_link_service_twice(super_client, client, context):
+def test_link_service_twice(client, context):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
@@ -453,7 +453,7 @@ def test_link_service_twice(super_client, client, context):
 
     # link service2 to service1
     service1 = service1.addservicelink(serviceId=service2.id)
-    _validate_add_service_link(service1, service2, super_client)
+    _validate_add_service_link(service1, service2, client)
 
     # try to link again
     with pytest.raises(ApiError) as e:
@@ -464,7 +464,7 @@ def test_link_service_twice(super_client, client, context):
     assert e.value.error.fieldName == 'serviceId'
 
 
-def test_links_after_service_remove(super_client, client, context):
+def test_links_after_service_remove(client, context):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
@@ -483,18 +483,18 @@ def test_links_after_service_remove(super_client, client, context):
 
     # link servic2 to service1
     service1 = service1.addservicelink(serviceId=service2.id)
-    _validate_add_service_link(service1, service2, super_client)
+    _validate_add_service_link(service1, service2, client)
 
     # link service1 to service2
     service2 = service2.addservicelink(serviceId=service1.id)
-    _validate_add_service_link(service2, service1, super_client)
+    _validate_add_service_link(service2, service1, client)
 
     # remove service1
     service1 = client.wait_success(service1.remove())
 
-    _validate_remove_service_link(service1, service2, super_client)
+    _validate_remove_service_link(service1, service2, client)
 
-    _validate_remove_service_link(service2, service1, super_client)
+    _validate_remove_service_link(service2, service1, client)
 
 
 def test_link_volumes(client, context):
@@ -824,7 +824,7 @@ def test_link_services_from_diff_env(client, context):
     assert e.value.error.fieldName == 'serviceId'
 
 
-def test_set_service_links(super_client, client, context):
+def test_set_service_links(client, context):
     env1 = client.create_environment(name=random_str())
     env1 = client.wait_success(env1)
 
@@ -849,19 +849,19 @@ def test_set_service_links(super_client, client, context):
     # set service2, service3 links for service1
     service1 = service1.setservicelinks(serviceLinks={"link1": service2.id,
                                                       "link2": service3.id})
-    _validate_add_service_link(service1, service2, super_client)
-    _validate_add_service_link(service1, service3, super_client)
+    _validate_add_service_link(service1, service2, client, "link1")
+    _validate_add_service_link(service1, service3, client, "link2")
 
     # set service2 links for service1
     service1 = service1.\
         setservicelinks(serviceIds=[service2.id])
-    _validate_add_service_link(service1, service2, super_client)
-    _validate_remove_service_link(service1, service3, super_client)
+    _validate_add_service_link(service1, service2, client)
+    _validate_remove_service_link(service1, service3, client)
 
     # set empty service link set
     service1 = service1.setservicelinks(serviceLinks={})
-    _validate_remove_service_link(service1, service2, super_client)
-    _validate_remove_service_link(service1, service3, super_client)
+    _validate_remove_service_link(service1, service2, client)
+    _validate_remove_service_link(service1, service3, client)
 
     # try to link to the service from diff environment
     env2 = client.create_environment(name=random_str())
@@ -1521,7 +1521,7 @@ def test_global_service_update_label(new_context):
     assert instance2_host == host2.id
 
     # destroy the instance, reactivate the service and check
-    #  both hosts got instances
+    # both hosts got instances
     _instance_remove(instance1, client)
     service = client.wait_success(service.deactivate())
     assert service.state == "inactive"
@@ -1585,7 +1585,7 @@ def test_global_add_host(new_context):
     assert instance2_host == host2.id
 
 
-def test_dns_service(super_client, client, context):
+def test_dns_service(client, context):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
@@ -1624,16 +1624,16 @@ def test_dns_service(super_client, client, context):
     assert dns.state == 'active'
 
     dns = app.addservicelink(serviceId=web1.id)
-    _validate_add_service_link(dns, web1, super_client)
+    _validate_add_service_link(dns, web1, client)
 
     dns = app.addservicelink(serviceId=web2.id)
-    _validate_add_service_link(dns, web2, super_client)
+    _validate_add_service_link(dns, web2, client)
 
     app = app.addservicelink(serviceId=dns.id)
-    _validate_add_service_link(app, dns, super_client)
+    _validate_add_service_link(app, dns, client)
 
 
-def test_svc_container_reg_cred_and_image(client, super_client):
+def test_svc_container_reg_cred_and_image(super_client, client):
     server = 'server{0}.io'.format(random_num())
     registry = client.create_registry(serverAddress=server,
                                       name=random_str())
@@ -1756,7 +1756,7 @@ def test_service_affinity_rules(super_client, new_context):
         "imageUuid": image_uuid,
         "labels": {
             "io.rancher.scheduler.affinity:container_label_ne":
-            "io.rancher.service.name=" + service_name
+                "io.rancher.service.name=" + service_name
         }
     }
 
@@ -1784,7 +1784,7 @@ def test_service_affinity_rules(super_client, new_context):
         "imageUuid": image_uuid,
         "labels": {
             "io.rancher.scheduler.affinity:container_label_soft":
-            "io.rancher.service.name=" + service_name2
+                "io.rancher.service.name=" + service_name2
         }
     }
 
@@ -1825,25 +1825,36 @@ def _resource_is_running(resource):
     return resource.state == 'running'
 
 
-def _validate_add_service_link(service, consumedService, super_client):
-    service_maps = super_client. \
-        list_serviceConsumeMap(serviceId=service.id,
-                               consumedServiceId=consumedService.id)
+def _validate_add_service_link(service,
+                               consumedService, client, link_name=None):
+    if link_name is None:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedServiceId=consumedService.id)
+    else:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedServiceId=consumedService.id,
+                                   name=link_name)
+
     assert len(service_maps) == 1
+    if link_name is not None:
+        assert service_maps[0].name is not None
+
     service_map = service_maps[0]
     wait_for_condition(
-        super_client, service_map, _resource_is_active,
+        client, service_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
 
 
-def _validate_remove_service_link(service, consumedService, super_client):
-    service_maps = super_client. \
+def _validate_remove_service_link(service, consumedService, client):
+    service_maps = client. \
         list_serviceConsumeMap(serviceId=service.id,
                                consumedServiceId=consumedService.id)
     assert len(service_maps) == 1
     service_map = service_maps[0]
     wait_for_condition(
-        super_client, service_map, _resource_is_removed,
+        client, service_map, _resource_is_removed,
         lambda x: 'State is: ' + x.state)
 
 

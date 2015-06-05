@@ -404,6 +404,12 @@
         "instanceHealthCheck.requestLine" : "cr",
         "instanceHealthCheck.port" : "cr",
 
+
+        "serviceConsumeMap" : "r",
+        "serviceConsumeMap.name" : "r",
+        "serviceConsumeMap.serviceId" : "r",
+        "serviceConsumeMap.consumedServiceId" : "r",
+
         "serviceExposeMap" : "r",
         "serviceExposeMap.instanceId" : "r",
         "serviceExposeMap.serviceId" : "r",
