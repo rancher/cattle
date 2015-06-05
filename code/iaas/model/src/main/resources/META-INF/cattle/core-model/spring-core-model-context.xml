@@ -16,6 +16,7 @@
     <bean id="CoreAddonTypeSet" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeClasses" >
             <set>
+                <value>io.cattle.platform.core.addon.LogConfig</value>
                 <value>io.cattle.platform.core.addon.RestartPolicy</value>
                 <value>io.cattle.platform.core.addon.LoadBalancerHealthCheck</value>
                 <value>io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy</value>

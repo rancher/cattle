@@ -22,7 +22,7 @@ def test_container_port_create_start(client, super_client, context):
         c_admin = super_client.update(c, requestedHostId=host.id)
         assert c_admin.requestedHostId == host.id
 
-        ports = c.ports()
+        ports = c.ports_link()
         assert len(ports) == 3
 
         count = 0
@@ -52,7 +52,7 @@ def test_container_port_create_start(client, super_client, context):
         c = client.wait_success(c.start())
         assert super_client.reload(c).hosts()[0].id == host.id
 
-        for port in c.ports():
+        for port in c.ports_link():
             assert port.state == 'active'
             private_ip = port.privateIpAddress()
             public_ip = port.publicIpAddress()
@@ -80,7 +80,7 @@ def test_container_port_start(client, context):
 
         assert c.state == 'running'
 
-        ports = c.ports()
+        ports = c.ports_link()
         assert len(ports) == 3
 
         count = 0
@@ -124,7 +124,7 @@ def test_container_port_stop(client, context):
         c = client.wait_success(c.stop())
         assert c.state == 'stopped'
 
-        ports = c.ports()
+        ports = c.ports_link()
         assert len(ports) == 3
 
         count = 0
@@ -161,15 +161,15 @@ def test_container_port_purge(client, context):
     c = client.wait_success(c.stop(remove=True))
     assert c.state == 'removed'
 
-    assert len(c.ports()) == 3
+    assert len(c.ports_link()) == 3
 
     c = client.wait_success(c.purge())
     assert c.state == 'purged'
 
     count = 0
-    assert len(c.ports()) == 3
+    assert len(c.ports_link()) == 3
 
-    for port in c.ports():
+    for port in c.ports_link():
         assert port.state == 'removed'
         assert port.privateIpAddressId is None
         assert port.publicIpAddressId is None
@@ -213,7 +213,7 @@ def test_ports_service(super_client, client, context):
 
         assert item is not None
 
-        port = c.ports()[0]
+        port = c.ports_link()[0]
 
         assert port.publicPort is None
 

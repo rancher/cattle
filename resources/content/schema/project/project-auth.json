@@ -30,6 +30,7 @@
         "loadBalancerHealthCheck" : "cru",
         "loadBalancerListener" : "crud",
         "loadBalancerService" : "crud",
+        "logConfig" : "cr",
         "port" : "ru",
         "project" : "r",
         "projectMember" : "r",

@@ -14,6 +14,28 @@ def transform_url(client):
                             'scripts/transform')
 
 
+def test_transform_all_null(transform_url, client):
+    response = requests.post(transform_url,
+                             '{"Id": "an-id" }',
+                             auth=HTTPBasicAuth(client._access_key,
+                                                client._secret_key))
+    assert response.status_code == 200
+    container = response.json()
+    assert container['imageUuid'] is None
+
+
+def test_transform_empty_image(transform_url, client):
+    response = requests.post(transform_url,
+                             '{"Id": "an-id", '
+                             '"Config": {"Image": ""}, '
+                             '"HostConfig": {}}',
+                             auth=HTTPBasicAuth(client._access_key,
+                                                client._secret_key))
+    assert response.status_code == 200
+    container = response.json()
+    assert container['imageUuid'] is None
+
+
 def test_transform_inspect_minimal(transform_url, client):
     response = requests.post(transform_url,
                              '{"Id": "an-id", '
@@ -35,7 +57,7 @@ def test_transform_inspect_minimal(transform_url, client):
     assert container['cpuSet'] is None
     assert container['tty'] is False
     assert container['stdinOpen'] is False
-    assert container['directory'] is None
+    assert container['workingDir'] is None
     assert len(container['environment']) == 0
     assert len(container['command']) == 0
     assert len(container['dataVolumes']) == 0
@@ -48,6 +70,27 @@ def test_transform_inspect_minimal(transform_url, client):
     assert len(container['devices']) == 0
     assert len(container['labels']) == 0
     assert container['networkMode'] == 'none'
+    assert container['securityOpt'] is None
+    assert container['extraHosts'] is None
+    assert not container['readOnly']
+    assert container['pidMode'] is None
+    assert container['logConfig'] is None
+
+
+def test_transform_inspect_host_config(transform_url, client, super_client):
+    # Test certain fields are in both Config and HostConfig but that
+    # HostConfig takes priority
+    inspect = inspect_payload('inspect_full_host_config.json')
+    response = requests.post(transform_url, inspect,
+                             auth=HTTPBasicAuth(client._access_key,
+                                                client._secret_key))
+    assert response.status_code == 200
+    container = response.json()
+    assert container is not None
+    assert container['memory'] == 42
+    assert container['memorySwap'] == 43
+    assert container['cpuShares'] == 2
+    assert container['cpuSet'] == '2,3'
 
 
 def test_transform_inspect_full(transform_url, client, super_client):
@@ -72,7 +115,7 @@ def test_transform_inspect_full(transform_url, client, super_client):
     assert container['tty'] is True
     assert container['stdinOpen'] is True
     assert container['imageUuid'] == 'docker:busybox'
-    assert container['directory'] == '/a_workdir'
+    assert container['workingDir'] == '/a_workdir'
     assert len(container['environment']['ENV1']) == 3
     assert container['environment']['ENV1'] == 'FOO'
     assert container['environment']['NOVALUE'] == ''
@@ -100,6 +143,12 @@ def test_transform_inspect_full(transform_url, client, super_client):
     assert len(container['labels']) == 2
     assert container['labels']['io.rancher.labeltest.value'] == 'val'
     assert container['labels']['io.rancher.labeltest.blank'] == ''
+    assert container['securityOpt'] == ['label:foo', 'label:bar']
+    assert container['logConfig']['type'] == 'syslog'
+    assert container['logConfig']['config']['tag'] == 'value'
+    assert container['pidMode'] == 'host'
+    assert container['extraHosts'] == ['host:1.1.1.1', 'host:2.2.2.2']
+    assert container['readOnly']
 
     # Load with admin so that we can see the data field
     response = requests.post(transform_url, inspect,
@@ -145,7 +194,7 @@ def test_transform_inspect_rountrip(transform_url, client):
     assert container['tty'] == orig_container['tty']
     assert container['stdinOpen'] == orig_container['stdinOpen']
     assert container['imageUuid'] == orig_container['imageUuid']
-    assert container['directory'] == orig_container['directory']
+    assert container['workingDir'] == orig_container['workingDir']
     assert container['environment'] == orig_container['environment']
     assert container['command'] == orig_container['command']
     orig_vols = {}
@@ -165,6 +214,11 @@ def test_transform_inspect_rountrip(transform_url, client):
     assert container['restartPolicy'] == orig_container['restartPolicy']
     assert container['devices'] == orig_container['devices']
     assert container['labels'] == orig_container['labels']
+    assert container['securityOpt'] == orig_container['securityOpt']
+    assert container['logConfig'] == orig_container['logConfig']
+    assert container['pidMode'] == orig_container['pidMode']
+    assert container['extraHosts'] == orig_container['extraHosts']
+    assert container['readOnly'] == orig_container['readOnly']
     assert container['networkMode'] == orig_container['networkMode']
 
 

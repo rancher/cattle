@@ -15,53 +15,288 @@ TYPE_LEN = {
 
 
 @pytest.fixture(scope='module')
-def clients(super_client, admin_user_client):
-    ret = {}
-    for k in TYPE_LEN.keys():
-        name = 'auth test {}'.format(k)
-        accounts = super_client.list_account(name=name)
-        if len(accounts) == 1:
-            api_keys = filter(lambda x: x.kind == 'apiKey',
-                              accounts[0].credentials())
-            if len(api_keys) == 1:
-                ret[k] = api_client(api_keys[0].publicValue,
-                                    api_keys[1].secretValue)
-                continue
+def user_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='user').user_client
 
-        context = create_context(admin_user_client, kind=k)
-        ret[k] = context.user_client
-
-    return ret
+@pytest.fixture(scope='module')
+def read_admin_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='readAdmin').user_client
 
 
 @pytest.fixture(scope='module')
-def user_client(clients):
-    return clients['user']
+def project_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='project').user_client
 
 
 @pytest.fixture(scope='module')
-def project_client(clients):
-    return clients['project']
+def token_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='token').user_client
 
 
 @pytest.fixture(scope='module')
-def token_client(clients):
-    return clients['token']
+def agent_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='agent').user_client
 
 
 @pytest.fixture(scope='module')
-def agent_client(clients):
-    return clients['agent']
+def agent_register_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='agentRegister').user_client
 
 
 @pytest.fixture(scope='module')
-def service_client(clients):
-    return clients['service']
+def service_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='service').user_client
 
 
-def test_user_client_access(clients):
-    for kind, client in clients.items():
-        assert TYPE_LEN[kind] == len(client.schema.types.items())
+def test_user_types(user_client):
+    set(user_client.schema.types.keys()) == {
+        'account',
+        'addLoadBalancerInput',
+        'addRemoveClusterHostInput',
+        'addRemoveLoadBalancerHostInput',
+        'addRemoveLoadBalancerListenerInput',
+        'addRemoveLoadBalancerTargetInput',
+        'addRemoveServiceLinkInput',
+        'amazonec2Config',
+        'apiKey',
+        'certificate',
+        'cluster',
+        'composeConfig',
+        'composeConfigInput',
+        'container',
+        'containerEvent',
+        'containerExec',
+        'containerLogs',
+        'credential',
+        'digitaloceanConfig',
+        'dnsService',
+        'environment',
+        'exoscaleConfig',
+        'externalService',
+        'globalLoadBalancer',
+        'globalLoadBalancerHealthCheck',
+        'globalLoadBalancerPolicy',
+        'host',
+        'hostAccess',
+        'image',
+        'instance',
+        'instanceConsole',
+        'instanceConsoleInput',
+        'instanceHealthCheck',
+        'instanceLink',
+        'instanceStop',
+        'ipAddress',
+        'ipAddressAssociateInput',
+        'label',
+        'loadBalancer',
+        'loadBalancerAppCookieStickinessPolicy',
+        'loadBalancerConfig',
+        'loadBalancerConfigListenerMap',
+        'loadBalancerCookieStickinessPolicy',
+        'loadBalancerHealthCheck',
+        'loadBalancerHostMap',
+        'loadBalancerListener',
+        'loadBalancerService',
+        'loadBalancerTarget',
+        'logConfig',
+        'machine',
+        'mount',
+        'network',
+        'openstackConfig',
+        'packetConfig',
+        'physicalHost',
+        'port',
+        'project',
+        'projectMember',
+        'rackspaceConfig',
+        'register',
+        'registrationToken',
+        'registry',
+        'registryCredential',
+        'removeLoadBalancerInput',
+        'restartPolicy',
+        'schema',
+        'service',
+        'serviceExposeMap',
+        'setLabelsInput',
+        'setLoadBalancerHostsInput',
+        'setLoadBalancerListenersInput',
+        'setLoadBalancerTargetsInput',
+        'setProjectMembersInput',
+        'setServiceLinksInput',
+        'snapshot',
+        'softlayerConfig',
+        'statsAccess',
+        'storagePool',
+        'typeDocumentation',
+        'userPreference',
+        'virtualboxConfig',
+        'vmwarevcloudairConfig',
+        'vmwarevsphereConfig',
+        'volume',
+    }
+
+
+def test_project_types(project_client):
+    # same as user
+    test_user_types(project_client)
+
+
+def test_agent_register_types(agent_register_client):
+    set(agent_register_client.schema.types.keys()) == {
+        'agent',
+        'authorized',
+        'error',
+        'schema',
+    }
+
+
+def test_agent_types(agent_client):
+    set(agent_client.schema.types.keys()) == {
+        'agent',
+        'authorized',
+        'configContent',
+        'containerEvent',
+        'error',
+        'publish',
+        'schema',
+        'subscribe',
+    }
+
+
+def test_token_types(token_client):
+    set(token_client.schema.types.keys()) == {
+        'schema',
+        'token',
+    }
+
+
+def test_service_types(service_client):
+    # same as admin user
+    test_admin_types(service_client)
+
+
+def test_read_admin_types(read_admin_client):
+    # same as admin user
+    test_admin_types(read_admin_client)
+
+
+def test_admin_types(admin_user_client):
+    set(admin_user_client.schema.types.keys()) == {
+        'account',
+        'activeSetting',
+        'addLoadBalancerInput',
+        'addRemoveClusterHostInput',
+        'addRemoveLoadBalancerHostInput',
+        'addRemoveLoadBalancerListenerInput',
+        'addRemoveLoadBalancerTargetInput',
+        'addRemoveServiceLinkInput',
+        'agent',
+        'amazonec2Config',
+        'apiKey',
+        'certificate',
+        'cluster',
+        'composeConfig',
+        'composeConfigInput',
+        'configItem',
+        'configItemStatus',
+        'container',
+        'containerEvent',
+        'containerExec',
+        'containerLogs',
+        'credential',
+        'databasechangelog',
+        'databasechangeloglock',
+        'digitaloceanConfig',
+        'dnsService',
+        'environment',
+        'exoscaleConfig',
+        'extensionImplementation',
+        'extensionPoint',
+        'externalHandler',
+        'externalHandlerExternalHandlerProcessMap',
+        'externalHandlerProcess',
+        'externalHandlerProcessConfig',
+        'externalService',
+        'githubconfig',
+        'globalLoadBalancer',
+        'globalLoadBalancerHealthCheck',
+        'globalLoadBalancerPolicy',
+        'host',
+        'hostAccess',
+        'image',
+        'instance',
+        'instanceConsole',
+        'instanceConsoleInput',
+        'instanceHealthCheck',
+        'instanceLink',
+        'instanceStop',
+        'ipAddress',
+        'ipAddressAssociateInput',
+        'label',
+        'loadBalancer',
+        'loadBalancerAppCookieStickinessPolicy',
+        'loadBalancerConfig',
+        'loadBalancerConfigListenerMap',
+        'loadBalancerCookieStickinessPolicy',
+        'loadBalancerHealthCheck',
+        'loadBalancerHostMap',
+        'loadBalancerListener',
+        'loadBalancerService',
+        'loadBalancerTarget',
+        'logConfig',
+        'machine',
+        'mount',
+        'network',
+        'openstackConfig',
+        'packetConfig',
+        'physicalHost',
+        'port',
+        'processDefinition',
+        'processExecution',
+        'processInstance',
+        'project',
+        'projectMember',
+        'publish',
+        'rackspaceConfig',
+        'register',
+        'registrationToken',
+        'registry',
+        'registryCredential',
+        'removeLoadBalancerInput',
+        'resourceDefinition',
+        'restartPolicy',
+        'schema',
+        'service',
+        'serviceExposeMap',
+        'setLabelsInput',
+        'setLoadBalancerHostsInput',
+        'setLoadBalancerListenersInput',
+        'setLoadBalancerTargetsInput',
+        'setProjectMembersInput',
+        'setServiceLinksInput',
+        'setting',
+        'snapshot',
+        'softlayerConfig',
+        'stateTransition',
+        'statsAccess',
+        'storagePool',
+        'task',
+        'taskInstance',
+        'typeDocumentation',
+        'userPreference',
+        'virtualboxConfig',
+        'vmwarevcloudairConfig',
+        'vmwarevsphereConfig',
+        'volume',
+    }
 
 
 def test_instance_link_auth(admin_user_client, user_client, project_client):
@@ -161,7 +396,7 @@ def test_project_member_auth(admin_user_client, user_client, project_client):
         "role": "cr",
         "externalId": "cr",
         "externalIdType": "cr",
-        "projectId": "r"
+        "projectId": "r",
     })
 
     auth_check(project_client.schema, 'projectMember', 'r', {
@@ -169,7 +404,7 @@ def test_project_member_auth(admin_user_client, user_client, project_client):
         "role": "r",
         "externalId": "r",
         "externalIdType": "r",
-        "projectId": "r"
+        "projectId": "r",
     })
 
 
@@ -314,7 +549,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'dataVolumesFrom': 'r',
         'description': 'r',
         'devices': 'r',
-        'directory': 'r',
+        'workingDir': 'r',
         'dns': 'r',
         'dnsSearch': 'r',
         'domainName': 'r',
@@ -350,6 +585,11 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'labels': 'r',
         'healthCheck': 'r',
         'healthState': 'r',
+        'securityOpt': 'r',
+        'logConfig': 'r',
+        'pidMode': 'r',
+        'extraHosts': 'r',
+        'readOnly': 'r'
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -365,7 +605,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'dataVolumesFrom': 'r',
         'description': 'r',
         'devices': 'r',
-        'directory': 'r',
+        'workingDir': 'r',
         'dns': 'r',
         'dnsSearch': 'r',
         'domainName': 'r',
@@ -399,6 +639,11 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'labels': 'r',
         'healthCheck': 'r',
         'healthState': 'r',
+        'securityOpt': 'r',
+        'logConfig': 'r',
+        'pidMode': 'r',
+        'extraHosts': 'r',
+        'readOnly': 'r'
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -414,7 +659,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'dataVolumesFrom': 'cr',
         'description': 'cru',
         'devices': 'cr',
-        'directory': 'cr',
+        'workingDir': 'cr',
         'dns': 'cr',
         'dnsSearch': 'cr',
         'domainName': 'cr',
@@ -448,6 +693,11 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'labels': 'cr',
         'healthCheck': 'cr',
         'healthState': 'r',
+        'securityOpt': 'cr',
+        'logConfig': 'cr',
+        'pidMode': 'cr',
+        'extraHosts': 'cr',
+        'readOnly': 'cr'
     })
 
 
