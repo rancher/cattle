@@ -137,7 +137,7 @@ def test_activate_single_service(client, context):
     assert container.command == ['sleep', '42']
     assert len(container.instanceLinks()) == 1
     assert len(container.environment) == 1
-    assert len(container.ports_link()) == 2
+    assert len(container.ports) == 2
     assert len(container.dataVolumes) == 1
     assert set(container.dataVolumesFrom) == set([container1.id])
     assert container.capAdd == caps
@@ -854,7 +854,7 @@ def test_set_service_links(super_client, client, context):
 
     # set service2 links for service1
     service1 = service1.\
-        setservicelinks(serviceLinks={service2.name: service2.id})
+        setservicelinks(serviceIds=[service2.id])
     _validate_add_service_link(service1, service2, super_client)
     _validate_remove_service_link(service1, service3, super_client)
 

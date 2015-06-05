@@ -4,6 +4,10 @@
         "serviceLinks": {
             "type": "map[reference[service]]",
             "nullable": false
+        },
+        "serviceIds": {
+            "type": "array[reference[service]]",
+            "nullable": false
         }
     }
 }

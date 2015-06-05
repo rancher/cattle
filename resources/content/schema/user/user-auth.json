@@ -374,6 +374,7 @@
 
         "setServiceLinksInput" : "r",
         "setServiceLinksInput.serviceLinks" : "cr",
+        "setServiceLinksInput.serviceIds" : "cr",
 
         "loadBalancerConfigListenerMap" : "r",
         "loadBalancerConfigListenerMap.loadBalancerConfigId" : "r",
