@@ -42,6 +42,7 @@
         "removeLoadBalancerInput" : "cr",
         "restartPolicy" : "cr",
         "service" : "crud",
+        "serviceConsumeMap" : "r",
         "serviceExposeMap" : "r",
         "setLoadBalancerHostsInput" : "cr",
         "setLoadBalancerListenersInput" : "cr",
