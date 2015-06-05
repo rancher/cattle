@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.servlet.http.Cookie;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -71,10 +72,10 @@ public class GithubUtils {
         if (jsonData == null){
             return externalIds;
         }
-        List<String> teamIds = (List<String>) CollectionUtils.toList(jsonData.get("team_ids"));
-        List<String> orgIds = (List<String>) CollectionUtils.toList(jsonData.get("org_ids"));
+        List<String> teamIds = (List<String>) CollectionUtils.toList(jsonData.get(GithubConstants.TEAM_IDS));
+        List<String> orgIds = (List<String>) CollectionUtils.toList(jsonData.get(GithubConstants.ORG_IDS));
         String accountId = ObjectUtils.toString(jsonData.get(GithubConstants.ACCOUNT_ID), null);
-        externalIds.add(new ExternalId(accountId , GithubConstants.USER_SCOPE, (String) jsonData.get("username")));
+        externalIds.add(new ExternalId(accountId , GithubConstants.USER_SCOPE, (String) jsonData.get(GithubConstants.USERNAME)));
         for (String teamId: teamIds){
             externalIds.add(new ExternalId(teamId, GithubConstants.TEAM_SCOPE));
         }
@@ -98,7 +99,7 @@ public class GithubUtils {
         } else if (tokenArr.length == 1) {
             toParse = tokenArr[0];
         } else {
-            return null;
+            toParse = jwt;
         }
         Map<String, Object> jsonData;
         try {
@@ -108,9 +109,9 @@ public class GithubUtils {
         }
         if (jsonData == null){
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, ValidationErrorCodes.MISSING_REQUIRED,
-                    "There is no github token present.", null);
+                    "There is no github token present. Or it is invalid.", null);
         }
-        List<String> idList = (List<String>) jsonData.get("idList");
+        List<String> idList = (List<String>) jsonData.get(GithubConstants.ID_LIST);
         Set<ExternalId> externalIds = externalIds(jsonData);
         if (!isAllowed(idList, externalIds)){
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
@@ -125,7 +126,7 @@ public class GithubUtils {
     public String getJWT(){
         ApiRequest request = ApiContext.getContext().getApiRequest();
         String jwt = (String) request.getAttribute(GithubConstants.GITHUB_JWT);
-        if (StringUtils.isNotBlank(jwt) && !jwt.toLowerCase().startsWith(ProjectConstants.AUTH_TYPE)){
+        if (StringUtils.isNotBlank(jwt) && getJsonData(jwt) == null){
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, ValidationErrorCodes.INVALID_FORMAT,
                     "Token malformed after retrieval.", null);
         }
@@ -134,14 +135,22 @@ public class GithubUtils {
     public void findAndSetJWT() {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         String jwt = (String) request.getAttribute(GithubConstants.GITHUB_JWT);
-        if (jwt == null && StringUtils.isBlank(jwt)){
+        if (StringUtils.isNotBlank(jwt) && getJsonData(jwt) != null){
+            return;
+        }
+        if (StringUtils.isBlank(jwt)) {
+            for (Cookie cookie : request.getServletContext().getRequest().getCookies()) {
+                if (cookie.getName().equalsIgnoreCase(GithubConstants.TOKEN)
+                        && StringUtils.isNotBlank(cookie.getValue())) {
+                    jwt = cookie.getValue();
+                }
+            }
+        }
+        if (StringUtils.isBlank(jwt)){
             jwt = request.getServletContext().getRequest().getHeader(ProjectConstants.AUTH_HEADER);
         }
-        if (StringUtils.isEmpty(jwt) || !jwt.toLowerCase().startsWith(ProjectConstants.AUTH_TYPE)){
-            jwt = request.getServletContext().getRequest().getParameter("token");
-            if (StringUtils.isNotBlank(jwt) && !jwt.toLowerCase().startsWith(ProjectConstants.AUTH_TYPE)){
-                jwt = ProjectConstants.AUTH_TYPE + jwt;
-            }
+        if (StringUtils.isBlank(jwt)){
+            jwt = request.getServletContext().getRequest().getParameter(GithubConstants.TOKEN);
         }
         if (getJsonData(jwt) != null){
             request.setAttribute(GithubConstants.GITHUB_JWT, jwt);

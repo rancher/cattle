@@ -102,10 +102,10 @@ public class GithubTokenHandler implements TokenHandler {
         Map<String, Object> jsonData = new HashMap<>();
         jsonData.put(GithubConstants.ACCOUNT_ID, userAccountInfo.getAccountId());
         jsonData.put("teamToOrg", teamToOrg);
-        jsonData.put("username", userAccountInfo.getAccountName());
-        jsonData.put("team_ids", teamIds);
-        jsonData.put("org_ids", orgIds);
-        jsonData.put("idList", idList);
+        jsonData.put(GithubConstants.USERNAME, userAccountInfo.getAccountName());
+        jsonData.put(GithubConstants.TEAM_IDS, teamIds);
+        jsonData.put(GithubConstants.ORG_IDS, orgIds);
+        jsonData.put(GithubConstants.ID_LIST, idList);
         DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).set(accessToken);
         objectManager.persist(account);
         account = objectManager.reload(account);
