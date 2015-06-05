@@ -538,6 +538,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'agentId': 'r',
         'allocationState': 'r',
+        'build': 'r',
         'capAdd': 'r',
         'capDrop': 'r',
         'command': 'r',
@@ -595,6 +596,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
 
     auth_check(user_client.schema, 'container', 'r', {
         'accountId': 'r',
+        'build': 'r',
         'capAdd': 'r',
         'capDrop': 'r',
         'command': 'r',
@@ -649,6 +651,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
 
     auth_check(project_client.schema, 'container', 'crud', {
         'accountId': 'r',
+        'build': 'cr',
         'capAdd': 'cr',
         'capDrop': 'cr',
         'command': 'cr',
@@ -699,6 +702,15 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'pidMode': 'cr',
         'extraHosts': 'cr',
         'readOnly': 'cr'
+    })
+
+    auth_check(project_client.schema, 'dockerBuild', 'cr', {
+        'dockerfile': 'cr',
+        'context': 'cr',
+        'remote': 'cr',
+        'nocache': 'cr',
+        'rm': 'cr',
+        'forcerm': 'cr',
     })
 
 

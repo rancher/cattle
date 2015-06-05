@@ -34,6 +34,7 @@
         "clusterHostMap" : "",
 
         "container" : "r",
+        "container.build" : "cr",
         "container.capAdd" : "cr",
         "container.capDrop" : "cr",
         "container.command" : "cr",
@@ -105,7 +106,15 @@
         "credential.publicValue" : "r",
         "credential.secretValue" : "r",
 
-        "host" : "ru",
+        "dockerBuild" : "r",
+        "dockerBuild.dockerfile" : "cr",
+        "dockerBuild.remote" : "cr",
+        "dockerBuild.context" : "cr",
+        "dockerBuild.nocache" : "cr",
+        "dockerBuild.rm" : "cr",
+        "dockerBuild.forcerm" : "cr",
+
+        "host" : "r",
         "host.agentId" : "r",
         "host.computeTotal" : "r",
         "host.info" : "r",
