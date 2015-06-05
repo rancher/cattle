@@ -267,6 +267,14 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected void preRunStateCheck() {
         if (instanceContext.getState().isDone(schedule)) {
+            String configuredChainProcess = getConfiguredChainProcess();
+            if (configuredChainProcess != null) {
+                try {
+                    scheduleChain(configuredChainProcess);
+                    throw new ProcessExecutionExitException(ExitReason.CHAIN);
+                } catch (ProcessCancelException e) {
+                }
+            }
             throw new ProcessExecutionExitException(ALREADY_DONE);
         }
 
@@ -354,6 +362,17 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         throw new ProcessExecutionExitException(SCHEDULED);
     }
 
+    protected String getConfiguredChainProcess() {
+        ProcessState state = instanceContext.getState();
+        ProcessDefinition processDefinition = instanceContext.getProcessDefinition();
+
+        if (state.getData().containsKey(processDefinition.getName() + ProcessLogic.CHAIN_PROCESS)) {
+            return state.getData().get(processDefinition.getName() + ProcessLogic.CHAIN_PROCESS).toString();
+        }
+
+        return null;
+    }
+
     protected boolean runHandlers(ProcessPhase phase, List<? extends ProcessLogic> handlers) {
         boolean shouldDelegate = false;
         boolean ran = false;
@@ -394,9 +413,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 }
             }
 
-            if (currentPhase == ProcessPhase.POST_LISTENERS && chainProcess == null
-                    && state.getData().containsKey(processDefinition.getName() + ProcessLogic.CHAIN_PROCESS)) {
-                chainProcess = state.getData().get(processDefinition.getName() + ProcessLogic.CHAIN_PROCESS).toString();
+            String configuredChainProcess = getConfiguredChainProcess();
+            if (currentPhase == ProcessPhase.POST_LISTENERS && chainProcess == null && configuredChainProcess != null ) {
+                chainProcess = configuredChainProcess;
             }
 
             instanceContext.setPhase(phase);
@@ -554,32 +573,36 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         return newState;
     }
 
+    protected void scheduleChain(final String chainProcess) {
+        final ProcessState state = instanceContext.getState();
+        final LaunchConfiguration config = new LaunchConfiguration(chainProcess, record.getResourceType(), record.getResourceId(), state.getData());
+        config.setParentProcessState(state);
+
+        ExecutionExceptionHandler handler = this.context.getExceptionHandler();
+
+        Runnable run = new Runnable() {
+            @Override
+            public void run() {
+                DefaultProcessInstanceImpl.this.context.getProcessManager().scheduleProcessInstance(config);
+                log.info("Chained [{}] to [{}]", record.getProcessName(), chainProcess);
+                state.reload();
+            }
+        };
+
+        if (handler == null) {
+            run.run();
+        } else {
+            handler.wrapChainSchedule(state, context, run);
+        }
+    }
+
     protected boolean setDone() {
         boolean chained = false;
         final ProcessState state = instanceContext.getState();
         String previousState = state.getState();
 
         if (chainProcess != null) {
-            final LaunchConfiguration config = new LaunchConfiguration(chainProcess, record.getResourceType(), record.getResourceId(), state.getData());
-            config.setParentProcessState(state);
-
-            ExecutionExceptionHandler handler = this.context.getExceptionHandler();
-
-            Runnable run = new Runnable() {
-                @Override
-                public void run() {
-                    DefaultProcessInstanceImpl.this.context.getProcessManager().scheduleProcessInstance(config);
-                    log.info("Chained [{}] to [{}]", record.getProcessName(), chainProcess);
-                    state.reload();
-                }
-            };
-
-            if (handler == null) {
-                run.run();
-            } else {
-                handler.wrapChainSchedule(state, context, run);
-            }
-
+            scheduleChain(chainProcess);
             chained = true;
         }
 
