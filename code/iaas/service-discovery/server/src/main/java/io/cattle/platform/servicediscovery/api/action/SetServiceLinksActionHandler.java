@@ -17,6 +17,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,32 +47,55 @@ public class SetServiceLinksActionHandler implements ActionHandler {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Object perform(String name, Object obj, ApiRequest request) {
         if (!(obj instanceof Service)) {
             return null;
         }
         final Service service = (Service) obj;
-        final Map<String, Long> newServiceLinks = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_MAP)
-                .as(Map.class);
-            lockManager.lock(new ServiceDiscoveryServiceSetLinksLock(service), new LockCallbackNoReturn() {
-                @Override
-                public void doWithLockNoResult() {
-                    // remove old listeners set
-                    removeOldServiceMaps(service, newServiceLinks);
-    
-                    // create a new set
-                    createNewServiceMaps(service, newServiceLinks);
-                }
+        final Map<Long, String> newServiceLinks = populateNewServiceLinks(request);
+
+        lockManager.lock(new ServiceDiscoveryServiceSetLinksLock(service), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                // remove old listeners set
+                removeOldServiceMaps(service, newServiceLinks);
+
+                // create a new set
+                createNewServiceMaps(service, newServiceLinks);
+            }
         });
         
         return service;
     }
 
-    private void createNewServiceMaps(Service service, Map<String, Long> newServiceLinks) {
-        for (String linkName : newServiceLinks.keySet()) {
-            Long consumedServiceId = newServiceLinks.get(linkName);
+    @SuppressWarnings("unchecked")
+    protected Map<Long, String> populateNewServiceLinks(ApiRequest request) {
+        final Map<Long, String> newServiceLinks = new HashMap<>();
+        final Map<String, Long> newServiceLinksMaps = DataAccessor.fromMap(request.getRequestObject())
+                .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_MAP)
+                .as(Map.class);
+
+        if (newServiceLinksMaps != null) {
+            for (String linkName : newServiceLinksMaps.keySet()) {
+                newServiceLinks.put(newServiceLinksMaps.get(linkName), linkName);
+            }
+        }
+
+        final List<? extends Long> newConsumedServicesIds = DataAccessor.fromMap(request.getRequestObject())
+                .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_IDS).asList(jsonMapper,
+                        Long.class);
+        
+        if (newConsumedServicesIds != null) {
+            for (Long consumedServiceId : newConsumedServicesIds) {
+                newServiceLinks.put(consumedServiceId, null);
+            }
+        }
+        return newServiceLinks;
+    }
+
+    private void createNewServiceMaps(Service service, Map<Long, String> newServiceLinks) {
+        for (Long consumedServiceId : newServiceLinks.keySet()) {
+            String linkName = newServiceLinks.get(consumedServiceId);
             ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), consumedServiceId);
             if (map == null) {
                 map = objectManager.create(ServiceConsumeMap.class,
@@ -85,12 +109,12 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         }
     }
 
-    private void removeOldServiceMaps(Service service, Map<String, Long> newServiceLinks) {
+    private void removeOldServiceMaps(Service service, Map<Long, String> newServiceLinks) {
         List<? extends ServiceConsumeMap> existingMaps = consumeMapDao.findConsumedMapsToRemove(service.getId());
         List<ServiceConsumeMap> mapsToRemove = new ArrayList<>();
 
         for (ServiceConsumeMap existingMap : existingMaps) {
-            if (!newServiceLinks.containsValue(existingMap.getConsumedServiceId())) {
+            if (!newServiceLinks.containsKey(existingMap.getConsumedServiceId())) {
                 mapsToRemove.add(existingMap);
             }
         }
