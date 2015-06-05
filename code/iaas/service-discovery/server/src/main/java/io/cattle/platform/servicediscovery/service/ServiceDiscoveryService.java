@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.service;
 
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 
 import java.util.AbstractMap.SimpleEntry;

@@ -1,7 +1,10 @@
 package io.cattle.platform.servicediscovery.deployment;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
 import java.util.Map;
@@ -14,7 +17,21 @@ public abstract class DeploymentUnitInstance {
 
     public abstract boolean isError();
 
-    public abstract void remove();
+    public void remove() {
+        removeUnitInstance();
+        if (exposeMap != null) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, exposeMap, null);
+            context.resourceMonitor.waitFor(exposeMap,
+                    new ResourcePredicate<ServiceExposeMap>() {
+                        @Override
+                        public boolean evaluate(ServiceExposeMap obj) {
+                            return CommonStatesConstants.REMOVED.equals(obj.getState());
+                        }
+                    });
+        }
+    }
+
+    protected abstract void removeUnitInstance();
 
     public abstract void stop();
 

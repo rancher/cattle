@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import static io.cattle.platform.core.model.tables.LoadBalancerTable.*;
-
+import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -10,7 +9,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
@@ -50,15 +48,10 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance i
     }
 
     @Override
-    public void remove() {
-        // 1) remove host map
+    protected void removeUnitInstance() {
         context.objectProcessManager.scheduleProcessInstanceAsync(
                 LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
                 context.objectManager.reload(hostMap), null);
-        // 2) remove the mapping
-        if (this.exposeMap != null) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, exposeMap, null);
-        }
     }
 
     @Override

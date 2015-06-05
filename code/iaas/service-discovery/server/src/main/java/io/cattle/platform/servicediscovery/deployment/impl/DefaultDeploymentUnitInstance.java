@@ -15,7 +15,6 @@ import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -45,10 +44,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     }
 
     @Override
-    public void remove() {
-        // 1) schedule remove for the instance
-        // removal instance is scheduled ahead of map removal, to avoid situation when map removal is scheduled, but
-        // removal scheduling fails by some reason
+    protected void removeUnitInstance() {
         if (!(instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
                 CommonStatesConstants.REMOVING))) {
             try {
@@ -59,14 +55,6 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                         instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
                                 InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
             }
-        }
-
-        // 2) remove the mapping
-        List<? extends ServiceExposeMap> maps = context.objectManager.mappedChildren(
-                context.objectManager.loadResource(Instance.class, instance.getId()),
-                ServiceExposeMap.class);
-        for (ServiceExposeMap map : maps) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, map, null);
         }
     }
 
