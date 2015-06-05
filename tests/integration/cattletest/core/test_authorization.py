@@ -19,6 +19,7 @@ def user_client(admin_user_client):
     return create_context(admin_user_client, create_project=False,
                           add_host=False, kind='user').user_client
 
+
 @pytest.fixture(scope='module')
 def read_admin_client(admin_user_client):
     return create_context(admin_user_client, create_project=False,
