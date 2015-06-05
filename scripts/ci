@@ -67,7 +67,7 @@ DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/regis
 
 ./wait-for-hosts
 
-./test -- -n $(nproc) || {
+./test -- -n 4 || {
     echo Test failed
     cat /tmp/run.log
     echo Test failed
