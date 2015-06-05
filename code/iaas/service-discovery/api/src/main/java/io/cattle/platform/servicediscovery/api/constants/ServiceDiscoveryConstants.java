@@ -20,6 +20,8 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
     public static final String FIELD_NETWORKSERVICE = "networkServiceId";
+    public static final String FIELD_SERVICE_LINKS = "serviceLinks";
+    public static final String FIELD_SERVICE_LINK_NAME = "name";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

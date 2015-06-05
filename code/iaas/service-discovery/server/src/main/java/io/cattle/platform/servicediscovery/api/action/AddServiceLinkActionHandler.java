@@ -38,20 +38,23 @@ public class AddServiceLinkActionHandler implements ActionHandler {
         Service service = (Service) obj;
         Long consumedServiceId = DataAccessor.fromMap(request.getRequestObject())
                 .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_ID).as(Long.class);
+        String linkName = DataAccessor.fromMap(request.getRequestObject())
+                .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_LINK_NAME).as(String.class);
 
-        createMap(service, consumedServiceId);
+        createMap(service, consumedServiceId, linkName);
 
         return service;
     }
 
-    protected void createMap(Service service, long consumedServiceId) {
+    protected void createMap(Service service, long consumedServiceId, String name) {
         ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), consumedServiceId);
 
         if (map == null) {
             map = objectManager.create(ServiceConsumeMap.class,
                     SERVICE_CONSUME_MAP.SERVICE_ID,
                     service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId,
-                    SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId());
+                    SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
+                    SERVICE_CONSUME_MAP.NAME, name);
         }
         objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
                 map, null);

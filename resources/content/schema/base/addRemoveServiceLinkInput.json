@@ -5,6 +5,11 @@
             "type": "reference[service]",
             "required": true,
             "nullable": false
+        },
+        "name" : {
+            "type": "string",
+            "required": false,
+            "nullable": true
         }
     }
 }

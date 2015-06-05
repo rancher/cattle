@@ -425,6 +425,13 @@ def test_service_add_remove_service_link(client, super_client, context):
     service1 = service1.removeservicelink(serviceId=service2.id)
     _validate_remove_service_link(service1, service2, super_client)
 
+    # validate adding link with the name
+    service1 = service1.addservicelink(serviceId=service2.id, name='mylink')
+    service_maps = super_client. \
+        list_serviceConsumeMap(serviceId=service1.id,
+                               consumedServiceId=service2.id, name='mylink')
+    assert len(service_maps) == 1
+
 
 def test_link_service_twice(super_client, client, context):
     env = client.create_environment(name=random_str())
@@ -840,17 +847,19 @@ def test_set_service_links(super_client, client, context):
     service3 = client.wait_success(service3)
 
     # set service2, service3 links for service1
-    service1 = service1.setservicelinks(serviceIds=[service2.id, service3.id])
+    service1 = service1.setservicelinks(serviceLinks={"link1": service2.id,
+                                                      "link2": service3.id})
     _validate_add_service_link(service1, service2, super_client)
     _validate_add_service_link(service1, service3, super_client)
 
     # set service2 links for service1
-    service1 = service1.setservicelinks(serviceIds=[service2.id])
+    service1 = service1.\
+        setservicelinks(serviceLinks={service2.name: service2.id})
     _validate_add_service_link(service1, service2, super_client)
     _validate_remove_service_link(service1, service3, super_client)
 
     # set empty service link set
-    service1 = service1.setservicelinks(serviceIds=[])
+    service1 = service1.setservicelinks(serviceLinks={})
     _validate_remove_service_link(service1, service2, super_client)
     _validate_remove_service_link(service1, service3, super_client)
 
@@ -864,7 +873,7 @@ def test_set_service_links(super_client, client, context):
     service4 = client.wait_success(service4)
 
     with pytest.raises(ApiError) as e:
-        service1.setservicelinks(serviceIds=[service4.id])
+        service1.setservicelinks(serviceLinks={"link": service4.id})
 
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidReference'

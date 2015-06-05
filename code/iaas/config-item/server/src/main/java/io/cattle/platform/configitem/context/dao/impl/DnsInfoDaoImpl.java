@@ -17,6 +17,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
@@ -102,6 +103,14 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .fetch().map(mapper);
     }
 
+    private String getDnsName(Object serviceConsumeMap, Object service) {
+        String consumeMapName = ((ServiceConsumeMap) serviceConsumeMap).getName();
+        if (consumeMapName != null && !consumeMapName.isEmpty()) {
+            return consumeMapName;
+        }
+        return ((Service) service).getName();
+    }
+
     @Override
     public List<DnsEntryData> getServiceHostDnsData(final Instance instance) {
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
@@ -111,7 +120,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Map<String, List<String>> resolve = new HashMap<>();
                 List<String> ips = new ArrayList<>();
                 ips.add(((IpAddress) input.get(1)).getAddress());
-                resolve.put(((Service) input.get(0)).getName(), ips);
+                resolve.put(getDnsName(input.get(4), input.get(0)), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
                 data.setInstance((Instance)input.get(3));
@@ -123,6 +132,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressTable targetIpAddress = mapper.add(IP_ADDRESS);
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
         InstanceTable clientInstance = mapper.add(INSTANCE);
+        ServiceConsumeMapTable serviceConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
         InstanceTable targetInstance = INSTANCE.as("instance");
@@ -130,7 +140,6 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
         ServiceExposeMapTable targetServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_target");
-        ServiceConsumeMapTable serviceConsumeMap = SERVICE_CONSUME_MAP.as("service_consume_map");
 
         return create()
                 .select(mapper.fields())
@@ -261,7 +270,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Map<String, List<String>> resolve = new HashMap<>();
                 List<String> ips = new ArrayList<>();
                 ips.add(((ServiceExposeMap) input.get(1)).getIpAddress());
-                resolve.put(((Service) input.get(0)).getName(), ips);
+                resolve.put(getDnsName(input.get(4), input.get(0)), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
                 data.setInstance((Instance) input.get(3));
@@ -273,10 +282,10 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         ServiceExposeMapTable targetServiceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
         InstanceTable clientInstance = mapper.add(INSTANCE);
+        ServiceConsumeMapTable serviceConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
         NicTable clientNic = NIC.as("client_nic");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
-        ServiceConsumeMapTable serviceConsumeMap = SERVICE_CONSUME_MAP.as("service_consume_map");
 
         return create()
                 .select(mapper.fields())
@@ -323,7 +332,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Map<String, List<String>> resolve = new HashMap<>();
                 List<String> ips = new ArrayList<>();
                 ips.add(((IpAddress) input.get(1)).getAddress());
-                resolve.put(((Service) input.get(0)).getName(), ips);
+                resolve.put(getDnsName(input.get(4), input.get(0)), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
                 data.setInstance((Instance) input.get(3));
@@ -335,6 +344,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressTable targetIpAddress = mapper.add(IP_ADDRESS);
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
         InstanceTable clientInstance = mapper.add(INSTANCE);
+        ServiceConsumeMapTable dnsConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
         InstanceTable targetInstance = INSTANCE.as("instance");
@@ -342,8 +352,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
         ServiceExposeMapTable targetServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_target");
-        ServiceConsumeMapTable dnsConsumeMap = SERVICE_CONSUME_MAP.as("dns_consume_map");
-        ServiceConsumeMapTable serviceConsumeMap = SERVICE_CONSUME_MAP.as("service_consume_map");
+        ServiceConsumeMapTable serviceConsumeMap = SERVICE_CONSUME_MAP.as("consume_map");
 
         return create()
                 .select(mapper.fields())

@@ -1,8 +1,8 @@
 {
     "collectionMethods" : [],
     "resourceFields": {
-        "serviceIds": {
-            "type": "array[reference[service]]",
+        "serviceLinks": {
+            "type": "map[reference[service]]",
             "nullable": false
         }
     }
