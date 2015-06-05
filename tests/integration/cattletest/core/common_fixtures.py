@@ -349,6 +349,7 @@ def wait_all_success(client, objs, timeout=DEFAULT_TIMEOUT):
 
 def wait_for_condition(client, resource, check_function, fail_handler=None,
                        timeout=DEFAULT_TIMEOUT):
+    sleep_time = _sleep_time()
     start = time.time()
     resource = client.reload(resource)
     while not check_function(resource):
@@ -360,7 +361,7 @@ def wait_for_condition(client, resource, check_function, fail_handler=None,
                 exceptionMsg = exceptionMsg + fail_handler(resource)
             raise Exception(exceptionMsg)
 
-        time.sleep(.5)
+        time.sleep(sleep_time.next())
         resource = client.reload(resource)
 
     return resource
@@ -568,11 +569,21 @@ def resource_action_check(schema, id, actions):
     assert keys_received == action_keys
 
 
+def _sleep_time():
+    sleep = 0.01
+    while True:
+        yield sleep
+        sleep *= 2
+        if sleep > 1:
+            sleep = 1
+
+
 def wait_for(callback, timeout=DEFAULT_TIMEOUT):
+    sleep_time = _sleep_time()
     start = time.time()
     ret = callback()
     while ret is None or ret is False:
-        time.sleep(.5)
+        time.sleep(sleep_time.next())
         if time.time() - start > timeout:
             raise Exception('Timeout waiting for condition')
         ret = callback()
@@ -605,10 +616,11 @@ def resource_pool_items(admin_client, obj, type=None, qualifier=None):
 
 
 def wait_setting_active(api_client, setting, timeout=45):
+    sleep_time = _sleep_time()
     start = time.time()
     setting = api_client.by_id_setting(setting.name)
     while setting.value != setting.activeValue:
-        time.sleep(.5)
+        time.sleep(sleep_time.next())
         setting = api_client.by_id('setting', setting.id)
         if time.time() - start > timeout:
             msg = 'Timeout waiting for [{0}] to be done'.format(setting)

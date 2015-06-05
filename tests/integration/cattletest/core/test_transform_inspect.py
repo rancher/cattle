@@ -144,7 +144,7 @@ def test_transform_inspect_full(transform_url, client, super_client):
     assert container['labels']['io.rancher.labeltest.value'] == 'val'
     assert container['labels']['io.rancher.labeltest.blank'] == ''
     assert container['securityOpt'] == ['label:foo', 'label:bar']
-    assert container['logConfig']['type'] == 'syslog'
+    assert container['logConfig']['driver'] == 'syslog'
     assert container['logConfig']['config']['tag'] == 'value'
     assert container['pidMode'] == 'host'
     assert container['extraHosts'] == ['host:1.1.1.1', 'host:2.2.2.2']

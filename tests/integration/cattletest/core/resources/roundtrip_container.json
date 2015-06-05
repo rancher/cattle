@@ -108,7 +108,7 @@
   },
   "securityOpt": ["label:foo", "label:bar"],
   "logConfig": {
-    "type": "syslog",
+    "driver": "syslog",
     "config": {
       "tag": "value"
     }
