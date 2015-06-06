@@ -206,4 +206,17 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 .and(SERVICE.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, CommonStatesConstants.UPDATING_ACTIVE))
                 .fetchInto(ServiceRecord.class);
     }
+
+    @Override
+    public List<? extends ServiceExposeMap> getNonRemovedServiceIpMaps(long serviceId) {
+        return create()
+                .select(SERVICE_EXPOSE_MAP.fields())
+                .from(SERVICE_EXPOSE_MAP)
+                .where(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
+                .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()
+                        .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
+                                CommonStatesConstants.REMOVING))
+                        .and(SERVICE_EXPOSE_MAP.IP_ADDRESS.isNotNull()))
+                .fetchInto(ServiceExposeMapRecord.class);
+    }
 }

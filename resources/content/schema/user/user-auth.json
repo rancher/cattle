@@ -416,7 +416,7 @@
         "serviceExposeMap.ipAddress" : "r",
 
         "externalService" : "r",
-        "externalService.externalIpAddresses" : "cr",
+        "externalService.externalIpAddresses" : "cru",
         "externalService.launchConfig" : "",
         "externalService.dataVolumesFromService" : "",
         "externalService.scale" : "",

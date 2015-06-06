@@ -1376,6 +1376,25 @@ def test_external_service(client, context):
     _validate_service_ip_map(client, service2, "72.22.16.5", "active")
     _validate_service_ip_map(client, service2, "192.168.0.10", "active")
 
+    # add one extra ip address
+    ips = ["72.22.16.5", '192.168.0.10', '10.1.1.1']
+    service2 = client.update(service2, externalIpAddresses=ips)
+    service2 = client.wait_success(service2, 120)
+    assert len(service2.externalIpAddresses) == 3
+    _validate_service_ip_map(client, service2, "72.22.16.5", "active")
+    _validate_service_ip_map(client, service2, "192.168.0.10", "active")
+    _validate_service_ip_map(client, service2, "10.1.1.1", "active")
+
+    # remove 2 ips from the list, and add one new
+    ips = ["72.22.16.5", '50.255.37.17']
+    service2 = client.update(service2, externalIpAddresses=ips)
+    service2 = client.wait_success(service2, 120)
+    assert len(service2.externalIpAddresses) == 2
+    _validate_service_ip_map(client, service2, "72.22.16.5", "active")
+    _validate_service_ip_map(client, service2, "192.168.0.10", "removed")
+    _validate_service_ip_map(client, service2, "10.1.1.1", "removed")
+    _validate_service_ip_map(client, service2, "50.255.37.17", "active")
+
     # remove external service
     service2 = client.wait_success(service2.remove())
     assert service2.state == "removed"
