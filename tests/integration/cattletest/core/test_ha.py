@@ -8,7 +8,7 @@ def _process_names(processes):
 
 def test_container_ha_default(super_client, new_context):
     client = new_context.client
-    c = new_context.create_container(name='simForgetImmediately')
+    c = new_context.create_container_no_success(name='simForgetImmediately')
 
     def do_ping():
         ping = one(super_client.list_task, name='agent.ping')
