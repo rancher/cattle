@@ -852,16 +852,22 @@ def test_set_service_links(client, context):
     _validate_add_service_link(service1, service2, client, "link1")
     _validate_add_service_link(service1, service3, client, "link2")
 
+    # update the link with new name
+    service1 = service1.setservicelinks(serviceLinks={"link3": service2.id,
+                                                      "link4": service3.id})
+    _validate_remove_service_link(service1, service2, client, "link1")
+    _validate_remove_service_link(service1, service3, client, "link2")
+    _validate_add_service_link(service1, service2, client, "link3")
+    _validate_add_service_link(service1, service3, client, "link4")
+
     # set service2 links for service1
     service1 = service1.\
         setservicelinks(serviceIds=[service2.id])
-    _validate_add_service_link(service1, service2, client)
-    _validate_remove_service_link(service1, service3, client)
+    _validate_remove_service_link(service1, service3, client, "link4")
 
     # set empty service link set
     service1 = service1.setservicelinks(serviceLinks={})
-    _validate_remove_service_link(service1, service2, client)
-    _validate_remove_service_link(service1, service3, client)
+    _validate_remove_service_link(service1, service2, client, "link3")
 
     # try to link to the service from diff environment
     env2 = client.create_environment(name=random_str())
@@ -1847,11 +1853,20 @@ def _validate_add_service_link(service,
         lambda x: 'State is: ' + x.state)
 
 
-def _validate_remove_service_link(service, consumedService, client):
-    service_maps = client. \
-        list_serviceConsumeMap(serviceId=service.id,
-                               consumedServiceId=consumedService.id)
+def _validate_remove_service_link(service,
+                                  consumedService, client, link_name=None):
+    if link_name is None:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedServiceId=consumedService.id)
+    else:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedServiceId=consumedService.id,
+                                   name=link_name)
+
     assert len(service_maps) == 1
+
     service_map = service_maps[0]
     wait_for_condition(
         client, service_map, _resource_is_removed,

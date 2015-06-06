@@ -8,7 +8,7 @@ public interface ServiceConsumeMapDao {
 
     ServiceConsumeMap findMapToRemove(long serviceId, long consumedServiceId);
 
-    ServiceConsumeMap findNonRemovedMap(long serviceId, long consumedServiceId);
+    ServiceConsumeMap findNonRemovedMap(long serviceId, long consumedServiceId, String linkName);
 
     /**
      * Lists maps to remove referencing services consumed by passed serviceId

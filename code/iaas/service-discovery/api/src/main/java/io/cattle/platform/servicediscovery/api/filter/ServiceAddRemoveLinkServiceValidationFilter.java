@@ -55,7 +55,7 @@ public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractDefault
         Long consumedServiceId = (Long) data.get(ServiceDiscoveryConstants.FIELD_SERVICE_ID);
         if (ACTIONS.get(action) == Operation.ADD) {
             Service service = objectManager.loadResource(Service.class, serviceId);
-            if (consumeMapDao.findNonRemovedMap(serviceId, consumedServiceId) != null) {
+            if (consumeMapDao.findNonRemovedMap(serviceId, consumedServiceId, null) != null) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
                         ServiceDiscoveryConstants.FIELD_SERVICE_ID);
             }
