@@ -249,6 +249,18 @@ def test_network_modes(transform_url, client):
     container = response.json()
     assert container['networkMode'] == 'none'
 
+    inspect = '{"Id": "an-id", "Config": {"Image": "image"}, ' \
+              '"HostConfig": {"NetworkMode": "none"}}'
+    response = requests.post(transform_url, inspect, auth=auth)
+    container = response.json()
+    assert container['networkMode'] == 'none'
+
+    inspect = '{"Id": "an-id", "Config": {"Image": "image"}, ' \
+              '"HostConfig": {"NetworkMode": null}}'
+    response = requests.post(transform_url, inspect, auth=auth)
+    container = response.json()
+    assert container['networkMode'] == 'bridge'
+
     inspect = inspect_template % 'container:foobar'
     response = requests.post(transform_url, inspect, auth=auth)
     assert response.status_code == 422
