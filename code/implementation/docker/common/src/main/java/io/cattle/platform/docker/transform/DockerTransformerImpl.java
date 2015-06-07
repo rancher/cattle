@@ -129,7 +129,6 @@ public class DockerTransformerImpl implements DockerTransformer {
         if (containerConfig != null && hostConfig != null) {
             setVolumes(instance, containerConfig.getVolumes(), hostConfig.getBinds());
             setPorts(instance, safeGetExposedPorts(containerConfig), hostConfig.getPortBindings());
-            setNetworkMode(instance, containerConfig, hostConfig);
         }
 
         if (hostConfig != null) {
@@ -144,6 +143,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             setDevices(instance, hostConfig.getDevices());
         }
 
+        setNetworkMode(instance, containerConfig, hostConfig);
         setField(instance, FIELD_SECURITY_OPT, fromInspect, "HostConfig", "SecurityOpt");
         setField(instance, FIELD_PID_MODE, fromInspect, "HostConfig", "PidMode");
         setField(instance, FIELD_READ_ONLY, fromInspect, "HostConfig", "ReadonlyRootfs");
@@ -164,13 +164,15 @@ public class DockerTransformerImpl implements DockerTransformer {
             return;
 
         String netMode = null;
-        if (containerConfig.isNetworkDisabled()) {
+        if (containerConfig != null && containerConfig.isNetworkDisabled()) {
             netMode = NETWORK_MODE_NONE;
-        } else {
+        } else if (hostConfig != null) {
             String inspectNetMode = hostConfig.getNetworkMode();
-            if (NETWORK_MODE_BRIDGE.equals(inspectNetMode) || NETWORK_MODE_HOST.equals(inspectNetMode)){
+            if (NETWORK_MODE_BRIDGE.equals(inspectNetMode) ||
+                    NETWORK_MODE_HOST.equals(inspectNetMode) ||
+                    NETWORK_MODE_NONE.equals(inspectNetMode)) {
                 netMode = inspectNetMode;
-            }else if (StringUtils.isBlank(inspectNetMode)) {
+            } else if (StringUtils.isBlank(inspectNetMode)) {
                 netMode = NETWORK_MODE_BRIDGE;
             } else if (StringUtils.startsWith(inspectNetMode, NETWORK_MODE_CONTAINER)) {
                 throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_OPTION,
