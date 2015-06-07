@@ -40,13 +40,17 @@ public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessP
             secretValue = keys[1];
         }
 
-        /*
-         * Don't pass back secret value because it will be logged and that's not
-         * good
-         */
-        objectManager.setFields(credential, CREDENTIAL.SECRET_VALUE, secretValue);
+        if (secretValue == null) {
+            return null;
+        } else {
+            /*
+             * Don't pass back secret value because it will be logged and that's not
+             * good
+             */
+            objectManager.setFields(credential, CREDENTIAL.SECRET_VALUE, secretValue);
 
-        return new HandlerResult(CREDENTIAL.PUBLIC_VALUE, publicValue, "_secretHash", secretValue.hashCode());
+            return new HandlerResult(CREDENTIAL.PUBLIC_VALUE, publicValue, "_secretHash", secretValue.hashCode());
+        }
     }
 
     protected String getCredentialType() {
