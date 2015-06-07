@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LabelTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LabelRecord> {
 
-	private static final long serialVersionUID = 902328062;
+	private static final long serialVersionUID = 2072325992;
 
 	/**
 	 * The singleton instance of <code>cattle.label</code>
@@ -89,12 +89,12 @@ public class LabelTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.
 	/**
 	 * The column <code>cattle.label.key</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LabelRecord, java.lang.String> KEY = createField("key", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LabelRecord, java.lang.String> KEY = createField("key", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
 	 * The column <code>cattle.label.value</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LabelRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LabelRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
 
 	/**
 	 * Create a <code>cattle.label</code> table reference

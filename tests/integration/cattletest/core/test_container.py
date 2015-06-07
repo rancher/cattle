@@ -705,10 +705,21 @@ def test_container_network_modes(context, super_client):
     assert c.state == 'running'
     assert len(c.nics()) == 0
 
+    target = context.create_container(networkMode='bridge')
+    target = super_client.wait_success(target)
+    assert c.state == 'running'
+    assert len(target.nics()) == 1
+
     for i in [('host', 'dockerHost'), ('none', 'dockerNone'),
               ('container', 'dockerContainer'), ('bridge', 'dockerBridge'),
               ('managed', 'hostOnlyNetwork')]:
-        c = context.create_container(networkMode=i[0])
+        args = {
+            'networkMode': i[0]
+        }
+        if i[0] == 'container':
+            args['networkContainerId'] = target.id
+
+        c = context.create_container(**args)
         c = super_client.wait_success(c)
         assert c.state == 'running'
         assert len(c.nics()) == 1

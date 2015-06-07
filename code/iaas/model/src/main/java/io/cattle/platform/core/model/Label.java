@@ -154,7 +154,7 @@ public interface Label extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.label.key</code>.
 	 */
-	@javax.persistence.Column(name = "key", length = 255)
+	@javax.persistence.Column(name = "key", length = 1024)
 	public java.lang.String getKey();
 
 	/**
@@ -165,7 +165,7 @@ public interface Label extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.label.value</code>.
 	 */
-	@javax.persistence.Column(name = "value", length = 255)
+	@javax.persistence.Column(name = "value", length = 4096)
 	public java.lang.String getValue();
 
 	// -------------------------------------------------------------------------

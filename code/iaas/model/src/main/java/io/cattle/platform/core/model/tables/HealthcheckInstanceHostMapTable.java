@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HealthcheckInstanceHostMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord> {
 
-	private static final long serialVersionUID = 2068203797;
+	private static final long serialVersionUID = 683402705;
 
 	/**
 	 * The singleton instance of <code>cattle.healthcheck_instance_host_map</code>
@@ -92,14 +92,14 @@ public class HealthcheckInstanceHostMapTable extends org.jooq.impl.TableImpl<io.
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord, java.lang.Long> HOST_ID = createField("host_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>cattle.healthcheck_instance_host_map.health_state</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord, java.lang.String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
-
-	/**
 	 * The column <code>cattle.healthcheck_instance_host_map.external_timestamp</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord, java.lang.Long> EXTERNAL_TIMESTAMP = createField("external_timestamp", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.healthcheck_instance_host_map.health_state</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord, java.lang.String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
 	 * Create a <code>cattle.healthcheck_instance_host_map</code> table reference

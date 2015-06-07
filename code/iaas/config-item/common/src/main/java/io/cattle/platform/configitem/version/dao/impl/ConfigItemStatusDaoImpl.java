@@ -94,10 +94,14 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .insertInto(CONFIG_ITEM_STATUS,
                         CONFIG_ITEM_STATUS.NAME,
                         getResourceField(client),
+                        CONFIG_ITEM_STATUS.RESOURCE_TYPE,
+                        CONFIG_ITEM_STATUS.RESOURCE_ID,
                         CONFIG_ITEM_STATUS.REQUESTED_VERSION,
                         CONFIG_ITEM_STATUS.REQUESTED_UPDATED)
                 .values(
                         itemName,
+                        new Long(client.getResourceId()),
+                        getResourceNameField(client),
                         new Long(client.getResourceId()),
                         1L,
                         new Timestamp(System.currentTimeMillis()))
@@ -106,6 +110,10 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
         } catch ( DataAccessException e ) {
             return e;
         }
+    }
+
+    protected String getResourceNameField(Client client) {
+        return getResourceField(client).getName().toLowerCase();
     }
 
     protected TableField<ConfigItemStatusRecord, Long> getResourceField(Client client) {
@@ -167,7 +175,8 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
     }
 
     protected Condition targetObjectCondition(Client client) {
-        return getResourceField(client).eq(client.getResourceId());
+        return CONFIG_ITEM_STATUS.RESOURCE_TYPE.eq(getResourceNameField(client))
+                .and(CONFIG_ITEM_STATUS.RESOURCE_ID.eq(client.getResourceId()));
     }
 
     @Override
