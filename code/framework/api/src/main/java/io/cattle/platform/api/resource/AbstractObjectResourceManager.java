@@ -453,12 +453,17 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         String capability = ObjectUtils.toString(attributes.get("capability"), null);
         String state = ObjectUtils.toString(attributes.get(ObjectMetaDataManager.STATE_FIELD), null);
+        String currentState = io.cattle.platform.object.util.ObjectUtils.getState(obj);
 
         if (!StringUtils.isBlank(capability) && !DataAccessor.fieldStringList(obj, ObjectMetaDataManager.CAPABILITIES_FIELD).contains(capability)) {
             return false;
         }
 
-        if (!StringUtils.isBlank(state) && !state.equals(io.cattle.platform.object.util.ObjectUtils.getState(obj))) {
+        if (!StringUtils.isBlank(state) && !state.equals(currentState)) {
+            return false;
+        }
+        List<String> states = ((List<String>) attributes.get(ObjectMetaDataManager.STATES_FIELD));
+        if (states != null && !states.contains(currentState)){
             return false;
         }
 

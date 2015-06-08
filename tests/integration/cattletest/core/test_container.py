@@ -724,3 +724,14 @@ def test_container_network_modes(context, super_client):
         assert c.state == 'running'
         assert len(c.nics()) == 1
         assert c.nics()[0].network().kind == i[1]
+
+
+def test_container_resource_actions_json_state(context):
+    c = context.create_container(startOnCreate=True)
+    c.stop()
+    c.logs()
+    c = context.client.wait_success(c)
+    c.logs()
+    context.client.delete(c)
+    c = context.client.wait_success(c)
+    assert 'logs' not in c

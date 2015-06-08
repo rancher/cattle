@@ -227,7 +227,10 @@
     "resourceActions": {
         "logs": {
             "input":"containerLogs",
-            "output":"hostAccess"
+            "output":"hostAccess",
+            "attributes": {
+                "states": [ "running", "stopped", "stopping" ]
+            }
         },
         "setlabels": {
             "input": "setLabelsInput",
