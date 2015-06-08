@@ -95,3 +95,38 @@ def test_settings_insert(admin_user_client, random_str):
     assert s.id == s2.id
 
     admin_user_client.delete(s)
+
+
+def test_settings_user_list(context):
+    user_client = context.user_client
+    settings = user_client.list_setting()
+    names = {x.name for x in settings}
+
+    assert len(settings) != 0
+    assert len(settings) < 10
+    assert 'rancher.compose.linux.url' in names
+
+    settings = user_client.list_setting(all=True)
+    assert len(settings) != 0
+    assert len(settings) < 10
+
+    settings = user_client.list_setting(all=False)
+    assert len(settings) != 0
+    assert len(settings) < 10
+
+
+def test_settings_admin_user_list(admin_user_client):
+    settings = admin_user_client.list_setting()
+    assert len(settings) != 0
+    assert len(settings) > 10
+
+    settings = admin_user_client.list_setting(all=True)
+    assert len(settings) != 0
+    assert len(settings) > 10
+
+    settings = admin_user_client.list_setting(all=False)
+    names = {x.name for x in settings}
+
+    assert len(settings) != 0
+    assert len(settings) < 10
+    assert 'rancher.compose.linux.url' in names

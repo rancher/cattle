@@ -1,9 +1,11 @@
 package io.cattle.platform.api.settings.manager;
 
 import static io.cattle.platform.core.model.tables.SettingTable.*;
+
 import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
 import io.cattle.platform.api.settings.model.ActiveSetting;
 import io.cattle.platform.archaius.sources.NamedConfigurationSource;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.collections.Predicate;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
@@ -28,10 +31,12 @@ import org.slf4j.LoggerFactory;
 import com.netflix.config.ConcurrentCompositeConfiguration;
 import com.netflix.config.DynamicConfiguration;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.config.DynamicStringListProperty;
 
 public class SettingManager extends AbstractJooqResourceManager {
 
     private static final Logger log = LoggerFactory.getLogger(SettingManager.class);
+    private static final DynamicStringListProperty PUBLIC_SETTINGS = ArchaiusUtil.getList("settings.public");
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -138,6 +143,20 @@ public class SettingManager extends AbstractJooqResourceManager {
         }
 
         return result;
+    }
+
+    @Override
+    protected Object authorize(Object object) {
+        Predicate predicate = new SettingsFilter(PUBLIC_SETTINGS.get(), ApiContext.getContext().getApiRequest());
+        if (object instanceof List<?>) {
+            List<Object> list = new ArrayList<>((List<?>) object);
+            org.apache.commons.collections.CollectionUtils.filter(list, predicate);
+            return super.authorize(list);
+        } else if (predicate.evaluate(object)){
+            return super.authorize(object);
+        }
+
+        return null;
     }
 
     protected List<ActiveSetting> getSettings(List<Setting> settings, Configuration config) {

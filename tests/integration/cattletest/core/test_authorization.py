@@ -865,8 +865,35 @@ def test_config_item_status_auth(admin_user_client, user_client,
 
 
 def test_setting_auth(admin_user_client, user_client, project_client):
-    assert 'setting' not in user_client.schema.types
-    assert 'setting' not in project_client.schema.types
+    auth_check(user_client.schema, 'activeSetting', 'r', {
+        'name': 'r',
+        'activeValue': 'r',
+        'value': 'r',
+    })
+
+    auth_check(project_client.schema, 'activeSetting', 'r', {
+        'name': 'r',
+        'activeValue': 'r',
+        'value': 'r',
+    })
+
+    auth_check(admin_user_client.schema, 'activeSetting', 'rud', {
+        'name': 'r',
+        'activeValue': 'r',
+        'value': 'ru',
+        'source': 'r',
+        'inDb': 'r',
+    })
+
+    auth_check(user_client.schema, 'setting', 'r', {
+        'name': 'r',
+        'value': 'r',
+    })
+
+    auth_check(project_client.schema, 'setting', 'r', {
+        'name': 'r',
+        'value': 'r',
+    })
 
     auth_check(admin_user_client.schema, 'setting', 'crud', {
         'name': 'cr',
