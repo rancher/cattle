@@ -13,6 +13,7 @@ import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -674,17 +676,19 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 null);
     }
 
-    public List<Service> getServicesFor(Object obj) {
+    public Collection<Service> getServicesFor(Object obj) {
         List<? extends Service> dbResult = null;
         if (obj instanceof Instance) {
             dbResult = serviceDao.findServicesFor((Instance) obj);
+        } else if (obj instanceof Host) {
+            dbResult = serviceDao.getServicesOnHost(((Host) obj).getId());
         }
 
         if (dbResult == null) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
 
-        return new ArrayList<>(dbResult);
+        return new HashSet<>(dbResult);
     }
 
     @SuppressWarnings("unchecked")

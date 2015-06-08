@@ -1711,6 +1711,67 @@ def test_service_affinity_rules(super_client, new_context):
     assert instances[2].hosts()[0].id == instances[0].hosts()[0].id
 
 
+def test_host_delete_reconcile_service(super_client, new_context):
+    register_simulated_host(new_context)
+
+    client = new_context.client
+
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = new_context.image_uuid
+    name = random_str()
+    service_name = "service" + name
+
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label_soft_ne":
+                "io.rancher.service.name=" + service_name
+        }
+    }
+    service = client.create_service(name=service_name,
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=2)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    instance1 = _validate_compose_instance_start(client,
+                                                 service, env, "1")
+    instance2 = _validate_compose_instance_start(client,
+                                                 service, env, "2")
+    instance1_host = instance1.hosts()[0]
+    instance2_host = instance2.hosts()[0]
+    assert instance1_host.id != instance2_host.id
+
+    # remove host2
+    instance2_host = super_client.wait_success(instance2_host.deactivate())
+    instance2_host = super_client.delete(instance2_host)
+    super_client.wait_success(instance2_host)
+
+    # check that service is reconciled and instance2 gets recreated
+    # on host1.
+    # NOTE: This is a little strange, but since we don't stop the instance
+    # on the deleted host, that instance will still be in running state,
+    # so we'll have 3rd that shows up
+    wait_for(
+        lambda: len(client.list_container(
+            name=env.name + "_" + service.name + "_3",
+            state="running")) > 0
+    )
+    instance2 = client.list_container(
+        name=env.name + "_" + service.name + "_3",
+        state="running")[0]
+    instance2_host = instance2.hosts()[0]
+    assert instance1_host.id == instance2_host.id
+    service = client.wait_success(service.deactivate(), 120)
+
+
 def _get_instance_for_service(super_client, serviceId):
     instances = []
     instance_service_maps = super_client. \

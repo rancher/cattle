@@ -5,6 +5,7 @@ import io.cattle.platform.core.model.Service;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 
 public interface ServiceDiscoveryService {
 
@@ -32,7 +33,7 @@ public interface ServiceDiscoveryService {
 
     List<Integer> getServiceInstanceUsedOrderIds(Service service, String launchConfigName);
 
-    List<Service> getServicesFor(Object obj);
+    Collection<Service> getServicesFor(Object obj);
 
     List<String> getServiceLaunchConfigNames(Service service);
 

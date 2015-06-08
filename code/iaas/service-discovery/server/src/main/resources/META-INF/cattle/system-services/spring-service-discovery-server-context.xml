@@ -28,6 +28,7 @@
 
     <bean class="io.cattle.platform.servicediscovery.process.HostActivatePostHandler" />
     <bean class="io.cattle.platform.servicediscovery.process.HostLabelMapCreate" />
+    <bean class="io.cattle.platform.servicediscovery.process.HostDeletePostHandler" />
 
     <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
     <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />

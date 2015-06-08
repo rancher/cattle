@@ -34,7 +34,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     ServiceExposeMapDao expMapDao;
     @Inject
     GenericMapDao mapDao;
-    
+
     @Override
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Object instanceObj, Map<String, String> labels, String launchConfigName) {

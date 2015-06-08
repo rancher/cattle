@@ -28,7 +28,7 @@ public abstract class ServiceDeploymentPlanner {
 
         if (units != null) {
             for (DeploymentUnit unit : units) {
-                if (unit.isUnhealthy()) {
+                if (unit.isUnhealthy() || !unit.isHostActive()) {
                     unhealthyUnits.add(unit);
                 } else {
                     healthyUnits.add(unit);
@@ -43,7 +43,7 @@ public abstract class ServiceDeploymentPlanner {
         allUnits.addAll(unhealthyUnits);
         return allUnits;
     }
-    
+
     public abstract List<DeploymentUnit> deployHealthyUnits();
 
     public abstract boolean needToReconcileDeployment();

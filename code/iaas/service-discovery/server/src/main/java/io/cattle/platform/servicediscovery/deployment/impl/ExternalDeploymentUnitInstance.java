@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -86,4 +87,8 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
         return false;
     }
 
+    @Override
+    public Instance getInstance() {
+        throw new RuntimeException("Unsupported");
+    }
 }

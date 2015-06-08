@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.api.dao;
 
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceConsumeMap;
 
 import java.util.List;
 
@@ -14,4 +13,9 @@ public interface ServiceDao {
      */
     List<? extends Service> findServicesFor(Instance instance);
 
+    /**
+     * @param hostId
+     * @return Collection of Services running on host
+     */
+    List<? extends Service> getServicesOnHost(long hostId);
 }

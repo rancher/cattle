@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.api.dao;
 
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -38,4 +39,6 @@ public interface ServiceExposeMapDao {
     List<? extends Service> getActiveServices(long accountId);
 
     List<? extends ServiceExposeMap> getNonRemovedServiceIpMaps(long serviceId);
+
+    Host getHostForInstance(long instanceId);
 }
