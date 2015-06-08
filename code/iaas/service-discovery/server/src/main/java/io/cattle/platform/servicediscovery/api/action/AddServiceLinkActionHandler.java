@@ -47,7 +47,7 @@ public class AddServiceLinkActionHandler implements ActionHandler {
     }
 
     protected void createMap(Service service, long consumedServiceId, String name) {
-        ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), consumedServiceId);
+        ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), consumedServiceId, null);
 
         if (map == null) {
             map = objectManager.create(ServiceConsumeMap.class,

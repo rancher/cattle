@@ -96,7 +96,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
     private void createNewServiceMaps(Service service, Map<Long, String> newServiceLinks) {
         for (Long consumedServiceId : newServiceLinks.keySet()) {
             String linkName = newServiceLinks.get(consumedServiceId);
-            ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), consumedServiceId);
+            ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), consumedServiceId, linkName);
             if (map == null) {
                 map = objectManager.create(ServiceConsumeMap.class,
                         SERVICE_CONSUME_MAP.SERVICE_ID,
@@ -104,7 +104,8 @@ public class SetServiceLinksActionHandler implements ActionHandler {
                         SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
                         SERVICE_CONSUME_MAP.NAME, linkName);
             }
-            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
+            objectProcessManager.scheduleProcessInstance(
+                    ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
                     map, null);
         }
     }
@@ -116,11 +117,18 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         for (ServiceConsumeMap existingMap : existingMaps) {
             if (!newServiceLinks.containsKey(existingMap.getConsumedServiceId())) {
                 mapsToRemove.add(existingMap);
+            } else {
+                String newName = newServiceLinks.get(existingMap.getConsumedServiceId());
+                String existingName = existingMap.getName();
+                if (newName != null && existingName != null && !newName.equals(existingName)) {
+                    mapsToRemove.add(existingMap);
+                }
             }
         }
 
         for (ServiceConsumeMap mapToRemove : mapsToRemove) {
-            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstance(
+                    ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
                     mapToRemove, null);
         }
     }
