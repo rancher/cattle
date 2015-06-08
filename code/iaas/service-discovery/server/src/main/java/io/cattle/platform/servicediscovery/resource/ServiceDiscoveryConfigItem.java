@@ -72,7 +72,7 @@ public class ServiceDiscoveryConfigItem {
 
     public static final ServiceDiscoveryConfigItem LABELS = new ServiceDiscoveryConfigItem(
             InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS,
-            true, false);
+            true, true);
 
     public static final ServiceDiscoveryConfigItem EXTERNAL_IPS = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_EXTERNALIPS,

@@ -49,6 +49,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
+import org.apache.commons.lang.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -127,14 +128,26 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     populateLinksForService(service, servicesToExportIds, composeServiceData);
                     populateNetworkForService(service, launchConfigName, composeServiceData);
                     populateVolumesForService(service, launchConfigName, composeServiceData);
+                    addExtraComposeParameters(service, launchConfigName, composeServiceData);
                 }
 
-                data.put(
-                        launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? service
-                                .getName() : launchConfigName, composeServiceData);
+                if (!composeServiceData.isEmpty()) {
+                    data.put(
+                            launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? service
+                                    .getName() : launchConfigName, composeServiceData);
+                }
             }
         }
         return data;
+    }
+
+    private void addExtraComposeParameters(Service service,
+            String launchConfigName, Map<String, Object> composeServiceData) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
+            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/dns-service");
+        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/lb-service");
+        }
     }
 
 
