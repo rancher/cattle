@@ -120,7 +120,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Map<String, List<String>> resolve = new HashMap<>();
                 List<String> ips = new ArrayList<>();
                 ips.add(((IpAddress) input.get(1)).getAddress());
-                resolve.put(getDnsName(input.get(4), input.get(0)), ips);
+                String dnsName = getDnsName(input.get(0), input.get(4), input.get(5), false);
+                resolve.put(dnsName, ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
                 data.setInstance((Instance)input.get(3));
@@ -133,13 +134,13 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
         InstanceTable clientInstance = mapper.add(INSTANCE);
         ServiceConsumeMapTable serviceConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
+        ServiceExposeMapTable targetServiceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
         InstanceTable targetInstance = INSTANCE.as("instance");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
-        ServiceExposeMapTable targetServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_target");
 
         return create()
                 .select(mapper.fields())
@@ -198,7 +199,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Map<String, List<String>> resolve = new HashMap<>();
                 List<String> ips = new ArrayList<>();
                 ips.add(((IpAddress) input.get(1)).getAddress());
-                resolve.put(((Service) input.get(0)).getName(), ips);
+                resolve.put(getDnsName(input.get(0), null, input.get(4), true), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
                 data.setInstance((Instance)input.get(3));
@@ -210,13 +211,13 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressTable targetIpAddress = mapper.add(IP_ADDRESS);
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
         InstanceTable clientInstance = mapper.add(INSTANCE);
+        ServiceExposeMapTable targetServiceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
         InstanceTable targetInstance = INSTANCE.as("instance");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
-        ServiceExposeMapTable targetServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_target");
 
         return create()
                 .select(mapper.fields())
@@ -332,7 +333,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Map<String, List<String>> resolve = new HashMap<>();
                 List<String> ips = new ArrayList<>();
                 ips.add(((IpAddress) input.get(1)).getAddress());
-                resolve.put(getDnsName(input.get(4), input.get(0)), ips);
+                resolve.put(getDnsName(input.get(0), input.get(4), input.get(5), false), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
                 data.setInstance((Instance) input.get(3));
@@ -345,14 +346,15 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
         InstanceTable clientInstance = mapper.add(INSTANCE);
         ServiceConsumeMapTable dnsConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
+        ServiceExposeMapTable targetServiceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
+
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
         InstanceTable targetInstance = INSTANCE.as("instance");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
-        ServiceExposeMapTable targetServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_target");
-        ServiceConsumeMapTable serviceConsumeMap = SERVICE_CONSUME_MAP.as("consume_map");
+        ServiceConsumeMapTable serviceConsumeMap = SERVICE_CONSUME_MAP.as("service_consume_map");
 
         return create()
                 .select(mapper.fields())
@@ -407,6 +409,30 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(dnsService.STATE.in(CommonStatesConstants.ACTIVATING,
                                 CommonStatesConstants.ACTIVE)))
                 .fetch().map(mapper);
+    }
+
+    protected String getDnsName(Object service, Object serviceConsumeMap, Object serviceExposeMap, boolean self) {
+
+        String dnsPrefix = null;
+        if (serviceExposeMap != null) {
+            dnsPrefix = ((ServiceExposeMap) serviceExposeMap).getDnsPrefix();
+        }
+
+        String consumeMapName = null;
+        if (serviceConsumeMap != null) {
+            consumeMapName = ((ServiceConsumeMap) serviceConsumeMap).getName();
+        }
+
+        String primaryDnsName = (consumeMapName != null && !consumeMapName.isEmpty()) ? consumeMapName
+                : ((Service) service).getName();
+        String dnsName = primaryDnsName;
+        if (self) {
+            dnsName = dnsPrefix == null ? dnsName : dnsPrefix;
+        } else {
+            dnsName = dnsPrefix == null ? dnsName : dnsPrefix + "." + dnsName;
+        }
+
+        return dnsName;
     }
 
 }

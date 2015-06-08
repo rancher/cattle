@@ -4,8 +4,8 @@ import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -20,7 +20,7 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -52,10 +52,19 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public ServiceExposeMap createServiceInstanceMap(Service service, final Instance instance) {
-            return objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
-                    SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(), SERVICE_EXPOSE_MAP.ACCOUNT_ID,
-                service.getAccountId());
+        Map<String, String> instanceLabels = DataAccessor.fields(instance)
+                .withKey(InstanceConstants.FIELD_LABELS).withDefault(Collections.EMPTY_MAP).as(Map.class);
+        String dnsPrefix = instanceLabels
+                .get(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG);
+        if (ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
+            dnsPrefix = null;
+        }
+
+        return objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
+                SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(), SERVICE_EXPOSE_MAP.ACCOUNT_ID,
+                service.getAccountId(), SERVICE_EXPOSE_MAP.DNS_PREFIX, dnsPrefix);
     }
 
     @Override
@@ -72,38 +81,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public void updateServiceName(Service service) {
-        List<? extends Instance> instances = updateInstanceNames(service);
-        for (Instance instance : instances) {
-            objectManager.persist(instance);
-        }
-    }
-
-    private List<? extends Instance> updateInstanceNames(Service service) {
-        List<? extends Instance> instances = listServiceInstances(service.getId());
-        int i = 1;
-        for (Instance instance : instances) {
-            instance.setName(sdService.generateServiceInstanceName(service, i));
-            i++;
-        }
-        return instances;
-    }
-
-    @Override
-    public void updateEnvironmentName(Environment env) {
-        List<? extends Service> services = objectManager.mappedChildren(env, Service.class);
-        List<Instance> instances = new ArrayList<>();
-        for (Service service : services) {
-            if (service.getRemoved() == null && !service.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED)
-                    && !service.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING))
-                instances.addAll(updateInstanceNames(service));
-        }
-        for (Instance instance : instances) {
-            objectManager.persist(instance);
-        }
-    }
-
-    @Override
     public List<? extends ServiceExposeMap> getNonRemovedServiceInstanceMap(long serviceId) {
         return create()
                 .select(SERVICE_EXPOSE_MAP.fields())
@@ -115,51 +92,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                                 SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
                                         CommonStatesConstants.REMOVING))))
                 .fetchInto(ServiceExposeMapRecord.class);
-    }
-
-    @Override
-    public List<Service> collectSidekickServices(Service initialService, Map<String, String> initialSvcLabels) {
-        List<Service> servicesToCollect = new ArrayList<>();
-        if (initialSvcLabels == null) {
-            initialSvcLabels = sdService.getServiceLabels(initialService);
-        }
-        String initialSvcSidekickLabel = initialSvcLabels.
-                get(ServiceDiscoveryConstants.LABEL_SERVICE_SIDEKICK);
-
-        // add itself
-        servicesToCollect.add(initialService);
-
-        // add sidekick services
-        if (initialSvcSidekickLabel != null) {
-            /*
-             * Find all sidekick services. Just look at sidekick, not volumes-from or other things
-             */
-            List<? extends Service> services = sdService.listEnvironmentServices(initialService.getEnvironmentId());
-            for (Service svc : services) {
-                if (svc.getId().equals(initialService.getId())) {
-                    continue;
-                }
-
-                Map<String, String> svcLabels = sdService.getServiceLabels(svc);
-                String svcSidekickLabel = svcLabels.get(
-                        ServiceDiscoveryConstants.LABEL_SERVICE_SIDEKICK) == null ? null
-                        : svcLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_SIDEKICK);
-                if (initialSvcSidekickLabel.equalsIgnoreCase(svcSidekickLabel)) {
-                    servicesToCollect.add(svc);
-                }
-            }
-        }
-        return servicesToCollect;
-    }
-
-    @Override
-    public void updateScale(List<Service> services, Integer scale) {
-        for (Service service : services) {
-            service = objectManager.reload(service);
-            DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_SCALE)
-                    .set(scale);
-            service = objectManager.persist(service);
-        }
     }
 
     @Override

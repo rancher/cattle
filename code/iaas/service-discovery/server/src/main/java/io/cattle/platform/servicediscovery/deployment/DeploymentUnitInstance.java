@@ -11,9 +11,10 @@ import java.util.Map;
 
 public abstract class DeploymentUnitInstance {
     protected String uuid;
-    protected Service service;
     protected DeploymentServiceContext context;
     protected ServiceExposeMap exposeMap;
+    protected String launchConfigName;
+    protected Service service;
 
     public abstract boolean isError();
 
@@ -35,9 +36,11 @@ public abstract class DeploymentUnitInstance {
 
     public abstract void stop();
 
-    protected DeploymentUnitInstance(DeploymentServiceContext context, String uuid, Service service) {
+    protected DeploymentUnitInstance(DeploymentServiceContext context, String uuid, Service service,
+            String launchConfigName) {
         this.context = context;
         this.uuid = uuid;
+        this.launchConfigName = launchConfigName;
         this.service = service;
     }
 
@@ -53,6 +56,10 @@ public abstract class DeploymentUnitInstance {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public String getLaunchConfigName() {
+        return launchConfigName;
     }
 
     public Service getService() {

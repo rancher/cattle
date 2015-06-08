@@ -21,12 +21,12 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance i
     protected Instance instance;
 
     public LoadBalancerDeploymentUnitInstance() {
-        super(null, null, null);
+        super(null, null, null, null);
     }
 
-    public LoadBalancerDeploymentUnitInstance(String uuid, Service service,
-            LoadBalancerHostMap hostMap, DeploymentServiceContext context, Map<String, String> labels) {
-        super(context, uuid, service);
+    public LoadBalancerDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
+            Service service, LoadBalancerHostMap hostMap, Map<String, String> labels, String launchConfigName) {
+        super(context, uuid, service, launchConfigName);
         this.hostMap = hostMap;
         if (hostMap != null) {
             Instance instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
@@ -62,7 +62,7 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance i
                     LOAD_BALANCER.REMOVED, null);
 
             Map<String, Object> launchConfig = context.sdService.buildServiceInstanceLaunchData(service,
-                    deployParams);
+                    deployParams, launchConfigName);
             this.hostMap = context.lbService.addHostWLaunchConfigToLoadBalancer(lb, launchConfig);
             this.instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
             this.exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);

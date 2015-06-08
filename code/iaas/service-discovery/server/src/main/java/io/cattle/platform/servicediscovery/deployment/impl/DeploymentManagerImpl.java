@@ -8,7 +8,6 @@ import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
@@ -74,7 +73,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
         if (service == null) {
             return;
         }
-        final List<Service> services = expMapDao.collectSidekickServices(service, null);
+        final List<Service> services = new ArrayList<>();
+        services.add(service);
 
         lockManager.lock(createLock(services), new LockCallbackNoReturn() {
             @Override
@@ -191,10 +191,14 @@ public class DeploymentManagerImpl implements DeploymentManager {
             List<Service> services) {
         Map<Long, DeploymentUnitInstanceIdGenerator> generator = new HashMap<>();
         for (Service service : services) {
-            List<Integer> usedNames = sdSvc.getServiceInstanceUsedOrderIds(service);
+            Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
+            for (String launchConfigName : sdSvc.getServiceLaunchConfigNames(service)) {
+                List<Integer> usedIds = sdSvc.getServiceInstanceUsedOrderIds(service, launchConfigName);
+                launchConfigUsedIds.put(launchConfigName, usedIds);
+
+            }
             generator.put(service.getId(),
-                            new DeploymentUnitInstanceIdGeneratorImpl(objectMgr.loadResource(
-                                    Environment.class, service.getEnvironmentId()), service, usedNames));
+                    new DeploymentUnitInstanceIdGeneratorImpl(launchConfigUsedIds));
         }
         return generator;
     }

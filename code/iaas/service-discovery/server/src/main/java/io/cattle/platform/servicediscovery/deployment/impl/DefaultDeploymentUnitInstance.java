@@ -24,13 +24,12 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     protected Instance instance;
 
     public DefaultDeploymentUnitInstance() {
-        super(null, null, null);
+        super(null, null, null, null);
     }
 
     public DefaultDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
-            Service service,
-            String instanceName, Instance instance, Map<String, String> labels) {
-        super(context, uuid, service);
+            Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
+        super(context, uuid, service, launchConfigName);
         this.instanceName = instanceName;
         this.instance = instance;
         if (this.instance != null) {
@@ -62,7 +61,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     public DeploymentUnitInstance start(Map<String, Object> deployParams) {
         if (createNew()) {
             Map<String, Object> launchConfigData = context.sdService.buildServiceInstanceLaunchData(service,
-                    deployParams);
+                    deployParams, launchConfigName);
             launchConfigData.put("name", this.instanceName);
             Pair<Instance, ServiceExposeMap> instanceMapPair = context.exposeMapDao.createServiceInstance(launchConfigData,
                     service, this.instanceName);

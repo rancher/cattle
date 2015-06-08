@@ -17,14 +17,6 @@
         "networkId":{
             "type": "reference[network]"
         },
-        "dataVolumesFromService": {
-            "type" : "array[reference[service]]",
-            "nullable" : true
-        },
-        "networkServiceId": {
-            "type" : "reference[service]",
-            "nullable" : true
-        },
         "name":{
             "required": true,
             "validChars": "a-zA-Z0-9-",
@@ -34,9 +26,14 @@
             }
         },
         "launchConfig": {
-            "type": "container",
+            "type": "launchConfig",
             "create": true,
             "required": true
+        },
+        "secondaryLaunchConfigs": {
+            "type": "array[secondaryLaunchConfig]",
+            "create": true,
+            "required": false
         }
     },
     "resourceActions" : {
