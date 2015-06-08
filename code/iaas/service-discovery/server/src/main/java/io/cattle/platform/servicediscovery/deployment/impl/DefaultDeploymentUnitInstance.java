@@ -69,10 +69,16 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
             this.instance = instanceMapPair.getLeft();
             this.exposeMap = instanceMapPair.getRight();
         }
-        context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
-                null);
-        context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
-                null);
+
+        if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
+                    null);
+        }
+
+        if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
+                    null);
+        }
 
         if (InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
             context.objectProcessManager.scheduleProcessInstanceAsync(
