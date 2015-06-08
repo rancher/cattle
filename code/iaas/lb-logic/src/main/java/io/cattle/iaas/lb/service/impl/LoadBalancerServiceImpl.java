@@ -15,10 +15,12 @@ import io.cattle.platform.core.model.LoadBalancerConfigListenerMap;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.LoadBalancerTarget;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
@@ -132,10 +134,14 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     }
 
     @Override
-    public LoadBalancerHostMap addHostWLaunchConfigToLoadBalancer(LoadBalancer lb, Map<String, Object> data) {
+    public LoadBalancerHostMap addHostWLaunchConfigToLoadBalancer(LoadBalancer lb, final Map<String, Object> data) {
         data.put(LoadBalancerConstants.FIELD_LB_ID, lb.getId());
         data.put("accountId", lb.getAccountId());
-        return resourceDao.createAndSchedule(LoadBalancerHostMap.class, data);
+        return DeferredUtils.nest(new Callable<LoadBalancerHostMap>() {
+            @Override
+            public LoadBalancerHostMap call() throws Exception {
+                return resourceDao.createAndSchedule(LoadBalancerHostMap.class, data);
+            }
+        });
     }
-
 }
