@@ -69,10 +69,13 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
 
-        for (Pair<ServiceExposeMap, Long> instanceLBServicePair : getInstanceToLBServiceMap(state, process)) {
+        for (Pair<ServiceExposeMap, Service> instanceLBServicePair : getInstanceToLBServiceMap(state, process)) {
+            Service lbService = instanceLBServicePair.getRight();
+            if (!sdService.isActiveService(lbService)) {
+                return null;
+            }
             LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
-                    instanceLBServicePair.getRight(),
-                    LOAD_BALANCER.REMOVED, null);
+                    lbService.getId(), LOAD_BALANCER.REMOVED, null);
             ServiceExposeMap map = instanceLBServicePair.getLeft();
             if (lb != null) {
                 // register only instances of primary service
@@ -89,70 +92,88 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
         return null;
     }
 
-    private List<Pair<ServiceExposeMap, Long>> getInstanceToLBServiceMap(ProcessState state, ProcessInstance process) {
-        List<Pair<ServiceExposeMap, Long>> exposeMapToLBService = new ArrayList<>();
+    private List<Pair<ServiceExposeMap, Service>> getInstanceToLBServiceMap(ProcessState state, ProcessInstance process) {
+        List<Pair<ServiceExposeMap, Service>> exposeMapToLBService = new ArrayList<>();
         if (process.getName().equalsIgnoreCase(InstanceConstants.PROCESS_START)) {
-            Instance instance = (Instance) state.getResource();
-            List<ServiceExposeMap> maps = objectManager.mappedChildren(
-                    objectManager.loadResource(Instance.class, instance.getId()),
-                    ServiceExposeMap.class);
-            if (maps.isEmpty()) {
-                // handle only instances that are the part of the service
-                return exposeMapToLBService;
-            }
-            List<? extends ServiceConsumeMap> consumingServicesMaps = consumeMapDao
-                    .findConsumingServices(maps.get(0).getServiceId());
-            for (ServiceConsumeMap consumingServiceMap : consumingServicesMaps) {
-                Service lbService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
-                if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-                    exposeMapToLBService.add(Pair.of(maps.get(0), lbService.getId()));
-                }
-            }
+            getLBServiceForInstance(state, exposeMapToLBService);
         } else if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE)) {
-            ServiceConsumeMap consumeMap = (ServiceConsumeMap) state.getResource();
-            Service lbService = objectManager.loadResource(Service.class, consumeMap.getServiceId());
-            if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+            getLBServiceForServiceLink(state, exposeMapToLBService);
+        } else if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE)) {
+            getLBServiceForService(state, exposeMapToLBService);
+        } else if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_EXPOSE_MAP_CREATE)) {
+            getLBServiceForExposeMap(state, exposeMapToLBService);
+        }
+        return exposeMapToLBService;
+    }
+
+    protected void getLBServiceForService(ProcessState state, List<Pair<ServiceExposeMap, Service>> exposeMapToLBService) {
+        // handle only for lb service to handle the case when lbService.create finishes after the link is created
+        // for the service
+        Service lbService = (Service) state.getResource();
+        if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+            // a) get all the services consumed by the lb service
+            List<? extends ServiceConsumeMap> consumedServicesMaps = consumeMapDao.findConsumedServices(lbService
+                    .getId());
+            // b) for every service, get the instances and register them as lb targets
+            for (ServiceConsumeMap consumedServiceMap : consumedServicesMaps) {
                 List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
-                        objectManager.loadResource(Service.class, consumeMap.getConsumedServiceId()),
+                        objectManager.loadResource(Service.class, consumedServiceMap.getConsumedServiceId()),
                         ServiceExposeMap.class);
                 for (ServiceExposeMap map : maps) {
-                    exposeMapToLBService.add(Pair.of(map, lbService.getId()));
-                }
-            }
-        } else if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE)) {
-            // handle only for lb service to handle the case when lbService.create finishes after the link is created
-            // for the service
-            Service lbService = (Service) state.getResource();
-            if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-                // a) get all the services consumed by the lb service
-                List<? extends ServiceConsumeMap> consumedServicesMaps = consumeMapDao.findConsumedServices(lbService
-                        .getId());
-                // b) for every service, get the instances and register them as lb targets
-                for (ServiceConsumeMap consumedServiceMap : consumedServicesMaps) {
-                    List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
-                            objectManager.loadResource(Service.class, consumedServiceMap.getConsumedServiceId()),
-                            ServiceExposeMap.class);
-                    for (ServiceExposeMap map : maps) {
-                        exposeMapToLBService.add(Pair.of(map, lbService
-                                    .getId()));
-                        }
-                }
-            }
-        } else if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_EXPOSE_MAP_CREATE)) {
-            ServiceExposeMap map = (ServiceExposeMap) state.getResource();
-            if (map.getIpAddress() != null) {
-                // find all services consuming the current one
-                List<? extends ServiceConsumeMap> consumingServicesMaps = consumeMapDao
-                        .findConsumingServices(map.getServiceId());
-                for (ServiceConsumeMap consumingServiceMap : consumingServicesMaps) {
-                    Service lbService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
-                    if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-                        exposeMapToLBService.add(Pair.of(map, lbService.getId()));
-                    }
+                    exposeMapToLBService.add(Pair.of(map, lbService));
                 }
             }
         }
-        return exposeMapToLBService;
+    }
+
+    protected void getLBServiceForExposeMap(ProcessState state,
+            List<Pair<ServiceExposeMap, Service>> exposeMapToLBService) {
+        ServiceExposeMap map = (ServiceExposeMap) state.getResource();
+        if (map.getIpAddress() != null) {
+            // find all services consuming the current one
+            List<? extends ServiceConsumeMap> consumingServicesMaps = consumeMapDao
+                    .findConsumingServices(map.getServiceId());
+            for (ServiceConsumeMap consumingServiceMap : consumingServicesMaps) {
+                Service lbService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
+                if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+                    exposeMapToLBService.add(Pair.of(map, lbService));
+                }
+            }
+        }
+    }
+
+    protected void getLBServiceForServiceLink(ProcessState state,
+            List<Pair<ServiceExposeMap, Service>> exposeMapToLBService) {
+        ServiceConsumeMap consumeMap = (ServiceConsumeMap) state.getResource();
+        Service lbService = objectManager.loadResource(Service.class, consumeMap.getServiceId());
+        if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+            List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
+                    objectManager.loadResource(Service.class, consumeMap.getConsumedServiceId()),
+                    ServiceExposeMap.class);
+            for (ServiceExposeMap map : maps) {
+                exposeMapToLBService.add(Pair.of(map, lbService));
+            }
+        }
+    }
+
+    protected void getLBServiceForInstance(ProcessState state,
+            List<Pair<ServiceExposeMap, Service>> exposeMapToLBService) {
+        Instance instance = (Instance) state.getResource();
+        List<ServiceExposeMap> maps = objectManager.mappedChildren(
+                objectManager.loadResource(Instance.class, instance.getId()),
+                ServiceExposeMap.class);
+        if (maps.isEmpty()) {
+            // handle only instances that are the part of the service
+            return;
+        }
+        List<? extends ServiceConsumeMap> consumingServicesMaps = consumeMapDao
+                .findConsumingServices(maps.get(0).getServiceId());
+        for (ServiceConsumeMap consumingServiceMap : consumingServicesMaps) {
+            Service lbService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
+            if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+                exposeMapToLBService.add(Pair.of(maps.get(0), lbService));
+            }
+        }
     }
 
     @Override

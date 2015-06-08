@@ -98,7 +98,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                     LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lb.getId(), LOAD_BALANCER_TARGET.IP_ADDRESS, null,
                     LOAD_BALANCER_TARGET.ACCOUNT_ID, lb.getAccountId());
         }
-        objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE,
+        objectProcessManager.scheduleProcessInstanceAsync(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE,
                 target, null);
     }
 
@@ -119,7 +119,8 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     public void removeTargetFromLoadBalancer(LoadBalancer lb, long instanceId) {
         LoadBalancerTarget target = lbTargetDao.getLbInstanceTargetToRemove(lb.getId(), instanceId);
         if (target != null) {
-            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE, target,
+            objectProcessManager.scheduleProcessInstanceAsync(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
+                    target,
                     null);
         }
     }

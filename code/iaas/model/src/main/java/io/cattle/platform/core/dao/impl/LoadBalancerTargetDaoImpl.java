@@ -83,7 +83,7 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
     }
 
     @Override
-    public List<? extends Instance> getLoadBalancerActiveInstanceTargets(long lbId) {
+    public List<? extends Instance> getLoadBalancerActiveTargetInstances(long lbId) {
         return create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
@@ -108,6 +108,20 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
                         LOAD_BALANCER_TARGET.STATE.in(CommonStatesConstants.ACTIVATING,
                                         CommonStatesConstants.ACTIVE))
                         .and(LOAD_BALANCER_TARGET.IP_ADDRESS.isNotNull())
+                        .and(LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId)))
+                .fetchInto(LoadBalancerTargetRecord.class);
+    }
+
+    @Override
+    public List<? extends LoadBalancerTarget> getLoadBalancerActiveInstanceTargets(long lbId) {
+        return create()
+                .select(LOAD_BALANCER_TARGET.fields())
+                .from(LOAD_BALANCER_TARGET)
+                .where(LOAD_BALANCER_TARGET.REMOVED.isNull()
+                        .and(
+                                LOAD_BALANCER_TARGET.STATE.in(CommonStatesConstants.ACTIVATING,
+                                        CommonStatesConstants.ACTIVE))
+                        .and(LOAD_BALANCER_TARGET.INSTANCE_ID.isNotNull())
                         .and(LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId)))
                 .fetchInto(LoadBalancerTargetRecord.class);
     }

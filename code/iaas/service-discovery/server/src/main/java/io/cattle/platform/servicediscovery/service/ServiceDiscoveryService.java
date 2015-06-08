@@ -38,4 +38,6 @@ public interface ServiceDiscoveryService {
 
     Object getLaunchConfigObject(Service service, String launchConfigName, String objectName);
 
+    boolean isActiveService(Service service);
+
 }

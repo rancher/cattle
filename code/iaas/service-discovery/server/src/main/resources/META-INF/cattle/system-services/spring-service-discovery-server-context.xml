@@ -25,6 +25,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerRemovePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetAddPostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetRemovePostListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceActivatePostListener" />
 
     <bean class="io.cattle.platform.servicediscovery.process.HostActivatePostHandler" />
     <bean class="io.cattle.platform.servicediscovery.process.HostLabelMapCreate" />
