@@ -158,7 +158,7 @@ def test_activate_single_service(client, context):
     assert container.state == "running"
     assert container.cpuSet == "2"
     assert container.requestedHostId == host.id
-    assert container.healthState == 'healthy'
+    assert container.healthState == 'initializing'
 
 
 def test_activate_services(client, context):

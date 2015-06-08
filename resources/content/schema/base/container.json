@@ -194,7 +194,7 @@
         },
         "healthState": {
             "type": "enum",
-            "options" : [ "healthy", "unhealthy", "updating-healthy", "updating-unhealthy" ]
+            "options" : [ "healthy", "unhealthy", "updating-healthy", "updating-unhealthy", "initializing" ]
         },
         "securityOpt": {
             "type": "array[string]",

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord> {
 
-	private static final long serialVersionUID = -2060736396;
+	private static final long serialVersionUID = 91662303;
 
 	/**
 	 * The singleton instance of <code>cattle.config_item_status</code>
@@ -62,16 +62,6 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.util.Date> APPLIED_UPDATED = createField("applied_updated", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>cattle.config_item_status.resource_type</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.String> RESOURCE_TYPE = createField("resource_type", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
-
-	/**
-	 * The column <code>cattle.config_item_status.resource_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> RESOURCE_ID = createField("resource_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
-
-	/**
 	 * The column <code>cattle.config_item_status.agent_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
@@ -85,6 +75,16 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 * The column <code>cattle.config_item_status.service_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.config_item_status.resource_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> RESOURCE_ID = createField("resource_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+
+	/**
+	 * The column <code>cattle.config_item_status.resource_type</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.String> RESOURCE_TYPE = createField("resource_type", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
 
 	/**
 	 * Create a <code>cattle.config_item_status</code> table reference
@@ -129,7 +129,7 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord>>asList(io.cattle.platform.core.model.Keys.KEY_CONFIG_ITEM_STATUS_PRIMARY, io.cattle.platform.core.model.Keys.KEY_CONFIG_ITEM_STATUS_IDX_CONFIG_ITEM_STATUS_NAME_AGENT_ID);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord>>asList(io.cattle.platform.core.model.Keys.KEY_CONFIG_ITEM_STATUS_PRIMARY, io.cattle.platform.core.model.Keys.KEY_CONFIG_ITEM_STATUS_IDX_CONFIG_ITEM_STATUS_RESOURCE);
 	}
 
 	/**

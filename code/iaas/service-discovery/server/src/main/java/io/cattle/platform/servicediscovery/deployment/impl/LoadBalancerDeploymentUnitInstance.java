@@ -119,7 +119,7 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance i
         if (this.instance != null) {
             return this.instance.getHealthState() != null && (this.instance.getHealthState().equalsIgnoreCase(
                     HealthcheckConstants.HEALTH_STATE_UNHEALTHY) || this.instance.getHealthState().equalsIgnoreCase(
-                    HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY));
+                                    HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY));
         }
         return false;
     }

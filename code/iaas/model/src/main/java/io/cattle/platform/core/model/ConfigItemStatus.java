@@ -94,28 +94,6 @@ public interface ConfigItemStatus extends java.io.Serializable {
 	public java.util.Date getAppliedUpdated();
 
 	/**
-	 * Setter for <code>cattle.config_item_status.resource_type</code>.
-	 */
-	public void setResourceType(java.lang.String value);
-
-	/**
-	 * Getter for <code>cattle.config_item_status.resource_type</code>.
-	 */
-	@javax.persistence.Column(name = "resource_type", nullable = false, length = 128)
-	public java.lang.String getResourceType();
-
-	/**
-	 * Setter for <code>cattle.config_item_status.resource_id</code>.
-	 */
-	public void setResourceId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.config_item_status.resource_id</code>.
-	 */
-	@javax.persistence.Column(name = "resource_id", nullable = false, precision = 19)
-	public java.lang.Long getResourceId();
-
-	/**
 	 * Setter for <code>cattle.config_item_status.agent_id</code>.
 	 */
 	public void setAgentId(java.lang.Long value);
@@ -147,6 +125,28 @@ public interface ConfigItemStatus extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "service_id", precision = 19)
 	public java.lang.Long getServiceId();
+
+	/**
+	 * Setter for <code>cattle.config_item_status.resource_id</code>.
+	 */
+	public void setResourceId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.config_item_status.resource_id</code>.
+	 */
+	@javax.persistence.Column(name = "resource_id", nullable = false, precision = 19)
+	public java.lang.Long getResourceId();
+
+	/**
+	 * Setter for <code>cattle.config_item_status.resource_type</code>.
+	 */
+	public void setResourceType(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.config_item_status.resource_type</code>.
+	 */
+	@javax.persistence.Column(name = "resource_type", nullable = false, length = 128)
+	public java.lang.String getResourceType();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

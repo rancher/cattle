@@ -47,7 +47,6 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
     public Object create(String type, ApiRequest request, ResourceManager next) {
         ServiceEvent event = request.proxyRequestObject(ServiceEvent.class);
 
-        Policy policy = ApiUtils.getPolicy();
         /* Will never return null, MissingRequired will be thrown if missing */
         Agent agent = getAgent();
         if (agent == null) {
@@ -55,7 +54,7 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
         }
 
         HealthcheckInstanceHostMap healthcheckInstanceHostMap = objectManager.findOne(HealthcheckInstanceHostMap.class,
-                ObjectMetaDataManager.UUID_FIELD, event.getHealthcheckUuid());
+                ObjectMetaDataManager.UUID_FIELD, event.getHealthcheckUuid().split("_")[0]);
 
         if (healthcheckInstanceHostMap == null) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
