@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord> {
 
-	private static final long serialVersionUID = 1298801116;
+	private static final long serialVersionUID = -2060736396;
 
 	/**
 	 * The singleton instance of <code>cattle.config_item_status</code>
@@ -60,6 +60,16 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 * The column <code>cattle.config_item_status.applied_updated</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.util.Date> APPLIED_UPDATED = createField("applied_updated", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
+
+	/**
+	 * The column <code>cattle.config_item_status.resource_type</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.String> RESOURCE_TYPE = createField("resource_type", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
+
+	/**
+	 * The column <code>cattle.config_item_status.resource_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> RESOURCE_ID = createField("resource_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
 	/**
 	 * The column <code>cattle.config_item_status.agent_id</code>.

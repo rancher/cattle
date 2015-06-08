@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "label", schema = "cattle")
 public class LabelRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.LabelRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Label {
 
-	private static final long serialVersionUID = 1873304874;
+	private static final long serialVersionUID = -842273294;
 
 	/**
 	 * Setter for <code>cattle.label.id</code>.
@@ -231,7 +231,7 @@ public class LabelRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	/**
 	 * Getter for <code>cattle.label.key</code>.
 	 */
-	@javax.persistence.Column(name = "key", length = 255)
+	@javax.persistence.Column(name = "key", length = 1024)
 	@Override
 	public java.lang.String getKey() {
 		return (java.lang.String) getValue(12);
@@ -248,7 +248,7 @@ public class LabelRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	/**
 	 * Getter for <code>cattle.label.value</code>.
 	 */
-	@javax.persistence.Column(name = "value", length = 255)
+	@javax.persistence.Column(name = "value", length = 4096)
 	@Override
 	public java.lang.String getValue() {
 		return (java.lang.String) getValue(13);

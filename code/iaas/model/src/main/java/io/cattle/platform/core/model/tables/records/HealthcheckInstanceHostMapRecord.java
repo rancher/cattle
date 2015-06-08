@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "healthcheck_instance_host_map", schema = "cattle")
-public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.HealthcheckInstanceHostMap {
+public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.HealthcheckInstanceHostMap {
 
-	private static final long serialVersionUID = -460175742;
+	private static final long serialVersionUID = -598439372;
 
 	/**
 	 * Setter for <code>cattle.healthcheck_instance_host_map.id</code>.
@@ -238,28 +238,11 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 	}
 
 	/**
-	 * Setter for <code>cattle.healthcheck_instance_host_map.health_state</code>.
-	 */
-	@Override
-	public void setHealthState(java.lang.String value) {
-		setValue(13, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.healthcheck_instance_host_map.health_state</code>.
-	 */
-	@javax.persistence.Column(name = "health_state", length = 128)
-	@Override
-	public java.lang.String getHealthState() {
-		return (java.lang.String) getValue(13);
-	}
-
-	/**
 	 * Setter for <code>cattle.healthcheck_instance_host_map.external_timestamp</code>.
 	 */
 	@Override
 	public void setExternalTimestamp(java.lang.Long value) {
-		setValue(14, value);
+		setValue(13, value);
 	}
 
 	/**
@@ -268,7 +251,24 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 	@javax.persistence.Column(name = "external_timestamp", precision = 19)
 	@Override
 	public java.lang.Long getExternalTimestamp() {
-		return (java.lang.Long) getValue(14);
+		return (java.lang.Long) getValue(13);
+	}
+
+	/**
+	 * Setter for <code>cattle.healthcheck_instance_host_map.health_state</code>.
+	 */
+	@Override
+	public void setHealthState(java.lang.String value) {
+		setValue(14, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.healthcheck_instance_host_map.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 128)
+	@Override
+	public java.lang.String getHealthState() {
+		return (java.lang.String) getValue(14);
 	}
 
 	// -------------------------------------------------------------------------
@@ -291,7 +291,7 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long> fieldsRow() {
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String> fieldsRow() {
 		return (org.jooq.Row15) super.fieldsRow();
 	}
 
@@ -299,7 +299,7 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long> valuesRow() {
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String> valuesRow() {
 		return (org.jooq.Row15) super.valuesRow();
 	}
 
@@ -411,16 +411,16 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field14() {
-		return io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP.HEALTH_STATE;
+	public org.jooq.Field<java.lang.Long> field14() {
+		return io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP.EXTERNAL_TIMESTAMP;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field15() {
-		return io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP.EXTERNAL_TIMESTAMP;
+	public org.jooq.Field<java.lang.String> field15() {
+		return io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP.HEALTH_STATE;
 	}
 
 	/**
@@ -531,16 +531,16 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value14() {
-		return getHealthState();
+	public java.lang.Long value14() {
+		return getExternalTimestamp();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value15() {
-		return getExternalTimestamp();
+	public java.lang.String value15() {
+		return getHealthState();
 	}
 
 	/**
@@ -664,16 +664,7 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public HealthcheckInstanceHostMapRecord value14(java.lang.String value) {
-		setHealthState(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public HealthcheckInstanceHostMapRecord value15(java.lang.Long value) {
+	public HealthcheckInstanceHostMapRecord value14(java.lang.Long value) {
 		setExternalTimestamp(value);
 		return this;
 	}
@@ -682,7 +673,16 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 	 * {@inheritDoc}
 	 */
 	@Override
-	public HealthcheckInstanceHostMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.Long value13, java.lang.String value14, java.lang.Long value15) {
+	public HealthcheckInstanceHostMapRecord value15(java.lang.String value) {
+		setHealthState(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public HealthcheckInstanceHostMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.Long value13, java.lang.Long value14, java.lang.String value15) {
 		return this;
 	}
 
@@ -708,8 +708,8 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 		setData(from.getData());
 		setHealthcheckInstanceId(from.getHealthcheckInstanceId());
 		setHostId(from.getHostId());
-		setHealthState(from.getHealthState());
 		setExternalTimestamp(from.getExternalTimestamp());
+		setHealthState(from.getHealthState());
 	}
 
 	/**
@@ -735,7 +735,7 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 	/**
 	 * Create a detached, initialised HealthcheckInstanceHostMapRecord
 	 */
-	public HealthcheckInstanceHostMapRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long healthcheckInstanceId, java.lang.Long hostId, java.lang.String healthState, java.lang.Long externalTimestamp) {
+	public HealthcheckInstanceHostMapRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long healthcheckInstanceId, java.lang.Long hostId, java.lang.Long externalTimestamp, java.lang.String healthState) {
 		super(io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP);
 
 		setValue(0, id);
@@ -751,7 +751,7 @@ public class HealthcheckInstanceHostMapRecord extends org.jooq.impl.UpdatableRec
 		setValue(10, data);
 		setValue(11, healthcheckInstanceId);
 		setValue(12, hostId);
-		setValue(13, healthState);
-		setValue(14, externalTimestamp);
+		setValue(13, externalTimestamp);
+		setValue(14, healthState);
 	}
 }
