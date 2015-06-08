@@ -70,6 +70,9 @@ public class GithubExternalIdHandler implements ExternalIdHandler {
 
     @Override
     public Set<ExternalId> getExternalIds(Account account) {
+        if (!githubClient.githubConfigured()){
+            return new HashSet<>();
+        }
         ApiRequest request = ApiContext.getContext().getApiRequest();
         githubUtils.findAndSetJWT();
         String jwt = githubUtils.getJWT();
@@ -77,7 +80,12 @@ public class GithubExternalIdHandler implements ExternalIdHandler {
         if(StringUtils.isBlank(jwt) && !StringUtils.isBlank(accessToken)){
             try {
                 jwt =  ProjectConstants.AUTH_TYPE + githubTokenHandler.getGithubToken(accessToken).getJwt();
-            } catch (IOException e) {
+            } catch (ClientVisibleException e) {
+                if (e.getCode().equalsIgnoreCase(GithubConstants.GITHUB_ERROR) &&
+                        !e.getDetail().contains("401")){
+                    throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.JWT_CREATION_FAILED, "", null);
+                }
+            }catch (IOException e) {
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.JWT_CREATION_FAILED, "", null);
             }
         }
