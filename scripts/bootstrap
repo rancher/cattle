@@ -32,3 +32,10 @@ if [ "${CATTLE_DB_CATTLE_DATABASE}" == "mysql" ]; then
         mysql < ../resources/content/db/mysql/create_db_and_user_dev.sql
     fi
 fi
+
+if [ -f ../resources/content/cattle-global.properties ]; then
+    websocket_proxy_url=$(grep 'service.package.websocket.proxy.url' ../resources/content/cattle-global.properties | awk -F= '{print $2}')
+    curl -L -o websocket_proxy.tar.xz $websocket_proxy_url
+    tar xpvf websocket_proxy.tar.xz -C /usr/bin && chmod +x /usr/bin/websocket-proxy
+    echo "Installed websocket-proxy"
+fi

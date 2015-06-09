@@ -55,6 +55,7 @@ run()
 
 run ./bootstrap
 run ./clean
+
 CI=true MAVEN_ARGS='-B -q' run ./build
 
 run ./run --background
@@ -81,8 +82,9 @@ echo "Testing H2"
 export RUNTIME_DIR=../../../runtime/ci-h2/
 export RUNTIME_DIR_CLEAN=true
 export CATTLE_DB_CATTLE_DATABASE=h2
-export CATTLE_TEST_HTTP_PORT=8082
-export CATTLE_TEST_URL=http://localhost:8082/v1/schemas
+export CATTLE_TEST_HTTP_PORT=8083
+export CATTLE_TEST_HTTP_PROXIED_PORT=8084
+export CATTLE_TEST_URL=http://localhost:8083/v1/schemas
 
 run ./run --background
 ./test -e py27 -- core/test_virtual_machine.py core/test_container.py || {

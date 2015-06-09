@@ -15,11 +15,10 @@ def test_stats_host(docker_client, context):
     assert 'stats' in host.links
     assert 'stats' not in sim_host.links
 
-    found_ip = _get_host_stats_ip(host)
     stats_access = host.stats()
-
     assert stats_access.token.index('.') > 0
-    assert stats_access.url == 'ws://%s:9345/v1/stats' % found_ip.address
+
+    assert '/v1/stats' in stats_access.url
 
 
 def _get_host_stats_ip(host):
@@ -48,14 +47,11 @@ def test_stats_container(docker_client):
     assert container.state == 'running'
     assert len(container.hosts()) == 1
 
-    host = container.hosts()[0]
-
-    found_ip = _get_host_stats_ip(host)
     stats_access = container.stats()
 
     assert stats_access.token.index('.') > 0
-    assert stats_access.url == 'ws://{}:9345/v1/stats/{}'.format(
-        found_ip.address, container.externalId)
+
+    assert '/v1/stats/%s' % container.externalId in stats_access.url
 
 
 def test_host_api_key_download(client):

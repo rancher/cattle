@@ -1,5 +1,7 @@
 package io.cattle.platform.launcher.jetty;
 
+import static io.cattle.platform.server.context.ServerContext.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -11,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.log.Log;
@@ -68,8 +71,14 @@ public class Main {
     }
 
     protected static String getHttpPort() {
-        String port = System.getenv("CATTLE_HTTP_PORT");
-        return port == null ? System.getProperty("cattle.http.port", "8080") : port;
+        boolean proxyEmbedded = StringUtils.equals(HOST_API_PROXY_MODE_EMBEDDED, getHostApiProxyMode());
+        if(proxyEmbedded) {
+            String port = System.getenv("CATTLE_HTTP_PROXIED_PORT");
+            return port == null ? System.getProperty("cattle.http.proxied.port", "8081") : port;
+        } else {
+            String port = System.getenv("CATTLE_HTTP_PORT");
+            return port == null ? System.getProperty("cattle.http.port", "8080") : port;
+        }
     }
 
     public static void main(String... args) {
