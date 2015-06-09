@@ -49,7 +49,6 @@ import javax.inject.Inject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
-import org.apache.commons.lang.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -222,20 +221,22 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     private void populateLinksForService(Service service, Collection<Long> servicesToExportIds,
             Map<String, Object> composeServiceData) {
-        List<String> serviceLinks = new ArrayList<>();
+        Map<String, String> serviceLinksWithNames = new HashMap<>();
         List<Service> externalLinksServices = new ArrayList<>();
         List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
         for (ServiceConsumeMap consumedServiceMap : consumedServiceMaps) {
             Service consumedService = objectManager.findOne(Service.class, SERVICE.ID, consumedServiceMap.getConsumedServiceId());
             
             if (servicesToExportIds.contains(consumedServiceMap.getConsumedServiceId())) {
-                serviceLinks.add(consumedService.getName());
+                String linkName = consumedServiceMap.getName() != null ? consumedServiceMap.getName() : consumedService
+                        .getName();
+                serviceLinksWithNames.put(consumedService.getName(), linkName);
             } else {
                 externalLinksServices.add(consumedService);
             }
         }
-        if (!serviceLinks.isEmpty()) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.LINKS.getDockerName(), serviceLinks);
+        if (!serviceLinksWithNames.isEmpty()) {
+            composeServiceData.put(ServiceDiscoveryConfigItem.LINKS.getDockerName(), serviceLinksWithNames);
         }
         populateExternalLinksForService(service, composeServiceData, externalLinksServices);
     }
