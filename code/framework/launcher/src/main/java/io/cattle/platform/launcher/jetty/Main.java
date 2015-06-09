@@ -69,7 +69,7 @@ public class Main {
 
     protected static String getHttpPort() {
         String port = System.getenv("CATTLE_HTTP_PORT");
-        return port == null ? System.getProperty("cattle.http.port", "8080") : port;
+        return port == null ? System.getProperty("cattle.http.port", "8081") : port;
     }
 
     public static void main(String... args) {
