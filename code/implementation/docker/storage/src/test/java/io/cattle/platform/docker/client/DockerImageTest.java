@@ -6,6 +6,8 @@ import org.junit.Test;
 
 public class DockerImageTest {
 
+    private static final String sha = "sha256:88f8d82bc9bc20ff80992cdeeee1dd6d8799cd36797b3653c644943e90b3acdf";
+
     @Test
     public void testNoNamespace() {
         DockerImage image = DockerImage.parse("ubuntu");
@@ -138,5 +140,59 @@ public class DockerImageTest {
         assertNull(image);
         image = DockerImage.parse("garbage:bar/foo:1:2:3");
         assertNull(image);
+    }
+
+    @Test
+    public void testNoNamespaceWithShaTag() {
+        DockerImage image = DockerImage.parse("ubuntu@" + sha);
+        assertEquals("index.docker.io", image.getServer());
+        assertEquals("ubuntu", image.getRepository());
+        assertEquals(sha, image.getTag());
+        assertNull(image.getNamespace());
+    }
+
+    @Test
+    public void testShaTag() {
+        DockerImage image = DockerImage.parse("ibuildthecloud/ubuntu-core@" + sha);
+        assertEquals("index.docker.io", image.getServer());
+        assertEquals("ubuntu-core", image.getRepository());
+        assertEquals("ibuildthecloud", image.getNamespace());
+        assertEquals(sha, image.getTag());
+    }
+
+    @Test
+    public void testUrlSha() {
+        DockerImage image = DockerImage.parse("quay.io/ibuildthecloud/ubuntu-core@" + sha);
+        assertEquals("quay.io", image.getServer());
+        assertEquals("ubuntu-core", image.getRepository());
+        assertEquals("ibuildthecloud", image.getNamespace());
+        assertEquals(sha, image.getTag());
+    }
+
+    @Test
+    public void testUrlTlnSha() {
+        DockerImage image = DockerImage.parse("quay.io/ubuntu-core@" + sha);
+        assertEquals("quay.io", image.getServer());
+        assertEquals("ubuntu-core", image.getRepository());
+        assertNull(image.getNamespace());
+        assertEquals(sha, image.getTag());
+    }
+
+    @Test
+    public void testLocalHostSha() {
+        DockerImage image = DockerImage.parse("localhost:5000/ibuildthecloud/ubuntu-core@" + sha);
+        assertEquals("localhost:5000", image.getServer());
+        assertEquals("ubuntu-core", image.getRepository());
+        assertEquals("ibuildthecloud", image.getNamespace());
+        assertEquals(sha, image.getTag());
+    }
+
+    @Test
+    public void testLocalHostTlnSha() {
+        DockerImage image = DockerImage.parse("localhost:5000/ubuntu-core@" + sha);
+        assertEquals("localhost:5000", image.getServer());
+        assertEquals("ubuntu-core", image.getRepository());
+        assertNull(image.getNamespace());
+        assertEquals(sha, image.getTag());
     }
 }

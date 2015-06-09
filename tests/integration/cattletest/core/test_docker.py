@@ -59,6 +59,43 @@ def test_docker_create_only(docker_client, super_client):
 
 
 @if_docker
+def test_docker_create_only_from_sha(docker_client, super_client):
+    image_name = 'tianon/true@sha256:662fc60808e6d5628a090e39' \
+                 'b4bcae694add28a626031cc889109c2cf2af5d73'
+    uuid = 'docker:' + image_name
+    container = docker_client.create_container(name='test-sha256',
+                                               imageUuid=uuid,
+                                               startOnCreate=False)
+    try:
+        container = docker_client.wait_success(container)
+
+        assert container is not None
+        assert 'container' == container.type
+        image = super_client.reload(container).image()
+        assert image.instanceKind == 'container'
+
+        image_mapping = filter(
+            lambda m: m.storagePool().external,
+            image.imageStoragePoolMaps()
+        )
+
+        assert len(image_mapping) == 0
+
+        assert not image.isPublic
+        assert image.name == '{}'.format(image.data.dockerImage.fullName,
+                                         image.data.dockerImage.id)
+        assert image.name == image_name
+        assert image.data.dockerImage.repository == 'true'
+        assert image.data.dockerImage.namespace == 'tianon'
+        assert image.data.dockerImage.tag == 'sha256:662fc60808e6d5628a090e' \
+                                             '39b4bcae694add28a626031cc8891' \
+                                             '09c2cf2af5d73'
+    finally:
+        if container is not None:
+            docker_client.wait_success(docker_client.delete(container))
+
+
+@if_docker
 def test_docker_create_with_start(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
     container = docker_client.create_container(name='test', imageUuid=uuid)

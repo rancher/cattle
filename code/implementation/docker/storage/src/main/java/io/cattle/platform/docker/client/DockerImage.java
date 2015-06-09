@@ -13,7 +13,7 @@ public class DockerImage {
     private static final DynamicStringProperty INDEX_SERVER = ArchaiusUtil.getString("docker.index.server");
     private static final String KIND_PREFIX = "docker:";
 
-    public DockerImage(String id, String repository, String namespace, String tag, String server) {
+    public DockerImage(String id, String server, String namespace, String repository, String tag) {
         super();
         this.id = id;
         this.repository = repository;
@@ -33,63 +33,68 @@ public class DockerImage {
         }
     }
 
-    public static DockerImage parse(String id) {
-        id = StringUtils.removeStart(id, KIND_PREFIX);
-        String namespace = null;
-        String repo = null;
-        String tag = null;
-        String server = null;
-        if (id == null) {
+    public static DockerImage parse(String uuid) {
+        uuid = StringUtils.removeStart(uuid, KIND_PREFIX);
+        if (uuid == null) {
             return null;
         }
-        String[] forwardSlash = id.split("/");
+        String[] fields;
+        String[] forwardSlash = uuid.split("/");
         switch (forwardSlash.length) {
         case 1:
-            String[] split2 = forwardSlash[0].split(":");
-            if (split2.length == 1) {
-                tag = "latest";
-                repo = id;
-            } else if (split2.length == 2) {
-                tag = split2[1];
-                repo = split2[0];
-            }
+            fields = repoAndTag(uuid);
             break;
         case 2:
             String first = forwardSlash[0];
-            String[] second = forwardSlash[1].split(":");
+            String second = forwardSlash[1];
+            fields = repoAndTag(second);
             if (first.contains(".") || first.contains(":") || first.equals("localhost")) {
-                server = first;
+                fields[0] = first;
             } else {
-                namespace = first;
-            }
-            if (second.length == 1) {
-                repo = forwardSlash[1];
-                tag = "latest";
-            } else if (second.length == 2) {
-                repo = second[0];
-                tag = second[1];
-            } else {
-                return null;
+                fields[1] = first;
             }
             break;
         case 3:
-            server = forwardSlash[0];
-            namespace = forwardSlash[1];
-            split2 = forwardSlash[2].split(":");
-            if (split2.length == 1) {
-                repo = forwardSlash[2];
-                tag = "latest";
-            } else if (split2.length == 2) {
-                repo = split2[0];
-                tag = split2[1];
-            } else {
-                return null;
-            }
+            fields = repoAndTag(forwardSlash[2]);
+            fields[0] = forwardSlash[0];
+            fields[1] = forwardSlash[1];
             break;
         default:
             return null;
         }
-        return new DockerImage(null, repo, namespace, tag, server);
+        if (fields[2] == null){
+            return null;
+        }
+        return fromArray(fields);
+    }
+
+    private static String[] repoAndTag(String uuid){
+        String[] fields = new String[4];
+        String[] split;
+        if (uuid.contains("@")){
+            split = uuid.split("@");
+            if (split.length == 2 && split[1].startsWith("sha256:")) {
+                fields[2] = split[0];
+                fields[3] = split[1];
+            }
+        } else {
+            split = uuid.split(":");
+            if (split.length == 1) {
+                fields[2] = uuid;
+                fields[3] = "latest";
+            } else if (split.length == 2) {
+                fields[2] = split[0];
+                fields[3] = split[1];
+            }
+        }
+        return fields;
+    }
+
+    private static DockerImage fromArray(String[] fields){
+        if (fields.length != 4){
+            return null;
+        }
+        return new DockerImage(null, fields[0], fields[1], fields[2], fields[3]);
     }
 
     public String getId() {
@@ -154,6 +159,9 @@ public class DockerImage {
     }
 
     public String getFullName() {
+        if (tag.startsWith("sha256")){
+            return getQualifiedName() + '@' + tag;
+        }
         return getQualifiedName() + ":" + tag;
     }
 
