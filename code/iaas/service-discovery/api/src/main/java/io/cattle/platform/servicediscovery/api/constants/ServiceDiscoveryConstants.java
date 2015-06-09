@@ -53,9 +53,9 @@ public class ServiceDiscoveryConstants {
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
     public static final String LINK_COMPOSE_CONFIG = "composeConfig";
 
-    public static final String LABEL_SERVICE_NAME = "io.rancher.service.name";
     public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
-    public static final String LABEL_ENVIRONMENT_NAME = "io.rancher.environment.name";
+    public static final String LABEL_PROJECT_NAME = "io.rancher.project.name";
+    public static final String LABEL_PROJECT_SERVICE_NAME = "io.rancher.project_service.name";
     public static final String LABEL_SERVICE_GLOBAL = "io.rancher.scheduler.global";
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";

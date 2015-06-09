@@ -270,10 +270,11 @@ public class DeploymentUnit {
 
     protected Map<String, String> getLabels(DeploymentUnitInstance instance) {
         Map<String, String> labels = new HashMap<>();
-        labels.put(ServiceDiscoveryConstants.LABEL_SERVICE_NAME, instance.getService().getName());
-        labels.put(ServiceDiscoveryConstants.LABEL_ENVIRONMENT_NAME,
-                context.objectManager.loadResource(Environment.class, instance.getService().getEnvironmentId())
-                        .getName());
+        String serviceName = instance.getService().getName();
+        String envName = context.objectManager.loadResource(Environment.class, instance.getService().getEnvironmentId())
+                .getName();
+        labels.put(ServiceDiscoveryConstants.LABEL_PROJECT_NAME, envName);
+        labels.put(ServiceDiscoveryConstants.LABEL_PROJECT_SERVICE_NAME, envName + "/" + serviceName);
         /*
          * Put label 'io.rancher.deployment.unit=this.uuid' on each one. This way
          * we can reference a set of containers later.

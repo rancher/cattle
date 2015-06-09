@@ -1082,14 +1082,16 @@ def test_validate_labels(client, context):
 
     # check that labels defined in launch config + the internal label, are set
     result_labels_1 = {'affinity': 'container==B', '!affinity': "container==C",
-                       'io.rancher.service.name': service_name1,
-                       'io.rancher.environment.name': env.name}
+                       'io.rancher.project.name': env.name,
+                       'io.rancher.project_service.name':
+                           env.name + '/' + service_name1}
     instance1 = _validate_compose_instance_start(client, service1, env, "1")
     assert all(item in instance1.labels for item in result_labels_1) is True
 
     # check that only one internal label is set
-    result_labels_2 = {'io.rancher.service.name': service_name2,
-                       'io.rancher.environment.name': env.name}
+    result_labels_2 = {'io.rancher.project.name': env.name,
+                       'io.rancher.project_service.name':
+                           env.name + '/' + service_name2}
     instance2 = _validate_compose_instance_start(client, service2, env, "1")
     assert all(item in instance2.labels for item in result_labels_2) is True
 
@@ -1659,7 +1661,8 @@ def test_service_affinity_rules(super_client, new_context):
         "imageUuid": image_uuid,
         "labels": {
             "io.rancher.scheduler.affinity:container_label_ne":
-                "io.rancher.service.name=" + service_name
+                "io.rancher.project_service.name=" +
+                env.name + '/' + service_name
         }
     }
 
@@ -1687,7 +1690,8 @@ def test_service_affinity_rules(super_client, new_context):
         "imageUuid": image_uuid,
         "labels": {
             "io.rancher.scheduler.affinity:container_label_soft":
-                "io.rancher.service.name=" + service_name2
+                "io.rancher.project_service.name=" +
+                "${project_name}/${service_name}"
         }
     }
 

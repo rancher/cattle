@@ -46,7 +46,7 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
 
         // Currently, intentionally duplicating code to be explicit
         Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
-        List<Constraint> affinityConstraintsFromLabels = allocatorService.extractConstraintsFromLabels(labels);
+        List<Constraint> affinityConstraintsFromLabels = allocatorService.extractConstraintsFromLabels(labels, attempt.getInstance());
         for (Constraint constraint : affinityConstraintsFromLabels) {
             constraints.add(constraint);
         }

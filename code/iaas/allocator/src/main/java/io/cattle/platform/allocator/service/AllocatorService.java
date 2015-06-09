@@ -1,6 +1,7 @@
 package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.core.model.Instance;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,6 @@ public interface AllocatorService {
     List<Constraint> extractConstraintsFromEnv(Map env);
 
     @SuppressWarnings("rawtypes")
-    List<Constraint> extractConstraintsFromLabels(Map labels);
+    List<Constraint> extractConstraintsFromLabels(Map labels, Instance instance);
 
 }
