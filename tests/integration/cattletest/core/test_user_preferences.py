@@ -30,6 +30,11 @@ def test_delete_user_preference(user_client):
     preference = user_client.wait_success(preference.purge())
     preference = user_client.by_id('userPreference', preference.id)
     assert preference.state == 'purged'
+    preference = _user_preference(user_client)
+    preference = user_client.wait_success(preference.remove())
+    assert preference.state == 'removed'
+    preference = user_client.wait_success(preference.purge())
+    assert preference.state == 'purged'
 
 
 def test_update_user_preference(user_client):
@@ -42,11 +47,11 @@ def test_update_user_preference(user_client):
 
 def test_unique_user_preference(user_client, admin_user_client):
     rand_str = random_str()
-    _user_preference(user_client, rand_str)
+    _user_preference(user_client, name=rand_str)
     with pytest.raises(ApiError) as e:
-        _user_preference(user_client, rand_str)
+        _user_preference(user_client, name=rand_str)
     assert e.value.error.status == 422
-    _user_preference(admin_user_client, rand_str)
+    _user_preference(admin_user_client, name=rand_str)
     with pytest.raises(ApiError) as e:
-        _user_preference(admin_user_client, rand_str)
+        _user_preference(admin_user_client, name=rand_str)
     assert e.value.error.status == 422
