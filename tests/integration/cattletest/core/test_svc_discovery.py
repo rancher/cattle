@@ -1337,6 +1337,7 @@ def test_global_service(new_context):
     instance2 = _validate_compose_instance_start(client, service, env, "2")
     instance2_host = instance2.hosts()[0].id
     assert instance1_host != instance2_host
+    client.wait_success(service.deactivate())
 
 
 def test_global_service_update_label(new_context):
@@ -1380,7 +1381,8 @@ def test_global_service_update_label(new_context):
         name=env.name + "_" + service.name + "_2")) == 0
 
     # update host2 with label group=web
-    host2 = client.update(host2, labels=labels)
+    host2 = client.wait_success(client.update(host2, labels=labels))
+    service = client.wait_success(service)
 
     # wait for 2nd instance to start up
     wait_for(
@@ -1407,6 +1409,7 @@ def test_global_service_update_label(new_context):
     instance1_host = instance1.hosts()[0].id
     assert instance1_host == host1.id or instance1_host == host2.id
     assert instance1.hosts()[0].id != instance2.hosts()[0].id
+    client.wait_success(service.deactivate())
 
 
 def test_global_add_host(new_context):
@@ -1455,6 +1458,7 @@ def test_global_add_host(new_context):
     # confirm 2nd instance is on host2
     instance2_host = instance2.hosts()[0].id
     assert instance2_host == host2.id
+    client.wait_success(service.deactivate())
 
 
 def test_dns_service(client, context):
