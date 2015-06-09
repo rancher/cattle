@@ -112,6 +112,18 @@ def test_docker_build(docker_client, super_client):
 
 
 @if_docker
+def test_docker_create_with_start_using_docker_io(docker_client, super_client):
+    image = 'docker.io/' + TEST_IMAGE
+    uuid = 'docker:' + image
+    container = docker_client.create_container(name='test', imageUuid=uuid)
+    container = super_client.wait_success(container)
+    assert container.state == 'running'
+    assert container.data.dockerContainer.Image == image + ':latest'
+    if container is not None:
+        docker_client.wait_success(docker_client.delete(container))
+
+
+@if_docker
 def test_docker_command(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
     container = docker_client.create_container(name='test',
