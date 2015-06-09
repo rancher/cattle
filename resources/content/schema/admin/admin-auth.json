@@ -88,6 +88,11 @@
         "githubconfig.hostname": "cr",
 
         "host.apiProxy" : "ru",
+				
+		"hostApiProxyToken" : "r",
+		"hostApiProxyToken.reportedUuid" : "r",
+		"hostApiProxyToken.token" : "r",
+		"hostApiProxyToken.url" : "r",
 
         "instanceLink.ports" : "r",
 

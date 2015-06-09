@@ -27,6 +27,8 @@ public class ServerContext {
     private static final String FOUND_SERVER_IP = lookupServerIp();
     private static final String SERVER_ID_FORMAT = System.getProperty("cattle.server.id.format", "%s");
 
+    public static final DynamicStringProperty HOST_API_PROXY_SCHEME = ArchaiusUtil.getString("cattle.host.api.proxy.scheme");
+
     public static boolean isCustomApiHost() {
         return !StringUtils.isBlank(HOST.get());
     }
