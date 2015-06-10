@@ -12,6 +12,7 @@
 
     <bean class="io.cattle.platform.host.api.HostApiPublicKeyScriptHandler" />
     <bean class="io.cattle.platform.host.api.HostApiProxyTokenManager" />
+    <bean class="io.cattle.host.api.proxy.launch.ProxyLauncher" />
 
     <bean id="ProxyTokenTypeSet" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeClasses">
