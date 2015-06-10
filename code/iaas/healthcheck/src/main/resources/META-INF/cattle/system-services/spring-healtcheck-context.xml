@@ -17,5 +17,7 @@
     <bean class="io.cattle.iaas.healthcheck.process.InstanceHealthcheckRegister" />
     <bean class="io.cattle.iaas.healthcheck.process.ServiceEventPreCreate" />
     <bean class="io.cattle.iaas.healthcheck.process.ServiceEventCreate" />
+    <bean class="io.cattle.iaas.healthcheck.process.HostRemovePostHandler" />
+    <bean class="io.cattle.iaas.healthcheck.process.HealthcheckInstanceHostMapRemovePostHandler" />
 
 </beans>

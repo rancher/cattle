@@ -181,3 +181,49 @@ def test_health_check_bad_agent(super_client, context, client):
                                           reportedHealth='Something Bad',
                                           healthcheckUuid=hcihm.uuid)
     assert e.value.error.code == 'CantVerifyHealthcheck'
+
+
+def test_health_check_host_remove(super_client, context, client):
+    # create 4 hosts for healtcheck as one of them would be removed later
+    super_client.reload(register_simulated_host(context))
+    super_client.reload(register_simulated_host(context))
+    super_client.reload(register_simulated_host(context))
+    super_client.reload(register_simulated_host(context))
+
+    env = client.create_environment(name='env-' + random_str())
+    service = client.create_service(name='test', launchConfig={
+        'imageUuid': context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+        }
+    }, environmentId=env.id, scale=1)
+
+    service = client.wait_success(client.wait_success(service).activate())
+    assert service.state == 'active'
+
+    expose_map = find_one(service.serviceExposeMaps)
+    container = super_client.reload(expose_map.instance())
+    hci = find_one(container.healthcheckInstances)
+    assert len(hci.healthcheckInstanceHostMaps()) == 3
+
+    hcihm = hci.healthcheckInstanceHostMaps()[0]
+    hosts = super_client.list_host(uuid=hcihm.host().uuid)
+    assert len(hosts) == 1
+    host = hosts[0]
+
+    # remove the host
+    host = super_client.wait_success(host.deactivate())
+    host = super_client.wait_success(super_client.delete(host))
+    assert host.state == 'removed'
+
+    # verify that new hostmap was created for the instance
+    hci = find_one(container.healthcheckInstances)
+    assert len(hci.healthcheckInstanceHostMaps()) == 3
+
+    hcim = None
+    for h in hci.healthcheckInstanceHostMaps():
+        if h.hostId == host.id:
+            hcihm = h
+            break
+
+    assert hcim is None

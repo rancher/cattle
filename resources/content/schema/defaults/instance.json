@@ -1,5 +1,4 @@
 {
     "allocationState" : "inactive",
-    "healthState" : "initializing",
     "instanceTriggeredStop" : "stop"
 }
