@@ -86,6 +86,7 @@ public class HostApiServiceImpl implements HostApiService {
     }
 
     protected String getToken(IpAddress ip, int port, Host host, Map<String, Object> inputData) {
+        // TODO Figure out if we really need to put the ip and port into the token
         Map<String, Object> data = new HashMap<String, Object>(inputData);
         String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
         if (uuid != null) {
