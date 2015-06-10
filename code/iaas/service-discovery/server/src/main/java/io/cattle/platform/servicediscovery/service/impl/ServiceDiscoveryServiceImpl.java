@@ -127,14 +127,26 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     populateLinksForService(service, servicesToExportIds, composeServiceData);
                     populateNetworkForService(service, launchConfigName, composeServiceData);
                     populateVolumesForService(service, launchConfigName, composeServiceData);
+                    addExtraComposeParameters(service, launchConfigName, composeServiceData);
                 }
 
-                data.put(
-                        launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? service
-                                .getName() : launchConfigName, composeServiceData);
+                if (!composeServiceData.isEmpty()) {
+                    data.put(
+                            launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? service
+                                    .getName() : launchConfigName, composeServiceData);
+                }
             }
         }
         return data;
+    }
+
+    private void addExtraComposeParameters(Service service,
+            String launchConfigName, Map<String, Object> composeServiceData) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
+            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/dns-service");
+        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/lb-service");
+        }
     }
 
 
@@ -209,20 +221,22 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     private void populateLinksForService(Service service, Collection<Long> servicesToExportIds,
             Map<String, Object> composeServiceData) {
-        List<String> serviceLinks = new ArrayList<>();
+        Map<String, String> serviceLinksWithNames = new HashMap<>();
         List<Service> externalLinksServices = new ArrayList<>();
         List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
         for (ServiceConsumeMap consumedServiceMap : consumedServiceMaps) {
             Service consumedService = objectManager.findOne(Service.class, SERVICE.ID, consumedServiceMap.getConsumedServiceId());
             
             if (servicesToExportIds.contains(consumedServiceMap.getConsumedServiceId())) {
-                serviceLinks.add(consumedService.getName());
+                String linkName = consumedServiceMap.getName() != null ? consumedServiceMap.getName() : consumedService
+                        .getName();
+                serviceLinksWithNames.put(consumedService.getName(), linkName);
             } else {
                 externalLinksServices.add(consumedService);
             }
         }
-        if (!serviceLinks.isEmpty()) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.LINKS.getDockerName(), serviceLinks);
+        if (!serviceLinksWithNames.isEmpty()) {
+            composeServiceData.put(ServiceDiscoveryConfigItem.LINKS.getDockerName(), serviceLinksWithNames);
         }
         populateExternalLinksForService(service, composeServiceData, externalLinksServices);
     }
