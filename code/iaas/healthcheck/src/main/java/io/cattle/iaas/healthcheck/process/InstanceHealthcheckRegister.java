@@ -1,11 +1,13 @@
 package io.cattle.iaas.healthcheck.process;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.iaas.healthcheck.service.HealthcheckService.HealthcheckInstanceType;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -15,7 +17,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -33,7 +34,13 @@ public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic impl
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Instance instance = (Instance) state.getResource();
+        Nic nic = (Nic) state.getResource();
+        Instance instance = objectManager.loadResource(Instance.class, nic.getInstanceId());
+
+        if (instance == null) {
+            return null;
+        }
+
         InstanceHealthCheck healthCheck = DataAccessor.field(instance,
                 InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
 
@@ -49,7 +56,7 @@ public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic impl
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { InstanceConstants.PROCESS_START };
+        return new String[] { "nic.activate" };
     }
 
     @Override
