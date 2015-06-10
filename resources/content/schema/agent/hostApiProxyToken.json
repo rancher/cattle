@@ -1,0 +1,14 @@
+{
+    "collectionMethods": ["POST"],
+    "resourceFields": {
+        "reportedUuid": {
+            "create": true
+        },
+        "token": {
+            "create": false
+        },
+        "url": {
+            "create": false
+        }
+    }
+}

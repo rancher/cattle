@@ -1,5 +1,6 @@
 from common_fixtures import *  # NOQA
 from test_docker import docker_client, TEST_IMAGE_UUID, if_docker
+from urlparse import urlparse
 
 docker_client
 
@@ -22,18 +23,15 @@ def _get_container_logs_ip(host):
 
 
 @if_docker
-def test_logs_container(docker_client):
+def test_logs_container(docker_client, cattle_url):
     uuid = TEST_IMAGE_UUID
     container = docker_client.create_container(name='test', imageUuid=uuid)
     container = docker_client.wait_success(container)
 
     assert len(container.hosts()) == 1
 
-    host = container.hosts()[0]
-
-    found_ip = _get_container_logs_ip(host)
     logs_access = container.logs()
 
     assert logs_access.token.index('.') > 0
-    assert logs_access.url == \
-        'ws://{}:9345/v1/logs/'.format(found_ip.address)
+    parsed_url = urlparse(cattle_url)
+    assert logs_access.url == 'ws://%s/v1/logs/' % parsed_url.netloc

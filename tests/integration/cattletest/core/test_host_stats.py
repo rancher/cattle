@@ -1,5 +1,6 @@
 from common_fixtures import *  # NOQA
 from test_docker import docker_client, TEST_IMAGE_UUID, if_docker
+from urlparse import urlparse
 
 import requests
 
@@ -8,18 +9,18 @@ docker_client
 
 
 @if_docker
-def test_stats_host(docker_client, context):
+def test_stats_host(docker_client, context, cattle_url):
     host = docker_client.list_host()[0]
     sim_host = context.host
 
     assert 'stats' in host.links
     assert 'stats' not in sim_host.links
 
-    found_ip = _get_host_stats_ip(host)
     stats_access = host.stats()
-
     assert stats_access.token.index('.') > 0
-    assert stats_access.url == 'ws://%s:9345/v1/stats' % found_ip.address
+
+    parsed_url = urlparse(cattle_url)
+    assert stats_access.url == 'ws://%s/v1/stats' % parsed_url.netloc
 
 
 def _get_host_stats_ip(host):
@@ -40,7 +41,7 @@ def _get_host_stats_ip(host):
 
 
 @if_docker
-def test_stats_container(docker_client):
+def test_stats_container(docker_client, cattle_url):
     uuid = TEST_IMAGE_UUID
     container = docker_client.create_container(name='test', imageUuid=uuid)
     container = docker_client.wait_success(container)
@@ -48,14 +49,13 @@ def test_stats_container(docker_client):
     assert container.state == 'running'
     assert len(container.hosts()) == 1
 
-    host = container.hosts()[0]
-
-    found_ip = _get_host_stats_ip(host)
     stats_access = container.stats()
 
     assert stats_access.token.index('.') > 0
-    assert stats_access.url == 'ws://{}:9345/v1/stats/{}'.format(
-        found_ip.address, container.externalId)
+
+    parsed_url = urlparse(cattle_url)
+    assert stats_access.url == 'ws://%s/v1/stats/%s' % (
+        parsed_url.netloc, container.externalId)
 
 
 def test_host_api_key_download(client):
