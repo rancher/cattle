@@ -12,7 +12,12 @@ import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenService;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,12 +59,25 @@ public class HostApiServiceImpl implements HostApiService {
         Map<String, String> values = new HashMap<String, String>();
         values.put(HEADER_AUTH.get(), String.format(HEADER_AUTH_VALUE.get(), token));
 
-        return new HostApiAccess(getHostAddress(ip, port, host), token, values);
+        return new HostApiAccess(getHostAddress(host), token, values);
     }
 
-    protected String getHostAddress(IpAddress ip, int port, Host host) {
-        String proxy = DataAccessor.fieldString(host, HostConstants.FIELD_API_PROXY);
-        return proxy == null ? String.format("%s:%d", ip.getAddress(), port) : proxy;
+    protected String getHostAddress(Host host) {
+        // TODO Can we drop support for FIELD_API_PROXY?
+        // String proxy = DataAccessor.fieldString(host, HostConstants.FIELD_API_PROXY);
+
+        // TODO Implement HA-aware proxy lookup
+        if (ApiContext.getContext() == null || ApiContext.getContext().getApiRequest() == null) {
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
+        }
+
+        String responseBaseUrl = ApiContext.getContext().getApiRequest().getResponseUrlBase();
+        try {
+            URL url = new URL(responseBaseUrl);
+            return String.format("%s:%d", url.getHost(), url.getPort());
+        } catch (MalformedURLException e) {
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
+        }
     }
 
     @Override
