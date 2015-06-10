@@ -35,7 +35,7 @@ backend ${healthCheckEntry.healthCheckUuid}_backend
         balance roundrobin
         <#if healthCheckEntry.healthCheck.responseTimeout??>timeout check ${healthCheckEntry.healthCheck.responseTimeout}</#if>
         <#if healthCheckEntry.healthCheck.requestLine?? && healthCheckEntry.healthCheck.requestLine?has_content>option httpchk ${healthCheckEntry.healthCheck.requestLine}</#if>
-        server cattle-${healthCheckEntry.healthCheckUuid} ${healthCheckEntry.targetIpAddress.address}:${healthCheckEntry.healthCheck.port} check port ${healthCheckEntry.healthCheck.port}<#if healthCheckEntry.healthCheck.interval??> inter ${healthCheckEntry.healthCheck.interval}</#if><#if healthCheckEntry.healthCheck.healthyThreshold??> rise ${healthCheckEntry.healthCheck.healthyThreshold}</#if><#if healthCheckEntry.healthCheck.unhealthyThreshold??> fall ${healthCheckEntry.healthCheck.unhealthyThreshold}</#if>
+        server cattle-${healthCheckEntry.healthCheckUuid}_${healthCheckEntry.startCount} ${healthCheckEntry.targetIpAddress.address}:${healthCheckEntry.healthCheck.port} check port ${healthCheckEntry.healthCheck.port}<#if healthCheckEntry.healthCheck.interval??> inter ${healthCheckEntry.healthCheck.interval}</#if><#if healthCheckEntry.healthCheck.healthyThreshold??> rise ${healthCheckEntry.healthCheck.healthyThreshold}</#if><#if healthCheckEntry.healthCheck.unhealthyThreshold??> fall ${healthCheckEntry.healthCheck.unhealthyThreshold}</#if>
 </#list>
 
 # Need to listen on something since we have no front ends

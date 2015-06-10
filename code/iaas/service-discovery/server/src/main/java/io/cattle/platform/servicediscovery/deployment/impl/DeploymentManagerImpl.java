@@ -70,7 +70,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     @Override
     public void activate(final Service service) {
-        if (service == null) {
+        if (service == null || service.getRemoved() != null) {
             return;
         }
         final List<Service> services = new ArrayList<>();
@@ -304,7 +304,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void run() {
                 Service service = objectMgr.loadResource(Service.class, client.getResourceId());
-                if (service != null) {
+                if (service != null
+                        && service.getRemoved() == null
+                        && (service.getState().equals(CommonStatesConstants.ACTIVATING)
+                                || service.getState().equals(CommonStatesConstants.ACTIVE) || service.getState()
+                                .equals(CommonStatesConstants.UPDATING_ACTIVE))) {
                     activate(service);
                 }
             }

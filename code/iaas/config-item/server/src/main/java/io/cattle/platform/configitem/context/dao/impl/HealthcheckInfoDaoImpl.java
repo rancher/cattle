@@ -1,12 +1,11 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
-import static io.cattle.platform.core.model.tables.IpAddressTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
-
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
+import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
+import static io.cattle.platform.core.model.tables.NicTable.NIC;
 import io.cattle.platform.configitem.context.dao.HealthcheckInfoDao;
 import io.cattle.platform.configitem.context.data.HealthcheckData;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
@@ -14,7 +13,6 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.IpAddress;
@@ -29,8 +27,8 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+
 import javax.inject.Inject;
 
 public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements HealthcheckInfoDao {
@@ -55,6 +53,7 @@ public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements Healthche
                         InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
                 if (healthCheck != null) {
                     data.setHealthCheck(healthCheck);
+                    data.setStartCount(targetInstance.getStartCount());
                 }
                 data.setTargetIpAddress((IpAddress) input.get(0));
                 data.setHealthCheckUuid(((HealthcheckInstanceHostMap) input.get(2)).getUuid());

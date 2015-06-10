@@ -344,6 +344,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "health_state", length = 128)
 	public java.lang.String getHealthState();
 
+	/**
+	 * Setter for <code>cattle.instance.start_count</code>.
+	 */
+	public void setStartCount(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.start_count</code>.
+	 */
+	@javax.persistence.Column(name = "start_count", precision = 19)
+	public java.lang.Long getStartCount();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

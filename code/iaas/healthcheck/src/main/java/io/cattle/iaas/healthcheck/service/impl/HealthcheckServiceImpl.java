@@ -1,12 +1,13 @@
 package io.cattle.iaas.healthcheck.service.impl;
 
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.constants.HealthcheckConstants.*;
-
+import static io.cattle.platform.core.constants.HealthcheckConstants.HEALTH_STATE_HEALTHY;
+import static io.cattle.platform.core.constants.HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
+import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.HealthcheckInstance;
@@ -23,6 +24,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import javax.inject.Inject;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -77,6 +79,12 @@ public class HealthcheckServiceImpl implements HealthcheckService {
     }
 
     protected boolean shouldUpdate(HealthcheckInstanceHostMap hcihm, long externalTimestamp, boolean healthy) {
+        HealthcheckInstance hcInstance = objectManager.loadResource(HealthcheckInstance.class,
+                hcihm.getHealthcheckInstanceId());
+        if (!healthy && getHealthState(hcInstance).equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_INITIALIZING)) {
+            return false;
+        }
+
         if (hcihm.getExternalTimestamp() == null) {
             return true;
         }
@@ -143,6 +151,13 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         }
         
         // 1. create healthcheckInstance mapping
+        HealthcheckInstance healthInstance = createHealtcheckInstance(id, accountId);
+        
+        // 2. create healtcheckInstance to hosts mappings
+        createHealthCheckHostMaps(instanceType, id, accountId, healthInstance);
+    }
+
+    protected HealthcheckInstance createHealtcheckInstance(long id, Long accountId) {
         HealthcheckInstance healthInstance = objectManager.findAny(HealthcheckInstance.class,
                 HEALTHCHECK_INSTANCE.ACCOUNT_ID, accountId,
                 HEALTHCHECK_INSTANCE.INSTANCE_ID, id,
@@ -153,8 +168,11 @@ public class HealthcheckServiceImpl implements HealthcheckService {
                     HEALTHCHECK_INSTANCE.ACCOUNT_ID, accountId,
                     HEALTHCHECK_INSTANCE.INSTANCE_ID, id);
         }
-        
-        // 2. create healtcheckInstance to hosts mappings
+        return healthInstance;
+    }
+
+    protected void createHealthCheckHostMaps(HealthcheckInstanceType instanceType, long id, Long accountId,
+            HealthcheckInstance healthInstance) {
         Long inferiorHostId = getInstanceHostId(instanceType, id);
         List<Long> healthCheckHostIds = getHealthCheckHostIds(healthInstance, inferiorHostId);
         for (Long healthCheckHostId : healthCheckHostIds) {
