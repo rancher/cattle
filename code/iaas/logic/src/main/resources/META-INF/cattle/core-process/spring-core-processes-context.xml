@@ -57,7 +57,6 @@
     <process:defaultProcesses resourceType="storagePoolHostMap" />
     <process:defaultProcesses resourceType="subnet" />
     <process:defaultProcesses resourceType="subnetVnetMap" />
-    <process:defaultProcesses resourceType="userPreference" />
     <process:defaultProcesses resourceType="vnet" />
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
     <process:defaultProcesses resourceType="zone" />
@@ -198,5 +197,9 @@
     <!-- Service Event -->
     <process:process name="serviceevent.create" resourceType="serviceEvent" start="requested" transitioning="creating" done="created" />
     <process:process name="serviceevent.remove" resourceType="serviceEvent" start="created,creating" transitioning="removing" done="removed" />
+
+    <!-- User Preference -->
+    <process:defaultProcesses resourceType="userPreference" />
+    <process:process name="userpreference.remove" resourceType="userPreference" start="inactive,active" transitioning="removing" done="removed" />
 
 </beans>
