@@ -16,6 +16,9 @@
     <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler" />
     <bean class="io.cattle.platform.process.common.handler.EventBasedProcessHandler" />
+    <bean class="io.cattle.platform.process.agent.AgentHostStateUpdate" >
+        <property name="processDefinitions" value="#{extensionManager.list('process.definition')}" />
+    </bean>
 
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:reportProgress="true"

@@ -399,6 +399,7 @@ def test_project_member_auth(admin_user_client, user_client, project_client):
 def test_host_auth(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'host', 'r', {
         'accountId': 'r',
+        'agentState': 'r',
         'apiProxy': 'r',
         'agentId': 'r',
         'computeTotal': 'r',
@@ -410,6 +411,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
 
     auth_check(user_client.schema, 'host', 'r', {
         'accountId': 'r',
+        'agentState': 'r',
         'computeTotal': 'r',
         'physicalHostId': 'r',
         'info': 'r',
@@ -418,6 +420,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
 
     auth_check(project_client.schema, 'host', 'rud', {
         'accountId': 'r',
+        'agentState': 'r',
         'computeTotal': 'r',
         'physicalHostId': 'r',
         'info': 'r',

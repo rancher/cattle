@@ -103,3 +103,22 @@ def test_host_purge(super_client, new_context):
 
     volume = super_client.wait_success(volume.purge())
     assert volume.state == 'purged'
+
+
+def test_host_agent_state(super_client, new_context):
+    agent = super_client.reload(new_context.host).agent()
+    assert new_context.host.agentState is None
+
+    agent = super_client.wait_success(agent.deactivate())
+    host = new_context.client.reload(new_context.host)
+
+    assert host.state == 'active'
+    assert agent.state == 'inactive'
+    assert agent.state == host.agentState
+
+    agent = super_client.wait_success(agent.activate())
+    host = new_context.client.reload(new_context.host)
+
+    assert host.state == 'active'
+    assert agent.state == 'active'
+    assert agent.state == host.agentState

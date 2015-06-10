@@ -5,6 +5,7 @@ public class HostConstants {
     public static final String TYPE = "host";
     public static final String FIELD_PHYSICAL_HOST_ID = "physicalHostId";
 
+    public static final String FIELD_AGENT_STATE = "agentState";
     public static final String FIELD_REPORTED_UUID = "reportedUuid";
     public static final String FIELD_PHYSICAL_HOST_UUID = "physicalHostUuid";
     public static final String FIELD_HOST_UUID = "hostUuid";
