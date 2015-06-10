@@ -191,7 +191,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
                 tempPolicy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), externalIds)) {
             return project;
         }
-        return null;
+        throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
     }
 
     public AuthDao getAuthDao() {
