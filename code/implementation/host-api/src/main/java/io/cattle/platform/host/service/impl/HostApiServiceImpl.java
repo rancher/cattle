@@ -24,13 +24,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.netflix.config.DynamicStringProperty;
 
 public class HostApiServiceImpl implements HostApiService {
 
     private static final String HOST_UUID = "hostUuid";
-    private static final String IP_ADDRESS = "ipAddress";
-    private static final String PORT = "port";
 
     private static final DynamicStringProperty HEADER_AUTH = ArchaiusUtil.getString("host.api.auth.header");
     private static final DynamicStringProperty HEADER_AUTH_VALUE = ArchaiusUtil.getString("host.api.auth.header.value");
@@ -40,18 +40,13 @@ public class HostApiServiceImpl implements HostApiService {
     HostApiRSAKeyProvider keyProvider;
 
     @Override
-    public HostApiAccess getAccess(Long hostId, int port, Map<String, Object> data) {
+    public HostApiAccess getAccess(Long hostId, Map<String, Object> data) {
         Host host = objectManager.loadResource(Host.class, hostId);
         if (host == null) {
             return null;
         }
 
-        IpAddress ip = getIpAddress(host);
-        if (ip == null || ip.getAddress() == null) {
-            return null;
-        }
-
-        String token = getToken(ip, port, host, data);
+        String token = getToken(host, data);
         if (token == null) {
             return null;
         }
@@ -63,21 +58,30 @@ public class HostApiServiceImpl implements HostApiService {
     }
 
     protected String getHostAddress(Host host) {
-        // TODO Can we drop support for FIELD_API_PROXY?
-        // String proxy = DataAccessor.fieldString(host, HostConstants.FIELD_API_PROXY);
-
         // TODO Implement HA-aware proxy lookup
         if (ApiContext.getContext() == null || ApiContext.getContext().getApiRequest() == null) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
         }
 
         String responseBaseUrl = ApiContext.getContext().getApiRequest().getResponseUrlBase();
+        String hostAddress = null;
         try {
             URL url = new URL(responseBaseUrl);
-            return String.format("%s:%d", url.getHost(), url.getPort());
+            if (StringUtils.isNotBlank(url.getHost())) {
+                hostAddress = url.getHost();
+                if (url.getPort() != -1) {
+                    hostAddress = hostAddress + ":" + url.getPort();
+                }
+            }
         } catch (MalformedURLException e) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
         }
+
+        if (StringUtils.isBlank(hostAddress)) {
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
+        }
+
+        return hostAddress;
     }
 
     @Override
@@ -85,19 +89,13 @@ public class HostApiServiceImpl implements HostApiService {
         return keyProvider.getPublicKeys();
     }
 
-    protected String getToken(IpAddress ip, int port, Host host, Map<String, Object> inputData) {
-        // TODO Figure out if we really need to put the ip and port into the token
+    protected String getToken(Host host, Map<String, Object> inputData) {
         Map<String, Object> data = new HashMap<String, Object>(inputData);
         String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
         if (uuid != null) {
             data.put(HOST_UUID, uuid);
         } else {
             data.put(HOST_UUID, host.getUuid());
-        }
-
-        data.put(IP_ADDRESS, ip.getAddress());
-        if (port > 0) {
-            data.put(PORT, port);
         }
 
         return tokenService.generateToken(data);

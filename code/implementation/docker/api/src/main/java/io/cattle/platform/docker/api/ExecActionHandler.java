@@ -11,6 +11,7 @@ import io.cattle.platform.docker.util.DockerUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -18,13 +19,10 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class ExecActionHandler implements ActionHandler {
 
-    private static final DynamicStringProperty CONSOLE_AGENT_SCHEME = ArchaiusUtil.getString("console.agent.scheme");
-    private static final DynamicIntProperty CONSOLE_AGENT_PORT = ArchaiusUtil.getInt("console.agent.port");
     private static final DynamicStringProperty CONSOLE_AGENT_PATH = ArchaiusUtil.getString("console.agent.path");
 
     HostApiService apiService;
@@ -57,13 +55,13 @@ public class ExecActionHandler implements ActionHandler {
                 DockerInstanceConstants.DOCKER_ATTACH_STDOUT, exec.getAttachStdout(), DockerInstanceConstants.DOCKER_TTY, exec.getTty(),
                 DockerInstanceConstants.DOCKER_CMD, exec.getCommand(), DockerInstanceConstants.DOCKER_CONTAINER, dockerId);
 
-        HostApiAccess apiAccess = apiService.getAccess(host.getId(), CONSOLE_AGENT_PORT.get(), CollectionUtils.asMap("exec", data));
+        HostApiAccess apiAccess = apiService.getAccess(host.getId(), CollectionUtils.asMap("exec", data));
 
         if (apiAccess == null) {
             return null;
         }
 
-        StringBuilder url = new StringBuilder(CONSOLE_AGENT_SCHEME.get());
+        StringBuilder url = new StringBuilder(ServerContext.HOST_API_PROXY_SCHEME.get());
         url.append("://").append(apiAccess.getHostAndPort());
         url.append(CONSOLE_AGENT_PATH.get());
 

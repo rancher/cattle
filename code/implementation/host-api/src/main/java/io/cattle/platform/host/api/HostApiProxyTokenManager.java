@@ -16,10 +16,14 @@ import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResource
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
 
@@ -44,14 +48,33 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
         HostApiProxyToken p = request.proxyRequestObject(HostApiProxyToken.class);
         validate(p);
 
-        HostApiProxyTokenImpl i = new HostApiProxyTokenImpl();
-        i.setToken(getToken(p.getReportedUuid()));
-        i.setReportedUuid(p.getReportedUuid());
-        // TODO Handle unset host.api setting
+        HostApiProxyTokenImpl token = new HostApiProxyTokenImpl();
+        token.setToken(getToken(p.getReportedUuid()));
+        token.setReportedUuid(p.getReportedUuid());
+
         String apiHost = ServerContext.HOST.get();
+        if (StringUtils.isBlank(apiHost)) {
+            try {
+                String responseBaseUrl = request.getResponseUrlBase();
+                URL url = new URL(responseBaseUrl);
+                if (StringUtils.isNotBlank(url.getHost())) {
+                    apiHost = url.getHost();
+                    if (url.getPort() != -1) {
+                        apiHost = apiHost + ":" + url.getPort();
+                    }
+                }
+            } catch (MalformedURLException e) {
+                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
+            }
+        }
+
+        if (StringUtils.isBlank(apiHost)) {
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
+        }
+
         String apiProxyScheme = ServerContext.HOST_API_PROXY_SCHEME.get();
-        i.setUrl(apiProxyScheme + "://" + apiHost + "/v1/connectbackend");
-        return i;
+        token.setUrl(apiProxyScheme + "://" + apiHost + "/v1/connectbackend");
+        return token;
     }
 
     protected String getToken(String reportedUuid) {
