@@ -19,7 +19,7 @@
 
     <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
 
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstancePurgePostListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstancePurgePreListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceStartPostListener" />
 
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerRemovePostListener" />

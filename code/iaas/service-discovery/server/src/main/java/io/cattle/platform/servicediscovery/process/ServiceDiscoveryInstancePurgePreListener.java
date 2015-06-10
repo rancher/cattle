@@ -4,7 +4,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPostListener;
+import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
@@ -23,7 +23,7 @@ import javax.inject.Named;
  * - separate handler takes care of that
  */
 @Named
-public class ServiceDiscoveryInstancePurgePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
+public class ServiceDiscoveryInstancePurgePreListener extends AbstractObjectProcessLogic implements ProcessPreListener,
         Priority {
     @Override
     public String[] getProcessNames() {
@@ -44,7 +44,7 @@ public class ServiceDiscoveryInstancePurgePostListener extends AbstractObjectPro
         for (ServiceExposeMap map : maps) {
             if (!(map.getState().equals(CommonStatesConstants.REMOVED) || map.getState().equals(
                     CommonStatesConstants.REMOVING))) {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, map, null);
+                objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, map, null);
             }
         }
     }
