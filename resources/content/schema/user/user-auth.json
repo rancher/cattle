@@ -115,6 +115,7 @@
         "dockerBuild.forcerm" : "cr",
 
         "host" : "r",
+        "host.agentState" : "r",
         "host.agentId" : "r",
         "host.computeTotal" : "r",
         "host.info" : "r",
