@@ -14,6 +14,7 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.ArrayList;
@@ -38,6 +39,9 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
     @Inject
     LoadBalancerService lbManager;
 
+    @Inject
+    ServiceDiscoveryService sdService;
+
     @Override
     public String[] getProcessNames() {
         return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
@@ -53,6 +57,9 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
             // no special handling for a regular service
             Service lbService = objectManager.loadResource(Service.class, consumeMap.getServiceId());
             if (!lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+                return null;
+            }
+            if (!sdService.isActiveService(lbService)) {
                 return null;
             }
             removeConsumedServiceTargets(consumeMap, lbService);
@@ -72,6 +79,9 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
             for (ServiceConsumeMap consumingServiceMap : consumingServicesMaps) {
                 Service lbService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
                 if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+                    if (!sdService.isActiveService(lbService)) {
+                        return;
+                    }
                     LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
                             lbService.getId(),
                             LOAD_BALANCER.REMOVED, null);

@@ -19,8 +19,10 @@ public interface LoadBalancerTargetDao {
 
     LoadBalancerTarget getLbIpAddressTargetToRemove(long lbId, String ipAddress);
 
-    List<? extends Instance> getLoadBalancerActiveInstanceTargets(long lbId);
+    List<? extends Instance> getLoadBalancerActiveTargetInstances(long lbId);
 
     List<? extends LoadBalancerTarget> getLoadBalancerActiveIpTargets(long lbId);
+
+    List<? extends LoadBalancerTarget> getLoadBalancerActiveInstanceTargets(long lbId);
 
 }

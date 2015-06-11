@@ -209,7 +209,7 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
             List<? extends Instance> lbInstances = lbInstancesMap.get(lbId);
             // surround by lock
             for (final Instance lbInstance : lbInstances) {
-                boolean lbHasActiveTargets = (targetDao.getLoadBalancerActiveInstanceTargets(lb.getId()).size() + targetDao
+                boolean lbHasActiveTargets = (targetDao.getLoadBalancerActiveTargetInstances(lb.getId()).size() + targetDao
                         .getLoadBalancerActiveIpTargets(lb.getId()).size()) > 0;
                 List<String> ports = DataUtils.getFieldList(lbInstance.getData(), InstanceConstants.FIELD_PORTS,
                         String.class);

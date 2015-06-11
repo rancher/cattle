@@ -8,6 +8,7 @@ import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANC
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -38,6 +39,7 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -727,6 +729,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public Object getLaunchConfigObject(Service service, String launchConfigName, String objectName) {
         Map<String, Object> serviceData = getLaunchConfigDataAsMap(service, launchConfigName);
         return serviceData.get(objectName);
+    }
+
+    @Override
+    public boolean isActiveService(Service service) {
+        List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVATING,
+                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
+        return (validStates.contains(service.getState()));
     }
 
 }

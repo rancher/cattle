@@ -478,6 +478,60 @@ def test_labels(super_client, client, context):
                for item in result_labels.items()) is True
 
 
+def test_inactive_lb(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    # create and activate web service
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    web_service = client. \
+        create_service(name=random_str() + "web",
+                       environmentId=env.id,
+                       launchConfig=launch_config)
+
+    web_service = client.wait_success(web_service)
+    web_service = client.wait_success(web_service.activate(), 120)
+    assert web_service.state == "active"
+    web_instances = client. \
+        list_container(name=env.name + "_" + web_service.name + "_" + "1")
+    assert len(web_instances) == 1
+
+    # create lb service, but don't activate
+    lb_launch_config = {"imageUuid": image_uuid,
+                        "ports": [1000]}
+    lb_service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=lb_launch_config)
+    lb_service = client.wait_success(lb_service)
+    assert lb_service.state == "inactive"
+    lbs = client. \
+        list_loadBalancer(serviceId=lb_service.id)
+    assert len(lbs) == 1
+    lb = lbs[0]
+
+    # map web service to lb service; validate no lb targets were created
+    lb_service = lb_service.addservicelink(serviceId=web_service.id)
+    target_maps = client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id)
+    assert len(target_maps) == 0
+
+    # activate lb service and validate web instance was added as lb target
+    lb_service = client.wait_success(lb_service.activate(), 120)
+    assert lb_service.state == "active"
+    _validate_add_target_instance(web_instances[0], client)
+
+    # deactivate lb service, and remove service link
+    lb_service = client.wait_success(lb_service.deactivate(), 120)
+    assert lb_service.state == "inactive"
+    lb_service = lb_service.removeservicelink(serviceId=web_service.id)
+    lb_service = client.wait_success(lb_service.activate(), 120)
+    assert lb_service.state == "active"
+    _validate_remove_target_instance(web_instances[0], client)
+
+
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
     start = time.time()
     host_maps = super_client. \
