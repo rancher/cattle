@@ -40,21 +40,21 @@ public class InstancePortCreate extends AbstractObjectProcessLogic implements Pr
             return null;
         }
 
-        Map<Integer, Port> ports = new HashMap<Integer, Port>();
+        Map<String, Port> ports = new HashMap<>();
         for (Port port : objectManager.children(instance, Port.class)) {
-            ports.put(port.getPrivatePort(), port);
+            ports.put(toKey(port), port);
         }
 
         for (String port : portDefs) {
             PortSpec spec = new PortSpec(port);
 
-            if (ports.containsKey(spec.getPrivatePort())) {
+            if (ports.containsKey(toKey(spec))) {
                 continue;
             }
 
             Port portObj = objectManager.create(Port.class, PORT.KIND, PortConstants.KIND_USER, PORT.ACCOUNT_ID, instance.getAccountId(), PORT.INSTANCE_ID,
                     instance.getId(), PORT.PUBLIC_PORT, spec.getPublicPort(), PORT.PRIVATE_PORT, spec.getPrivatePort(), PORT.PROTOCOL, spec.getProtocol());
-            ports.put(portObj.getPrivatePort(), portObj);
+            ports.put(toKey(portObj), portObj);
         }
 
         for (Port port : ports.values()) {
@@ -62,6 +62,14 @@ public class InstancePortCreate extends AbstractObjectProcessLogic implements Pr
         }
 
         return null;
+    }
+
+    protected String toKey(PortSpec spec) {
+        return String.format("%d:%d/%s", spec.getPublicPort(), spec.getPrivatePort(), spec.getProtocol());
+    }
+
+    protected String toKey(Port port) {
+        return String.format("%d:%d/%s", port.getPublicPort(), port.getPrivatePort(), port.getProtocol());
     }
 
     @Override

@@ -228,3 +228,22 @@ def test_ports_service(super_client, client, context):
         assert new_item.requestedVersion > item.requestedVersion
     finally:
         context.delete(c)
+
+
+def test_ports_overlapping(context):
+    port_specs = [
+        '1234:80/tcp',
+        '2345:80/tcp',
+        '1234:80/udp',
+        '2345:80/udp',
+    ]
+    c = context.create_container(ports=port_specs)
+
+    ports = c.ports_link()
+
+    assert len(ports) == 4
+
+    found = {'{}:{}/{}'.format(x.publicPort, x.privatePort, x.protocol)
+             for x in ports}
+
+    assert set(port_specs) == found
