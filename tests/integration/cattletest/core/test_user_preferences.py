@@ -45,6 +45,14 @@ def test_update_user_preference(user_client):
     assert got_preference.value == new_value
 
 
+def test_update_user_preference_pass_name(user_client):
+    preference = _user_preference(user_client)
+    new_value = random_str()
+    user_client.update(preference, name=preference.name, value=new_value)
+    got_preference = user_client.by_id('userPreference', preference.id)
+    assert got_preference.value == new_value
+
+
 def test_unique_user_preference(user_client, admin_user_client):
     rand_str = random_str()
     _user_preference(user_client, name=rand_str)
