@@ -80,7 +80,7 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
                 Service lbService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
                 if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
                     if (!sdService.isActiveService(lbService)) {
-                        return;
+                        continue;
                     }
                     LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
                             lbService.getId(),

@@ -26,6 +26,8 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetAddPostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetRemovePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceActivatePostListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceActivatePreListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceDeactivatePreListener" />
 
     <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcilePostTrigger" />
     <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcileTrigger" />

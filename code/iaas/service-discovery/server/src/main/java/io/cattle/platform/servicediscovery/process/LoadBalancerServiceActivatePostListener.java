@@ -22,7 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class LoadBalancerServiceActivatePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
 
