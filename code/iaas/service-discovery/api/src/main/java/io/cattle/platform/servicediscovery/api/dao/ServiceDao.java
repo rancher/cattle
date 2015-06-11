@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.api.dao;
 
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceConsumeMap;
 
 import java.util.List;
 

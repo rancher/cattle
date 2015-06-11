@@ -10,8 +10,12 @@ import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.Affi
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,6 +29,12 @@ import javax.inject.Inject;
 import org.jooq.tools.StringUtils;
 
 public class AllocatorServiceImpl implements AllocatorService {
+
+    private static final String SERVICE_NAME_MACRO = "${service_name}";
+    private static final String PROJECT_NAME_MACRO = "${project_name}";
+
+    @Inject
+    ServiceDao serviceDao;
 
     @Inject
     AllocatorDao allocatorDao;
@@ -57,7 +67,7 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     private List<Constraint> getHostAffinityConstraintsFromLabels(Map<String, String> labelConstraints) {
-        List<Constraint> constraints = extractConstraintsFromLabels(labelConstraints);
+        List<Constraint> constraints = extractConstraintsFromLabels(labelConstraints, null);
 
         List<Constraint> hostConstraints = new ArrayList<Constraint>();
         for (Constraint constraint : constraints) {
@@ -143,7 +153,7 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public List<Constraint> extractConstraintsFromLabels(Map labels) {
+    public List<Constraint> extractConstraintsFromLabels(Map labels, Instance instance) {
         List<Constraint> constraints = new ArrayList<Constraint>();
         if (labels == null) {
             return constraints;
@@ -155,24 +165,29 @@ public class AllocatorServiceImpl implements AllocatorService {
             String key = (String)affinityDef.getKey();
             String valueStr = (String)affinityDef.getValue();
 
+            if (instance != null) {
+                // TODO: Possibly memoize the macros so we don't need to redo the queries for Service and Environment
+                valueStr = evaluateMacros(valueStr, instance);
+            }
+
             String opStr = "";
             if (key.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL)) {
                 opStr = key.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
-                List<AffinityConstraintDefinition> defs = extractAffinitionConstraintDefinitionFromLabel(opStr, valueStr, true);
+                List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
                 for (AffinityConstraintDefinition def: defs) {
                     constraints.add(new ContainerLabelAffinityConstraint(def, allocatorDao));
                 }
 
             } else if (key.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
                 opStr = key.substring(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER.length());
-                List<AffinityConstraintDefinition> defs = extractAffinitionConstraintDefinitionFromLabel(opStr, valueStr, false);
+                List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, false);
                 for (AffinityConstraintDefinition def: defs) {
                     constraints.add(new ContainerAffinityConstraint(def, objectManager, instanceDao));
                 }
 
             } else if (key.startsWith(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL)) {
                 opStr = key.substring(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL.length());
-                List<AffinityConstraintDefinition> defs = extractAffinitionConstraintDefinitionFromLabel(opStr, valueStr, true);
+                List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
                 for (AffinityConstraintDefinition def: defs) {
                     constraints.add(new HostAffinityConstraint(def, allocatorDao));
                 }
@@ -180,6 +195,39 @@ public class AllocatorServiceImpl implements AllocatorService {
         }
 
         return constraints;
+    }
+
+    /**
+     * Supported macros
+     * ${service_name}
+     * ${project_name}
+     *
+     * @param valueStr
+     * @param instance
+     * @return
+     */
+    private String evaluateMacros(String valueStr, Instance instance) {
+        if (valueStr.indexOf(SERVICE_NAME_MACRO) != -1 || valueStr.indexOf(PROJECT_NAME_MACRO) != -1) {
+            Service service = null;
+
+            List<? extends Service> services = serviceDao.findServicesFor(instance);
+            if (services.size() > 0) {
+                service = services.get(0);
+            }
+
+            if (service != null) {
+                valueStr = valueStr.replace(SERVICE_NAME_MACRO, service.getName());
+            }
+
+            if (valueStr.indexOf(PROJECT_NAME_MACRO) != -1 && service != null) {
+                Environment project = objectManager.loadResource(Environment.class, service.getEnvironmentId());
+                if (project != null) {
+                    valueStr = valueStr.replace(PROJECT_NAME_MACRO, project.getName());
+                }
+            }
+        }
+
+        return valueStr;
     }
 
     private AffinityConstraintDefinition extractAffinitionConstraintDefinitionFromEnv(String definitionString) {
@@ -194,7 +242,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         return null;
     }
 
-    private List<AffinityConstraintDefinition> extractAffinitionConstraintDefinitionFromLabel(String opStr, String valueStr, boolean keyValuePairs) {
+    private List<AffinityConstraintDefinition> extractAffinityConstraintDefinitionFromLabel(String opStr, String valueStr, boolean keyValuePairs) {
         List<AffinityConstraintDefinition> defs = new ArrayList<AffinityConstraintDefinition>();
 
         AffinityOps affinityOp = null;
