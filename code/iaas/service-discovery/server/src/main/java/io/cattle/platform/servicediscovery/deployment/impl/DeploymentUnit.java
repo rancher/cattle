@@ -95,14 +95,14 @@ public class DeploymentUnit {
         return false;
     }
 
-    public boolean isHostActive() {
+    private boolean isHostActive() {
         for (DeploymentUnitInstance deployUnitInstance : getDeploymentUnitInstances()) {
-            if (deployUnitInstance instanceof ExternalDeploymentUnitInstance) {
+            if (!(deployUnitInstance instanceof InstanceUnit)) {
                 // external deployment units do not have instances
                 return true;
             }
 
-            Instance instance = deployUnitInstance.getInstance();
+            Instance instance = ((InstanceUnit)deployUnitInstance).getInstance();
             if (instance != null && instance.getId() != null) {
                 // TODO: Performance-wise, this is really bad!  Especially, since we already
                 // know what host is going down from the host trigger.
@@ -267,6 +267,9 @@ public class DeploymentUnit {
             if (instance.isUnhealthy()) {
                 return true;
             }
+        }
+        if (!isHostActive()) {
+            return true;
         }
         return false;
     }

@@ -15,7 +15,7 @@ import java.util.Map;
  * DeploymentUnitInstance and InstanceUnit into one interface and possibly have an
  * AbstractDeploymentUnitInstance class that provides some of the implementation.
  */
-public abstract class DeploymentUnitInstance implements InstanceUnit {
+public abstract class DeploymentUnitInstance {
     protected String uuid;
     protected DeploymentServiceContext context;
     protected ServiceExposeMap exposeMap;

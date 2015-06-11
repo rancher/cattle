@@ -87,8 +87,4 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
         return false;
     }
 
-    @Override
-    public Instance getInstance() {
-        throw new RuntimeException("Unsupported");
-    }
 }

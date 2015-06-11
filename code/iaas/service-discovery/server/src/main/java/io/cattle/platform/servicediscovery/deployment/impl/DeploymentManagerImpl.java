@@ -130,10 +130,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     needToReconcile = true;
                     break;
                 }
-                if (!unit.isHostActive()) {
-                    needToReconcile = true;
-                    break;
-                }
             }
         } else {
             needToReconcile = true;
