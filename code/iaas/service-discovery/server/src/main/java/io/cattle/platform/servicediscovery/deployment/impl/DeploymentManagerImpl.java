@@ -31,6 +31,7 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +83,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 if (service.getState().equals(CommonStatesConstants.INACTIVE)) {
                     return;
                 }
-                
+
                 // get existing deployment units
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
                         new DeploymentServiceContext());
@@ -236,7 +237,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return result;
     }
 
-
     @Override
     public void deactivate(final Service service) {
         // do with lock to prevent intervention to sidekick service activate
@@ -288,10 +288,10 @@ public class DeploymentManagerImpl implements DeploymentManager {
         reconcileServices(sdSvc.getServicesFor(obj));
     }
 
-    private void reconcileServices(List<Service> services) {
-        for (Service service : services) {
+    private void reconcileServices(Collection<Service> services) {
+        for (Service service: services) {
             ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Service.class, service.getId());
-            request.addItem("reconcile");
+            request.addItem(RECONCILE);
 
             itemManager.updateConfig(request);
         }

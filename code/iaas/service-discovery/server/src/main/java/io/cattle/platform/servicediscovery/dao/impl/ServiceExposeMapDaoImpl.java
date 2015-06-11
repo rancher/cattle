@@ -2,13 +2,17 @@ package io.cattle.platform.servicediscovery.dao.impl;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
@@ -153,5 +157,20 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                                 CommonStatesConstants.REMOVING))
                         .and(SERVICE_EXPOSE_MAP.IP_ADDRESS.isNotNull()))
                 .fetchInto(ServiceExposeMapRecord.class);
+    }
+
+    @Override
+    public Host getHostForInstance(long instanceId) {
+        List<? extends Host> results = create()
+                .select(HOST.fields())
+                .from(HOST)
+                .join(INSTANCE_HOST_MAP)
+                .on(HOST.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .where(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instanceId))
+                .fetchInto(HostRecord.class);
+        if (results.size() > 0) {
+            return results.get(0);
+        }
+        return null;
     }
 }

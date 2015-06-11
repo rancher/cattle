@@ -13,4 +13,9 @@ public interface ServiceDao {
      */
     List<? extends Service> findServicesFor(Instance instance);
 
+    /**
+     * @param hostId
+     * @return Collection of Services running on host
+     */
+    List<? extends Service> getServicesOnHost(long hostId);
 }

@@ -43,7 +43,7 @@ public abstract class ServiceDeploymentPlanner {
         allUnits.addAll(unhealthyUnits);
         return allUnits;
     }
-    
+
     public abstract List<DeploymentUnit> deployHealthyUnits();
 
     public abstract boolean needToReconcileDeployment();

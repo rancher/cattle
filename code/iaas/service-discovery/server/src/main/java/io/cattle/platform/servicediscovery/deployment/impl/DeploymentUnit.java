@@ -2,8 +2,11 @@ package io.cattle.platform.servicediscovery.deployment.impl;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -54,7 +57,7 @@ public class DeploymentUnit {
                     new DeploymentUnitService(service, this.context.sdService.getServiceLaunchConfigNames(service), context));
         }
     }
-    
+
     /*
      * this constructor is called to create a new unit
      */
@@ -90,6 +93,34 @@ public class DeploymentUnit {
             }
         }
         return false;
+    }
+
+    private boolean isHostActive() {
+        for (DeploymentUnitInstance deployUnitInstance : getDeploymentUnitInstances()) {
+            if (!(deployUnitInstance instanceof InstanceUnit)) {
+                // external deployment units do not have instances
+                return true;
+            }
+
+            Instance instance = ((InstanceUnit)deployUnitInstance).getInstance();
+            if (instance != null && instance.getId() != null) {
+                // TODO: Performance-wise, this is really bad!  Especially, since we already
+                // know what host is going down from the host trigger.
+
+                // Check whether this instance has been deployed and if so, what is the state of the
+                // host?
+                Host host = context.exposeMapDao.getHostForInstance(instance.getId());
+                if (host != null) {
+                    if (CommonStatesConstants.REMOVING.equals(host.getState()) ||
+                            CommonStatesConstants.REMOVED.equals(host.getState()) ||
+                            CommonStatesConstants.PURGING.equals(host.getState()) ||
+                            CommonStatesConstants.PURGED.equals(host.getState())) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     public void remove() {
@@ -236,6 +267,9 @@ public class DeploymentUnit {
             if (instance.isUnhealthy()) {
                 return true;
             }
+        }
+        if (!isHostActive()) {
+            return true;
         }
         return false;
     }
