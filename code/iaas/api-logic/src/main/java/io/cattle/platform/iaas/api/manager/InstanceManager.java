@@ -5,8 +5,11 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.net.ResponseCache;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +34,13 @@ public class InstanceManager extends AbstractJooqResourceManager {
 
         try {
             return super.deleteInternal(type, id, obj, request);
-        } catch (ProcessCancelException e) {
-            scheduleProcess(InstanceConstants.PROCESS_STOP, obj, CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
-            return getObjectManager().reload(obj);
+        } catch (ClientVisibleException e) {
+            if (ResponseCodes.METHOD_NOT_ALLOWED == e.getStatus() ) {
+                scheduleProcess(InstanceConstants.PROCESS_STOP, obj, CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
+                return getObjectManager().reload(obj);
+            } else {
+                throw e;
+            }
         }
     }
 

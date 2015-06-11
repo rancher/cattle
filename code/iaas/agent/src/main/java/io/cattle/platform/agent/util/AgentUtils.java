@@ -1,5 +1,6 @@
 package io.cattle.platform.agent.util;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -13,7 +14,11 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.codec.binary.Base64;
 
+import com.netflix.config.DynamicStringListProperty;
+
 public class AgentUtils {
+
+    public static final DynamicStringListProperty AGENT_RESOURCES = ArchaiusUtil.getList("agent.resources");
 
     public static Ping newPing(Agent agent) {
         if (agent == null) {

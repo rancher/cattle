@@ -8,6 +8,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventProgress;
+import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.meta.Relationship;
@@ -26,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +52,8 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     String agentResourceRelationship;
     String dataResourceRelationship;
     String eventResourceRelationship;
-    String shortCircuitIfRemoved;
+
+    boolean shortCircuitIfAgentRemoved;
     List<String> processDataKeys = new ArrayList<>();
 
     String expression;
@@ -79,13 +80,6 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        if (shortCircuitIfRemoved != null) {
-            Object shortCircuit = getObjectByRelationship(shortCircuitIfRemoved, state.getResource());
-            if (shortCircuit != null && ObjectUtils.getRemoved(shortCircuit) != null) {
-                return null;
-            }
-        }
-
         Object eventResource = getEventResource(state, process);
         Object dataResource = getDataResource(state, process);
         Object agentResource = getAgentResource(state, process, dataResource);
@@ -105,6 +99,10 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         }
 
         Event reply = handleEvent(state, process, eventResource, dataResource, agentResource, agent);
+
+        if (reply == null) {
+            return null;
+        }
 
         return new HandlerResult(shouldContinue, getResourceDataMap(getObjectManager().getType(eventResource), reply.getData()));
     }
@@ -152,7 +150,17 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
                 }
             });
         }
-        Event reply = agent.callSync(event, options);
+
+        Event reply;
+        try {
+            reply = agent.callSync(event, options);
+        } catch (AgentRemovedException e) {
+            if (shortCircuitIfAgentRemoved) {
+                return null;
+            } else {
+                throw e;
+            }
+        }
 
         postProcessEvent(event, reply, state, process, eventResource, dataResource, agentResource);
         return reply;
@@ -435,14 +443,6 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         this.reportProgress = reportProgress;
     }
 
-    public String getShortCircuitIfRemoved() {
-        return shortCircuitIfRemoved;
-    }
-
-    public void setShortCircuitIfRemoved(String shortCircuitIfRemoved) {
-        this.shortCircuitIfRemoved = shortCircuitIfRemoved;
-    }
-
     public List<String> getProcessDataKeys() {
         return processDataKeys;
     }
@@ -450,5 +450,14 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
     public void setProcessDataKeys(List<String> processDataKeys) {
         this.processDataKeys = processDataKeys;
     }
+
+    public boolean isShortCircuitIfAgentRemoved() {
+        return shortCircuitIfAgentRemoved;
+    }
+
+    public void setShortCircuitIfAgentRemoved(boolean shortCircuitIfAgentRemoved) {
+        this.shortCircuitIfAgentRemoved = shortCircuitIfAgentRemoved;
+    }
+
 
 }

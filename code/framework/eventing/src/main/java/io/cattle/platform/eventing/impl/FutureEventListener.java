@@ -43,7 +43,7 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
                 if (transitioning == null || Event.TRANSITIONING_NO.equals(transitioning)) {
                     future.set(replyWithName);
                 } else if (Event.TRANSITIONING_ERROR.equals(transitioning)) {
-                    future.setException(new EventExecutionException(replyWithName));
+                    future.setException(EventExecutionException.fromEvent(replyWithName));
                 } else if (progress != null) {
                     if (retry != null) {
                         retry.setKeepalive(true);

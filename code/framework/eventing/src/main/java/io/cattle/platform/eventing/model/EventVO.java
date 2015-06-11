@@ -1,5 +1,6 @@
 package io.cattle.platform.eventing.model;
 
+import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 
 import java.util.Arrays;
@@ -52,6 +53,16 @@ public class EventVO<T> implements Event {
         this.transitioningProgress = event.getTransitioningProgress();
         this.context = event.getContext();
         this.timeoutMillis = event.getTimeoutMillis();
+    }
+
+    public static EventVO<Object> replyWithException(Event request, Class<? extends EventExecutionException> clz,
+                                                     String message) {
+        EventVO reply = reply(request);
+        reply.setTransitioning(TRANSITIONING_ERROR);
+        reply.setTransitioningInternalMessage("class:" + clz.getCanonicalName());
+        reply.setTransitioningMessage(message);
+
+        return reply;
     }
 
     public static EventVO<Object> reply(Event request) {

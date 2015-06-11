@@ -63,7 +63,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
     }
 
     @Override
-    public boolean subscribe(Collection<String> eventNames, ApiRequest apiRequest, final boolean strip) throws IOException {
+    public boolean subscribe(Collection<String> eventNames, final ApiRequest apiRequest, final boolean strip) throws IOException {
         if (Method.GET.isMethod(apiRequest.getMethod()) && !supportGet) {
             return false;
         }
@@ -74,7 +74,6 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         final MessageWriter writer = getMessageWriter(apiRequest);
         final AtomicBoolean disconnect = new AtomicBoolean(false);
 
-        final ApiRequest request = new ApiRequest(apiRequest);
         final IdFormatter idFormatter = apiContext.getIdFormatter();
         final Object policy = apiContext.getPolicy();
 
@@ -88,6 +87,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
                 try {
                     EventVO<Object> modified = new EventVO<Object>(event);
 
+                    ApiRequest request = new ApiRequest(apiRequest);
                     postProcess(modified, idFormatter, request, policy);
                     obfuscateIds(modified, idFormatter);
 

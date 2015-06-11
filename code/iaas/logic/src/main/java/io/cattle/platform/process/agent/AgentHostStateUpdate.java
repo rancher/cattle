@@ -1,8 +1,10 @@
 package io.cattle.platform.process.agent;
 
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessDefinition;
@@ -13,8 +15,10 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessPrePostListener;
 import io.cattle.platform.util.type.InitializationTask;
+import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 import java.util.HashMap;
@@ -25,7 +29,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener implements InitializationTask {
+public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener implements InitializationTask, Priority {
 
     private static final Logger log = LoggerFactory.getLogger(AgentHostStateUpdate.class);
 
@@ -49,7 +53,8 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
     @Override
     protected HandlerResult preHandle(ProcessState state, ProcessInstance process) {
         for (Host host : objectManager.children(state.getResource(), Host.class)) {
-            objectManager.setFields(host, HostConstants.FIELD_AGENT_STATE, state.getState());
+            log.info("Setting host [{}] agentState to [{}] on pre", host.getId(), state.getState());
+            objectManager.setFields(host, HOST.AGENT_STATE, state.getState());
             trigger(host);
         }
 
@@ -66,7 +71,8 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
         }
 
         for (Host host : objectManager.children(agent, Host.class)) {
-            objectManager.setFields(host, HostConstants.FIELD_AGENT_STATE, newState);
+            log.info("Setting host [{}] agentState to [{}] on post", host.getId(), newState);
+            objectManager.setFields(host, HOST.AGENT_STATE, newState);
             trigger(host);
         }
 
@@ -74,11 +80,15 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
     }
 
     protected void trigger(Host host) {
+        Map<String, Object> data = new HashMap<>();
+        data.put(ObjectMetaDataManager.ACCOUNT_FIELD, host.getAccountId());
+
         Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
+                .withData(data)
                 .withResourceType(HostConstants.TYPE)
                 .withResourceId(host.getId().toString());
 
-        DeferredUtils.deferPublish(eventService, event);
+        eventService.publish(event);
     }
 
     @Override
@@ -103,6 +113,11 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
 
     @Override
     public void stop() {
+    }
+
+    @Override
+    public int getPriority() {
+        return Integer.MAX_VALUE;
     }
 
     public List<ProcessDefinition> getProcessDefinitions() {

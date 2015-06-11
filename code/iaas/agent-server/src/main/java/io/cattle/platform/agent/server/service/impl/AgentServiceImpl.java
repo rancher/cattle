@@ -11,6 +11,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -61,6 +62,10 @@ public class AgentServiceImpl implements AgentService {
             connectionManager.closeConnection(agent);
             handleResponse(event, EventVO.reply(agentEvent));
         } else {
+            if (agent.getRemoved() != null) {
+                handleError(event, EventVO.replyWithException(agentEvent, AgentRemovedException.class,
+                        "Agent is removed"));
+            }
             if (!GOOD_AGENT_STATES.contains(agent.getState())) {
                 log.info("Dropping event [{}] [{}] for agent [{}] in state [{}]", event.getName(), event.getId(), agent.getId(), agent.getState());
                 return;
@@ -82,7 +87,7 @@ public class AgentServiceImpl implements AgentService {
                         try {
                             Event agentEventResponse = AsyncUtils.get(future);
                             if (Event.TRANSITIONING_ERROR.equals(agentEventResponse.getTransitioning())) {
-                                throw new EventExecutionException(agentEventResponse);
+                                throw EventExecutionException.fromEvent(agentEventResponse);
                             }
 
                             handleResponse(event, agentEventResponse);

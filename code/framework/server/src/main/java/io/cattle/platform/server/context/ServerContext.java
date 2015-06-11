@@ -23,7 +23,7 @@ public class ServerContext {
     public static final DynamicStringProperty HOST = ArchaiusUtil.getString("api.host");
 
     private static final String URL_SETTING_FORMAT = "cattle.%s.url";
-    private static final String DEFAULT_URL = "cattle.url";
+    private static final String DEFAULT_URL = "public.url";
     private static final String FOUND_SERVER_IP = lookupServerIp();
     private static final String SERVER_ID_FORMAT = System.getProperty("cattle.server.id.format", "%s");
 
@@ -56,8 +56,12 @@ public class ServerContext {
 
         if (url == null) {
             String apiHost = HOST.get();
-            if (!StringUtils.isBlank(apiHost)) {
-                return new ServerAddress("http://" + apiHost + URL_PATH.get());
+            if (StringUtils.isNotBlank(apiHost)) {
+                if (apiHost.startsWith("http")) {
+                    return new ServerAddress(apiHost + URL_PATH.get());
+                } else {
+                    return new ServerAddress("http://" + apiHost + URL_PATH.get());
+                }
             }
         }
 

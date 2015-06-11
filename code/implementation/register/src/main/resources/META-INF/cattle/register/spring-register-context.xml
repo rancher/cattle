@@ -14,6 +14,7 @@
     <bean class="io.cattle.platform.register.process.RegisterCreate" />
     <bean class="io.cattle.platform.register.process.RegisterTokenCreate" />
     <bean class="io.cattle.platform.register.process.RegisterTokenAccountCreate" />
+    <bean class="io.cattle.platform.register.process.RegisterTokenAgentRemove" />
 
     <bean class="io.cattle.platform.register.dao.impl.RegisterDaoImpl" />
 

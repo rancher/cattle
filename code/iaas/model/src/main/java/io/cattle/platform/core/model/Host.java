@@ -212,6 +212,17 @@ public interface Host extends java.io.Serializable {
 	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
 	public java.lang.Boolean getIsPublic();
 
+	/**
+	 * Setter for <code>cattle.host.agent_state</code>.
+	 */
+	public void setAgentState(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.host.agent_state</code>.
+	 */
+	@javax.persistence.Column(name = "agent_state", length = 128)
+	public java.lang.String getAgentState();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

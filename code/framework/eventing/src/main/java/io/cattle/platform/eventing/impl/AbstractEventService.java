@@ -260,7 +260,7 @@ public abstract class AbstractEventService implements EventService {
              * trace. Normally the exceptions from a future will have a pretty
              * sparse stack not giving too much context
              */
-            throw new EventExecutionException(e);
+            throw EventExecutionException.fromEvent(e.getEvent());
         }
     }
 
