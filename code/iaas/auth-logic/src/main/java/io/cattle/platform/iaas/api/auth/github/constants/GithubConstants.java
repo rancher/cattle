@@ -37,4 +37,5 @@ public class GithubConstants {
     public static final String APPLICATION_JSON = "application/json";
     public static final String GITHUBCONFIG = "githubconfig";
     public static final String GITHUB_ERROR = "GitHubError";
+    public static final String ACCESS_TOKEN_INVALID = "InvalidAccessToken";
 }

@@ -39,7 +39,7 @@ public class GithubClient {
     public String getAccessToken(String code) throws IOException {
         List<BasicNameValuePair> requestData = new ArrayList<>();
 
-        if (StringUtils.isBlank(GithubConstants.GITHUB_CLIENT_ID.get()) || StringUtils.isBlank(GithubConstants.GITHUB_CLIENT_SECRET.get())){
+        if (!githubConfigured()){
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.GITHUBCONFIG, "No Github Client id and secret found.", null);
         }
 
@@ -63,6 +63,14 @@ public class GithubClient {
         }
 
         return (String) jsonData.get(GithubConstants.GITHUB_ACCESS_TOKEN);
+    }
+
+    public boolean githubConfigured() {
+        boolean githubConfigured = false;
+        if (StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_ID.get()) && StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_SECRET.get())){
+            githubConfigured = true;
+        }
+        return githubConfigured;
     }
 
     public GithubAccountInfo getUserAccountInfo(String githubAccessToken) throws IOException {
