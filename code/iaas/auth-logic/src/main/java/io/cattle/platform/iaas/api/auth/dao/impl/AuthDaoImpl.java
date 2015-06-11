@@ -35,10 +35,13 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import io.cattle.platform.object.util.ObjectUtils;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.SelectQuery;
 import org.jooq.TableField;
+import org.jooq.exception.InvalidResultException;
 import org.jooq.impl.DSL;
 
 import com.netflix.config.DynamicStringListProperty;
@@ -78,18 +81,22 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     
     @Override
     public Account getAccountByKeys(String access, String secretKey) {
-        return create()
-                .select(ACCOUNT.fields())
+        try {
+            return create()
+                    .select(ACCOUNT.fields())
                     .from(ACCOUNT)
-                .join(CREDENTIAL)
+                    .join(CREDENTIAL)
                     .on(CREDENTIAL.ACCOUNT_ID.eq(ACCOUNT.ID))
-                .where(
-                        ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
-                                .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
-                                .and(CREDENTIAL.PUBLIC_VALUE.eq(access))
-                                .and(CREDENTIAL.SECRET_VALUE.eq(secretKey)))
+                    .where(
+                            ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                                    .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
+                                    .and(CREDENTIAL.PUBLIC_VALUE.eq(access))
+                                    .and(CREDENTIAL.SECRET_VALUE.eq(secretKey)))
                     .and(CREDENTIAL.KIND.in(SUPPORTED_TYPES.get()))
-                .fetchOneInto(AccountRecord.class);
+                    .fetchOneInto(AccountRecord.class);
+        } catch (InvalidResultException e) {
+            throw new ClientVisibleException(ResponseCodes.CONFLICT, "MultipleKeys");
+        }
     }
 
     @Override
