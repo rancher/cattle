@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.service;
 
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.ContainerAffinityConstraint;
@@ -8,7 +7,6 @@ import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.dao.AllocatorDao;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
@@ -47,7 +45,7 @@ public class AllocatorServiceImpl implements AllocatorService {
 
     @Override
     public List<Long> getHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
-        List<Host> hosts = objectManager.find(Host.class, HOST.ACCOUNT_ID, accountId, HOST.STATE, CommonStatesConstants.ACTIVE, HOST.REMOVED, null);
+        List<? extends Host> hosts = allocatorDao.getActiveHosts(accountId);
 
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 

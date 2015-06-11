@@ -389,4 +389,15 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         }
         return labelsMap;
     }
+
+    @Override
+    public List<? extends Host> getActiveHosts(long accountId) {
+        return create()
+                .select(HOST.fields())
+                .from(HOST)
+                .where(HOST.REMOVED.isNull())
+                .and(HOST.ACCOUNT_ID.eq(accountId))
+                .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
+                .fetchInto(Host.class);
+    }
 }
