@@ -12,6 +12,7 @@ import io.cattle.platform.engine.process.ProcessPhase;
 import io.cattle.platform.engine.process.ProcessResult;
 import io.cattle.platform.engine.process.log.ProcessLog;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.jooq.Condition;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,6 +164,19 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
                         record.getId(), uuid, log).execute();
             }
         }
+    }
+
+    @Override
+    public int getNumPreviousExecutions(long processInstanceId) {
+        return create().selectCount().from(PROCESS_EXECUTION).where(PROCESS_EXECUTION.PROCESS_INSTANCE_ID.eq(processInstanceId)).fetchOne(0, int.class);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public long getLastExecutionTimestamp(long processInstanceId) {
+        Map<String, Object> log = create().select(PROCESS_EXECUTION.LOG).from(PROCESS_EXECUTION)
+                .where(PROCESS_EXECUTION.PROCESS_INSTANCE_ID.eq(processInstanceId)).orderBy(PROCESS_EXECUTION.ID.desc()).limit(1).fetchOne(0, Map.class);
+        return (long)((Map)((List)log.get("executions")).get(0)).get("startTime");
     }
 
     protected void merge(ProcessInstanceRecord pi, ProcessRecord record) {

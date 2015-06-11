@@ -1,9 +1,12 @@
 package io.cattle.platform.engine.eventing.impl;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.engine.eventing.ProcessEventListener;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
+import io.cattle.platform.engine.manager.impl.ProcessRecord;
+import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessInstanceException;
@@ -22,8 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Counter;
+import com.netflix.config.DynamicLongProperty;
 
 public class ProcessEventListenerImpl implements ProcessEventListener {
+    private static final DynamicLongProperty RETRY_MAX_WAIT = ArchaiusUtil.getLong("process.retry_max_wait.millis");
 
     private static final Logger log = LoggerFactory.getLogger(ProcessEventListenerImpl.class);
 
@@ -34,6 +39,9 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
     private static Counter EXCEPTION = MetricsUtil.getRegistry().counter("process_execution.unknown_exception");
     private static Counter TIMEOUT = MetricsUtil.getRegistry().counter("process_execution.timeout");
 
+    @Inject
+    ProcessRecordDao processRecordDao;
+
     ProcessManager processManager;
     ProcessServer processServer;
     Map<ExitReason, Counter> counters = new HashMap<ExitReason, Counter>();
@@ -43,9 +51,14 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
         if (event.getResourceId() == null)
             return;
 
+        long processId = new Long(event.getResourceId());
+
+        if (shouldWaitLonger(processId)) {
+            return;
+        }
+
         EVENT.inc();
 
-        long processId = new Long(event.getResourceId());
         boolean runRemaining = false;
         ProcessInstance instance = null;
         try {
@@ -79,6 +92,26 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
         if (runRemaining) {
             processServer.runRemainingTasks(processId);
         }
+    }
+
+    private boolean shouldWaitLonger(long processId) {
+        ProcessRecord record = processRecordDao.getRecord(processId);
+        if (record == null || record.getEndTime() != null) {
+            // is there any additional processing that happens or can we
+            // even short circuit it here and be done with this event?
+            // for now, assume additional processing occurs to get rid
+            // of event
+            return false;
+        }
+        int numPreviousAttempts = processRecordDao.getNumPreviousExecutions(processId);
+        if (numPreviousAttempts < 2) {
+            return false;
+        }
+
+        long now = System.currentTimeMillis();
+        long lastExecution = processRecordDao.getLastExecutionTimestamp(processId);
+        long maxWait = Math.min(RETRY_MAX_WAIT.get(), 15000L * (long)Math.pow(2,  numPreviousAttempts));
+        return now < lastExecution + maxWait;
     }
 
     @PostConstruct

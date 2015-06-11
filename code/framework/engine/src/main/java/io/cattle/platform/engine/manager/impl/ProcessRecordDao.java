@@ -12,4 +12,7 @@ public interface ProcessRecordDao {
 
     ProcessRecord getRecord(Long id);
 
+    int getNumPreviousExecutions(long processInstanceId);
+
+    long getLastExecutionTimestamp(long processInstanceId);
 }
