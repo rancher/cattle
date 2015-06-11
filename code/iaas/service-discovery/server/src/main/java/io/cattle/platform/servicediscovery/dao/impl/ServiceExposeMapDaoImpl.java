@@ -76,7 +76,8 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
                         .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
                         .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED)))
+                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED)))
                 .fetchInto(InstanceRecord.class);
     }
 
@@ -88,9 +89,11 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 .join(INSTANCE)
                 .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
                         .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
-                        .and(SERVICE_EXPOSE_MAP.REMOVED.isNull().and(
-                                SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
-                                        CommonStatesConstants.REMOVING))))
+                        .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                        .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
+                                CommonStatesConstants.REMOVING))
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING,
+                                CommonStatesConstants.PURGED)))
                 .fetchInto(ServiceExposeMapRecord.class);
     }
 
