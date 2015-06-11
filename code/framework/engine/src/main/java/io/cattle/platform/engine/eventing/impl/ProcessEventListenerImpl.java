@@ -1,5 +1,6 @@
 package io.cattle.platform.engine.eventing.impl;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.engine.eventing.ProcessEventListener;
 import io.cattle.platform.engine.manager.ProcessManager;
@@ -24,8 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Counter;
+import com.netflix.config.DynamicLongProperty;
 
 public class ProcessEventListenerImpl implements ProcessEventListener {
+    private static final DynamicLongProperty RETRY_MAX_WAIT = ArchaiusUtil.getLong("process.retry_max_wait.millis");
 
     private static final Logger log = LoggerFactory.getLogger(ProcessEventListenerImpl.class);
 
@@ -107,7 +110,8 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
 
         long now = System.currentTimeMillis();
         long lastExecution = processRecordDao.getLastExecutionTimestamp(processId);
-        return now < lastExecution + Math.pow(2,  numPreviousAttempts) * 15000;
+        long maxWait = Math.min(RETRY_MAX_WAIT.get(), 15000L * (long)Math.pow(2,  numPreviousAttempts));
+        return now < lastExecution + maxWait;
     }
 
     @PostConstruct
