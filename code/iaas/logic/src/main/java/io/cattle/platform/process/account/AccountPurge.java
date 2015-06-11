@@ -40,8 +40,6 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
                 // ignore
             }
             purge(host, null);
-
-            deleteAgentAccount(host.getAgentId(), state.getData());
         }
 
         for (Agent agent : getObjectManager().children(account, Agent.class)) {
@@ -80,13 +78,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             return;
         }
 
-        try {
-            deactivateThenRemove(account, data);
-        } catch (ProcessCancelException e) {
-            // ignore
-        }
-
-        getObjectProcessManager().scheduleStandardProcess(StandardProcess.PURGE, account, data);
+        deactivateThenScheduleRemove(account, data);
     }
 
 }

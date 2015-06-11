@@ -54,17 +54,6 @@ public class HostActivate extends AbstractDefaultProcessHandler {
     private HandlerResult handleHost(ProcessState state, ProcessInstance process) {
         final Host host = (Host) state.getResource();
 
-        if (host.getAgentId() == null) {
-            return null;
-        }
-
-        Agent agent = objectManager.loadResource(Agent.class, host.getAgentId());
-        if (agent == null) {
-            return null;
-        }
-
-        activate(agent, state.getData());
-
         // update cluster server configs for all clusters having having this host
         List<ClusterHostMapRecord> mappings = clusterHostMapDao.findClusterHostMapsHavingHost(host);
         for (ClusterHostMapRecord mapping : mappings) {

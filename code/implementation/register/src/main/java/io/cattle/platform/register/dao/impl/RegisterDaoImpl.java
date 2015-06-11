@@ -1,6 +1,8 @@
 package io.cattle.platform.register.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
+
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
@@ -32,7 +34,7 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
         }
 
         Agent agent = objectManager.create(Agent.class,
-                AGENT.KIND, "registeredAgent",
+                AGENT.KIND, AccountConstants.REGISTERED_AGENT_KIND,
                 AGENT.URI, String.format(format, obj.getUuid()),
                 AGENT.DATA, data,
                 AGENT.MANAGED_CONFIG, true);

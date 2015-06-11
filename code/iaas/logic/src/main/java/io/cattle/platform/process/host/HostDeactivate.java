@@ -77,27 +77,6 @@ public class HostDeactivate extends AbstractDefaultProcessHandler {
             }
         }
 
-        if (host.getAgentId() == null) {
-            return null;
-        }
-
-        lockManager.lock(new AgentCleanupLock(host.getAgentId()), new LockCallbackNoReturn() {
-            @Override
-            public void doWithLockNoResult() {
-                Agent agent = objectManager.loadResource(Agent.class, host.getAgentId());
-                if (agent == null) {
-                    return;
-                }
-
-                List<Host> children = ProcessHelpers.getNonRemovedChildren(objectManager, agent, Host.class);
-                if (children.size() > 1) {
-                    return;
-                }
-
-                deactivate(agent, state.getData());
-            }
-        });
-
         return null;
     }
 

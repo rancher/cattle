@@ -2,6 +2,7 @@ package io.cattle.platform.process.common.handler;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.engine.handler.AbstractProcessLogic;
+import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
@@ -46,9 +47,32 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
             obj = getObjectManager().reload(obj);
         } catch (ProcessCancelException e) {
            // ignore
+        } catch (ProcessNotFoundException e) {
+            // ignore
         }
 
         return getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, obj, data);
+    }
+
+    protected ExitReason deactivateThenScheduleRemove(Object obj, Map<String, Object> data) {
+        Object state = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.STATE_FIELD);
+
+        if (CommonStatesConstants.PURGED.equals(state)) {
+            return null;
+        }
+
+        try {
+            getObjectProcessManager().executeStandardProcess(StandardProcess.DEACTIVATE, obj, data);
+            obj = getObjectManager().reload(obj);
+        } catch (ProcessCancelException e) {
+            // ignore
+        } catch (ProcessNotFoundException e) {
+            // ignore
+        }
+
+        getObjectProcessManager().scheduleStandardProcess(StandardProcess.REMOVE, obj, data);
+
+        return null;
     }
 
     protected ExitReason createThenActivate(Object obj, Map<String, Object> data) {

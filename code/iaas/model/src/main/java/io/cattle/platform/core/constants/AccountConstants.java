@@ -5,6 +5,7 @@ import io.cattle.platform.core.util.ConstantsUtils;
 
 public class AccountConstants {
 
+    public static final String REGISTERED_AGENT_KIND = "registeredAgent";
     public static final String AGENT_KIND = "agent";
     public static final String SERVICE_KIND = "service";
     public static final String USER_KIND = "user";

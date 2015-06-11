@@ -8,6 +8,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstanceException;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ActionDefinition;
 import io.cattle.platform.object.meta.MapRelationship;
@@ -126,6 +127,8 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         try {
             scheduleProcess(StandardProcess.REMOVE, obj, null);
             return objectManager.reload(obj);
+        } catch (ProcessCancelException e) {
+            throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED);
         } catch (ProcessNotFoundException e) {
             return removeFromStore(type, id, obj, request);
         }

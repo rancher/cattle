@@ -99,6 +99,9 @@ def test_machine_lifecycle(super_client, admin_client, admin_account,
     machine = admin_client.wait_success(machine.remove())
     assert machine.state == 'removed'
 
+    agent = super_client.wait_success(super_client.reload(machine).agent())
+    assert agent.state == 'removed'
+
     host = admin_client.wait_success(admin_client.reload(host))
     assert host.state == 'removed'
 

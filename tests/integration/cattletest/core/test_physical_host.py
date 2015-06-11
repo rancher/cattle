@@ -48,8 +48,11 @@ def test_register_physical_host(super_client):
     phys_host = super_client.wait_success(phys_host.remove())
     assert phys_host.state == 'removed'
 
+    agent = super_client.wait_success(phys_host.agent())
+    assert agent.state == 'removed'
+
     host = super_client.wait_success(super_client.reload(host))
-    assert host.state == 'removed'
+    assert host.state in ['removed', 'purged']
 
 
 def test_register_multiple_physical_host(super_client):
@@ -87,9 +90,12 @@ def test_register_multiple_physical_host(super_client):
     phys_host = super_client.wait_success(phys_host.remove())
     assert phys_host.state == 'removed'
 
+    agent = super_client.wait_success(phys_host.agent())
+    assert agent.state == 'removed'
+
     for host in hosts:
         host = super_client.wait_success(super_client.reload(host))
-        assert host.state == 'removed'
+        assert host.state in ['removed', 'purged']
 
 
 def test_add_physical_host(super_client):

@@ -68,7 +68,7 @@ def print_phe(phe, prefix=''):
 
 if __name__ == '__main__':
     import sys
-    client = from_env(headers={'X-API-Project-Id': 'USER'})
+    client = from_env()
     if len(sys.argv) == 1:
         for pi in client.list_process_instance(sort='startTime', order='desc',
                                                endTime_null=True,

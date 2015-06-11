@@ -60,7 +60,7 @@ public class AgentLocatorImpl implements AgentLocator {
         return agentId == null ? null : new RemoteAgentImpl(jsonMapper, eventService, agentId, groupId);
     }
 
-    protected Long getAgentId(Object resource) {
+    public static Long getAgentId(Object resource) {
         Object obj = ObjectUtils.getPropertyIgnoreErrors(resource, "agentId");
         if (obj instanceof Long) {
             return (Long) obj;

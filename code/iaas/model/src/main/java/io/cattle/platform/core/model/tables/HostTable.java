@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.HostRecord> {
 
-	private static final long serialVersionUID = -667086310;
+	private static final long serialVersionUID = 1750761246;
 
 	/**
 	 * The singleton instance of <code>cattle.host</code>
@@ -115,6 +115,11 @@ public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.m
 	 * The column <code>cattle.host.is_public</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>cattle.host.agent_state</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.String> AGENT_STATE = createField("agent_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
 	 * Create a <code>cattle.host</code> table reference

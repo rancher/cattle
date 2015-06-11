@@ -54,13 +54,13 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         progress.init(state, 5, 5, 80, 5, 5);
 
         try {
-            progress.checkPoint("find placement");
+            progress.checkPoint("Scheduling");
             allocate(instance);
 
-            progress.checkPoint("create network");
+            progress.checkPoint("Networking");
             network(instance, state);
 
-            progress.checkPoint("create storage");
+            progress.checkPoint("Storage");
             storage(instance, state);
         } catch (ExecutionException e) {
             log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
@@ -68,7 +68,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
 
         try {
-            progress.checkPoint("create compute");
+            progress.checkPoint("Starting");
             compute(instance, state);
         } catch (ExecutionException e) {
             log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
@@ -79,7 +79,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
 
         try {
-            progress.checkPoint("post network");
+            progress.checkPoint("Post-network");
             postNetwork(instance, state);
         } catch (ExecutionException e) {
             log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());

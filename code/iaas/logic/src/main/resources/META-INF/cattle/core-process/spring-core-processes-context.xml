@@ -69,7 +69,7 @@
     <!-- Agent -->
     <process:defaultProcesses resourceType="agent" exclude="agent.deactivate" />
     <process:process name="agent.deactivate" resourceType="agent" start="active,activating,reconnecting,updating-active,updating-inactive" 
-                                            transitioning="deactivating" done="inactive" delegate="agent.remove" />
+                                            transitioning="deactivating" done="inactive" />
     <process:process name="agent.reconnect" resourceType="agent" start="active,activating" transitioning="reconnecting" done="active" />
 
     <!-- Instance -->
