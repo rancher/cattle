@@ -20,7 +20,7 @@
 
         "apiKey" : "r",
         "apiKey.publicValue" : "r",
-        "apiKey.secretValue" : "r",
+        "apiKey.secretValue" : "ro",
 
         "addRemoveClusterHostInput" : "cr",
         "addRemoveClusterHostInput.hostId" : "cr",
