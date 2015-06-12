@@ -878,12 +878,14 @@ def test_set_service_links(client, context):
 
 
 def _instance_remove(instance, client):
-    instance = client.wait_success(instance)
-    instance = client.wait_success(instance.stop())
-    assert instance.state == 'stopped'
-    instance = client.wait_success(instance.remove())
-    assert instance.state == 'removed'
-    return instance
+    instance.stop()
+    wait_for_condition(client, instance,
+                       lambda x: x.state == 'stopped')
+    instance = client.reload(instance)
+    instance.remove()
+    wait_for_condition(client, instance,
+                       lambda x: x.state == 'removed')
+    return client.reload(instance)
 
 
 def test_destroy_service_instance(client, context):
@@ -1393,7 +1395,7 @@ def test_global_service(new_context):
     instance2 = _validate_compose_instance_start(client, service, env, "2")
     instance2_host = instance2.hosts()[0].id
     assert instance1_host != instance2_host
-    client.wait_success(service.deactivate())
+    service.deactivate()
 
     env.remove()
 
@@ -1457,9 +1459,9 @@ def test_global_service_update_label(new_context):
     # destroy the instance, reactivate the service and check
     # both hosts got instances
     _instance_remove(instance1, client)
-    service = client.wait_success(service.deactivate())
+    service = client.wait_success(service.deactivate(), 120)
     assert service.state == "inactive"
-    service = client.wait_success(service.activate())
+    service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
     instance1 = _validate_compose_instance_start(client, service, env, "1")
     instance2 = _validate_compose_instance_start(client, service, env, "2")
@@ -1467,7 +1469,7 @@ def test_global_service_update_label(new_context):
     instance1_host = instance1.hosts()[0].id
     assert instance1_host == host1.id or instance1_host == host2.id
     assert instance1.hosts()[0].id != instance2.hosts()[0].id
-    client.wait_success(service.deactivate())
+    service.deactivate()
 
     env.remove()
 
@@ -1518,7 +1520,7 @@ def test_global_add_host(new_context):
     # confirm 2nd instance is on host2
     instance2_host = instance2.hosts()[0].id
     assert instance2_host == host2.id
-    client.wait_success(service.deactivate())
+    service.deactivate()
 
     env.remove()
 
