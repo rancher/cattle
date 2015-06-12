@@ -43,8 +43,8 @@ def service_client(admin_user_client):
                           add_host=False, kind='service').user_client
 
 
-def test_user_types(user_client):
-    set(user_client.schema.types.keys()) == {
+def test_user_types(user_client, adds=set(), removes=set()):
+    types = {
         'account',
         'addLoadBalancerInput',
         'addRemoveClusterHostInput',
@@ -129,16 +129,28 @@ def test_user_types(user_client):
         'vmwarevcloudairConfig',
         'vmwarevsphereConfig',
         'volume',
+        'launchConfig',
+        'serviceEvent',
+        'azureConfig',
+        'activeSetting',
+        'serviceConsumeMap',
+        'setting',
+        'dockerBuild',
+        'secondaryLaunchConfig',
     }
+    types.update(adds)
+    types.difference_update(removes)
+    assert set(user_client.schema.types.keys()) == types
 
 
 def test_project_types(project_client):
-    # same as user
-    test_user_types(project_client)
+    # Almost the same as user
+    test_user_types(project_client, adds={'subscribe'},
+                    removes={'userPreference'})
 
 
 def test_agent_register_types(agent_register_client):
-    set(agent_register_client.schema.types.keys()) == {
+    assert set(agent_register_client.schema.types.keys()) == {
         'agent',
         'authorized',
         'error',
@@ -147,7 +159,7 @@ def test_agent_register_types(agent_register_client):
 
 
 def test_agent_types(agent_client):
-    set(agent_client.schema.types.keys()) == {
+    assert set(agent_client.schema.types.keys()) == {
         'agent',
         'authorized',
         'configContent',
@@ -156,19 +168,21 @@ def test_agent_types(agent_client):
         'publish',
         'schema',
         'subscribe',
+        'serviceEvent',
     }
 
 
 def test_token_types(token_client):
-    set(token_client.schema.types.keys()) == {
+    assert set(token_client.schema.types.keys()) == {
         'schema',
         'token',
     }
 
 
 def test_service_types(service_client):
-    # same as admin user
-    test_admin_types(service_client)
+    # Almost the same as admin user
+    test_admin_types(service_client, adds={'subscribe'},
+                     removes={'userPreference'})
 
 
 def test_read_admin_types(read_admin_client):
@@ -176,8 +190,8 @@ def test_read_admin_types(read_admin_client):
     test_admin_types(read_admin_client)
 
 
-def test_admin_types(admin_user_client):
-    set(admin_user_client.schema.types.keys()) == {
+def test_admin_types(admin_user_client, adds=set(), removes=set()):
+    types = {
         'account',
         'activeSetting',
         'addLoadBalancerInput',
@@ -284,7 +298,16 @@ def test_admin_types(admin_user_client):
         'vmwarevcloudairConfig',
         'vmwarevsphereConfig',
         'volume',
+        'launchConfig',
+        'serviceEvent',
+        'azureConfig',
+        'serviceConsumeMap',
+        'dockerBuild',
+        'secondaryLaunchConfig',
     }
+    types.update(adds)
+    types.difference_update(removes)
+    assert set(admin_user_client.schema.types.keys()) == types
 
 
 def test_instance_link_auth(admin_user_client, user_client, project_client):
