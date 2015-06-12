@@ -11,4 +11,7 @@ public class LabelConstants {
 
     public static final String INPUT_LABELS = "labels";
 
+    public static final String PROCESS_HOSTLABELMAP_CREATE = "hostlabelmap.create";
+    public static final String PROCESS_HOSTLABELMAP_REMOVE = "hostlabelmap.remove";
+
 }

@@ -46,6 +46,8 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.jooq.Condition;
+import org.jooq.Record3;
+import org.jooq.RecordHandler;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -347,22 +349,25 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public Map<String, String> getLabelsForHost(long hostId) {
-        List<Label> labels = create()
-                .select(LABEL.fields())
-                    .from(LABEL)
-                    .join(HOST_LABEL_MAP)
-                        .on(LABEL.ID.eq(HOST_LABEL_MAP.LABEL_ID))
-                    .where(HOST_LABEL_MAP.HOST_ID.eq(hostId))
-                        .and(LABEL.REMOVED.isNull())
-                        .and(HOST_LABEL_MAP.REMOVED.isNull())
-                .fetchInto(Label.class);
+    public Map<String, String[]> getLabelsForHost(long hostId) {
+        final Map<String, String[]> labelKeyValueStatusMap = new HashMap<String, String[]>();
 
-        Map<String, String> labelsMap = new HashMap<String, String>();
-        for (Label label: labels) {
-            labelsMap.put(label.getKey(), label.getValue());
-        }
-        return labelsMap;
+        create()
+            .select(LABEL.KEY, LABEL.VALUE, HOST_LABEL_MAP.STATE)
+                .from(LABEL)
+                .join(HOST_LABEL_MAP)
+                    .on(LABEL.ID.eq(HOST_LABEL_MAP.LABEL_ID))
+                .where(HOST_LABEL_MAP.HOST_ID.eq(hostId))
+                    .and(LABEL.REMOVED.isNull())
+                    .and(HOST_LABEL_MAP.REMOVED.isNull())
+            .fetchInto(new RecordHandler<Record3<String, String, String>>() {
+                @Override
+                public void next(Record3<String, String, String> record) {
+                    labelKeyValueStatusMap.put(record.value1(), new String[] { record.value2(), record.value3() });
+                }
+            });
+
+        return labelKeyValueStatusMap;
     }
 
     @Override

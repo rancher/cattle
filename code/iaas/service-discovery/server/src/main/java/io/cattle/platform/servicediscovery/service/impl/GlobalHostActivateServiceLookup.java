@@ -51,7 +51,7 @@ public class GlobalHostActivateServiceLookup implements ServiceLookup {
         for (Service service : services) {
             Map<String, String> serviceLabels = sdSvc.getServiceLabels(service);
             if (serviceLabels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL) &&
-                    allocatorSvc.hostSatisfiesHostAffinity(host.getId(), serviceLabels)) {
+                    allocatorSvc.hostChangesAffectsHostAffinityRules(host.getId(), serviceLabels)) {
                 activeGlobalServices.add(service);
             }
         }
