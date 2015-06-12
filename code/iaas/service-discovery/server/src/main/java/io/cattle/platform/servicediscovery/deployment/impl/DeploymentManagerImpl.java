@@ -20,7 +20,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFactory;
@@ -143,10 +142,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
          */
         try {
             for (Service service : services) {
-                if (service.getId().equals(initialService.getId())) {
-                    continue;
-                }
-
                 if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
                     objectProcessMgr.scheduleStandardProcess(StandardProcess.ACTIVATE, service, null);
                 } else if (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
@@ -270,25 +265,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
         });
     }
 
+
     @Override
-    public void activateGlobalServicesForHost(long accountId, long hostId) {
-        List<? extends Service> services = expMapDao.getActiveServices(accountId);
-        List<Service> activeGlobalServices = new ArrayList<Service>();
-        for (Service service: services) {
-            Map<String, String> serviceLabels = sdSvc.getServiceLabels(service);
-            if (serviceLabels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL) &&
-                    allocatorSvc.hostSatisfiesHostAffinity(hostId, serviceLabels)) {
-                activeGlobalServices.add(service);
-            }
-        }
-        reconcileServices(activeGlobalServices);
-    }
-
-    public void reconcileServicesFor(Object obj) {
-        reconcileServices(sdSvc.getServicesFor(obj));
-    }
-
-    private void reconcileServices(Collection<Service> services) {
+    public void reconcileServices(Collection<? extends Service> services) {
         for (Service service: services) {
             ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Service.class, service.getId());
             request.addItem(RECONCILE);
