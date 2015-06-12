@@ -19,7 +19,7 @@
 
     <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
 
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstancePurgePreListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePreListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceStartPostListener" />
 
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerRemovePostListener" />
@@ -27,9 +27,8 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetRemovePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceActivatePostListener" />
 
-    <bean class="io.cattle.platform.servicediscovery.process.HostActivatePostHandler" />
-    <bean class="io.cattle.platform.servicediscovery.process.HostLabelMapCreate" />
-    <bean class="io.cattle.platform.servicediscovery.process.HostDeletePostHandler" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcilePostTrigger" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcileTrigger" />
 
     <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
     <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />
@@ -47,6 +46,10 @@
     <bean class="io.cattle.platform.servicediscovery.service.impl.RancherImageToComposeFormatter" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.RancherRestartToComposeFormatter" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.RancherGenericMapToComposeFormatter" />
+    <bean class="io.cattle.platform.servicediscovery.service.impl.GlobalHostActivateServiceLookup" />
+    <bean class="io.cattle.platform.servicediscovery.service.impl.HostServiceLookup" />
+    <bean class="io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup" /> 
+    
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnitInstanceFactoryImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.ServiceDeploymentPlannerFactoryImpl" />

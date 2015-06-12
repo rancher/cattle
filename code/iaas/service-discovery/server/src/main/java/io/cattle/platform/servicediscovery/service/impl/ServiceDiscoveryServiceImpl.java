@@ -14,7 +14,6 @@ import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
@@ -33,7 +32,6 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
-import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -44,7 +42,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,8 +82,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Inject
     AllocatorService allocatorService;
 
-    @Inject
-    ServiceDao serviceDao;
 
     @Override
     public SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services) {
@@ -678,21 +673,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public List<? extends Service> listEnvironmentServices(long environmentId) {
         return objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, environmentId, SERVICE.REMOVED,
                 null);
-    }
-
-    public Collection<Service> getServicesFor(Object obj) {
-        List<? extends Service> dbResult = null;
-        if (obj instanceof Instance) {
-            dbResult = serviceDao.findServicesFor((Instance) obj);
-        } else if (obj instanceof Host) {
-            dbResult = serviceDao.getServicesOnHost(((Host) obj).getId());
-        }
-
-        if (dbResult == null) {
-            return Collections.emptySet();
-        }
-
-        return new HashSet<>(dbResult);
     }
 
     @SuppressWarnings("unchecked")

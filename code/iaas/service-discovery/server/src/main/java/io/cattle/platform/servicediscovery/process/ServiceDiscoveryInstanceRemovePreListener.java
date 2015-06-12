@@ -23,11 +23,11 @@ import javax.inject.Named;
  * - separate handler takes care of that
  */
 @Named
-public class ServiceDiscoveryInstancePurgePreListener extends AbstractObjectProcessLogic implements ProcessPreListener,
+public class ServiceDiscoveryInstanceRemovePreListener extends AbstractObjectProcessLogic implements ProcessPreListener,
         Priority {
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instance.purge" };
+        return new String[] { "instance.remove" };
     }
 
     @Override
