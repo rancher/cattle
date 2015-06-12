@@ -17,7 +17,6 @@ import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.iaas.api.auth.ProjectLock;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.github.GithubUtils;
 import io.cattle.platform.iaas.api.auth.github.resource.Member;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
@@ -36,7 +35,6 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import io.cattle.platform.object.util.ObjectUtils;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.SelectQuery;
