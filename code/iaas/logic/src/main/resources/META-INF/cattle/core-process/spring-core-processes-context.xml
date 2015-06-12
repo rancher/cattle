@@ -119,7 +119,9 @@
 
     <!-- Load Balancer -->
     <process:process name="loadbalancer.create" resourceType="loadBalancer" start="requested" transitioning="activating" done="active" />
-    <process:process name="loadbalancer.remove" resourceType="loadBalancer" start="active, activating, updating-active" transitioning="removing" done="removed" />
+    <process:process name="loadbalancer.activate" resourceType="loadBalancer" start="inactive" transitioning="activating" done="active" />
+    <process:process name="loadbalancer.deactivate" resourceType="loadBalancer" start="active,activating, updating-active" transitioning="deactivating" done="inactive" />
+    <process:process name="loadbalancer.remove" resourceType="loadBalancer" start="active, activating, updating-active, inactive, deactivating" transitioning="removing" done="removed" />
     <process:process name="loadbalancer.update" resourceType="loadBalancer" start="active" transitioning="updating-active" done="active" />
 
     <!-- Load Balancer Target -->

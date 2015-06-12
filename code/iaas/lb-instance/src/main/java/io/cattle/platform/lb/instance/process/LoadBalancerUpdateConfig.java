@@ -109,12 +109,13 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
         for (Long lbId : lbIds) {
             LoadBalancer lb = objectManager.loadResource(LoadBalancer.class, lbId);
             List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
+
             if (activeStates.contains(lb.getState())) {
                 activeLbIds.add(lbId);
             }
         }
 
-        Map<Long, List<? extends Instance>> lbInstancesMap = createLoadBalancerInstances(state, process, lbIds);
+        Map<Long, List<? extends Instance>> lbInstancesMap = createLoadBalancerInstances(state, process, activeLbIds);
 
         updateLoadBalancerConfigs(state, lbInstancesMap);
 
