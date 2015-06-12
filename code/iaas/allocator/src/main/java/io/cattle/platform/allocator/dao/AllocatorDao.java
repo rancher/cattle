@@ -42,4 +42,6 @@ public interface AllocatorDao {
     Map<String, String> getLabelsForHost(long hostId);
 
     Multimap<String, String> getLabelsForContainersForHost(long hostId);
+
+    List<? extends Host> getActiveHosts(long accountId);
 }
