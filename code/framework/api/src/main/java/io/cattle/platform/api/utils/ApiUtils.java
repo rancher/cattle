@@ -175,8 +175,8 @@ public class ApiUtils {
 
                 additionalFields.putAll(attachments);
             }
-
-            return new WrappedResource(idFormatter, schema, obj, additionalFields, PRIORITY_FIELDS);
+            String method = request == null ? null : request.getMethod();
+            return new WrappedResource(idFormatter, schema, obj, additionalFields, PRIORITY_FIELDS, method);
         } finally {
             DEPTH.set(depth);
         }
