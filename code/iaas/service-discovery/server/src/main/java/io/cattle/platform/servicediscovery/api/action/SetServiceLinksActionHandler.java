@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.api.action;
 
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
 import io.cattle.platform.api.action.ActionHandler;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.json.JsonMapper;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang.StringUtils;
 
 public class SetServiceLinksActionHandler implements ActionHandler {
     
@@ -104,9 +107,11 @@ public class SetServiceLinksActionHandler implements ActionHandler {
                         SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
                         SERVICE_CONSUME_MAP.NAME, linkName);
             }
-            objectProcessManager.scheduleProcessInstance(
-                    ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
-                    map, null);
+            if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+                objectProcessManager.scheduleProcessInstanceAsync(
+                        ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
+                        map, null);
+            }
         }
     }
 
@@ -120,14 +125,15 @@ public class SetServiceLinksActionHandler implements ActionHandler {
             } else {
                 String newName = newServiceLinks.get(existingMap.getConsumedServiceId());
                 String existingName = existingMap.getName();
-                if (newName != null && existingName != null && !newName.equals(existingName)) {
+
+                if (!StringUtils.equalsIgnoreCase(newName, existingName)) {
                     mapsToRemove.add(existingMap);
                 }
             }
         }
 
         for (ServiceConsumeMap mapToRemove : mapsToRemove) {
-            objectProcessManager.scheduleProcessInstance(
+            objectProcessManager.scheduleProcessInstanceAsync(
                     ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
                     mapToRemove, null);
         }
