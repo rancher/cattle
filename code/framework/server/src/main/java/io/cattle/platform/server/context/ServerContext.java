@@ -27,6 +27,10 @@ public class ServerContext {
     private static final String FOUND_SERVER_IP = lookupServerIp();
     private static final String SERVER_ID_FORMAT = System.getProperty("cattle.server.id.format", "%s");
 
+    public static final String HOST_API_PROXY_MODE_OFF = "off";
+    public static final String HOST_API_PROXY_MODE_EMBEDDED = "embedded";
+    public static final String HOST_API_PROXY_MODE_HA = "ha";
+
     public static boolean isCustomApiHost() {
         return !StringUtils.isBlank(HOST.get());
     }
@@ -94,6 +98,14 @@ public class ServerContext {
         }
 
         return String.format(SERVER_ID_FORMAT, ip);
+    }
+
+    public static String getHostApiProxyMode() {
+        String embedded = System.getenv("CATTLE_HOST_API_PROXY_MODE");
+        if (StringUtils.isEmpty(embedded)) {
+            embedded = System.getProperty("host.api.proxy.mode", "off");
+        }
+        return embedded;
     }
 
     protected static String getServerIp() {

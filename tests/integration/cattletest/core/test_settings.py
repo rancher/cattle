@@ -60,23 +60,23 @@ def test_settings_update(admin_user_client, random_str):
 
 
 def test_console_update_existing(admin_user_client):
-    id = 'console.agent.port'
+    id = 'console.agent.path'
 
     s = admin_user_client.by_id_setting(id)
 
-    assert s.value == '9346'
+    assert s.value == '/v1/exec/'
 
-    s = admin_user_client.update(s, value='9000')
-    assert s.value == '9000'
-
-    s = admin_user_client.by_id_setting(id)
-    assert s.value == '9000'
-
-    s = admin_user_client.update(s, value='9346')
-    assert s.value == '9346'
+    s = admin_user_client.update(s, value='/v1/exec/2')
+    assert s.value == '/v1/exec/2'
 
     s = admin_user_client.by_id_setting(id)
-    assert s.value == '9346'
+    assert s.value == '/v1/exec/2'
+
+    s = admin_user_client.update(s, value='/v1/exec/')
+    assert s.value == '/v1/exec/'
+
+    s = admin_user_client.by_id_setting(id)
+    assert s.value == '/v1/exec/'
 
 
 def test_settings_insert(admin_user_client, random_str):

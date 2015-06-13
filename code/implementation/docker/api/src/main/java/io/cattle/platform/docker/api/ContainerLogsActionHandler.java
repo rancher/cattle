@@ -8,6 +8,7 @@ import io.cattle.platform.docker.api.model.ContainerLogs;
 import io.cattle.platform.docker.api.model.HostAccess;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.util.DockerUtils;
+import io.cattle.platform.host.api.HostApiUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
@@ -18,13 +19,10 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class ContainerLogsActionHandler implements ActionHandler {
 
-    private static final DynamicStringProperty HOST_LOGS_SCHEME = ArchaiusUtil.getString("host.logs.scheme");
-    private static final DynamicIntProperty HOST_LOGS_PORT = ArchaiusUtil.getInt("host.logs.port");
     private static final DynamicStringProperty HOST_LOGS_PATH = ArchaiusUtil.getString("host.logs.path");
 
     HostApiService apiService;
@@ -56,13 +54,13 @@ public class ContainerLogsActionHandler implements ActionHandler {
         Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_CONTAINER, dockerId, "Lines", logs.getLines(), "Follow",
                 logs.getFollow());
 
-        HostApiAccess apiAccess = apiService.getAccess(host.getId(), HOST_LOGS_PORT.get(), CollectionUtils.asMap("logs", data));
+        HostApiAccess apiAccess = apiService.getAccess(host.getId(), CollectionUtils.asMap("logs", data));
 
         if (apiAccess == null) {
             return null;
         }
 
-        StringBuilder url = new StringBuilder((HOST_LOGS_SCHEME).get());
+        StringBuilder url = new StringBuilder(HostApiUtils.HOST_API_PROXY_SCHEME.get());
         url.append("://").append(apiAccess.getHostAndPort());
         url.append(HOST_LOGS_PATH.get());
         HostAccess access = new HostAccess(url.toString(), apiAccess.getAuthenticationToken());
