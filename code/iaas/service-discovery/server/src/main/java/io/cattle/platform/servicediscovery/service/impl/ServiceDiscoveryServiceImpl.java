@@ -52,6 +52,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.DumperOptions.LineBreak;
 
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
@@ -103,6 +104,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     private String convertToYml(Map<String, Object> dockerComposeData) {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setLineBreak(LineBreak.WIN);
         Yaml yaml = new Yaml(options);
         return yaml.dump(dockerComposeData);
     }
