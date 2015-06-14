@@ -142,6 +142,7 @@ def test_account_purge(super_client, new_context):
     host2 = register_simulated_host(new_context)
     assert host2.state == 'active'
 
+    # create containers
     c1 = super_client.create_container(accountId=account_id,
                                        imageUuid=image_uuid,
                                        requestedHostId=host.id)
@@ -153,6 +154,35 @@ def test_account_purge(super_client, new_context):
                                        requestedHostId=host.id)
     c2 = super_client.wait_success(c2)
     assert c2.state == 'running'
+
+    # create environment and services
+    env = super_client. \
+        create_environment(accountId=account_id,
+                           name=random_str())
+    env = super_client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": image_uuid}
+
+    service1 = super_client.create_service(accountId=account_id,
+                                           name=random_str(),
+                                           environmentId=env.id,
+                                           launchConfig=launch_config)
+    service1 = super_client.wait_success(service1)
+    assert service1.state == "inactive"
+
+    service2 = super_client.create_service(accountId=account_id,
+                                           name=random_str(),
+                                           environmentId=env.id,
+                                           launchConfig=launch_config)
+    service2 = super_client.wait_success(service2)
+    assert service2.state == "inactive"
+
+    env.activateservices()
+    service1 = super_client.wait_success(service1, 120)
+    service2 = super_client.wait_success(service2, 120)
+    assert service1.state == "active"
+    assert service2.state == "active"
 
     account = super_client.reload(account)
     account = super_client.wait_success(account.deactivate())
@@ -187,3 +217,12 @@ def test_account_purge(super_client, new_context):
 
     volume = super_client.wait_success(volume.purge())
     assert volume.state == 'purged'
+
+    service1 = super_client.wait_success(service1)
+    assert service1.state == 'removed'
+
+    service2 = super_client.wait_success(service2)
+    assert service2.state == 'removed'
+
+    env = super_client.wait_success(env)
+    assert env.state == 'removed'

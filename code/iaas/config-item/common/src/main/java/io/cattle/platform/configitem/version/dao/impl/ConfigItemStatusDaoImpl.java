@@ -271,7 +271,7 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .join(SERVICE)
                 .on(SERVICE.ID.eq(CONFIG_ITEM_STATUS.SERVICE_ID))
                 .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION)
-                        .and(SERVICE.STATE.eq(CommonStatesConstants.ACTIVE)))
+                        .and(SERVICE.REMOVED.isNull()))
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
     }
@@ -286,7 +286,7 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
                 .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
                         .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
-                        .and(SERVICE.STATE.eq(CommonStatesConstants.ACTIVE)))
+                        .and(SERVICE.REMOVED.isNull()))
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
     }

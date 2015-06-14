@@ -4,6 +4,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -47,6 +48,13 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
                 continue;
             }
             deactivateThenRemove(agent, state.getData());
+        }
+
+        for (Environment env : getObjectManager().children(account, Environment.class)) {
+            if (env.getRemoved() != null) {
+                continue;
+            }
+            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, env, null);
         }
 
         for (Instance instance : getObjectManager().children(account, Instance.class)) {
