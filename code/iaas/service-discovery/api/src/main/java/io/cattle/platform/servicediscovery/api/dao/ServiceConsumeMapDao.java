@@ -1,5 +1,7 @@
 package io.cattle.platform.servicediscovery.api.dao;
 
+import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 
 import java.util.List;
@@ -31,10 +33,26 @@ public interface ServiceConsumeMapDao {
      * @return list of services consumed by the service specified
      */
     List<? extends ServiceConsumeMap> findConsumedServices(long serviceId);
-    
+
     /**
      * @param serviceId
      * @return list of services consuming the service specified
      */
     List<? extends ServiceConsumeMap> findConsumingServices(long serviceId);
+
+    /**
+     * @param instanceId
+     * @return list of services consumed by the instance specified
+     */
+    List<? extends ServiceConsumeMap> findConsumedServicesForInstance(long instanceId);
+
+    /**
+     * @param instanceId
+     * @return  list of InstanceLink for the instance that are from services, not container links
+     */
+    List<? extends InstanceLink> findServiceBasedInstanceLinks(long instanceId);
+
+    Instance findOneInstanceForService(long serviceId);
+
+    List<String> findInstanceNamesForService(long serviceId);
 }

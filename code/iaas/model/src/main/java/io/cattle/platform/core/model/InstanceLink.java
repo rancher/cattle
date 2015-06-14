@@ -168,6 +168,17 @@ public interface InstanceLink extends java.io.Serializable {
 	@javax.persistence.Column(name = "target_instance_id", precision = 19)
 	public java.lang.Long getTargetInstanceId();
 
+	/**
+	 * Setter for <code>cattle.instance_link.service_consume_map_id</code>.
+	 */
+	public void setServiceConsumeMapId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance_link.service_consume_map_id</code>.
+	 */
+	@javax.persistence.Column(name = "service_consume_map_id", precision = 19)
+	public java.lang.Long getServiceConsumeMapId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

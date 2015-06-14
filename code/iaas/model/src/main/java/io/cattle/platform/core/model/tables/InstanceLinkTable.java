@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceLinkTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceLinkRecord> {
 
-	private static final long serialVersionUID = -153246347;
+	private static final long serialVersionUID = 305123440;
 
 	/**
 	 * The singleton instance of <code>cattle.instance_link</code>
@@ -97,6 +97,11 @@ public class InstanceLinkTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceLinkRecord, java.lang.Long> TARGET_INSTANCE_ID = createField("target_instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.instance_link.service_consume_map_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceLinkRecord, java.lang.Long> SERVICE_CONSUME_MAP_ID = createField("service_consume_map_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.instance_link</code> table reference
 	 */
 	public InstanceLinkTable() {
@@ -147,7 +152,7 @@ public class InstanceLinkTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceLinkRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceLinkRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LINK__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_LINK__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_LINK__TARGET_INSTANCE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceLinkRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_LINK__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_LINK__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_LINK__TARGET_INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_LINK__SERVICE_CONSUME_MAP_ID);
 	}
 
 	/**

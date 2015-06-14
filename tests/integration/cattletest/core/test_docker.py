@@ -772,6 +772,48 @@ def test_container_bad_build(super_client, docker_client):
     assert c.data.dockerInspect.Config.Image == TEST_IMAGE_LATEST
 
 
+@if_docker
+def test_service_link_emu_docker_link(super_client, docker_client):
+    env_name = random_str()
+    env = docker_client.create_environment(name=env_name)
+    env = docker_client.wait_success(env)
+    assert env.state == "active"
+
+    server = docker_client.create_service(name='server', launchConfig={
+        'imageUuid': TEST_IMAGE_UUID
+    }, environmentId=env.id)
+
+    service = docker_client.create_service(name='client', launchConfig={
+        'imageUuid': TEST_IMAGE_UUID
+    }, environmentId=env.id)
+
+    service.setservicelinks(serviceLinks={'other': server.id})
+    server = docker_client.wait_success(server)
+    service = docker_client.wait_success(service)
+
+    server = docker_client.wait_success(server.activate())
+    assert server.state == 'active'
+
+    service = docker_client.wait_success(service.activate())
+    assert service.state == 'active'
+
+    instance = find_one(service.instances)
+    instance = super_client.reload(instance)
+    link = find_one(instance.instanceLinks)
+
+    target_instance = find_one(server.instances)
+
+    assert len(link.ports) == 1
+    assert link.ports[0].privatePort == 8080
+    assert link.ports[0].publicPort == 8080
+    assert link.ports[0].protocol == 'tcp'
+    assert link.ports[0].ipAddress is not None
+    assert link.targetInstanceId == target_instance.id
+    assert link.instanceNames == ['{}_server_1'.format(env_name)]
+
+    docker_client.delete(env)
+
+
 def _check_path(volume, should_exist, client, super_client):
     path = _path_to_volume(volume)
     c = client. \
