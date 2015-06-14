@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "instance_link", schema = "cattle")
-public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceLinkRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.InstanceLink {
+public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceLinkRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.InstanceLink {
 
-	private static final long serialVersionUID = 1004791252;
+	private static final long serialVersionUID = 1887970487;
 
 	/**
 	 * Setter for <code>cattle.instance_link.id</code>.
@@ -254,6 +254,23 @@ public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		return (java.lang.Long) getValue(13);
 	}
 
+	/**
+	 * Setter for <code>cattle.instance_link.service_consume_map_id</code>.
+	 */
+	@Override
+	public void setServiceConsumeMapId(java.lang.Long value) {
+		setValue(14, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.instance_link.service_consume_map_id</code>.
+	 */
+	@javax.persistence.Column(name = "service_consume_map_id", precision = 19)
+	@Override
+	public java.lang.Long getServiceConsumeMapId() {
+		return (java.lang.Long) getValue(14);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -267,23 +284,23 @@ public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	}
 
 	// -------------------------------------------------------------------------
-	// Record14 type implementation
+	// Record15 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row14) super.fieldsRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row15) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long> valuesRow() {
-		return (org.jooq.Row14) super.valuesRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long> valuesRow() {
+		return (org.jooq.Row15) super.valuesRow();
 	}
 
 	/**
@@ -402,6 +419,14 @@ public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field15() {
+		return io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK.SERVICE_CONSUME_MAP_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -508,6 +533,14 @@ public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@Override
 	public java.lang.Long value14() {
 		return getTargetInstanceId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value15() {
+		return getServiceConsumeMapId();
 	}
 
 	/**
@@ -640,7 +673,16 @@ public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public InstanceLinkRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14) {
+	public InstanceLinkRecord value15(java.lang.Long value) {
+		setServiceConsumeMapId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public InstanceLinkRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.Long value15) {
 		return this;
 	}
 
@@ -667,6 +709,7 @@ public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		setLinkName(from.getLinkName());
 		setInstanceId(from.getInstanceId());
 		setTargetInstanceId(from.getTargetInstanceId());
+		setServiceConsumeMapId(from.getServiceConsumeMapId());
 	}
 
 	/**
@@ -692,7 +735,7 @@ public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	/**
 	 * Create a detached, initialised InstanceLinkRecord
 	 */
-	public InstanceLinkRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String linkName, java.lang.Long instanceId, java.lang.Long targetInstanceId) {
+	public InstanceLinkRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String linkName, java.lang.Long instanceId, java.lang.Long targetInstanceId, java.lang.Long serviceConsumeMapId) {
 		super(io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK);
 
 		setValue(0, id);
@@ -709,5 +752,6 @@ public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		setValue(11, linkName);
 		setValue(12, instanceId);
 		setValue(13, targetInstanceId);
+		setValue(14, serviceConsumeMapId);
 	}
 }

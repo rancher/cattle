@@ -40,12 +40,12 @@ def test_container_build(super_client, context, client):
     assert image.data.fields.build.rm
 
 
-def test_container_create_only(super_client, client):
+def test_container_create_only(super_client, client, context):
     uuid = "sim:{}".format(random_num())
-    container = client.create_container(imageUuid=uuid,
-                                        name="test",
-                                        startOnCreate=False)
-    container = super_client.reload(container)
+    container = super_client.create_container(accountId=context.project.id,
+                                              imageUuid=uuid,
+                                              name="test",
+                                              startOnCreate=False)
 
     assert_fields(container, {
         "type": "container",

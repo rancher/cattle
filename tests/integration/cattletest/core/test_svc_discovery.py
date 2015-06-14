@@ -1854,6 +1854,61 @@ def test_host_delete_reconcile_service(super_client, new_context):
     env.remove()
 
 
+def test_service_link_emu_docker_link(super_client, client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    server = client.create_service(name='server', launchConfig={
+        'imageUuid': context.image_uuid
+    }, environmentId=env.id)
+
+    server2 = client.create_service(name='server2', launchConfig={
+        'imageUuid': context.image_uuid
+    }, environmentId=env.id)
+
+    service = client.create_service(name='client', launchConfig={
+        'imageUuid': context.image_uuid
+    }, environmentId=env.id)
+
+    service.setservicelinks(serviceLinks={'other': server.id,
+                                          'server2': server2.id})
+
+    server = client.wait_success(server)
+    assert server.state == 'inactive'
+
+    server2 = client.wait_success(server2)
+    assert server2.state == 'inactive'
+
+    service = client.wait_success(service)
+    assert service.state == 'inactive'
+
+    server = client.wait_success(server.activate())
+    assert server.state == 'active'
+
+    server2 = client.wait_success(server2.activate())
+    assert server2.state == 'active'
+
+    service = client.wait_success(service.activate())
+    assert service.state == 'active'
+
+    instance = find_one(service.instances)
+    instance = super_client.reload(instance)
+
+    links = instance.instanceLinks()
+
+    assert len(links) == 2
+
+    for link in links:
+        map = link.serviceConsumeMap()
+        assert map.consumedServiceId in {server.id, server2.id}
+        assert link.instanceId is not None
+        if map.consumedServiceId == server.id:
+            assert link.linkName == 'other'
+        elif map.consumedServiceId == server2.id:
+            assert link.linkName == 'server2'
+
+
 def _get_instance_for_service(super_client, serviceId):
     instances = []
     instance_service_maps = super_client. \
