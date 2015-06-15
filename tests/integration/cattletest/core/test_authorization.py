@@ -68,6 +68,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'environment',
         'exoscaleConfig',
         'externalService',
+        'fieldDocumentation',
         'globalLoadBalancer',
         'globalLoadBalancerHealthCheck',
         'globalLoadBalancerPolicy',
@@ -228,6 +229,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalHandlerProcess',
         'externalHandlerProcessConfig',
         'externalService',
+        'fieldDocumentation',
         'githubconfig',
         'globalLoadBalancer',
         'globalLoadBalancerHealthCheck',
@@ -1092,12 +1094,15 @@ def test_registration_tokens_auth(admin_user_client, user_client,
 def test_type_documentation_auth(admin_user_client, user_client,
                                  project_client):
     auth_check(admin_user_client.schema, 'typeDocumentation', 'r', {
+        'resourceFields': 'r',
     })
 
     auth_check(user_client.schema, 'typeDocumentation', 'r', {
+        'resourceFields': 'r',
     })
 
     auth_check(project_client.schema, 'typeDocumentation', 'r', {
+        'resourceFields': 'r',
     })
 
 
