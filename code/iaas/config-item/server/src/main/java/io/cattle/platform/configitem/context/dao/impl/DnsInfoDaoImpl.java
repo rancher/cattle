@@ -98,6 +98,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(clientNic.REMOVED.isNull())
                         .and(targetNic.REMOVED.isNull())
                         .and(instanceLink.REMOVED.isNull())
+                        .and(instanceLink.SERVICE_CONSUME_MAP_ID.isNull())
                         .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
                                 InstanceConstants.STATE_STARTING)))
                 .fetch().map(mapper);
