@@ -99,7 +99,7 @@ public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements Healthche
                         .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
                         .and(targetNic.REMOVED.isNull())
                         .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
-                                InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING))
+                                InstanceConstants.STATE_STARTING))
                         .and(HEALTHCHECK_INSTANCE.INSTANCE_ID.isNotNull()))
                 .fetch().map(mapper);
     }
