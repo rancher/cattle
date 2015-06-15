@@ -1919,7 +1919,7 @@ def test_service_link_emu_docker_link(super_client, client, context):
         elif map.consumedServiceId == server2.id:
             assert link.linkName == 'server2'
             assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
-                   server2.id
+                server2.id
 
 
 def _get_instance_for_service(super_client, serviceId):
