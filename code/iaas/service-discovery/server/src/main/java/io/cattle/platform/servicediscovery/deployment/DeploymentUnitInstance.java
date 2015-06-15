@@ -71,4 +71,6 @@ public abstract class DeploymentUnitInstance {
     public Service getService() {
         return service;
     }
+
+    public abstract void waitForNotTransitioning();
 }

@@ -8,15 +8,20 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.TransformerUtils;
 
 @Named
 public class EnvironmentActivateServicesActionHandler implements ActionHandler {
@@ -30,6 +35,9 @@ public class EnvironmentActivateServicesActionHandler implements ActionHandler {
     @Inject
     ServiceDiscoveryService sdService;
 
+    @Inject
+    ServiceConsumeMapDao consumeMapDao;
+
     @Override
     public String getName() {
         return ServiceDiscoveryConstants.PROCESS_ENV_ACTIVATE_SERVICES;
@@ -42,17 +50,50 @@ public class EnvironmentActivateServicesActionHandler implements ActionHandler {
         }
         Environment env = (Environment) obj;
         List<? extends Service> services = sdService.listEnvironmentServices(env.getId());
-        activateServices(services, new HashMap<String, Object>());
+        activateServices(services);
 
         return env;
     }
 
-    private void activateServices(List<? extends Service> services, Map<String, Object> data) {
+    private void activateServices(List<? extends Service> services) {
+        List<Long> alreadyActivatedServices = new ArrayList<>();
+        List<Long> alreadySeenServices = new ArrayList<>();
+        Map<Long, Service> servicesToActivate = new HashMap<>();
         for (Service service : services) {
-            if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.ACTIVATE, service, data);
-            }
+            servicesToActivate.put(service.getId(), service);
+        }
+
+        for (Service service : services) {
+
+            activateService(service, servicesToActivate, alreadySeenServices, alreadyActivatedServices);
         }
     }
-    
+
+    @SuppressWarnings("unchecked")
+    protected void activateService(Service service, Map<Long, Service> servicesToActivate,
+            List<Long> alreadySeenServices, List<Long> alreadyActivatedServices) {
+        if (alreadyActivatedServices.contains(service.getId())) {
+            return;
+        }
+        alreadySeenServices.add(service.getId());
+        List<Long> consumedServicesIds = (List<Long>) CollectionUtils.collect(
+                consumeMapDao.findConsumedServices(service.getId()),
+                TransformerUtils.invokerTransformer("getConsumedServiceId"));
+        for (Long consumedServiceId : consumedServicesIds) {
+            Service consumedService = servicesToActivate.get(consumedServiceId);
+            if (consumedService != null && !alreadySeenServices.contains(consumedService.getId())) {
+                activateService(consumedService, servicesToActivate, alreadySeenServices, alreadyActivatedServices);
+            }
+        }
+
+        if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
+            Map<String, Object> data = new HashMap<>();
+            List<Long> consumedServicesToWaitFor = new ArrayList<>();
+            consumedServicesToWaitFor.addAll(consumedServicesIds);
+            consumedServicesToWaitFor.retainAll(alreadyActivatedServices);
+            data.put(ServiceDiscoveryConstants.FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS, consumedServicesToWaitFor);
+            objectProcessManager.scheduleStandardProcess(StandardProcess.ACTIVATE, service, data);
+        }
+        alreadyActivatedServices.add(service.getId());
+    }
 }

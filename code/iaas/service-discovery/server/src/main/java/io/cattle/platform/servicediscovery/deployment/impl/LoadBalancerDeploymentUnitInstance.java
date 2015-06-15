@@ -123,4 +123,11 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance i
         }
         return false;
     }
+
+    @Override
+    public void waitForNotTransitioning() {
+        if (this.hostMap != null) {
+            this.hostMap = context.resourceMonitor.waitForNotTransitioning(this.hostMap);
+        }
+    }
 }

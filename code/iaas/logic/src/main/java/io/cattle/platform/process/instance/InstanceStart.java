@@ -186,7 +186,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
 
         for (InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_INSTANCE_ID)) {
-            activate(link, state.getData());
+            if (link.getRemoved() == null) {
+                activate(link, state.getData());
+            }
         }
     }
 

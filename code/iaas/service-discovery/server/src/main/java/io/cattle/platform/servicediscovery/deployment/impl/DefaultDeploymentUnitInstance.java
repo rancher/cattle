@@ -94,7 +94,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public DeploymentUnitInstance waitForStart() {
-        this.instance = context.resourceMonitor.waitFor(context.objectManager.reload(this.instance),
+        this.instance = context.resourceMonitor.waitFor(this.instance,
                 new ResourcePredicate<Instance>() {
             @Override
             public boolean evaluate(Instance obj) {
@@ -130,6 +130,13 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                     HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY));
         }
         return false;
+    }
+
+    @Override
+    public void waitForNotTransitioning() {
+        if (this.instance != null) {
+            this.instance = context.resourceMonitor.waitForNotTransitioning(this.instance);
+        }
     }
 }
 

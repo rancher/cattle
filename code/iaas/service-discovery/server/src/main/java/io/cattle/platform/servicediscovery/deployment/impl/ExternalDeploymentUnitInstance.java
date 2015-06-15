@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -85,6 +84,13 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     @Override
     public boolean isUnhealthy() {
         return false;
+    }
+
+    @Override
+    public void waitForNotTransitioning() {
+        if (this.exposeMap != null) {
+            this.exposeMap = context.resourceMonitor.waitForNotTransitioning(this.exposeMap);
+        }
     }
 
 }

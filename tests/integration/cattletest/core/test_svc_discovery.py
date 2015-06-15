@@ -160,8 +160,6 @@ def test_activate_single_service(client, context):
     assert container.requestedHostId == host.id
     assert container.healthState == 'initializing'
 
-    env.remove()
-
 
 def test_activate_services(client, context):
     env = client.create_environment(name=random_str())
@@ -188,8 +186,6 @@ def test_activate_services(client, context):
     service2 = client.wait_success(service2, 120)
     assert service1.state == "active"
     assert service2.state == "active"
-
-    env.remove()
 
 
 def _validate_instance_stopped(service, client, env):
@@ -256,8 +252,6 @@ def test_deactivate_remove_service(client, context):
     service = client.wait_success(service.remove())
     _validate_compose_instance_removed(client, service, env)
 
-    env.remove()
-
 
 def test_env_deactivate_services(client, context):
     env = client.create_environment(name=random_str())
@@ -294,8 +288,6 @@ def test_env_deactivate_services(client, context):
     assert service2.state == "inactive"
     _validate_instance_stopped(service1, client, env)
     _validate_instance_stopped(service2, client, env)
-
-    env.remove()
 
 
 def test_remove_inactive_service(client, context):
@@ -342,8 +334,6 @@ def test_remove_inactive_service(client, context):
     service = client.wait_success(service.remove())
     assert service.state == "removed"
     _validate_compose_instance_removed(client, service, env)
-
-    env.remove()
 
 
 def test_remove_environment(client, context):
@@ -408,8 +398,6 @@ def test_create_duplicated_services(client, context):
     assert e.value.error.code == 'NotUnique'
     assert e.value.error.fieldName == 'name'
 
-    env.remove()
-
 
 def test_service_add_remove_service_link(client, context):
     env = client.create_environment(name=random_str())
@@ -444,8 +432,6 @@ def test_service_add_remove_service_link(client, context):
                                consumedServiceId=service2.id, name='mylink')
     assert len(service_maps) == 1
 
-    env.remove()
-
 
 def test_link_service_twice(client, context):
     env = client.create_environment(name=random_str())
@@ -476,8 +462,6 @@ def test_link_service_twice(client, context):
     assert e.value.error.status == 422
     assert e.value.error.code == 'NotUnique'
     assert e.value.error.fieldName == 'serviceId'
-
-    env.remove()
 
 
 def test_links_after_service_remove(client, context):
@@ -512,8 +496,6 @@ def test_links_after_service_remove(client, context):
 
     _validate_remove_service_link(service2, service1, client)
 
-    env.remove()
-
 
 def test_link_volumes(client, context):
     env = client.create_environment(name=random_str())
@@ -538,8 +520,6 @@ def test_link_volumes(client, context):
 
     assert len(container1.dataVolumesFrom) == 1
     assert set(container1.dataVolumesFrom) == set([container2.id])
-
-    env.remove()
 
 
 def test_volumes_service_links_scale_one(client, context):
@@ -579,8 +559,6 @@ def test_volumes_service_links_scale_one(client, context):
     assert set(s3_container.dataVolumesFrom) == set([s1_container.id,
                                                      s2_container.id])
 
-    env.remove()
-
 
 def test_volumes_service_links_scale_two(client, context):
     env = client.create_environment(name=random_str())
@@ -612,8 +590,6 @@ def test_volumes_service_links_scale_two(client, context):
     assert len(s12_container.dataVolumesFrom) == 1
     assert set(s12_container.dataVolumesFrom) != set(
         s11_container.dataVolumesFrom)
-
-    env.remove()
 
 
 def test_remove_active_service(client, context):
@@ -647,8 +623,6 @@ def test_remove_active_service(client, context):
     service = client.wait_success(service.remove(), 120)
     assert service.state == "removed"
     _validate_compose_instance_removed(client, service, env)
-
-    env.remove()
 
 
 def _wait_until_active_map_count(service, count, client, timeout=30):
@@ -751,9 +725,8 @@ def test_validate_service_scaleup_scaledown(client, context):
     instance3 = _validate_compose_instance_start(client, service, env, "3")
 
     # stop the instance2
-    instance2 = client.wait_success(instance2)
-    instance2 = client.wait_success(instance2.stop())
-    assert instance2.state == 'stopped'
+    client.wait_success(instance2.stop())
+    service = client.wait_success(service)
 
     # rename the instance 3
     instance3 = client.update(instance3, name='newName')
@@ -778,8 +751,6 @@ def test_validate_service_scaleup_scaledown(client, context):
     instance_service_map = client. \
         list_serviceExposeMap(serviceId=service.id, state="active")
     assert len(instance_service_map) == 2
-
-    env.remove()
 
 
 def test_link_services_from_diff_env(client, context):
@@ -878,11 +849,7 @@ def test_set_service_links(client, context):
 
 
 def _instance_remove(instance, client):
-    instance.stop()
-    wait_for_condition(client, instance,
-                       lambda x: x.state == 'stopped')
-    instance = client.reload(instance)
-    instance.remove()
+    instance = client.wait_success(client.delete(instance))
     wait_for_condition(client, instance,
                        lambda x: x.state == 'removed')
     return client.reload(instance)
@@ -913,7 +880,7 @@ def test_destroy_service_instance(client, context):
     instance3 = _validate_compose_instance_start(client, service, env, "3")
 
     # 1. stop and remove the instance2. Validate the mapping is gone
-    instance2 = _instance_remove(instance2, client)
+    _instance_remove(instance2, client)
 
     instance_service_map = client. \
         list_serviceExposeMap(serviceId=service.id, instanceId=instance2.id)
@@ -957,8 +924,6 @@ def test_destroy_service_instance(client, context):
         client, instance_service_map[0], _resource_is_removed,
         lambda x: 'State is: ' + x.state)
 
-    env.remove()
-
 
 def test_service_rename(client, context):
     env = client.create_environment(name=random_str())
@@ -992,8 +957,6 @@ def test_service_rename(client, context):
     _validate_compose_instance_start(client, service1, env, "1")
     _validate_compose_instance_start(client, service1, env, "2")
     _validate_compose_instance_start(client, service2, env, "1")
-
-    env.remove()
 
 
 def test_env_rename(client, context):
@@ -1037,8 +1000,6 @@ def test_env_rename(client, context):
     _validate_compose_instance_start(client, service_1, env, "2")
     _validate_compose_instance_start(client, service_2, env, "1")
 
-    env.remove()
-
 
 def test_validate_scale_down_restore_state(client, context):
     env = client.create_environment(name=random_str())
@@ -1064,12 +1025,9 @@ def test_validate_scale_down_restore_state(client, context):
     instance2 = _validate_compose_instance_start(client, service, env, "2")
     instance3 = _validate_compose_instance_start(client, service, env, "3")
     # stop the instances 1, 2 and destroy instance 3
-    instance1 = client.wait_success(instance1.stop())
-    assert instance1.state == 'stopped'
-    instance2 = client.wait_success(instance2.stop())
-    assert instance2.state == 'stopped'
-    instance3 = _instance_remove(instance3, client)
-    assert instance3.state == 'removed'
+    client.wait_success(instance1.stop())
+    client.wait_success(instance2.stop())
+    _instance_remove(instance3, client)
 
     # wait for reconcile
     service = client.wait_success(service)
@@ -1085,8 +1043,6 @@ def test_validate_scale_down_restore_state(client, context):
     instance_service_map = client. \
         list_serviceExposeMap(serviceId=service.id, state="active")
     assert len(instance_service_map) == 1
-
-    env.remove()
 
 
 def test_validate_labels(client, context):
@@ -1141,8 +1097,6 @@ def test_validate_labels(client, context):
     instance2 = _validate_compose_instance_start(client, service2, env, "1")
     assert all(item in instance2.labels for item in result_labels_2) is True
 
-    env.remove()
-
 
 def test_sidekick_restart_instances(client, context):
     env = client.create_environment(name=random_str())
@@ -1178,6 +1132,7 @@ def test_sidekick_restart_instances(client, context):
     # scale should be restored
     client.wait_success(instance11.stop())
     _instance_remove(instance22, client)
+    service = client.wait_success(service)
     service = client.update(service, scale=2, name=service.name)
     service = client.wait_success(service, 120)
 
@@ -1189,8 +1144,6 @@ def test_sidekick_restart_instances(client, context):
     instance_service_map1 = client. \
         list_serviceExposeMap(serviceId=service.id, state="active")
     assert len(instance_service_map1) == 4
-
-    env.remove()
 
 
 def test_sidekick_scaleup(client, context):
@@ -1230,8 +1183,6 @@ def test_sidekick_scaleup(client, context):
     instance_service_map1 = client. \
         list_serviceExposeMap(serviceId=service.id, state="active")
     assert len(instance_service_map1) == 4
-
-    env.remove()
 
 
 def _validate_service_ip_map(client, service, ip, state, timeout=30):
@@ -1314,8 +1265,6 @@ def test_external_service(client, context):
     service2 = client.wait_success(service2.remove())
     assert service2.state == "removed"
 
-    env.remove()
-
 
 def test_service_spread_deployment(super_client, new_context):
     client = new_context.client
@@ -1351,8 +1300,6 @@ def test_service_spread_deployment(super_client, new_context):
     instance2 = _validate_compose_instance_start(client, service, env, "2")
     instance2_host = instance2.hosts()[0].id
     assert instance1_host != instance2_host
-
-    env.remove()
 
 
 def test_global_service(new_context):
@@ -1396,8 +1343,6 @@ def test_global_service(new_context):
     instance2_host = instance2.hosts()[0].id
     assert instance1_host != instance2_host
     service.deactivate()
-
-    env.remove()
 
 
 def test_global_service_update_label(new_context):
@@ -1471,8 +1416,6 @@ def test_global_service_update_label(new_context):
     assert instance1.hosts()[0].id != instance2.hosts()[0].id
     service.deactivate()
 
-    env.remove()
-
 
 def test_global_add_host(new_context):
     client = new_context.client
@@ -1522,8 +1465,6 @@ def test_global_add_host(new_context):
     assert instance2_host == host2.id
     service.deactivate()
 
-    env.remove()
-
 
 def test_dns_service(client, context):
     env = client.create_environment(name=random_str())
@@ -1572,8 +1513,6 @@ def test_dns_service(client, context):
     app = app.addservicelink(serviceId=dns.id)
     _validate_add_service_link(app, dns, client)
 
-    env.remove()
-
 
 def test_svc_container_reg_cred_and_image(super_client, client):
     server = 'server{0}.io'.format(random_num())
@@ -1609,8 +1548,6 @@ def test_svc_container_reg_cred_and_image(super_client, client):
     image = container.image()
     assert image.name == name
     assert image.registryCredentialId == registry_credential.id
-
-    env.remove()
 
 
 def test_network_from_service(client, context):
@@ -1656,8 +1593,6 @@ def test_network_from_service(client, context):
     assert s21_container.networkMode == 'managed'
     assert s22_container.networkMode == 'managed'
 
-    env.remove()
-
 
 def test_circular_refs(client, context):
     env = client.create_environment(name=random_str())
@@ -1698,8 +1633,6 @@ def test_circular_refs(client, context):
                               secondaryLaunchConfigs=[s_lc1, s_lc2])
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidReference'
-
-    env.remove()
 
 
 def _wait_compose_instance_start(client, service, env, number, timeout=30):
@@ -1788,8 +1721,6 @@ def test_service_affinity_rules(super_client, new_context):
     assert instances[1].hosts()[0].id == instances[2].hosts()[0].id
     assert instances[2].hosts()[0].id == instances[0].hosts()[0].id
 
-    env.remove()
-
 
 def test_host_delete_reconcile_service(super_client, new_context):
     register_simulated_host(new_context)
@@ -1850,8 +1781,6 @@ def test_host_delete_reconcile_service(super_client, new_context):
     instance2_host = instance2.hosts()[0]
     assert instance1_host.id == instance2_host.id
     service = client.wait_success(service.deactivate(), 120)
-
-    env.remove()
 
 
 def test_service_link_emu_docker_link(super_client, client, context):
