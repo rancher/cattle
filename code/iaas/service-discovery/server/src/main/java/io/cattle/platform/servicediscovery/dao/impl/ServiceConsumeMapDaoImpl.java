@@ -1,9 +1,11 @@
 package io.cattle.platform.servicediscovery.dao.impl;
 
-import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -16,7 +18,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 
 import java.util.List;
-
 import javax.inject.Inject;
 
 public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements ServiceConsumeMapDao {
@@ -69,14 +70,17 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
     }
 
     @Override
-    public List<? extends ServiceConsumeMap> findConsumedServicesForInstance(long instanceId) {
+    public List<? extends ServiceConsumeMap> findConsumedServicesForInstance(long instanceId, String kind) {
         return create()
                 .select(SERVICE_CONSUME_MAP.fields())
                 .from(SERVICE_CONSUME_MAP)
-                .leftOuterJoin(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE_CONSUME_MAP.SERVICE_ID))
+                .join(SERVICE_EXPOSE_MAP)
+                    .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE_CONSUME_MAP.SERVICE_ID))
+                .join(SERVICE)
+                    .on(SERVICE.ID.eq(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))
                 .where(
                         SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instanceId)
+                                .and(SERVICE.KIND.eq(kind))
                                 .and(SERVICE_CONSUME_MAP.REMOVED.isNull())
                                 .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()))
                 .fetchInto(ServiceConsumeMapRecord.class);
@@ -103,6 +107,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                 .join(SERVICE_EXPOSE_MAP)
                     .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .where(INSTANCE.REMOVED.isNull()
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
                         .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()))
                 .orderBy(INSTANCE.CREATED.desc())
                 .fetchInto(InstanceRecord.class);

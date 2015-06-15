@@ -814,6 +814,36 @@ def test_service_link_emu_docker_link(super_client, docker_client):
     docker_client.delete(env)
 
 
+@if_docker
+def test_service_links_with_no_ports(docker_client):
+    env = docker_client.create_environment(name=random_str())
+    env = docker_client.wait_success(env)
+    assert env.state == "active"
+
+    server = docker_client.create_service(name='server', launchConfig={
+        'imageUuid': 'docker:busybox',
+        'stdinOpen': True,
+        'tty': True,
+    }, environmentId=env.id)
+    server = docker_client.wait_success(server)
+    assert server.state == 'inactive'
+
+    service = docker_client.create_service(name='client', launchConfig={
+        'imageUuid': 'docker:busybox',
+        'stdinOpen': True,
+        'tty': True,
+    }, environmentId=env.id)
+    service = docker_client.wait_success(service)
+    assert service.state == 'inactive'
+
+    service.setservicelinks(serviceLinks={'bb': server.id})
+
+    server = docker_client.wait_success(server.activate())
+    assert server.state == 'active'
+    service = docker_client.wait_success(service.activate())
+    assert service.state == 'active'
+
+
 def _check_path(volume, should_exist, client, super_client):
     path = _path_to_volume(volume)
     c = client. \

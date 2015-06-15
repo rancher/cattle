@@ -1859,6 +1859,8 @@ def test_service_link_emu_docker_link(super_client, client, context):
     env = client.wait_success(env)
     assert env.state == "active"
 
+    dns = client.create_dns_service(name='dns', environmentId=env.id)
+
     server = client.create_service(name='server', launchConfig={
         'imageUuid': context.image_uuid
     }, environmentId=env.id)
@@ -1871,8 +1873,12 @@ def test_service_link_emu_docker_link(super_client, client, context):
         'imageUuid': context.image_uuid
     }, environmentId=env.id)
 
-    service.setservicelinks(serviceLinks={'other': server.id,
+    service.setservicelinks(serviceLinks={'dns': dns.id,
+                                          'other': server.id,
                                           'server2': server2.id})
+
+    dns = client.wait_success(dns)
+    assert dns.state == 'inactive'
 
     server = client.wait_success(server)
     assert server.state == 'inactive'
@@ -1882,6 +1888,9 @@ def test_service_link_emu_docker_link(super_client, client, context):
 
     service = client.wait_success(service)
     assert service.state == 'inactive'
+
+    dns = client.wait_success(dns.activate())
+    assert dns.state == 'active'
 
     server = client.wait_success(server.activate())
     assert server.state == 'active'
@@ -1905,8 +1914,12 @@ def test_service_link_emu_docker_link(super_client, client, context):
         assert link.instanceId is not None
         if map.consumedServiceId == server.id:
             assert link.linkName == 'other'
+            assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
+                server.id
         elif map.consumedServiceId == server2.id:
             assert link.linkName == 'server2'
+            assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
+                   server2.id
 
 
 def _get_instance_for_service(super_client, serviceId):

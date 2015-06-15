@@ -33,7 +33,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcileTrigger" />
 
     <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkActivateHandler" />
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkPreInstanceLinkActivateHandler" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkPreInstanceStateHandler" />
 
     <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
     <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />
