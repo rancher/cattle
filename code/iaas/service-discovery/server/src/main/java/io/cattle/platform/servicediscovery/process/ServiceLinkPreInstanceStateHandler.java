@@ -18,7 +18,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 
-public class ServiceLinkPreInstanceLinkActivateHandler extends AbstractObjectProcessHandler implements ProcessPreListener {
+public class ServiceLinkPreInstanceStateHandler extends AbstractObjectProcessHandler implements ProcessPreListener {
 
     @Inject
     ServiceConsumeMapDao consumeMapDao;
@@ -35,7 +35,7 @@ public class ServiceLinkPreInstanceLinkActivateHandler extends AbstractObjectPro
         Set<InstanceLink> links = new HashSet<>();
         Set<InstanceLink> toRemove = new HashSet<>();
 
-        for (ServiceConsumeMap map : consumeMapDao.findConsumedServicesForInstance(instance.getId()) ) {
+        for (ServiceConsumeMap map : consumeMapDao.findConsumedServicesForInstance(instance.getId(), "service") ) {
             serviceConsumeMapIds.add(map.getId());
         }
 

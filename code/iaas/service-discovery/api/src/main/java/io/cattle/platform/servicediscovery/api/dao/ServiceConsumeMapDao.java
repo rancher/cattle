@@ -42,9 +42,10 @@ public interface ServiceConsumeMapDao {
 
     /**
      * @param instanceId
+     * @param kind
      * @return list of services consumed by the instance specified
      */
-    List<? extends ServiceConsumeMap> findConsumedServicesForInstance(long instanceId);
+    List<? extends ServiceConsumeMap> findConsumedServicesForInstance(long instanceId, String kind);
 
     /**
      * @param instanceId
