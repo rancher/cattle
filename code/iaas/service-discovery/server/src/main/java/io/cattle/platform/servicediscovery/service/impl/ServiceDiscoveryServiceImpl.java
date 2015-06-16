@@ -224,7 +224,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     private void populateLinksForService(Service service, Collection<Long> servicesToExportIds,
             Map<String, Object> composeServiceData) {
-        Map<String, String> serviceLinksWithNames = new HashMap<>();
+        List<String> serviceLinksWithNames = new ArrayList<>();
         List<Service> externalLinksServices = new ArrayList<>();
         List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
         for (ServiceConsumeMap consumedServiceMap : consumedServiceMaps) {
@@ -233,7 +233,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (servicesToExportIds.contains(consumedServiceMap.getConsumedServiceId())) {
                 String linkName = consumedServiceMap.getName() != null ? consumedServiceMap.getName() : consumedService
                         .getName();
-                serviceLinksWithNames.put(consumedService.getName(), linkName);
+                serviceLinksWithNames.add(consumedService.getName() + ":" + linkName);
             } else {
                 externalLinksServices.add(consumedService);
             }
@@ -248,7 +248,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     private void populateExternalLinksForService(Service service, Map<String, Object> composeServiceData,
             List<Service> externalLinksServices) {
 
-        Map<String, String> instanceLinksWithNames = new LinkedHashMap<String, String>();
+        Map<String, String> instanceLinksWithNamesMaps = new LinkedHashMap<String, String>();
         Map<String, Object> instanceLinksWithIds = (Map<String, Object>) composeServiceData
                 .get(ServiceDiscoveryConfigItem.EXTERNALLINKS
                 .getDockerName());
@@ -259,7 +259,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                         null);
                 String instanceName = getInstanceName(instance);
                 if (instanceName != null) {
-                    instanceLinksWithNames.put(instanceName, linkName);
+                    instanceLinksWithNamesMaps.put(instanceName, linkName);
                 }
             }
         }
@@ -269,11 +269,15 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             for (Instance instance : instances) {
                 String instanceName = getInstanceName(instance);
                 if (instanceName != null) {
-                    instanceLinksWithNames.put(instanceName, instanceName);
+                    instanceLinksWithNamesMaps.put(instanceName, instanceName);
                 }
             }
         }
-        if (!instanceLinksWithNames.isEmpty()) {
+        if (!instanceLinksWithNamesMaps.isEmpty()) {
+            List<String> instanceLinksWithNames = new ArrayList<>();
+            for (String instanceLinkName : instanceLinksWithNamesMaps.keySet()) {
+                instanceLinksWithNames.add(instanceLinksWithNamesMaps.get(instanceLinkName) + ":" + instanceLinkName);
+            }
             composeServiceData.put(ServiceDiscoveryConfigItem.EXTERNALLINKS.getDockerName(), instanceLinksWithNames);
         }
     }
