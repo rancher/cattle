@@ -787,7 +787,8 @@ def test_service_link_emu_docker_link(super_client, docker_client):
         'imageUuid': TEST_IMAGE_UUID
     }, environmentId=env.id)
 
-    service.setservicelinks(serviceLinks={'other': server.id})
+    service_link = {"serviceId": server.id, "name": "other"}
+    service.setservicelinks(serviceLinks=[service_link])
     server = docker_client.wait_success(server)
     service = docker_client.wait_success(service)
 
@@ -836,7 +837,8 @@ def test_service_links_with_no_ports(docker_client):
     service = docker_client.wait_success(service)
     assert service.state == 'inactive'
 
-    service.setservicelinks(serviceLinks={'bb': server.id})
+    service_link = {"serviceId": server.id, "name": "bb"}
+    service.setservicelinks(serviceLinks=[service_link])
 
     server = docker_client.wait_success(server.activate())
     assert server.state == 'active'

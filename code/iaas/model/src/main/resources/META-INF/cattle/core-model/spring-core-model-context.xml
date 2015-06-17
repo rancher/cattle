@@ -26,6 +26,7 @@
                 <value>io.cattle.platform.extension.dynamic.api.addon.ExternalHandlerProcessConfig</value>
                 <value>io.cattle.platform.core.addon.ComposeConfig</value>
                 <value>io.cattle.platform.core.addon.InstanceHealthCheck</value>
+                <value>io.cattle.platform.core.addon.ServiceLink</value>
             </set>
         </property>
     </bean>

@@ -5,9 +5,11 @@ import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG;
 import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
+import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
@@ -728,6 +730,35 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVATING,
                 CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
         return (validStates.contains(service.getState()));
+    }
+
+    @Override
+    public void addServiceLink(Service service, ServiceLink serviceLink) {
+        ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
+                serviceLink.getName());
+
+        if (map == null) {
+            map = objectManager.create(ServiceConsumeMap.class,
+                    SERVICE_CONSUME_MAP.SERVICE_ID,
+                    service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, serviceLink.getServiceId(),
+                    SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
+                    SERVICE_CONSUME_MAP.NAME, serviceLink.getName());
+        }
+
+        if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
+                    map, null);
+        }
+    }
+
+    @Override
+    public void removeServiceLink(Service service, ServiceLink serviceLink) {
+        ServiceConsumeMap map = consumeMapDao.findMapToRemove(service.getId(), serviceLink.getServiceId());
+
+        if (map != null) {
+            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+                    map, null);
+        }
     }
 
 }

@@ -371,12 +371,10 @@
         "service.secondaryLaunchConfigs" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
-        "addRemoveServiceLinkInput.serviceId" : "cr",
-        "addRemoveServiceLinkInput.name" : "cr",
+        "addRemoveServiceLinkInput.serviceLink" : "cr",
 
         "setServiceLinksInput" : "r",
         "setServiceLinksInput.serviceLinks" : "cr",
-        "setServiceLinksInput.serviceIds" : "cr",
 
         "loadBalancerConfigListenerMap" : "r",
         "loadBalancerConfigListenerMap.loadBalancerConfigId" : "r",
@@ -455,6 +453,10 @@
         "name" : "cr",
         "launchConfig.networkLaunchConfig" : "cr",
         "launchConfig.dataVolumesFromLaunchConfigs" : "cr",
+
+        "serviceLink" : "cr",
+        "serviceLink.serviceId" : "cr",
+        "serviceLink.name" : "cr",
 
         "end" : ""
     }

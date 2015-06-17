@@ -200,7 +200,8 @@ def test_targets(client, context):
 
     # map web service to lb service - early binding,
     # before services are activated
-    lb_service = lb_service.addservicelink(serviceId=web_service.id)
+    service_link = {"serviceId": web_service.id}
+    lb_service = lb_service.addservicelink(serviceLink=service_link)
 
     # activate web and lb services
     lb_service = client.wait_success(lb_service.activate(), 120)
@@ -212,7 +213,8 @@ def test_targets(client, context):
     assert db_service.state == "active"
 
     # bind db and lb services after service is activated
-    lb_service.addservicelink(serviceId=db_service.id)
+    service_link = {"serviceId": db_service.id}
+    lb_service.addservicelink(serviceLink=service_link)
 
     # verify that instances of db and web services were added to lb
     web_instances = client. \
@@ -226,7 +228,8 @@ def test_targets(client, context):
     _validate_add_target_instance(db_instances[0], client)
 
     # remove link and make sure that the target map is gone
-    lb_service.removeservicelink(serviceId=db_service.id)
+    service_link = {"serviceId": db_service.id}
+    lb_service.removeservicelink(serviceLink=service_link)
     # validate that the instance is still running
     db_instance = client.reload(db_instances[0])
     assert db_instance.state == 'running'
@@ -276,7 +279,8 @@ def test_target_ips(client, context):
 
     # map web service to lb service - early binding,
     # before services are activated
-    lb_service = lb_service.addservicelink(serviceId=web_service.id)
+    service_link = {"serviceId": web_service.id}
+    lb_service = lb_service.addservicelink(serviceLink=service_link)
 
     # activate web and lb services
     lb_service = client.wait_success(lb_service.activate(), 120)
@@ -288,7 +292,8 @@ def test_target_ips(client, context):
     assert db_service.state == "active"
 
     # bind db and lb services after service is activated
-    lb_service.addservicelink(serviceId=db_service.id)
+    service_link = {"serviceId": db_service.id}
+    lb_service.addservicelink(serviceLink=service_link)
 
     # verify that ips of db and web services were added to lb
     _validate_add_target_ip("72.22.16.5", client)
@@ -297,7 +302,8 @@ def test_target_ips(client, context):
     _validate_add_target_ip("192.168.0.10", client)
 
     # remove link and make sure that the db targets are gone
-    lb_service.removeservicelink(serviceId=db_service.id)
+    service_link = {"serviceId": db_service.id}
+    lb_service.removeservicelink(serviceLink=service_link)
     _validate_remove_target_ip("192.168.0.9", client)
     _validate_remove_target_ip("192.168.0.10", client)
 
@@ -517,7 +523,8 @@ def test_inactive_lb(client, context):
     lb = lbs[0]
 
     # map web service to lb service; validate no lb targets were created
-    lb_service = lb_service.addservicelink(serviceId=web_service.id)
+    service_link = {"serviceId": web_service.id}
+    lb_service = lb_service.addservicelink(serviceLink=service_link)
     target_maps = client. \
         list_loadBalancerTarget(loadBalancerId=lb.id)
     assert len(target_maps) == 0
@@ -530,7 +537,8 @@ def test_inactive_lb(client, context):
     # deactivate lb service, and remove service link
     lb_service = client.wait_success(lb_service.deactivate(), 120)
     assert lb_service.state == "inactive"
-    lb_service = lb_service.removeservicelink(serviceId=web_service.id)
+    service_link = {"serviceId": web_service.id}
+    lb_service = lb_service.removeservicelink(serviceLink=service_link)
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
     _validate_remove_target_instance(web_instances[0], client)

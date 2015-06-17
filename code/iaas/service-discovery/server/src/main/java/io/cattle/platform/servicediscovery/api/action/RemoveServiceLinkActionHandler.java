@@ -1,12 +1,12 @@
 package io.cattle.platform.servicediscovery.api.action;
 
 import io.cattle.platform.api.action.ActionHandler;
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceConsumeMap;
-import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import javax.inject.Inject;
@@ -16,10 +16,10 @@ import javax.inject.Named;
 public class RemoveServiceLinkActionHandler implements ActionHandler {
 
     @Inject
-    ServiceConsumeMapDao consumeMapDao;
+    JsonMapper jsonMapper;
 
     @Inject
-    ObjectProcessManager objectProcessManager;
+    ServiceDiscoveryService sdService;
 
     @Override
     public String getName() {
@@ -32,20 +32,11 @@ public class RemoveServiceLinkActionHandler implements ActionHandler {
             return null;
         }
         Service service = (Service) obj;
-        Long consumedServiceId = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_ID).as(Long.class);
+        ServiceLink serviceLink = DataAccessor.fromMap(request.getRequestObject()).withKey(
+                ServiceDiscoveryConstants.FIELD_SERVICE_LINK).as(jsonMapper, ServiceLink.class);
 
-        removeMap(service.getId(), consumedServiceId);
+        sdService.removeServiceLink(service, serviceLink);
 
         return service;
-    }
-
-    protected void removeMap(long serviceId, long consumedServiceId) {
-        ServiceConsumeMap map = consumeMapDao.findMapToRemove(serviceId, consumedServiceId);
-
-        if (map != null) {
-            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
-                    map, null);
-        }
     }
 }

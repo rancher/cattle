@@ -1,23 +1,20 @@
 package io.cattle.platform.servicediscovery.api.action;
 
-import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
 import io.cattle.platform.api.action.ActionHandler;
-import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.process.lock.ServiceDiscoveryServiceSetLinksLock;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,16 +29,13 @@ public class SetServiceLinksActionHandler implements ActionHandler {
     JsonMapper jsonMapper;
 
     @Inject
-    ObjectManager objectManager;
-
-    @Inject
-    ObjectProcessManager objectProcessManager;
-
-    @Inject
     ServiceConsumeMapDao consumeMapDao;
 
     @Inject
     LockManager lockManager;
+
+    @Inject
+    ServiceDiscoveryService sdService;
 
 
     @Override
@@ -55,7 +49,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
             return null;
         }
         final Service service = (Service) obj;
-        final Map<Long, String> newServiceLinks = populateNewServiceLinks(request);
+        final Map<Long, ServiceLink> newServiceLinks = populateNewServiceLinks(request);
 
         lockManager.lock(new ServiceDiscoveryServiceSetLinksLock(service), new LockCallbackNoReturn() {
             @Override
@@ -71,71 +65,46 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         return service;
     }
 
-    @SuppressWarnings("unchecked")
-    protected Map<Long, String> populateNewServiceLinks(ApiRequest request) {
-        final Map<Long, String> newServiceLinks = new HashMap<>();
-        final Map<String, Long> newServiceLinksMaps = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_MAP)
-                .as(Map.class);
+    protected Map<Long, ServiceLink> populateNewServiceLinks(ApiRequest request) {
+        Map<Long, ServiceLink> newServiceLinks = new HashMap<>();
+        List<? extends ServiceLink> serviceLinks = DataAccessor.fromMap(request.getRequestObject()).withKey(
+                ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).asList(jsonMapper, ServiceLink.class);
 
-        if (newServiceLinksMaps != null) {
-            for (String linkName : newServiceLinksMaps.keySet()) {
-                newServiceLinks.put(newServiceLinksMaps.get(linkName), linkName);
+        if (serviceLinks != null) {
+            for (ServiceLink serviceLink : serviceLinks) {
+                newServiceLinks.put(serviceLink.getServiceId(), serviceLink);
             }
         }
 
-        final List<? extends Long> newConsumedServicesIds = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_IDS).asList(jsonMapper,
-                        Long.class);
-        
-        if (newConsumedServicesIds != null) {
-            for (Long consumedServiceId : newConsumedServicesIds) {
-                newServiceLinks.put(consumedServiceId, null);
-            }
-        }
         return newServiceLinks;
     }
 
-    private void createNewServiceMaps(Service service, Map<Long, String> newServiceLinks) {
-        for (Long consumedServiceId : newServiceLinks.keySet()) {
-            String linkName = newServiceLinks.get(consumedServiceId);
-            ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), consumedServiceId, linkName);
-            if (map == null) {
-                map = objectManager.create(ServiceConsumeMap.class,
-                        SERVICE_CONSUME_MAP.SERVICE_ID,
-                        service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId,
-                        SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
-                        SERVICE_CONSUME_MAP.NAME, linkName);
-            }
-            if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-                objectProcessManager.scheduleProcessInstanceAsync(
-                        ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
-                        map, null);
-            }
+    private void createNewServiceMaps(Service service, Map<Long, ServiceLink> newServiceLinks) {
+        for (ServiceLink newServiceLink : newServiceLinks.values()) {
+            sdService.addServiceLink(service, newServiceLink);
         }
     }
 
-    private void removeOldServiceMaps(Service service, Map<Long, String> newServiceLinks) {
+    private void removeOldServiceMaps(Service service, Map<Long, ServiceLink> newServiceLinks) {
         List<? extends ServiceConsumeMap> existingMaps = consumeMapDao.findConsumedMapsToRemove(service.getId());
-        List<ServiceConsumeMap> mapsToRemove = new ArrayList<>();
+        List<ServiceLink> linksToRemove = new ArrayList<>();
 
         for (ServiceConsumeMap existingMap : existingMaps) {
+            ServiceLink existingLink = new ServiceLink(existingMap.getConsumedServiceId(), existingMap.getName());
             if (!newServiceLinks.containsKey(existingMap.getConsumedServiceId())) {
-                mapsToRemove.add(existingMap);
+                linksToRemove.add(existingLink);
             } else {
-                String newName = newServiceLinks.get(existingMap.getConsumedServiceId());
+                String newName = newServiceLinks.get(existingMap.getConsumedServiceId()).getName();
                 String existingName = existingMap.getName();
 
                 if (!StringUtils.equalsIgnoreCase(newName, existingName)) {
-                    mapsToRemove.add(existingMap);
+                    linksToRemove.add(existingLink);
                 }
             }
         }
 
-        for (ServiceConsumeMap mapToRemove : mapsToRemove) {
-            objectProcessManager.scheduleProcessInstanceAsync(
-                    ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
-                    mapToRemove, null);
+        for (ServiceLink linkToRemove : linksToRemove) {
+            sdService.removeServiceLink(service, linkToRemove);
         }
     }
 }

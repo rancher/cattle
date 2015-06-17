@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.service;
 
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -37,5 +38,9 @@ public interface ServiceDiscoveryService {
     Object getLaunchConfigObject(Service service, String launchConfigName, String objectName);
 
     boolean isActiveService(Service service);
+
+    void addServiceLink(Service service, ServiceLink serviceLink);
+
+    void removeServiceLink(Service service, ServiceLink serviceLink);
 
 }

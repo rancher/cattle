@@ -1,14 +1,12 @@
 package io.cattle.platform.servicediscovery.api.action;
 
-import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
 import io.cattle.platform.api.action.ActionHandler;
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceConsumeMap;
-import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import javax.inject.Inject;
@@ -16,14 +14,12 @@ import javax.inject.Named;
 
 @Named
 public class AddServiceLinkActionHandler implements ActionHandler {
-    @Inject
-    ServiceConsumeMapDao consumeMapDao;
 
     @Inject
-    ObjectManager objectManager;
+    JsonMapper jsonMapper;
 
     @Inject
-    ObjectProcessManager objectProcessManager;
+    ServiceDiscoveryService sdService;
 
     @Override
     public String getName() {
@@ -36,27 +32,11 @@ public class AddServiceLinkActionHandler implements ActionHandler {
             return null;
         }
         Service service = (Service) obj;
-        Long consumedServiceId = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_ID).as(Long.class);
-        String linkName = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_LINK_NAME).as(String.class);
+        ServiceLink serviceLink = DataAccessor.fromMap(request.getRequestObject()).withKey(
+                ServiceDiscoveryConstants.FIELD_SERVICE_LINK).as(jsonMapper, ServiceLink.class);
 
-        createMap(service, consumedServiceId, linkName);
+        sdService.addServiceLink(service, serviceLink);
 
         return service;
-    }
-
-    protected void createMap(Service service, long consumedServiceId, String name) {
-        ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), consumedServiceId, null);
-
-        if (map == null) {
-            map = objectManager.create(ServiceConsumeMap.class,
-                    SERVICE_CONSUME_MAP.SERVICE_ID,
-                    service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId,
-                    SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
-                    SERVICE_CONSUME_MAP.NAME, name);
-        }
-        objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
-                map, null);
     }
 }
