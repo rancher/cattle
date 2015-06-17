@@ -248,6 +248,7 @@
 
         "typeDocumentation" : "r",
         "typeDocumentation.resourceFields" : "r",
+        "fieldDocumentation": "r",
 
         "userPreference" : "crud",
         "userPreference.value" : "crud",
