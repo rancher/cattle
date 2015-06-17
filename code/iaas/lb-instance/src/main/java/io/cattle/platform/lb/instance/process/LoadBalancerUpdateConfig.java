@@ -128,7 +128,10 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
         List<Agent> agents = new ArrayList<>();
         for (Long lbId : lbInstancesMap.keySet()) {
             for (Instance lbInstance : lbInstancesMap.get(lbId)) {
-                agents.add(objectManager.loadResource(Agent.class, lbInstance.getAgentId()));
+                Agent agent = objectManager.loadResource(Agent.class, lbInstance.getAgentId());
+                if (agent.getRemoved() == null) {
+                    agents.add(agent);
+                }
             }
         }
 
