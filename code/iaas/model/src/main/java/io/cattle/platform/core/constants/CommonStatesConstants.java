@@ -2,6 +2,8 @@ package io.cattle.platform.core.constants;
 
 public class CommonStatesConstants {
 
+    public static final String CREATED = "created";
+    public static final String CREATING = "creating";
     public static final String ACTIVE = "active";
     public static final String INACTIVE = "inactive";
     public static final String ACTIVATING = "activating";

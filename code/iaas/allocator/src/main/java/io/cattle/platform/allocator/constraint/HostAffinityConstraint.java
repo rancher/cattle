@@ -4,6 +4,7 @@ import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.Affi
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 
 import java.util.Map;
 import java.util.Set;
@@ -33,16 +34,27 @@ public class HostAffinityConstraint implements Constraint {
         Set<Long> hostIds = candidate.getHosts();
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
             for (Long hostId : hostIds) {
-                Map<String, String> labelsForHost = allocatorDao.getLabelsForHost(hostId);
-                if (!labelValue.equals(labelsForHost.get(labelKey))) {
+                Map<String, String[]> labelsForHost = allocatorDao.getLabelsForHost(hostId);
+                if (labelsForHost.get(labelKey) == null) { // key doesn't exist
+                    return false;
+                }
+                String value = labelsForHost.get(labelKey)[0];
+                String hostLabelMapState = labelsForHost.get(labelKey)[1];
+                if (!labelValue.equals(value)) { // value doesn't match
+                    return false;
+                }
+                if (CommonStatesConstants.REMOVING.equals(hostLabelMapState)) { // value matches but it's currently getting removed
                     return false;
                 }
             }
             return true;
         } else {
             for (Long hostId : hostIds) {
-                Map<String, String> labelsForHost = allocatorDao.getLabelsForHost(hostId);
-                if (labelValue.equals(labelsForHost.get(labelKey))) {
+                Map<String, String[]> labelsForHost = allocatorDao.getLabelsForHost(hostId);
+                if (labelsForHost.get(labelKey) != null 
+                        && labelValue.equals(labelsForHost.get(labelKey)[0]) 
+                        && (CommonStatesConstants.CREATING.equals(labelsForHost.get(labelKey)[1])
+                                || CommonStatesConstants.CREATED.equals(labelsForHost.get(labelKey)[1]))) {
                     return false;
                 }
             }

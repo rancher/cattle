@@ -39,7 +39,8 @@ public interface AllocatorDao {
 
     List<Port> getUsedPortsForHostExcludingInstance(long hostId, long instanceId);
 
-    Map<String, String> getLabelsForHost(long hostId);
+    // key -> [value,mapping.state]
+    Map<String, String[]> getLabelsForHost(long hostId);
 
     Multimap<String, String> getLabelsForContainersForHost(long hostId);
 

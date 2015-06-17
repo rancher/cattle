@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.constants.LabelConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -27,7 +28,12 @@ public class ServicesReconcilePostTrigger extends AbstractObjectProcessLogic imp
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { HostConstants.PROCESS_REMOVE, HostConstants.PROCESS_ACTIVATE, "hostlabelmap.create" };
+        return new String[] {
+                HostConstants.PROCESS_REMOVE,
+                HostConstants.PROCESS_ACTIVATE,
+                LabelConstants.PROCESS_HOSTLABELMAP_CREATE,
+                LabelConstants.PROCESS_HOSTLABELMAP_REMOVE
+        };
     }
 
     @Override

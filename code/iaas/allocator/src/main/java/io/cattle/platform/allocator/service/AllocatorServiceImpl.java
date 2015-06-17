@@ -59,8 +59,12 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     @Override
-    public boolean hostSatisfiesHostAffinity(long hostId, Map<String, String> labelConstraints) {
+    public boolean hostChangesAffectsHostAffinityRules(long hostId, Map<String, String> labelConstraints) {
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
+        // NOTE: There is a bug since the current check does not detect the converse.
+        // For example, if the host currently satisfies the hostAffinityConstraints but the
+        // change causes it to no longer satisfy the condition.  This is fine for now since
+        // we currently do not want to remove containers for the user.
         return hostSatisfiesHostAffinity(hostId, hostAffinityConstraints);
     }
 
