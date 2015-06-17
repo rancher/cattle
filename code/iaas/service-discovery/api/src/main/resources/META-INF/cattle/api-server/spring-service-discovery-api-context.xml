@@ -18,5 +18,21 @@
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceDiscoveryEnvironmentOutputFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceSetServiceLinksValidationFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceLoadBalancerRemoveValidationFilter" />
+       
+       <bean class="io.cattle.platform.servicediscovery.api.service.impl.ServiceDiscoveryApiServiceImpl" />
+       
+       <bean class="io.cattle.platform.servicediscovery.api.action.AddServiceLinkActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.SetServiceLinksActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentActivateServicesActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentDeactivateServicesActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentComposeLinkHandler" />
+       
+       <bean class="io.cattle.platform.servicediscovery.api.service.impl.RancherImageToComposeFormatter" />
+       <bean class="io.cattle.platform.servicediscovery.api.service.impl.RancherRestartToComposeFormatter" />
+       <bean class="io.cattle.platform.servicediscovery.api.service.impl.RancherGenericMapToComposeFormatter" />
+       
+       <bean class="io.cattle.platform.allocator.service.AllocatorServiceImpl" />
         
 </beans>

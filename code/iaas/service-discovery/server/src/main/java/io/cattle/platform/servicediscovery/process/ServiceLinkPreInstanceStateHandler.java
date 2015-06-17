@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
-import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
-
+import static io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -15,6 +14,7 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 

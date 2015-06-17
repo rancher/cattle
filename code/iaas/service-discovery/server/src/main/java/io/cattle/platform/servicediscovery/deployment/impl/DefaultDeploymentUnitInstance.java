@@ -10,6 +10,7 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
@@ -60,8 +61,8 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     @Override
     public DeploymentUnitInstance start(Map<String, Object> deployParams) {
         if (createNew()) {
-            Map<String, Object> launchConfigData = context.sdService.buildServiceInstanceLaunchData(service,
-                    deployParams, launchConfigName);
+            Map<String, Object> launchConfigData = ServiceDiscoveryUtil.buildServiceInstanceLaunchData(service,
+                    deployParams, launchConfigName, context.allocatorService);
             launchConfigData.put("name", this.instanceName);
             Pair<Instance, ServiceExposeMap> instanceMapPair = context.exposeMapDao.createServiceInstance(launchConfigData,
                     service, this.instanceName);

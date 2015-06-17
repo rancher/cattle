@@ -1,6 +1,6 @@
 package io.cattle.iaas.lb.api.action;
 
-import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.iaas.lb.api.service.LoadBalancerApiService;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -27,7 +27,7 @@ public class LoadBalancerConfigSetListenersActionHandler implements ActionHandle
     ObjectManager objectManager;
 
     @Inject
-    LoadBalancerService lbService;
+    LoadBalancerApiService lbService;
 
     @Override
     public String getName() {

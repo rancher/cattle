@@ -1,6 +1,7 @@
-package io.cattle.platform.servicediscovery.service.impl;
+package io.cattle.platform.servicediscovery.api.service.impl;
 
-import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
+import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
+import io.cattle.platform.servicediscovery.api.service.RancherConfigToComposeFormatter;
 
 public class RancherImageToComposeFormatter implements RancherConfigToComposeFormatter {
     private static final String IMAGE_PREFIX = "docker:";

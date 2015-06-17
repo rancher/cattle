@@ -1,0 +1,10 @@
+{
+    "collectionMethods" : [],
+    "resourceFields" : {
+        "serviceLink" : {
+            "type": "loadBalancerServiceLink",
+            "required": true,
+            "nullable": false
+        }
+    }
+}

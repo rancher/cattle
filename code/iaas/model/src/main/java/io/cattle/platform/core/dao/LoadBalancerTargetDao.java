@@ -1,7 +1,10 @@
 package io.cattle.platform.core.dao;
 
+import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerTarget;
+import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 
 import java.util.List;
 
@@ -24,5 +27,16 @@ public interface LoadBalancerTargetDao {
     List<? extends LoadBalancerTarget> getLoadBalancerActiveIpTargets(long lbId);
 
     List<? extends LoadBalancerTarget> getLoadBalancerActiveInstanceTargets(long lbId);
+
+    /*
+     * This method generates set of ports for the load balancer target either from:
+     * 1) ports set on the target
+     * 2) if ports are not set, get information from the load balancer listener
+     */
+    List<LoadBalancerTargetPortSpec> getLoadBalancerTargetPorts(LoadBalancerTarget target);
+
+    void createLoadBalancerTarget(LoadBalancer lb, List<? extends String> ports, String ipAddress, Long instanceId);
+
+    void removeLoadBalancerTarget(LoadBalancer lb, LoadBalancerTargetInput toRemove);
 
 }

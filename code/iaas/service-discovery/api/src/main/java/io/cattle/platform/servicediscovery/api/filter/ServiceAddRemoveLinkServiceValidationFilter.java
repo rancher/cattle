@@ -1,8 +1,11 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -22,6 +25,9 @@ public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractDefault
 
     @Inject
     ObjectManager objectManager;
+
+    @Inject
+    JsonMapper jsonMapper;
 
     private enum Operation {
         ADD,
@@ -52,21 +58,22 @@ public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractDefault
     }
 
     private void validateAction(long serviceId, String action, Map<String, Object> data) {
-        Long consumedServiceId = (Long) data.get(ServiceDiscoveryConstants.FIELD_SERVICE_ID);
+        ServiceLink serviceLink = DataAccessor.fromMap(data).withKey(
+                ServiceDiscoveryConstants.FIELD_SERVICE_LINK).as(jsonMapper, ServiceLink.class);
         if (ACTIONS.get(action) == Operation.ADD) {
             Service service = objectManager.loadResource(Service.class, serviceId);
-            if (consumeMapDao.findNonRemovedMap(serviceId, consumedServiceId, null) != null) {
+            if (consumeMapDao.findNonRemovedMap(serviceId, serviceLink.getServiceId(), null) != null) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
                         ServiceDiscoveryConstants.FIELD_SERVICE_ID);
             }
-            Service consumedService = objectManager.loadResource(Service.class, consumedServiceId);
+            Service consumedService = objectManager.loadResource(Service.class, serviceLink.getServiceId());
             if (service == null || consumedService == null
                     || !consumedService.getEnvironmentId().equals(service.getEnvironmentId())) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
                         ServiceDiscoveryConstants.FIELD_SERVICE_ID);
             }
         } else {
-            if (consumeMapDao.findMapToRemove(serviceId, consumedServiceId) == null) {
+            if (consumeMapDao.findMapToRemove(serviceId, serviceLink.getServiceId()) == null) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
                         ServiceDiscoveryConstants.FIELD_SERVICE_ID);
             }

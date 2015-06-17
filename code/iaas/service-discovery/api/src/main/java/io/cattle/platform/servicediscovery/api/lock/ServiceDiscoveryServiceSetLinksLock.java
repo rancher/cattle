@@ -1,4 +1,4 @@
-package io.cattle.platform.servicediscovery.process.lock;
+package io.cattle.platform.servicediscovery.api.lock;
 
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.lock.definition.AbstractBlockingLockDefintion;

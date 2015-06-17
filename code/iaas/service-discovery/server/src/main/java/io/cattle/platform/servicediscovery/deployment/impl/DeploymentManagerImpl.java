@@ -21,6 +21,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFactory;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
@@ -70,19 +71,20 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     @Override
     public void activate(final Service service) {
-        if (service == null || service.getRemoved() != null) {
+        // return immediately if inactive
+        if (service == null || !sdSvc.isActiveService(service)) {
             return;
         }
+
         final List<Service> services = new ArrayList<>();
         services.add(service);
 
         lockManager.lock(createLock(services), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                if (service.getState().equals(CommonStatesConstants.INACTIVE)) {
+                if (!sdSvc.isActiveService(service)) {
                     return;
                 }
-
                 // get existing deployment units
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
                         new DeploymentServiceContext());
@@ -188,7 +190,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         Map<Long, DeploymentUnitInstanceIdGenerator> generator = new HashMap<>();
         for (Service service : services) {
             Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
-            for (String launchConfigName : sdSvc.getServiceLaunchConfigNames(service)) {
+            for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
                 List<Integer> usedIds = sdSvc.getServiceInstanceUsedOrderIds(service, launchConfigName);
                 launchConfigUsedIds.put(launchConfigName, usedIds);
 
@@ -287,11 +289,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void run() {
                 Service service = objectMgr.loadResource(Service.class, client.getResourceId());
-                if (service != null
-                        && service.getRemoved() == null
-                        && (service.getState().equals(CommonStatesConstants.ACTIVATING)
-                                || service.getState().equals(CommonStatesConstants.ACTIVE) || service.getState()
-                                .equals(CommonStatesConstants.UPDATING_ACTIVE))) {
+                if (service != null && sdSvc.isActiveService(service)) {
                     activate(service);
                 }
             }

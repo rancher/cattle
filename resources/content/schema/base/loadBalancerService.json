@@ -7,5 +7,20 @@
             "type" : "loadBalancerConfig",
             "nullable": true
         }
+    },
+    "resourceActions" : {
+        "addservicelink" : {
+            "input" : "addRemoveLoadBalancerServiceLinkInput",
+            "output" : "service"
+
+        },
+        "removeservicelink" : {
+            "input" : "addRemoveLoadBalancerServiceLinkInput",
+            "output" : "service"
+        },
+        "setservicelinks" : {
+            "input" : "setLoadBalancerServiceLinksInput",
+            "output" : "service"
+        }
     }
 }

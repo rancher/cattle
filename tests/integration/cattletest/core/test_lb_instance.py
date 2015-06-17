@@ -383,7 +383,8 @@ def test_validate_ports(client, super_client, context):
     image_uuid = context.image_uuid
     container = client.create_container(imageUuid=image_uuid)
     container = client.wait_success(container)
-    lb = lb.addtarget(instanceId=container.id)
+    target = {"instanceId": container.id, "ports": "99"}
+    lb = lb.addtarget(loadBalancerTarget=target)
     _validate_add_target(container, lb, client)
     _add_listener_to_config(client, config)
     ports = super_client.list_port(publicPort='8080', instanceId=instance.id)

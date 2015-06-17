@@ -20,5 +20,21 @@
                 "description" : "Enter kind=apiKey if you want an API key to be auto generated"
             }
         }
+    },
+    {
+        "id" : "loadBalancerTarget",
+        "resourceFields" : {
+            "ports" : {
+                "description" : "Format: <port>[:[host][path]]. Example: 80:foo.com/bar"
+            }
+        }
+    },
+    {
+        "id" : "loadBalancerServiceLink",
+        "resourceFields" : {
+            "ports" : {
+                "description" : "Format: <port>[:[host][path]]. Example: 80:foo.com/bar"
+            }
+        }
     }
 ]

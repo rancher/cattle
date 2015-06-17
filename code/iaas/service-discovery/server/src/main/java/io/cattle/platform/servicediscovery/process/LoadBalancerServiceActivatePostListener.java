@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.dao.LoadBalancerTargetDao;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerTarget;
@@ -12,6 +13,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
@@ -23,6 +25,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.TransformerUtils;
 
 @Named
 public class LoadBalancerServiceActivatePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
@@ -40,6 +45,9 @@ public class LoadBalancerServiceActivatePostListener extends AbstractObjectProce
     @Inject
     LoadBalancerService lbService;
 
+    @Inject
+    JsonMapper jsonMapper;
+
     @Override
     public String[] getProcessNames() {
         return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE };
@@ -55,36 +63,64 @@ public class LoadBalancerServiceActivatePostListener extends AbstractObjectProce
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
                 service.getId(), LOAD_BALANCER.REMOVED, null);
         
-        List<Long> consumedInstancesIds = getConsumedInstancesIds(service);
-        List<Long> lbTargetIds = getLoadBalancerTargetInstancesIds(lb);
+        List<? extends ServiceExposeMap> serviceTargets = getConsumedLoadBalancerTargets(service);
+        List<? extends LoadBalancerTarget> lbTargets = getLoadBalancerTargets(lb);
 
-        addMissingTargets(lb, consumedInstancesIds, lbTargetIds);
-        removeExtraTargets(lb, consumedInstancesIds, lbTargetIds);
+        addMissingTargets(service, lb, serviceTargets, lbTargets);
 
         return null;
     }
 
-    protected void removeExtraTargets(LoadBalancer lb, List<Long> consumedInstancesIds, List<Long> lbTargetIds) {
-        List<Long> targetInstancesToRemove = new ArrayList<>();
-        targetInstancesToRemove.addAll(lbTargetIds);
-        targetInstancesToRemove.removeAll(consumedInstancesIds);
-        for (Long toRemove : targetInstancesToRemove) {
-            lbService.removeTargetFromLoadBalancer(lb, toRemove);
+    @SuppressWarnings("unchecked")
+    protected void addMissingTargets(Service lbSvc, LoadBalancer lb, List<? extends ServiceExposeMap> serviceTargets,
+            List<? extends LoadBalancerTarget> lbTargets) {
+        List<Long> lbTargetInstanceIds = (List<Long>) CollectionUtils.collect(lbTargets,
+                TransformerUtils.invokerTransformer("getInstanceId"));
+        List<String> lbTargetIpAddresses = (List<String>) CollectionUtils.collect(lbTargets,
+                TransformerUtils.invokerTransformer("getIpAddress"));
+        
+        List<Long> lbServiceTargetInstanceIds = (List<Long>) CollectionUtils.collect(serviceTargets,
+                TransformerUtils.invokerTransformer("getInstanceId"));
+        List<String> lbServiceTargetIpAddresses = (List<String>) CollectionUtils.collect(serviceTargets,
+                TransformerUtils.invokerTransformer("getIpAddress"));
+
+        addMissingTargets(lbSvc, serviceTargets, lbTargetInstanceIds, lbTargetIpAddresses);
+        removeExtraTargets(lb, lbTargets, lbServiceTargetInstanceIds, lbServiceTargetIpAddresses);
+    }
+
+    protected void removeExtraTargets(LoadBalancer lb, List<? extends LoadBalancerTarget> lbTargets,
+            List<Long> lbServiceTargetInstances, List<String> lbServiceTargetIpAddresses) {
+        List<LoadBalancerTarget> targetsToRemove = new ArrayList<>();
+        for (LoadBalancerTarget lbTarget : lbTargets) {
+            if (lbTarget.getInstanceId() != null && !lbServiceTargetInstances.contains(lbTarget.getInstanceId())) {
+                targetsToRemove.add(lbTarget);
+            } else if (lbTarget.getIpAddress() != null && !lbServiceTargetIpAddresses.contains(lbTarget.getIpAddress())) {
+                targetsToRemove.add(lbTarget);
+            }
+        }
+        for (LoadBalancerTarget targetToRemove : targetsToRemove) {
+            lbService.removeTargetFromLoadBalancer(lb, new LoadBalancerTargetInput(targetToRemove.getInstanceId(),
+                    targetToRemove.getIpAddress(), null));
         }
     }
 
-    protected void addMissingTargets(LoadBalancer lb, List<Long> consumedInstancesIds, List<Long> lbTargetIds) {
-        List<Long> targetInstanceToAdd = new ArrayList<>();
-        targetInstanceToAdd.addAll(consumedInstancesIds);
-        targetInstanceToAdd.removeAll(lbTargetIds);
-
-        for (Long toAdd : targetInstanceToAdd) {
-            lbService.addTargetToLoadBalancer(lb, toAdd);
+    protected void addMissingTargets(Service lbSvc, List<? extends ServiceExposeMap> serviceTargets,
+            List<Long> lbTargetInstanceIds, List<String> lbTargetIpAddresses) {
+        List<ServiceExposeMap> serviceTargetsToAdd = new ArrayList<>();
+        for (ServiceExposeMap serviceTarget : serviceTargets) {
+            if (serviceTarget.getInstanceId() != null && !lbTargetInstanceIds.contains(serviceTarget.getId())) {
+                serviceTargetsToAdd.add(serviceTarget);
+            } else if (serviceTarget.getIpAddress() != null && !lbTargetIpAddresses.contains(serviceTarget.getIpAddress())) {
+                serviceTargetsToAdd.add(serviceTarget);
+            }
+        }
+        for (ServiceExposeMap serviceTargetToAdd : serviceTargetsToAdd) {
+            sdService.addToLoadBalancerService(lbSvc, serviceTargetToAdd);
         }
     }
 
-    protected List<Long> getConsumedInstancesIds(Service service) {
-        List<Long> consumedInstancesIds = new ArrayList<>();
+    protected List<? extends ServiceExposeMap> getConsumedLoadBalancerTargets(Service service) {
+        List<ServiceExposeMap> consumedLoadBalancerTargets = new ArrayList<>();
         // a) get all the services consumed by the lb service
         List<? extends ServiceConsumeMap> consumedServicesMaps = consumeMapDao.findConsumedServices(service
                 .getId());
@@ -93,25 +129,13 @@ public class LoadBalancerServiceActivatePostListener extends AbstractObjectProce
             List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
                     objectManager.loadResource(Service.class, consumedServiceMap.getConsumedServiceId()),
                     ServiceExposeMap.class);
-            for (ServiceExposeMap map : maps) {
-                if (map.getInstanceId() != null) {
-                    consumedInstancesIds.add(map.getInstanceId());
-                }
-            }
+            consumedLoadBalancerTargets.addAll(maps);
         }
-        return consumedInstancesIds;
+        return consumedLoadBalancerTargets;
     }
     
-    protected List<Long> getLoadBalancerTargetInstancesIds(LoadBalancer lb) {
-        List<Long> targetIds = new ArrayList<>();
-        List<? extends LoadBalancerTarget> lbTargets = targetDao.getLoadBalancerActiveInstanceTargets(lb.getId());
-        for (LoadBalancerTarget lbTarget : lbTargets) {
-            if (lbTarget.getInstanceId() != null) {
-                targetIds.add(lbTarget.getInstanceId());
-            }
-        }
-
-        return targetIds;
+    protected List<? extends LoadBalancerTarget> getLoadBalancerTargets(LoadBalancer lb) {
+        return targetDao.listByLbId(lb.getId());
     }
 
     @Override

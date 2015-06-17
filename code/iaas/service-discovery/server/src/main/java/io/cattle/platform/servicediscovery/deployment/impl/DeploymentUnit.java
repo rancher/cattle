@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
 import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
@@ -54,7 +55,8 @@ public class DeploymentUnit {
         this.uuid = uuid;
         for (Service service : services) {
             this.svc.put(service.getId(),
-                    new DeploymentUnitService(service, this.context.sdService.getServiceLaunchConfigNames(service), context));
+                    new DeploymentUnitService(service, ServiceDiscoveryUtil.getServiceLaunchConfigNames(service),
+                            context));
         }
     }
 
@@ -184,9 +186,9 @@ public class DeploymentUnit {
     @SuppressWarnings("unchecked")
     protected List<Integer> getVolumesFromInstancesIds(Service service, String launchConfigName) {
         List<Integer> volumesFromInstanceIds = new ArrayList<>();
-        Object volumesFromLaunchConfigs = context.sdService.getLaunchConfigObject(service, launchConfigName,
+        Object volumesFromLaunchConfigs = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
                 ServiceDiscoveryConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
-        Object volumesFromInstance = context.sdService.getLaunchConfigObject(service, launchConfigName,
+        Object volumesFromInstance = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
                 DockerInstanceConstants.FIELD_VOLUMES_FROM);
         if (volumesFromInstance != null) {
             volumesFromInstanceIds.addAll((List<Integer>) volumesFromInstance);
@@ -220,13 +222,13 @@ public class DeploymentUnit {
     protected Integer getNetworkContainerId(String launchConfigName, Service service) {
         Integer networkContainerId = null;
 
-        Object networkFromInstance = context.sdService.getLaunchConfigObject(service, launchConfigName,
+        Object networkFromInstance = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
                 DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
         if (networkFromInstance != null) {
             return (Integer) networkFromInstance;
         }
 
-        Object networkFromLaunchConfig = context.sdService.getLaunchConfigObject(service, launchConfigName,
+        Object networkFromLaunchConfig = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
                 ServiceDiscoveryConstants.FIELD_NETWORK_LAUNCH_CONFIG);
 
         if (networkFromLaunchConfig != null) {

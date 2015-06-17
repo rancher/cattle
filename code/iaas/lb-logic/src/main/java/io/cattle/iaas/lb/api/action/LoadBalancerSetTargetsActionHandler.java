@@ -1,7 +1,8 @@
 package io.cattle.iaas.lb.api.action;
 
-import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.iaas.lb.api.service.LoadBalancerApiService;
 import io.cattle.platform.api.action.ActionHandler;
+import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.LoadBalancer;
@@ -16,6 +17,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.TransformerUtils;
+
 public class LoadBalancerSetTargetsActionHandler implements ActionHandler {
     @Inject
     JsonMapper jsonMapper;
@@ -24,7 +28,7 @@ public class LoadBalancerSetTargetsActionHandler implements ActionHandler {
     GenericMapDao mapDao;
 
     @Inject
-    LoadBalancerService lbService;
+    LoadBalancerApiService lbService;
     
     @Inject
     ObjectManager objectManager;
@@ -40,60 +44,57 @@ public class LoadBalancerSetTargetsActionHandler implements ActionHandler {
             return null;
         }
         LoadBalancer lb = (LoadBalancer) obj;
-        List<? extends Long> newInstanceIds = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_IDS).asList(
-                jsonMapper, Long.class);
-        List<? extends String> newIpAddresses = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESSES).asList(
-                jsonMapper, String.class);
+        List<? extends LoadBalancerTargetInput> newLBTargets = DataAccessor
+                .fromMap(request.getRequestObject())
+                .withKey(
+                        LoadBalancerConstants.FIELD_LB_TARGETS).asList(jsonMapper, LoadBalancerTargetInput.class);
+
 
         // remove old targets set
-        removeOldTargetMaps(lb, newInstanceIds, newIpAddresses);
+        removeOldTargetMaps(lb, newLBTargets);
 
         // create a new targets set
-        createNewTargetMaps(lb, newInstanceIds, newIpAddresses);
+        createNewTargetMaps(lb, newLBTargets);
 
         return objectManager.reload(lb);
     }
 
-    private void createNewTargetMaps(LoadBalancer lb, List<? extends Long> newInstanceIds, List<? extends String> newIpAddresses) {
+    private void createNewTargetMaps(LoadBalancer lb,
+            List<? extends LoadBalancerTargetInput> newLBTargets) {
 
-        if (newInstanceIds != null) {
-            for (Long instanceId : newInstanceIds) {
-                lbService.addTargetToLoadBalancer(lb, instanceId);
-            }
-        }
-
-        if (newIpAddresses != null) {
-            for (String ipAddress : newIpAddresses) {
-                lbService.addTargetIpToLoadBalancer(lb, ipAddress);
+        if (newLBTargets != null) {
+            for (LoadBalancerTargetInput newLBTarget : newLBTargets) {
+                lbService.addTargetToLoadBalancer(lb, newLBTarget);
             }
         }
     }
 
-    private void removeOldTargetMaps(LoadBalancer lb, List<? extends Long> newInstanceIds, List<? extends String> newIpAddresses) {
+    @SuppressWarnings("unchecked")
+    private void removeOldTargetMaps(LoadBalancer lb,
+            List<? extends LoadBalancerTargetInput> newLBTargets) {
         List<? extends LoadBalancerTarget> existingTargets = mapDao.findToRemove(LoadBalancerTarget.class, LoadBalancer.class, lb.getId());
-
+        List<Long> newLBTargetInstances = (List<Long>) CollectionUtils.collect(newLBTargets,
+                TransformerUtils.invokerTransformer("getInstanceId"));
+        List<String> newLBTargetIps = (List<String>) CollectionUtils.collect(newLBTargets,
+                TransformerUtils.invokerTransformer("getIpAddress"));
         List<LoadBalancerTarget> targetsToRemove = new ArrayList<>();
 
         for (LoadBalancerTarget existingTarget : existingTargets) {
             if (existingTarget.getInstanceId() != null) {
-                if (newInstanceIds != null && !newInstanceIds.contains(existingTarget.getInstanceId())) {
+                if (newLBTargetInstances != null && !newLBTargetInstances.contains(existingTarget.getInstanceId())) {
                     targetsToRemove.add(existingTarget);
                 }
             } else {
-                if (newIpAddresses != null && !newIpAddresses.contains(existingTarget.getIpAddress())) {
+                if (newLBTargetIps != null && !newLBTargetIps.contains(existingTarget.getIpAddress())) {
                     targetsToRemove.add(existingTarget);
                 }
             }
         }
 
         for (LoadBalancerTarget targetToRemove : targetsToRemove) {
-            if (targetToRemove.getIpAddress() != null) {
-                lbService.removeTargetIpFromLoadBalancer(lb, targetToRemove.getIpAddress());
-            } else {
-                lbService.removeTargetFromLoadBalancer(lb, targetToRemove.getInstanceId());
-            }
+            lbService.removeTargetFromLoadBalancer(lb, new LoadBalancerTargetInput(targetToRemove.getInstanceId(),
+                    targetToRemove.getIpAddress(), null));
+
         }
     }
 

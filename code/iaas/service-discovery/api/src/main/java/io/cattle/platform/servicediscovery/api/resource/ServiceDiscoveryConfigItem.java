@@ -1,4 +1,4 @@
-package io.cattle.platform.servicediscovery.resource;
+package io.cattle.platform.servicediscovery.api.resource;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;

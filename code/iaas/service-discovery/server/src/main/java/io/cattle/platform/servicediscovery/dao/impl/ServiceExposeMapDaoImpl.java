@@ -1,10 +1,10 @@
 package io.cattle.platform.servicediscovery.dao.impl;
 
+import static io.cattle.platform.core.model.tables.HostTable.HOST;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -24,6 +24,7 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -174,5 +175,17 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
             return results.get(0);
         }
         return null;
+    }
+
+    @Override
+    public boolean isPrimaryServiceInstance(ServiceExposeMap map) {
+        return map.getDnsPrefix() == null;
+    }
+
+    @Override
+    public boolean isActiveMap(ServiceExposeMap serviceExposeMap) {
+        List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVATING,
+                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE, CommonStatesConstants.REQUESTED);
+        return (validStates.contains(serviceExposeMap.getState()));
     }
 }

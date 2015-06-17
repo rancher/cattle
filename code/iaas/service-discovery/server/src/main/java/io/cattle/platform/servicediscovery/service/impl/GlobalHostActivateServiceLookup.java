@@ -8,6 +8,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.service.ServiceLookup;
 
@@ -49,7 +50,7 @@ public class GlobalHostActivateServiceLookup implements ServiceLookup {
         List<? extends Service> services = expMapDao.getActiveServices(host.getAccountId());
         List<Service> activeGlobalServices = new ArrayList<Service>();
         for (Service service : services) {
-            Map<String, String> serviceLabels = sdSvc.getServiceLabels(service);
+            Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, allocatorSvc);
             if (serviceLabels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL) &&
                     allocatorSvc.hostChangesAffectsHostAffinityRules(host.getId(), serviceLabels)) {
                 activeGlobalServices.add(service);

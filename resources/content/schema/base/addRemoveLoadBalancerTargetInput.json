@@ -1,13 +1,10 @@
 {
     "collectionMethods" : [],
-    "resourceFields": {
-        "instanceId": {
-            "type": "reference[instance]",
-            "nullable": true
-        },
-        "ipAddress": {
-            "type": "string",
-            "nullable": true
+    "resourceFields" : {
+        "loadBalancerTarget" : {
+            "type": "loadBalancerTarget",
+            "required": true,
+            "nullable": false
         }
     }
 }

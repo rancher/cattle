@@ -25,6 +25,9 @@ public class LoadBalancerConstants {
     public static final String FIELD_LB_COOKIE_POLICY = "lbCookieStickinessPolicy";
     public static final String FIELD_LB_CONFIG_ID = "loadBalancerConfigId";
     public static final String FIELD_LB_SERVICE_ID = "serviceId";
+    public static final String FIELD_LB_TARGET = "loadBalancerTarget";
+    public static final String FIELD_LB_TARGETS = "loadBalancerTargets";
+    public static final String FIELD_LB_TARGET_PORTS = "ports";
 
     public static final String ACTION_ADD_HOST = "addhost";
     public static final String ACTION_REMOVE_HOST = "removehost";
@@ -33,12 +36,14 @@ public class LoadBalancerConstants {
     public static final String ACTION_LB_CONFIG_REMOVE_LISTENER = "removelistener";
     public static final String ACTION_LB_ADD_TARGET = "addtarget";
     public static final String ACTION_LB_REMOVE_TARGET = "removetarget";
+    public static final String ACTION_LB_SET_TARGETS = "settargets";
+
 
     public static final String PROCESS_LB_CONFIG_LISTENER_MAP_CREATE = "loadbalancerconfiglistenermap.create";
     public static final String PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE = "loadbalancerconfiglistenermap.remove";
     public static final String PROCESS_LB_CREATE = "loadbalancer.create";
     public static final String PROCESS_LB_UPDATE = "loadbalancer.update";
-    public static final String PROCESS_LB_SET_TARGETS = "loadbalancer.settargets";
+    public static final String PROCESS_LB_SET_TARGETS = "loadbalancer." + ACTION_LB_SET_TARGETS;
     public static final String PROCESS_LB_CONFIG_ADD_LISTENER = "loadbalancerconfig." + ACTION_LB_CONFIG_ADD_LISTENER;
     public static final String PROCESS_LB_CONFIG_REMOVE_LISTENER = "loadbalancerconfig."
             + ACTION_LB_CONFIG_REMOVE_LISTENER;

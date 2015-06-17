@@ -52,33 +52,6 @@ def test_activate_lb_svc(super_client, context, client, image_uuid):
     _validate_lb_instance(host, lb, super_client, service)
 
 
-def _activate_svc_w_scale_two(new_context, random_str):
-    client = new_context.client
-    host1 = new_context.host
-    host2 = register_simulated_host(new_context)
-    env = client.create_environment(name=random_str)
-    env = client.wait_success(env)
-    assert env.state == "active"
-    launch_config = {"imageUuid": new_context.image_uuid,
-                     "ports": [8081, '909:1001']}
-    service = client. \
-        create_loadBalancerService(name=random_str,
-                                   environmentId=env.id,
-                                   launchConfig=launch_config,
-                                   scale=2)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
-    # 1. verify that the service was activated
-    service = client.wait_success(service.activate(), 120)
-    assert service.state == "active"
-    # 2. verify that lb got created
-    lbs = client.list_loadBalancer(serviceId=service.id)
-    assert len(lbs) == 1
-    lb = client.wait_success(lbs[0])
-    assert lb.state == 'active'
-    return host1, host2, lb, service, env
-
-
 def test_deactivate_then_activate_lb_svc(super_client, new_context):
     client = new_context.client
     host1, host2, lb, service, env = _activate_svc_w_scale_two(new_context,
@@ -200,7 +173,8 @@ def test_targets(client, context):
 
     # map web service to lb service - early binding,
     # before services are activated
-    lb_service = lb_service.addservicelink(serviceId=web_service.id)
+    service_link = {"serviceId": web_service.id, "ports": ["90"]}
+    lb_service = lb_service.addservicelink(serviceLink=service_link)
 
     # activate web and lb services
     lb_service = client.wait_success(lb_service.activate(), 120)
@@ -212,21 +186,26 @@ def test_targets(client, context):
     assert db_service.state == "active"
 
     # bind db and lb services after service is activated
-    lb_service.addservicelink(serviceId=db_service.id)
+    service_link = {"serviceId": db_service.id, "ports": ["90"]}
+    lb_service.addservicelink(serviceLink=service_link)
 
     # verify that instances of db and web services were added to lb
     web_instances = client. \
         list_container(name=env.name + "_" + web_service.name + "_" + "1")
     assert len(web_instances) == 1
-    _validate_add_target_instance(web_instances[0], client)
+    _validate_add_target_instance(web_instances[0], client, ports=["90"])
 
     db_instances = client. \
         list_container(name=env.name + "_" + db_service.name + "_" + "1")
     assert len(db_instances) == 1
-    _validate_add_target_instance(db_instances[0], client)
+    _validate_add_target_instance(db_instances[0], client, ports=["90"])
+
+    _validate_add_service_link(client, lb_service, db_service, ports=["90"])
+    _validate_add_service_link(client, lb_service, web_service, ports=["90"])
 
     # remove link and make sure that the target map is gone
-    lb_service.removeservicelink(serviceId=db_service.id)
+    service_link = {"serviceId": db_service.id, "ports": ["90"]}
+    lb_service.removeservicelink(serviceLink=service_link)
     # validate that the instance is still running
     db_instance = client.reload(db_instances[0])
     assert db_instance.state == 'running'
@@ -276,7 +255,8 @@ def test_target_ips(client, context):
 
     # map web service to lb service - early binding,
     # before services are activated
-    lb_service = lb_service.addservicelink(serviceId=web_service.id)
+    service_link = {"serviceId": web_service.id, "ports": ["90"]}
+    lb_service = lb_service.addservicelink(serviceLink=service_link)
 
     # activate web and lb services
     lb_service = client.wait_success(lb_service.activate(), 120)
@@ -288,16 +268,18 @@ def test_target_ips(client, context):
     assert db_service.state == "active"
 
     # bind db and lb services after service is activated
-    lb_service.addservicelink(serviceId=db_service.id)
+    service_link = {"serviceId": db_service.id, "ports": ["90"]}
+    lb_service.addservicelink(serviceLink=service_link)
 
     # verify that ips of db and web services were added to lb
-    _validate_add_target_ip("72.22.16.5", client)
-    _validate_add_target_ip("72.22.16.6", client)
-    _validate_add_target_ip("192.168.0.9", client)
-    _validate_add_target_ip("192.168.0.10", client)
+    _validate_add_target_ip("72.22.16.5", client, ports=["90"])
+    _validate_add_target_ip("72.22.16.6", client, ports=["90"])
+    _validate_add_target_ip("192.168.0.9", client, ports=["90"])
+    _validate_add_target_ip("192.168.0.10", client, ports=["90"])
 
     # remove link and make sure that the db targets are gone
-    lb_service.removeservicelink(serviceId=db_service.id)
+    service_link = {"serviceId": db_service.id, "ports": ["90"]}
+    lb_service.removeservicelink(serviceLink=service_link)
     _validate_remove_target_ip("192.168.0.9", client)
     _validate_remove_target_ip("192.168.0.10", client)
 
@@ -476,8 +458,8 @@ def test_labels(super_client, client, context):
                                                 service, client,
                                                 ['8089:8089', '914:914'])
     lb_instance = _validate_lb_instance(host, lb, super_client, service)
-    result_labels = {'io.rancher.stack_service.name':
-                     env.name + '/' + service_name}
+    name = env.name + '/' + service_name
+    result_labels = {'io.rancher.stack_service.name': name}
     assert all(item in lb_instance.labels.items()
                for item in result_labels.items()) is True
 
@@ -517,7 +499,8 @@ def test_inactive_lb(client, context):
     lb = lbs[0]
 
     # map web service to lb service; validate no lb targets were created
-    lb_service = lb_service.addservicelink(serviceId=web_service.id)
+    service_link = {"serviceId": web_service.id, "ports": ["90"]}
+    lb_service = lb_service.addservicelink(serviceLink=service_link)
     target_maps = client. \
         list_loadBalancerTarget(loadBalancerId=lb.id)
     assert len(target_maps) == 0
@@ -525,12 +508,16 @@ def test_inactive_lb(client, context):
     # activate lb service and validate web instance was added as lb target
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
-    _validate_add_target_instance(web_instances[0], client)
+    target_maps = client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id)
+    assert len(target_maps) == 1
+    _validate_add_target_instance(web_instances[0], client, ports=["90"])
 
     # deactivate lb service, and remove service link
     lb_service = client.wait_success(lb_service.deactivate(), 120)
     assert lb_service.state == "inactive"
-    lb_service = lb_service.removeservicelink(serviceId=web_service.id)
+    service_link = {"serviceId": web_service.id, "ports": ["90"]}
+    lb_service = lb_service.removeservicelink(serviceLink=service_link)
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
     _validate_remove_target_instance(web_instances[0], client)
@@ -713,13 +700,15 @@ def _wait_until_target_instance_map_created(super_client,
     return target_maps
 
 
-def _validate_add_target_ip(ip, super_client):
+def _validate_add_target_ip(ip, super_client, ports=None):
     target_maps = _wait_until_target_ip_map_created(super_client, ip)
     assert len(target_maps) == 1
     target_map = target_maps[0]
     wait_for_condition(
         super_client, target_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
+    if ports:
+        assert target_map.ports == ports
 
 
 def _validate_remove_target_instance(container, super_client):
@@ -742,7 +731,7 @@ def _validate_remove_target_ip(ip, super_client):
         lambda x: 'State is: ' + x.state)
 
 
-def _validate_add_target_instance(container, super_client):
+def _validate_add_target_instance(container, super_client, ports=None):
     target_maps = _wait_until_target_instance_map_created(super_client,
                                                           container)
     assert len(target_maps) == 1
@@ -750,6 +739,9 @@ def _validate_add_target_instance(container, super_client):
     wait_for_condition(
         super_client, target_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
+
+    if ports:
+        assert target_map.ports == ports
 
 
 def _wait_until_target_ip_map_created(super_client, ip, timeout=30):
@@ -763,3 +755,41 @@ def _wait_until_target_ip_map_created(super_client, ip, timeout=30):
         if time.time() - start > timeout:
             assert 'Timeout waiting for map creation'
     return target_maps
+
+
+def _activate_svc_w_scale_two(new_context, random_str):
+    client = new_context.client
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context)
+    env = client.create_environment(name=random_str)
+    env = client.wait_success(env)
+    assert env.state == "active"
+    launch_config = {"imageUuid": new_context.image_uuid,
+                     "ports": [8081, '909:1001']}
+    service = client. \
+        create_loadBalancerService(name=random_str,
+                                   environmentId=env.id,
+                                   launchConfig=launch_config,
+                                   scale=2)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    # 1. verify that the service was activated
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+    # 2. verify that lb got created
+    lbs = client.list_loadBalancer(serviceId=service.id)
+    assert len(lbs) == 1
+    lb = client.wait_success(lbs[0])
+    assert lb.state == 'active'
+
+    return host1, host2, lb, service, env
+
+
+def _validate_add_service_link(client, service, consumedService, ports=None):
+    service_maps = client. \
+        list_serviceConsumeMap(serviceId=service.id,
+                               consumedServiceId=consumedService.id, )
+
+    assert len(service_maps) == 1
+    if ports is not None:
+        assert service_maps[0].ports == ports
