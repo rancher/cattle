@@ -11,11 +11,13 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.iaas.api.auth.projects.ProjectLock;
+import io.github.ibuildthecloud.gdapi.util.TransformationService;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.projects.Member;
 import io.cattle.platform.lock.LockCallback;
@@ -107,18 +109,25 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     @Override
     public Account getAccountByKeys(String access, String secretKey) {
         try {
-            return create()
-                    .select(ACCOUNT.fields())
-                    .from(ACCOUNT)
-                    .join(CREDENTIAL)
-                    .on(CREDENTIAL.ACCOUNT_ID.eq(ACCOUNT.ID))
+            Credential credential = create()
+                    .selectFrom(CREDENTIAL)
                     .where(
-                            ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
-                                    .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
+                            CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
                                     .and(CREDENTIAL.PUBLIC_VALUE.eq(access))
-                                    .and(CREDENTIAL.SECRET_VALUE.eq(secretKey)))
-                    .and(CREDENTIAL.KIND.in(SUPPORTED_TYPES.get()))
-                    .fetchOneInto(AccountRecord.class);
+                                    .and(CREDENTIAL.KIND.in(SUPPORTED_TYPES.get()))
+                    .fetchOne();
+            if (credential == null) {
+                return null;
+            }
+            boolean secretIsCorrect = ApiContext.getContext().getTransformationService().compare(secretKey, credential.getSecretValue());
+            if (secretIsCorrect) {
+                return create()
+                        .selectFrom(ACCOUNT).where(ACCOUNT.ID.eq(credential.getAccountId()))
+                        .fetchOneInto(AccountRecord.class);
+            }
+            else {
+                return null;
+            }
         } catch (InvalidResultException e) {
             throw new ClientVisibleException(ResponseCodes.CONFLICT, "MultipleKeys");
         }

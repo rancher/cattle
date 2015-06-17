@@ -47,4 +47,5 @@ public @interface Field {
 
     String invalidChars() default "";
 
+    String transform() default "";
 }

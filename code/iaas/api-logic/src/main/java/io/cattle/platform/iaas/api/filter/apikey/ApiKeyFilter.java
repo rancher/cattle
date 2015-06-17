@@ -4,6 +4,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
@@ -27,14 +28,18 @@ public class ApiKeyFilter extends AbstractDefaultResourceManagerFilter {
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Credential cred = request.proxyRequestObject(Credential.class);
-
         if (cred.getPublicValue() == null) {
             String[] keys = generateKeys();
             cred.setPublicValue(keys[0]);
             cred.setSecretValue(keys[1]);
         }
-
-        return super.create(type, request, next);
+        String clearSecret = cred.getSecretValue();
+        if (clearSecret != null) {
+            cred.setSecretValue(ApiContext.getContext().getTransformationService().transform(clearSecret, "HASH"));
+        }
+        cred = (Credential) super.create(type, request, next);
+        cred.setSecretValue(clearSecret);
+        return cred;
     }
 
     public static String[] generateKeys() {

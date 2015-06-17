@@ -26,7 +26,7 @@
         "apiKey" : "crud",
         "apiKey.accountId" : "cr",
         "apiKey.publicValue" : "cr",
-        "apiKey.secretValue" : "cr", 
+        "apiKey.secretValue" : "cro",
 
         "configItem" : "r",
         "configItem.sourceVersion" : "r",

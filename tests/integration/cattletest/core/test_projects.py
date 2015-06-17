@@ -336,7 +336,7 @@ def test_list_projects_flag(admin_user_client, user_clients):
     projects_with_flag = admin_user_client.list('project', all='true')
     admin_id = acc_id(admin_user_client)
     assert len(projects) != len(projects_with_flag)
-    for project in projects:
+    for project in projects_with_flag:
         include = False
         for member in get_plain_members(project.projectMembers()):
             if (member['externalIdType'] == 'rancher_id'):

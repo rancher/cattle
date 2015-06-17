@@ -12,4 +12,9 @@ public class AgentApiKeyCreate extends ApiKeyCreate {
         return CredentialConstants.KIND_AGENT_API_KEY;
     }
 
+    @Override
+    protected boolean getsHashed() {
+        return false;
+    }
+
 }

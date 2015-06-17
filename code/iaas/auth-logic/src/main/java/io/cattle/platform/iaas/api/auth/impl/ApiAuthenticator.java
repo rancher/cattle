@@ -17,6 +17,7 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -41,10 +42,16 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     @Inject
     ObjectManager objectManager;
 
+    @Inject
+    TransformationService transformationService;
+
     @Override
     public void handle(ApiRequest request) throws IOException {
         if (ApiContext.getContext().getPolicy() != null) {
             return;
+        }
+        if (ApiContext.getContext().getTransformationService() == null){
+            ApiContext.getContext().setTransformationService(transformationService);
         }
 
         Account authenticatedAsAccount = getAccount(request);

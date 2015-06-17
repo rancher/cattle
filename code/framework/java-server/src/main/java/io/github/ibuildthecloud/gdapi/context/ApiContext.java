@@ -7,6 +7,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.url.DefaultUrlBuilder;
 import io.github.ibuildthecloud.gdapi.url.NullUrlBuilder;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
+import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 public class ApiContext {
 
@@ -15,6 +16,8 @@ public class ApiContext {
     ApiRequest apiRequest;
     IdFormatter idFormatter = new IdentityFormatter();
     Object policy;
+
+    TransformationService transformationService;
 
     protected ApiContext() {
         super();
@@ -81,4 +84,11 @@ public class ApiContext {
         this.idFormatter = idFormatter;
     }
 
+    public TransformationService getTransformationService() {
+        return this.transformationService;
+    }
+
+    public void setTransformationService(TransformationService transformationService) {
+        this.transformationService = transformationService;
+    }
 }

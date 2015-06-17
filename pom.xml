@@ -17,6 +17,7 @@
         <module>code/framework/async</module>
         <module>code/framework/db-loader</module>
         <module>code/framework/deferred</module>
+        <module>code/framework/encryption</module>
         <module>code/framework/engine</module>
         <module>code/framework/eventing</module>
         <module>code/framework/events</module>

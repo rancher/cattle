@@ -49,6 +49,8 @@ public interface Field {
 
     String getInvalidChars();
 
+    String getTransform();
+
     @XmlTransient
     @io.github.ibuildthecloud.gdapi.annotation.Field(include = false)
     boolean isIncludeInList();
