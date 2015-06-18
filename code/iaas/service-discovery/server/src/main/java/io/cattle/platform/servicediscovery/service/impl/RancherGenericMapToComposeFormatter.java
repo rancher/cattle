@@ -31,8 +31,9 @@ public class RancherGenericMapToComposeFormatter implements RancherConfigToCompo
                 if (map.get(key) instanceof Map) {
                     lowerCaseParameters(map.get(key));
                 }
-
-                newMap.put(NamedUtils.toUnderscoreSeparated(key), map.get(key));
+                if (map.get(key) != null) {
+                    newMap.put(NamedUtils.toUnderscoreSeparated(key), map.get(key));
+                }
                 it.remove();
             }
             map.putAll(newMap);

@@ -52,14 +52,13 @@ public class ServiceDiscoveryConfigItem {
             DockerInstanceConstants.FIELD_NETWORK_MODE,
             "net");
 
+    public static final ServiceDiscoveryConfigItem LABELS = new ServiceDiscoveryConfigItem(
+            InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS,
+            true, true);
+
     // CATTLE PARAMETERS
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale",
             false, false);
-    public static final ServiceDiscoveryConfigItem CPU_SET = new ServiceDiscoveryConfigItem("cpuSet",
-            "cpu_set", true, false);
-    public static final ServiceDiscoveryConfigItem REQUESTED_HOST_ID = new ServiceDiscoveryConfigItem(
-            InstanceConstants.FIELD_REQUESTED_HOST_ID, InstanceConstants.FIELD_REQUESTED_HOST_ID,
-            true, false);
     public static final ServiceDiscoveryConfigItem HEALTHCHECK = new ServiceDiscoveryConfigItem(
             InstanceConstants.FIELD_HEALTH_CHECK,
             NamedUtils.toUnderscoreSeparated(InstanceConstants.FIELD_HEALTH_CHECK),
@@ -69,10 +68,6 @@ public class ServiceDiscoveryConfigItem {
             ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
             NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG),
             false, false);
-
-    public static final ServiceDiscoveryConfigItem LABELS = new ServiceDiscoveryConfigItem(
-            InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS,
-            true, true);
 
     public static final ServiceDiscoveryConfigItem EXTERNAL_IPS = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_EXTERNALIPS,
