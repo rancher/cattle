@@ -201,13 +201,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
 
     protected void start(final Instance agentInstance) {
         if (InstanceConstants.STATE_STOPPED.equals(agentInstance.getState())) {
-            DeferredUtils.nest(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    processManager.scheduleProcessInstance(InstanceConstants.PROCESS_START, agentInstance, null);
-                    return null;
-                }
-            });
+            processManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_START, agentInstance, null);
         }
     }
 
