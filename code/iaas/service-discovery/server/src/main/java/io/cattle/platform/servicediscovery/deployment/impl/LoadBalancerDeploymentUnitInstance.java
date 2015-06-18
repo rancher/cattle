@@ -40,7 +40,8 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance i
     @Override
     public boolean isError() {
         if (this.hostMap.getState().equals(CommonStatesConstants.ACTIVE)) {
-            if (this.instance == null || this.instance.getRemoved() != null) {
+            if (this.instance == null || this.instance.getRemoved() != null
+                    || this.instance.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
                 return true;
             }
         }

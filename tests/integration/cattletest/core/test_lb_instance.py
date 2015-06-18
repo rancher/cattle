@@ -390,6 +390,25 @@ def test_validate_ports(client, super_client, context):
     assert len(ports) == 2
 
 
+def test_add_inactive_host(super_client, config_id, new_context):
+    host = register_simulated_host(new_context)
+
+    # create lb
+    lb = _create_valid_lb(super_client, config_id)
+
+    # deactivate the host
+    host = super_client.wait_success(host.deactivate())
+    assert host.state == 'inactive'
+
+    # try to add a host to lb
+    with pytest.raises(ApiError) as e:
+        lb.addhost(hostId=host.id)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+    assert e.value.error.fieldName == 'hostId'
+
+
 def _validate_add_listener(config, listener, client):
     lb_config_maps = client. \
         list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
