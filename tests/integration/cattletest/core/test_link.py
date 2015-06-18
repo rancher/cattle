@@ -201,3 +201,35 @@ def test_link_timeout(super_client, client, context):
     assert c.state == 'removed'
     assert c.transitioning == 'error'
     assert c.transitioningMessage == '{} : {}'.format(msg, msg)
+
+
+def test_link_remove_instance_restart(client, super_client, context):
+    target1 = context.create_container()
+
+    c = client.create_container(imageUuid=context.image_uuid,
+                                startOnCreate=False,
+                                instanceLinks={
+                                    'target1_link': target1.id})
+    c = client.wait_success(c)
+
+    links = c.instanceLinks()
+    assert len(links) == 1
+    link = links[0]
+
+    assert link.state == 'inactive'
+
+    c = client.wait_success(c.start())
+    link = client.reload(link)
+    assert c.state == 'running'
+    assert link.state == 'active'
+
+    c = client.wait_success(c.stop())
+    assert c.state == 'stopped'
+
+    link = client.reload(link)
+
+    link = super_client.wait_success(link.remove())
+    assert link.state == 'removed'
+
+    c = client.wait_success(c.start())
+    assert c.state == 'running'

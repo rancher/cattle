@@ -5,9 +5,16 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
+
+import java.util.Collections;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -22,6 +29,12 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 
     @Inject
     DeploymentManager deploymentMgr;
+
+    @Inject
+    ResourceMonitor resourceMonitor;
+
+    @Inject
+    ServiceConsumeMapDao consumeMapDao;
 
     @Override
     public String[] getProcessNames() {
@@ -39,8 +52,28 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             return null;
         }
 
+        waitForConsumedServicesActivate(state);
+
         deploymentMgr.activate(service);
 
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void waitForConsumedServicesActivate(ProcessState state) {
+        List<Integer> consumedServicesIds = DataAccessor.fromMap(state.getData())
+                .withKey(ServiceDiscoveryConstants.FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS)
+                .withDefault(Collections.EMPTY_LIST).as(List.class);
+
+        for (Integer consumedServiceId : consumedServicesIds) {
+            Service consumedService = objectManager.loadResource(Service.class, consumedServiceId.longValue());
+            resourceMonitor.waitFor(consumedService,
+                    new ResourcePredicate<Service>() {
+                        @Override
+                        public boolean evaluate(Service obj) {
+                            return CommonStatesConstants.ACTIVE.equals(obj.getState());
+                        }
+                    });
+        }
     }
 }

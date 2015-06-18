@@ -171,7 +171,7 @@ public class DeploymentUnit {
     protected DeploymentUnitInstance createInstance(String launchConfigName, Service service) {
         List<Integer> volumesFromInstanceIds = getVolumesFromInstancesIds(service, launchConfigName);
         Integer networkContainerId = getNetworkContainerId(launchConfigName, service);
-        
+        getDeploymentUnitInstance(service, launchConfigName).waitForNotTransitioning();
         getDeploymentUnitInstance(service, launchConfigName)
                 .start(
                         populateDeployParams(getDeploymentUnitInstance(service, launchConfigName),

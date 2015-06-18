@@ -271,7 +271,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         for (Service service: services) {
             ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Service.class, service.getId());
             request.addItem(RECONCILE);
-
+            request.withDeferredTrigger(true);
             itemManager.updateConfig(request);
         }
     }
