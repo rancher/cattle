@@ -5,6 +5,9 @@
             "authUrl": {
                 "description": "OpenStack authentication URL"
             },
+            "availabilityZone": {
+                "description": "OpenStack availability zone"
+            },
             "domainId": {
                 "description": "OpenStack domain ID (identity v3 only)"
             },

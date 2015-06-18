@@ -11,6 +11,9 @@
             "diskSize": {
                 "description": "Size of disk for host in MB"
             },
+            "hostonlyCidr": {
+                "description": "Specify the Host Only CIDR"
+            },
             "importBoot2dockerVm": {
                 "description": "The name of a Boot2Docker VM to import"
             },

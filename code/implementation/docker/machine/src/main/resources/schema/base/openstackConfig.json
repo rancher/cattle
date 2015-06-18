@@ -4,6 +4,10 @@
             "type": "string",
             "nullable": true
         },
+        "availabilityZone": {
+            "type": "string",
+            "nullable": true
+        },
         "domainId": {
             "type": "string",
             "nullable": true

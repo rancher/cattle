@@ -12,6 +12,10 @@
             "type": "string",
             "nullable": true
         },
+        "hostonlyCidr": {
+            "type": "string",
+            "nullable": true
+        },
         "importBoot2dockerVm": {
             "type": "string",
             "nullable": true
