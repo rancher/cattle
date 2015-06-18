@@ -124,6 +124,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             setEnvironment(instance, containerConfig.getEnv());
             setCommand(instance, containerConfig.getCmd());
             setListField(instance, FIELD_ENTRY_POINT, containerConfig.getEntrypoint());
+            setField(instance, FIELD_VOLUME_DRIVER, fromInspect, "Config", "VolumeDriver");
         }
 
         if (containerConfig != null && hostConfig != null) {

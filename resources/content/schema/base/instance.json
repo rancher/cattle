@@ -61,6 +61,10 @@
             "create" : true,
             "default" : true
         },
+        "volumeDriver" : {
+            "type" : "string",
+            "create" : true
+        },
         "validHostIds" : {
             "type" : "array[reference[host]",
             "create" : true,

@@ -43,6 +43,7 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem STDINOPEN = new ServiceDiscoveryConfigItem("stdinOpen", "stdin_open");
     public static final ServiceDiscoveryConfigItem TTY = new ServiceDiscoveryConfigItem("tty", "tty");
     public static final ServiceDiscoveryConfigItem CPUSHARES = new ServiceDiscoveryConfigItem("cpuShares", "cpu_shares");
+    public static final ServiceDiscoveryConfigItem VOLUME_DRIVER = new ServiceDiscoveryConfigItem("volumeDriver", "volume_driver");
     public static final ServiceDiscoveryConfigItem EXPOSE = new ServiceDiscoveryConfigItem("expose", "expose");
     public static final ServiceDiscoveryConfigItem EXTERNALLINKS = new ServiceDiscoveryConfigItem("instanceLinks",
             "external_links");
