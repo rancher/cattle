@@ -35,6 +35,7 @@ public class DockerInstanceConstants {
     public static final String FIELD_PID_MODE = "pidMode";
     public static final String FIELD_EXTRA_HOSTS = "extraHosts";
     public static final String FIELD_READ_ONLY = "readOnly";
+    public static final String FIELD_VOLUME_DRIVER = "volumeDriver";
 
     public static final String EVENT_FIELD_VOLUMES_FROM = "dataVolumesFromContainers";
 

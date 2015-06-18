@@ -607,6 +607,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'securityOpt': 'r',
         'logConfig': 'r',
         'pidMode': 'r',
+        'volumeDriver': 'r',
         'extraHosts': 'r',
         'readOnly': 'r'
     })
@@ -663,6 +664,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'logConfig': 'r',
         'pidMode': 'r',
         'extraHosts': 'r',
+        'volumeDriver': 'r',
         'readOnly': 'r'
     })
 
@@ -718,6 +720,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'logConfig': 'cr',
         'pidMode': 'cr',
         'extraHosts': 'cr',
+        'volumeDriver': 'cr',
         'readOnly': 'cr'
     })
 

@@ -81,6 +81,7 @@
         "container.systemContainer" : "r",
         "container.nativeContainer" : "r",
         "container.labels" : "cr",
+        "container.volumeDriver" : "cr",
         "container.workingDir" : "cr",
 
         "containerExec" : "r",
