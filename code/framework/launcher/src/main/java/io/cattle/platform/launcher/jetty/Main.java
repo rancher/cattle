@@ -15,7 +15,9 @@ import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.jmx.MBeanContainer;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -91,7 +93,13 @@ public class Main {
         long start = System.currentTimeMillis();
 
         try {
-            Server s = new Server(Integer.parseInt(getHttpPort()));
+            SelectChannelConnector connector = new SelectChannelConnector();
+            connector.setPort(Integer.parseInt(getHttpPort()));
+            connector.setRequestHeaderSize(16 * 1024);
+
+            Server s = new Server();
+            s.setConnectors(new Connector[]{connector});
+
             MBeanContainer mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
             s.getContainer().addEventListener(mbContainer);
             s.addBean(mbContainer);

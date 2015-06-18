@@ -301,3 +301,11 @@ def test_role_option(admin_user_client, client, random_str, context):
 
     creds = client.list_credential(name=random_str, _role='superadmin')
     assert len(creds) == 0
+
+
+def test_query_length(admin_user_client):
+    big = 'a' * 8192
+    admin_user_client.list_account(name=big)
+
+    bigger = 'a' * (16384 - 512)
+    admin_user_client.list_account(name=bigger)
