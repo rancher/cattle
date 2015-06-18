@@ -63,6 +63,7 @@
         },
         "volumeDriver" : {
             "type" : "string",
+            "nullable": true,
             "create" : true
         },
         "validHostIds" : {
