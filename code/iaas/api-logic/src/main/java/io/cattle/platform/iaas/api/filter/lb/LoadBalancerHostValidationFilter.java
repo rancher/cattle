@@ -1,11 +1,13 @@
 package io.cattle.platform.iaas.api.filter.lb;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -20,6 +22,9 @@ public class LoadBalancerHostValidationFilter extends AbstractDefaultResourceMan
 
     @Inject
     GenericMapDao mapDao;
+
+    @Inject
+    ObjectManager objMgr;
 
     private static final Map<String, Boolean> ACTIONS;
 
@@ -55,6 +60,12 @@ public class LoadBalancerHostValidationFilter extends AbstractDefaultResourceMan
         if (ACTIONS.get(action)) {
             if (mapDao.findNonRemoved(LoadBalancerHostMap.class, Host.class, hostId, LoadBalancer.class, id) != null) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE, LoadBalancerConstants.FIELD_LB_HOST_ID);
+            }
+            // only active hosts are allowed
+            Host host = objMgr.loadResource(Host.class, hostId);
+            if (!host.getState().equals(CommonStatesConstants.ACTIVE)) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                        LoadBalancerConstants.FIELD_LB_HOST_ID);
             }
         } else {
             if (mapDao.findToRemove(LoadBalancerHostMap.class, Host.class, hostId, LoadBalancer.class, id) == null) {

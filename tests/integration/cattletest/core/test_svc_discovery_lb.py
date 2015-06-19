@@ -536,6 +536,35 @@ def test_inactive_lb(client, context):
     _validate_remove_target_instance(web_instances[0], client)
 
 
+def test_destroy_svc_instance(super_client, context, client, image_uuid):
+    host = context.host
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": [95, '94:94']}
+
+    service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    service = client.wait_success(service.activate(), 120)
+    # perform validation
+    lb, service = _validate_lb_service_activate(env, host,
+                                                service, client,
+                                                ['94:94', '95:95'])
+    instance = _validate_lb_instance(host, lb, super_client, service)
+    client.wait_success(client.delete(instance))
+    _wait_until_active_map_count(lb, 0, client)
+
+    client.wait_success(service)
+    _wait_until_active_map_count(lb, 1, client)
+    _validate_lb_instance(host, lb, super_client, service)
+
+
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
     start = time.time()
     host_maps = super_client. \
@@ -586,7 +615,7 @@ def validate_remove_host(host, lb, super_client):
 def _validate_lb_instance(host, lb, super_client, service):
     host_maps = super_client. \
         list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host.id)
+                                 hostId=host.id, state='active')
     assert len(host_maps) == 1
     # verify that the agent got created
     uri = 'delegate:///?lbId={}&hostMapId={}'. \
