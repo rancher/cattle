@@ -40,7 +40,7 @@ error()
 
 call_curl()
 {
-    local curl="curl -s --connect-timeout 60 --retry 2"
+    local curl="curl -s --connect-timeout 3"
     if [ "$CURL_AUTH" = "false" ]; then
         $curl "$@"
     elif [ -n "$CATTLE_AGENT_INSTANCE_AUTH" ]; then
@@ -56,9 +56,9 @@ get()
 {
     if [ "$1" = "--no-auth" ]; then
         shift 1
-        CURL_AUTH=false call_curl -L --retry 5 "$@"
+        CURL_AUTH=false call_curl -L "$@"
     else
-        call_curl -L --retry 5 "$@"
+        call_curl -L "$@"
     fi
 }
 
