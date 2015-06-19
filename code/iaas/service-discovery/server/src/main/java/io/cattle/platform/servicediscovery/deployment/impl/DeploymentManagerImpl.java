@@ -210,11 +210,15 @@ public class DeploymentManagerImpl implements DeploymentManager {
     protected void startUnits(List<DeploymentUnit> units, List<Service> services) {
         Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = populateUsedNames(services);
         for (DeploymentUnit unit : units) {
-            unit.start(svcInstanceIdGenerator);
+            if (!unit.isUnhealthy()) {
+                unit.start(svcInstanceIdGenerator);
+            }
         }
 
         for (DeploymentUnit unit : units) {
-            unit.waitForStart();
+            if (!unit.isUnhealthy()) {
+                unit.waitForStart();
+            }
         }
     }
 
