@@ -46,15 +46,11 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         LoadBalancerHostMap lbHostMap = mapDao.findNonRemoved(LoadBalancerHostMap.class, LoadBalancer.class,
                 lb.getId(), Host.class, hostId);
         if (lbHostMap == null) {
-            DeferredUtils.nest(new Runnable() {
-                @Override
-                public void run() {
-                    resourceDao.createAndSchedule(LoadBalancerHostMap.class,
+            resourceDao.createAndSchedule(LoadBalancerHostMap.class,
                             LOAD_BALANCER_HOST_MAP.LOAD_BALANCER_ID, lb.getId(),
                             LOAD_BALANCER_HOST_MAP.HOST_ID, hostId,
                             LOAD_BALANCER_HOST_MAP.ACCOUNT_ID, lb.getAccountId());
-                }
-            });
+
         }
     }
 
@@ -64,7 +60,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                 Host.class, hostId);
 
         if (lbHostMap != null) {
-            objectProcessManager.scheduleProcessInstanceAsync(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
                     lbHostMap, null);
         }
     }
@@ -76,15 +72,11 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                 LoadBalancerListener.class, listenerId);
 
         if (lbConfigListenerMap == null) {
-            DeferredUtils.nest(new Runnable() {
-                @Override
-                public void run() {
-                    resourceDao.createAndSchedule(LoadBalancerConfigListenerMap.class,
+            resourceDao.createAndSchedule(LoadBalancerConfigListenerMap.class,
                             LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_CONFIG_ID,
                             config.getId(), LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_LISTENER_ID, listenerId,
                             LOAD_BALANCER_CONFIG_LISTENER_MAP.ACCOUNT_ID, config.getAccountId());
-                }
-            });
+
         }
     }
     
@@ -95,7 +87,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                 LoadBalancerListener.class, listenerId);
 
         if (lbConfigListenerMap != null) {
-            objectProcessManager.scheduleProcessInstanceAsync(
+            objectProcessManager.scheduleProcessInstance(
                     LoadBalancerConstants.PROCESS_LB_CONFIG_LISTENER_MAP_REMOVE,
                     lbConfigListenerMap, null);
         }
@@ -109,7 +101,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                     LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lb.getId(), LOAD_BALANCER_TARGET.IP_ADDRESS, null,
                     LOAD_BALANCER_TARGET.ACCOUNT_ID, lb.getAccountId());
         }
-        objectProcessManager.scheduleProcessInstanceAsync(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE,
+        objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE,
                 target, null);
     }
 
@@ -122,7 +114,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                             .getId(), LOAD_BALANCER_TARGET.IP_ADDRESS, ipAddress,
                     LOAD_BALANCER_TARGET.ACCOUNT_ID, lb.getAccountId());
         }
-        objectProcessManager.scheduleProcessInstanceAsync(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE,
+        objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_CREATE,
                 target, null);
     }
 
@@ -130,7 +122,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     public void removeTargetFromLoadBalancer(LoadBalancer lb, long instanceId) {
         LoadBalancerTarget target = lbTargetDao.getLbInstanceTargetToRemove(lb.getId(), instanceId);
         if (target != null) {
-            objectProcessManager.scheduleProcessInstanceAsync(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
                     target,
                     null);
         }
@@ -140,7 +132,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     public void removeTargetIpFromLoadBalancer(LoadBalancer lb, String ipAddress) {
         LoadBalancerTarget target = lbTargetDao.getLbIpAddressTargetToRemove(lb.getId(), ipAddress);
         if (target != null) {
-            objectProcessManager.scheduleProcessInstanceAsync(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,
                     target, null);
         }
     }
