@@ -175,14 +175,7 @@ public class AllocatorServiceImpl implements AllocatorService {
                     continue;
                 }
 
-                if (affinityDef.startsWith(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL)) {
-                    affinityDef = affinityDef.substring(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL.length());
-                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
-                    if (def != null && !StringUtils.isEmpty(def.getKey())) {
-                        constraints.add(new ContainerLabelAffinityConstraint(def, allocatorDao));
-                    }
-
-                } else if (affinityDef.startsWith(ContainerAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER)) {
+                if (affinityDef.startsWith(ContainerAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER)) {
                     affinityDef = affinityDef.substring(ContainerAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER.length());
                     AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.getValue())) {
@@ -196,6 +189,12 @@ public class AllocatorServiceImpl implements AllocatorService {
                         constraints.add(new HostAffinityConstraint(def, allocatorDao));
                     }
 
+                } else if (affinityDef.startsWith(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL)) {
+                    affinityDef = affinityDef.substring(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL.length());
+                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
+                    if (def != null && !StringUtils.isEmpty(def.getKey())) {
+                        constraints.add(new ContainerLabelAffinityConstraint(def, allocatorDao));
+                    }
                 }
             }
         }
