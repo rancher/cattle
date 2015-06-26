@@ -69,15 +69,38 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jsp</artifactId>
-            <version>${jetty.version}</version>
+            <version>${jetty.jsp.version}</version>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-server</artifactId>
+            <version>9.2.11.v20150529</version>
+        </dependency>
+        <dependency>
+    <groupId>org.eclipse.jetty.websocket</groupId>
+    <artifactId>websocket-api</artifactId>
+    <version>9.2.11.v20150529</version>
+</dependency>
+        <!-- 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-websocket</artifactId>
-            <version>${jetty.version}</version>
+            <version>${jetty.websocket.version}</version>
             <scope>provided</scope>
         </dependency>
+         -->
+<dependency>
+	<groupId>org.eclipse.jetty</groupId>
+	<artifactId>jetty-util</artifactId>
+	<version>9.2.11.v20150529</version>
+</dependency>
+<dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-io</artifactId>
+    <version>9.2.11.v20150529</version>
+</dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlets</artifactId>

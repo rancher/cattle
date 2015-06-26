@@ -16,9 +16,14 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-websocket</artifactId>
-            <version>${jetty.version}</version>
+            <version>${jetty.websocket.version}</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+    <groupId>org.eclipse.jetty.websocket</groupId>
+    <artifactId>websocket-api</artifactId>
+    <version>9.2.11.v20150529</version>
+</dependency>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-servlet_3.0_spec</artifactId>
