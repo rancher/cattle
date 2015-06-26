@@ -16,8 +16,10 @@ import java.util.TimeZone;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -93,17 +95,19 @@ public class Main {
         long start = System.currentTimeMillis();
 
         try {
-            SelectChannelConnector connector = new SelectChannelConnector();
-            connector.setPort(Integer.parseInt(getHttpPort()));
-            connector.setRequestHeaderSize(16 * 1024);
-
             Server s = new Server();
-            s.setConnectors(new Connector[]{connector});
+
+            HttpConfiguration httpConfig = new HttpConfiguration();
+            httpConfig.setRequestHeaderSize(16 * 1024);
+            httpConfig.setOutputBufferSize(512);
+            ServerConnector http = new ServerConnector(s, new HttpConnectionFactory(httpConfig));
+            http.setPort(Integer.parseInt(getHttpPort()));
+            s.setConnectors(new Connector[] {http});
 
             MBeanContainer mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-            s.getContainer().addEventListener(mbContainer);
+            s.addEventListener(mbContainer);
             s.addBean(mbContainer);
-            mbContainer.addBean(Log.getRootLogger());
+            s.addBean(Log.getRootLogger());
 
             WebAppContext context = new WebAppContext();
             context.setThrowUnavailableOnStartupException(true);
@@ -138,7 +142,6 @@ public class Main {
             context.setContextPath("/");
 
             s.setHandler(context);
-
             s.start();
 
             CONSOLE_LOG.info("[DONE ] [{}ms] Startup Succeeded, Listening on port {}", (System.currentTimeMillis() - start), getHttpPort());

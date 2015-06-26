@@ -141,10 +141,12 @@ public class GithubUtils {
             return;
         }
         if (StringUtils.isBlank(jwt)) {
-            for (Cookie cookie : request.getServletContext().getRequest().getCookies()) {
-                if (cookie.getName().equalsIgnoreCase(GithubConstants.TOKEN)
-                        && StringUtils.isNotBlank(cookie.getValue())) {
-                    jwt = cookie.getValue();
+            if (request.getServletContext().getRequest().getCookies() != null) {
+                for (Cookie cookie : request.getServletContext().getRequest().getCookies()) {
+                    if (cookie.getName().equalsIgnoreCase(GithubConstants.TOKEN) 
+                            && StringUtils.isNotBlank(cookie.getValue())) {
+                        jwt = cookie.getValue();
+                    }
                 }
             }
         }
