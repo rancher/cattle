@@ -79,6 +79,7 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
             FieldImpl fieldImpl = (FieldImpl) field;
             fieldImpl.setCreate(perm.isCreate());
             fieldImpl.setUpdate(perm.isUpdate());
+            fieldImpl.setReadOnCreateOnly(perm.isReadOnCreateOnly());
         }
         Iterator<Map.Entry<String, Action>> actionIter = schema.getResourceActions().entrySet().iterator();
 
@@ -197,7 +198,7 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
     }
 
     private static class Perm {
-        boolean read, create, update, delete;
+        boolean read, create, update, delete, readOnCreateOnly;
 
         public Perm(String value) {
             super();
@@ -205,6 +206,7 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
             read = value.contains("r");
             update = value.contains("u");
             delete = value.contains("d");
+            readOnCreateOnly = value.contains("o");
         }
 
         public boolean isRead() {
@@ -221,6 +223,10 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
 
         public boolean isDelete() {
             return delete;
+        }
+
+        public boolean isReadOnCreateOnly() {
+            return readOnCreateOnly;
         }
     }
 
