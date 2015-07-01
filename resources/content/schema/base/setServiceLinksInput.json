@@ -2,12 +2,8 @@
     "collectionMethods" : [],
     "resourceFields": {
         "serviceLinks": {
-            "type": "map[reference[service]]",
-            "nullable": false
-        },
-        "serviceIds": {
-            "type": "array[reference[service]]",
-            "nullable": false
+            "type": "array[serviceLink]",
+            "nullable": true
         }
     }
 }

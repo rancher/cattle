@@ -1,15 +1,10 @@
 {
     "collectionMethods" : [],
     "resourceFields" : {
-        "serviceId" : {
-            "type": "reference[service]",
+        "serviceLink" : {
+            "type": "serviceLink",
             "required": true,
             "nullable": false
-        },
-        "name" : {
-            "type": "string",
-            "required": false,
-            "nullable": true
         }
     }
 }
