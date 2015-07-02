@@ -19,7 +19,7 @@ public class ExternalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     }
 
     @Override
-    public boolean needToReconcileDeployment() {
+    public boolean needToReconcileDeploymentImpl() {
         return false;
     }
 }

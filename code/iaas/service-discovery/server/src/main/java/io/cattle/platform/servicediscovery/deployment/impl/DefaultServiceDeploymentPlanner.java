@@ -54,7 +54,7 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     }
 
     @Override
-    public boolean needToReconcileDeployment() {
+    public boolean needToReconcileDeploymentImpl() {
         return (healthyUnits.size() != requestedScale);
     }
 }
