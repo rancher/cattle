@@ -18,6 +18,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketFactory;
 import org.eclipse.jetty.websocket.WebSocketFactory.Acceptor;
+import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 
 public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHandler {
 
@@ -38,17 +42,27 @@ public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHan
         HttpServletResponse resp = apiRequest.getServletContext().getResponse();
         final WebSocketMessageWriter messageWriter = new WebSocketMessageWriter();
 
-        WebSocketFactory factory = new WebSocketFactory(new Acceptor() {
+        WebSocketServerFactory factory = new WebSocketServerFactory();
+
+        factory.setCreator(new WebSocketCreator() {
+
             @Override
-            public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
+            public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
                 return messageWriter;
             }
 
-            @Override
-            public boolean checkOrigin(HttpServletRequest request, String origin) {
-                return true;
-            }
         });
+
+//         {
+//         public boolean acceptWebSocket(HttpServletRequest request,
+//         HttpServletResponse response) throws IOException {
+//         return true;
+//         }
+//         };
+//
+//        WebSocketFactory factory = new WebSocketFactory(new Acceptor() {
+//        @Override public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) { return messageWriter; }
+//        @Override public boolean checkOrigin(HttpServletRequest request, String origin) { return true; } });
 
         if (factory.acceptWebSocket(req, resp)) {
             apiRequest.commit();

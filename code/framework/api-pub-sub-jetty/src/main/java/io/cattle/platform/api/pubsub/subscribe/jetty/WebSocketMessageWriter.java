@@ -15,33 +15,32 @@ public class WebSocketMessageWriter extends WebSocketAdapter implements MessageW
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketMessageWriter.class);
 
-    Connection connection;
     Session session;
     @Override
     public void onWebSocketConnect(Session session) {
-        this.connection = connection;
+        this.session = session;
     }
 
     @Override
     public void onWebSocketClose(int closeCode, String message) {
         log.info("Websocket connection closed");
-        connection = null;
+        session = null;
     }
 
 
     @Override
     public void write(String message, Object writeLock) throws IOException {
-        if (connection == null) {
+        if (session == null) {
             throw new EOFException("WebSocket is closed");
         } else {
-            connection.sendMessage(message);
+            session.getRemote().sendString(message);
         }
     }
 
     @Override
     public void close() {
-        if (connection != null) {
-            connection.close();
+        if (session != null) {
+            session.close();
         }
     }
 /*
