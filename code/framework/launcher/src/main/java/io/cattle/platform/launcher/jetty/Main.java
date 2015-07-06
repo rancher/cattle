@@ -94,36 +94,26 @@ public class Main {
         long start = System.currentTimeMillis();
 
         try {
-            
-
-            
 //            http_config.setSecureScheme("https");
 //            http_config.setSecurePort(8443);
 //            http_config.setOutputBufferSize(32768);
-            
-
-            
 //            http.setIdleTimeout(30000);
-            
-
 //            http.set
-            
 //            SelectChannelConnector connector = new SelectChannelConnector();
 //            connector.setPort(Integer.parseInt(getHttpPort()));
 //            connector.setRequestHeaderSize(16 * 1024);
-
 //            Server s = new Server();
 //            s.setConnectors(new Connector[]{connector});
+//            mbContainer.addBean(Log.getRootLogger());
 
-//          mbContainer.addBean(Log.getRootLogger());
-            
             Server s = new Server();
+
             HttpConfiguration httpConfig = new HttpConfiguration();
             httpConfig.setRequestHeaderSize(16 * 1024);
             ServerConnector http = new ServerConnector(s, new HttpConnectionFactory(httpConfig));
             http.setPort(Integer.parseInt(getHttpPort()));
             s.setConnectors(new Connector[] {http});
-            
+
             MBeanContainer mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
             s.addEventListener(mbContainer);
             s.addBean(mbContainer);
@@ -161,7 +151,6 @@ public class Main {
             context.setContextPath("/");
 
             s.setHandler(context);
-
             s.start();
             
             CONSOLE_LOG.info("[DONE ] [{}ms] Startup Succeeded, Listening on port {}", (System.currentTimeMillis() - start), getHttpPort());
