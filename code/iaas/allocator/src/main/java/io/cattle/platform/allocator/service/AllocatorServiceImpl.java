@@ -98,19 +98,23 @@ public class AllocatorServiceImpl implements AllocatorService {
             return;
         }
         for (Map.Entry<String, String> entry : srcMap.entrySet()) {
-            if (entry.getKey().startsWith("io.rancher.scheduler.affinity")) {
+            String key = entry.getKey().toLowerCase();
+            String value = entry.getValue();
+
+            if (key.startsWith("io.rancher.scheduler.affinity")) {
                 // merge labels
-                String destValue = destMap.get(entry.getKey());
+                String destValue = destMap.get(key);
+
                 if (StringUtils.isEmpty(destValue)) {
-                    destMap.put(entry.getKey(), entry.getValue());
-                } else if (StringUtils.isEmpty(entry.getValue())) {
+                    destMap.put(key, value);
+                } else if (StringUtils.isEmpty(value)) {
                     continue;
-                } else if (!destValue.contains(entry.getValue())) {
-                    destMap.put(entry.getKey(), destValue + "," + entry.getValue());
+                } else if (!destValue.toLowerCase().contains(value.toLowerCase())) {
+                    destMap.put(key, destValue + "," + value);
                 }
             } else {
                 // overwrite label value
-                destMap.put(entry.getKey(), entry.getValue());
+                destMap.put(key, value);
             }
         }
     }
@@ -163,8 +167,9 @@ public class AllocatorServiceImpl implements AllocatorService {
         Iterator<Map.Entry> iter = labels.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry affinityDef = iter.next();
-            String key = (String)affinityDef.getKey();
+            String key = ((String)affinityDef.getKey()).toLowerCase();
             String valueStr = (String)affinityDef.getValue();
+            valueStr = valueStr == null ? "" : valueStr.toLowerCase();
 
             if (instance != null) {
                 // TODO: Possibly memoize the macros so we don't need to redo the queries for Service and Environment

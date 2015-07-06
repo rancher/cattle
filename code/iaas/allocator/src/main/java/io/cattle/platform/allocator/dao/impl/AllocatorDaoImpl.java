@@ -45,6 +45,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang.StringUtils;
 import org.jooq.Condition;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
@@ -363,7 +364,11 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             .fetchInto(new RecordHandler<Record3<String, String, String>>() {
                 @Override
                 public void next(Record3<String, String, String> record) {
-                    labelKeyValueStatusMap.put(record.value1(), new String[] { record.value2(), record.value3() });
+                    labelKeyValueStatusMap.put(record.value1(),
+                            new String[] {
+                                StringUtils.lowerCase(record.value2()),
+                                record.value3()
+                                });
                 }
             });
 
@@ -390,7 +395,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
         Multimap<String, String> labelsMap = HashMultimap.create();
         for (Label label: labels) {
-            labelsMap.put(label.getKey(), label.getValue());
+            labelsMap.put(label.getKey(), StringUtils.lowerCase(label.getValue()));
         }
         return labelsMap;
     }

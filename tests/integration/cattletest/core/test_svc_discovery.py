@@ -1320,7 +1320,7 @@ def test_global_service(new_context):
     host2 = register_simulated_host(new_context)
 
     # add labels to the hosts
-    labels = {'group': 'web'}
+    labels = {'group': 'web', 'subgroup': 'Foo'}
     host1 = client.update(host1, labels=labels)
     host2 = client.update(host2, labels=labels)
 
@@ -1333,7 +1333,8 @@ def test_global_service(new_context):
         "imageUuid": image_uuid,
         "labels": {
             'io.rancher.scheduler.global': 'true',
-            'io.rancher.scheduler.affinity:host_label': 'group=web'
+            'io.rancher.scheduler.affinity:host_label':
+                'group=Web,subgroup=foo'
         }
     }
     service = client.create_service(name=random_str(),
