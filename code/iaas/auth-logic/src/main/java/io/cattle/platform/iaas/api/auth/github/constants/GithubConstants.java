@@ -17,10 +17,10 @@ public class GithubConstants {
     public static final String ACCOUNT_ID = "account_id";
     public static final String GITHUB_REQUEST_CODE = "code";
     public static final DynamicStringProperty GITHUB_HOSTNAME = ArchaiusUtil.getString("api.github.domain");
-    public static final String GITHUB_DEFAULT_HOSTNAME = "github.com";
+    public static final String GITHUB_DEFAULT_HOSTNAME = "https://github.com";
     public static final String GHE_API = "/api/v3";
-    public static final String GITHUB_API = "api.github.com";
-    public static final String SCHEME = "https://";
+    public static final String GITHUB_API = "https://api.github.com";
+    public static final DynamicStringProperty SCHEME = ArchaiusUtil.getString("api.github.scheme");
     public static final String CLIENT_ID = "client_id";
     public static final String CLIENT_SECRET = "client_secret";
     public static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString("api.auth.github.client.id");

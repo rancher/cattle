@@ -10,6 +10,7 @@ import java.util.List;
 public class GithubConfig {
 
     private String hostname;
+    private String scheme;
     private Boolean enabled;
     private String accessMode;
     private String clientId;
@@ -17,13 +18,15 @@ public class GithubConfig {
     private List<String> allowedUsers;
     private List<String> allowedOrganizations;
 
-    public GithubConfig(Boolean enabled, String accessMode, String clientId, List<String> allowedUsers, List<String> allowedOrganizations, String hostName) {
+    public GithubConfig(Boolean enabled, String accessMode, String clientId, List<String> allowedUsers, List<String> allowedOrganizations, String hostName,
+     String scheme) {
         this.enabled = enabled;
         this.accessMode = accessMode;
         this.clientId = clientId;
         this.allowedUsers = allowedUsers;
         this.allowedOrganizations = allowedOrganizations;
         this.hostname = hostName;
+        this.scheme = scheme;
     }
 
     @Field(nullable = true)
@@ -59,5 +62,10 @@ public class GithubConfig {
     @Field(nullable = true)
     public String getHostname() {
         return hostname;
+    }
+
+    @Field(nullable = true)
+    public String getScheme() {
+        return scheme;
     }
 }

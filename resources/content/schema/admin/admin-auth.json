@@ -86,6 +86,7 @@
         "githubconfig.clientSecret": "cr",
         "githubconfig.enabled": "cr",
         "githubconfig.hostname": "cr",
+        "githubconfig.scheme": "cr",
 
         "host.apiProxy" : "ru",
 

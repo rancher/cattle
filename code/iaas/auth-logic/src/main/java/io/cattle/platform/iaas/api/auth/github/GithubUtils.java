@@ -226,11 +226,11 @@ public class GithubUtils {
         String hostName;
         String apiEndpoint;
         if (StringUtils.isBlank(GithubConstants.GITHUB_HOSTNAME.get())) {
-            hostName = GithubConstants.SCHEME + GithubConstants.GITHUB_DEFAULT_HOSTNAME;
-            apiEndpoint = GithubConstants.SCHEME + GithubConstants.GITHUB_API;
+            hostName = GithubConstants.GITHUB_DEFAULT_HOSTNAME;
+            apiEndpoint = GithubConstants.GITHUB_API;
         } else {
-            hostName = GithubConstants.SCHEME + GithubConstants.GITHUB_HOSTNAME.get();
-            apiEndpoint = GithubConstants.SCHEME + GithubConstants.GITHUB_HOSTNAME.get() + GithubConstants.GHE_API;
+            hostName = GithubConstants.SCHEME.get() + GithubConstants.GITHUB_HOSTNAME.get();
+            apiEndpoint = GithubConstants.SCHEME.get() + GithubConstants.GITHUB_HOSTNAME.get() + GithubConstants.GHE_API;
         }
         String toReturn;
         switch (val) {
