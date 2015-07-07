@@ -177,7 +177,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         }
         try{
             project = authDao.getAccountById(new Long(unobfuscatedId));
-            if (!project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)){
+            if (project == null || !project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)){
                 throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
             }
             if (authenticatedAsAccount.getId() == project.getId()){
