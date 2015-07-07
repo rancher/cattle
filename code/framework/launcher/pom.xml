@@ -18,10 +18,5 @@
             <artifactId>jetty-jmx</artifactId>
             <version>${jetty.version}</version>
         </dependency>
-        <dependency>
-    <groupId>org.eclipse.jetty</groupId>
-    <artifactId>jetty-io</artifactId>
-    <version>9.2.11.v20150529</version>
-</dependency>
 	</dependencies>
 </project>

@@ -24,7 +24,7 @@ public class WebSocketMessageWriter extends WebSocketAdapter implements MessageW
 
     @Override
     public void onWebSocketClose(int closeCode, String message) {
-        log.info("Websocket connection closed");
+        log.debug("Websocket connection closed");
         session = null;
         connectionClosed = true;
     }
