@@ -20,6 +20,7 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
@@ -105,8 +106,7 @@ public class Main {
             MBeanContainer mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
             s.addEventListener(mbContainer);
             s.addBean(mbContainer);
-
-            // TODO TODOCAJ Get the logger mbean back in there
+            s.addBean(Log.getRootLogger());
 
             WebAppContext context = new WebAppContext();
             context.setThrowUnavailableOnStartupException(true);
