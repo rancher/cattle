@@ -38,28 +38,13 @@ public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHan
         HttpServletRequest req = apiRequest.getServletContext().getRequest();
         HttpServletResponse resp = apiRequest.getServletContext().getResponse();
         final WebSocketMessageWriter messageWriter = new WebSocketMessageWriter();
-
         WebSocketServerFactory factory = new WebSocketServerFactory();
-
         factory.setCreator(new WebSocketCreator() {
-
             @Override
             public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
                 return messageWriter;
             }
-
         });
-
-//         {
-//         public boolean acceptWebSocket(HttpServletRequest request,
-//         HttpServletResponse response) throws IOException {
-//         return true;
-//         }
-//         };
-//
-//        WebSocketFactory factory = new WebSocketFactory(new Acceptor() {
-//        @Override public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) { return messageWriter; }
-//        @Override public boolean checkOrigin(HttpServletRequest request, String origin) { return true; } });
 
         if (factory.acceptWebSocket(req, resp)) {
             apiRequest.commit();

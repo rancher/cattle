@@ -6,11 +6,11 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketAdapter;
+import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WebSocketMessageWriter extends WebSocketAdapter implements MessageWriter {
+public class WebSocketMessageWriter implements WebSocketListener, MessageWriter {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketMessageWriter.class);
 
@@ -30,7 +30,7 @@ public class WebSocketMessageWriter extends WebSocketAdapter implements MessageW
     @Override
     public void write(String message, Object writeLock) throws IOException {
         if (session == null) {
-            throw new EOFException("WebSocket is closed");
+           throw new EOFException("WebSocket is closed");
         } else {
             session.getRemote().sendString(message);
         }
@@ -42,15 +42,19 @@ public class WebSocketMessageWriter extends WebSocketAdapter implements MessageW
             session.close();
         }
     }
-/*
+
     @Override
-    public void onMessage(String data) {
-        log.info("mersgage " + data);
+    public void onWebSocketText(String message){
+        log.info("mersgage " + message);
     }
 
     @Override
-    public boolean onControl(byte controlCode, byte[] data, int offset, int length) {
-        log.info("mersgage " + controlCode + " | " + data);
+    public void onWebSocketBinary(byte[] payload, int offset, int len) {
+        log.info("binary");
     }
-    */
+
+    @Override
+    public void onWebSocketError(Throwable cause) {
+      log.error("oh booy ", cause);  
+    }
 }
