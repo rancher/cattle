@@ -47,6 +47,7 @@ public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHan
         });
 
         if (factory.acceptWebSocket(req, resp)) {
+            apiRequest.setResponseCode(101);
             apiRequest.commit();
             return messageWriter;
         } else {
