@@ -2,15 +2,14 @@
 <web-app
   xmlns="http://java.sun.com/xml/ns/javaee"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_1.xsd"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
   metadata-complete="true"
-  version="3.1"
+  version="2.5"
 >
 
     <servlet>
         <servlet-name>static</servlet-name>
         <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
-        <async-supported>true</async-supported>
         <init-param>
             <param-name>aliases</param-name>
             <param-value>false</param-value>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_1.xsd"
-	version="3.1" metadata-complete="true" >
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5" metadata-complete="true" >
 
 	<listener>
 		<listener-class>io.cattle.platform.context.WebContextLoaderListener</listener-class>
@@ -14,7 +14,6 @@
     <filter>
         <filter-name>UIFilter</filter-name>
         <filter-class>io.cattle.platform.iaas.api.servlet.filter.UIPathFilter</filter-class>
-        <async-supported>true</async-supported>
     </filter>
     <filter-mapping>
         <filter-name>UIFilter</filter-name>
@@ -24,7 +23,6 @@
     <filter>
         <filter-name>ApiFilter</filter-name>
         <filter-class>io.cattle.platform.api.servlet.ApiRequestFilter</filter-class>
-        <async-supported>true</async-supported>
         <init-param>
             <param-name>ignore-prefixes</param-name>
             <param-value>/static,/ping,/healthcheck</param-value>
@@ -38,12 +36,10 @@
     <servlet>
         <servlet-name>HealthCheck</servlet-name>
         <servlet-class>com.codahale.metrics.servlets.HealthCheckServlet</servlet-class>
-        <async-supported>true</async-supported>
     </servlet>
     <servlet>
         <servlet-name>Ping</servlet-name>
         <servlet-class>com.codahale.metrics.servlets.PingServlet</servlet-class>
-        <async-supported>true</async-supported>
     </servlet>
     <servlet-mapping>
         <servlet-name>Ping</servlet-name>
