@@ -94,18 +94,6 @@ public class Main {
         long start = System.currentTimeMillis();
 
         try {
-//            http_config.setSecureScheme("https");
-//            http_config.setSecurePort(8443);
-//            http_config.setOutputBufferSize(32768);
-//            http.setIdleTimeout(30000);
-//            http.set
-//            SelectChannelConnector connector = new SelectChannelConnector();
-//            connector.setPort(Integer.parseInt(getHttpPort()));
-//            connector.setRequestHeaderSize(16 * 1024);
-//            Server s = new Server();
-//            s.setConnectors(new Connector[]{connector});
-//            mbContainer.addBean(Log.getRootLogger());
-
             Server s = new Server();
 
             HttpConfiguration httpConfig = new HttpConfiguration();
@@ -117,6 +105,8 @@ public class Main {
             MBeanContainer mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
             s.addEventListener(mbContainer);
             s.addBean(mbContainer);
+
+            // TODO TODOCAJ Get the logger mbean back in there
 
             WebAppContext context = new WebAppContext();
             context.setThrowUnavailableOnStartupException(true);
