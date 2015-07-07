@@ -5,7 +5,6 @@ import io.cattle.platform.api.pubsub.subscribe.MessageWriter;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.eclipse.jetty.websocket.WebSocket.Connection;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.slf4j.Logger;
