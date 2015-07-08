@@ -19,6 +19,7 @@ public class LazyJDBCSource implements PolledConfigurationSource {
 
     JDBCConfigurationSource source;
     boolean firstLoad = true;
+    boolean firstDbError = true;
 
     @Override
     public PollResult poll(boolean initial, Object checkPoint) throws Exception {
@@ -50,7 +51,12 @@ public class LazyJDBCSource implements PolledConfigurationSource {
                     break;
                 } catch (SQLException e) {
                     connectionGood = false;
-                    log.error("Failed to get connection to database, will retry for 5 minutes");
+                    if (firstDbError) {
+                        firstDbError = false;
+                        log.error("Failed to get connection to database, will retry for 5 minutes", e);
+                    } else {
+                        log.error("Failed to get connection to database, will retry for 5 minutes");
+                    }
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException t) {
