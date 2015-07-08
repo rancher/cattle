@@ -10,6 +10,7 @@ import java.util.Map;
 public class DnsEntryData {
     IpAddress sourceIpAddress;
     Map<String, List<String>> resolve = new HashMap<>();
+    Map<String, String> resolveCname = new HashMap<>();
     Instance instance;
 
     public DnsEntryData() {
@@ -38,5 +39,13 @@ public class DnsEntryData {
 
     public void setInstance(Instance instance) {
         this.instance = instance;
+    }
+
+    public Map<String, String> getResolveCname() {
+        return resolveCname;
+    }
+
+    public void setResolveCname(Map<String, String> resolveCname) {
+        this.resolveCname = resolveCname;
     }
 }

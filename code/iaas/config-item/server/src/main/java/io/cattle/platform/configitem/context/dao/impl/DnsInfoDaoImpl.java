@@ -269,12 +269,20 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
-                Map<String, List<String>> resolve = new HashMap<>();
-                List<String> ips = new ArrayList<>();
-                ips.add(((ServiceExposeMap) input.get(1)).getIpAddress());
-                resolve.put(getDnsName(input.get(4), input.get(0)), ips);
+                if (((ServiceExposeMap) input.get(1)).getIpAddress() != null) {
+                    Map<String, List<String>> resolve = new HashMap<>();
+                    List<String> ips = new ArrayList<>();
+                    ips.add(((ServiceExposeMap) input.get(1)).getIpAddress());
+                    resolve.put(getDnsName(input.get(4), input.get(0)), ips);
+                    data.setResolve(resolve);
+                } else if (((ServiceExposeMap) input.get(1)).getHostName() != null) {
+                    Map<String, String> resolveHostName = new HashMap<>();
+                    resolveHostName.put(getDnsName(input.get(4), input.get(0)),
+                            ((ServiceExposeMap) input.get(1)).getHostName());
+                    data.setResolveCname(resolveHostName);
+                }
+
                 data.setSourceIpAddress((IpAddress) input.get(2));
-                data.setResolve(resolve);
                 data.setInstance((Instance) input.get(3));
                 return data;
             }
@@ -320,7 +328,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(clientServiceExposeMap.REMOVED.isNull())
                         .and(targetServiceExposeMap.REMOVED.isNull())
                         .and(targetService.REMOVED.isNull())
-                        .and(targetServiceExposeMap.IP_ADDRESS.isNotNull()))
+                        .and(targetServiceExposeMap.IP_ADDRESS.isNotNull().or(
+                                targetServiceExposeMap.HOST_NAME.isNotNull())))
                 .fetch().map(mapper);
     }
 

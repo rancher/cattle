@@ -4,6 +4,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -38,13 +39,39 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     @Override
+    public String[] getTypes() {
+        return new String[] { "service", "loadBalancerService", "externalService" };
+    }
+
+    @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Service service = request.proxyRequestObject(Service.class);
         
         validateName(type, service);
+
         validateLaunchConfigs(service, request);
 
+        validateIpsHostName(request);
+
         return super.create(type, request, next);
+    }
+
+    protected void validateIpsHostName(ApiRequest request) {
+        
+        List<?> externalIps = DataUtils.getFieldFromRequest(request, ServiceDiscoveryConstants.FIELD_EXTERNALIPS,
+                List.class);
+        
+        String hostName = DataUtils.getFieldFromRequest(request, ServiceDiscoveryConstants.FIELD_HOSTNAME,
+                String.class);
+
+        boolean isExternalIps = externalIps != null && !externalIps.isEmpty();
+        boolean isHostName = hostName != null && !hostName.isEmpty();
+
+        if (isExternalIps && isHostName) {
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                    ServiceDiscoveryConstants.FIELD_EXTERNALIPS + " and "
+                            + ServiceDiscoveryConstants.FIELD_HOSTNAME + " are mutually exclusive");
+        }
     }
     
     @Override
@@ -175,7 +202,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                     "name");
         }
 
-        if (service.getName().startsWith("-") || service.getName().endsWith("-")) {
+        if (service.getName() != null && (service.getName().startsWith("-") || service.getName().endsWith("-"))) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
                     "name");
         }

@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "service_expose_map", schema = "cattle")
-public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String>, io.cattle.platform.core.model.ServiceExposeMap {
+public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.ServiceExposeMap {
 
-	private static final long serialVersionUID = 1939056281;
+	private static final long serialVersionUID = -231406703;
 
 	/**
 	 * Setter for <code>cattle.service_expose_map.id</code>.
@@ -271,6 +271,23 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		return (java.lang.String) getValue(14);
 	}
 
+	/**
+	 * Setter for <code>cattle.service_expose_map.host_name</code>.
+	 */
+	@Override
+	public void setHostName(java.lang.String value) {
+		setValue(15, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.host_name</code>.
+	 */
+	@javax.persistence.Column(name = "host_name", length = 255)
+	@Override
+	public java.lang.String getHostName() {
+		return (java.lang.String) getValue(15);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -284,23 +301,23 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	}
 
 	// -------------------------------------------------------------------------
-	// Record15 type implementation
+	// Record16 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row15) super.fieldsRow();
+	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
+		return (org.jooq.Row16) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row15) super.valuesRow();
+	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
+		return (org.jooq.Row16) super.valuesRow();
 	}
 
 	/**
@@ -427,6 +444,14 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field16() {
+		return io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP.HOST_NAME;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -541,6 +566,14 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	@Override
 	public java.lang.String value15() {
 		return getDnsPrefix();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value16() {
+		return getHostName();
 	}
 
 	/**
@@ -682,7 +715,16 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceExposeMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12, java.lang.Long value13, java.lang.String value14, java.lang.String value15) {
+	public ServiceExposeMapRecord value16(java.lang.String value) {
+		setHostName(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ServiceExposeMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12, java.lang.Long value13, java.lang.String value14, java.lang.String value15, java.lang.String value16) {
 		return this;
 	}
 
@@ -710,6 +752,7 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		setAccountId(from.getAccountId());
 		setIpAddress(from.getIpAddress());
 		setDnsPrefix(from.getDnsPrefix());
+		setHostName(from.getHostName());
 	}
 
 	/**
@@ -735,7 +778,7 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	/**
 	 * Create a detached, initialised ServiceExposeMapRecord
 	 */
-	public ServiceExposeMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long serviceId, java.lang.Long instanceId, java.lang.Long accountId, java.lang.String ipAddress, java.lang.String dnsPrefix) {
+	public ServiceExposeMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long serviceId, java.lang.Long instanceId, java.lang.Long accountId, java.lang.String ipAddress, java.lang.String dnsPrefix, java.lang.String hostName) {
 		super(io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP);
 
 		setValue(0, id);
@@ -753,5 +796,6 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		setValue(12, accountId);
 		setValue(13, ipAddress);
 		setValue(14, dnsPrefix);
+		setValue(15, hostName);
 	}
 }

@@ -416,12 +416,14 @@
         "serviceExposeMap.instanceId" : "r",
         "serviceExposeMap.serviceId" : "r",
         "serviceExposeMap.ipAddress" : "r",
+        "serviceExposeMap.hostname" : "r",
 
         "externalService" : "r",
         "externalService.externalIpAddresses" : "cru",
         "externalService.launchConfig" : "",
         "externalService.scale" : "",
         "externalService.secondaryLaunchConfigs" : "",
+        "externalService.hostname" : "cru",
 
         "dnsService" : "r",
         "dnsService.launchConfig" : "",

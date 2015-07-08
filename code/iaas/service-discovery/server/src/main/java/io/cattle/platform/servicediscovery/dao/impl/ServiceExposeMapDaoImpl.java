@@ -187,5 +187,38 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVATING,
                 CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE, CommonStatesConstants.REQUESTED);
         return (validStates.contains(serviceExposeMap.getState()));
+
+    }
+
+    @Override
+    public ServiceExposeMap getServiceHostnameExposeMap(Service service, String hostName) {
+        return objectManager.findAny(ServiceExposeMap.class,
+                SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(),
+                SERVICE_EXPOSE_MAP.HOST_NAME, hostName,
+                SERVICE_EXPOSE_MAP.REMOVED, null);
+    }
+
+    @Override
+    public ServiceExposeMap createHostnameToServiceMap(Service service, String hostName) {
+        ServiceExposeMap map = getServiceHostnameExposeMap(service, hostName);
+        if (map == null) {
+            map = objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(),
+                    SERVICE_EXPOSE_MAP.HOST_NAME, hostName, SERVICE_EXPOSE_MAP.ACCOUNT_ID,
+                    service.getAccountId());
+        }
+        return map;
+    }
+
+    @Override
+    public List<? extends ServiceExposeMap> getNonRemovedServiceHostnameMaps(long serviceId) {
+        return create()
+                .select(SERVICE_EXPOSE_MAP.fields())
+                .from(SERVICE_EXPOSE_MAP)
+                .where(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
+                .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()
+                        .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
+                                CommonStatesConstants.REMOVING))
+                        .and(SERVICE_EXPOSE_MAP.HOST_NAME.isNotNull()))
+                .fetchInto(ServiceExposeMapRecord.class);
     }
 }

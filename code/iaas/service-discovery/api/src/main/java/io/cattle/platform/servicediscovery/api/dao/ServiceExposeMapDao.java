@@ -46,4 +46,10 @@ public interface ServiceExposeMapDao {
 
     boolean isActiveMap(ServiceExposeMap serviceExposeMap);
 
+    ServiceExposeMap getServiceHostnameExposeMap(Service service, String hostName);
+
+    ServiceExposeMap createHostnameToServiceMap(Service service, String hostName);
+
+    List<? extends ServiceExposeMap> getNonRemovedServiceHostnameMaps(long serviceId);
+
 }
