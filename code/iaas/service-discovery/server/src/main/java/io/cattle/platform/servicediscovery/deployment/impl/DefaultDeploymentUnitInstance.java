@@ -3,7 +3,9 @@ package io.cattle.platform.servicediscovery.deployment.impl;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
@@ -14,6 +16,8 @@ import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -137,6 +141,19 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     public void waitForNotTransitioning() {
         if (this.instance != null) {
             this.instance = context.resourceMonitor.waitForNotTransitioning(this.instance);
+        }
+    }
+
+    @Override
+    public void waitForAllocate() {
+        if (this.instance != null) {
+            instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
+                @Override
+                public boolean evaluate(Instance obj) {
+                    return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
+                            instance.getId()).size() > 0;
+                }
+            });
         }
     }
 }

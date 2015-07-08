@@ -93,4 +93,8 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
         }
     }
 
+    @Override
+    public void waitForAllocate() {
+        return;
+    }
 }

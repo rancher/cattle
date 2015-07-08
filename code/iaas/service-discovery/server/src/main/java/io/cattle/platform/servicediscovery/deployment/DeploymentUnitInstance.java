@@ -73,4 +73,7 @@ public abstract class DeploymentUnitInstance {
     }
 
     public abstract void waitForNotTransitioning();
+
+    public abstract void waitForAllocate();
+
 }

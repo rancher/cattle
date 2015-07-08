@@ -162,8 +162,16 @@ public class DeploymentUnit {
                 createInstance(launchConfigName, duService.getService());
             }
         }
+
+        this.waitForAllocate();
     }
     
+    protected void waitForAllocate() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            instance.waitForAllocate();
+        }
+    }
+
     public void waitForStart(){
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
             instance.waitForStart();
