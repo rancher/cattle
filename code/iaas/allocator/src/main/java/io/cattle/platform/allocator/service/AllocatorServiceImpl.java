@@ -29,7 +29,7 @@ import org.jooq.tools.StringUtils;
 public class AllocatorServiceImpl implements AllocatorService {
 
     private static final String SERVICE_NAME_MACRO = "${service_name}";
-    private static final String PROJECT_NAME_MACRO = "${project_name}";
+    private static final String STACK_NAME_MACRO = "${stack_name}";
 
     @Inject
     ServiceDao serviceDao;
@@ -209,7 +209,7 @@ public class AllocatorServiceImpl implements AllocatorService {
      * @return
      */
     private String evaluateMacros(String valueStr, Instance instance) {
-        if (valueStr.indexOf(SERVICE_NAME_MACRO) != -1 || valueStr.indexOf(PROJECT_NAME_MACRO) != -1) {
+        if (valueStr.indexOf(SERVICE_NAME_MACRO) != -1 || valueStr.indexOf(STACK_NAME_MACRO) != -1) {
             Service service = null;
 
             List<? extends Service> services = serviceDao.findServicesFor(instance);
@@ -221,10 +221,10 @@ public class AllocatorServiceImpl implements AllocatorService {
                 valueStr = valueStr.replace(SERVICE_NAME_MACRO, service.getName());
             }
 
-            if (valueStr.indexOf(PROJECT_NAME_MACRO) != -1 && service != null) {
+            if (valueStr.indexOf(STACK_NAME_MACRO) != -1 && service != null) {
                 Environment project = objectManager.loadResource(Environment.class, service.getEnvironmentId());
                 if (project != null) {
-                    valueStr = valueStr.replace(PROJECT_NAME_MACRO, project.getName());
+                    valueStr = valueStr.replace(STACK_NAME_MACRO, project.getName());
                 }
             }
         }

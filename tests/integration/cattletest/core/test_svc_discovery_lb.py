@@ -453,7 +453,7 @@ def test_labels(super_client, client, context):
                                                 ['8010:8010', '913:913'])
     lb_instance = _validate_lb_instance(host, lb, super_client, service)
     result_labels = {'affinity': "container==B", '!affinity': "container==C",
-                     'io.rancher.project_service.name':
+                     'io.rancher.stack_service.name':
                          env.name + "/" + service_name}
 
     assert all(item in lb_instance.labels.items()
@@ -476,7 +476,7 @@ def test_labels(super_client, client, context):
                                                 service, client,
                                                 ['8089:8089', '914:914'])
     lb_instance = _validate_lb_instance(host, lb, super_client, service)
-    result_labels = {'io.rancher.project_service.name':
+    result_labels = {'io.rancher.stack_service.name':
                      env.name + '/' + service_name}
     assert all(item in lb_instance.labels.items()
                for item in result_labels.items()) is True
