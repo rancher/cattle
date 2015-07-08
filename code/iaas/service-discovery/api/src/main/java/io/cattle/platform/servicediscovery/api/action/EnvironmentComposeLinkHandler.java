@@ -6,7 +6,7 @@ import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -22,7 +22,7 @@ import org.apache.commons.lang.StringUtils;
 
 public class EnvironmentComposeLinkHandler implements LinkHandler {
     @Inject
-    ServiceDiscoveryService discoverySvc;
+    ServiceDiscoveryApiService discoverySvc;
 
     @Inject
     ObjectManager objectManager;
@@ -44,8 +44,6 @@ public class EnvironmentComposeLinkHandler implements LinkHandler {
                 SERVICE.REMOVED, null);
         String dockerCompose = discoverySvc.buildDockerComposeConfig(services);
         String rancherCompose = discoverySvc.buildRancherComposeConfig(services);
-
-
 
         if (StringUtils.isNotEmpty(dockerCompose) || StringUtils.isNotEmpty(rancherCompose)) {
             ByteArrayOutputStream baos = zipFiles(dockerCompose, rancherCompose);

@@ -262,9 +262,9 @@
 
         "loadBalancerListener" : "r",
         "loadBalancerListener.sourcePort" : "cr",
-        "loadBalancerListener.targetPort" : "cr",
+        "loadBalancerListener.targetPort" : "r",
         "loadBalancerListener.sourceProtocol" : "cr",
-        "loadBalancerListener.targetProtocol" : "cr",
+        "loadBalancerListener.targetProtocol" : "r",
         "loadBalancerListener.algorithm" : "cr",
         "loadBalancerListener.serviceId" : "r",
 
@@ -338,12 +338,10 @@
         "loadBalancer.setHosts" : "r",
 
         "addRemoveLoadBalancerTargetInput" : "r",
-        "addRemoveLoadBalancerTargetInput.instanceId" : "cr",
-        "addRemoveLoadBalancerTargetInput.ipAddress" : "cr",
+        "addRemoveLoadBalancerTargetInput.loadBalancerTarget" : "cr",
 
         "setLoadBalancerTargetsInput" : "r",
-        "setLoadBalancerTargetsInput.instanceIds" : "cr",
-        "setLoadBalancerTargetsInput.ipAddresses" : "cr",
+        "setLoadBalancerTargetsInput.loadBalancerTargets" : "cr",
 
         "addRemoveLoadBalancerHostInput" : "r",
         "addRemoveLoadBalancerHostInput.hostId" : "cr",
@@ -352,9 +350,10 @@
         "setLoadBalancerHostsInput.hostIds" : "cr",
 
         "loadBalancerTarget" : "r",
-        "loadBalancerTarget.instanceId" : "r",
+        "loadBalancerTarget.instanceId" : "cr",
         "loadBalancerTarget.loadBalancerId" : "r",
-        "loadBalancerTarget.ipAddress" : "r",
+        "loadBalancerTarget.ipAddress" : "cr",
+        "loadBalancerTarget.ports" : "cr",
 
         "composeConfig" : "r",
         "composeConfig.dockerComposeConfig" : "r",
@@ -371,12 +370,10 @@
         "service.secondaryLaunchConfigs" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
-        "addRemoveServiceLinkInput.serviceId" : "cr",
-        "addRemoveServiceLinkInput.name" : "cr",
+        "addRemoveServiceLinkInput.serviceLink" : "cr",
 
         "setServiceLinksInput" : "r",
         "setServiceLinksInput.serviceLinks" : "cr",
-        "setServiceLinksInput.serviceIds" : "cr",
 
         "loadBalancerConfigListenerMap" : "r",
         "loadBalancerConfigListenerMap.loadBalancerConfigId" : "r",
@@ -412,6 +409,7 @@
         "serviceConsumeMap.name" : "r",
         "serviceConsumeMap.serviceId" : "r",
         "serviceConsumeMap.consumedServiceId" : "r",
+        "serviceConsumeMap.ports" : "r",
 
         "serviceExposeMap" : "r",
         "serviceExposeMap.instanceId" : "r",
@@ -447,14 +445,26 @@
         "activeSetting.value" : "r",
 
         "launchConfig" : "cr",
-        "name" : "",
+        "launchConfig.name" : "",
         "launchConfig.networkLaunchConfig" : "cr",
         "launchConfig.dataVolumesFromLaunchConfigs" : "cr",
 
         "secondaryLaunchConfig" : "cr",
-        "name" : "cr",
-        "launchConfig.networkLaunchConfig" : "cr",
-        "launchConfig.dataVolumesFromLaunchConfigs" : "cr",
+        "secondaryLaunchConfig.name" : "cr",
+
+        "serviceLink" : "cr",
+        "serviceLink.serviceId" : "cr",
+        "serviceLink.name" : "cr",
+
+        "addRemoveLoadBalancerServiceLinkInput" : "r",
+        "addRemoveLoadBalancerServiceLinkInput.serviceLink" : "cr",
+
+        "setLoadBalancerServiceLinksInput" : "r",
+        "setLoadBalancerServiceLinksInput.serviceLinks" : "cr",
+
+        "loadBalancerServiceLink" : "cr",
+        "loadBalancerServiceLink.ports" : "cr",
+        "loadBalancerServiceLink.name" : "",
 
         "end" : ""
     }

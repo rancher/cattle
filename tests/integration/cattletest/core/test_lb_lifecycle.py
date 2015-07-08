@@ -25,8 +25,9 @@ def test_add_lb_w_host_and_target(super_client, client, context):
     container = client.create_container(imageUuid=image_uuid,
                                         startOnCreate=False)
     container = client.wait_success(container)
-    lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(container, lb, client)
+    target = {"instanceId": container.id, "ports": "100"}
+    lb = lb.addtarget(loadBalancerTarget=target)
+    _validate_add_target(container, lb, client)
 
     # check the port (should be created along with the instance)
     ports = client.list_port(publicPort=port,
@@ -51,7 +52,7 @@ def test_add_lb_w_host_and_target(super_client, client, context):
     listener = _create_valid_listener(client, port1)
     # add listener to config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    validate_add_listener(config, listener, client)
+    _validate_add_listener(config, listener, client)
     # check the port
     ports = client.list_port(publicPort=port1, instanceId=instance.id)
     assert len(ports) == 1
@@ -71,8 +72,9 @@ def test_destroy_lb_instance(super_client, client, context):
     image_uuid = context.image_uuid
     container = client.create_container(imageUuid=image_uuid)
     container = client.wait_success(container)
-    lb = lb.addtarget(instanceId=container.id)
-    validate_add_target(container, lb, client)
+    target = {"instanceId": container.id, "ports": "100"}
+    lb = lb.addtarget(loadBalancerTarget=target)
+    _validate_add_target(container, lb, client)
 
     # destroy the lb instance
     # stop the lb instance
@@ -111,7 +113,7 @@ def _create_config(client, listenerPort):
     listener = _create_valid_listener(client, listenerPort)
     # add listener to config
     config = config.addlistener(loadBalancerListenerId=listener.id)
-    validate_add_listener(config, listener, client)
+    _validate_add_listener(config, listener, client)
 
     return config
 
@@ -175,7 +177,7 @@ def _resource_is_removed(resource):
     return resource.state == 'removed'
 
 
-def validate_add_listener(config, listener, client):
+def _validate_add_listener(config, listener, client):
     lb_config_maps = client. \
         list_loadBalancerConfigListenerMap(loadBalancerListenerId=listener.id,
                                            loadBalancerConfigId=config.id)
@@ -186,14 +188,14 @@ def validate_add_listener(config, listener, client):
         lambda x: 'State is: ' + x.state)
 
 
-def validate_add_target(container1, lb, super_client):
-    target_maps = super_client. \
+def _validate_add_target(container1, lb, client):
+    target_maps = client. \
         list_loadBalancerTarget(loadBalancerId=lb.id,
                                 instanceId=container1.id)
     assert len(target_maps) == 1
     target_map = target_maps[0]
     wait_for_condition(
-        super_client, target_map, _resource_is_active,
+        client, target_map, _resource_is_active,
         lambda x: 'State is: ' + x.state)
 
 

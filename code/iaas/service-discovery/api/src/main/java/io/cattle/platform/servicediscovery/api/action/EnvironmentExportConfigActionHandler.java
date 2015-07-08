@@ -9,7 +9,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -26,7 +26,7 @@ public class EnvironmentExportConfigActionHandler implements ActionHandler {
     JsonMapper jsonMapper;
 
     @Inject
-    ServiceDiscoveryService svcDiscoveryServer;
+    ServiceDiscoveryApiService svcDiscoveryServer;
 
     @Override
     public String getName() {
@@ -46,14 +46,15 @@ public class EnvironmentExportConfigActionHandler implements ActionHandler {
         List<Service> toExport = new ArrayList<>();
         for (Service service : services) {
             // export only non-removed requested services
-            if ((serviceIds == null || serviceIds.isEmpty()) || serviceIds.contains(service.getId())){
+            if ((serviceIds == null || serviceIds.isEmpty()) || serviceIds.contains(service.getId())) {
                 if (service.getRemoved() == null && !service.getState().equals(CommonStatesConstants.REMOVED)) {
                     toExport.add(service);
                 }
             }
         }
         SimpleEntry<String, String> composeConfig = svcDiscoveryServer.buildComposeConfig(toExport);
-        
+
         return new ComposeConfig(composeConfig.getKey(), composeConfig.getValue());
+
     }
 }

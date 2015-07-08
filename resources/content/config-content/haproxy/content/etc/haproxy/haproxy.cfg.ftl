@@ -28,19 +28,32 @@ defaults
 	errorfile 503 /etc/haproxy/errors/503.http
 	errorfile 504 /etc/haproxy/errors/504.http
 
-<#if listeners?has_content && targets?has_content>
+<#if listeners?has_content && backends?has_content>
 <#list listeners as listener >
 frontend ${listener.uuid}_frontend
         bind ${publicIp}:${listener.sourcePort}
         mode ${listener.sourceProtocol}
-        default_backend ${listener.uuid}_backend
+        <#list backends as backend >
+        <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>
+        <#if backend.portSpec.domain != "default">
+        acl ${backend.uuid}_host hdr_end(host) -i ${backend.portSpec.domain}
+    	</#if>
+    	<#if backend.portSpec.path != "default">
+        acl ${backend.uuid}_path path_beg -i ${backend.portSpec.path}
+    	</#if>
+    	use_backend ${listener.uuid}_${backend.uuid}_backend if <#if backend.portSpec.domain != "default">${backend.uuid}_host</#if> <#if backend.portSpec.path != "default">${backend.uuid}_path</#if>
+    	<#else>
+    	default_backend ${listener.uuid}_${backend.uuid}_backend
+        </#if>
+        </#list>
 
-backend ${listener.uuid}_backend
+<#list backends as backend >
+backend ${listener.uuid}_${backend.uuid}_backend
         mode ${listener.targetProtocol}
         balance ${listener.data.fields.algorithm}
-        <#if healthCheck??>
-        <#if healthCheck.responseTimeout??>timeout check ${healthCheck.responseTimeout}</#if>
-        <#if healthCheck.requestLine?? && healthCheck.requestLine?has_content>option httpchk ${healthCheck.requestLine}</#if>
+        <#if backend.healthCheck??>
+        <#if backend.healthCheck.responseTimeout??>timeout check ${backend.healthCheck.responseTimeout}</#if>
+        <#if backend.healthCheck.requestLine?? && backend.healthCheck.requestLine?has_content>option httpchk ${backend.healthCheck.requestLine}</#if>
         </#if>
         <#if listener.targetProtocol="http">
         <#if appPolicy??>
@@ -50,10 +63,11 @@ backend ${listener.uuid}_backend
         cookie <#if lbPolicy.cookie??>${lbPolicy.cookie}<#else>lbCookie_${listener.uuid}</#if><#if lbPolicy.mode??> ${lbPolicy.mode}<#else> insert</#if><#if lbPolicy.indirect> indirect</#if><#if lbPolicy.nocache> nocache</#if><#if lbPolicy.postonly> postonly</#if><#if lbPolicy.domain?? && lbPolicy.domain?has_content> domain ${lbPolicy.domain}</#if>
         </#if>
         </#if>
-        <#list targets as target >
-        server ${target.name} ${target.ipAddress}:${listener.targetPort}<#if healthCheck??> check<#if healthCheck.port??> port ${healthCheck.port}</#if><#if healthCheck.interval??> inter ${healthCheck.interval}</#if><#if healthCheck.healthyThreshold??> rise ${healthCheck.healthyThreshold}</#if><#if healthCheck.unhealthyThreshold??> fall ${healthCheck.unhealthyThreshold}</#if></#if><#if listener.targetProtocol="http" && lbPolicy??> cookie ${target.cookie}</#if>
+        <#list backend.targets as target >
+        server ${target.name} ${target.ipAddress}:${target.portSpec.port}<#if target.healthCheck??> check<#if target.healthCheck.port??> port ${target.healthCheck.port}</#if><#if target.healthCheck.interval??> inter ${target.healthCheck.interval}</#if><#if target.healthCheck.healthyThreshold??> rise ${target.healthCheck.healthyThreshold}</#if><#if target.healthCheck.unhealthyThreshold??> fall ${target.healthCheck.unhealthyThreshold}</#if></#if><#if listener.targetProtocol="http" && lbPolicy??> cookie ${target.cookie}</#if>
         </#list>
 
+</#list>
 </#list>
 <#else>
 listen web 0.0.0.0:9

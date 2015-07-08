@@ -1,11 +1,10 @@
 package io.cattle.platform.servicediscovery.dao.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
+import static io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -18,6 +17,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 
 import java.util.List;
+
 import javax.inject.Inject;
 
 public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements ServiceConsumeMapDao {

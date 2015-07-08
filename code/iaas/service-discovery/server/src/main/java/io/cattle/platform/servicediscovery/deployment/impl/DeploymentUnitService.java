@@ -1,6 +1,9 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
+import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
@@ -15,9 +18,11 @@ public class DeploymentUnitService {
     Map<String, DeploymentUnitInstance> launchConfigToInstance = new HashMap<>();
     List<String> launchConfigNames = new ArrayList<>();
     DeploymentServiceContext context;
+    Environment env;
 
     public DeploymentUnitService(Service service, List<String> launchConfigNames, DeploymentServiceContext context) {
         this.service = service;
+        this.env = context.objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
         this.launchConfigNames = launchConfigNames;
         this.context = context;
     }
@@ -51,8 +56,8 @@ public class DeploymentUnitService {
                 if (order == null) {
                     order = svcInstanceIdGenerator.getNextAvailableId(launchConfigName);
                 }
-                String instanceName = context.sdService.generateServiceInstanceName(service,
-                        launchConfigName, order);
+                String instanceName = ServiceDiscoveryUtil.generateServiceInstanceName(env,
+                        service, launchConfigName, order);
                 DeploymentUnitInstance deploymentUnitInstance = context.deploymentUnitInstanceFactory
                         .createDeploymentUnitInstance(context, uuid, service, instanceName, null, null,
                                 launchConfigName);

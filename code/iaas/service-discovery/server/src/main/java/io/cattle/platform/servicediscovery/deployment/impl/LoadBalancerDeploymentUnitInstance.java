@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
@@ -62,8 +63,8 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance i
                     service.getId(),
                     LOAD_BALANCER.REMOVED, null);
 
-            Map<String, Object> launchConfig = context.sdService.buildServiceInstanceLaunchData(service,
-                    deployParams, launchConfigName);
+            Map<String, Object> launchConfig = ServiceDiscoveryUtil.buildServiceInstanceLaunchData(service,
+                    deployParams, launchConfigName, context.allocatorService);
             this.hostMap = context.lbService.addHostWLaunchConfigToLoadBalancer(lb, launchConfig);
             this.instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
             this.exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);

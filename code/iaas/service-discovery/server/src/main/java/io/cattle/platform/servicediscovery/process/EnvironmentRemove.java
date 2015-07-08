@@ -8,7 +8,6 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
@@ -24,9 +23,6 @@ public class EnvironmentRemove extends AbstractObjectProcessHandler {
     ResourceMonitor resourceMonitor;
 
     @Inject
-    ProcessProgress progress;
-
-    @Inject
     ServiceDiscoveryService sdServer;
 
     @Override
@@ -39,7 +35,6 @@ public class EnvironmentRemove extends AbstractObjectProcessHandler {
         Environment env = (Environment) state.getResource();
         List<? extends Service> services = objectManager.mappedChildren(env, Service.class);
         if (!services.isEmpty()) {
-            progress.init(state, sdServer.getWeights(services.size(), 100));
             removeServices(services);
         }
         return null;

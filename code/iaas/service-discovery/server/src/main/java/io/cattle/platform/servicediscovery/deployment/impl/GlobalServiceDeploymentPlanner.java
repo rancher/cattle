@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.deployment.impl;
 
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
@@ -21,7 +22,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         for (Service service : services) {
             List<Long> hostIdsToDeployService =
                     context.allocatorService.getHostsSatisfyingHostAffinity(service.getAccountId(),
-                            context.sdService.getServiceLabels(service));
+                            ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService));
             hostIds.addAll(hostIdsToDeployService);
         }
         for (DeploymentUnit unit : units) {

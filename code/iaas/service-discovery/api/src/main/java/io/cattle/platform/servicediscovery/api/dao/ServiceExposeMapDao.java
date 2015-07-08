@@ -41,4 +41,9 @@ public interface ServiceExposeMapDao {
     List<? extends ServiceExposeMap> getNonRemovedServiceIpMaps(long serviceId);
 
     Host getHostForInstance(long instanceId);
+
+    boolean isPrimaryServiceInstance(ServiceExposeMap map);
+
+    boolean isActiveMap(ServiceExposeMap serviceExposeMap);
+
 }

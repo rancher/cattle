@@ -138,6 +138,10 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'setting',
         'dockerBuild',
         'secondaryLaunchConfig',
+        'serviceLink',
+        'loadBalancerServiceLink',
+        'addRemoveLoadBalancerServiceLinkInput',
+        'setLoadBalancerServiceLinksInput'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -308,6 +312,10 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'serviceConsumeMap',
         'dockerBuild',
         'secondaryLaunchConfig',
+        'serviceLink',
+        'loadBalancerServiceLink',
+        'addRemoveLoadBalancerServiceLinkInput',
+        'setLoadBalancerServiceLinksInput'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1199,7 +1207,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'vmwarevcloudairConfig': 'cr',
         'openstackConfig': 'cr',
         'azureConfig': 'cr',
-        })
+    })
 
     auth_check(service_client.schema, 'machine', 'crud', {
         'driver': 'r',
@@ -1491,4 +1499,32 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'cr',
         'accountId': 'r',
         'loadBalancerConfig': 'cr',
+    })
+
+
+def test_svc_discovery_consume_map(admin_user_client, user_client,
+                                   project_client):
+    auth_check(admin_user_client.schema, 'serviceConsumeMap', 'r', {
+        'name': 'r',
+        'serviceId': 'r',
+        'consumedServiceId': 'r',
+        'ports': 'r',
+        'data': 'r',
+        'accountId': 'r'
+    })
+
+    auth_check(user_client.schema, 'serviceConsumeMap', 'r', {
+        'name': 'r',
+        'serviceId': 'r',
+        'consumedServiceId': 'r',
+        'ports': 'r',
+        'accountId': 'r'
+    })
+
+    auth_check(project_client.schema, 'serviceConsumeMap', 'r', {
+        'name': 'r',
+        'serviceId': 'r',
+        'consumedServiceId': 'r',
+        'ports': 'r',
+        'accountId': 'r'
     })

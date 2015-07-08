@@ -1,9 +1,11 @@
 package io.cattle.iaas.lb.api.action;
 
-import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.iaas.lb.api.service.LoadBalancerApiService;
 import io.cattle.platform.api.action.ActionHandler;
+import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.LoadBalancer;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -15,7 +17,10 @@ public class LoadBalancerAddTargetActionHandler implements ActionHandler {
     ObjectManager objectManager;
 
     @Inject
-    LoadBalancerService lbService;
+    LoadBalancerApiService lbService;
+
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public String getName() {
@@ -28,16 +33,10 @@ public class LoadBalancerAddTargetActionHandler implements ActionHandler {
             return null;
         }
         LoadBalancer lb = (LoadBalancer) obj;
-        Long instanceId = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_ID).as(Long.class);
-        String ipAddress = DataAccessor.fromMap(request.getRequestObject())
-                .withKey(LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS).as(String.class);
+        LoadBalancerTargetInput lbTarget = DataAccessor.fromMap(request.getRequestObject()).withKey(
+                LoadBalancerConstants.FIELD_LB_TARGET).as(jsonMapper, LoadBalancerTargetInput.class);
 
-        if (ipAddress != null) {
-            lbService.addTargetIpToLoadBalancer(lb, ipAddress);
-        } else {
-            lbService.addTargetToLoadBalancer(lb, instanceId);
-        }
+        lbService.addTargetToLoadBalancer(lb, lbTarget);
 
         return objectManager.reload(lb);
     }

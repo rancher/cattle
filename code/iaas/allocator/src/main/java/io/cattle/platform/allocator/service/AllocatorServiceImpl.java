@@ -1,11 +1,11 @@
 package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
+import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.ContainerAffinityConstraint;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
-import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Environment;
@@ -13,7 +13,6 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,9 +29,6 @@ public class AllocatorServiceImpl implements AllocatorService {
 
     private static final String SERVICE_NAME_MACRO = "${service_name}";
     private static final String STACK_NAME_MACRO = "${stack_name}";
-
-    @Inject
-    ServiceDao serviceDao;
 
     @Inject
     AllocatorDao allocatorDao;
@@ -212,7 +208,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         if (valueStr.indexOf(SERVICE_NAME_MACRO) != -1 || valueStr.indexOf(STACK_NAME_MACRO) != -1) {
             Service service = null;
 
-            List<? extends Service> services = serviceDao.findServicesFor(instance);
+            List<? extends Service> services = instanceDao.findServicesFor(instance);
             if (services.size() > 0) {
                 service = services.get(0);
             }

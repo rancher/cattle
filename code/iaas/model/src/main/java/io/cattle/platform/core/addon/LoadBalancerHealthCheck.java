@@ -9,6 +9,11 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
  * server <serverName Ip:port> check port <port> inter <interval> rise <healthyThreshold> fall <unhealthyThreshold>
  */
 
+/*
+ * Deprecate this class once we get rid of Standalone LB. From then on, the healthcheck will always be read from the
+ * healtcheck defined on the service only
+ */
+
 @Type(list = false)
 public class LoadBalancerHealthCheck {
 

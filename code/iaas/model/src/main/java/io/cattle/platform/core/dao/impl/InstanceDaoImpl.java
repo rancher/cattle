@@ -1,15 +1,19 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL;
+import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
+import static io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
+import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
 import java.util.List;
@@ -89,5 +93,15 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         }
 
         return instance;
+    }
+
+    @Override
+    public List<? extends Service> findServicesFor(Instance instance) {
+        return create().select(SERVICE.fields())
+                .from(SERVICE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
+                .where(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instance.getId()))
+                .fetchInto(ServiceRecord.class);
     }
 }

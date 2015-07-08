@@ -4,8 +4,12 @@ import static io.cattle.platform.core.model.tables.LoadBalancerConfigListenerMap
 import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.LoadBalancerDao;
 import io.cattle.platform.core.model.LoadBalancer;
+import io.cattle.platform.core.model.LoadBalancerConfig;
+import io.cattle.platform.core.model.LoadBalancerConfigListenerMap;
 import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord;
 import io.cattle.platform.core.model.tables.records.LoadBalancerRecord;
@@ -13,7 +17,15 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class LoadBalancerDaoImpl extends AbstractJooqDao implements LoadBalancerDao {
+
+    @Inject
+    GenericMapDao mapDao;
+
+    @Inject
+    GenericResourceDao resourceDao;
 
     @Override
     public boolean updateLoadBalancer(long lbId, Long glbId, Long weight) {
@@ -65,5 +77,20 @@ public class LoadBalancerDaoImpl extends AbstractJooqDao implements LoadBalancer
             return null;
         }
         return lbs.get(0);
+    }
+
+    @Override
+    public void addListenerToConfig(LoadBalancerConfig config, long listenerId) {
+        LoadBalancerConfigListenerMap lbConfigListenerMap = mapDao.findNonRemoved(LoadBalancerConfigListenerMap.class,
+                LoadBalancerConfig.class, config.getId(),
+                LoadBalancerListener.class, listenerId);
+
+        if (lbConfigListenerMap == null) {
+            resourceDao.createAndSchedule(LoadBalancerConfigListenerMap.class,
+                    LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_CONFIG_ID,
+                    config.getId(), LOAD_BALANCER_CONFIG_LISTENER_MAP.LOAD_BALANCER_LISTENER_ID, listenerId,
+                    LOAD_BALANCER_CONFIG_LISTENER_MAP.ACCOUNT_ID, config.getAccountId());
+
+        }
     }
 }

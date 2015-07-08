@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -87,7 +88,8 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
                             LOAD_BALANCER.REMOVED, null);
 
                     if (lb != null) {
-                        lbManager.removeTargetIpFromLoadBalancer(lb, exposeMap.getIpAddress());
+                        lbManager.removeTargetFromLoadBalancer(lb,
+                                new LoadBalancerTargetInput(null, exposeMap.getIpAddress(), null));
                     }
                 }
             }
@@ -95,37 +97,27 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
     }
 
     private void removeConsumedServiceTargets(ServiceConsumeMap consumeMap, Service lbService) {
+        // This method is to handle the case when link was created/removed in the short period of time while lb service
+        // is being created
+
         // get all the instances of the consumed service
-        List<Long> instanceIds = new ArrayList<>();
-        List<String> ips = new ArrayList<>();
+        List<LoadBalancerTargetInput> targets = new ArrayList<>();
         List<? extends ServiceExposeMap> maps = objectManager.mappedChildren(
                 objectManager.loadResource(Service.class, consumeMap.getConsumedServiceId()),
                 ServiceExposeMap.class);
         for (ServiceExposeMap map : maps) {
-            if (map.getInstanceId() != null) {
-                instanceIds.add(map.getInstanceId());
-            } else if (map.getIpAddress() != null) {
-                ips.add(map.getIpAddress());
-            }
+            targets.add(new LoadBalancerTargetInput(map.getInstanceId(), map.getIpAddress(), null));
         }
 
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
                 lbService.getId(),
                 LOAD_BALANCER.REMOVED, null);
+        if (lb == null) {
+            return;
+        }
 
-        if (lb != null) {
-            // unassign instances from the lb
-            for (Long instanceId : instanceIds) {
-                // to handle the case when link was created/removed in the short period of time while lb service is
-                // being created
-                lbManager.removeTargetFromLoadBalancer(lb, instanceId);
-            }
-            // unassign ips from the lb
-            for (String ip : ips) {
-                // to handle the case when link was created/removed in the short period of time while lb service is
-                // being created
-                lbManager.removeTargetIpFromLoadBalancer(lb, ip);
-            }
+        for (LoadBalancerTargetInput target : targets) {
+            lbManager.removeTargetFromLoadBalancer(lb, target);
         }
     }
 

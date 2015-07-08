@@ -35,22 +35,11 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkActivateHandler" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkPreInstanceStateHandler" />
 
-    <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
-    <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />
-    <bean class="io.cattle.platform.servicediscovery.api.action.AddServiceLinkActionHandler" />
-    <bean class="io.cattle.platform.servicediscovery.api.action.SetServiceLinksActionHandler" />
-    <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentActivateServicesActionHandler" />
-    <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentDeactivateServicesActionHandler" />
-    <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentComposeLinkHandler" />
-
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl" />
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl" />
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceDaoImpl" />
 
     <bean class="io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl" />
-    <bean class="io.cattle.platform.servicediscovery.service.impl.RancherImageToComposeFormatter" />
-    <bean class="io.cattle.platform.servicediscovery.service.impl.RancherRestartToComposeFormatter" />
-    <bean class="io.cattle.platform.servicediscovery.service.impl.RancherGenericMapToComposeFormatter" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.GlobalHostActivateServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.HostServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup" /> 
@@ -58,7 +47,7 @@
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnitInstanceFactoryImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.ServiceDeploymentPlannerFactoryImpl" />
-
+    
     <bean class="io.cattle.platform.allocator.service.AllocatorServiceImpl" />
       
     <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />

@@ -1,6 +1,7 @@
-package io.cattle.platform.servicediscovery.service.impl;
+package io.cattle.platform.servicediscovery.api.service.impl;
 
-import io.cattle.platform.servicediscovery.resource.ServiceDiscoveryConfigItem;
+import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
+import io.cattle.platform.servicediscovery.api.service.RancherConfigToComposeFormatter;
 import io.cattle.platform.util.type.NamedUtils;
 
 import java.util.HashMap;

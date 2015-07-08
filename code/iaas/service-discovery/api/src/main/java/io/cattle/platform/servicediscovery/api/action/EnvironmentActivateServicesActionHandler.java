@@ -9,7 +9,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class EnvironmentActivateServicesActionHandler implements ActionHandler {
     ObjectManager objectManager;
 
     @Inject
-    ServiceDiscoveryService sdService;
+    ServiceDiscoveryApiService sdService;
 
     @Inject
     ServiceConsumeMapDao consumeMapDao;

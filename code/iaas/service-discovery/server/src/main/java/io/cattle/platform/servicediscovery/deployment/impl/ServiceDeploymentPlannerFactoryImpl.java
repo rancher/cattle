@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.deployment.impl;
 
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlannerFactory;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
@@ -20,7 +21,7 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
         }
 
         Service service = services.get(0);
-        Map<String, String> serviceLabels = context.sdService.getServiceLabels(service);
+        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService);
         String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
 
         if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())

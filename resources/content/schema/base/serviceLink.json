@@ -1,0 +1,15 @@
+{    
+    "collectionMethods" : [ "POST" ],   
+     "resourceFields": {
+        "name": {
+            "type": "string",
+            "required": false,
+            "nullable": true
+        },
+        "serviceId": {
+            "type": "reference[service]",
+            "required": true,
+            "nullable": false
+        }
+    }
+}
