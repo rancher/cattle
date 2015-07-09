@@ -1,42 +1,40 @@
 from common_fixtures import *  # NOQA
 
 import websocket
-import thread
 import time
 
 SUB_OPTIONS = '?include=hosts&include=instances&include=instanceLinks' \
-              '&include=ipAddresses&eventNames=resource.change'
+              '&include=ipAddresses&eventNames=resource.change&projectId=%s'
 
 
-def test_websocket_close(client):
+def test_websocket_close(client, context):
+    assertions = {}
+
     def on_message(ws, message):
-        print message
+        assertions['messaged'] = True
+        ws.close()
 
     def on_error(ws, error):
-        print "### error: [%s] ###" % error
+        assert False, "Got an error: %s" % error
 
     def on_close(ws):
-        print "### closed ###"
+        assertions['closed'] = True
 
     def on_open(ws):
-        print "### opened ###"
+        assertions['opened'] = True
 
-    websocket.enableTrace(True)
+    # websocket.enableTrace(True)
 
     subscribe_url = client.schema.types['subscribe'].links['collection']
-    subscribe_url = subscribe_url.replace('http', 'ws') + SUB_OPTIONS
-    subscribe_url = "ws://localhost:8080/v1/subscribe?eventNames=" \
-                    "resource.change&include=hosts&include=instances" \
-                    "&include=instance&include=loadBalancerConfig" \
-                    "&include=loadBalancerTargets&include=" \
-                    "loadBalancerListeners&include=instanceLinks" \
-                    "&include=ipAddresses&projectId=1a5"
-    assert subscribe_url is not None
+    options = SUB_OPTIONS % context.project.id
+    subscribe_url = subscribe_url.replace('http', 'ws') + options
     ws = websocket.WebSocketApp(subscribe_url,
                                 on_message=on_message,
                                 on_error=on_error,
-                                on_close=on_close)
-    ws.on_open = on_open
+                                on_close=on_close,
+                                on_open=on_open)
     ws.run_forever()
-
-    time.sleep(15)
+    time.sleep(.5)
+    assert assertions['closed']
+    assert assertions['opened']
+    assert assertions['messaged']

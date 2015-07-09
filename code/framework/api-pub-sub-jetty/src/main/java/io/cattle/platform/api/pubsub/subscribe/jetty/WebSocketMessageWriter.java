@@ -35,6 +35,9 @@ public class WebSocketMessageWriter extends WebSocketAdapter implements MessageW
             throw new EOFException("WebSocket is closed");
         }
         if (session != null) {
+            // TODO The fact that this is a blocking call being written to from
+            // multiple threads is causing problems. Specifically, this stacktrace:
+            // https://gist.github.com/cjellick/04df09544e17fbdd0f14
             session.getRemote().sendString(message);
         }
     }
