@@ -7,7 +7,7 @@ import inspect
 from datetime import datetime, timedelta
 
 NOT_NONE = object()
-DEFAULT_TIMEOUT = 90
+DEFAULT_TIMEOUT = 300
 _SUPER_CLIENT = None
 
 
