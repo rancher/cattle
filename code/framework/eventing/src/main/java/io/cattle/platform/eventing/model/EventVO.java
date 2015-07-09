@@ -57,7 +57,7 @@ public class EventVO<T> implements Event {
 
     public static EventVO<Object> replyWithException(Event request, Class<? extends EventExecutionException> clz,
                                                      String message) {
-        EventVO reply = reply(request);
+        EventVO<Object> reply = reply(request);
         reply.setTransitioning(TRANSITIONING_ERROR);
         reply.setTransitioningInternalMessage("class:" + clz.getCanonicalName());
         reply.setTransitioningMessage(message);

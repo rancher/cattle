@@ -1,15 +1,12 @@
 package io.cattle.platform.sample.data;
 
-import static io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
-import static io.cattle.platform.core.model.tables.ProjectMemberTable.PROJECT_MEMBER;
-
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
 
 import java.util.List;
-
-import javax.inject.Inject;
 
 public class SampleDataStartupV3 extends AbstractSampleData {
 

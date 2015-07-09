@@ -1,15 +1,11 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AccountLookup;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.util.type.Priority;
-import io.github.ibuildthecloud.gdapi.context.ApiContext;
-import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import javax.inject.Inject;
 

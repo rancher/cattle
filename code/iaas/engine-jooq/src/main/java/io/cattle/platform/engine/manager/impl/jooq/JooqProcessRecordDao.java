@@ -12,7 +12,6 @@ import io.cattle.platform.engine.process.ProcessPhase;
 import io.cattle.platform.engine.process.ProcessResult;
 import io.cattle.platform.engine.process.log.ProcessLog;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -31,7 +30,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.jooq.Condition;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

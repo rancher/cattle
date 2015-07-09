@@ -57,7 +57,6 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     private JsonMapper jsonMapper;
     private ObjectManager objectManager;
     private GithubClient client;
-    private GithubUtils githubUtils;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -230,10 +229,4 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     public void setGithubClient(GithubClient client) {
         this.client = client;
     }
-
-    @Inject
-    public void setGithubUtils(GithubUtils githubUtils) {
-        this.githubUtils = githubUtils;
-    }
-
 }

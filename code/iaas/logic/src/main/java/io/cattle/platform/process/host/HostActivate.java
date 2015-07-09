@@ -4,7 +4,6 @@ import io.cattle.iaas.cluster.process.lock.ClusterLock;
 import io.cattle.iaas.cluster.service.ClusterManager;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.dao.ClusterHostMapDao;
-import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.tables.records.ClusterHostMapRecord;
 import io.cattle.platform.engine.handler.HandlerResult;

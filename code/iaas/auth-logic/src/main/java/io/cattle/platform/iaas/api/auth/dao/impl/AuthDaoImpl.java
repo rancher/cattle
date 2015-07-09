@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.auth.dao.impl;
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
-
 import io.cattle.platform.api.auth.ExternalId;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
@@ -37,8 +36,10 @@ import javax.inject.Inject;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
+import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.TableField;
 import org.jooq.exception.InvalidResultException;
@@ -210,13 +211,13 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                     .and(PROJECT_MEMBER.REMOVED.isNull())
                     .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE)));
         }
-        SelectQuery query = create().selectQuery();
+        SelectQuery<Record> query = create().selectQuery();
         query.addFrom(ACCOUNT);
         query.addJoin(PROJECT_MEMBER, PROJECT_MEMBER.PROJECT_ID.equal(ACCOUNT.ID));
         query.addConditions(allMembers);
         query.setDistinct(true);
         projects.addAll(query.fetchInto(ACCOUNT));
-        Map<Long, Account> returnProjects = new HashMap();
+        Map<Long, Account> returnProjects = new HashMap<Long, Account>();
         for (Account project: projects){
             returnProjects.put(project.getId(), project);
         }
@@ -304,8 +305,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 for (ProjectMember member : previousMembers) {
                     otherPreviosMembers.add(new Member(member));
                 }
-                HashSet<Member> create = (HashSet<Member>) ((HashSet<Member>) members).clone();
-                HashSet<Member> delete = (HashSet<Member>) ((HashSet<Member>) otherPreviosMembers).clone();
+                Set<Member> create = new HashSet<Member>(members);
+                Set<Member> delete = new HashSet<Member>(otherPreviosMembers);
                 for (Member member : members) {
                     if (delete.remove(member)) {
                         create.remove(member);

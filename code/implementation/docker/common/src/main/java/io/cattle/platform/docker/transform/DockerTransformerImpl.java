@@ -3,7 +3,6 @@ package io.cattle.platform.docker.transform;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
-
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.json.JsonMapper;
@@ -187,13 +186,11 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_NETWORK_MODE, netMode);
     }
 
-    @SuppressWarnings({ "rawtypes" })
     void setField(Instance instance, String field, Map<String, Object> fromInspect, String... keys) {
         Object l = CollectionUtils.getNestedValue(fromInspect, keys);
         setField(instance, field, l);
     }
 
-    @SuppressWarnings({ "rawtypes" })
     void setFieldIfNotEmpty(Instance instance, String field, Map<String, Object> fromInspect, String... keys) {
         Object l = CollectionUtils.getNestedValue(fromInspect, keys);
         if (!isEmptyValue(l)) {
@@ -201,6 +198,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         }
     }
 
+    @SuppressWarnings("unchecked")
     void setLogConfig(Instance instance, Map<String, Object> fromInspect) {
         Object type = CollectionUtils.getNestedValue(fromInspect, "HostConfig", "LogConfig", "Type");
         Object config = CollectionUtils.getNestedValue(fromInspect, "HostConfig", "LogConfig", "Config");
@@ -417,7 +415,6 @@ public class DockerTransformerImpl implements DockerTransformer {
         return fieldValue;
     }
 
-    @SuppressWarnings({ "rawtypes", "unused" })
     private boolean isEmptyValue(Object fieldValue) {
         return fieldValue == null ||
                 (fieldValue instanceof String && StringUtils.isEmpty((String) fieldValue)) ||

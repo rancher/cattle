@@ -22,7 +22,6 @@ import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.lb.instance.dao.LoadBalancerInstanceDao;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
@@ -35,7 +34,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 

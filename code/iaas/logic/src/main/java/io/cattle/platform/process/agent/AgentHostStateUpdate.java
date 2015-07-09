@@ -4,8 +4,6 @@ import static io.cattle.platform.core.model.tables.HostTable.*;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.tables.HostTable;
-import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -24,6 +22,7 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.slf4j.Logger;

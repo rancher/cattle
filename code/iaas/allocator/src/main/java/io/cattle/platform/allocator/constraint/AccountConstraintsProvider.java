@@ -2,7 +2,6 @@ package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
-import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;

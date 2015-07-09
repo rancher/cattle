@@ -54,6 +54,7 @@ public class Retry {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public boolean equals(Object obj) {
         if (obj instanceof DelayedObject) {
             return ((DelayedObject) obj).getObject().equals(this);
