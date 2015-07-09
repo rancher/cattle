@@ -67,10 +67,8 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidRedirect", "The redirect is invalid", null);
         }
 
-        String protocol = servletRequest.getScheme();
-
         if (!StringUtils.startsWith(redirect, "http")) {
-            redirect = protocol + "://" + redirect;
+            redirect = "https://" + redirect;
         }
 
         URI url = URI.create(redirect);
