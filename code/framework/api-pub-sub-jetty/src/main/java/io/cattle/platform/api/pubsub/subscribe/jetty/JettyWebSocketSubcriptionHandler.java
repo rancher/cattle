@@ -46,7 +46,7 @@ public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHan
             }
         });
 
-        if (factory.acceptWebSocket(req, resp)) {
+        if ("websocket".equalsIgnoreCase(req.getHeader("Upgrade")) && factory.acceptWebSocket(req, resp)) {
             apiRequest.setResponseCode(101);
             apiRequest.commit();
             return messageWriter;
