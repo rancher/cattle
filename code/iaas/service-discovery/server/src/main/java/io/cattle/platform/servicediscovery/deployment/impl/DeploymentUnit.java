@@ -309,8 +309,13 @@ public class DeploymentUnit {
         String serviceName = instance.getService().getName();
         String envName = context.objectManager.loadResource(Environment.class, instance.getService().getEnvironmentId())
                 .getName();
+        labels.put(ServiceDiscoveryConstants.LABEL_STACK_NAME, envName);
+        labels.put(ServiceDiscoveryConstants.LABEL_STACK_SERVICE_NAME, envName + "/" + serviceName);
+
+        // LEGACY: keeping backwards compatibility with 'project'
         labels.put(ServiceDiscoveryConstants.LABEL_PROJECT_NAME, envName);
         labels.put(ServiceDiscoveryConstants.LABEL_PROJECT_SERVICE_NAME, envName + "/" + serviceName);
+
         /*
          * Put label 'io.rancher.deployment.unit=this.uuid' on each one. This way
          * we can reference a set of containers later.
