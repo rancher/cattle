@@ -373,7 +373,8 @@ def test_github_auth(admin_user_client, user_client, project_client):
         'clientId': 'cr',
         'clientSecret': 'cr',
         'accessMode': 'cr',
-        'hostname': 'cr'
+        'hostname': 'cr',
+        'scheme': 'cr'
     })
 
 
