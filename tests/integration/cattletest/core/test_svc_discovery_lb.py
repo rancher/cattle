@@ -554,6 +554,65 @@ def test_destroy_svc_instance(super_client, context, client, image_uuid):
     _validate_lb_instance(host, lb, super_client, service)
 
 
+def test_set_service_links(client, context):
+    env1 = client.create_environment(name=random_str())
+    env1 = client.wait_success(env1)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    lb_service = client.create_loadBalancerService(name="lb",
+                                                   environmentId=env1.id,
+                                                   launchConfig=launch_config)
+    lb_service = client.wait_success(lb_service)
+
+    service2 = client.create_service(name=random_str(),
+                                     environmentId=env1.id,
+                                     launchConfig=launch_config)
+    service2 = client.wait_success(service2)
+
+    service3 = client.create_service(name=random_str(),
+                                     environmentId=env1.id,
+                                     launchConfig=launch_config)
+    service3 = client.wait_success(service3)
+
+    # set service2, service3 links for lb service
+    service_link1 = {"serviceId": service2.id, "ports": ["90"]}
+    service_link2 = {"serviceId": service3.id, "ports": ["90"]}
+    lb_service = lb_service. \
+        setservicelinks(serviceLinks=[service_link1, service_link2])
+    _validate_add_service_link(client, lb_service, service2, ports=["90"])
+    _validate_add_service_link(client, lb_service, service3, ports=["90"])
+
+    # update the link with new ports
+    service_link1 = {"serviceId": service2.id, "ports": ["100"]}
+    service_link2 = {"serviceId": service3.id, "ports": ["101"]}
+    lb_service = lb_service. \
+        setservicelinks(serviceLinks=[service_link1, service_link2])
+    _validate_remove_service_link(client, lb_service, service2, ports=["90"])
+    _validate_remove_service_link(client, lb_service, service3, ports=["90"])
+    _validate_add_service_link(client, lb_service, service2, ports=["100"])
+    _validate_add_service_link(client, lb_service, service3, ports=["101"])
+
+    # set service2 links for service1
+    service_link = {"serviceId": service2.id, "ports": ["100"]}
+    lb_service = lb_service. \
+        setservicelinks(serviceLinks=[service_link])
+    _validate_remove_service_link(client, lb_service, service3, ports=["101"])
+
+    # try to set duplicated service links
+    with pytest.raises(ApiError) as e:
+        lb_service = lb_service. \
+            setservicelinks(serviceLinks=[service_link, service_link])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+    assert e.value.error.fieldName == 'serviceId'
+
+    # set empty service link set
+    lb_service = lb_service.setservicelinks(serviceLinks=[])
+    _validate_remove_service_link(client, lb_service, service2, ports=["100"])
+
+
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
     start = time.time()
     host_maps = super_client. \
@@ -788,10 +847,33 @@ def _activate_svc_w_scale_two(new_context, random_str):
 
 
 def _validate_add_service_link(client, service, consumedService, ports=None):
+    if ports:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedServiceId=consumedService.id,
+                                   ports=ports)
+    else:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedServiceId=consumedService.id)
+
+    assert len(service_maps) > 0
+
+
+def _validate_remove_service_link(client, service, consumedService, ports,
+                                  timeout=30):
+    start = time.time()
     service_maps = client. \
         list_serviceConsumeMap(serviceId=service.id,
-                               consumedServiceId=consumedService.id, )
-
-    assert len(service_maps) == 1
-    if ports is not None:
-        assert service_maps[0].ports == ports
+                               consumedServiceId=consumedService.id,
+                               ports=ports,
+                               state='removed')
+    while len(service_maps) != 1:
+        time.sleep(.5)
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedServiceId=consumedService.id,
+                                   ports=ports,
+                                   state='removed')
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for map to be removed.'

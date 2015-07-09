@@ -11,6 +11,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -29,6 +30,11 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
     }
 
     @Override
+    public String[] getTypes() {
+        return new String[] { "service", "loadBalancerService", "dnsService" };
+    }
+
+    @Override
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
         if (request.getAction().equals(ServiceDiscoveryConstants.ACTION_SERVICE_SET_SERVICE_LINKS)) {
             validateServices(Long.valueOf(request.getId()), request);
@@ -40,10 +46,16 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
     private void validateServices(long serviceId, ApiRequest request) {
         List<? extends ServiceLink> serviceLinks = DataAccessor.fromMap(request.getRequestObject()).withKey(
                 ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).asList(jsonMapper, ServiceLink.class);
+        List<Long> serviceIds = new ArrayList<>();
 
         if (serviceLinks != null) {
             Service service = objectManager.loadResource(Service.class, serviceId);
             for (ServiceLink serviceLink : serviceLinks) {
+                if (serviceIds.contains(serviceLink.getServiceId())) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                            ServiceDiscoveryConstants.FIELD_SERVICE_ID);
+                }
+                serviceIds.add(serviceLink.getServiceId());
                 Service consumedService = objectManager.loadResource(Service.class, serviceLink.getServiceId());
                 if (service == null || consumedService == null
                         || !consumedService.getEnvironmentId().equals(service.getEnvironmentId())) {

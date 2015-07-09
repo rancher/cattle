@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.api.action;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.json.JsonMapper;
@@ -51,14 +52,15 @@ public class SetServiceLinksActionHandler implements ActionHandler {
             return null;
         }
         final Service service = (Service) obj;
-        final Map<Long, ServiceLink> newServiceLinks = populateNewServiceLinks(request, service.getKind()
-                .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name()));
+        final boolean forLb = service.getKind()
+                .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name());
+        final Map<Long, ServiceLink> newServiceLinks = populateNewServiceLinks(request, forLb);
         if (newServiceLinks != null && !newServiceLinks.isEmpty()) {
             lockManager.lock(new ServiceDiscoveryServiceSetLinksLock(service), new LockCallbackNoReturn() {
                 @Override
                 public void doWithLockNoResult() {
                     // remove old listeners set
-                    removeOldServiceMaps(service, newServiceLinks);
+                    removeOldServiceMaps(service, newServiceLinks, forLb);
 
                     // create a new set
                     createNewServiceMaps(service, newServiceLinks);
@@ -101,7 +103,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         }
     }
 
-    private void removeOldServiceMaps(Service service, Map<Long, ServiceLink> newServiceLinks) {
+    private void removeOldServiceMaps(Service service, Map<Long, ServiceLink> newServiceLinks, boolean forLb) {
         List<? extends ServiceConsumeMap> existingMaps = consumeMapDao.findConsumedMapsToRemove(service.getId());
         List<ServiceLink> linksToRemove = new ArrayList<>();
 
@@ -110,10 +112,20 @@ public class SetServiceLinksActionHandler implements ActionHandler {
             if (!newServiceLinks.containsKey(existingMap.getConsumedServiceId())) {
                 linksToRemove.add(existingLink);
             } else {
-                String newName = newServiceLinks.get(existingMap.getConsumedServiceId()).getName();
-                String existingName = existingMap.getName();
+                ServiceLink newServiceLink = newServiceLinks.get(existingMap.getConsumedServiceId());
+                
+                boolean namesAreEqual = StringUtils.equalsIgnoreCase(newServiceLink.getName(), existingMap.getName());
+                boolean portsAreEqual = true;
+                if (forLb) {
+                    LoadBalancerServiceLink newLbServiceLink = (LoadBalancerServiceLink) newServiceLink;
+                    List<? extends String> newPorts = newLbServiceLink.getPorts();
+                    List<? extends String> existingPorts = DataAccessor.fields(existingMap).
+                            withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
+                            .asList(jsonMapper, String.class);
+                    portsAreEqual = newPorts.containsAll(existingPorts) && existingPorts.containsAll(newPorts);
+                }
 
-                if (!StringUtils.equalsIgnoreCase(newName, existingName)) {
+                if (!namesAreEqual || !portsAreEqual) {
                     linksToRemove.add(existingLink);
                 }
             }
