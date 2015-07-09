@@ -4,6 +4,7 @@ import static io.cattle.platform.core.constants.CommonStatesConstants.*;
 import static io.cattle.platform.core.constants.ContainerEventConstants.*;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.core.constants.NetworkConstants.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
 import io.cattle.platform.agent.AgentLocator;
@@ -13,7 +14,7 @@ import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.ContainerEvent;
-import io.cattle.platform.core.model.Image;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Subnet;
@@ -32,11 +33,9 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.storage.service.StorageService;
-import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.net.NetUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +97,13 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         }
 
         final ContainerEvent event = (ContainerEvent)state.getResource();
+
+        Host host = objectManager.findOne(Host.class, HOST.ID, event.getHostId());
+        if (host == null || host.getRemoved() != null) {
+            log.info("Host [{}] is unavailable. Not processing container event [{}].", event.getHostId(), event.getId());
+            return null;
+        }
+
         final Map<String, Object> data = state.getData();
         HandlerResult result = lockManager.lock(new ContainerEventInstanceLock(event.getAccountId(), event.getExternalId()), new LockCallback<HandlerResult>() {
             @Override
