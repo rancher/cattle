@@ -99,7 +99,6 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(objectManager.loadResource(LoadBalancer.class, lb.getId()),
                 LoadBalancerTarget.class);
         Map<Integer, List<LoadBalancerTargetInfo>> uuidToTargetInfos = new HashMap<>();
-        InstanceHealthCheck commonHealthCheck = null;
         for (LoadBalancerTarget target : targets) {
             if (!(target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVATING) || target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE))) {
                 continue;
@@ -110,9 +109,6 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                 Instance userInstance = objectManager.loadResource(Instance.class, target.getInstanceId());
                 healthCheck = DataAccessor.field(userInstance,
                         InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
-                if (healthCheck != null && commonHealthCheck == null) {
-                    commonHealthCheck = healthCheck;
-                }
 
                 if (userInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)
                         || userInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_STARTING)
@@ -129,8 +125,6 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
 
             if (ipAddress != null) {
                 String targetName = (target.getName() == null ? target.getUuid() : target.getName());
-                // LEGACY: to support the case when healtcheck is defined on LB
-                healthCheck = healthCheck == null ? lbHealthCheck : healthCheck;
                 List<LoadBalancerTargetPortSpec> portSpecs = lbTargetDao.getLoadBalancerTargetPorts(target);
                 for (LoadBalancerTargetPortSpec portSpec : portSpecs) {
                     LoadBalancerTargetInfo targetInfo = new LoadBalancerTargetInfo(ipAddress, targetName,
@@ -146,15 +140,9 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             }
         }
 
-        // LEGACY: to support the case when healtcheck is defined on LB + to supopr the case when targets are ip
-        // addresses for stand alone LB case)
-        if (lbHealthCheck != null && commonHealthCheck == null) {
-            commonHealthCheck = lbHealthCheck;
-        }
-
         List<LoadBalancerTargetsInfo> targetsInfo = new ArrayList<>();
         for (Integer uuid : uuidToTargetInfos.keySet()) {
-            LoadBalancerTargetsInfo target = new LoadBalancerTargetsInfo(uuidToTargetInfos.get(uuid), commonHealthCheck);
+            LoadBalancerTargetsInfo target = new LoadBalancerTargetsInfo(uuidToTargetInfos.get(uuid), lbHealthCheck);
             targetsInfo.add(target);
         }
         

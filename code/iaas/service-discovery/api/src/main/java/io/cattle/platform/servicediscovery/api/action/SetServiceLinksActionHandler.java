@@ -118,7 +118,8 @@ public class SetServiceLinksActionHandler implements ActionHandler {
                 boolean portsAreEqual = true;
                 if (forLb) {
                     LoadBalancerServiceLink newLbServiceLink = (LoadBalancerServiceLink) newServiceLink;
-                    List<? extends String> newPorts = newLbServiceLink.getPorts();
+                    List<? extends String> newPorts = newLbServiceLink.getPorts() != null ? newLbServiceLink.getPorts()
+                            : new ArrayList<String>();
                     List<? extends String> existingPorts = DataAccessor.fields(existingMap).
                             withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
                             .asList(jsonMapper, String.class);
