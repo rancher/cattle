@@ -5,7 +5,6 @@ import io.cattle.platform.configitem.request.util.ConfigUpdateRequestUtils;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
-import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;

@@ -1,7 +1,6 @@
 package io.cattle.platform.process.credential;
 
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -11,14 +10,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
-import java.security.SecureRandom;
-
 import javax.inject.Named;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
-
-import com.netflix.config.DynamicStringProperty;
 
 @Named
 public class ApiKeyCreate extends AbstractObjectProcessLogic implements ProcessPreListener {

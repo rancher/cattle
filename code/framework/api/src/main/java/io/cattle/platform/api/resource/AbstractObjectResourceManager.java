@@ -447,6 +447,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected boolean isValidAction(Object obj, Action action) {
         Map<String, Object> attributes = action.getAttributes();
 

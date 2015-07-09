@@ -1,8 +1,7 @@
 package io.cattle.platform.docker.process.instance;
 
-import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-
+import static io.cattle.platform.core.model.tables.ImageTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Credential;
@@ -11,7 +10,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerNetworkConstants;
-import io.cattle.platform.docker.constants.DockerStoragePoolConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -22,8 +20,6 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.storage.service.StorageService;
-import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
-import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.Arrays;
 import java.util.List;

@@ -1,12 +1,9 @@
 package io.cattle.platform.process.host;
 
-import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.dao.ClusterHostMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.tables.records.ClusterHostMapRecord;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -15,8 +12,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.Collections;
-import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 

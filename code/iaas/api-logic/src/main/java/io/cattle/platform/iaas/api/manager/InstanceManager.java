@@ -3,13 +3,11 @@ package io.cattle.platform.iaas.api.manager;
 import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import java.net.ResponseCache;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

@@ -9,12 +9,7 @@ import io.cattle.platform.storage.service.dao.ImageDao;
 
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class ImageDaoImpl extends AbstractJooqDao implements ImageDao {
-
-    private static final Logger log = LoggerFactory.getLogger(ImageDaoImpl.class);
 
     @Inject
     ObjectManager objectManager;

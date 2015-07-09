@@ -1,10 +1,8 @@
 package io.cattle.platform.register.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
-
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
-import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;

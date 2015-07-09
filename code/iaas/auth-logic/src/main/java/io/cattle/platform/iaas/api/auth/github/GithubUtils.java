@@ -67,6 +67,7 @@ public class GithubUtils {
         return externalIds(jsonData);
     }
 
+    @SuppressWarnings("unchecked")
     private Set<ExternalId> externalIds(Map<String, Object> jsonData) {
         Set<ExternalId> externalIds = new HashSet<>();
         if (jsonData == null){
@@ -85,6 +86,7 @@ public class GithubUtils {
         return  externalIds;
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> getJsonData(String jwt) {
         if (StringUtils.isEmpty(jwt)) {
             return null;
@@ -166,6 +168,7 @@ public class GithubUtils {
         return externalIds();
     }
 
+    @SuppressWarnings("unchecked")
     public String getTeamOrgById(String id) {
         Map<String, Object> jsonData = getJsonData();
         Map<String, String> teamToOrg = (Map<String, String>) jsonData.get("teamToOrg");

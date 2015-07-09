@@ -1,12 +1,8 @@
 package io.cattle.platform.iaas.api.auth.github;
 
 import io.cattle.platform.api.action.ActionHandler;
-import io.cattle.platform.api.auth.Policy;
-import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
@@ -25,6 +21,7 @@ public class SetProjectMembersActionHandler implements ActionHandler{
     @Inject
     ProjectMemberResourceManager projectMemberResourceManager;
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
         Account project = (Account) obj;

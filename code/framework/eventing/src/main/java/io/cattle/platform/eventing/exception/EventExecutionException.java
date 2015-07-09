@@ -35,7 +35,7 @@ public class EventExecutionException extends ExecutionException {
         if (internal != null && internal.startsWith("class:")) {
             String className = internal.split(":")[1];
             try {
-                Class clz = Class.forName(className);
+                Class<?> clz = Class.forName(className);
                 if (EventExecutionException.class.isAssignableFrom(clz)) {
                     return (EventExecutionException) clz.getConstructor(String.class, Event.class)
                             .newInstance(event.getTransitioningMessage(), event);

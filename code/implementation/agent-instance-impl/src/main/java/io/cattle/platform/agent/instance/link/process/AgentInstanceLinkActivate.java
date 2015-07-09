@@ -13,21 +13,14 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.resource.pool.PooledResource;
-import io.cattle.platform.resource.pool.PooledResourceOptions;
-import io.cattle.platform.resource.pool.ResourcePoolManager;
-import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 

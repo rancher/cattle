@@ -85,7 +85,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             return Collections.singletonList(project);
         }
         if (criteria.get("uuid") != null) {
-            String uuid = ((String) ((Condition) ((ArrayList) criteria.get("uuid")).get(0)).getValue());
+            String uuid = ((String) ((Condition) ((ArrayList<?>) criteria.get("uuid")).get(0)).getValue());
             return giveProjectAccess(authDao.getAccountByUuid(uuid), policy);
         }
         boolean isAdmin;
@@ -139,6 +139,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         return createProject(request);
     }
 
+    @SuppressWarnings("unchecked")
     private Account createProject(ApiRequest apiRequest) {
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         Map<String, Object> project = CollectionUtils.toMap(apiRequest.getRequestObject());

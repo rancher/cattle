@@ -1,6 +1,5 @@
 package io.cattle.platform.iaas.api.filter.containerevent;
 
-import static io.cattle.platform.core.model.tables.AgentTable.*;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.dao.AgentDao;
@@ -9,11 +8,9 @@ import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
-import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
-import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.Map;
