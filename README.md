@@ -1,4 +1,4 @@
-# Cattle [![Build Status](http://ci.rancher.io/api/badge/github.com/rancherio/cattle/status.svg?branch=master)](http://ci.rancher.io/github.com/rancherio/cattle)
+# Cattle [![Build Status](http://ci.rancher.io/api/badge/github.com/rancher/cattle/status.svg?branch=master)](http://ci.rancher.io/github.com/rancher/cattle)
 **This is early alpha stuff.  You've been warned.**
 
 Cattle is an infrastructure orchestration platform for such tasks as running containers and virtual machines.  It was created as a sandbox to try out new architectural ideas that would be either too risky or too difficult to do within an established platform like OpenStack or Apache CloudStack.
