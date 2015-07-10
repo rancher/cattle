@@ -15,7 +15,7 @@ package io.cattle.platform.core.model.tables.records;
 })
 public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ResourcePoolRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.ResourcePool {
 
-	private static final long serialVersionUID = 1024793693;
+	private static final long serialVersionUID = 1323875213;
 
 	/**
 	 * Setter for <code>cattle.resource_pool.id</code>.
@@ -199,7 +199,7 @@ public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	/**
 	 * Getter for <code>cattle.resource_pool.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

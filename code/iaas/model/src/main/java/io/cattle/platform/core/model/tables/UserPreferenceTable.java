@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class UserPreferenceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.UserPreferenceRecord> {
 
-	private static final long serialVersionUID = -181933587;
+	private static final long serialVersionUID = -2033388885;
 
 	/**
 	 * The singleton instance of <code>cattle.user_preference</code>
@@ -79,7 +79,7 @@ public class UserPreferenceTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	/**
 	 * The column <code>cattle.user_preference.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.UserPreferenceRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.UserPreferenceRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.user_preference.value</code>.

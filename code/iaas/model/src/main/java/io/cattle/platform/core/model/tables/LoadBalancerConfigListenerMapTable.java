@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LoadBalancerConfigListenerMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord> {
 
-	private static final long serialVersionUID = -104115610;
+	private static final long serialVersionUID = -103041656;
 
 	/**
 	 * The singleton instance of <code>cattle.load_balancer_config_listener_map</code>
@@ -74,7 +74,7 @@ public class LoadBalancerConfigListenerMapTable extends org.jooq.impl.TableImpl<
 	/**
 	 * The column <code>cattle.load_balancer_config_listener_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerConfigListenerMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.load_balancer_config_listener_map.load_balancer_config_id</code>.

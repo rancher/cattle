@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "subnet", schema = "cattle")
 public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.SubnetRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.Long>, io.cattle.platform.core.model.Subnet {
 
-	private static final long serialVersionUID = -1913938283;
+	private static final long serialVersionUID = 588048803;
 
 	/**
 	 * Setter for <code>cattle.subnet.id</code>.
@@ -197,7 +197,7 @@ public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	/**
 	 * Getter for <code>cattle.subnet.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

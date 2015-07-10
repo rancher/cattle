@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Instance {
 
-	private static final long serialVersionUID = 1777638257;
+	private static final long serialVersionUID = -2054042499;
 
 	/**
 	 * Setter for <code>cattle.instance.id</code>.
@@ -197,7 +197,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Getter for <code>cattle.instance.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

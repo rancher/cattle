@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "mount", schema = "cattle")
 public class MountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.MountRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Mount {
 
-	private static final long serialVersionUID = 43485957;
+	private static final long serialVersionUID = 1464425819;
 
 	/**
 	 * Setter for <code>cattle.mount.id</code>.
@@ -197,7 +197,7 @@ public class MountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	/**
 	 * Getter for <code>cattle.mount.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

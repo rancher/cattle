@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class OfferingTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.OfferingRecord> {
 
-	private static final long serialVersionUID = -1224411100;
+	private static final long serialVersionUID = -972300080;
 
 	/**
 	 * The singleton instance of <code>cattle.offering</code>
@@ -79,7 +79,7 @@ public class OfferingTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	/**
 	 * The column <code>cattle.offering.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.OfferingRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.OfferingRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.offering.is_public</code>.

@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "account", schema = "cattle")
 public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AccountRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Account {
 
-	private static final long serialVersionUID = 1555173424;
+	private static final long serialVersionUID = 375886644;
 
 	/**
 	 * Setter for <code>cattle.account.id</code>.
@@ -180,7 +180,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	/**
 	 * Getter for <code>cattle.account.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(9);

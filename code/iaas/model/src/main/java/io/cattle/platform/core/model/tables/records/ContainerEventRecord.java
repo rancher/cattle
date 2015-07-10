@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "container_event", schema = "cattle")
 public class ContainerEventRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ContainerEventRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.ContainerEvent {
 
-	private static final long serialVersionUID = 1214213344;
+	private static final long serialVersionUID = -2087231546;
 
 	/**
 	 * Setter for <code>cattle.container_event.id</code>.
@@ -112,7 +112,7 @@ public class ContainerEventRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	/**
 	 * Getter for <code>cattle.container_event.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(5);

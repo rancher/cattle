@@ -132,7 +132,7 @@ public interface IpAssociation extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.ip_association.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
 	/**

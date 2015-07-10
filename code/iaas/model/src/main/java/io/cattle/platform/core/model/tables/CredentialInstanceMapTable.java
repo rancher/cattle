@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CredentialInstanceMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.CredentialInstanceMapRecord> {
 
-	private static final long serialVersionUID = -1975210452;
+	private static final long serialVersionUID = -861164422;
 
 	/**
 	 * The singleton instance of <code>cattle.credential_instance_map</code>
@@ -74,7 +74,7 @@ public class CredentialInstanceMapTable extends org.jooq.impl.TableImpl<io.cattl
 	/**
 	 * The column <code>cattle.credential_instance_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.CredentialInstanceMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.CredentialInstanceMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.credential_instance_map.credential_id</code>.

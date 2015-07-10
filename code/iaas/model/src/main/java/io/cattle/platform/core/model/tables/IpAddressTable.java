@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class IpAddressTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.IpAddressRecord> {
 
-	private static final long serialVersionUID = -35729643;
+	private static final long serialVersionUID = -1937163817;
 
 	/**
 	 * The singleton instance of <code>cattle.ip_address</code>
@@ -79,7 +79,7 @@ public class IpAddressTable extends org.jooq.impl.TableImpl<io.cattle.platform.c
 	/**
 	 * The column <code>cattle.ip_address.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.IpAddressRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.IpAddressRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.ip_address.address</code>.

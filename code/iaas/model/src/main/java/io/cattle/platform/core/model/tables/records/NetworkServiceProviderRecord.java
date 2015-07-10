@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "network_service_provider", schema = "cattle")
 public class NetworkServiceProviderRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.NetworkServiceProviderRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long>, io.cattle.platform.core.model.NetworkServiceProvider {
 
-	private static final long serialVersionUID = -1004502954;
+	private static final long serialVersionUID = -1061564962;
 
 	/**
 	 * Setter for <code>cattle.network_service_provider.id</code>.
@@ -197,7 +197,7 @@ public class NetworkServiceProviderRecord extends org.jooq.impl.UpdatableRecordI
 	/**
 	 * Getter for <code>cattle.network_service_provider.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

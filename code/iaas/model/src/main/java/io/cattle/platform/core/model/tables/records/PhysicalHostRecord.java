@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "physical_host", schema = "cattle")
 public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.PhysicalHostRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.PhysicalHost {
 
-	private static final long serialVersionUID = -1177372955;
+	private static final long serialVersionUID = 829666503;
 
 	/**
 	 * Setter for <code>cattle.physical_host.id</code>.
@@ -197,7 +197,7 @@ public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	/**
 	 * Getter for <code>cattle.physical_host.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

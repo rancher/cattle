@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "ip_address_nic_map", schema = "cattle")
 public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.IpAddressNicMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.IpAddressNicMap {
 
-	private static final long serialVersionUID = -1800501050;
+	private static final long serialVersionUID = -63119668;
 
 	/**
 	 * Setter for <code>cattle.ip_address_nic_map.id</code>.
@@ -180,7 +180,7 @@ public class IpAddressNicMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Getter for <code>cattle.ip_address_nic_map.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(9);

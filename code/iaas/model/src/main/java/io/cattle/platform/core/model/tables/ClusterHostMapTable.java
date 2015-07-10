@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ClusterHostMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ClusterHostMapRecord> {
 
-	private static final long serialVersionUID = 1760038300;
+	private static final long serialVersionUID = -1962330106;
 
 	/**
 	 * The singleton instance of <code>cattle.cluster_host_map</code>
@@ -74,7 +74,7 @@ public class ClusterHostMapTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	/**
 	 * The column <code>cattle.cluster_host_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ClusterHostMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ClusterHostMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.cluster_host_map.cluster_id</code>.

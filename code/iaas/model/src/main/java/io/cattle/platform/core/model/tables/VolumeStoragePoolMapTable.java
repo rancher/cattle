@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord> {
 
-	private static final long serialVersionUID = 905420719;
+	private static final long serialVersionUID = 852878481;
 
 	/**
 	 * The singleton instance of <code>cattle.volume_storage_pool_map</code>
@@ -74,7 +74,7 @@ public class VolumeStoragePoolMapTable extends org.jooq.impl.TableImpl<io.cattle
 	/**
 	 * The column <code>cattle.volume_storage_pool_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.volume_storage_pool_map.volume_id</code>.

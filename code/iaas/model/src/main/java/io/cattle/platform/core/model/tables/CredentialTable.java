@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CredentialTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.CredentialRecord> {
 
-	private static final long serialVersionUID = 1760963263;
+	private static final long serialVersionUID = -557604909;
 
 	/**
 	 * The singleton instance of <code>cattle.credential</code>
@@ -79,7 +79,7 @@ public class CredentialTable extends org.jooq.impl.TableImpl<io.cattle.platform.
 	/**
 	 * The column <code>cattle.credential.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.CredentialRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.CredentialRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.credential.public_value</code>.

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class IpAddressNicMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.IpAddressNicMapRecord> {
 
-	private static final long serialVersionUID = -1718763541;
+	private static final long serialVersionUID = -2075504335;
 
 	/**
 	 * The singleton instance of <code>cattle.ip_address_nic_map</code>
@@ -74,7 +74,7 @@ public class IpAddressNicMapTable extends org.jooq.impl.TableImpl<io.cattle.plat
 	/**
 	 * The column <code>cattle.ip_address_nic_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.IpAddressNicMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.IpAddressNicMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.ip_address_nic_map.ip_address_id</code>.

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LabelTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LabelRecord> {
 
-	private static final long serialVersionUID = 2072325992;
+	private static final long serialVersionUID = 956284380;
 
 	/**
 	 * The singleton instance of <code>cattle.label</code>
@@ -79,7 +79,7 @@ public class LabelTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.
 	/**
 	 * The column <code>cattle.label.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LabelRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LabelRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.label.type</code>.

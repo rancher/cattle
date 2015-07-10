@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "instance_link", schema = "cattle")
 public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceLinkRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.InstanceLink {
 
-	private static final long serialVersionUID = 1887970487;
+	private static final long serialVersionUID = -1351791139;
 
 	/**
 	 * Setter for <code>cattle.instance_link.id</code>.
@@ -197,7 +197,7 @@ public class InstanceLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	/**
 	 * Getter for <code>cattle.instance_link.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

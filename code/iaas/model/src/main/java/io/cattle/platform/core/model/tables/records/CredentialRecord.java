@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "credential", schema = "cattle")
 public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.CredentialRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.Credential {
 
-	private static final long serialVersionUID = -1833553748;
+	private static final long serialVersionUID = -183819832;
 
 	/**
 	 * Setter for <code>cattle.credential.id</code>.
@@ -197,7 +197,7 @@ public class CredentialRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	/**
 	 * Getter for <code>cattle.credential.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);
