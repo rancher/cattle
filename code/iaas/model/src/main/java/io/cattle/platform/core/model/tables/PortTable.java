@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class PortTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.PortRecord> {
 
-	private static final long serialVersionUID = 2082990048;
+	private static final long serialVersionUID = 1815092212;
 
 	/**
 	 * The singleton instance of <code>cattle.port</code>
@@ -79,7 +79,7 @@ public class PortTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.m
 	/**
 	 * The column <code>cattle.port.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.PortRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.PortRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.port.public_port</code>.

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NetworkServiceProviderInstanceMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.NetworkServiceProviderInstanceMapRecord> {
 
-	private static final long serialVersionUID = -1839633289;
+	private static final long serialVersionUID = 1712732525;
 
 	/**
 	 * The singleton instance of <code>cattle.network_service_provider_instance_map</code>
@@ -74,7 +74,7 @@ public class NetworkServiceProviderInstanceMapTable extends org.jooq.impl.TableI
 	/**
 	 * The column <code>cattle.network_service_provider_instance_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NetworkServiceProviderInstanceMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NetworkServiceProviderInstanceMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.network_service_provider_instance_map.network_service_provider_id</code>.

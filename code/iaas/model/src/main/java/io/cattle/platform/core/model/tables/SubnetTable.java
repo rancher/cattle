@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SubnetTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.SubnetRecord> {
 
-	private static final long serialVersionUID = 958577622;
+	private static final long serialVersionUID = -1269129534;
 
 	/**
 	 * The singleton instance of <code>cattle.subnet</code>
@@ -79,7 +79,7 @@ public class SubnetTable extends org.jooq.impl.TableImpl<io.cattle.platform.core
 	/**
 	 * The column <code>cattle.subnet.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.SubnetRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.SubnetRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.subnet.network_address</code>.

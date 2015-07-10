@@ -132,7 +132,7 @@ public interface HostLabelMap extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.host_label_map.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
 	/**

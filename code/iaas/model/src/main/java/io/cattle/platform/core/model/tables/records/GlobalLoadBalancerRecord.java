@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "global_load_balancer", schema = "cattle")
 public class GlobalLoadBalancerRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.GlobalLoadBalancerRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>>, io.cattle.platform.core.model.GlobalLoadBalancer {
 
-	private static final long serialVersionUID = -312585182;
+	private static final long serialVersionUID = -1639532764;
 
 	/**
 	 * Setter for <code>cattle.global_load_balancer.id</code>.
@@ -197,7 +197,7 @@ public class GlobalLoadBalancerRecord extends org.jooq.impl.UpdatableRecordImpl<
 	/**
 	 * Getter for <code>cattle.global_load_balancer.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

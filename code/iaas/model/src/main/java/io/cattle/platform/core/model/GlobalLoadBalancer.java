@@ -132,7 +132,7 @@ public interface GlobalLoadBalancer extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.global_load_balancer.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
 	// -------------------------------------------------------------------------

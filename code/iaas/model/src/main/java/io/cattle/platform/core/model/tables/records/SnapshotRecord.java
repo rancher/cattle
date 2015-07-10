@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "snapshot", schema = "cattle")
 public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.SnapshotRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long>, io.cattle.platform.core.model.Snapshot {
 
-	private static final long serialVersionUID = -1677739556;
+	private static final long serialVersionUID = 987740428;
 
 	/**
 	 * Setter for <code>cattle.snapshot.id</code>.
@@ -197,7 +197,7 @@ public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Getter for <code>cattle.snapshot.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

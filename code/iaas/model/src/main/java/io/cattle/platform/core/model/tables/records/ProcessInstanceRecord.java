@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "process_instance", schema = "cattle")
 public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.ProcessInstance {
 
-	private static final long serialVersionUID = -611905442;
+	private static final long serialVersionUID = 2046731068;
 
 	/**
 	 * Setter for <code>cattle.process_instance.id</code>.
@@ -78,7 +78,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Getter for <code>cattle.process_instance.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(3);

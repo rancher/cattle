@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentGroupTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AgentGroupRecord> {
 
-	private static final long serialVersionUID = 889569475;
+	private static final long serialVersionUID = -2015443239;
 
 	/**
 	 * The singleton instance of <code>cattle.agent_group</code>
@@ -79,7 +79,7 @@ public class AgentGroupTable extends org.jooq.impl.TableImpl<io.cattle.platform.
 	/**
 	 * The column <code>cattle.agent_group.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AgentGroupRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AgentGroupRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * Create a <code>cattle.agent_group</code> table reference

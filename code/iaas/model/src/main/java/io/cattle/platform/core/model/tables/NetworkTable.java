@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NetworkTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.NetworkRecord> {
 
-	private static final long serialVersionUID = 1539428051;
+	private static final long serialVersionUID = -890109673;
 
 	/**
 	 * The singleton instance of <code>cattle.network</code>
@@ -79,7 +79,7 @@ public class NetworkTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	/**
 	 * The column <code>cattle.network.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NetworkRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NetworkRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.network.is_public</code>.

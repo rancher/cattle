@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceConsumeMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord> {
 
-	private static final long serialVersionUID = -1749720843;
+	private static final long serialVersionUID = 517525859;
 
 	/**
 	 * The singleton instance of <code>cattle.service_consume_map</code>
@@ -74,7 +74,7 @@ public class ServiceConsumeMapTable extends org.jooq.impl.TableImpl<io.cattle.pl
 	/**
 	 * The column <code>cattle.service_consume_map.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.service_consume_map.service_id</code>.

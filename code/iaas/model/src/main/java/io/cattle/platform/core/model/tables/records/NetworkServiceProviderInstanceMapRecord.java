@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "network_service_provider_instance_map", schema = "cattle")
 public class NetworkServiceProviderInstanceMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.NetworkServiceProviderInstanceMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.NetworkServiceProviderInstanceMap {
 
-	private static final long serialVersionUID = 881316305;
+	private static final long serialVersionUID = 235241621;
 
 	/**
 	 * Setter for <code>cattle.network_service_provider_instance_map.id</code>.
@@ -180,7 +180,7 @@ public class NetworkServiceProviderInstanceMapRecord extends org.jooq.impl.Updat
 	/**
 	 * Getter for <code>cattle.network_service_provider_instance_map.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(9);

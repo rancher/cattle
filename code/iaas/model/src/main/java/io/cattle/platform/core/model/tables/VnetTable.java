@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VnetTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.VnetRecord> {
 
-	private static final long serialVersionUID = -2026722416;
+	private static final long serialVersionUID = 698693156;
 
 	/**
 	 * The singleton instance of <code>cattle.vnet</code>
@@ -79,7 +79,7 @@ public class VnetTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.m
 	/**
 	 * The column <code>cattle.vnet.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VnetRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VnetRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.vnet.uri</code>.

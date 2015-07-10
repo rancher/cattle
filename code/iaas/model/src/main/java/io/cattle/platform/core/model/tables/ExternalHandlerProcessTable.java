@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ExternalHandlerProcessTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ExternalHandlerProcessRecord> {
 
-	private static final long serialVersionUID = -477706927;
+	private static final long serialVersionUID = -1296185509;
 
 	/**
 	 * The singleton instance of <code>cattle.external_handler_process</code>
@@ -74,7 +74,7 @@ public class ExternalHandlerProcessTable extends org.jooq.impl.TableImpl<io.catt
 	/**
 	 * The column <code>cattle.external_handler_process.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ExternalHandlerProcessRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ExternalHandlerProcessRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * Create a <code>cattle.external_handler_process</code> table reference

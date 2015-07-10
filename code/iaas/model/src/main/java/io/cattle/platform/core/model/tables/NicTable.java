@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NicTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.NicRecord> {
 
-	private static final long serialVersionUID = 2000719190;
+	private static final long serialVersionUID = -239236646;
 
 	/**
 	 * The singleton instance of <code>cattle.nic</code>
@@ -79,7 +79,7 @@ public class NicTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.mo
 	/**
 	 * The column <code>cattle.nic.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NicRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NicRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.nic.instance_id</code>.

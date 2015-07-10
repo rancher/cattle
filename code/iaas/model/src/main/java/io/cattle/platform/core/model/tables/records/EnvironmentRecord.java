@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "environment", schema = "cattle")
 public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.EnvironmentRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>>, io.cattle.platform.core.model.Environment {
 
-	private static final long serialVersionUID = -572249726;
+	private static final long serialVersionUID = 365508860;
 
 	/**
 	 * Setter for <code>cattle.environment.id</code>.
@@ -197,7 +197,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	/**
 	 * Getter for <code>cattle.environment.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

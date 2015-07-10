@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "ip_pool", schema = "cattle")
 public class IpPoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.IpPoolRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Boolean>, io.cattle.platform.core.model.IpPool {
 
-	private static final long serialVersionUID = -320918224;
+	private static final long serialVersionUID = 1206484838;
 
 	/**
 	 * Setter for <code>cattle.ip_pool.id</code>.
@@ -197,7 +197,7 @@ public class IpPoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	/**
 	 * Getter for <code>cattle.ip_pool.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(10);

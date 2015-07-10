@@ -121,7 +121,7 @@ public interface ExternalHandlerExternalHandlerProcessMap extends java.io.Serial
 	/**
 	 * Getter for <code>cattle.external_handler_external_handler_process_map.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
 	/**

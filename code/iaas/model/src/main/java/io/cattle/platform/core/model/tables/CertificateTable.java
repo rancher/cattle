@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CertificateTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.CertificateRecord> {
 
-	private static final long serialVersionUID = 949918707;
+	private static final long serialVersionUID = -1971831805;
 
 	/**
 	 * The singleton instance of <code>cattle.certificate</code>
@@ -79,7 +79,7 @@ public class CertificateTable extends org.jooq.impl.TableImpl<io.cattle.platform
 	/**
 	 * The column <code>cattle.certificate.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.CertificateRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.CertificateRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.certificate.cert_chain</code>.

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class GlobalLoadBalancerTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.GlobalLoadBalancerRecord> {
 
-	private static final long serialVersionUID = 538767251;
+	private static final long serialVersionUID = -2091413777;
 
 	/**
 	 * The singleton instance of <code>cattle.global_load_balancer</code>
@@ -79,7 +79,7 @@ public class GlobalLoadBalancerTable extends org.jooq.impl.TableImpl<io.cattle.p
 	/**
 	 * The column <code>cattle.global_load_balancer.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.GlobalLoadBalancerRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.GlobalLoadBalancerRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * Create a <code>cattle.global_load_balancer</code> table reference

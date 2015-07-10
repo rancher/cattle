@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ContainerEventTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ContainerEventRecord> {
 
-	private static final long serialVersionUID = -170648426;
+	private static final long serialVersionUID = 428048112;
 
 	/**
 	 * The singleton instance of <code>cattle.container_event</code>
@@ -54,7 +54,7 @@ public class ContainerEventTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	/**
 	 * The column <code>cattle.container_event.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ContainerEventRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ContainerEventRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.container_event.external_id</code>.

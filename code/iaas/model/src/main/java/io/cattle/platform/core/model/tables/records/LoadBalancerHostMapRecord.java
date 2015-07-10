@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "load_balancer_host_map", schema = "cattle")
 public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.LoadBalancerHostMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.LoadBalancerHostMap {
 
-	private static final long serialVersionUID = -1127783755;
+	private static final long serialVersionUID = -1041974511;
 
 	/**
 	 * Setter for <code>cattle.load_balancer_host_map.id</code>.
@@ -180,7 +180,7 @@ public class LoadBalancerHostMapRecord extends org.jooq.impl.UpdatableRecordImpl
 	/**
 	 * Getter for <code>cattle.load_balancer_host_map.data</code>.
 	 */
-	@javax.persistence.Column(name = "data", length = 65535)
+	@javax.persistence.Column(name = "data", length = 16777215)
 	@Override
 	public java.util.Map<String,Object> getData() {
 		return (java.util.Map<String,Object>) getValue(9);
