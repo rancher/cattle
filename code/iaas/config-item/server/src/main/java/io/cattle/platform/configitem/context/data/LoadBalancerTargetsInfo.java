@@ -11,10 +11,22 @@ public class LoadBalancerTargetsInfo {
     List<LoadBalancerTargetInfo> targets;
     InstanceHealthCheck healthCheck;
 
-    public LoadBalancerTargetsInfo(List<LoadBalancerTargetInfo> lbTargetInfo, InstanceHealthCheck healthCheck) {
+    public LoadBalancerTargetsInfo(List<LoadBalancerTargetInfo> lbTargetInfo, InstanceHealthCheck lbHealthCheck) {
         super();
         this.targets = lbTargetInfo;
-        this.healthCheck = healthCheck;
+        for (LoadBalancerTargetInfo target : this.targets) {
+            if (target.getHealthCheck() != null) {
+                this.healthCheck = target.getHealthCheck();
+                break;
+            }
+        }
+
+        // LEGACY: to support the case when healtcheck is defined on LB + to support the case when targets are ip
+        // addresses for stand alone LB case)
+        if (this.healthCheck == null && lbHealthCheck != null) {
+            this.healthCheck = lbHealthCheck;
+        }
+
         if (!lbTargetInfo.isEmpty()) {
             this.portSpec = lbTargetInfo.get(0).getPortSpec();
             this.uuid = lbTargetInfo.get(0).getUuid();

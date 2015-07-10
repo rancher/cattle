@@ -84,5 +84,4 @@ public class LoadBalancerTargetPortSpec {
     public void setPath(String path) {
         this.path = path;
     }
-
 }
