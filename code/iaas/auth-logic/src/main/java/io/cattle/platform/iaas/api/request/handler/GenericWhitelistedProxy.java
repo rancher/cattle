@@ -67,6 +67,12 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidRedirect", "The redirect is invalid", null);
         }
 
+        /* When no protocol is provided, use HTTPS by default. Please
+         * note that due to the following issue, it is in fact not
+         * possible to specify a protocol when cattle is running
+         * behind the websocket-proxy:
+         *   https://github.com/rancher/rancher/issues/1485
+         */
         if (!StringUtils.startsWith(redirect, "http")) {
             redirect = "https://" + redirect;
         }
