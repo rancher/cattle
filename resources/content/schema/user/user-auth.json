@@ -83,6 +83,7 @@
         "container.labels" : "cr",
         "container.volumeDriver" : "cr",
         "container.workingDir" : "cr",
+        "container.expose" : "cr",
 
         "containerExec" : "r",
         "containerExec.attachStdin" : "cr",
@@ -267,6 +268,7 @@
         "loadBalancerListener.targetProtocol" : "r",
         "loadBalancerListener.algorithm" : "cr",
         "loadBalancerListener.serviceId" : "r",
+        "loadBalancerListener.privatePort" : "cr",
 
         "loadBalancerConfig" : "r",
         "loadBalancerConfig.healthCheck" : "cru",

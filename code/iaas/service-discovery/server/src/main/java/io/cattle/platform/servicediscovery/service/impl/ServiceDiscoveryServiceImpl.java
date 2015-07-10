@@ -201,59 +201,112 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @SuppressWarnings("unchecked")
     private void createListeners(Service service, LoadBalancerConfig lbConfig, Map<String, Object> launchConfigData) {
-        // 1. create listeners
-        List<String> portDefs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
-        if (portDefs == null || portDefs.isEmpty()) {
-            return;
-        }
-
         Map<Integer, LoadBalancerListener> listeners = new HashMap<>();
 
-        for (String port : portDefs) {
+        // 1. create listeners
+        Map<String, Boolean> portDefs = new HashMap<>();
+
+        if (launchConfigData.get(InstanceConstants.FIELD_PORTS) != null) {
+            for (String port : (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS)) {
+                portDefs.put(port, true);
+            }
+        }
+
+        if (launchConfigData.get(InstanceConstants.FIELD_EXPOSE) != null) {
+            for (String port : (List<String>) launchConfigData.get(InstanceConstants.FIELD_EXPOSE)) {
+                portDefs.put(port, false);
+            }
+        }
+
+        for (String port : portDefs.keySet()) {
             PortSpec spec = new PortSpec(port);
+            String protocol;
             if (!port.contains("tcp")) {
                 // default to http unless defined otherwise in the compose file
-                spec.setProtocol("http");
+                protocol = "http";
+            } else {
+                protocol = "tcp";
             }
 
             if (listeners.containsKey(spec.getPrivatePort())) {
                 continue;
             }
 
-            Integer publicPort = spec.getPublicPort();
             int privatePort = spec.getPrivatePort();
-            if (publicPort == null) {
-                publicPort = privatePort;
+            Integer sourcePort = spec.getPublicPort();
+            // set sourcePort only for ports defined in "ports" param
+            // the ones defined in expose, will get translated to private listeners
+            if (portDefs.get(port) && sourcePort == null) {
+                sourcePort = privatePort;
             }
 
-            LoadBalancerListener listenerObj = objectManager.findOne(LoadBalancerListener.class,
-                    LOAD_BALANCER_LISTENER.SERVICE_ID, service.getId(),
-                    LOAD_BALANCER_LISTENER.SOURCE_PORT, publicPort,
-                    LOAD_BALANCER_LISTENER.TARGET_PORT, privatePort,
-                    LOAD_BALANCER_LISTENER.REMOVED, null,
-                    LOAD_BALANCER_LISTENER.ACCOUNT_ID, service.getAccountId());
-
-            if (listenerObj == null) {
-                listenerObj = objectManager.create(LoadBalancerListener.class,
-                        LOAD_BALANCER_LISTENER.NAME, getLoadBalancerName(service) + "_" + publicPort,
-                        LOAD_BALANCER_LISTENER.ACCOUNT_ID,
-                        service.getAccountId(), LOAD_BALANCER_LISTENER.SOURCE_PORT, publicPort,
-                        LOAD_BALANCER_LISTENER.TARGET_PORT, privatePort,
-                        LOAD_BALANCER_LISTENER.SOURCE_PROTOCOL, spec.getProtocol(),
-                        LOAD_BALANCER_LISTENER.TARGET_PROTOCOL,
-                        spec.getProtocol(),
-                        LoadBalancerConstants.FIELD_LB_LISTENER_ALGORITHM, "roundrobin",
-                        LOAD_BALANCER_LISTENER.ACCOUNT_ID, service.getAccountId(),
-                        LOAD_BALANCER_LISTENER.SERVICE_ID, service.getId());
-            }
-            objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_LISTENER_CREATE, listenerObj, null);
-
-            listeners.put(listenerObj.getTargetPort(), listenerObj);
+            createListener(service, listeners, new LoadBalancerListenerPort(privatePort, sourcePort,
+                    protocol, privatePort));
         }
 
         for (LoadBalancerListener listener : listeners.values()) {
             lbService.addListenerToConfig(lbConfig, listener.getId());
         }
+    }
+    
+    private class LoadBalancerListenerPort {
+        int privatePort;
+        Integer sourcePort;
+        Integer targetPort;
+        String protocol;
+
+        public LoadBalancerListenerPort(int privatePort, Integer sourcePort, String protocol, Integer targetPort) {
+            super();
+            this.privatePort = privatePort;
+            this.sourcePort = sourcePort;
+            this.protocol = protocol;
+            this.targetPort = targetPort;
+        }
+
+        public int getPrivatePort() {
+            return privatePort;
+        }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public Integer getSourcePort() {
+            return sourcePort;
+        }
+
+        public Integer getTargetPort() {
+            return targetPort;
+        }
+    }
+
+
+    protected void createListener(Service service, Map<Integer, LoadBalancerListener> listeners,
+            LoadBalancerListenerPort port) {
+        LoadBalancerListener listenerObj = objectManager.findOne(LoadBalancerListener.class,
+                LOAD_BALANCER_LISTENER.SERVICE_ID, service.getId(),
+                LOAD_BALANCER_LISTENER.SOURCE_PORT, port.getSourcePort(),
+                LOAD_BALANCER_LISTENER.PRIVATE_PORT, port.getPrivatePort(),
+                LOAD_BALANCER_LISTENER.TARGET_PORT, port.getTargetPort(),
+                LOAD_BALANCER_LISTENER.REMOVED, null,
+                LOAD_BALANCER_LISTENER.ACCOUNT_ID, service.getAccountId());
+
+        if (listenerObj == null) {
+            listenerObj = objectManager.create(LoadBalancerListener.class,
+                    LOAD_BALANCER_LISTENER.NAME, getLoadBalancerName(service) + "_" + port.getPrivatePort(),
+                    LOAD_BALANCER_LISTENER.ACCOUNT_ID, service.getAccountId(),
+                    LOAD_BALANCER_LISTENER.SOURCE_PORT, port.getSourcePort(),
+                    LOAD_BALANCER_LISTENER.PRIVATE_PORT, port.getPrivatePort(),
+                    LOAD_BALANCER_LISTENER.TARGET_PORT, port.getTargetPort(),
+                    LOAD_BALANCER_LISTENER.SOURCE_PROTOCOL, port.getProtocol(),
+                    LOAD_BALANCER_LISTENER.TARGET_PROTOCOL, port.getProtocol(),
+                    LoadBalancerConstants.FIELD_LB_LISTENER_ALGORITHM, "roundrobin",
+                    LOAD_BALANCER_LISTENER.ACCOUNT_ID, service.getAccountId(),
+                    LOAD_BALANCER_LISTENER.SERVICE_ID, service.getId());
+        }
+        objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_LISTENER_CREATE, listenerObj, null);
+
+        listeners.put(listenerObj.getPrivatePort(), listenerObj);
     }
 
     @Override

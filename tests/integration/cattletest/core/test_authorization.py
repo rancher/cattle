@@ -618,7 +618,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'pidMode': 'r',
         'volumeDriver': 'r',
         'extraHosts': 'r',
-        'readOnly': 'r'
+        'readOnly': 'r',
+        'expose': 'r'
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -674,7 +675,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'pidMode': 'r',
         'extraHosts': 'r',
         'volumeDriver': 'r',
-        'readOnly': 'r'
+        'readOnly': 'r',
+        'expose': 'r'
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -730,7 +732,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'pidMode': 'cr',
         'extraHosts': 'cr',
         'volumeDriver': 'cr',
-        'readOnly': 'cr'
+        'readOnly': 'cr',
+        'expose': 'cr'
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -1527,5 +1530,44 @@ def test_svc_discovery_consume_map(admin_user_client, user_client,
         'serviceId': 'r',
         'consumedServiceId': 'r',
         'ports': 'r',
+        'accountId': 'r'
+    })
+
+
+def test_lb_listener(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'loadBalancerListener', 'r', {
+        'name': 'r',
+        'sourceProtocol': 'r',
+        'targetProtocol': 'r',
+        'sourcePort': 'r',
+        'targetPort': 'r',
+        'privatePort': 'r',
+        'algorithm': 'r',
+        'data': 'r',
+        'serviceId': 'r',
+        'accountId': 'r'
+    })
+
+    auth_check(user_client.schema, 'loadBalancerListener', 'r', {
+        'name': 'r',
+        'sourceProtocol': 'r',
+        'targetProtocol': 'r',
+        'sourcePort': 'r',
+        'targetPort': 'r',
+        'privatePort': 'r',
+        'algorithm': 'r',
+        'serviceId': 'r',
+        'accountId': 'r'
+    })
+
+    auth_check(project_client.schema, 'loadBalancerListener', 'crud', {
+        'name': 'cru',
+        'sourceProtocol': 'cr',
+        'targetProtocol': 'r',
+        'sourcePort': 'cr',
+        'targetPort': 'r',
+        'privatePort': 'cr',
+        'algorithm': 'cr',
+        'serviceId': 'r',
         'accountId': 'r'
     })
