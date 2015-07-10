@@ -92,50 +92,26 @@ public class DeploymentManagerImpl implements DeploymentManager {
                         units, new DeploymentServiceContext());
 
                 // don't process if there is no need to reconcile
-                boolean needToReconcile = needToReconcile(services, units, planner);
+                boolean needToReconcile = needToReconcile(planner);
 
                 if (!needToReconcile) {
                     return;
                 }
 
                 activateServices(service, services);
-                activateDeploymentUnits(services, units, planner);
+                activateDeploymentUnits(planner);
             }
         });
     }
 
-    private boolean needToReconcile(final List<Service> services, final List<DeploymentUnit> units,
-            final ServiceDeploymentPlanner planner) {
-        for (Service service : services) {
+    private boolean needToReconcile(ServiceDeploymentPlanner planner) {
+        for (Service service : planner.getServices()) {
             if (service.getState().equals(CommonStatesConstants.INACTIVE)) {
                 return true;
             }
         }
 
-        boolean needToReconcile = false;
-        if (!planner.needToReconcileDeployment()) {
-            for (DeploymentUnit unit : units) {
-                if (unit.isError()) {
-                    needToReconcile = true;
-                    break;
-                }
-                if (!unit.isComplete()) {
-                    needToReconcile = true;
-                    break;
-                }
-                if (!unit.isStarted()) {
-                    needToReconcile = true;
-                    break;
-                }
-                if (unit.isUnhealthy()) {
-                    needToReconcile = true;
-                    break;
-                }
-            }
-        } else {
-            needToReconcile = true;
-        }
-        return needToReconcile;
+        return planner.needToReconcileDeployment();
     }
 
     private void activateServices(final Service initialService, final List<Service> services) {
@@ -161,28 +137,21 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return new ServicesSidekickLock(services);
     }
 
-    protected void activateDeploymentUnits(List<Service> services, List<DeploymentUnit> units,
-            ServiceDeploymentPlanner planner) {
+    protected void activateDeploymentUnits(ServiceDeploymentPlanner planner) {
         /*
          * Delete invalid units
          */
-        units = deleteBadUnits(units);
-
-        /*
-         * Ask the planner to deploy more units/ remove extra units
-         */
-        units = planner.deploy();
+        deleteBadUnits(planner);
 
         /*
          * Activate all the units
          */
-        startUnits(units, services);
+        startUnits(planner);
 
         /*
          * Delete the units that have a bad health
          */
-
-        cleanupUnhealthyUnits(units);
+        cleanupUnhealthyUnits(planner);
     }
 
     private Map<Long, DeploymentUnitInstanceIdGenerator> populateUsedNames(
@@ -201,41 +170,35 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return generator;
     }
 
-    protected void cleanupUnhealthyUnits(List<DeploymentUnit> units) {
-        for (DeploymentUnit unit : units) {
-            if (unit.isUnhealthy()) {
-                unit.remove();
-            }
+    protected void cleanupUnhealthyUnits(ServiceDeploymentPlanner planner) {
+        List<DeploymentUnit> unhealthyUnits = planner.getUnhealthyUnits();
+        for (DeploymentUnit unhealthyUnit : unhealthyUnits) {
+            unhealthyUnit.remove();
         }
     }
 
-    protected void startUnits(List<DeploymentUnit> units, List<Service> services) {
-        Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = populateUsedNames(services);
+    protected void startUnits(ServiceDeploymentPlanner planner) {
+        Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = populateUsedNames(planner.getServices());
+        /*
+         * Ask the planner to deploy more units/ remove extra units
+         */
+        List<DeploymentUnit> units = planner.deploy();
+
         for (DeploymentUnit unit : units) {
-            if (!unit.isUnhealthy()) {
-                unit.start(svcInstanceIdGenerator);
-            }
+            unit.start(svcInstanceIdGenerator);
         }
 
         for (DeploymentUnit unit : units) {
-            if (!unit.isUnhealthy()) {
-                unit.waitForStart();
-            }
+            unit.waitForStart();
         }
     }
 
-    protected List<DeploymentUnit> deleteBadUnits(List<DeploymentUnit> units) {
-        List<DeploymentUnit> result = new ArrayList<>(units.size());
+    protected void deleteBadUnits(ServiceDeploymentPlanner planner) {
+        List<DeploymentUnit> badUnits = planner.getBadUnits();
 
-        for (DeploymentUnit unit : units) {
-            if (unit.isError()) {
-                unit.remove();
-            } else {
-                result.add(unit);
-            }
+        for (DeploymentUnit badUnit : badUnits) {
+            badUnit.remove();
         }
-
-        return result;
     }
 
     @Override

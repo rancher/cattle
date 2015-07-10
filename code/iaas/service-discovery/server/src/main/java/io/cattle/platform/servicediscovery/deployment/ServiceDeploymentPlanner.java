@@ -19,6 +19,7 @@ public abstract class ServiceDeploymentPlanner {
     protected List<Service> services;
     protected List<DeploymentUnit> healthyUnits = new ArrayList<>();
     private List<DeploymentUnit> unhealthyUnits = new ArrayList<>();
+    private List<DeploymentUnit> badUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
 
     public ServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
@@ -28,27 +29,54 @@ public abstract class ServiceDeploymentPlanner {
 
         if (units != null) {
             for (DeploymentUnit unit : units) {
-                if (unit.isUnhealthy()) {
-                    unhealthyUnits.add(unit);
+                if (unit.isError()) {
+                    badUnits.add(unit);
                 } else {
-                    healthyUnits.add(unit);
+                    if (unit.isUnhealthy()) {
+                        unhealthyUnits.add(unit);
+                    } else {
+                        healthyUnits.add(unit);
+                    }
                 }
             }
         }
     }
 
     public List<DeploymentUnit> deploy() {
-        List<DeploymentUnit> allUnits = new ArrayList<>();
-        allUnits.addAll(this.deployHealthyUnits());
-        allUnits.addAll(unhealthyUnits);
-        return allUnits;
+        return this.deployHealthyUnits();
     }
 
-    public abstract List<DeploymentUnit> deployHealthyUnits();
+    protected abstract List<DeploymentUnit> deployHealthyUnits();
 
-    public abstract boolean needToReconcileDeployment();
+    public boolean needToReconcileDeployment() {
+        return unhealthyUnits.size() > 0 || badUnits.size() > 0 || needToReconcileDeploymentImpl()
+                || ifHealthyUnitsNeedReconcile();
+    }
+    
+    private boolean ifHealthyUnitsNeedReconcile() {
+        for (DeploymentUnit unit : healthyUnits) {
+            if (!unit.isStarted()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public abstract boolean needToReconcileDeploymentImpl();
 
     public void addUnits(List<DeploymentUnit> units) {
         this.healthyUnits.addAll(units);
+    }
+
+    public List<DeploymentUnit> getBadUnits() {
+        return badUnits;
+    }
+
+    public List<DeploymentUnit> getUnhealthyUnits() {
+        return unhealthyUnits;
+    }
+
+    public List<Service> getServices() {
+        return services;
     }
 }

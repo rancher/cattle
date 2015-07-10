@@ -86,6 +86,9 @@ public class DeploymentUnit {
     }
 
     public boolean isError() {
+        if (!this.isComplete()) {
+            return true;
+        }
         /*
          * This should check for instances with an error transitioning state
          */
@@ -276,7 +279,7 @@ public class DeploymentUnit {
         return false;
     }
 
-    public boolean isComplete() {
+    protected boolean isComplete() {
         for (DeploymentUnitService duService : svc.values()) {
             if (!duService.isComplete()) {
                 return false;
@@ -340,10 +343,6 @@ public class DeploymentUnit {
 
     public Map<String, String> getLabels() {
         return unitLabels;
-    }
-
-    public String getUuid() {
-        return uuid;
     }
 
     protected List<DeploymentUnitInstance> getDeploymentUnitInstances() {

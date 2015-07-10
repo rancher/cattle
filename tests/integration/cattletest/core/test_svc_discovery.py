@@ -1110,6 +1110,58 @@ def test_validate_labels(client, context):
     assert all(item in instance2.labels for item in result_labels_2) is True
 
 
+def test_sidekick_destroy_instance(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "dataVolumesFromLaunchConfigs": ['secondary']}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+
+    # activate service1
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    instance11 = _validate_compose_instance_start(client, service, env, "1")
+    instance12 = _validate_compose_instance_start(client,
+                                                  service,
+                                                  env, "1", "secondary")
+
+    instance_service_map1 = client. \
+        list_serviceExposeMap(serviceId=service.id, state="active")
+    assert len(instance_service_map1) == 2
+
+    # destroy secondary instance and wait for the service to reconcile
+    _instance_remove(instance11, client)
+    service = client.wait_success(service)
+
+    _validate_compose_instance_start(client, service, env, "1")
+    _validate_compose_instance_start(client, service, env, "1", "secondary")
+
+    instance_service_map1 = client. \
+        list_serviceExposeMap(serviceId=service.id, state="active")
+    assert len(instance_service_map1) == 2
+
+    # destroy primary instance and wait for the service to reconcile
+    _instance_remove(instance12, client)
+    service = client.wait_success(service)
+
+    _validate_compose_instance_start(client, service, env, "1")
+    _validate_compose_instance_start(client, service, env, "1", "secondary")
+
+    instance_service_map1 = client. \
+        list_serviceExposeMap(serviceId=service.id, state="active")
+    assert len(instance_service_map1) == 2
+
+
 def test_sidekick_restart_instances(client, context):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)

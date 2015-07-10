@@ -53,7 +53,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     }
 
     @Override
-    public boolean needToReconcileDeployment() {
+    public boolean needToReconcileDeploymentImpl() {
         return (healthyUnits.size() != hostIds.size());
     }
 }
