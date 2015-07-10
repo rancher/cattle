@@ -8,10 +8,10 @@ import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Label;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.ArrayList;
@@ -32,6 +32,13 @@ public class AllocatorServiceImpl implements AllocatorService {
 
     // LEGACY: Temporarily support ${project_name} but this has become ${stack_name} now
     private static final String PROJECT_NAME_MACRO = "${project_name}";
+
+    // TODO: We should refactor since these are defined in ServiceDiscoveryConstants too
+    private static final String LABEL_STACK_NAME = "io.rancher.stack.name";
+    private static final String LABEL_STACK_SERVICE_NAME = "io.rancher.stack_service.name";
+
+    @Inject
+    LabelsDao labelsDao;
 
     @Inject
     AllocatorDao allocatorDao;
@@ -218,25 +225,31 @@ public class AllocatorServiceImpl implements AllocatorService {
         if (valueStr.indexOf(SERVICE_NAME_MACRO) != -1 ||
                 valueStr.indexOf(STACK_NAME_MACRO) != -1 ||
                 valueStr.indexOf(PROJECT_NAME_MACRO) != -1) {
-            Service service = null;
 
-            List<? extends Service> services = instanceDao.findServicesFor(instance);
-            if (services.size() > 0) {
-                service = services.get(0);
-            }
-
-            if (service != null) {
-                valueStr = valueStr.replace(SERVICE_NAME_MACRO, service.getName());
-            }
-
-            // LEGACY: ${project_name} rename ${stack_name}
-            if ((valueStr.indexOf(STACK_NAME_MACRO) != -1 || valueStr.indexOf(PROJECT_NAME_MACRO) != -1) && service != null) {
-                Environment stack = objectManager.loadResource(Environment.class, service.getEnvironmentId());
-                if (stack != null) {
-                    valueStr = valueStr.replace(STACK_NAME_MACRO, stack.getName());
-                    // LEGACY:
-                    valueStr = valueStr.replace(PROJECT_NAME_MACRO, stack.getName());
+            List<Label> labels = labelsDao.getLabelsForInstance(instance.getId());
+            String serviceLaunchConfigName = "";
+            String stackName = "";
+            for (Label label: labels) {
+                if (LABEL_STACK_NAME.equals(label.getKey())) {
+                    stackName = label.getValue();
+                } else if (LABEL_STACK_SERVICE_NAME.equals(label.getKey())) {
+                    if (label.getValue() != null) {
+                        int i = label.getValue().indexOf('/');
+                        if (i != -1) {
+                            serviceLaunchConfigName = label.getValue().substring(i + 1);
+                        }
+                    }
                 }
+            }
+            if (!StringUtils.isBlank(stackName)) {
+                valueStr = valueStr.replace(STACK_NAME_MACRO, stackName);
+
+                // LEGACY: ${project_name} rename ${stack_name}
+                valueStr = valueStr.replace(PROJECT_NAME_MACRO, stackName);
+            }
+
+            if (!StringUtils.isBlank(serviceLaunchConfigName)) {
+                valueStr = valueStr.replace(SERVICE_NAME_MACRO, serviceLaunchConfigName);
             }
         }
 

@@ -1098,14 +1098,16 @@ def test_validate_labels(client, context):
     result_labels_1 = {'affinity': 'container==B', '!affinity': "container==C",
                        'io.rancher.stack.name': env.name,
                        'io.rancher.stack_service.name':
-                           env.name + '/' + service_name1}
+                           env.name + '/' + service_name1 + '/' +
+                           "io.rancher.service.primary.launch.config"}
     instance1 = _validate_compose_instance_start(client, service1, env, "1")
     assert all(item in instance1.labels for item in result_labels_1) is True
 
     # check that only one internal label is set
     result_labels_2 = {'io.rancher.stack.name': env.name,
                        'io.rancher.stack_service.name':
-                           env.name + '/' + service_name2}
+                           env.name + '/' + service_name2 + '/' +
+                           "io.rancher.service.primary.launch.config"}
     instance2 = _validate_compose_instance_start(client, service2, env, "1")
     assert all(item in instance2.labels for item in result_labels_2) is True
 
@@ -1737,7 +1739,8 @@ def test_service_affinity_rules(super_client, new_context):
         "labels": {
             "io.rancher.scheduler.affinity:container_label_ne":
                 "io.rancher.stack_service.name=" +
-                env.name + '/' + service_name
+                env.name + '/' + service_name + '/' +
+                "io.rancher.service.primary.launch.config"
         }
     }
 
