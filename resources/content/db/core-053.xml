@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <changeSet author="darren (generated)" id="dump6">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="account"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump7">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="agent"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump8">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="agent_group"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump9">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="certificate"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump10">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="cluster_host_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump11">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="container_event"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump12">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="credential"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump13">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="credential_instance_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump14">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="environment"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump15">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="external_handler"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump16">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="external_handler_external_handler_process_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump17">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="external_handler_process"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump18">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="generic_object"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump19">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="global_load_balancer"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump20">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="healthcheck_instance"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump21">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="healthcheck_instance_host_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump22">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="host"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump23">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="host_ip_address_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump24">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="host_label_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump25">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="host_vnet_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump26">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="image"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump27">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="image_storage_pool_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump28">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="instance"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump29">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="instance_host_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump30">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="instance_label_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump31">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="instance_link"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump32">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="ip_address"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump33">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="ip_address_nic_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump34">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="ip_association"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump35">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="ip_pool"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump36">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="label"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump37">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="load_balancer"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump38">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="load_balancer_config"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump39">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="load_balancer_config_listener_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump40">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="load_balancer_host_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump41">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="load_balancer_listener"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump42">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="load_balancer_target"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump43">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="mount"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump44">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="network"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump45">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="network_service"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump46">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="network_service_provider"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump47">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="network_service_provider_instance_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump48">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="nic"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump49">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="offering"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump50">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="physical_host"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump51">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="port"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump52">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="process_instance"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump53">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="project_member"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump54">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="resource_pool"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump55">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="service"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump56">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="service_consume_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump57">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="service_event"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump58">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="service_expose_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump59">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="snapshot"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump60">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="snapshot_storage_pool_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump61">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="storage_pool"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump62">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="storage_pool_host_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump63">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="subnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump64">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="subnet_vnet_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump65">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="user_preference"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump66">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="vnet"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump67">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="volume"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump68">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="volume_storage_pool_map"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump69">
+        <modifyDataType columnName="data" newDataType="MEDIUMTEXT(16777215)" tableName="zone"/>
+    </changeSet>
+</databaseChangeLog>
