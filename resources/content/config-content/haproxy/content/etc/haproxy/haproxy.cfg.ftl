@@ -30,11 +30,12 @@ defaults
 
 <#if listeners?has_content && backends?has_content>
 <#list listeners as listener >
+<#if listener.privatePort??><#assign sourcePort = listener.privatePort><#else><#assign sourcePort = listener.sourcePort></#if>
 frontend ${listener.uuid}_frontend
-        bind ${publicIp}:${listener.sourcePort}
+        bind ${publicIp}:${sourcePort}
         mode ${listener.sourceProtocol}
         <#list backends as backend >
-        <#if backend.portSpec.sourcePort == listener.sourcePort>
+        <#if backend.portSpec.sourcePort == sourcePort>
         <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>
         <#if backend.portSpec.domain != "default">
         acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}
@@ -50,7 +51,7 @@ frontend ${listener.uuid}_frontend
         </#list>
 
 <#list backends as backend >
-<#if backend.portSpec.sourcePort == listener.sourcePort>
+<#if backend.portSpec.sourcePort == sourcePort>
 backend ${listener.uuid}_${backend.uuid}_backend
         mode ${listener.targetProtocol}
         balance ${listener.data.fields.algorithm}

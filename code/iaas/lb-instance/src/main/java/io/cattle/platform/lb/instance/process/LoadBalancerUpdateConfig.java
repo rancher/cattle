@@ -208,7 +208,9 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
                     .getLoadBalancerConfigId());
             final Set<Integer> listenerPorts = new HashSet<>();
             for (LoadBalancerListener listener : listeners) {
-                listenerPorts.add(listener.getSourcePort());
+                if (listener.getSourcePort() != null) {
+                    listenerPorts.add(listener.getSourcePort());
+                }
             }
             List<? extends Instance> lbInstances = lbInstancesMap.get(lbId);
             // surround by lock

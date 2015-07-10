@@ -75,6 +75,11 @@
         "systemContainer" : {
             "type": "enum",
             "options": [ "NetworkAgent", "LoadBalancerAgent"]
+        },
+        "expose": {
+            "type": "array[string]",
+            "create": true,
+            "nullable": true
         }
     },
     "resourceActions" : {

@@ -5,6 +5,7 @@ import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 public class LoadBalancerListenerValidationFilter extends AbstractDefaultResourceManagerFilter {
 
@@ -22,10 +23,25 @@ public class LoadBalancerListenerValidationFilter extends AbstractDefaultResourc
     public Object create(String type, ApiRequest request, ResourceManager next) {
         LoadBalancerListener listener = request.proxyRequestObject(LoadBalancerListener.class);
         Integer targetPort = listener.getTargetPort();
-        if (targetPort == null) {
-            int sourcePort = listener.getSourcePort();
-            listener.setTargetPort(sourcePort);
+        Integer privatePort = listener.getPrivatePort();
+        Integer sourcePort = listener.getSourcePort();
+
+        if (privatePort == null && sourcePort == null) {
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MISSING_REQUIRED,
+                    LoadBalancerConstants.FIELD_LB_SOURCE_PORT);
         }
+
+        if (privatePort == null) {
+            privatePort = sourcePort;
+        }
+
+        if (targetPort == null) {
+            targetPort = privatePort;
+        }
+
+        listener.setTargetPort(targetPort);
+        listener.setSourcePort(sourcePort);
+        listener.setPrivatePort(privatePort);
 
         String targetProtocol = listener.getTargetProtocol();
         if (targetProtocol == null) {

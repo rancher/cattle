@@ -139,7 +139,7 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
                 .getLoadBalancerId());
         Map<Integer, LoadBalancerListener> lbSourcePorts = new HashMap<>();
         for (LoadBalancerListener listener : listeners) {
-            lbSourcePorts.put(listener.getSourcePort(), listener);
+            lbSourcePorts.put(getSourcePort(listener), listener);
         }
 
         List<Integer> targetSourcePorts = new ArrayList<>();
@@ -168,9 +168,14 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
             if (!targetSourcePorts.contains(lbSourcePort)) {
                 LoadBalancerListener listener = lbSourcePorts.get(lbSourcePort);
                 completePortSpecs
-                        .add(new LoadBalancerTargetPortSpec(listener.getTargetPort(), listener.getSourcePort()));
+                        .add(new LoadBalancerTargetPortSpec(listener.getTargetPort(), getSourcePort(listener)));
             }
         }
+    }
+
+    protected Integer getSourcePort(LoadBalancerListener listener) {
+        // LEGACY code to support the case when private port is not defined
+        return listener.getPrivatePort() != null ? listener.getPrivatePort() : listener.getSourcePort();
     }
 
     protected List<LoadBalancerTargetPortSpec> completePortSpecs(List<LoadBalancerTargetPortSpec> portSpecsInitial,
@@ -181,7 +186,7 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
         for (LoadBalancerTargetPortSpec portSpec : portSpecsInitial) {
             if (portSpec.getSourcePort() == null) {
                 for (LoadBalancerListener listener : listeners) {
-                    portSpec.setSourcePort(listener.getSourcePort());
+                    portSpec.setSourcePort(getSourcePort(listener));
                     portSpecsWithSourcePorts.add(portSpec);
                 }
             } else {
