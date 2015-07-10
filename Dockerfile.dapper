@@ -1,6 +1,6 @@
 FROM ubuntu:14.04.3
 
-ENV DAPPER_ENV API_VERSION
+ENV DAPPER_ENV API_VERSION ENVIRONMENTS
 ENV DAPPER_RUN_ARGS --privileged
 ENV DAPPER_SOURCE /usr/src/cattle
 ENV DAPPER_OUTPUT dist
@@ -15,6 +15,14 @@ RUN apt-get update && \
 
 # Install MySQL
 RUN DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y mysql-server
+
+# Install Postgres
+ENV PGSQL_VERSION 9.6
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    apt-get install -y wget && \
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-${PGSQL_VERSION}
 
 # Build Tools
 ENV BUILD_TOOLS_VERSION 0.3.1
@@ -31,6 +39,11 @@ RUN sed -i  -e "0,/3306/! {0,/3306/ s/3306/${CATTLE_DB_CATTLE_MYSQL_PORT}/}" \
     -e 's/^#\(max_connections.*\)/\1/;s/100$/1000/' \
     -e '/^log_error.*$/a innodb_flush_log_at_trx_commit = 0' \
     -e '/^max_connections.*$/a sql_mode = ONLY_FULL_GROUP_BY' /etc/mysql/my.cnf
+
+# Setup Postgres
+RUN sed -i -e 's/^#\(max_connections.*\)/\1/;s/\<100\>/1000/' \
+    -e 's/^#\(fsync.*\)/\1/;s/\<on\>/off/' /etc/postgresql/${PGSQL_VERSION}/main/postgresql.conf && \
+    sed -i -e 's/^#\(local.*\)/\1/;s/\<peer\>/trust/' /etc/postgresql/${PGSQL_VERSION}/main/pg_hba.conf
 
 # Cache Maven stuff
 RUN apt-get install -y git && \

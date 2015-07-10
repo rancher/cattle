@@ -807,10 +807,11 @@ def test_export_config(client, context):
     labels = {"io.rancher.loadbalancer.target.web": "a.com:90",
               "io.rancher.loadbalancer.target." +
               env2.name + "/web2": "a.com:90"}
-    links = ["web:web", "web1:web1"]
+    links = ["web1:web1", "web:web"]
     external_links = [env2.name + "/web2:web2"]
     lb = document['services'][lb_service.name]
     assert lb['labels'] == labels
+    lb['links'].sort()
     assert lb['links'] == links
     assert lb['external_links'] == external_links
 

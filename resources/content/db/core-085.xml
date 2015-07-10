@@ -6,8 +6,9 @@
         </addColumn>
     </changeSet>
     <changeSet author="rancher" id="1460757751518-2">
+        <validCheckSum>7:7b4e213ca60b68c7924875c547442437</validCheckSum>
         <addColumn tableName="volume">
-            <column name="host_id" type="BIGINT(19)"/>
+            <column name="host_id" type="BIGINT"/>
         </addColumn>
     </changeSet>
     <changeSet author="rancher" id="1460757751518-3">

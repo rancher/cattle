@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
     <changeSet author="wizardofmath (generated)" id="dump1">
+        <validCheckSum>7:ff0b4cd4d9272ba6a9c17ce4b03f96fb</validCheckSum>
         <createTable tableName="auth_token">
-            <column autoIncrement="true" name="id" type="BIGINT(20)">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="account_id" type="BIGINT(20)">
+            <column name="account_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="created" type="datetime">
@@ -17,7 +20,7 @@
             <column name="key" type="VARCHAR(40)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="value" type="MEDIUMTEXT">
+            <column name="value" type="${mediumtext}">
                 <constraints nullable="false"/>
             </column>
             <column name="version" type="VARCHAR(255)">

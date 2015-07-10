@@ -3,8 +3,9 @@
     <property name="mediumtext" value="TEXT" dbms="postgresql" />
     <property name="mediumtext" value="MEDIUMTEXT" />
     <changeSet author="alena (generated)" id="dump1">
+        <validCheckSum>7:8dc27d8bbbd5915fe5bdae6152d16695</validCheckSum>
         <addColumn tableName="service_expose_map">
-            <column defaultValueNumeric="0" name="upgrade" type="BIT">
+            <column defaultValueNumeric="0" defaultValueBoolean="0" name="upgrade" type="BIT">
                 <constraints nullable="false"/>
             </column>
         </addColumn>

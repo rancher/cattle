@@ -49,11 +49,18 @@ import freemarker.template.TemplateException;
 
 public class HaConfigManager extends AbstractNoOpResourceManager {
 
-    private static DynamicStringProperty DB_HOST = ArchaiusUtil.getString("db.cattle.mysql.host");
+    private static DynamicStringProperty DB = ArchaiusUtil.getString("db.cattle.database");
+    private static DynamicStringProperty DB_HOST = DB.get().equals("mysql")
+            ? ArchaiusUtil.getString("db.cattle.mysql.host")
+            : ArchaiusUtil.getString("db.cattle.postgres.host");
+    private static DynamicStringProperty DB_PORT = DB.get().equals("mysql")
+            ? ArchaiusUtil.getString("db.cattle.mysql.port")
+            : ArchaiusUtil.getString("db.cattle.postgres.port");
+    private static DynamicStringProperty DB_NAME = DB.get().equals("mysql")
+            ? ArchaiusUtil.getString("db.cattle.mysql.name")
+            : ArchaiusUtil.getString("db.cattle.postgres.name");
     private static DynamicStringProperty DB_USER = ArchaiusUtil.getString("db.cattle.username");
     private static DynamicStringProperty DB_PASS = ArchaiusUtil.getString("db.cattle.password");
-    private static DynamicStringProperty DB_PORT = ArchaiusUtil.getString("db.cattle.mysql.port");
-    private static DynamicStringProperty DB_NAME = ArchaiusUtil.getString("db.cattle.mysql.name");
     private static DynamicBooleanProperty HA_ENABLED = ArchaiusUtil.getBoolean("ha.enabled");
     private static DynamicIntProperty HA_CLUSTER_SIZE = ArchaiusUtil.getInt("ha.cluster.size");
 
@@ -134,6 +141,7 @@ public class HaConfigManager extends AbstractNoOpResourceManager {
         settingsUtils.changeSetting("ha.cluster.size", clusterSize.toString());
 
         data.put("encryptionKey", Base64.encodeBase64String(key.getEncoded()));
+        data.put("db", DB.get());
         data.put("dbHost", DB_HOST.get());
         data.put("dbPort", DB_PORT.get());
         data.put("dbUser", DB_USER.get());
@@ -160,17 +168,23 @@ public class HaConfigManager extends AbstractNoOpResourceManager {
     }
 
     protected long dbSize() throws IOException  {
-        ProcessBuilder pb = new ProcessBuilder("mysql", "--skip-column-names", "-s", "-uroot", "-e",
-                "SELECT SUM(data_length)/power(1024,2) AS dbsize_mb FROM information_schema.tables WHERE table_schema='cattle' GROUP BY table_schema;");
+        ProcessBuilder pb = DB.get().equals("mysql")
+                ? new ProcessBuilder("mysql", "--skip-column-names", "-s", "-uroot", "-e",
+                "SELECT SUM(data_length)/power(1024,2) AS dbsize_mb FROM information_schema.tables WHERE table_schema='cattle' GROUP BY table_schema;")
+                : new ProcessBuilder("psql", "cattle", "cattle", "-t", "-q", "-c",
+                "SELECT pg_database_size('cattle')/power(1024,2)");
         pb.redirectError(Redirect.INHERIT);
         Process p = pb.start();
         try (InputStream in = p.getInputStream()) {
-           return Long.parseLong(IOUtils.toString(in).split("[.]")[0].trim());
+            return Long.parseLong(IOUtils.toString(in).split("[.]")[0].trim());
         }
     }
 
     protected Object dbDump(ApiRequest request) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder("mysqldump", "-uroot", "cattle");
+        ProcessBuilder pb = DB.get().equals("mysql")
+                ? new ProcessBuilder("mysqldump", "-uroot", "cattle")
+                : new ProcessBuilder("pg_dump", "-Fc", "-Ucattle", "cattle");
+
         pb.redirectError(Redirect.INHERIT);
 
         TimeZone tz = TimeZone.getTimeZone("UTC");
@@ -179,7 +193,7 @@ public class HaConfigManager extends AbstractNoOpResourceManager {
         String now = df.format(new Date());
 
         HttpServletResponse response = request.getServletContext().getResponse();
-        String prefix = "rancher-mysql-dump-" + now;
+        String prefix = "rancher-db-dump-" + now;
 
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + prefix + ".zip");

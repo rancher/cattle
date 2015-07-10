@@ -3,9 +3,11 @@
     <property name="mediumtext" value="TEXT" dbms="postgresql" />
     <property name="mediumtext" value="MEDIUMTEXT" />
     <changeSet author="alena (generated)" id="dump1">
-        <modifyDataType columnName="source_port" newDataType="int(10)" tableName="load_balancer_listener"/>
+        <validCheckSum>7:4ae888db3f094c4d04604b74ab2a7070</validCheckSum>
+        <modifyDataType columnName="source_port" newDataType="int" tableName="load_balancer_listener"/>
     </changeSet>
     <changeSet author="alena (generated)" id="dump2">
-        <modifyDataType columnName="target_port" newDataType="int(10)" tableName="load_balancer_listener"/>
+        <validCheckSum>7:dedb381547edd596a1122ce3c92eb3d5</validCheckSum>
+        <modifyDataType columnName="target_port" newDataType="int" tableName="load_balancer_listener"/>
     </changeSet>
 </databaseChangeLog>

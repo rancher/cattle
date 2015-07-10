@@ -1,0 +1,30 @@
+#!/bin/bash
+set -e
+
+service postgresql start
+
+set +e
+for ((i=0;i<60;i++))
+do
+    if su postgres -c "/usr/lib/postgresql/$PGSQL_VERSION/bin/pg_ctl status -s -D /var/lib/postgresql/$PGSQL_VERSION/main" &>> /dev/null; then
+        break
+    else
+        sleep 1
+    fi
+done
+set -e
+
+if [ "$1" = "--clean" ]; then
+    su postgres -c "psql << EOF
+DROP DATABASE IF EXISTS cattle;
+DROP ROLE IF EXISTS cattle;
+EOF"
+fi
+
+# If the for loop times out... something went wrong and this will fail
+# Check for cattle db and create it if it doesn't exist
+su postgres -c "psql cattle -c ''" || \
+    su postgres -c "psql << EOF
+CREATE ROLE cattle WITH LOGIN PASSWORD 'cattle';
+CREATE DATABASE cattle OWNER cattle;
+EOF"

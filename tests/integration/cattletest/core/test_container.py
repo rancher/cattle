@@ -762,8 +762,9 @@ def test_container_network_host_mode_w_dsn(context, super_client):
     assert c.state == 'running'
     assert len(c.nics()) == 2
 
-    assert c.nics()[0].network().kind == "dockerHost"
-    assert c.nics()[1].network().kind == "hostOnlyNetwork"
+    networks = [c.nics()[0].network().kind, c.nics()[1].network().kind]
+    assert "dockerHost" in networks
+    assert "hostOnlyNetwork" in networks
 
 
 def test_container_request_ip_from_label(new_context):

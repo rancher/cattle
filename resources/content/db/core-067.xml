@@ -22,7 +22,7 @@
             <column name="created" type="datetime"/>
             <column name="data" type="TEXT"/>
             <column name="parent" type="VARCHAR(255)"/>
-            <column name="definition" type="MEDIUMTEXT"/>
+            <column name="definition" type="${mediumtext}"/>
             <column name="service_id" type="BIGINT"/>
         </createTable>
     </changeSet>
