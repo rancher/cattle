@@ -42,8 +42,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         DeferredUtils.nest(new Runnable() {
             @Override
             public void run() {
-                lbTargetDao.createLoadBalancerTarget(lb, targetInput.getPorts(), targetInput.getIpAddress(),
-                        targetInput.getInstanceId());
+                lbTargetDao.createLoadBalancerTarget(lb, targetInput);
             }
         });
     }

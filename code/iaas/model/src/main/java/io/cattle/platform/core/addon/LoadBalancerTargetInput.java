@@ -1,6 +1,14 @@
 package io.cattle.platform.core.addon;
 
+import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.model.LoadBalancerTarget;
+import io.cattle.platform.core.model.ServiceConsumeMap;
+import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.util.DataAccessor;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class LoadBalancerTargetInput {
@@ -12,7 +20,21 @@ public class LoadBalancerTargetInput {
         super();
         this.instanceId = instanceId;
         this.ipAddress = ipAddress;
-        this.ports = ports;
+        if (ports != null) {
+            this.ports = ports;
+        }
+    }
+
+    public LoadBalancerTargetInput(LoadBalancerTarget target, JsonMapper jsonMapper) {
+        this(target.getInstanceId(), target.getIpAddress(), DataAccessor.fields(target).
+                withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
+                .asList(jsonMapper, String.class));
+    }
+
+    public LoadBalancerTargetInput(ServiceExposeMap instanceToAdd, ServiceConsumeMap serviceLink, JsonMapper jsonMapper) {
+        this(instanceToAdd.getInstanceId(), instanceToAdd.getIpAddress(), DataAccessor.fields(serviceLink).
+                withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
+                .asList(jsonMapper, String.class));
     }
 
     public LoadBalancerTargetInput() {

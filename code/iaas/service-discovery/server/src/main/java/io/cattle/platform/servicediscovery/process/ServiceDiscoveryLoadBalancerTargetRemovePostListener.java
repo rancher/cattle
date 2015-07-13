@@ -11,6 +11,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
@@ -42,6 +43,9 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
 
     @Inject
     ServiceDiscoveryService sdService;
+
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public String[] getProcessNames() {
@@ -89,7 +93,7 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
 
                     if (lb != null) {
                         lbManager.removeTargetFromLoadBalancer(lb,
-                                new LoadBalancerTargetInput(null, exposeMap.getIpAddress(), null));
+                                new LoadBalancerTargetInput(exposeMap, consumingServiceMap, jsonMapper));
                     }
                 }
             }
@@ -106,7 +110,7 @@ public class ServiceDiscoveryLoadBalancerTargetRemovePostListener extends Abstra
                 objectManager.loadResource(Service.class, consumeMap.getConsumedServiceId()),
                 ServiceExposeMap.class);
         for (ServiceExposeMap map : maps) {
-            targets.add(new LoadBalancerTargetInput(map.getInstanceId(), map.getIpAddress(), null));
+            targets.add(new LoadBalancerTargetInput(map, consumeMap, jsonMapper));
         }
 
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,

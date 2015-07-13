@@ -77,8 +77,7 @@ public class LoadBalancerApiServiceImpl implements LoadBalancerApiService {
 
     @Override
     public void addTargetToLoadBalancer(LoadBalancer lb, LoadBalancerTargetInput targetInput) {
-        lbTargetDao.createLoadBalancerTarget(lb, targetInput.getPorts(), targetInput.getIpAddress(),
-                targetInput.getInstanceId());
+        lbTargetDao.createLoadBalancerTarget(lb, targetInput);
     }
 
     @Override
