@@ -6,13 +6,15 @@ import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import java.util.List;
 
 public class LoadBalancerTargetsInfo {
-    Integer uuid;
+    int uuid;
     LoadBalancerTargetPortSpec portSpec;
     List<LoadBalancerTargetInfo> targets;
     InstanceHealthCheck healthCheck;
 
-    public LoadBalancerTargetsInfo(List<LoadBalancerTargetInfo> lbTargetInfo, InstanceHealthCheck lbHealthCheck) {
+    public LoadBalancerTargetsInfo(List<LoadBalancerTargetInfo> lbTargetInfo, InstanceHealthCheck lbHealthCheck,
+            int uuid) {
         super();
+        this.uuid = uuid;
         this.targets = lbTargetInfo;
         for (LoadBalancerTargetInfo target : this.targets) {
             if (target.getHealthCheck() != null) {
@@ -29,7 +31,6 @@ public class LoadBalancerTargetsInfo {
 
         if (!lbTargetInfo.isEmpty()) {
             this.portSpec = lbTargetInfo.get(0).getPortSpec();
-            this.uuid = lbTargetInfo.get(0).getUuid();
         }
     }
 
@@ -41,11 +42,11 @@ public class LoadBalancerTargetsInfo {
         this.targets = targets;
     }
 
-    public Integer getUuid() {
+    public int getUuid() {
         return uuid;
     }
 
-    public void setUuid(Integer uuid) {
+    public void setUuid(int uuid) {
         this.uuid = uuid;
     }
 

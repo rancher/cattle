@@ -4,7 +4,7 @@ import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 
 public class LoadBalancerTargetInfo {
-    private int uuid;
+    private String uuid;
     private String name;
     private String ipAddress;
     private String cookie;
@@ -59,19 +59,11 @@ public class LoadBalancerTargetInfo {
     }
 
     public void setUuid() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((portSpec.getDomain() == null) ? 0 : portSpec.getDomain().hashCode());
-        result = prime * result + ((portSpec.getPath() == null) ? 0 : portSpec.getPath().hashCode());
-        this.uuid = result;
+        this.uuid = portSpec.getDomain() + portSpec.getPath();
     }
 
-    public int getUuid() {
+    public String getUuid() {
         return uuid;
-    }
-
-    public void setUuid(int uuid) {
-        this.uuid = uuid;
     }
 
     public InstanceHealthCheck getHealthCheck() {
