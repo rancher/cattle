@@ -98,7 +98,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
     private List<LoadBalancerTargetsInfo> populateTargetsInfo(LoadBalancer lb, InstanceHealthCheck lbHealthCheck) {
         List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(objectManager.loadResource(LoadBalancer.class, lb.getId()),
                 LoadBalancerTarget.class);
-        Map<Integer, List<LoadBalancerTargetInfo>> uuidToTargetInfos = new HashMap<>();
+        Map<String, List<LoadBalancerTargetInfo>> uuidToTargetInfos = new HashMap<>();
         for (LoadBalancerTarget target : targets) {
             if (!(target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVATING) || target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE))) {
                 continue;
@@ -141,9 +141,12 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         }
 
         List<LoadBalancerTargetsInfo> targetsInfo = new ArrayList<>();
-        for (Integer uuid : uuidToTargetInfos.keySet()) {
-            LoadBalancerTargetsInfo target = new LoadBalancerTargetsInfo(uuidToTargetInfos.get(uuid), lbHealthCheck);
+        int count = 0;
+        for (String uuid : uuidToTargetInfos.keySet()) {
+            LoadBalancerTargetsInfo target = new LoadBalancerTargetsInfo(uuidToTargetInfos.get(uuid), lbHealthCheck,
+                    count);
             targetsInfo.add(target);
+            count++;
         }
         
         return targetsInfo;
