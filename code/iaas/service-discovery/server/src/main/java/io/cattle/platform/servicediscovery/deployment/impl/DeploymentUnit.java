@@ -317,7 +317,10 @@ public class DeploymentUnit {
 
     protected Map<String, String> getLabels(DeploymentUnitInstance instance) {
         Map<String, String> labels = new HashMap<>();
-        String serviceName = instance.getService().getName() + '/' + instance.getLaunchConfigName();
+        String serviceName = instance.getService().getName();
+        if (!ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME.equals(instance.getLaunchConfigName())) {
+            serviceName = serviceName + '/' + instance.getLaunchConfigName();
+        }
         String envName = context.objectManager.loadResource(Environment.class, instance.getService().getEnvironmentId())
                 .getName();
         labels.put(ServiceDiscoveryConstants.LABEL_STACK_NAME, envName);
