@@ -1,11 +1,11 @@
 package io.cattle.platform.servicediscovery.api.service.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -118,6 +119,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         for (Service service : servicesToExport) {
             List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
             for (String launchConfigName : launchConfigNames) {
+                boolean isPrimaryConfig = launchConfigName
+                        .equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
                 Map<String, Object> rancherServiceData = ServiceDiscoveryUtil.getServiceDataAsMap(service,
                         launchConfigName, allocatorService);
                 Map<String, Object> composeServiceData = new HashMap<>();
@@ -130,16 +133,41 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     populateNetworkForService(service, launchConfigName, composeServiceData);
                     populateVolumesForService(service, launchConfigName, composeServiceData);
                     addExtraComposeParameters(service, launchConfigName, composeServiceData);
+                    populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
                 }
 
                 if (!composeServiceData.isEmpty()) {
-                    data.put(
-                            launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? service
-                                    .getName() : launchConfigName, composeServiceData);
+                    data.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
                 }
             }
         }
         return data;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void populateSidekickLabels(Service service, Map<String, Object> composeServiceData, boolean isPrimary) {
+        List<? extends String> configs = ServiceDiscoveryUtil
+                .getServiceLaunchConfigNames(service);
+        configs.remove(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        StringBuffer sidekicks = new StringBuffer();
+        for (String config : configs) {
+            sidekicks.append(config).append(",");
+        }
+        Map<String, String> labels = new HashMap<>();
+        if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
+            labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
+            labels.remove(ServiceDiscoveryConstants.LABEL_SIDEKICK);
+        }
+        if (!sidekicks.toString().isEmpty() && isPrimary) {
+            String sidekicksFinal = sidekicks.toString().substring(0, sidekicks.length() - 1);
+            labels.put(ServiceDiscoveryConstants.LABEL_SIDEKICK, sidekicksFinal);
+        }
+
+        if (!labels.isEmpty()) {
+            composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
+        } else {
+            composeServiceData.remove(InstanceConstants.FIELD_LABELS);
+        }
     }
 
     private void populateLinksForService(Service service, Collection<Long> servicesToExportIds,
