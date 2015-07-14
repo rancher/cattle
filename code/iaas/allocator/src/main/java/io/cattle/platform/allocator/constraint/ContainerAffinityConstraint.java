@@ -37,7 +37,8 @@ public class ContainerAffinityConstraint implements Constraint {
                 List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(hostId);
                 for (Instance instance : instances) {
                     if (containerIdentifier != null && 
-                            (containerIdentifier.equals(instance.getName()) || containerIdentifier.equals(instance.getUuid()))) {
+                            (containerIdentifier.equalsIgnoreCase(instance.getName()) ||
+                                    containerIdentifier.equalsIgnoreCase(instance.getUuid()))) {
                         return true;
                     }
                 }
