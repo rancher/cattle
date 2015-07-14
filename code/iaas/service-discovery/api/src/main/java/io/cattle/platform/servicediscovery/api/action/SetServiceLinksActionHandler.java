@@ -55,7 +55,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         final boolean forLb = service.getKind()
                 .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name());
         final Map<Long, ServiceLink> newServiceLinks = populateNewServiceLinks(request, forLb);
-        if (newServiceLinks != null && !newServiceLinks.isEmpty()) {
+        if (newServiceLinks != null) {
             lockManager.lock(new ServiceDiscoveryServiceSetLinksLock(service), new LockCallbackNoReturn() {
                 @Override
                 public void doWithLockNoResult() {
