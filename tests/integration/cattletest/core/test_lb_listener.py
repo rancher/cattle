@@ -107,3 +107,27 @@ def test_lb_listener_create_wo_target_portprotocol(client):
     assert listener.state == 'active'
     assert listener.targetPort == 80
     assert listener.targetProtocol == 'tcp'
+
+
+def test_lb_ssl_listener_create(client):
+    listener = client.create_loadBalancerListener(name=random_str(),
+                                                  sourcePort='8080',
+                                                  sourceProtocol='https',
+                                                  algorithm='leastconn')
+    listener = client.wait_success(listener)
+
+    assert listener.state == 'active'
+    assert listener.sourcePort == 8080
+    assert listener.sourceProtocol == 'https'
+    assert listener.algorithm == 'leastconn'
+
+    listener = client.create_loadBalancerListener(name=random_str(),
+                                                  sourcePort='8080',
+                                                  sourceProtocol='ssl',
+                                                  algorithm='leastconn')
+    listener = client.wait_success(listener)
+
+    assert listener.state == 'active'
+    assert listener.sourcePort == 8080
+    assert listener.sourceProtocol == 'ssl'
+    assert listener.algorithm == 'leastconn'

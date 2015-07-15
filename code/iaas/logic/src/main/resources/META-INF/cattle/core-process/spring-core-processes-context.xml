@@ -208,4 +208,11 @@
     <process:defaultProcesses resourceType="userPreference" />
     <process:process name="userpreference.remove" resourceType="userPreference" start="inactive,active" transitioning="removing" done="removed" />
 
+ 	<!-- Certificate -->
+    <process:process name="certificate.create" resourceType="certificate" start="requested" transitioning="activating" done="active" />
+    <process:process name="certificate.remove" resourceType="certificate" start="requested,active,activating" transitioning="removing" done="removed" />
+
+	<!-- Load Balancer Certificate Map -->
+    <process:process name="loadbalancercertificatemap.create" resourceType="loadbalancerCertificateMap" start="requested" transitioning="activating" done="active" />
+    <process:process name="loadbalancercertificatemap.remove" resourceType="loadbalancerCertificateMap" start="requested,active,activating" transitioning="removing" done="removed" />
 </beans>

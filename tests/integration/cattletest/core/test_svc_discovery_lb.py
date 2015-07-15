@@ -3,6 +3,10 @@ from cattle import ApiError
 import yaml
 
 
+RESOURCE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            'resources/certs')
+
+
 @pytest.fixture(scope='module')
 def image_uuid(context):
     return context.image_uuid
@@ -828,7 +832,6 @@ def test_export_config(client, context):
     env2 = client.wait_success(env2)
     assert env2.state == "active"
 
-    # create services
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     web_service = _create_service(client, env1, launch_config, "web")
@@ -867,6 +870,79 @@ def test_export_config(client, context):
     assert document[lb_service.name]['labels'] == labels
     assert document[lb_service.name]['links'] == links
     assert document[lb_service.name]['external_links'] == external_links
+
+
+def test_lb_service_w_certificate(client, context, image_uuid):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    cert1 = _create_cert(client)
+    cert2 = _create_cert(client)
+    host = context.host
+    labels = {'io.rancher.loadbalancer.ssl.ports': "1765,1767"}
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": ['1765:1766', '1767:1768'],
+                     "labels": labels}
+
+    service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config,
+                                   certificateIds=[cert1.id, cert2.id],
+                                   defaultCertificateId=cert1.id)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    service = client.wait_success(service.activate(), 120)
+    # perform validation
+    lb, service = _validate_lb_service_activate(env, host,
+                                                service, client,
+                                                ['1765:1766', '1767:1768'],
+                                                "https")
+    assert lb.defaultCertificateId == cert1.id
+    assert lb.certificateIds == [cert1.id, cert2.id]
+
+
+def test_lb_service_update_certificate(client, context, image_uuid):
+    cert1 = _create_cert(client)
+    cert2 = _create_cert(client)
+    host = context.host
+    labels = {'io.rancher.loadbalancer.ssl.ports': "1769,1771"}
+
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": ['1769:1770', '1771:1772'],
+                     "labels": labels}
+
+    service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config,
+                                   certificateIds=[cert1.id, cert2.id],
+                                   defaultCertificateId=cert1.id)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    service = client.wait_success(service.activate(), 120)
+    # perform validation
+    lb, service = _validate_lb_service_activate(env, host,
+                                                service, client,
+                                                ['1769:1770', '1771:1772'],
+                                                "https")
+    assert lb.defaultCertificateId == cert1.id
+    assert lb.certificateIds == [cert1.id, cert2.id]
+
+    cert3 = _create_cert(client)
+
+    # update service with new certificate set
+    service = client.update(service, certificateIds=[cert1.id],
+                            defaultCertificateId=cert3.id)
+    client.wait_success(service, 120)
+
+    lb = client.reload(lb)
+    assert lb.defaultCertificateId == cert3.id
+    assert lb.certificateIds == [cert1.id]
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
@@ -908,12 +984,12 @@ def validate_remove_host(host, lb, super_client):
     host_maps = super_client. \
         list_loadBalancerHostMap(loadBalancerId=lb.id,
                                  hostId=host.id)
-    assert len(host_maps) == 1
-    host_map = host_maps[0]
-    wait_for_condition(
-        super_client, host_map, _resource_is_removed,
-        lambda x: 'State is: ' + x.state)
-    assert host_map.hostId == host.id
+    assert len(host_maps) in (0, 1)
+    if len(host_maps) == 1:
+        host_map = host_maps[0]
+        wait_for_condition(
+            super_client, host_map, _resource_is_removed,
+            lambda x: 'State is: ' + x.state)
 
 
 def _validate_lb_instance(host, lb, super_client, service):
@@ -940,7 +1016,7 @@ def _validate_lb_instance(host, lb, super_client, service):
 
 
 def _validate_create_listener(env, service, source_port,
-                              client, target_port):
+                              client, target_port, protocol=None):
     l_name = env.name + "_" + service.name + "_" + source_port
     listeners = client. \
         list_loadBalancerListener(sourcePort=source_port,
@@ -950,10 +1026,13 @@ def _validate_create_listener(env, service, source_port,
     assert listener.sourcePort == int(source_port)
     assert listener.privatePort == int(source_port)
     assert listener.targetPort == int(target_port)
+    if protocol:
+        assert listener.sourceProtocol == protocol
     return listener
 
 
-def _validate_lb_service_activate(env, host, service, client, ports):
+def _validate_lb_service_activate(env, host, service,
+                                  client, ports, protocol=None):
     # 1. verify that the service was activated
     assert service.state == "active"
     # 2. verify that lb got created
@@ -969,13 +1048,13 @@ def _validate_lb_service_activate(env, host, service, client, ports):
     source_port = ports[0].split(':')[0]
     target_port = ports[0].split(':')[1]
     listener = _validate_create_listener(env, service, source_port,
-                                         client, target_port)
+                                         client, target_port, protocol)
     _validate_add_listener(config_id, listener, client)
 
     source_port = ports[1].split(':')[0]
     target_port = ports[1].split(':')[1]
     listener = _validate_create_listener(env, service, source_port,
-                                         client, target_port)
+                                         client, target_port, protocol)
     _validate_add_listener(config_id, listener, client)
     return lb, service
 
@@ -1134,3 +1213,21 @@ def _validate_remove_service_link(client, service, consumedService, count,
                                    state='removed')
         if time.time() - start > timeout:
             assert 'Timeout waiting for map to be removed.'
+
+
+def _create_cert(client):
+    cert = _read_cert("cert.pem")
+    key = _read_cert("key.pem")
+    cert1 = client. \
+        create_certificate(name=random_str(),
+                           cert=cert,
+                           key=key)
+    cert1 = client.wait_success(cert1)
+    assert cert1.state == 'active'
+    assert cert1.cert == cert
+    return cert1
+
+
+def _read_cert(name):
+    with open(os.path.join(RESOURCE_DIR, name)) as f:
+        return f.read()

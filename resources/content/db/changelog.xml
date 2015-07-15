@@ -61,4 +61,5 @@
     <include file="db/core-054.xml"/>
     <include file="db/core-055.xml"/>
     <include file="db/core-056.xml"/>
+    <include file="db/core-057.xml"/>
 </databaseChangeLog>

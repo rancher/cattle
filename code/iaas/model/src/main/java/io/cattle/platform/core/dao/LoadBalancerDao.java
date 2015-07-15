@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao;
 
+import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerListener;
@@ -17,4 +18,8 @@ public interface LoadBalancerDao {
     LoadBalancer getActiveLoadBalancerById(long lbId);
     
     void addListenerToConfig(final LoadBalancerConfig config, final long listenerId);
+
+    List<Certificate> getLoadBalancerCertificates(LoadBalancer lb);
+
+    Certificate getLoadBalancerDefaultCertificate(LoadBalancer lb);
 }

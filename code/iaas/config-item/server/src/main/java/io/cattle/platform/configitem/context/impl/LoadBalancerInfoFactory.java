@@ -58,6 +58,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
     @Inject
     LoadBalancerTargetDao lbTargetDao;
 
+
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         List<? extends LoadBalancerListener> listeners = new ArrayList<>();
@@ -87,13 +88,15 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             if (targetsInfo.isEmpty()) {
                 return;
             }
-
         }
         context.getData().put("listeners", listeners);
         context.getData().put("publicIp", lbMgr.getLoadBalancerInstanceIp(instance).getAddress());
         context.getData().put("backends", sortTargets(targetsInfo));
         context.getData().put("appPolicy", appPolicy);
         context.getData().put("lbPolicy", lbPolicy);
+
+        context.getData().put("certs", lbDao.getLoadBalancerCertificates(lb));
+        context.getData().put("defaultCert", lbDao.getLoadBalancerDefaultCertificate(lb));
     }
 
 

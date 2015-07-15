@@ -3,6 +3,7 @@ global
     	log 127.0.0.1 local1 notice
         maxconn 4096
         maxpipes 1024
+        tune.ssl.default-dh-param 2048
 	chroot /var/lib/haproxy
 	user haproxy
 	group haproxy
@@ -17,9 +18,9 @@ defaults
         option forwardfor
         option httpclose
         retries 3
-        contimeout 5000
-        clitimeout 50000
-        srvtimeout 50000
+        timeout connect 5000
+        timeout client 50000
+        timeout server 50000
 	errorfile 400 /etc/haproxy/errors/400.http
 	errorfile 403 /etc/haproxy/errors/403.http
 	errorfile 408 /etc/haproxy/errors/408.http
@@ -31,9 +32,13 @@ defaults
 <#if listeners?has_content && backends?has_content>
 <#list listeners as listener >
 <#if listener.privatePort??><#assign sourcePort = listener.privatePort><#else><#assign sourcePort = listener.sourcePort></#if>
+<#assign protocol=listener.sourceProtocol>
+<#if listener.sourceProtocol == "https"><#assign protocol="http"></#if>
+<#if listener.sourceProtocol == "ssl"><#assign protocol="tcp"></#if>
 frontend ${listener.uuid}_frontend
-        bind ${publicIp}:${sourcePort}
-        mode ${listener.sourceProtocol}
+        bind ${publicIp}:${sourcePort}<#if (listener.sourceProtocol == "https" || listener.sourceProtocol == "ssl") && certs?has_content> ssl crt /etc/haproxy/certs/<#if !defaultCert??> strict-sni</#if></#if>
+        mode ${protocol}
+
         <#list backends as backend >
         <#if backend.portSpec.sourcePort == sourcePort>
         <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>
@@ -54,7 +59,7 @@ frontend ${listener.uuid}_frontend
 <#list backends as backend >
 <#if backend.portSpec.sourcePort == sourcePort>
 backend ${listener.uuid}_${backend.uuid}_backend
-        mode ${listener.targetProtocol}
+        mode ${protocol}
         balance ${listener.data.fields.algorithm}
         <#if backend.healthCheck??>
         <#if backend.healthCheck.responseTimeout??>timeout check ${backend.healthCheck.responseTimeout}</#if>
@@ -71,6 +76,9 @@ backend ${listener.uuid}_${backend.uuid}_backend
         <#list backend.targets as target >
         server ${target.name} ${target.ipAddress}:${target.portSpec.port}<#if target.healthCheck??> check<#if target.healthCheck.port??> port ${target.healthCheck.port}</#if><#if target.healthCheck.interval??> inter ${target.healthCheck.interval}</#if><#if target.healthCheck.healthyThreshold??> rise ${target.healthCheck.healthyThreshold}</#if><#if target.healthCheck.unhealthyThreshold??> fall ${target.healthCheck.unhealthyThreshold}</#if></#if><#if listener.targetProtocol="http" && lbPolicy??> cookie ${target.cookie}</#if>
         </#list>
+         <#if listener.sourceProtocol == "https">
+        http-request add-header X-Forwarded-Proto https if { ssl_fc }
+        </#if>
 </#if>
 </#list>
 </#list>

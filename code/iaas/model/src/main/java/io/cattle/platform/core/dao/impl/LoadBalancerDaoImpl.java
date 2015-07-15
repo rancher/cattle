@@ -1,5 +1,7 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.CertificateTable.CERTIFICATE;
+import static io.cattle.platform.core.model.tables.LoadBalancerCertificateMapTable.LOAD_BALANCER_CERTIFICATE_MAP;
 import static io.cattle.platform.core.model.tables.LoadBalancerConfigListenerMapTable.LOAD_BALANCER_CONFIG_LISTENER_MAP;
 import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
@@ -7,6 +9,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.LoadBalancerDao;
+import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerConfigListenerMap;
@@ -92,5 +95,38 @@ public class LoadBalancerDaoImpl extends AbstractJooqDao implements LoadBalancer
                     LOAD_BALANCER_CONFIG_LISTENER_MAP.ACCOUNT_ID, config.getAccountId());
 
         }
+    }
+
+    @Override
+    public List<Certificate> getLoadBalancerCertificates(LoadBalancer lb) {
+        return create()
+                .select(CERTIFICATE.fields())
+                .from(CERTIFICATE)
+                .join(LOAD_BALANCER_CERTIFICATE_MAP)
+                .on(CERTIFICATE.ID.eq(LOAD_BALANCER_CERTIFICATE_MAP.CERTIFICATE_ID)
+                        .and(LOAD_BALANCER_CERTIFICATE_MAP.LOAD_BALANCER_ID.eq(lb.getId()))
+                        .and(LOAD_BALANCER_CERTIFICATE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED)))
+                .where(CERTIFICATE.REMOVED.isNull())
+                .fetchInto(Certificate.class);
+    }
+
+    @Override
+    public Certificate getLoadBalancerDefaultCertificate(LoadBalancer lb) {
+        List<? extends Certificate> certs = create()
+                .select(CERTIFICATE.fields())
+                .from(CERTIFICATE)
+                .join(LOAD_BALANCER_CERTIFICATE_MAP)
+                .on(CERTIFICATE.ID.eq(LOAD_BALANCER_CERTIFICATE_MAP.CERTIFICATE_ID)
+                        .and(LOAD_BALANCER_CERTIFICATE_MAP.LOAD_BALANCER_ID.eq(lb.getId()))
+                        .and(LOAD_BALANCER_CERTIFICATE_MAP.IS_DEFAULT.eq(true))
+                        .and(LOAD_BALANCER_CERTIFICATE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED)))
+                .where(CERTIFICATE.REMOVED.isNull())
+                .fetchInto(Certificate.class);
+        if (certs.isEmpty()) {
+            return null;
+        }
+        return certs.get(0);
     }
 }

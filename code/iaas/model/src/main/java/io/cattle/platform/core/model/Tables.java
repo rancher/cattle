@@ -199,6 +199,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.LoadBalancerTable LOAD_BALANCER = io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 
 	/**
+	 * The table cattle.load_balancer_certificate_map
+	 */
+	public static final io.cattle.platform.core.model.tables.LoadBalancerCertificateMapTable LOAD_BALANCER_CERTIFICATE_MAP = io.cattle.platform.core.model.tables.LoadBalancerCertificateMapTable.LOAD_BALANCER_CERTIFICATE_MAP;
+
+	/**
 	 * The table cattle.load_balancer_config
 	 */
 	public static final io.cattle.platform.core.model.tables.LoadBalancerConfigTable LOAD_BALANCER_CONFIG = io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG;
