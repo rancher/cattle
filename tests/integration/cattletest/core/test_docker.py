@@ -750,8 +750,8 @@ def test_container_odd_fields(super_client, docker_client):
 
     c = super_client.reload(c)
 
-    assert c.data.dockerInspect.HostConfig.LogConfig == {'Type': 'json-file',
-                                                         'Config': None}
+    assert c.data.dockerInspect.HostConfig.LogConfig.Type == 'json-file'
+    assert c.data.dockerInspect.HostConfig.LogConfig.Config in ({}, None)
 
 
 @if_docker
