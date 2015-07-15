@@ -10,7 +10,7 @@
 %DOT%
     </script>
 
-    <script src="http://mdaines.github.io/viz.js/viz.js"></script>
+    <script src="https://mdaines.github.io/viz.js/viz.js"></script>
     <script>
       document.body.innerHTML += Viz(document.getElementById("dot").innerHTML, "svg");
     </script>
