@@ -1,15 +1,15 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
-import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.AccountLookup;
-import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
-import io.cattle.platform.iaas.api.auth.ExternalIdHandler;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
+import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -22,28 +22,25 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.config.DynamicBooleanProperty;
-
 public class ApiAuthenticator extends AbstractApiRequestHandler {
 
-    private static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean("api.security.enabled");
     private static final Logger log = LoggerFactory.getLogger(ApiAuthenticator.class);
 
     private static final String ACCOUNT_ID_HEADER = "X-API-ACCOUNT-ID";
 
     AuthDao authDao;
     List<AccountLookup> accountLookups;
-    List<ExternalIdHandler> externalIdHandlers;
+    List<IdentityTransformationHandler> identityTransformationHandlers;
     List<AuthorizationProvider> authorizationProviders;
     @Inject
     ObjectManager objectManager;
+
     @Override
     public void handle(ApiRequest request) throws IOException {
         if (ApiContext.getContext().getPolicy() != null) {
@@ -55,11 +52,11 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             throwUnauthorizated();
         }
 
-        Set<ExternalId> externalIds = getExternalIds(authenticatedAsAccount);
+        Set<Identity> identities = getIdentities(authenticatedAsAccount);
 
-        Account account = getAccountRequested(authenticatedAsAccount, externalIds, request);
+        Account account = getAccountRequested(authenticatedAsAccount, identities, request);
 
-        Policy policy = getPolicy(account, authenticatedAsAccount, externalIds, request);
+        Policy policy = getPolicy(account, authenticatedAsAccount, identities, request);
         if (policy == null) {
             log.error("Failed to find policy for [{}]", account.getId());
             throwUnauthorizated();
@@ -68,7 +65,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         SchemaFactory schemaFactory = getSchemaFactory(account, policy, request);
         if (schemaFactory == null) {
             log.error("Failed to find a schema for account type [{}]", account.getKind());
-            if (SECURITY.get()) {
+            if (SecurityConstants.SECURITY.get()) {
                 throwUnauthorizated();
             }
         }
@@ -88,11 +85,11 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         ApiContext.getContext().setPolicy(policy);
     }
 
-    protected Policy getPolicy(Account account, Account authenticatedAsAccount, Set<ExternalId> externalIds, ApiRequest request) {
+    protected Policy getPolicy(Account account, Account authenticatedAsAccount, Set<Identity> identities, ApiRequest request) {
         Policy policy = null;
 
         for (AuthorizationProvider auth : authorizationProviders) {
-            policy = auth.getPolicy(account, authenticatedAsAccount, externalIds, request);
+            policy = auth.getPolicy(account, authenticatedAsAccount, identities, request);
             if (policy != null) {
                 break;
             }
@@ -118,9 +115,11 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         Account account = null;
 
         for (AccountLookup lookup : accountLookups) {
-            account = lookup.getAccount(request);
-            if (account != null) {
-                break;
+            if (lookup.isConfigured()){
+                account = lookup.getAccount(request);
+                if (account != null) {
+                    break;
+                }
             }
         }
 
@@ -128,7 +127,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             return account;
         }
 
-        if (SECURITY.get()) {
+        if (SecurityConstants.SECURITY.get()) {
             for (AccountLookup lookup : accountLookups) {
                 if (lookup.challenge(request)) {
                     break;
@@ -139,17 +138,17 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         return account;
     }
 
-    private Set<ExternalId> getExternalIds(Account account) {
-        Set<ExternalId> externalIds = new HashSet<>();
+    private Set<Identity> getIdentities(Account account) {
+        Set<Identity> identities = new HashSet<>();
 
-        for (ExternalIdHandler externalIdHandler : externalIdHandlers) {
-            externalIds.addAll(externalIdHandler.getExternalIds(account));
+        for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
+            identities.addAll(identityTransformationHandler.getIdentities(account));
         }
 
-        return externalIds;
+        return identities;
     }
 
-    private Account getAccountRequested(Account authenticatedAsAccount, Set<ExternalId> externalIds, ApiRequest request) {
+    private Account getAccountRequested(Account authenticatedAsAccount, Set<Identity> identities, ApiRequest request) {
         Account project;
 
         String projectId = request.getServletContext().getRequest().getHeader(ProjectConstants.PROJECT_HEADER);
@@ -175,20 +174,20 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         if (StringUtils.isEmpty(unobfuscatedId)) {
             return null;
         }
-        try{
+        try {
             project = authDao.getAccountById(new Long(unobfuscatedId));
             if (project == null || !project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)){
                 throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
             }
-            if (authenticatedAsAccount.getId() == project.getId()){
+            if (authenticatedAsAccount.getId() == project.getId()) {
                 return authenticatedAsAccount;
             }
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
-        Policy tempPolicy = getPolicy(authenticatedAsAccount, authenticatedAsAccount, externalIds, request);
-        if (project != null && authDao.hasAccessToProject(project.getId(), authenticatedAsAccount.getId(),
-                tempPolicy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), externalIds)) {
+        Policy tempPolicy = getPolicy(authenticatedAsAccount, authenticatedAsAccount, identities, request);
+        if (authDao.hasAccessToProject(project.getId(), authenticatedAsAccount.getId(),
+                tempPolicy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), identities)) {
             return project;
         }
         throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
@@ -221,13 +220,13 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         this.accountLookups = accountLookups;
     }
 
-    public List<ExternalIdHandler> getExternalIdHandlers() {
-        return externalIdHandlers;
+    public List<IdentityTransformationHandler> getIdentityTransformationHandlers() {
+        return identityTransformationHandlers;
     }
 
     @Inject
-    public void setExternalIdHandlers(List<ExternalIdHandler> externalIdHandlers) {
-        this.externalIdHandlers = externalIdHandlers;
+    public void setIdentityTransformationHandlers(List<IdentityTransformationHandler> identityTransformationHandlers) {
+        this.identityTransformationHandlers = identityTransformationHandlers;
     }
 
 }

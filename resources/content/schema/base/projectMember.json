@@ -1,4 +1,5 @@
 {
+  "collectionMethods" : [ "GET" ],
   "pluralName": "projectMembers",
   "resourceFields" : {
     "projectId": {
@@ -19,7 +20,9 @@
         "github_user",
         "github_org",
         "github_team",
-        "rancher_id"
+        "rancher_id",
+        "ldap_user",
+        "ldap_group"
       ]
     }
   }

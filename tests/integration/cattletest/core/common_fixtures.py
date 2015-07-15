@@ -145,10 +145,13 @@ class Context(object):
 
 
 def create_context(admin_user_client, create_project=False, add_host=False,
-                   kind=None):
+                   kind=None, name=None):
     now = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-    name = 'Integration Test User {}'.format(now)
-    project_name = 'Integration Test Project {}'.format(now)
+    if name is None:
+        name = 'Integration Test User {}'.format(now)
+        project_name = 'Integration Test Project {}'.format(now)
+    else:
+        project_name = name + '\'s Project {}'.format(now)
 
     if kind is None:
         kind = 'user'

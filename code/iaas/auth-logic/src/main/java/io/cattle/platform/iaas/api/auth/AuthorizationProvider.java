@@ -1,6 +1,6 @@
 package io.cattle.platform.iaas.api.auth;
 
-import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.model.Account;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -12,6 +12,6 @@ public interface AuthorizationProvider {
 
     SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request);
 
-    Policy getPolicy(Account account, Account authenticatedAsAccount, Set<ExternalId> externalIds, ApiRequest request);
+    Policy getPolicy(Account account, Account authenticatedAsAccount, Set<Identity> identities, ApiRequest request);
 
 }

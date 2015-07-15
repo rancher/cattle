@@ -79,9 +79,8 @@
         "externalHandlerProcess" : "r",
 
         "githubconfig": "cru",
-        "githubconfig.allowedOrganizations": "cr",
+        "githubconfig.allowedIdentities": "cr",
         "githubconfig.accessMode": "cr",
-        "githubconfig.allowedUsers": "cr",
         "githubconfig.clientId": "cr",
         "githubconfig.clientSecret": "cr",
         "githubconfig.enabled": "cr",
@@ -98,6 +97,20 @@
         "instanceLink.ports" : "r",
 
         "instanceStop.deallocateFromHost" : "cr",
+
+        "ldapconfig" : "cru",
+        "ldapconfig.*" : "cr",
+        "ldapconfig.server" : "cr",
+        "ldapconfig.port" : "cr",
+        "ldapconfig.enabled" : "cr",
+        "ldapconfig.loginDomain" : "cr",
+        "ldapconfig.domain" : "cr",
+        "ldapconfig.accessMode" : "cr",
+        "ldapconfig.name" : "r",
+        "ldapconfig.searchFieldUser" : "cr",
+        "ldapconfig.serviceAccountUsername" : "cr",
+        "ldapconfig.serviceAccountPassword" : "cr",
+        "ldapconfig.tls" : "cr",
 
         "processDefinition" : "r",
         "processDefinition.extensionBased" : "r",

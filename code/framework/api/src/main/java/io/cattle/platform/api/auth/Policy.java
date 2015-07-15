@@ -19,7 +19,7 @@ public interface Policy {
 
     String getOption(String optionName);
 
-    Set<ExternalId> getExternalIds();
+    Set<Identity> getIdentities();
 
     long getAccountId();
 

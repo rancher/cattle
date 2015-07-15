@@ -138,6 +138,17 @@
         "hostAccess.token" : "r",
         "hostAccess.url" : "r",
 
+        "identity": "r",
+        "identity.name": "cr",
+        "identity.externalId": "cr",
+        "identity.externalIdType": "cr",
+        "identity.profilePicture": "cr",
+        "identity.profileUrl": "cr",
+        "identity.login": "cr",
+        "identity.projectId": "cr",
+        "identity.role": "cr",
+        "identity.all": "cr",
+
         "image" : "r",
 
         "instanceConsoleInput" : "r",
@@ -200,6 +211,9 @@
         "projectMember.name" : "r",
         "projectMember.externalId" : "cr",
         "projectMember.externalIdType" : "cr",
+        "projectMember.login" : "r",
+        "projectMember.profileUrl" : "r",
+        "projectMember.profilePicture" : "r",
         "projectMember.projectId" : "r",
 
         "register": "r",
