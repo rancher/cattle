@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
@@ -32,11 +33,13 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
 
     Map<String, List<Object>> byKeyRegistry = new HashMap<String, List<Object>>();
     Map<String, ExtensionList<Object>> extensionLists = new HashMap<String, ExtensionList<Object>>();
+    Map<String, ExtensionMap<String, Object>> extensionMaps = new HashMap<>();
     Map<String, List<Object>> byName = new HashMap<String, List<Object>>();
     Map<Object, String> objectToName = new HashMap<Object, String>();
     Map<String, Class<?>> keyToType = new HashMap<String, Class<?>>();
     Map<Pattern, List<String>> wildcards = new HashMap<Pattern, List<String>>();
     boolean started = false;
+
 
     @SuppressWarnings("unchecked")
     @Override
@@ -52,12 +55,27 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
     @SuppressWarnings("unchecked")
     @Override
     public <T> T first(String key, Class<T> type) {
-        return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] { type }, new FirstInstanceInvocationHandler(getExtensionListInternal(key)));
+        return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, new FirstInstanceInvocationHandler(getExtensionListInternal(key)));
     }
 
     @Override
     public List<?> list(String key) {
         return getExtensionListInternal(key);
+    }
+
+    @Override
+    public Map<String, Object> map(String key) {
+        return getExtensionMapInternal(key);
+    }
+
+    protected synchronized ExtensionMap<String, Object> getExtensionMapInternal(String key) {
+        ExtensionMap<String, Object> map = extensionMaps.get(key);
+        if (map == null) {
+            Map<String, Object> inner = started ? getMap(key) : Collections.<String, Object>emptyMap();
+            map = new ExtensionMap<>(this, key, inner);
+            extensionMaps.put(key, map);
+        }
+        return map;
     }
 
     @Override
@@ -134,10 +152,22 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
                 ExtensionList<?> extensionList = getExtensionListInternal(key);
                 extensionList.inner.clear();
                 extensionList.inner.addAll(getList(key));
+                ExtensionMap<String, Object> extensionMap = getExtensionMapInternal(key);
+                extensionMap.inner.clear();
+                extensionMap.inner.putAll(getMap(key));
             }
 
             started = true;
         }
+    }
+
+    protected synchronized Map<String, Object> getMap(String key) {
+        List<?> list = getList(key);
+        Map<String, Object> map = new ConcurrentHashMap<>();
+        for (Object item : list) {
+            map.put(NamedUtils.getName(item), item);
+        }
+        return map;
     }
 
     public void reset() {

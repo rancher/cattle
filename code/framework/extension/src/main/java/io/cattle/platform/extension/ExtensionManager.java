@@ -1,6 +1,7 @@
 package io.cattle.platform.extension;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ExtensionManager {
 
@@ -9,6 +10,8 @@ public interface ExtensionManager {
     <T> T first(String key, Class<T> type);
 
     List<?> list(String key);
+
+    Map<String, Object> map(String key);
 
     <T> List<T> getExtensionList(Class<T> type);
 
