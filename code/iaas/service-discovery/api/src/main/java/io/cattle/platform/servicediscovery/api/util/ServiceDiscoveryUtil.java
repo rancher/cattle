@@ -171,6 +171,7 @@ public class ServiceDiscoveryUtil {
                 if (dataObj instanceof Map) {
                     // unfortunately, need to make an except for labels due to the merging aspect of the values
                     if (key.equalsIgnoreCase(InstanceConstants.FIELD_LABELS)) {
+                        allocatorService.normalizeLabels((Map<String, String>) launchConfigItems.get(key), (Map<String, String>) dataObj);
                         allocatorService.mergeLabels((Map<String, String>) launchConfigItems.get(key),
                                 (Map<String, String>) dataObj);
                     } else {

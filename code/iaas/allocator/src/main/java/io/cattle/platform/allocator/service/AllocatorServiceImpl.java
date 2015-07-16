@@ -36,6 +36,9 @@ public class AllocatorServiceImpl implements AllocatorService {
     // TODO: We should refactor since these are defined in ServiceDiscoveryConstants too
     private static final String LABEL_STACK_NAME = "io.rancher.stack.name";
     private static final String LABEL_STACK_SERVICE_NAME = "io.rancher.stack_service.name";
+    private static final String LABEL_PROJECT_SERVICE_NAME = "io.rancher.project_service.name";
+    private static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
+    private static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
 
     @Inject
     LabelsDao labelsDao;
@@ -97,6 +100,41 @@ public class AllocatorServiceImpl implements AllocatorService {
             }
         }
         return true;
+    }
+
+    @Override
+    public void normalizeLabels(Map<String, String> systemLabels, Map<String, String> serviceUserLabels) {
+        String stackName = systemLabels.get(LABEL_STACK_NAME);
+        String stackServiceNameWithLaunchConfig = systemLabels.get(LABEL_STACK_SERVICE_NAME);
+        String launchConfig = systemLabels.get(LABEL_SERVICE_LAUNCH_CONFIG);
+
+        for (Map.Entry<String, String> entry : serviceUserLabels.entrySet()) {
+            String labelValue = entry.getValue();
+            if (entry.getKey().startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL) &&
+                    labelValue != null) {
+                String userEnteredServiceName = null;
+                if (labelValue.startsWith(LABEL_STACK_SERVICE_NAME)) {
+                    userEnteredServiceName = labelValue.substring(LABEL_STACK_SERVICE_NAME.length() + 1);
+                } else if (labelValue.startsWith(LABEL_PROJECT_SERVICE_NAME)) {
+                    userEnteredServiceName = labelValue.substring(LABEL_PROJECT_SERVICE_NAME.length() + 1);
+                }
+                if (userEnteredServiceName != null) {
+                    String[] components = userEnteredServiceName.split("/");
+                    if (components.length == 1 &&
+                            stackServiceNameWithLaunchConfig != null &&
+                            stackServiceNameWithLaunchConfig.startsWith(stackName + "/" + userEnteredServiceName)) {
+                        // prepend stack name
+                        userEnteredServiceName = stackName + "/" + userEnteredServiceName;
+                    }
+                    if (!PRIMARY_LAUNCH_CONFIG_NAME.equals(launchConfig) &&
+                            stackServiceNameWithLaunchConfig.startsWith(userEnteredServiceName)) {
+                        // automatically append secondary launchConfig
+                        userEnteredServiceName = userEnteredServiceName + "/" + launchConfig;
+                    }
+                    entry.setValue(LABEL_STACK_SERVICE_NAME + "=" + userEnteredServiceName);
+                }
+            }
+        }
     }
 
     @Override
