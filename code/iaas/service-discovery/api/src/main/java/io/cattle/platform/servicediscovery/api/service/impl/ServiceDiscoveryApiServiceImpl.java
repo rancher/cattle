@@ -149,7 +149,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         List<? extends String> configs = ServiceDiscoveryUtil
                 .getServiceLaunchConfigNames(service);
         configs.remove(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-        StringBuffer sidekicks = new StringBuffer();
+        StringBuilder sidekicks = new StringBuilder();
         for (String config : configs) {
             sidekicks.append(config).append(",");
         }
