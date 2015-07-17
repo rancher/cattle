@@ -274,6 +274,16 @@ public class DeploymentUnit {
         return true;
     }
 
+    public boolean isHealthCheckInitializing() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (instance.isHealthCheckInitializing()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public boolean isUnhealthy() {
         // returns list of instances that need cleanup (having bad health)
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {

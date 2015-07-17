@@ -5,18 +5,28 @@ import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+
+import io.cattle.platform.core.addon.LoadBalancerServiceLink;
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.tables.records.InstanceLinkRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
+import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -24,6 +34,9 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
 
     @Inject
     ObjectManager objectManager;
+
+    @Inject
+    ObjectProcessManager objectProcessManager;
 
     @Override
     public ServiceConsumeMap findMapToRemove(long serviceId, long consumedServiceId) {
@@ -134,6 +147,51 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                         .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId)))
                 .orderBy(INSTANCE.NAME.asc())
                 .fetch(INSTANCE.NAME);
+    }
+
+    @Override
+    public ServiceConsumeMap createServiceLink(Service service, ServiceLink serviceLink) {
+        ServiceConsumeMap map = findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
+                serviceLink.getName());
+
+        if (map == null) {
+            Map<Object,Object> properties = CollectionUtils.asMap(
+                    (Object)SERVICE_CONSUME_MAP.SERVICE_ID,
+                    service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, serviceLink.getServiceId(),
+                    SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
+                    SERVICE_CONSUME_MAP.NAME, serviceLink.getName());
+
+            if (serviceLink instanceof LoadBalancerServiceLink) {
+                  properties.put(LoadBalancerConstants.FIELD_LB_TARGET_PORTS,
+                          ((LoadBalancerServiceLink) serviceLink).getPorts());
+            }
+
+            map = objectManager.create(ServiceConsumeMap.class, objectManager.convertToPropertiesFor(ServiceConsumeMap.class,
+                    properties));
+        }
+
+        if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
+                    map, null);
+        }
+
+        return map;
+    }
+
+    @Override
+    public List<ServiceConsumeMap> createServiceLinks(List<ServiceLink> serviceLinks) {
+        List<ServiceConsumeMap> result = new ArrayList<>();
+
+        for (ServiceLink serviceLink : serviceLinks) {
+            Service service = objectManager.loadResource(Service.class, serviceLink.getConsumingServiceId());
+            if (service == null) {
+                continue;
+            }
+
+            result.add(createServiceLink(service, serviceLink));
+        }
+
+        return result;
     }
 
     @Override

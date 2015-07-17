@@ -1,8 +1,8 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -13,8 +13,8 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.servicediscovery.deployment.AbstractInstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
-import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
 import java.util.HashMap;
@@ -22,13 +22,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implements InstanceUnit {
+public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
     protected String instanceName;
-    protected Instance instance;
-
-    public DefaultDeploymentUnitInstance() {
-        super(null, null, null, null);
-    }
 
     public DefaultDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
@@ -42,7 +37,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public boolean isError() {
-        return this.instance.getRemoved() != null;
+        return this.instance != null && this.instance.getRemoved() != null;
     }
 
     @Override
@@ -108,31 +103,8 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     }
 
     @Override
-    public void stop() {
-        if (this.instance != null && this.instance.getState().equals(InstanceConstants.STATE_RUNNING)) {
-            context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
-                    null);
-        }
-    }
-
-    @Override
     public boolean isStarted() {
         return context.objectManager.reload(this.instance).getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING);
-    }
-
-    @Override
-    public Instance getInstance() {
-        return instance;
-    }
-
-    @Override
-    public boolean isUnhealthy() {
-        if (this.instance != null) {
-            return this.instance.getHealthState() != null && (this.instance.getHealthState().equalsIgnoreCase(
-                    HealthcheckConstants.HEALTH_STATE_UNHEALTHY) || this.instance.getHealthState().equalsIgnoreCase(
-                    HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY));
-        }
-        return false;
     }
 
     @Override

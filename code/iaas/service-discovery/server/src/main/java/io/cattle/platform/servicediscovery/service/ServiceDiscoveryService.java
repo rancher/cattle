@@ -19,4 +19,6 @@ public interface ServiceDiscoveryService {
 
     void addToLoadBalancerService(Service lbSvc, ServiceExposeMap serviceInstanceToAdd);
 
+    void cloneConsumingServices(Service fromService, Service toService);
+
 }

@@ -12,10 +12,9 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Map;
 import javax.inject.Inject;
 
 public class EnvironmentExportConfigActionHandler implements ActionHandler {
@@ -52,7 +51,7 @@ public class EnvironmentExportConfigActionHandler implements ActionHandler {
                 }
             }
         }
-        SimpleEntry<String, String> composeConfig = svcDiscoveryServer.buildComposeConfig(toExport);
+        Map.Entry<String, String> composeConfig = svcDiscoveryServer.buildComposeConfig(toExport);
 
         return new ComposeConfig(composeConfig.getKey(), composeConfig.getValue());
 

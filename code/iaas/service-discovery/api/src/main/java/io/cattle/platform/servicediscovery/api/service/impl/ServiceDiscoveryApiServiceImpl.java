@@ -1,13 +1,11 @@
 package io.cattle.platform.servicediscovery.api.service.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
-import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -30,7 +28,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -60,21 +57,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     @Override
     public void addServiceLink(Service service, ServiceLink serviceLink) {
-        ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
-                serviceLink.getName());
-
-        if (map == null) {
-            map = objectManager.create(ServiceConsumeMap.class,
-                    SERVICE_CONSUME_MAP.SERVICE_ID,
-                    service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, serviceLink.getServiceId(),
-                    SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
-                    SERVICE_CONSUME_MAP.NAME, serviceLink.getName());
-        }
-
-        if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
-                    map, null);
-        }
+        consumeMapDao.createServiceLink(service, serviceLink);
     }
 
     @Override
@@ -92,22 +75,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
             return;
         }
-        ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
-                serviceLink.getName());
 
-        if (map == null) {
-            map = objectManager.create(ServiceConsumeMap.class,
-                    SERVICE_CONSUME_MAP.SERVICE_ID,
-                    service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, serviceLink.getServiceId(),
-                    SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
-                    SERVICE_CONSUME_MAP.NAME, serviceLink.getName(),
-                    LoadBalancerConstants.FIELD_LB_TARGET_PORTS, serviceLink.getPorts());
-        }
-
-        if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
-                    map, null);
-        }
+        consumeMapDao.createServiceLink(service, serviceLink);
     }
 
     @Override
@@ -117,8 +86,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     @Override
-    public SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services) {
-        return new SimpleEntry<String, String>(buildDockerComposeConfig(services), buildRancherComposeConfig(services));
+    public Map.Entry<String, String> buildComposeConfig(List<? extends Service> services) {
+        return new SimpleEntry<>(buildDockerComposeConfig(services), buildRancherComposeConfig(services));
     }
 
     @Override

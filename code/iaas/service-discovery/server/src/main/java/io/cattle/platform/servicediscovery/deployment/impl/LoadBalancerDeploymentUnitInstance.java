@@ -1,9 +1,9 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.LoadBalancerTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Instance;
@@ -13,19 +13,14 @@ import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.servicediscovery.deployment.AbstractInstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
-import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
 import java.util.Map;
 
-public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance implements InstanceUnit {
+public class LoadBalancerDeploymentUnitInstance extends AbstractInstanceUnit {
     LoadBalancerHostMap hostMap;
-    protected Instance instance;
-
-    public LoadBalancerDeploymentUnitInstance() {
-        super(null, null, null, null);
-    }
 
     public LoadBalancerDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, LoadBalancerHostMap hostMap, Map<String, String> labels, String launchConfigName) {
@@ -97,35 +92,12 @@ public class LoadBalancerDeploymentUnitInstance extends DeploymentUnitInstance i
     }
     
     @Override
-    public void stop() {
-        if (this.instance != null && instance.getState().equals(InstanceConstants.STATE_RUNNING)) {
-            context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
-                    instance, null);
-        }
-    }
-
-    @Override
     public boolean isStarted() {
         boolean mapActive = this.hostMap.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE);
         boolean instanceRunning = this.instance != null
                 && this.instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING);
 
         return mapActive && instanceRunning;
-    }
-
-    @Override
-    public Instance getInstance() {
-        return instance;
-    }
-
-    @Override
-    public boolean isUnhealthy() {
-        if (this.instance != null) {
-            return this.instance.getHealthState() != null && (this.instance.getHealthState().equalsIgnoreCase(
-                    HealthcheckConstants.HEALTH_STATE_UNHEALTHY) || this.instance.getHealthState().equalsIgnoreCase(
-                                    HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY));
-        }
-        return false;
     }
 
     @Override

@@ -13,6 +13,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_NETWORK_ID = "networkId";
     public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_SERVICE_IDS = "serviceIds";
+    public static final String FIELD_UPGRADE = "upgrade";
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
@@ -67,4 +68,5 @@ public class ServiceDiscoveryConstants {
 
     public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
 
+    public static final String STATE_UPGRADING = "upgrading";
 }

@@ -115,6 +115,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'service',
         'serviceExposeMap',
         'setLabelsInput',
+        'setLabelsInput',
         'setLoadBalancerHostsInput',
         'setLoadBalancerListenersInput',
         'setLoadBalancerTargetsInput',
@@ -141,7 +142,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'serviceLink',
         'loadBalancerServiceLink',
         'addRemoveLoadBalancerServiceLinkInput',
-        'setLoadBalancerServiceLinksInput'
+        'setLoadBalancerServiceLinksInput',
+        'serviceUpgrade',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -286,6 +288,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'schema',
         'service',
         'serviceExposeMap',
+        'serviceUpgrade',
         'setLabelsInput',
         'setLoadBalancerHostsInput',
         'setLoadBalancerListenersInput',
@@ -1431,6 +1434,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'launchConfig': 'r',
         'accountId': 'r',
         'data': 'r',
+        'upgrade': 'r',
         'secondaryLaunchConfigs': 'r'
     })
 
@@ -1440,6 +1444,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'scale': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
+        'upgrade': 'r',
         'secondaryLaunchConfigs': 'r'
     })
 
@@ -1449,6 +1454,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'scale': 'cru',
         'launchConfig': 'cr',
         'accountId': 'r',
+        'upgrade': 'r',
         'secondaryLaunchConfigs': 'cr'
     })
 
@@ -1481,6 +1487,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'r',
         'accountId': 'r',
         'data': 'r',
+        'upgrade': 'r',
         'loadBalancerConfig': 'r',
     })
 
@@ -1490,6 +1497,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'scale': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
+        'upgrade': 'r',
         'loadBalancerConfig': 'r',
     })
 
@@ -1499,6 +1507,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'scale': 'cru',
         'launchConfig': 'cr',
         'accountId': 'r',
+        'upgrade': 'r',
         'loadBalancerConfig': 'cr',
     })
 
@@ -1527,5 +1536,32 @@ def test_svc_discovery_consume_map(admin_user_client, user_client,
         'serviceId': 'r',
         'consumedServiceId': 'r',
         'ports': 'r',
-        'accountId': 'r'
+        'accountId': 'r',
+    })
+
+
+def test_auth_service_upgrade(admin_user_client, user_client,
+                              project_client):
+    auth_check(admin_user_client.schema, 'serviceUpgrade', 'r', {
+        'updateLinks': 'r',
+        'toServiceId': 'r',
+        'batchSize': 'r',
+        'intervalMillis': 'r',
+        'finalScale': 'r',
+    })
+
+    auth_check(user_client.schema, 'serviceUpgrade', 'r', {
+        'updateLinks': 'r',
+        'toServiceId': 'r',
+        'batchSize': 'r',
+        'intervalMillis': 'r',
+        'finalScale': 'r',
+    })
+
+    auth_check(project_client.schema, 'serviceUpgrade', 'cr', {
+        'updateLinks': 'cr',
+        'toServiceId': 'cr',
+        'batchSize': 'cr',
+        'intervalMillis': 'cr',
+        'finalScale': 'cr',
     })

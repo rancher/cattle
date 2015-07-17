@@ -367,6 +367,7 @@
         "service.environmentId" : "cr",
         "service.scale" : "cru",
         "service.launchConfig" : "cr",
+        "service.upgrade" : "r",
         "service.secondaryLaunchConfigs" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
@@ -465,6 +466,13 @@
         "loadBalancerServiceLink" : "cr",
         "loadBalancerServiceLink.ports" : "cr",
         "loadBalancerServiceLink.name" : "",
+
+        "serviceUpgrade" : "r",
+        "serviceUpgrade.updateLinks" : "cr",
+        "serviceUpgrade.toServiceId" : "cr",
+        "serviceUpgrade.intervalMillis" : "cr",
+        "serviceUpgrade.batchSize" : "cr",
+        "serviceUpgrade.finalScale" : "cr",
 
         "end" : ""
     }
