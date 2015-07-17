@@ -82,6 +82,8 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                         SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instanceId)
                                 .and(SERVICE.KIND.eq(kind))
                                 .and(SERVICE_CONSUME_MAP.REMOVED.isNull())
+                                //Don't include yourself
+                                .and(SERVICE_CONSUME_MAP.SERVICE_ID.ne(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))
                                 .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()))
                 .fetchInto(ServiceConsumeMapRecord.class);
     }
