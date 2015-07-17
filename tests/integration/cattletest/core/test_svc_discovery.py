@@ -1790,6 +1790,102 @@ def test_service_affinity_rules(super_client, new_context):
     assert instances[2].hosts()[0].id == instances[0].hosts()[0].id
 
 
+def test_affinity_auto_prepend_stack(super_client, new_context):
+    register_simulated_host(new_context)
+    register_simulated_host(new_context)
+
+    client = new_context.client
+
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = new_context.image_uuid
+    name = random_str()
+    service_name = "service" + name
+
+    # test anti-affinity
+    # only service_name is supplied.
+    # env/project/stack should be automatically prepended
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label_ne":
+                "io.rancher.stack_service.name=" +
+                service_name
+        }
+    }
+
+    service = client.create_service(name=service_name,
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=3)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    # check that all containers are on different hosts
+    instances = _get_instance_for_service(super_client, service.id)
+    assert len(instances) == 3
+    assert instances[0].hosts()[0].id != instances[1].hosts()[0].id
+    assert instances[1].hosts()[0].id != instances[2].hosts()[0].id
+    assert instances[2].hosts()[0].id != instances[0].hosts()[0].id
+
+
+def test_anti_affinity_sidekick(new_context):
+    register_simulated_host(new_context)
+
+    client = new_context.client
+
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = new_context.image_uuid
+    name = random_str()
+    service_name = "service" + name
+
+    # only service name is provided.
+    # stack name should be prepended and secondaryLaunchConfig
+    # should automatically be appended for the sidekick
+    # containers
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.sidekicks": "secondary",
+            "io.rancher.scheduler.affinity:container_label_ne":
+                "io.rancher.stack_service.name=" +
+                service_name
+        }
+    }
+    secondary_lc = {
+        "imageUuid": image_uuid,
+        "name": "secondary"
+    }
+
+    service = client.create_service(name=service_name,
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=2,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+
+    # activate service1
+    service.activate()
+    service = client.wait_success(service, 120)
+    assert service.state == "active"
+    _validate_compose_instance_start(client, service, env, "1")
+    _validate_compose_instance_start(client, service, env, "2")
+    _validate_compose_instance_start(client, service, env, "1", "secondary")
+    _validate_compose_instance_start(client, service, env, "2", "secondary")
+
+    instance_service_map1 = client. \
+        list_serviceExposeMap(serviceId=service.id, state="active")
+    assert len(instance_service_map1) == 4
+
+
 def test_host_delete_reconcile_service(super_client, new_context):
     register_simulated_host(new_context)
 
