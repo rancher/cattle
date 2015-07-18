@@ -42,6 +42,7 @@
         "registry": "crud",
         "removeLoadBalancerInput" : "cr",
         "restartPolicy" : "cr",
+        "serviceUpgrade" : "cr",
         "secondaryLaunchConfig" : "cr",
         "service" : "crud",
         "serviceConsumeMap" : "r",

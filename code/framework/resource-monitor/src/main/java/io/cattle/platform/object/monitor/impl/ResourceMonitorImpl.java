@@ -89,7 +89,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             }
         }
 
-        throw new TimeoutException("Object [" + key + "] failed to satisify predicate [" + timeout + "] millis");
+        throw new TimeoutException("Object [" + key + "] failed to satisfy predicate [" + timeout + "] millis");
     }
 
     @Override

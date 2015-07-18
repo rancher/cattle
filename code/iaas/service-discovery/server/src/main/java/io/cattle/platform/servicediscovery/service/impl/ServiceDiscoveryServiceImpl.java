@@ -1,11 +1,14 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
-import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG;
-import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
-import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
+import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.*;
+import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.*;
+import static io.cattle.platform.core.model.tables.LoadBalancerTable.*;
+
 import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
@@ -37,7 +40,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
@@ -259,7 +261,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public boolean isActiveService(Service service) {
         List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVATING,
-                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
+                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE,
+                ServiceDiscoveryConstants.STATE_UPGRADING);
         return (validStates.contains(service.getState()));
     }
 
@@ -290,4 +293,25 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         lbService.addTargetToLoadBalancer(lb, target);
 
     }
+
+    @Override
+    public void cloneConsumingServices(Service fromService, Service toService) {
+        List<ServiceLink> linksToCreate = new ArrayList<>();
+
+        for (ServiceConsumeMap map : consumeMapDao.findConsumingServices(fromService.getId())) {
+            ServiceLink link;
+            List<String> ports = DataAccessor.fieldStringList(map, LoadBalancerConstants.FIELD_LB_TARGET_PORTS);
+            if (ports == null) {
+                link = new ServiceLink(toService.getId(), map.getName());
+            } else {
+                link = new LoadBalancerServiceLink(toService.getId(), map.getName(), ports);
+            }
+
+            link.setConsumingServiceId(map.getServiceId());
+            linksToCreate.add(link);
+        }
+
+        consumeMapDao.createServiceLinks(linksToCreate);
+    }
+
 }

@@ -20,4 +20,6 @@ public interface DeploymentManager extends AnnotatedEventListener {
 
     void reconcileServices(Collection<? extends Service> services);
 
+    boolean isHealthy(Service service);
+
 }

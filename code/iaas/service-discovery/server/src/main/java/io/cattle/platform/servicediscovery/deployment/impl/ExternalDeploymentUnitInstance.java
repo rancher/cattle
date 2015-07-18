@@ -97,4 +97,8 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     public void waitForAllocate() {
         return;
     }
+
+    public boolean isHealthCheckInitializing() {
+        return false;
+    }
 }

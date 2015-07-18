@@ -1,7 +1,9 @@
 package io.cattle.platform.servicediscovery.api.dao;
 
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 
 import java.util.List;
@@ -56,4 +58,8 @@ public interface ServiceConsumeMapDao {
     Instance findOneInstanceForService(long serviceId);
 
     List<String> findInstanceNamesForService(long serviceId);
+
+    ServiceConsumeMap createServiceLink(Service service, ServiceLink serviceLink);
+
+    List<ServiceConsumeMap> createServiceLinks(List<ServiceLink> serviceLink);
 }

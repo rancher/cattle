@@ -4,8 +4,8 @@ import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
+import java.util.Map;
 
 public interface ServiceDiscoveryApiService {
     void addServiceLink(Service service, ServiceLink serviceLink);
@@ -16,7 +16,7 @@ public interface ServiceDiscoveryApiService {
 
     List<? extends Service> listEnvironmentServices(long environmentId);
 
-    SimpleEntry<String, String> buildComposeConfig(List<? extends Service> services);
+    Map.Entry<String, String> buildComposeConfig(List<? extends Service> services);
 
     String buildDockerComposeConfig(List<? extends Service> services);
 

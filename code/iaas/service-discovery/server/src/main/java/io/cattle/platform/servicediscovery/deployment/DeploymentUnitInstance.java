@@ -76,4 +76,5 @@ public abstract class DeploymentUnitInstance {
 
     public abstract void waitForAllocate();
 
+    public abstract boolean isHealthCheckInitializing();
 }

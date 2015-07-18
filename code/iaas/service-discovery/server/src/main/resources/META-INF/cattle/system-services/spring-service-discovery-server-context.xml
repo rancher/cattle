@@ -16,6 +16,8 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDeactivate" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceCreate" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceUpgrade" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceCancelupgrade" />
 
     <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
 
@@ -53,13 +55,16 @@
     <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
     <bean class="io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl" />
 
-    <tx:advice id="ServiceExposeMapDaoImplAdvice" transaction-manager="CoreTransactionManager">
+    <tx:advice id="ServiceMapDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="createServiceInstance" isolation="READ_COMMITTED" />
+            <tx:method name="createServiceLink" isolation="READ_COMMITTED" />
+            <tx:method name="createServiceLinks" isolation="READ_COMMITTED" />
         </tx:attributes>
     </tx:advice>
 
     <aop:config>
-        <aop:advisor advice-ref="ServiceExposeMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao.*(..))" />
+        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao.*(..))" />
+        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao.*(..))" />
     </aop:config>
 </beans>

@@ -13,6 +13,7 @@ import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
+import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -35,7 +36,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 public class DeploymentManagerImpl implements DeploymentManager {
@@ -70,20 +70,34 @@ public class DeploymentManagerImpl implements DeploymentManager {
     EventService eventService;
 
     @Override
+    public boolean isHealthy(Service service) {
+        return !activate(service, true);
+    }
+
+    @Override
     public void activate(final Service service) {
+        activate(service, false);
+    }
+
+    /**
+     * @param service
+     * @param checkState
+     * @return true if this service needs to be reconciled
+     */
+    protected boolean activate(final Service service, final boolean checkState) {
         // return immediately if inactive
         if (service == null || !sdSvc.isActiveService(service)) {
-            return;
+            return false;
         }
 
         final List<Service> services = new ArrayList<>();
         services.add(service);
 
-        lockManager.lock(createLock(services), new LockCallbackNoReturn() {
+        return lockManager.lock(checkState ? null : createLock(services), new LockCallback<Boolean>() {
             @Override
-            public void doWithLockNoResult() {
+            public Boolean doWithLock() {
                 if (!sdSvc.isActiveService(service)) {
-                    return;
+                    return false;
                 }
                 // get existing deployment units
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
@@ -92,20 +106,37 @@ public class DeploymentManagerImpl implements DeploymentManager {
                         units, new DeploymentServiceContext());
 
                 // don't process if there is no need to reconcile
-                boolean needToReconcile = needToReconcile(planner);
+                boolean needToReconcile = needToReconcile(services, units, planner);
 
                 if (!needToReconcile) {
-                    return;
+                    return false;
+                }
+
+                if (checkState) {
+                    return !isHealthcheckInitiailizing(units);
                 }
 
                 activateServices(service, services);
                 activateDeploymentUnits(planner);
+
+                return false;
             }
         });
     }
 
-    private boolean needToReconcile(ServiceDeploymentPlanner planner) {
-        for (Service service : planner.getServices()) {
+    private boolean isHealthcheckInitiailizing(List<DeploymentUnit> units) {
+        for (DeploymentUnit unit : units) {
+            if (unit.isHealthCheckInitializing()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean needToReconcile(List<Service> services, final List<DeploymentUnit> units,
+            ServiceDeploymentPlanner planner) {
+        for (Service service : services) {
             if (service.getState().equals(CommonStatesConstants.INACTIVE)) {
                 return true;
             }
@@ -247,6 +278,10 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     @Override
     public void serviceUpdate(ConfigUpdate update) {
+        if (update.getResourceId() == null) {
+            return;
+        }
+
         final Client client = new Client(Service.class, new Long(update.getResourceId()));
         reconcileForClient(update, client, new Runnable() {
             @Override
