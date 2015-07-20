@@ -86,6 +86,7 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
         }
 
         String apiProxyScheme = HostApiUtils.HOST_API_PROXY_SCHEME.get();
+        hostAddress = hostAddress.replace("http://", "").replace("https://", "");
         token.setUrl(apiProxyScheme + "://" + hostAddress + "/v1/connectbackend");
         return token;
     }
