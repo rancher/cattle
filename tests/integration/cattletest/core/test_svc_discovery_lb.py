@@ -173,7 +173,7 @@ def test_targets(client, context):
 
     # map web service to lb service - early binding,
     # before services are activated
-    service_link = {"serviceId": web_service.id, "ports": ["90"]}
+    service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
     lb_service = lb_service.addservicelink(serviceLink=service_link)
 
     # activate web and lb services
@@ -186,25 +186,27 @@ def test_targets(client, context):
     assert db_service.state == "active"
 
     # bind db and lb services after service is activated
-    service_link = {"serviceId": db_service.id, "ports": ["90"]}
+    service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
     lb_service.addservicelink(serviceLink=service_link)
 
     # verify that instances of db and web services were added to lb
     web_instances = client. \
         list_container(name=env.name + "_" + web_service.name + "_" + "1")
     assert len(web_instances) == 1
-    _validate_add_target_instance(web_instances[0], client, ports=["90"])
+    _validate_add_target_instance(web_instances[0], client, ports=["a.com:90"])
 
     db_instances = client. \
         list_container(name=env.name + "_" + db_service.name + "_" + "1")
     assert len(db_instances) == 1
-    _validate_add_target_instance(db_instances[0], client, ports=["90"])
+    _validate_add_target_instance(db_instances[0], client, ports=["a.com:90"])
 
-    _validate_add_service_link(client, lb_service, db_service, ports=["90"])
-    _validate_add_service_link(client, lb_service, web_service, ports=["90"])
+    _validate_add_service_link(client, lb_service, db_service,
+                               ports=["a.com:90"])
+    _validate_add_service_link(client, lb_service, web_service,
+                               ports=["a.com:90"])
 
     # remove link and make sure that the target map is gone
-    service_link = {"serviceId": db_service.id, "ports": ["90"]}
+    service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
     lb_service.removeservicelink(serviceLink=service_link)
     # validate that the instance is still running
     db_instance = client.reload(db_instances[0])
@@ -255,7 +257,7 @@ def test_target_ips(client, context):
 
     # map web service to lb service - early binding,
     # before services are activated
-    service_link = {"serviceId": web_service.id, "ports": ["90"]}
+    service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
     lb_service = lb_service.addservicelink(serviceLink=service_link)
 
     # activate web and lb services
@@ -268,17 +270,17 @@ def test_target_ips(client, context):
     assert db_service.state == "active"
 
     # bind db and lb services after service is activated
-    service_link = {"serviceId": db_service.id, "ports": ["90"]}
+    service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
     lb_service.addservicelink(serviceLink=service_link)
 
     # verify that ips of db and web services were added to lb
-    _validate_add_target_ip("72.22.16.5", client, ports=["90"])
-    _validate_add_target_ip("72.22.16.6", client, ports=["90"])
-    _validate_add_target_ip("192.168.0.9", client, ports=["90"])
-    _validate_add_target_ip("192.168.0.10", client, ports=["90"])
+    _validate_add_target_ip("72.22.16.5", client, ports=["a.com:90"])
+    _validate_add_target_ip("72.22.16.6", client, ports=["a.com:90"])
+    _validate_add_target_ip("192.168.0.9", client, ports=["a.com:90"])
+    _validate_add_target_ip("192.168.0.10", client, ports=["a.com:90"])
 
     # remove link and make sure that the db targets are gone
-    service_link = {"serviceId": db_service.id, "ports": ["90"]}
+    service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
     lb_service.removeservicelink(serviceLink=service_link)
     _validate_remove_target_ip("192.168.0.9", client)
     _validate_remove_target_ip("192.168.0.10", client)
@@ -499,7 +501,7 @@ def test_inactive_lb(client, context):
     lb = lbs[0]
 
     # map web service to lb service; validate no lb targets were created
-    service_link = {"serviceId": web_service.id, "ports": ["90"]}
+    service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
     lb_service = lb_service.addservicelink(serviceLink=service_link)
     target_maps = client. \
         list_loadBalancerTarget(loadBalancerId=lb.id)
@@ -511,12 +513,12 @@ def test_inactive_lb(client, context):
     target_maps = client. \
         list_loadBalancerTarget(loadBalancerId=lb.id)
     assert len(target_maps) == 1
-    _validate_add_target_instance(web_instances[0], client, ports=["90"])
+    _validate_add_target_instance(web_instances[0], client, ports=["a.com:90"])
 
     # deactivate lb service, and remove service link
     lb_service = client.wait_success(lb_service.deactivate(), 120)
     assert lb_service.state == "inactive"
-    service_link = {"serviceId": web_service.id, "ports": ["90"]}
+    service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
     lb_service = lb_service.removeservicelink(serviceLink=service_link)
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
@@ -575,25 +577,29 @@ def test_set_service_links(client, context):
     service3 = client.wait_success(service3)
 
     # set service2, service3 links for lb service
-    service_link1 = {"serviceId": service2.id, "ports": ["90"]}
-    service_link2 = {"serviceId": service3.id, "ports": ["90"]}
+    service_link1 = {"serviceId": service2.id, "ports": ["a.com:90"]}
+    service_link2 = {"serviceId": service3.id, "ports": ["a.com:90"]}
     lb_service = lb_service. \
         setservicelinks(serviceLinks=[service_link1, service_link2])
-    _validate_add_service_link(client, lb_service, service2, ports=["90"])
-    _validate_add_service_link(client, lb_service, service3, ports=["90"])
+    _validate_add_service_link(client, lb_service, service2,
+                               ports=["a.com:90"])
+    _validate_add_service_link(client, lb_service, service3,
+                               ports=["a.com:90"])
 
     # update the link with new ports
-    service_link1 = {"serviceId": service2.id, "ports": ["100"]}
-    service_link2 = {"serviceId": service3.id, "ports": ["101"]}
+    service_link1 = {"serviceId": service2.id, "ports": ["a.com:100"]}
+    service_link2 = {"serviceId": service3.id, "ports": ["a.com:101"]}
     lb_service = lb_service. \
         setservicelinks(serviceLinks=[service_link1, service_link2])
     _validate_remove_service_link(client, lb_service, service2, 1)
     _validate_remove_service_link(client, lb_service, service3, 1)
-    _validate_add_service_link(client, lb_service, service2, ports=["100"])
-    _validate_add_service_link(client, lb_service, service3, ports=["101"])
+    _validate_add_service_link(client, lb_service, service2,
+                               ports=["a.com:100"])
+    _validate_add_service_link(client, lb_service, service3,
+                               ports=["a.com:101"])
 
     # set service2 links for service1
-    service_link = {"serviceId": service2.id, "ports": ["100"]}
+    service_link = {"serviceId": service2.id, "ports": ["a.com:100"]}
     lb_service = lb_service. \
         setservicelinks(serviceLinks=[service_link])
     _validate_remove_service_link(client, lb_service, service3, 2)
@@ -629,18 +635,126 @@ def test_modify_link(client, context):
     service = client.wait_success(service)
 
     # set service link with hostname 1
-    service_link = {"serviceId": service.id, "ports": ["90:a.com"]}
+    service_link = {"serviceId": service.id, "ports": ["a.com:90"]}
     lb_service = lb_service. \
         setservicelinks(serviceLinks=[service_link])
-    _validate_add_service_link(client, lb_service, service, ports=["90:a.com"])
+    _validate_add_service_link(client, lb_service, service, ports=["a.com:90"])
 
     # update the link with new ports
-    service_link = {"serviceId": service.id, "ports": ["100:b.com"]}
+    service_link = {"serviceId": service.id, "ports": ["b.com:100"]}
     lb_service = lb_service. \
         setservicelinks(serviceLinks=[service_link])
     _validate_remove_service_link(client, lb_service, service, 1)
     _validate_add_service_link(client, lb_service,
-                               service, ports=["100:b.com"])
+                               service, ports=["b.com:100"])
+
+
+def _create_service(client, env, launch_config):
+    service1 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config)
+    service1 = client.wait_success(service1)
+    return service1
+
+
+def test_create_links(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    lb_service = client.create_loadBalancerService(name="lb",
+                                                   environmentId=env.id,
+                                                   launchConfig=launch_config)
+    lb_service = client.wait_success(lb_service)
+
+    service1 = _create_service(client, env, launch_config)
+    service2 = _create_service(client, env, launch_config)
+    service3 = _create_service(client, env, launch_config)
+    service4 = _create_service(client, env, launch_config)
+    service5 = _create_service(client, env, launch_config)
+    service6 = _create_service(client, env, launch_config)
+    service7 = _create_service(client, env, launch_config)
+    service8 = _create_service(client, env, launch_config)
+    service9 = _create_service(client, env, launch_config)
+    service10 = _create_service(client, env, launch_config)
+    service11 = _create_service(client, env, launch_config)
+    service12 = _create_service(client, env, launch_config)
+    service13 = _create_service(client, env, launch_config)
+    service14 = _create_service(client, env, launch_config)
+    service15 = _create_service(client, env, launch_config)
+
+    # set service link with hostname 1
+    port1 = "example.com:80/path=81"
+    port2 = "example.com"
+    port3 = "example.com:80"
+    port4 = "example.com:80/path"
+    port5 = "example.com:80=81"
+    port6 = "example.com/path"
+    port7 = "example.com/path=81"
+    port8 = "example.com=81"
+    port9 = "80/path"
+    port10 = "80/path=81"
+    port11 = "80=81"
+    port12 = "/path"
+    port13 = "/path=81"
+    port14 = "81"
+    port15 = "example.com/path1/path2/path3=81"
+    service_link1 = {"serviceId": service1.id, "ports": [port1]}
+    service_link2 = {"serviceId": service2.id, "ports": [port2]}
+    service_link3 = {"serviceId": service3.id, "ports": [port3]}
+    service_link4 = {"serviceId": service4.id, "ports": [port4]}
+    service_link5 = {"serviceId": service5.id, "ports": [port5]}
+    service_link6 = {"serviceId": service6.id, "ports": [port6]}
+    service_link7 = {"serviceId": service7.id, "ports": [port7]}
+    service_link8 = {"serviceId": service8.id, "ports": [port8]}
+    service_link9 = {"serviceId": service9.id, "ports": [port9]}
+    service_link10 = {"serviceId": service10.id, "ports": [port10]}
+    service_link11 = {"serviceId": service11.id, "ports": [port11]}
+    service_link12 = {"serviceId": service12.id, "ports": [port12]}
+    service_link13 = {"serviceId": service13.id, "ports": [port13]}
+    service_link14 = {"serviceId": service14.id, "ports": [port14]}
+    service_link15 = {"serviceId": service15.id, "ports": [port15]}
+
+    lb_service = lb_service. \
+        setservicelinks(serviceLinks=[service_link1, service_link2,
+                                      service_link3, service_link4,
+                                      service_link5, service_link6,
+                                      service_link7, service_link8,
+                                      service_link9, service_link10,
+                                      service_link11, service_link12,
+                                      service_link13, service_link14,
+                                      service_link15])
+    _validate_add_service_link(client, lb_service, service1, ports=[port1])
+    _validate_add_service_link(client, lb_service, service2, ports=[port2])
+    _validate_add_service_link(client, lb_service, service3, ports=[port3])
+    _validate_add_service_link(client, lb_service, service4, ports=[port4])
+    _validate_add_service_link(client, lb_service, service5, ports=[port5])
+    _validate_add_service_link(client, lb_service, service6, ports=[port6])
+    _validate_add_service_link(client, lb_service, service7, ports=[port7])
+    _validate_add_service_link(client, lb_service, service8, ports=[port8])
+    _validate_add_service_link(client, lb_service, service9, ports=[port9])
+    _validate_add_service_link(client, lb_service, service10, ports=[port10])
+    _validate_add_service_link(client, lb_service, service11, ports=[port11])
+    _validate_add_service_link(client, lb_service, service12, ports=[port12])
+    _validate_add_service_link(client, lb_service, service13, ports=[port13])
+    _validate_add_service_link(client, lb_service, service14, ports=[port14])
+    _validate_add_service_link(client, lb_service, service15, ports=[port15])
+
+    service_link1 = {"serviceId": service1.id, "ports": ["90=100=100"]}
+    with pytest.raises(ApiError) as e:
+        lb_service. \
+            setservicelinks(serviceLinks=[service_link1])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidPort'
+
+    service_link1 = {"serviceId": service1.id, "ports": ["a.com:b.com:80"]}
+    with pytest.raises(ApiError) as e:
+        lb_service. \
+            setservicelinks(serviceLinks=[service_link1])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidPort'
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):

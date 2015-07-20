@@ -25,7 +25,7 @@ def test_add_lb_w_host_and_target(super_client, client, context):
     container = client.create_container(imageUuid=image_uuid,
                                         startOnCreate=False)
     container = client.wait_success(container)
-    target = {"instanceId": container.id, "ports": "100"}
+    target = {"instanceId": container.id, "ports": "a.com:100"}
     lb = lb.addtarget(loadBalancerTarget=target)
     _validate_add_target(container, lb, client)
 
@@ -72,7 +72,7 @@ def test_destroy_lb_instance(super_client, client, context):
     image_uuid = context.image_uuid
     container = client.create_container(imageUuid=image_uuid)
     container = client.wait_success(container)
-    target = {"instanceId": container.id, "ports": "100"}
+    target = {"instanceId": container.id, "ports": "a.com:100"}
     lb = lb.addtarget(loadBalancerTarget=target)
     _validate_add_target(container, lb, client)
 
