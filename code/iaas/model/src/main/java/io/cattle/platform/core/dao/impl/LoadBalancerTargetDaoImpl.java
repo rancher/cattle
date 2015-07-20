@@ -17,13 +17,16 @@ import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.LoadBalancerTargetRecord;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -41,44 +44,26 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
     @Inject
     ObjectProcessManager objectProcessManager;
 
-    @Override
-    public LoadBalancerTarget getLbInstanceTarget(long lbId, long instanceId) {
-        return objectManager.findOne(LoadBalancerTarget.class,
-                LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lbId,
-                LOAD_BALANCER_TARGET.INSTANCE_ID, instanceId,
-                LOAD_BALANCER_TARGET.REMOVED, null);
-    }
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
-    public LoadBalancerTarget getLbInstanceTargetToRemove(long lbId, long instanceId) {
-        return create()
-                .selectFrom(LOAD_BALANCER_TARGET)
-                .where(
-                        LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId)
-                                .and(LOAD_BALANCER_TARGET.INSTANCE_ID.eq(instanceId))
-                                .and(LOAD_BALANCER_TARGET.REMOVED.isNull().
-                                        or(LOAD_BALANCER_TARGET.STATE.eq(CommonStatesConstants.REMOVING))))
-                .fetchOne();
-    }
-
-    @Override
-    public LoadBalancerTarget getLbIpAddressTargetToRemove(long lbId, String ipAddress) {
-        return create()
-                .selectFrom(LOAD_BALANCER_TARGET)
-                .where(
-                        LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId)
-                                .and(LOAD_BALANCER_TARGET.IP_ADDRESS.eq(ipAddress))
-                                .and(LOAD_BALANCER_TARGET.REMOVED.isNull().
-                                        or(LOAD_BALANCER_TARGET.STATE.eq(CommonStatesConstants.REMOVING))))
-                .fetchOne();
-    }
-
-    @Override
-    public LoadBalancerTarget getLbIpAddressTarget(long lbId, String ipAddress) {
-        return objectManager.findOne(LoadBalancerTarget.class,
-                LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lbId,
-                LOAD_BALANCER_TARGET.IP_ADDRESS, ipAddress,
-                LOAD_BALANCER_TARGET.REMOVED, null);
+    public LoadBalancerTarget getLoadBalancerTarget(long lbId, LoadBalancerTargetInput targetInput) {
+        Map<Object, Object> criteria = new HashMap<>();
+        criteria.put(LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lbId);
+        criteria.put(LOAD_BALANCER_TARGET.IP_ADDRESS, targetInput.getIpAddress());
+        criteria.put(LOAD_BALANCER_TARGET.INSTANCE_ID, targetInput.getInstanceId());
+        criteria.put(LOAD_BALANCER_TARGET.REMOVED, null);
+        List<? extends LoadBalancerTarget> targets = objectManager.find(LoadBalancerTarget.class, criteria);
+        for (LoadBalancerTarget target : targets) {
+            List<? extends String> ports = DataAccessor.fields(target).
+            withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
+                    .asList(jsonMapper, String.class);
+            if (ports.containsAll(targetInput.getPorts()) && targetInput.getPorts().containsAll(ports)) {
+                return target;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -169,28 +154,21 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
     }
 
     @Override
-    public void createLoadBalancerTarget(LoadBalancer lb, List<? extends String> ports, String ipAddress,
-            Long instanceId) {
-        LoadBalancerTarget target = ipAddress != null ? getLbIpAddressTarget(lb.getId(), ipAddress)
-                : getLbInstanceTarget(lb.getId(), instanceId);
+    public void createLoadBalancerTarget(LoadBalancer lb, LoadBalancerTargetInput toAdd) {
+        LoadBalancerTarget target = getLoadBalancerTarget(lb.getId(), toAdd);
         if (target == null) {
             target = resourceDao.createAndSchedule(LoadBalancerTarget.class, LOAD_BALANCER_TARGET.INSTANCE_ID, null,
                     LOAD_BALANCER_TARGET.LOAD_BALANCER_ID, lb.getId(),
-                    LOAD_BALANCER_TARGET.IP_ADDRESS, ipAddress,
-                    LOAD_BALANCER_TARGET.INSTANCE_ID, instanceId,
+                    LOAD_BALANCER_TARGET.IP_ADDRESS, toAdd.getIpAddress(),
+                    LOAD_BALANCER_TARGET.INSTANCE_ID, toAdd.getInstanceId(),
                     LOAD_BALANCER_TARGET.ACCOUNT_ID, lb.getAccountId(),
-                    LoadBalancerConstants.FIELD_LB_TARGET_PORTS, ports);
+                    LoadBalancerConstants.FIELD_LB_TARGET_PORTS, toAdd.getPorts());
         }
     }
 
     @Override
     public void removeLoadBalancerTarget(LoadBalancer lb, LoadBalancerTargetInput toRemove) {
-        LoadBalancerTarget target = null;
-        if (toRemove.getInstanceId() != null) {
-            target = getLbInstanceTargetToRemove(lb.getId(), toRemove.getInstanceId());
-        } else {
-            target = getLbIpAddressTargetToRemove(lb.getId(), toRemove.getIpAddress());
-        }
+        LoadBalancerTarget target = getLoadBalancerTarget(lb.getId(), toRemove);
 
         if (target != null) {
             objectProcessManager.scheduleProcessInstance(LoadBalancerConstants.PROCESS_LB_TARGET_MAP_REMOVE,

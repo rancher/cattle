@@ -36,7 +36,6 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -285,11 +284,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 lbSvc.getId(), LOAD_BALANCER.REMOVED, null);
         ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(lbSvc.getId(), instanceToRegister.getServiceId(),
                 null);
-        List<? extends String> ports = DataAccessor.fields(map).
-                withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
-                .asList(jsonMapper, String.class);
-        LoadBalancerTargetInput target = new LoadBalancerTargetInput(instanceToRegister.getInstanceId(),
-                instanceToRegister.getIpAddress(), ports);
+        LoadBalancerTargetInput target = new LoadBalancerTargetInput(instanceToRegister,
+                map, jsonMapper);
         lbService.addTargetToLoadBalancer(lb, target);
 
     }

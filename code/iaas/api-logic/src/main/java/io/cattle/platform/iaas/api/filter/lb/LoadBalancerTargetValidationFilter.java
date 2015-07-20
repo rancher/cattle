@@ -60,13 +60,8 @@ public class LoadBalancerTargetValidationFilter extends AbstractDefaultResourceM
             Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
             LoadBalancerTargetInput lbTarget = DataAccessor.fromMap(data).withKey(
                     LoadBalancerConstants.FIELD_LB_TARGET).as(jsonMapper, LoadBalancerTargetInput.class);
-            Long instanceId = lbTarget.getInstanceId();
-            String ipAddress = lbTarget.getIpAddress();
 
-            boolean isInstance = (instanceId != null);
-            boolean isIp = (ipAddress != null);
-
-            validateInstanceAndIp(request, instanceId, ipAddress, isInstance, isIp);
+            validateInstanceAndIp(request, lbTarget);
             validatePorts(lbTarget);
         }
 
@@ -80,10 +75,11 @@ public class LoadBalancerTargetValidationFilter extends AbstractDefaultResourceM
         }
     }
 
-    protected void validateInstanceAndIp(ApiRequest request, Long instanceId, String ipAddress, boolean isInstance,
-            boolean isIp) {
+    protected void validateInstanceAndIp(ApiRequest request, LoadBalancerTargetInput lbTarget) {
         // InstanceId and ipAddress are mutually exclusive; one of them have
         // to be specified
+        boolean isInstance = lbTarget.getInstanceId() != null;
+        boolean isIp = lbTarget.getIpAddress() != null;
         if (isInstance == isIp) {
             if (isInstance) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION, LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS);
@@ -93,15 +89,16 @@ public class LoadBalancerTargetValidationFilter extends AbstractDefaultResourceM
         }
 
         if (isInstance) {
-            lbFilterUtils.validateGenericMapAction(mapDao, LoadBalancerTarget.class, Instance.class, instanceId, LoadBalancer.class, Long.valueOf(request
+            lbFilterUtils.validateGenericMapAction(mapDao, LoadBalancerTarget.class, Instance.class, lbTarget
+                    .getInstanceId(), LoadBalancer.class, Long.valueOf(request
                     .getId()), new SimpleEntry<String, Boolean>(LoadBalancerConstants.FIELD_LB_TARGET_INSTANCE_ID, ACTIONS.get(request.getAction())));
         } else {
-            validateIpMapAction(request, ipAddress);
+            validateIpMapAction(request, lbTarget);
         }
     }
 
-    private void validateIpMapAction(ApiRequest request, String ipAddress) {
-        LoadBalancerTarget target = lbTargetDao.getLbIpAddressTarget(Long.valueOf(request.getId()), ipAddress);
+    private void validateIpMapAction(ApiRequest request, LoadBalancerTargetInput lbTarget) {
+        LoadBalancerTarget target = lbTargetDao.getLoadBalancerTarget(Long.valueOf(request.getId()), lbTarget);
         if (ACTIONS.get(request.getAction())) {
             if (target != null) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE, LoadBalancerConstants.FIELD_LB_TARGET_IPADDRESS);

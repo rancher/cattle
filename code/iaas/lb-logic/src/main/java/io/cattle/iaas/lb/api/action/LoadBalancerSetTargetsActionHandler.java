@@ -92,8 +92,7 @@ public class LoadBalancerSetTargetsActionHandler implements ActionHandler {
         }
 
         for (LoadBalancerTarget targetToRemove : targetsToRemove) {
-            lbService.removeTargetFromLoadBalancer(lb, new LoadBalancerTargetInput(targetToRemove.getInstanceId(),
-                    targetToRemove.getIpAddress(), null));
+            lbService.removeTargetFromLoadBalancer(lb, new LoadBalancerTargetInput(targetToRemove, jsonMapper));
 
         }
     }

@@ -10,17 +10,11 @@ import java.util.List;
 
 public interface LoadBalancerTargetDao {
 
-    LoadBalancerTarget getLbInstanceTarget(long lbId, long instanceId);
-
-    LoadBalancerTarget getLbIpAddressTarget(long lbId, String ipAddress);
+    LoadBalancerTarget getLoadBalancerTarget(long lbId, LoadBalancerTargetInput targetInput);
 
     List<? extends LoadBalancerTarget> listByLbIdToRemove(long lbId);
 
     List<? extends LoadBalancerTarget> listByLbId(long lbId);
-
-    LoadBalancerTarget getLbInstanceTargetToRemove(long lbId, long instanceId);
-
-    LoadBalancerTarget getLbIpAddressTargetToRemove(long lbId, String ipAddress);
 
     List<? extends Instance> getLoadBalancerActiveTargetInstances(long lbId);
 
@@ -35,7 +29,7 @@ public interface LoadBalancerTargetDao {
      */
     List<LoadBalancerTargetPortSpec> getLoadBalancerTargetPorts(LoadBalancerTarget target);
 
-    void createLoadBalancerTarget(LoadBalancer lb, List<? extends String> ports, String ipAddress, Long instanceId);
+    void createLoadBalancerTarget(LoadBalancer lb, LoadBalancerTargetInput toAdd);
 
     void removeLoadBalancerTarget(LoadBalancer lb, LoadBalancerTargetInput toRemove);
 
