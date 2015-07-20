@@ -643,6 +643,49 @@ def test_modify_link(client, context):
                                service, ports=["100:b.com"])
 
 
+def test_private_lb(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": [8081, '909:1001'],
+                     "expose": [9999, 9998]}
+    service = client.create_loadBalancerService(name=random_str(),
+                                                environmentId=env.id,
+                                                launchConfig=launch_config)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    # 1. verify that the service was activated
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+    # 2. verify that lb got created
+    lbs = client. \
+        list_loadBalancer(serviceId=service.id)
+    assert len(lbs) == 1
+    lb = client.wait_success(lbs[0])
+    assert lb.state == 'active'
+    listeners = client. \
+        list_loadBalancerListener(serviceId=service.id, privatePort=8081)
+    assert len(listeners) == 1
+    assert listeners[0].sourcePort == 8081
+
+    listeners = client. \
+        list_loadBalancerListener(serviceId=service.id, privatePort=1001)
+    assert len(listeners) == 1
+    assert listeners[0].sourcePort == 909
+
+    listeners = client. \
+        list_loadBalancerListener(serviceId=service.id, privatePort=9999)
+    assert len(listeners) == 1
+    assert listeners[0].sourcePort is None
+
+    listeners = client. \
+        list_loadBalancerListener(serviceId=service.id, privatePort=9998)
+    assert len(listeners) == 1
+    assert listeners[0].sourcePort is None
+
+
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
     start = time.time()
     host_maps = super_client. \
@@ -714,15 +757,15 @@ def _validate_lb_instance(host, lb, super_client, service):
 
 
 def _validate_create_listener(env, service, source_port,
-                              client, target_port):
-    l_name = env.name + "_" + service.name + "_" + source_port
+                              client, private_port):
+    l_name = env.name + "_" + service.name + "_" + private_port
     listeners = client. \
         list_loadBalancerListener(sourcePort=source_port,
                                   name=l_name)
     assert len(listeners) >= 1
     listener = listeners[0]
     assert listener.sourcePort == int(source_port)
-    assert listener.targetPort == int(target_port)
+    assert listener.privatePort == int(private_port)
     return listener
 
 

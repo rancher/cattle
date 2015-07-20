@@ -31,7 +31,7 @@ defaults
 <#if listeners?has_content && backends?has_content>
 <#list listeners as listener >
 frontend ${listener.uuid}_frontend
-        bind ${publicIp}:${listener.sourcePort}
+        bind ${publicIp}:<#if listener.privatePort??>${listener.privatePort}<#else>${listener.sourcePort}</#if>
         mode ${listener.sourceProtocol}
         <#list backends as backend >
         <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>

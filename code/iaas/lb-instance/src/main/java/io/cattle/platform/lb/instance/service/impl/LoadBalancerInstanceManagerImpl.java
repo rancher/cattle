@@ -249,8 +249,14 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                 .getLoadBalancerConfigId());
         List<String> ports = new ArrayList<String>();
         for (LoadBalancerListener listener : listeners) {
-            String fullPort = listener.getSourcePort() + ":" + listener.getSourcePort();
-            ports.add(fullPort);
+            if (listener.getSourcePort() != null) {
+                // LEGACY: private port is read from source_port (if missing) to provide backwards compatibility
+                String fullPort = listener.getSourcePort().toString() + ":" + listener.getPrivatePort() != null ? listener
+                        .getPrivatePort().toString()
+                        : listener.getSourcePort().toString();
+                ports.add(fullPort);
+
+            }
         }
 
         return ports;

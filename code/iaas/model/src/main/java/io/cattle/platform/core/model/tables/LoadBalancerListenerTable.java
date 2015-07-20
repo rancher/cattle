@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LoadBalancerListenerTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord> {
 
-	private static final long serialVersionUID = -126849998;
+	private static final long serialVersionUID = -351965140;
 
 	/**
 	 * The singleton instance of <code>cattle.load_balancer_listener</code>
@@ -105,6 +105,11 @@ public class LoadBalancerListenerTable extends org.jooq.impl.TableImpl<io.cattle
 	 * The column <code>cattle.load_balancer_listener.service_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.load_balancer_listener.private_port</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.LoadBalancerListenerRecord, java.lang.Integer> PRIVATE_PORT = createField("private_port", org.jooq.impl.SQLDataType.INTEGER, this, "");
 
 	/**
 	 * Create a <code>cattle.load_balancer_listener</code> table reference
