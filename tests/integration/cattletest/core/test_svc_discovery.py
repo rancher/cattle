@@ -1966,12 +1966,23 @@ def test_service_link_emu_docker_link(super_client, client, context):
         'imageUuid': context.image_uuid
     }, environmentId=env.id)
 
+    server3 = client.create_service(name='server3', launchConfig={
+        'imageUuid': context.image_uuid
+    }, environmentId=env.id)
+
+    server4 = client.create_service(name='server4', launchConfig={
+        'imageUuid': context.image_uuid
+    }, environmentId=env.id)
+
     service_link1 = {"serviceId": dns.id, "name": "dns"}
     service_link2 = {"serviceId": server.id, "name": "other"}
     service_link3 = {"serviceId": server2.id, "name": "server2"}
+    service_link4 = {"serviceId": server3.id}
+    service_link5 = {"serviceId": server4.id, "name": ""}
     service.\
         setservicelinks(serviceLinks=[service_link1,
-                                      service_link2, service_link3])
+                                      service_link2, service_link3,
+                                      service_link4, service_link5])
 
     dns = client.wait_success(dns)
     assert dns.state == 'inactive'
@@ -1985,6 +1996,12 @@ def test_service_link_emu_docker_link(super_client, client, context):
     service = client.wait_success(service)
     assert service.state == 'inactive'
 
+    server3 = client.wait_success(server3)
+    assert server3.state == 'inactive'
+
+    server4 = client.wait_success(server4)
+    assert server4.state == 'inactive'
+
     dns = client.wait_success(dns.activate())
     assert dns.state == 'active'
 
@@ -1994,6 +2011,12 @@ def test_service_link_emu_docker_link(super_client, client, context):
     server2 = client.wait_success(server2.activate())
     assert server2.state == 'active'
 
+    server3 = client.wait_success(server3.activate())
+    assert server3.state == 'active'
+
+    server4 = client.wait_success(server4.activate())
+    assert server4.state == 'active'
+
     service = client.wait_success(service.activate())
     assert service.state == 'active'
 
@@ -2002,11 +2025,12 @@ def test_service_link_emu_docker_link(super_client, client, context):
 
     links = instance.instanceLinks()
 
-    assert len(links) == 2
+    assert len(links) == 4
 
     for link in links:
         map = link.serviceConsumeMap()
-        assert map.consumedServiceId in {server.id, server2.id}
+        assert map.consumedServiceId in {server.id, server2.id,
+                                         server3.id, server4.id}
         assert link.instanceId is not None
         if map.consumedServiceId == server.id:
             assert link.linkName == 'other'
@@ -2016,6 +2040,14 @@ def test_service_link_emu_docker_link(super_client, client, context):
             assert link.linkName == 'server2'
             assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
                 server2.id
+        elif map.consumedServiceId == server3.id:
+            assert link.linkName == 'server3'
+            assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
+                server3.id
+        elif map.consumedServiceId == server4.id:
+            assert link.linkName == 'server4'
+            assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
+                server4.id
 
 
 def _get_instance_for_service(super_client, serviceId):

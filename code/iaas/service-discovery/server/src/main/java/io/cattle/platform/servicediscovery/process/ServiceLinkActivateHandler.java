@@ -17,6 +17,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.jooq.tools.StringUtils;
 
 public class ServiceLinkActivateHandler extends AbstractObjectProcessHandler implements ProcessPreListener {
 
@@ -38,7 +39,7 @@ public class ServiceLinkActivateHandler extends AbstractObjectProcessHandler imp
 
         ServiceConsumeMap map = objectManager.loadResource(ServiceConsumeMap.class, link.getServiceConsumeMapId());
         String serviceName = map.getName();
-        if (serviceName == null) {
+        if (StringUtils.isBlank(serviceName)) {
             Service service = objectManager.loadResource(Service.class, map.getConsumedServiceId());
             serviceName = service.getName();
         }
