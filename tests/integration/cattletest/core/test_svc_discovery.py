@@ -1912,6 +1912,63 @@ def test_affinity_auto_prepend_stack(super_client, new_context):
     assert instances[2].hosts()[0].id != instances[0].hosts()[0].id
 
 
+def test_affinity_auto_prepend_stack_other_service(super_client, new_context):
+    register_simulated_host(new_context)
+    register_simulated_host(new_context)
+
+    client = new_context.client
+
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = new_context.image_uuid
+    service_name1 = "service" + random_str()
+    service_name2 = "service" + random_str()
+
+    service1 = client.create_service(name=service_name1,
+                                     environmentId=env.id,
+                                     launchConfig={
+                                         "imageUuid": image_uuid,
+                                     },
+                                     scale=1)
+    service1 = client.wait_success(service1)
+    assert service1.state == "inactive"
+
+    service1 = client.wait_success(service1.activate(), 120)
+    assert service1.state == "active"
+
+    # test anti-affinity
+    # only service_name is supplied.
+    # env/project/stack should be automatically prepended
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label_ne":
+                "io.rancher.stack_service.name=" +
+                service_name2 + "," + service_name1
+        }
+    }
+
+    service2 = client.create_service(name=service_name2,
+                                     environmentId=env.id,
+                                     launchConfig=launch_config,
+                                     scale=2)
+    service2 = client.wait_success(service2)
+    assert service2.state == "inactive"
+
+    service2 = client.wait_success(service2.activate(), 120)
+    assert service2.state == "active"
+
+    # check that all containers are on different hosts
+    instances = _get_instance_for_service(super_client, service2.id)
+    instances.extend(_get_instance_for_service(super_client, service1.id))
+    assert len(instances) == 3
+    assert instances[0].hosts()[0].id != instances[1].hosts()[0].id
+    assert instances[1].hosts()[0].id != instances[2].hosts()[0].id
+    assert instances[2].hosts()[0].id != instances[0].hosts()[0].id
+
+
 def test_anti_affinity_sidekick(new_context):
     register_simulated_host(new_context)
 
