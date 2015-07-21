@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class HostApiAccess {
 
-    String hostname;
+    String url;
     String authenticationToken;
     int port;
 
@@ -14,9 +14,9 @@ public class HostApiAccess {
     protected HostApiAccess() {
     }
 
-    public HostApiAccess(String hostname, String token, Map<String, String> headers) {
+    public HostApiAccess(String url, String token, Map<String, String> headers) {
         super();
-        this.hostname = hostname;
+        this.url = url;
         this.headers = headers;
         this.authenticationToken = token;
     }
@@ -25,8 +25,8 @@ public class HostApiAccess {
         return headers;
     }
 
-    public String getHostAndPort() {
-        return hostname;
+    public String getUrl() {
+        return url;
     }
 
     public String getAuthenticationToken() {

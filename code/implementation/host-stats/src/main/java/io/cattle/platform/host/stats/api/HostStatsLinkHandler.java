@@ -7,7 +7,6 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.util.DockerUtils;
-import io.cattle.platform.host.api.HostApiUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.host.stats.utils.HostStatsConstants;
@@ -54,23 +53,21 @@ public class HostStatsLinkHandler implements LinkHandler {
             return null;
         }
 
-        HostApiAccess apiAccess = hostApiService.getAccess(host.getId(), Collections.<String, Object> emptyMap());
+        String[] pathSegments = null;
+        if (instance != null) {
+            pathSegments = new String[] { HOST_STATS_PATH.get(), DockerUtils.getDockerIdentifier(instance) };
+        } else {
+            pathSegments = new String[] { HOST_STATS_PATH.get() };
+        }
+
+        HostApiAccess apiAccess = hostApiService.getAccess(request, host.getId(), Collections.<String, Object> emptyMap(), pathSegments);
         if (apiAccess == null) {
             return null;
         }
 
-        StringBuilder url = new StringBuilder(HostApiUtils.HOST_API_PROXY_SCHEME.get());
-        url.append("://").append(apiAccess.getHostAndPort());
-        url.append(HOST_STATS_PATH.get());
-
-        if (instance != null) {
-            String dockerId = DockerUtils.getDockerIdentifier(instance);
-            url.append("/").append(dockerId);
-        }
-
         StatsAccess statsAccess = new StatsAccess();
         statsAccess.setToken(apiAccess.getAuthenticationToken());
-        statsAccess.setUrl(url.toString());
+        statsAccess.setUrl(apiAccess.getUrl());
 
         return statsAccess;
     }

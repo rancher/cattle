@@ -2,10 +2,10 @@ package io.cattle.platform.register.api;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.iaas.config.ScopedConfig;
 import io.cattle.platform.register.util.RegisterConstants;
 import io.cattle.platform.register.util.RegistrationToken;
 import io.cattle.platform.server.context.ServerContext;
+import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -15,16 +15,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import com.netflix.config.DynamicStringProperty;
 
 public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
 
     private static final DynamicStringProperty DOCKER_CMD = ArchaiusUtil.getString("docker.register.command");
     private static final DynamicStringProperty REQUIRED_IMAGE = ArchaiusUtil.getString("bootstrap.required.image");
-
-    @Inject ScopedConfig scopedConfig;
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
@@ -42,7 +38,7 @@ public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
             URL url = null;
             if (ServerContext.isCustomApiHost()) {
                 try {
-                    url = new URL(scopedConfig.getApiUrl(null) + "/scripts/" + token);
+                    url = new URL(ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP) + "/scripts/" + token);
                 } catch (MalformedURLException e) {
                     throw new RuntimeException("Invalid URL", e);
                 }

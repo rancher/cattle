@@ -14,12 +14,10 @@ import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenService;
-import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +40,7 @@ public class HostApiServiceImpl implements HostApiService {
     HostApiRSAKeyProvider keyProvider;
 
     @Override
-    public HostApiAccess getAccess(Long hostId, Map<String, Object> data) {
+    public HostApiAccess getAccess(ApiRequest request, Long hostId, Map<String, Object> data, String... resourcePathSegments) {
         Host host = objectManager.loadResource(Host.class, hostId);
         if (host == null) {
             return null;
@@ -56,45 +54,44 @@ public class HostApiServiceImpl implements HostApiService {
         Map<String, String> values = new HashMap<String, String>();
         values.put(HEADER_AUTH.get(), String.format(HEADER_AUTH_VALUE.get(), token));
 
-        return new HostApiAccess(getHostAddress(host), token, values);
+        return new HostApiAccess(getHostAccessUrl(request, host, resourcePathSegments), token, values);
     }
 
-    protected String getHostAddress(Host host) {
-        if (ApiContext.getContext() == null || ApiContext.getContext().getApiRequest() == null) {
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
-        }
-
-        String hostAddress = null;
+    protected String getHostAccessUrl(ApiRequest request, Host host, String... segments) {
+        StringBuilder buffer = new StringBuilder();
         switch (getHostApiProxyMode()) {
         case HOST_API_PROXY_MODE_EMBEDDED:
-            String responseBaseUrl = ApiContext.getContext().getApiRequest().getResponseUrlBase();
-            try {
-                URL url = new URL(responseBaseUrl);
-                if (StringUtils.isNotBlank(url.getHost())) {
-                    hostAddress = url.getHost();
-                    if (url.getPort() > 0) {
-                        hostAddress = hostAddress + ":" + url.getPort();
-                    }
-                }
-            } catch (MalformedURLException e) {
-                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
-            }
+            String url = request.getResponseUrlBase().replaceFirst("http", "ws");
+            buffer.append(url);
             break;
 
         case HOST_API_PROXY_MODE_HA:
             // TODO Implement HA-aware proxy lookup
-            hostAddress = HostApiUtils.HOST_API_PROXY_HOST.get();
+            String proxyHost = HostApiUtils.HOST_API_PROXY_HOST.get();
+            if (StringUtils.isNotBlank(proxyHost)) {
+                String scheme = StringUtils.equalsIgnoreCase("https", request.getServletContext().getRequest().getScheme()) ? "wss://" : "ws://";
+                buffer.append(scheme).append(proxyHost);
+            }
             break;
 
         case HOST_API_PROXY_MODE_OFF:
             throw new ClientVisibleException(501, "HostApiProxyDisabled");
         }
 
-        if (StringUtils.isBlank(hostAddress)) {
+        if (buffer.length() <= 0) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
         }
 
-        return hostAddress;
+        if (segments != null) {
+            for (String segment : segments) {
+                if (buffer.charAt(buffer.length() -1) != '/' && !segment.startsWith("/")) {
+                    buffer.append("/");
+                }
+                buffer.append(segment);
+            }
+        }
+
+        return buffer.toString();
     }
 
     @Override
