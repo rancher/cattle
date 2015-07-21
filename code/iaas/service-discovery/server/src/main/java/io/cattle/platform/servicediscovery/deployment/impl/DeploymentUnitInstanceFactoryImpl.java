@@ -27,6 +27,8 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstanceFactory {
     @Inject
     ObjectManager objectMgr;
@@ -36,6 +38,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     GenericMapDao mapDao;
 
     @Override
+    @SuppressWarnings("unchecked")
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Object instanceObj, Map<String, String> labels, String launchConfigName) {
         if (service.getKind().equalsIgnoreCase(KIND.SERVICE.name())) {
@@ -53,11 +56,12 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             return new LoadBalancerDeploymentUnitInstance(context, uuid,
                     service, hostMap, labels, launchConfigName);
         } else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
-            String ip = null;
+            Pair<String, String> ipHostName = null;
             if (instanceObj != null) {
-                ip = (String) instanceObj;
+                ipHostName = (Pair<String, String>) instanceObj;
             }
-            return new ExternalDeploymentUnitInstance(uuid, service, context, ip, launchConfigName);
+            return new ExternalDeploymentUnitInstance(context, uuid, service, launchConfigName, ipHostName.getLeft(),
+                    ipHostName.getRight());
         }
         return null;
     }
@@ -97,32 +101,65 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     }
 
 
-    @SuppressWarnings("unchecked")
     protected void collectExternalServiceInstances(DeploymentServiceContext context,
+            Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
+            Service service) {
+
+        // 1. request deployment units for ips defined on the service
+        createExternalUnitsForIps(context, uuidToLabels, uuidToInstances, service);
+
+        // 2. request deployment units for hostname defined on the service
+        createDeploymentUnitsForHostname(context, uuidToLabels, uuidToInstances, service);
+
+    }
+
+
+    protected void createDeploymentUnitsForHostname(DeploymentServiceContext context,
+            Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
+            Service service) {
+        String hostName = DataAccessor.fields(service)
+                .withKey(ServiceDiscoveryConstants.FIELD_HOSTNAME).as(String.class);
+        if (hostName != null) {
+            createExternalDeploymentUnit(context, uuidToLabels, uuidToInstances, service, null, hostName);
+        }
+
+        // get existing maps (they will be cleaned up later if ip is no longer on the service)
+        List<? extends ServiceExposeMap> exposeMaps = expMapDao.getNonRemovedServiceHostnameMaps(service.getId());
+        for (ServiceExposeMap exposeMap : exposeMaps) {
+                createExternalDeploymentUnit(context, uuidToLabels, uuidToInstances, service, null,
+                        exposeMap.getHostName());
+        }
+    }
+
+
+    @SuppressWarnings("unchecked")
+    protected void createExternalUnitsForIps(DeploymentServiceContext context,
             Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
             Service service) {
         List<String> externalIps = DataAccessor.fields(service)
                 .withKey(ServiceDiscoveryConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
                 .as(List.class);
 
-        // 1. request deployment units for ips defined on the service
-        for (String externalIp : externalIps) {
-            createExternalDeploymentUnit(context, uuidToLabels, uuidToInstances, service, externalIp);
+        if (externalIps != null) {
+            for (String externalIp : externalIps) {
+                createExternalDeploymentUnit(context, uuidToLabels, uuidToInstances, service, externalIp, null);
+            }
         }
 
-        // 2. get existing maps (they will be cleaned up later if ip is no longer on the service)
+        // get existing maps (they will be cleaned up later if ip is no longer on the service)
         List<? extends ServiceExposeMap> exposeMaps = expMapDao.getNonRemovedServiceIpMaps(service.getId());
         for (ServiceExposeMap exposeMap : exposeMaps) {
-            createExternalDeploymentUnit(context, uuidToLabels, uuidToInstances, service, exposeMap.getIpAddress());
+                createExternalDeploymentUnit(context, uuidToLabels, uuidToInstances, service, exposeMap.getIpAddress(),
+                    null);
         }
     }
 
     protected void createExternalDeploymentUnit(DeploymentServiceContext context,
             Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
-            Service service, String externalIp) {
+            Service service, String externalIp, String hostName) {
         String uuid = UUID.randomUUID().toString();
         DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, uuid, service, null,
-                externalIp, null, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+                Pair.of(externalIp, hostName), null, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         addToDeploymentUnitList(uuidToLabels, uuidToInstances, new HashMap<String, String>(), uuid,
                 unitInstance);
     }

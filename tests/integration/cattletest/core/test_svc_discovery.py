@@ -684,9 +684,9 @@ def _validate_compose_instance_start(client, service, env,
                                      number, launch_config_name=None):
     cn = launch_config_name + "_" if \
         launch_config_name is not None else ""
+    name = env.name + "_" + service.name + "_" + cn + number
     instances = client. \
-        list_container(name=env.name + "_"
-                       + service.name + "_" + cn + number,
+        list_container(name=name,
                        state="running")
     assert len(instances) == 1
     return instances[0]
@@ -814,7 +814,7 @@ def test_set_service_links(client, context):
     # set service2, service3 links for service1
     service_link1 = {"serviceId": service2.id, "name": "link1"}
     service_link2 = {"serviceId": service3.id, "name": "link2"}
-    service1 = service1.\
+    service1 = service1. \
         setservicelinks(serviceLinks=[service_link1, service_link2])
     _validate_add_service_link(service1, service2, client, "link1")
     _validate_add_service_link(service1, service3, client, "link2")
@@ -822,7 +822,7 @@ def test_set_service_links(client, context):
     # update the link with new name
     service_link1 = {"serviceId": service2.id, "name": "link3"}
     service_link2 = {"serviceId": service3.id, "name": "link4"}
-    service1 = service1.\
+    service1 = service1. \
         setservicelinks(serviceLinks=[service_link1, service_link2])
     _validate_remove_service_link(service1, service2, client, "link1")
     _validate_remove_service_link(service1, service3, client, "link2")
@@ -831,7 +831,7 @@ def test_set_service_links(client, context):
 
     # set service2 links for service1
     service_link = {"serviceId": service2.id}
-    service1 = service1.\
+    service1 = service1. \
         setservicelinks(serviceLinks=[service_link])
     _validate_remove_service_link(service1, service3, client, "link4")
 
@@ -1262,7 +1262,22 @@ def _validate_service_ip_map(client, service, ip, state, timeout=30):
             assert 'Timeout waiting for map to be in correct state'
 
 
-def test_external_service(client, context):
+def _validate_service_hostname_map(client, service,
+                                   host_name, state, timeout=30):
+    start = time.time()
+    instance_service_map = client. \
+        list_serviceExposeMap(serviceId=service.id,
+                              hostname=host_name, state=state)
+    while len(instance_service_map) < 1:
+        time.sleep(.5)
+        instance_service_map = client. \
+            list_serviceExposeMap(serviceId=service.id,
+                                  hostname=host_name, state=state)
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for map to be in correct state'
+
+
+def test_external_service_w_ips(client, context):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
@@ -1328,6 +1343,69 @@ def test_external_service(client, context):
     # remove external service
     service2 = client.wait_success(service2.remove())
     assert service2.state == "removed"
+
+
+def test_external_service_w_hostname(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    # create service1 as a regular service
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    service1 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config)
+    service1 = client.wait_success(service1)
+
+    # create service 2 as external
+    service2 = client.create_externalService(name=random_str(),
+                                             environmentId=env.id,
+                                             launchConfig=launch_config,
+                                             hostname="a.com")
+    service2 = client.wait_success(service2)
+
+    # activate services
+    env.activateservices()
+    service1 = client.wait_success(service1)
+    assert service1.state == 'active'
+
+    service2 = client.wait_success(service2)
+    assert service2.state == 'active'
+    assert service2.hostname == "a.com"
+    _validate_service_hostname_map(client, service2, "a.com", "active")
+
+    # deactivate external service
+    service2 = client.wait_success(service2.deactivate())
+    assert service2.state == "inactive"
+    _validate_service_hostname_map(client, service2, "a.com", "removed")
+
+    # activate external service again
+    service2 = client.wait_success(service2.activate())
+    assert service2.state == "active"
+    _validate_service_hostname_map(client, service2, "a.com", "active")
+
+    # change hostname
+    service2 = client.update(service2, hostname="b.com")
+    service2 = client.wait_success(service2, 120)
+    assert service2.hostname == "b.com"
+    _validate_service_hostname_map(client, service2, "b.com", "active")
+    _validate_service_hostname_map(client, service2, "a.com", "removed")
+
+    # remove external service
+    service2 = client.wait_success(service2.remove())
+    assert service2.state == "removed"
+
+    # try to create external service with both hostname externalips
+    with pytest.raises(ApiError) as e:
+        ips = ["72.22.16.5", '192.168.0.10']
+        client.create_externalService(name=random_str(),
+                                      environmentId=env.id,
+                                      launchConfig=launch_config,
+                                      hostname="a.com",
+                                      externalIpAddresses=ips)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
 
 
 def test_service_spread_deployment(super_client, new_context):
@@ -2034,8 +2112,8 @@ def test_service_link_emu_docker_link(super_client, client, context):
         assert link.instanceId is not None
         if map.consumedServiceId == server.id:
             assert link.linkName == 'other'
-            assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
-                server.id
+            expose_map = link.targetInstance().serviceExposeMaps()[0]
+            assert expose_map.serviceId == server.id
         elif map.consumedServiceId == server2.id:
             assert link.linkName == 'server2'
             assert link.targetInstance().serviceExposeMaps()[0].serviceId == \

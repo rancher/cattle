@@ -41,20 +41,11 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
         // 6. aggregate the links based on the source ip address
         Map<String, DnsEntryData> processedDnsEntries = new HashMap<>();
         for (DnsEntryData dnsEntry : dnsEntries) {
-            Map<String, List<String>> resolve = new HashMap<>();
             DnsEntryData newData = null;
             if (processedDnsEntries.containsKey(dnsEntry.getSourceIpAddress().getAddress())) {
                 newData = processedDnsEntries.get(dnsEntry.getSourceIpAddress().getAddress());
-                resolve = newData.getResolve();
-                for (String dnsName : dnsEntry.getResolve().keySet()) {
-                    Set<String> ips = new HashSet<>();
-                    if (resolve.containsKey(dnsName)) {
-                        ips.addAll(resolve.get(dnsName));
-                    }
-                    ips.addAll(dnsEntry.getResolve().get(dnsName));
-                    resolve.put(dnsName, Lists.newArrayList(ips));
-                    newData.setResolve(resolve);
-                }
+                populateARecords(dnsEntry, newData);
+                populateCnameRecords(dnsEntry, newData);
             } else {
                 newData = dnsEntry;
             }
@@ -62,5 +53,28 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
             processedDnsEntries.put(dnsEntry.getSourceIpAddress().getAddress(), newData);
         }
         context.getData().put("dnsEntries", processedDnsEntries.values());
+    }
+
+    protected void populateARecords(DnsEntryData dnsEntry, DnsEntryData newData) {
+        Map<String, List<String>> resolve = newData.getResolve();
+        for (String dnsName : dnsEntry.getResolve().keySet()) {
+            Set<String> ips = new HashSet<>();
+            if (resolve.containsKey(dnsName)) {
+                ips.addAll(resolve.get(dnsName));
+            }
+            ips.addAll(dnsEntry.getResolve().get(dnsName));
+            resolve.put(dnsName, Lists.newArrayList(ips));
+            newData.setResolve(resolve);
+        }
+    }
+
+    protected void populateCnameRecords(DnsEntryData dnsEntry, DnsEntryData newData) {
+        Map<String, String> resolveCname = newData.getResolveCname();
+        for (String dnsName : dnsEntry.getResolveCname().keySet()) {
+            if (!resolveCname.containsKey(dnsName)) {
+                resolveCname.putAll(dnsEntry.getResolveCname());
+            }
+            newData.setResolveCname(resolveCname);
+        }
     }
 }

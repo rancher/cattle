@@ -179,6 +179,17 @@ public interface ServiceExposeMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "dns_prefix", length = 128)
 	public java.lang.String getDnsPrefix();
 
+	/**
+	 * Setter for <code>cattle.service_expose_map.host_name</code>.
+	 */
+	public void setHostName(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.host_name</code>.
+	 */
+	@javax.persistence.Column(name = "host_name", length = 255)
+	public java.lang.String getHostName();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

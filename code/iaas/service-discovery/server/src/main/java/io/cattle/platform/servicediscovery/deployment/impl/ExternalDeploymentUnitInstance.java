@@ -16,23 +16,38 @@ import java.util.List;
 import java.util.Map;
 
 public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
-    protected String ipAddress;
+    String ipAddress;
+    String hostName;
     List<String> serviceExternalIps;
+    String serviceHostName;
 
 
     @SuppressWarnings("unchecked")
-    protected ExternalDeploymentUnitInstance(String uuid, Service service, DeploymentServiceContext context, String ipAddress, String launchConfigName) {
+    protected ExternalDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
+            Service service, String launchConfigName, String ipAddress, String hostName) {
         super(context, uuid, service, launchConfigName);
-        this.ipAddress = ipAddress;
-        this.exposeMap = context.exposeMapDao.getServiceIpExposeMap(service, ipAddress);
-        this.serviceExternalIps = DataAccessor.fields(service)
-                .withKey(ServiceDiscoveryConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
-                .as(List.class);
+        if (ipAddress != null) {
+            this.ipAddress = ipAddress;
+            this.exposeMap = context.exposeMapDao.getServiceIpExposeMap(service, ipAddress);
+            this.serviceExternalIps = DataAccessor.fields(service)
+                    .withKey(ServiceDiscoveryConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
+                    .as(List.class);
+
+        } else {
+            this.hostName = hostName;
+            this.exposeMap = context.exposeMapDao.getServiceHostnameExposeMap(service, hostName);
+            this.serviceHostName = DataAccessor.fields(service)
+                    .withKey(ServiceDiscoveryConstants.FIELD_HOSTNAME).as(String.class);
+        }
     }
 
     @Override
     public boolean isError() {
-        return !serviceExternalIps.contains(this.ipAddress);
+        if (this.ipAddress != null) {
+            return !serviceExternalIps.contains(this.ipAddress);
+        } else {
+            return !serviceHostName.contains(this.hostName);
+        }
     }
 
     @Override
@@ -48,7 +63,11 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     @Override
     public DeploymentUnitInstance start(Map<String, Object> deployParams) {
         if (createNew()) {
-            this.exposeMap = context.exposeMapDao.createIpToServiceMap(this.service, this.ipAddress);
+            if (this.ipAddress != null) {
+                this.exposeMap = context.exposeMapDao.createIpToServiceMap(this.service, this.ipAddress);
+            } else {
+                this.exposeMap = context.exposeMapDao.createHostnameToServiceMap(this.service, this.hostName);
+            }
         }
         DeferredUtils.nest(new Runnable() {
             @Override

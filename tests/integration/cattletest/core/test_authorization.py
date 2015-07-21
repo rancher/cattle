@@ -1565,3 +1565,62 @@ def test_auth_service_upgrade(admin_user_client, user_client,
         'intervalMillis': 'cr',
         'finalScale': 'cr',
     })
+
+
+def test_svc_discovery_expose_map(admin_user_client, user_client,
+                                  project_client):
+    auth_check(admin_user_client.schema, 'serviceExposeMap', 'r', {
+        'name': 'r',
+        'serviceId': 'r',
+        'instanceId': 'r',
+        'ipAddress': 'r',
+        'data': 'r',
+        'accountId': 'r'
+    })
+
+    auth_check(user_client.schema, 'serviceExposeMap', 'r', {
+        'name': 'r',
+        'serviceId': 'r',
+        'instanceId': 'r',
+        'ipAddress': 'r',
+        'accountId': 'r'
+    })
+
+    auth_check(project_client.schema, 'serviceExposeMap', 'r', {
+        'name': 'r',
+        'serviceId': 'r',
+        'instanceId': 'r',
+        'ipAddress': 'r',
+        'accountId': 'r'
+    })
+
+
+def test_svc_discovery_external_service(admin_user_client, user_client,
+                                        project_client):
+    auth_check(admin_user_client.schema, 'externalService', 'r', {
+        'name': 'r',
+        'environmentId': 'r',
+        'hostname': 'r',
+        'externalIpAddresses': 'r',
+        'accountId': 'r',
+        'data': 'r',
+        'upgrade': 'r'
+    })
+
+    auth_check(user_client.schema, 'externalService', 'r', {
+        'name': 'r',
+        'environmentId': 'r',
+        'hostname': 'r',
+        'externalIpAddresses': 'r',
+        'accountId': 'r',
+        'upgrade': 'r'
+    })
+
+    auth_check(project_client.schema, 'externalService', 'crud', {
+        'name': 'cru',
+        'environmentId': 'cr',
+        'hostname': 'cru',
+        'externalIpAddresses': 'cru',
+        'accountId': 'r',
+        'upgrade': 'r'
+    })
