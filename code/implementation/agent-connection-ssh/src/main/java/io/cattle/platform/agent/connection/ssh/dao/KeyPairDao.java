@@ -4,7 +4,7 @@ import io.cattle.platform.core.model.Agent;
 
 import java.util.List;
 
-public interface SshAgentDao {
+public interface KeyPairDao {
 
     String[] getLastestActiveApiKeys(Agent agent);
 

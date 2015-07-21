@@ -4,7 +4,7 @@ import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.DataTable.*;
-import io.cattle.platform.agent.connection.ssh.dao.SshAgentDao;
+import io.cattle.platform.agent.connection.ssh.dao.KeyPairDao;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Agent;
@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
 
-public class SshAgentDaoImpl extends AbstractJooqDao implements SshAgentDao {
+public class KeyPairDaoImpl extends AbstractJooqDao implements KeyPairDao {
 
     private static final String PUBLIC_FORMAT = "ssh-client-key%s-public";
     private static final String PRIVATE_FORMAT = "ssh-client-key%s-private";

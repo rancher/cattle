@@ -1,6 +1,6 @@
 package io.cattle.platform.agent.connection.ssh;
 
-import io.cattle.platform.agent.connection.ssh.dao.SshAgentDao;
+import io.cattle.platform.agent.connection.ssh.dao.KeyPairDao;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.lock.LockCallbackWithException;
 import io.cattle.platform.lock.LockManager;
@@ -28,7 +28,7 @@ public class ClientKeyPairProvider extends AbstractKeyPairProvider implements In
     private static final Logger log = LoggerFactory.getLogger(ClientKeyPairProvider.class);
 
     volatile KeyPair[] keys = null;
-    SshAgentDao agentDao;
+    KeyPairDao agentDao;
     LockManager lockManager;
     ExecutorService executorService;
 
@@ -95,12 +95,12 @@ public class ClientKeyPairProvider extends AbstractKeyPairProvider implements In
         return result;
     }
 
-    public SshAgentDao getAgentDao() {
+    public KeyPairDao getAgentDao() {
         return agentDao;
     }
 
     @Inject
-    public void setAgentDao(SshAgentDao agentDao) {
+    public void setAgentDao(KeyPairDao agentDao) {
         this.agentDao = agentDao;
     }
 
