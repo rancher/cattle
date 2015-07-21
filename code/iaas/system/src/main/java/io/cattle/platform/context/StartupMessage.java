@@ -17,7 +17,6 @@ public class StartupMessage implements Runnable {
     public void run() {
         String apiUrl = scopedConfig.getApiUrl(null);
         CONSOLE_LOG.info("[URL  ] API               : {}", apiUrl);
-        CONSOLE_LOG.info("[URL  ] SSH Authorization : {}/authorized_keys", apiUrl);
     }
 
     public ScopedConfig getScopedConfig() {

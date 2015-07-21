@@ -159,7 +159,6 @@ def test_project_types(project_client):
 def test_agent_register_types(agent_register_client):
     assert set(agent_register_client.schema.types.keys()) == {
         'agent',
-        'authorized',
         'error',
         'schema',
     }
@@ -168,7 +167,6 @@ def test_agent_register_types(agent_register_client):
 def test_agent_types(agent_client):
     assert set(agent_client.schema.types.keys()) == {
         'agent',
-        'authorized',
         'configContent',
         'containerEvent',
         'error',
