@@ -763,8 +763,8 @@ def test_private_lb(client, context):
     assert env.state == "active"
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
-                     "ports": [8081, '909:1001'],
-                     "expose": [9999, 9998]}
+                     "ports": [567, '568:569'],
+                     "expose": [9999, '9998:9997']}
     service = client.create_loadBalancerService(name=random_str(),
                                                 environmentId=env.id,
                                                 launchConfig=launch_config)
@@ -780,24 +780,36 @@ def test_private_lb(client, context):
     lb = client.wait_success(lbs[0])
     assert lb.state == 'active'
     listeners = client. \
-        list_loadBalancerListener(serviceId=service.id, privatePort=8081)
+        list_loadBalancerListener(serviceId=service.id, privatePort=567)
     assert len(listeners) == 1
-    assert listeners[0].sourcePort == 8081
+    assert listeners[0].sourcePort == 567
+    assert listeners[0].sourceProtocol == 'http'
+    assert listeners[0].privatePort == 567
+    assert listeners[0].targetPort == 567
 
     listeners = client. \
-        list_loadBalancerListener(serviceId=service.id, privatePort=1001)
+        list_loadBalancerListener(serviceId=service.id, privatePort=568)
     assert len(listeners) == 1
-    assert listeners[0].sourcePort == 909
+    assert listeners[0].sourcePort == 568
+    assert listeners[0].sourceProtocol == 'http'
+    assert listeners[0].privatePort == 568
+    assert listeners[0].targetPort == 569
 
     listeners = client. \
         list_loadBalancerListener(serviceId=service.id, privatePort=9999)
     assert len(listeners) == 1
     assert listeners[0].sourcePort is None
+    assert listeners[0].sourceProtocol == 'http'
+    assert listeners[0].privatePort == 9999
+    assert listeners[0].targetPort == 9999
 
     listeners = client. \
         list_loadBalancerListener(serviceId=service.id, privatePort=9998)
     assert len(listeners) == 1
     assert listeners[0].sourcePort is None
+    assert listeners[0].sourceProtocol == 'http'
+    assert listeners[0].privatePort == 9998
+    assert listeners[0].targetPort == 9997
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
@@ -871,15 +883,16 @@ def _validate_lb_instance(host, lb, super_client, service):
 
 
 def _validate_create_listener(env, service, source_port,
-                              client, private_port):
-    l_name = env.name + "_" + service.name + "_" + private_port
+                              client, target_port):
+    l_name = env.name + "_" + service.name + "_" + source_port
     listeners = client. \
         list_loadBalancerListener(sourcePort=source_port,
                                   name=l_name)
     assert len(listeners) >= 1
     listener = listeners[0]
     assert listener.sourcePort == int(source_port)
-    assert listener.privatePort == int(private_port)
+    assert listener.privatePort == int(source_port)
+    assert listener.targetPort == int(target_port)
     return listener
 
 

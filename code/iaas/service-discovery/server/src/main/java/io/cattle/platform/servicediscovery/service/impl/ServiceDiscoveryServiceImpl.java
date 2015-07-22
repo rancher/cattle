@@ -233,16 +233,28 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 continue;
             }
 
-            int privatePort = spec.getPrivatePort();
-            Integer sourcePort = spec.getPublicPort();
+            int targetPort = spec.getPrivatePort();
+            Integer sourcePort = null;
+            Integer privatePort = null;
             // set sourcePort only for ports defined in "ports" param
             // the ones defined in expose, will get translated to private listeners
-            if (portDefs.get(port) && sourcePort == null) {
-                sourcePort = privatePort;
+            if (portDefs.get(port)) {
+                if (spec.getPublicPort() == null) {
+                    sourcePort = targetPort;
+                } else {
+                    sourcePort = spec.getPublicPort();
+                }
+                privatePort = sourcePort;
+            } else {
+                if (spec.getPublicPort() == null) {
+                    privatePort = targetPort;
+                } else {
+                    privatePort = spec.getPublicPort();
+                }
             }
-
+            
             createListener(service, listeners, new LoadBalancerListenerPort(privatePort, sourcePort,
-                    protocol, privatePort));
+                    protocol, targetPort));
         }
 
         for (LoadBalancerListener listener : listeners.values()) {
