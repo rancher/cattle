@@ -22,8 +22,9 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.RetryCallback;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
-import io.cattle.platform.iaas.config.ScopedConfig;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.server.context.ServerContext;
+import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -61,9 +63,6 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
     @Inject
     AgentLocator agentLocator;
-
-    @Inject
-    ScopedConfig scopedConfig;
 
     @Inject
     EventService eventService;
@@ -163,7 +162,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
     protected ConfigUpdate getEvent(ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
         Client client = request.getClient();
-        String url = scopedConfig.getConfigUrl(client.getResourceType(), client.getResourceId());
+        String url = ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP);
 
         if (items.size() == 0) {
             return new ConfigUpdate(client.getEventName(), url, Collections.<ConfigUpdateItem> emptyList());

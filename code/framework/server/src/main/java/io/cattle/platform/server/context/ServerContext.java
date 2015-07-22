@@ -22,8 +22,6 @@ public class ServerContext {
     public static final DynamicStringProperty SERVER_ID = ArchaiusUtil.getString("cattle.server.id");
     public static final DynamicStringProperty HOST = ArchaiusUtil.getString("api.host");
 
-    private static final String URL_SETTING_FORMAT = "cattle.%s.url";
-    private static final String DEFAULT_URL = "public.url";
     private static final String FOUND_SERVER_IP = lookupServerIp();
     private static final String SERVER_ID_FORMAT = System.getProperty("cattle.server.id.format", "%s");
 
@@ -35,38 +33,19 @@ public class ServerContext {
         return !StringUtils.isBlank(HOST.get());
     }
 
-    public static ServerAddress getServerAddress() {
-        return getServerAddress(null);
+    public enum BaseProtocol {
+        HTTP, WEBSOCKET
     }
 
-    public static ServerAddress getServerAddress(String name) {
-        return getServerAddress(null, name);
-    }
-
-    public static ServerAddress getServerAddress(String scope, String name) {
+    public static String getHostApiBaseUrl(BaseProtocol proto) {
         String url = null;
 
-        if (scope != null) {
-            url = ArchaiusUtil.getString(String.format(URL_SETTING_FORMAT, scope + "." + name)).get();
-        }
-
-        if (url == null) {
-            url = ArchaiusUtil.getString(String.format(URL_SETTING_FORMAT, name)).get();
-        }
-
-        if (url == null) {
-            url = ArchaiusUtil.getString(DEFAULT_URL).get();
-        }
-
-        if (url == null) {
+        if (ServerContext.isCustomApiHost()) {
             String apiHost = HOST.get();
-            if (StringUtils.isNotBlank(apiHost)) {
-                if (apiHost.startsWith("http")) {
-                    return new ServerAddress(apiHost + URL_PATH.get());
-                } else {
-                    return new ServerAddress("http://" + apiHost + URL_PATH.get());
-                }
+            if (!apiHost.startsWith("http")) {
+                apiHost = "http://" + apiHost;
             }
+            url = apiHost;
         }
 
         if (url == null) {
@@ -80,13 +59,17 @@ public class ServerContext {
                 buffer.append(getServerIp());
                 buffer.append(":").append(HTTP_PORT.get());
             }
-
-            buffer.append(URL_PATH.get());
-
             url = buffer.toString();
         }
 
-        return new ServerAddress(url);
+        if (BaseProtocol.WEBSOCKET.equals(proto)) {
+            url = url.replaceFirst("http", "ws");
+        } else {
+            // websocket endpoints don't follow same pathing as rest of api
+            url += URL_PATH.get();
+        }
+
+        return url;
     }
 
     public static String getServerId() {

@@ -17,8 +17,6 @@ import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResource
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,40 +51,31 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
         token.setToken(getToken(p.getReportedUuid()));
         token.setReportedUuid(p.getReportedUuid());
 
-        String hostAddress = null;
+        StringBuilder buffer = new StringBuilder();
         switch (getHostApiProxyMode()) {
         case HOST_API_PROXY_MODE_EMBEDDED:
-            hostAddress = ServerContext.HOST.get();
-            if (StringUtils.isBlank(hostAddress)) {
-                try {
-                    String responseBaseUrl = request.getResponseUrlBase();
-                    URL url = new URL(responseBaseUrl);
-                    if (StringUtils.isNotBlank(url.getHost())) {
-                        hostAddress = url.getHost();
-                        if (url.getPort() > 0) {
-                            hostAddress = hostAddress + ":" + url.getPort();
-                        }
-                    }
-                } catch (MalformedURLException e) {
-                    throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
-                }
+            if (ServerContext.isCustomApiHost()) {
+                buffer.append(ServerContext.getHostApiBaseUrl(ServerContext.BaseProtocol.WEBSOCKET));
+            } else {
+                buffer.append(request.getResponseUrlBase().replaceFirst("http", "ws"));
             }
             break;
 
         case HOST_API_PROXY_MODE_HA:
-            hostAddress = HostApiUtils.HOST_API_PROXY_HOST.get();
+            String scheme = StringUtils.equalsIgnoreCase("https", request.getServletContext().getRequest().getScheme()) ? "wss://" : "ws://";
+            buffer.append(scheme).append(HostApiUtils.HOST_API_PROXY_HOST.get());
             break;
 
         case HOST_API_PROXY_MODE_OFF:
             throw new ClientVisibleException(501, "HostApiProxyDisabled");
         }
 
-        if (StringUtils.isBlank(hostAddress)) {
+        if (buffer.length() <= 0) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
         }
 
-        String apiProxyScheme = HostApiUtils.HOST_API_PROXY_SCHEME.get();
-        token.setUrl(apiProxyScheme + "://" + hostAddress + "/v1/connectbackend");
+        String url = buffer.append(HostApiUtils.HOST_API_PROXY_BACKEND.get()).toString();
+        token.setUrl(url);
         return token;
     }
 

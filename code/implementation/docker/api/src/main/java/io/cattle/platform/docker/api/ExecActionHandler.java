@@ -8,7 +8,6 @@ import io.cattle.platform.docker.api.model.ContainerExec;
 import io.cattle.platform.docker.api.model.HostAccess;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.util.DockerUtils;
-import io.cattle.platform.host.api.HostApiUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
@@ -55,17 +54,13 @@ public class ExecActionHandler implements ActionHandler {
                 DockerInstanceConstants.DOCKER_ATTACH_STDOUT, exec.getAttachStdout(), DockerInstanceConstants.DOCKER_TTY, exec.getTty(),
                 DockerInstanceConstants.DOCKER_CMD, exec.getCommand(), DockerInstanceConstants.DOCKER_CONTAINER, dockerId);
 
-        HostApiAccess apiAccess = apiService.getAccess(host.getId(), CollectionUtils.asMap("exec", data));
+        HostApiAccess apiAccess = apiService.getAccess(request, host.getId(), CollectionUtils.asMap("exec", data), CONSOLE_AGENT_PATH.get());
 
         if (apiAccess == null) {
             return null;
         }
 
-        StringBuilder url = new StringBuilder(HostApiUtils.HOST_API_PROXY_SCHEME.get());
-        url.append("://").append(apiAccess.getHostAndPort());
-        url.append(CONSOLE_AGENT_PATH.get());
-
-        return new HostAccess(url.toString(), apiAccess.getAuthenticationToken());
+        return new HostAccess(apiAccess.getUrl(), apiAccess.getAuthenticationToken());
     }
 
     public HostApiService getApiService() {

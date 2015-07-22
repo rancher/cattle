@@ -10,10 +10,10 @@ import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.iaas.config.ScopedConfig;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.server.context.ServerContext;
+import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
@@ -47,8 +48,6 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
     GenericResourceDao resourceDao;
     @Inject
     ResourceMonitor resourceMonitor;
-    @Inject
-    ScopedConfig scopedConfig;
 
     Process process;
     ScheduledFuture<?> future;
@@ -136,7 +135,7 @@ public class MachineLauncher extends NoExceptionRunnable implements Initializati
 
         env.put("CATTLE_ACCESS_KEY", cred.getPublicValue());
         env.put("CATTLE_SECRET_KEY", cred.getSecretValue());
-        env.put("CATTLE_URL", scopedConfig.getApiUrl(null));
+        env.put("CATTLE_URL", ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP));
 
         pb.redirectOutput(Redirect.INHERIT);
         pb.redirectError(Redirect.INHERIT);

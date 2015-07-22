@@ -8,7 +8,6 @@ import io.cattle.platform.docker.api.model.ContainerLogs;
 import io.cattle.platform.docker.api.model.HostAccess;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.util.DockerUtils;
-import io.cattle.platform.host.api.HostApiUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
@@ -54,16 +53,13 @@ public class ContainerLogsActionHandler implements ActionHandler {
         Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_CONTAINER, dockerId, "Lines", logs.getLines(), "Follow",
                 logs.getFollow());
 
-        HostApiAccess apiAccess = apiService.getAccess(host.getId(), CollectionUtils.asMap("logs", data));
+        HostApiAccess apiAccess = apiService.getAccess(request, host.getId(), CollectionUtils.asMap("logs", data), HOST_LOGS_PATH.get());
 
         if (apiAccess == null) {
             return null;
         }
 
-        StringBuilder url = new StringBuilder(HostApiUtils.HOST_API_PROXY_SCHEME.get());
-        url.append("://").append(apiAccess.getHostAndPort());
-        url.append(HOST_LOGS_PATH.get());
-        HostAccess access = new HostAccess(url.toString(), apiAccess.getAuthenticationToken());
+        HostAccess access = new HostAccess(apiAccess.getUrl(), apiAccess.getAuthenticationToken());
         return access;
     }
 
