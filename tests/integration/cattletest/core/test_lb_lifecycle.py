@@ -11,9 +11,10 @@ def nsp(super_client, sim_context):
     return nsp
 
 
-def test_add_lb_w_host_and_target(super_client, client, context):
-    port = 88
-    port1 = 101
+def test_add_lb_w_host_and_target(super_client, client,
+                                  context, is_public=True):
+    port = 193
+    port1 = 191
     # add host
     agent, lb, uri, instance, config = _create_lb_w_host(super_client,
                                                          client,
@@ -25,7 +26,7 @@ def test_add_lb_w_host_and_target(super_client, client, context):
     container = client.create_container(imageUuid=image_uuid,
                                         startOnCreate=False)
     container = client.wait_success(container)
-    target = {"instanceId": container.id, "ports": "100"}
+    target = {"instanceId": container.id, "ports": "a.com:100"}
     lb = lb.addtarget(loadBalancerTarget=target)
     _validate_add_target(container, lb, client)
 
@@ -72,7 +73,7 @@ def test_destroy_lb_instance(super_client, client, context):
     image_uuid = context.image_uuid
     container = client.create_container(imageUuid=image_uuid)
     container = client.wait_success(container)
-    target = {"instanceId": container.id, "ports": "100"}
+    target = {"instanceId": container.id, "ports": "a.com:100"}
     lb = lb.addtarget(loadBalancerTarget=target)
     _validate_add_target(container, lb, client)
 
@@ -93,8 +94,30 @@ def test_destroy_lb_instance(super_client, client, context):
     assert len(ports) == 1
 
 
-def _create_valid_lb(client, listenerPort):
-    config = _create_config(client, listenerPort)
+def test_private_lb(super_client, client, context):
+    port = 77
+    # add host
+    agent, lb, uri, instance, config = _create_lb_w_host(super_client,
+                                                         client,
+                                                         context,
+                                                         port,
+                                                         is_public=False)
+    # add target to a load balancer
+    image_uuid = context.image_uuid
+    container = client.create_container(imageUuid=image_uuid)
+    container = client.wait_success(container)
+    target = {"instanceId": container.id, "ports": "100"}
+    lb = lb.addtarget(loadBalancerTarget=target)
+    _validate_add_target(container, lb, client)
+
+    # check that port wasn't opened
+    ports = client.list_port(publicPort=port,
+                             instanceId=instance.id, state='active')
+    assert len(ports) == 0
+
+
+def _create_valid_lb(client, listenerPort, is_public=True):
+    config = _create_config(client, listenerPort, is_public)
     default_lb_config = client. \
         create_loadBalancerConfig(name=random_str())
     client.wait_success(default_lb_config)
@@ -105,12 +128,12 @@ def _create_valid_lb(client, listenerPort):
     return test_lb, config
 
 
-def _create_config(client, listenerPort):
+def _create_config(client, listenerPort, is_public=True):
     # create config
     config = client.create_loadBalancerConfig(name=random_str())
     config = client.wait_success(config)
     # create listener
-    listener = _create_valid_listener(client, listenerPort)
+    listener = _create_valid_listener(client, listenerPort, is_public)
     # add listener to config
     config = config.addlistener(loadBalancerListenerId=listener.id)
     _validate_add_listener(config, listener, client)
@@ -118,11 +141,12 @@ def _create_config(client, listenerPort):
     return config
 
 
-def _create_lb_w_host(super_client, client, context, listenerPort):
+def _create_lb_w_host(super_client, client, context,
+                      listenerPort, is_public=True):
     host = context.host
 
     # create lb
-    lb, config = _create_valid_lb(client, listenerPort)
+    lb, config = _create_valid_lb(client, listenerPort, is_public)
 
     # add host to lb
     lb.addhost(hostId=host.id)
@@ -143,9 +167,11 @@ def _create_lb_w_host(super_client, client, context, listenerPort):
     return agent, lb, uri, instance, config
 
 
-def _create_valid_listener(client, sourcePort):
+def _create_valid_listener(client, sourcePort, is_public=True):
     listener = client.create_loadBalancerListener(name=random_str(),
-                                                  sourcePort=sourcePort,
+                                                  privatePort=sourcePort,
+                                                  sourcePort=sourcePort
+                                                  if is_public else None,
                                                   sourceProtocol='http',
                                                   targetProtocol='http')
     listener = client.wait_success(listener)

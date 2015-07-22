@@ -134,23 +134,82 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
     @Override
     @SuppressWarnings("unchecked")
     public List<LoadBalancerTargetPortSpec> getLoadBalancerTargetPorts(LoadBalancerTarget target) {
-        List<LoadBalancerTargetPortSpec> portSpecs = new ArrayList<>();
+        List<LoadBalancerTargetPortSpec> portSpecsInitial = new ArrayList<>();
+        List<? extends LoadBalancerListener> listeners = lbDao.listActiveListenersForConfig(target
+                .getLoadBalancerId());
+        Map<Integer, LoadBalancerListener> lbSourcePorts = new HashMap<>();
+        for (LoadBalancerListener listener : listeners) {
+            lbSourcePorts.put(getSourcePort(listener), listener);
+        }
+
+        List<Integer> targetSourcePorts = new ArrayList<>();
+
         List<String> portsData = DataAccessor.fields(target)
                 .withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
                 .as(List.class);
         if (portsData != null && !portsData.isEmpty()) {
             for (String portData : portsData) {
-                portSpecs.add(new LoadBalancerTargetPortSpec(portData));
-            }
-        } else {
-            // LEGACY: to support the case when ports are not defined on per target, and read from listener instead
-            List<? extends LoadBalancerListener> listeners = lbDao.listActiveListenersForConfig(target
-                    .getLoadBalancerId());
-            for (LoadBalancerListener listener : listeners) {
-                portSpecs.add(new LoadBalancerTargetPortSpec(listener.getTargetPort()));
+                portSpecsInitial.add(new LoadBalancerTargetPortSpec(portData));
             }
         }
-        return portSpecs;
+
+        List<LoadBalancerTargetPortSpec> portSpecsToReturn = completePortSpecs(portSpecsInitial, listeners,
+                lbSourcePorts, targetSourcePorts);
+
+        addMissingPortSpecs(lbSourcePorts, targetSourcePorts, portSpecsToReturn);
+
+        return portSpecsToReturn;
+    }
+
+    protected void addMissingPortSpecs(Map<Integer, LoadBalancerListener> lbSourcePorts,
+            List<Integer> targetSourcePorts, List<LoadBalancerTargetPortSpec> completePortSpecs) {
+        // create port specs for missing load balancer source ports
+        for (Integer lbSourcePort : lbSourcePorts.keySet()) {
+            if (!targetSourcePorts.contains(lbSourcePort)) {
+                LoadBalancerListener listener = lbSourcePorts.get(lbSourcePort);
+                completePortSpecs
+                        .add(new LoadBalancerTargetPortSpec(listener.getTargetPort(), getSourcePort(listener)));
+            }
+        }
+    }
+
+    protected Integer getSourcePort(LoadBalancerListener listener) {
+        // LEGACY code to support the case when private port is not defined
+        return listener.getPrivatePort() != null ? listener.getPrivatePort() : listener.getSourcePort();
+    }
+
+    protected List<LoadBalancerTargetPortSpec> completePortSpecs(List<LoadBalancerTargetPortSpec> portSpecsInitial,
+            List<? extends LoadBalancerListener> listeners, Map<Integer, LoadBalancerListener> lbSourcePorts,
+            List<Integer> targetSourcePorts) {
+        // complete missing source ports for port specs
+        List<LoadBalancerTargetPortSpec> portSpecsWithSourcePorts = new ArrayList<>();
+        for (LoadBalancerTargetPortSpec portSpec : portSpecsInitial) {
+            if (portSpec.getSourcePort() == null) {
+                for (LoadBalancerListener listener : listeners) {
+                    portSpec.setSourcePort(getSourcePort(listener));
+                    portSpecsWithSourcePorts.add(portSpec);
+                }
+            } else {
+                portSpecsWithSourcePorts.add(portSpec);
+            }
+            // register the fact that the source port is defined on the target
+            targetSourcePorts.add(portSpec.getSourcePort());
+        }
+        
+        // complete missing target ports
+        List<LoadBalancerTargetPortSpec> completePortSpecs = new ArrayList<>();
+        for (LoadBalancerTargetPortSpec spec : portSpecsWithSourcePorts) {
+            if (spec.getPort() == null) {
+                LoadBalancerListener listener = lbSourcePorts.get(spec.getSourcePort());
+                if (listener != null) {
+                    spec.setPort(listener.getTargetPort());
+                    completePortSpecs.add(spec);
+                }
+            } else {
+                completePortSpecs.add(spec);
+            }
+        }
+        return completePortSpecs;
     }
 
     @Override

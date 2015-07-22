@@ -14,8 +14,7 @@
             "type": "int",
             "min": 1,
             "max": 65535,
-            "required": true,
-            "nullable": false
+            "nullable": true
         },
         "targetPort": {
             "type": "int",
@@ -27,6 +26,11 @@
             "options": [ "roundrobin", "leastconn", "source"],
             "nullable": true,
             "default": "roundrobin"
+        },
+        "privatePort": {
+            "type": "int",
+            "min": 1,
+            "max": 65535
         }
     }
 }

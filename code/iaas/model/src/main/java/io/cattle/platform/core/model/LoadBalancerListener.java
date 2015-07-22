@@ -190,6 +190,17 @@ public interface LoadBalancerListener extends java.io.Serializable {
 	@javax.persistence.Column(name = "service_id", precision = 19)
 	public java.lang.Long getServiceId();
 
+	/**
+	 * Setter for <code>cattle.load_balancer_listener.private_port</code>.
+	 */
+	public void setPrivatePort(java.lang.Integer value);
+
+	/**
+	 * Getter for <code>cattle.load_balancer_listener.private_port</code>.
+	 */
+	@javax.persistence.Column(name = "private_port", precision = 10)
+	public java.lang.Integer getPrivatePort();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

@@ -30,10 +30,12 @@ defaults
 
 <#if listeners?has_content && backends?has_content>
 <#list listeners as listener >
+<#if listener.privatePort??><#assign sourcePort = listener.privatePort><#else><#assign sourcePort = listener.sourcePort></#if>
 frontend ${listener.uuid}_frontend
-        bind ${publicIp}:${listener.sourcePort}
+        bind ${publicIp}:${sourcePort}
         mode ${listener.sourceProtocol}
         <#list backends as backend >
+        <#if backend.portSpec.sourcePort == sourcePort>
         <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>
         <#if backend.portSpec.domain != "default">
         acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}
@@ -45,9 +47,11 @@ frontend ${listener.uuid}_frontend
     	<#else>
     	default_backend ${listener.uuid}_${backend.uuid}_backend
         </#if>
+        </#if>
         </#list>
 
 <#list backends as backend >
+<#if backend.portSpec.sourcePort == sourcePort>
 backend ${listener.uuid}_${backend.uuid}_backend
         mode ${listener.targetProtocol}
         balance ${listener.data.fields.algorithm}
@@ -66,7 +70,7 @@ backend ${listener.uuid}_${backend.uuid}_backend
         <#list backend.targets as target >
         server ${target.name} ${target.ipAddress}:${target.portSpec.port}<#if target.healthCheck??> check<#if target.healthCheck.port??> port ${target.healthCheck.port}</#if><#if target.healthCheck.interval??> inter ${target.healthCheck.interval}</#if><#if target.healthCheck.healthyThreshold??> rise ${target.healthCheck.healthyThreshold}</#if><#if target.healthCheck.unhealthyThreshold??> fall ${target.healthCheck.unhealthyThreshold}</#if></#if><#if listener.targetProtocol="http" && lbPolicy??> cookie ${target.cookie}</#if>
         </#list>
-
+</#if>
 </#list>
 </#list>
 <#else>

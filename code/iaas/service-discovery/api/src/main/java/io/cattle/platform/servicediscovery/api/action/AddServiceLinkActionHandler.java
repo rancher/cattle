@@ -4,6 +4,7 @@ import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -36,6 +37,13 @@ public class AddServiceLinkActionHandler implements ActionHandler {
         if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
             LoadBalancerServiceLink serviceLink = DataAccessor.fromMap(request.getRequestObject()).withKey(
                     ServiceDiscoveryConstants.FIELD_SERVICE_LINK).as(jsonMapper, LoadBalancerServiceLink.class);
+
+            if (serviceLink.getPorts() != null) {
+                for (String port : serviceLink.getPorts()) {
+                    // to validate the spec
+                    new LoadBalancerTargetPortSpec(port);
+                }
+            }
 
             sdService.addLoadBalancerServiceLink(service, serviceLink);
         } else {

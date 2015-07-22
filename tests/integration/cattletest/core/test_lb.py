@@ -62,10 +62,10 @@ def test_lb_add_target_instance_with_ports(client, context, config_id):
 
     # add target to a load balancer
     lb = _add_target(lb, container=container,
-                     ports=["77:a.com", "99:b.com, c.com"])
+                     ports=["a.com:77", "b.com:99"])
 
     _validate_add_target(container, lb,
-                         client, ports=["77:a.com", "99:b.com, c.com"])
+                         client, ports=["a.com:77", "b.com:99"])
 
 
 def test_lb_remove_target_instance(client, context, config_id):
@@ -335,7 +335,7 @@ def _validate_remove_host(host, lb, client):
 
 def _add_target(lb, container=None, ip_address=None, ports=None):
     container_id = container.id if container else None
-    port_domains = ports if ports else ["99"]
+    port_domains = ports if ports else ["99:99"]
     target = {"instanceId": container_id,
               "ipAddress": ip_address, "ports": port_domains}
     lb = lb.addtarget(loadBalancerTarget=target)
@@ -344,7 +344,7 @@ def _add_target(lb, container=None, ip_address=None, ports=None):
 
 def _remove_target(lb, container=None, ip_address=None, ports=None):
     container_id = container.id if container else None
-    port_domains = ports if ports else ["99"]
+    port_domains = ports if ports else ["99:99"]
     target = {"instanceId": container_id,
               "ipAddress": ip_address, "ports": port_domains}
     lb = lb.removetarget(loadBalancerTarget=target)
@@ -422,11 +422,11 @@ def _create_lb_and_container(client, context, config_id):
 def _set_targets(lb, containers=None, ip_addresses=None):
     targets = []
     for container in containers or []:
-        target = {"instanceId": container.id, "ports": "100: foo.com"}
+        target = {"instanceId": container.id, "ports": "foo.com:100"}
         targets.append(target)
 
     for ip in ip_addresses or []:
-        target = {"ipAddress": ip, "ports": "100: bar.com"}
+        target = {"ipAddress": ip, "ports": "bar.com:100"}
         targets.append(target)
 
     lb = lb.settargets(loadBalancerTargets=targets)

@@ -22,18 +22,10 @@
         }
     },
     {
-        "id" : "loadBalancerTarget",
-        "resourceFields" : {
-            "ports" : {
-                "description" : "Format: <port>[:[host][path]]. Example: 80:foo.com/bar"
-            }
-        }
-    },
-    {
         "id" : "loadBalancerServiceLink",
         "resourceFields" : {
             "ports" : {
-                "description" : "Format: <port>[:[host][path]]. Example: 80:foo.com/bar"
+                "description" : "Format: [[[domain:][sourcePort][/path]=][targetPort]]. Examples: example.com:80/path=81, example.com:80/path, 80=81"
             }
         }
     }

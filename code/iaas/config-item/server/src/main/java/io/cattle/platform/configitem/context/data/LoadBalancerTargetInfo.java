@@ -59,7 +59,7 @@ public class LoadBalancerTargetInfo {
     }
 
     public void setUuid() {
-        this.uuid = portSpec.getDomain() + portSpec.getPath();
+        this.uuid = portSpec.getSourcePort() + portSpec.getDomain() + portSpec.getPath();
     }
 
     public String getUuid() {

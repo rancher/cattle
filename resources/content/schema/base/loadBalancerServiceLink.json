@@ -5,7 +5,7 @@
             "type": "array[string]",
             "create": true,
             "nullable": true,
-            "required": true
+            "required": false
         }
     }
 }
