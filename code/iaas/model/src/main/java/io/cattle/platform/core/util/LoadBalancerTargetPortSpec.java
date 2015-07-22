@@ -37,6 +37,13 @@ public class LoadBalancerTargetPortSpec {
     public LoadBalancerTargetPortSpec() {
     }
 
+    public LoadBalancerTargetPortSpec(LoadBalancerTargetPortSpec that) {
+        this.port = that.port;
+        this.domain = that.domain;
+        this.path = that.path;
+        this.sourcePort = that.sourcePort;
+    }
+
     public LoadBalancerTargetPortSpec(String input) {
         String targetPort = null;
         String domain = null;
