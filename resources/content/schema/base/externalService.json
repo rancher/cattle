@@ -3,7 +3,7 @@
         "externalIpAddresses": {
             "type": "array[string]",
             "required": false,
-            "nullable": false,
+            "nullable": true,
             "attributes" : {
                 "scheduleUpdate" : true
             }
@@ -11,7 +11,7 @@
         "hostname": {
             "type": "string",
             "required": false,
-            "nullable": false,
+            "nullable": true,
             "attributes" : {
                 "scheduleUpdate" : true
             }
