@@ -186,14 +186,17 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
         for (LoadBalancerTargetPortSpec portSpec : portSpecsInitial) {
             if (portSpec.getSourcePort() == null) {
                 for (LoadBalancerListener listener : listeners) {
-                    portSpec.setSourcePort(getSourcePort(listener));
-                    portSpecsWithSourcePorts.add(portSpec);
+                    LoadBalancerTargetPortSpec newSpec = new LoadBalancerTargetPortSpec(portSpec);
+                    newSpec.setSourcePort(getSourcePort(listener));
+                    portSpecsWithSourcePorts.add(newSpec);
+                    // register the fact that the source port is defined on the target
+                    targetSourcePorts.add(newSpec.getSourcePort());
                 }
             } else {
                 portSpecsWithSourcePorts.add(portSpec);
+                // register the fact that the source port is defined on the target
+                targetSourcePorts.add(portSpec.getSourcePort());
             }
-            // register the fact that the source port is defined on the target
-            targetSourcePorts.add(portSpec.getSourcePort());
         }
         
         // complete missing target ports
