@@ -74,13 +74,14 @@ public class LoadBalancerTargetPortSpec {
             }
             
             // path assignment
+            if (input.startsWith("/")) {
+                path = input;
+                return;
+            }
             String[] splittedBySlash = StringUtils.split(input, "/", 2);
             if (splittedBySlash.length > 1) {
                 path = "/" + splittedBySlash[1];
                 input = splittedBySlash[0];
-            } else if (input.startsWith("/")) {
-                path = input;
-                return;
             }
 
             // domain name assignment
