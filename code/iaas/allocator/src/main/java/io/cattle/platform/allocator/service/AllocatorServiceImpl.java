@@ -1,5 +1,7 @@
 package io.cattle.platform.allocator.service;
 
+import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.Constraint;
@@ -9,9 +11,11 @@ import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Label;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.ArrayList;
@@ -108,6 +112,8 @@ public class AllocatorServiceImpl implements AllocatorService {
         String stackServiceNameWithLaunchConfig = systemLabels.get(LABEL_STACK_SERVICE_NAME);
         String launchConfig = systemLabels.get(LABEL_SERVICE_LAUNCH_CONFIG);
 
+        Set<String> serviceNamesInStack = getServiceNamesInStack(stackName);
+
         for (Map.Entry<String, String> entry : serviceUserLabels.entrySet()) {
             String labelValue = entry.getValue();
             if (entry.getKey().startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL) &&
@@ -121,10 +127,11 @@ public class AllocatorServiceImpl implements AllocatorService {
                 if (userEnteredServiceName != null) {
                     String[] components = userEnteredServiceName.split("/");
                     if (components.length == 1 &&
-                            stackServiceNameWithLaunchConfig != null &&
-                            stackServiceNameWithLaunchConfig.startsWith(stackName + "/" + userEnteredServiceName)) {
-                        // prepend stack name
-                        userEnteredServiceName = stackName + "/" + userEnteredServiceName;
+                            stackServiceNameWithLaunchConfig != null) {
+                        if (serviceNamesInStack.contains(userEnteredServiceName)) {
+                            // prepend stack name
+                            userEnteredServiceName = stackName + "/" + userEnteredServiceName;
+                        }
                     }
                     if (!PRIMARY_LAUNCH_CONFIG_NAME.equals(launchConfig) &&
                             stackServiceNameWithLaunchConfig.startsWith(userEnteredServiceName)) {
@@ -135,6 +142,18 @@ public class AllocatorServiceImpl implements AllocatorService {
                 }
             }
         }
+    }
+
+    private Set<String> getServiceNamesInStack(String stackName) {
+        Set<String> servicesInEnv = new HashSet<String>();
+
+        Environment stack = objectManager.findOne(Environment.class, ENVIRONMENT.NAME, stackName);
+        List<? extends Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, stack.getId(), SERVICE.REMOVED,
+                null);
+        for (Service service : services) {
+            servicesInEnv.add(service.getName());
+        }
+        return servicesInEnv;
     }
 
     @Override
