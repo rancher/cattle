@@ -684,6 +684,7 @@ def test_create_links(client, context):
     service13 = _create_service(client, env, launch_config)
     service14 = _create_service(client, env, launch_config)
     service15 = _create_service(client, env, launch_config)
+    service16 = _create_service(client, env, launch_config)
 
     # set service link with hostname 1
     port1 = "example.com:80/path=81"
@@ -701,6 +702,8 @@ def test_create_links(client, context):
     port13 = "/path=81"
     port14 = "81"
     port15 = "example.com/path1/path2/path3=81"
+    # old style
+    port16 = "90:a.com/hello"
     service_link1 = {"serviceId": service1.id, "ports": [port1]}
     service_link2 = {"serviceId": service2.id, "ports": [port2]}
     service_link3 = {"serviceId": service3.id, "ports": [port3]}
@@ -716,6 +719,7 @@ def test_create_links(client, context):
     service_link13 = {"serviceId": service13.id, "ports": [port13]}
     service_link14 = {"serviceId": service14.id, "ports": [port14]}
     service_link15 = {"serviceId": service15.id, "ports": [port15]}
+    service_link16 = {"serviceId": service16.id, "ports": [port16]}
 
     lb_service = lb_service. \
         setservicelinks(serviceLinks=[service_link1, service_link2,
@@ -725,7 +729,7 @@ def test_create_links(client, context):
                                       service_link9, service_link10,
                                       service_link11, service_link12,
                                       service_link13, service_link14,
-                                      service_link15])
+                                      service_link15, service_link16])
     _validate_add_service_link(client, lb_service, service1, ports=[port1])
     _validate_add_service_link(client, lb_service, service2, ports=[port2])
     _validate_add_service_link(client, lb_service, service3, ports=[port3])
@@ -741,6 +745,7 @@ def test_create_links(client, context):
     _validate_add_service_link(client, lb_service, service13, ports=[port13])
     _validate_add_service_link(client, lb_service, service14, ports=[port14])
     _validate_add_service_link(client, lb_service, service15, ports=[port15])
+    _validate_add_service_link(client, lb_service, service16, ports=[port16])
 
     service_link1 = {"serviceId": service1.id, "ports": ["90=100=100"]}
     with pytest.raises(ApiError) as e:
