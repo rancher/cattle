@@ -122,11 +122,11 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             for (String launchConfigName : launchConfigNames) {
                 boolean isPrimaryConfig = launchConfigName
                         .equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-                Map<String, Object> rancherServiceData = ServiceDiscoveryUtil.getServiceDataAsMap(service,
+                Map<String, Object> cattleServiceData = ServiceDiscoveryUtil.getServiceDataAsMap(service,
                         launchConfigName, allocatorService);
                 Map<String, Object> composeServiceData = new HashMap<>();
-                for (String rancherService : rancherServiceData.keySet()) {
-                    translateRancherToCompose(forDockerCompose, rancherServiceData, composeServiceData, rancherService);
+                for (String cattleService : cattleServiceData.keySet()) {
+                    translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service);
                 }
 
                 if (forDockerCompose) {
@@ -305,10 +305,10 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     protected void translateRancherToCompose(boolean forDockerCompose, Map<String, Object> rancherServiceData,
-            Map<String, Object> composeServiceData, String rancherService) {
-        ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(rancherService);
+            Map<String, Object> composeServiceData, String cattleName, Service service) {
+        ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(cattleName, service);
         if (item != null && item.isDockerComposeProperty() == forDockerCompose) {
-            Object value = rancherServiceData.get(rancherService);
+            Object value = rancherServiceData.get(cattleName);
             boolean export = false;
             if (value instanceof List) {
                 if (!((List<?>) value).isEmpty()) {
