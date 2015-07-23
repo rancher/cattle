@@ -77,8 +77,7 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
                 }
                 serviceIds.add(serviceLink.getServiceId());
                 Service consumedService = objectManager.loadResource(Service.class, serviceLink.getServiceId());
-                if (service == null || consumedService == null
-                        || !consumedService.getEnvironmentId().equals(service.getEnvironmentId())) {
+                if (service == null || consumedService == null) {
                     ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
                             ServiceDiscoveryConstants.FIELD_SERVICE_ID);
                 }
