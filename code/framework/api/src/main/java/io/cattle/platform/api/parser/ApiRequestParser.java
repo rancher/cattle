@@ -16,10 +16,16 @@ import com.netflix.config.DynamicBooleanProperty;
 public class ApiRequestParser extends DefaultApiRequestParser {
 
     private static final DynamicBooleanProperty ALLOW_OVERRIDE = ArchaiusUtil.getBoolean("api.allow.client.override");
+    private static final DynamicBooleanProperty ALLOW_X_FORWARDED_HOST = ArchaiusUtil.getBoolean("api.allow.x.forwarded.host");
 
     @Override
     public boolean isAllowClientOverrideHeaders() {
         return ALLOW_OVERRIDE.get();
+    }
+
+    @Override
+    public boolean isAllowXForwardedHost() {
+        return ALLOW_X_FORWARDED_HOST.get();
     }
 
     @Override
