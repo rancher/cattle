@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.service;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
@@ -11,7 +10,6 @@ import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
-import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Label;
@@ -107,12 +105,12 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     @Override
-    public void normalizeLabels(Map<String, String> systemLabels, Map<String, String> serviceUserLabels) {
+    public void normalizeLabels(long environmentId, Map<String, String> systemLabels, Map<String, String> serviceUserLabels) {
         String stackName = systemLabels.get(LABEL_STACK_NAME);
         String stackServiceNameWithLaunchConfig = systemLabels.get(LABEL_STACK_SERVICE_NAME);
         String launchConfig = systemLabels.get(LABEL_SERVICE_LAUNCH_CONFIG);
 
-        Set<String> serviceNamesInStack = getServiceNamesInStack(stackName);
+        Set<String> serviceNamesInStack = getServiceNamesInStack(environmentId);
 
         for (Map.Entry<String, String> entry : serviceUserLabels.entrySet()) {
             String labelValue = entry.getValue();
@@ -144,11 +142,11 @@ public class AllocatorServiceImpl implements AllocatorService {
         }
     }
 
-    private Set<String> getServiceNamesInStack(String stackName) {
+    // TODO: Fix repeated DB call even if DB's cache no longer hits the disk
+    private Set<String> getServiceNamesInStack(long environmentId) {
         Set<String> servicesInEnv = new HashSet<String>();
 
-        Environment stack = objectManager.findOne(Environment.class, ENVIRONMENT.NAME, stackName);
-        List<? extends Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, stack.getId(), SERVICE.REMOVED,
+        List<? extends Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, environmentId, SERVICE.REMOVED,
                 null);
         for (Service service : services) {
             servicesInEnv.add(service.getName());
