@@ -6,6 +6,7 @@ import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -134,6 +135,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     populateVolumesForService(service, launchConfigName, composeServiceData);
                     addExtraComposeParameters(service, launchConfigName, composeServiceData);
                     populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
+                    populateLoadBalancerServiceLabels(service, launchConfigName, composeServiceData);
                 }
 
                 if (!composeServiceData.isEmpty()) {
@@ -142,6 +144,36 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             }
         }
         return data;
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected void populateLoadBalancerServiceLabels(Service service,
+            String launchConfigName, Map<String, Object> composeServiceData) {
+        if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+            return;
+        }
+
+        Map<String, String> labels = new HashMap<>();
+        if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
+            labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
+        }
+        // get all consumed services maps
+        List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
+        // for each port, populate the label
+        for (ServiceConsumeMap map : consumedServiceMaps) {
+            Service consumedService = objectManager.loadResource(Service.class, map.getConsumedServiceId());
+            List<String> ports = DataAccessor.fieldStringList(map, LoadBalancerConstants.FIELD_LB_TARGET_PORTS);
+            String labelName = ServiceDiscoveryConstants.LABEL_LB_TARGET + consumedService.getName();
+            StringBuilder bldr = new StringBuilder();
+            for (String port : ports) {
+                bldr.append(port).append(",");
+            }
+            labels.put(labelName, bldr.toString().substring(0, bldr.length() - 1));
+        }
+
+        if (!labels.isEmpty()) {
+            composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
+        }
     }
 
     @SuppressWarnings("unchecked")

@@ -70,6 +70,7 @@ public class ServiceDiscoveryConstants {
 
     public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
     public static final String LABEL_SIDEKICK = "io.rancher.sidekicks";
+    public static final String LABEL_LB_TARGET = "io.rancher.loadbalancer.target.";
 
     public static final String STATE_UPGRADING = "upgrading";
 }
