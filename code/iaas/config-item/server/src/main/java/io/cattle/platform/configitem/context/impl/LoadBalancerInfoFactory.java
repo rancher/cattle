@@ -28,6 +28,8 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,9 +91,41 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         }
         context.getData().put("listeners", listeners);
         context.getData().put("publicIp", lbMgr.getLoadBalancerInstanceIp(instance).getAddress());
-        context.getData().put("backends", targetsInfo);
+        context.getData().put("backends", sortTargets(targetsInfo));
         context.getData().put("appPolicy", appPolicy);
         context.getData().put("lbPolicy", lbPolicy);
+    }
+
+
+    protected List<LoadBalancerTargetsInfo> sortTargets(List<LoadBalancerTargetsInfo> targetsInfo) {
+        List<LoadBalancerTargetsInfo> toReturn = new ArrayList<>();
+        // sort by path length first
+        Collections.sort(targetsInfo, new Comparator<LoadBalancerTargetsInfo>() {
+            @Override
+            public int compare(LoadBalancerTargetsInfo s1, LoadBalancerTargetsInfo s2) {
+                return s1.getPortSpec().getPath().length() >= s2.getPortSpec().getPath().length() ? -1 : 1;
+            }
+        });
+        List<LoadBalancerTargetsInfo> notNullDomainAndPath = new ArrayList<>();
+        List<LoadBalancerTargetsInfo> nullDomainOrPath = new ArrayList<>();
+        List<LoadBalancerTargetsInfo> defaultDomainAndPath = new ArrayList<>();
+        for (LoadBalancerTargetsInfo targetInfo : targetsInfo) {
+            boolean pathNull = targetInfo.getPortSpec().getPath().equalsIgnoreCase(LoadBalancerTargetPortSpec.DEFAULT);
+            boolean domainNull = targetInfo.getPortSpec().getDomain().equalsIgnoreCase(LoadBalancerTargetPortSpec.DEFAULT);
+            
+            if (pathNull && domainNull) {
+                defaultDomainAndPath.add(targetInfo);
+            } else if (!pathNull && !domainNull) {
+                notNullDomainAndPath.add(targetInfo);
+            } else {
+                nullDomainOrPath.add(targetInfo);
+            }
+        }
+        toReturn.addAll(notNullDomainAndPath);
+        toReturn.addAll(nullDomainOrPath);
+        toReturn.addAll(defaultDomainAndPath);
+
+        return toReturn;
     }
 
 
