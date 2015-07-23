@@ -63,7 +63,8 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
         return new String[] { InstanceConstants.PROCESS_START,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_EXPOSE_MAP_CREATE };
+                ServiceDiscoveryConstants.PROCESS_SERVICE_EXPOSE_MAP_CREATE,
+                ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_UPDATE };
     }
 
     @Override
@@ -89,7 +90,9 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
         List<Pair<ServiceExposeMap, Service>> exposeMapToLBService = new ArrayList<>();
         if (process.getName().equalsIgnoreCase(InstanceConstants.PROCESS_START)) {
             getLBServiceForInstance(state, exposeMapToLBService);
-        } else if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE)) {
+        } else if (process.getName().equalsIgnoreCase(
+                ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE)
+                || process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_UPDATE)) {
             getLBServiceForServiceLink(state, exposeMapToLBService);
         } else if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE)) {
             getLBServiceForService(state, exposeMapToLBService);

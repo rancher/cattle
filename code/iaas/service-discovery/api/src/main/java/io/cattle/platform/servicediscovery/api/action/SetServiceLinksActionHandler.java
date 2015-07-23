@@ -3,7 +3,6 @@ package io.cattle.platform.servicediscovery.api.action;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
-import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.json.JsonMapper;
@@ -115,18 +114,8 @@ public class SetServiceLinksActionHandler implements ActionHandler {
                 ServiceLink newServiceLink = newServiceLinks.get(existingMap.getConsumedServiceId());
                 
                 boolean namesAreEqual = StringUtils.equalsIgnoreCase(newServiceLink.getName(), existingMap.getName());
-                boolean portsAreEqual = true;
-                if (forLb) {
-                    LoadBalancerServiceLink newLbServiceLink = (LoadBalancerServiceLink) newServiceLink;
-                    List<? extends String> newPorts = newLbServiceLink.getPorts() != null ? newLbServiceLink.getPorts()
-                            : new ArrayList<String>();
-                    List<? extends String> existingPorts = DataAccessor.fields(existingMap).
-                            withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
-                            .asList(jsonMapper, String.class);
-                    portsAreEqual = newPorts.containsAll(existingPorts) && existingPorts.containsAll(newPorts);
-                }
 
-                if (!namesAreEqual || !portsAreEqual) {
+                if (!namesAreEqual) {
                     linksToRemove.add(existingLink);
                 }
             }

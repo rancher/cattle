@@ -20,7 +20,9 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,16 +56,7 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
         criteria.put(LOAD_BALANCER_TARGET.IP_ADDRESS, targetInput.getIpAddress());
         criteria.put(LOAD_BALANCER_TARGET.INSTANCE_ID, targetInput.getInstanceId());
         criteria.put(LOAD_BALANCER_TARGET.REMOVED, null);
-        List<? extends LoadBalancerTarget> targets = objectManager.find(LoadBalancerTarget.class, criteria);
-        for (LoadBalancerTarget target : targets) {
-            List<? extends String> ports = DataAccessor.fields(target).
-            withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
-                    .asList(jsonMapper, String.class);
-            if (ports.containsAll(targetInput.getPorts()) && targetInput.getPorts().containsAll(ports)) {
-                return target;
-            }
-        }
-        return null;
+        return objectManager.findAny(LoadBalancerTarget.class, criteria);
     }
 
     @Override
@@ -96,7 +89,7 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
                 .on(LOAD_BALANCER_TARGET.INSTANCE_ID.eq(INSTANCE.ID)
                         .and(LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId))
                         .and(LOAD_BALANCER_TARGET.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE)))
+                                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
                 .where(INSTANCE.REMOVED.isNull().and(
                         INSTANCE.STATE.in(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING,
                                 InstanceConstants.STATE_RESTARTING)))
@@ -111,7 +104,7 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
                 .where(LOAD_BALANCER_TARGET.REMOVED.isNull()
                         .and(
                         LOAD_BALANCER_TARGET.STATE.in(CommonStatesConstants.ACTIVATING,
-                                        CommonStatesConstants.ACTIVE))
+                                        CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
                         .and(LOAD_BALANCER_TARGET.IP_ADDRESS.isNotNull())
                         .and(LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId)))
                 .fetchInto(LoadBalancerTargetRecord.class);
@@ -125,7 +118,7 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
                 .where(LOAD_BALANCER_TARGET.REMOVED.isNull()
                         .and(
                                 LOAD_BALANCER_TARGET.STATE.in(CommonStatesConstants.ACTIVATING,
-                                        CommonStatesConstants.ACTIVE))
+                                        CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
                         .and(LOAD_BALANCER_TARGET.INSTANCE_ID.isNotNull())
                         .and(LOAD_BALANCER_TARGET.LOAD_BALANCER_ID.eq(lbId)))
                 .fetchInto(LoadBalancerTargetRecord.class);
@@ -225,6 +218,13 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
                     LOAD_BALANCER_TARGET.INSTANCE_ID, toAdd.getInstanceId(),
                     LOAD_BALANCER_TARGET.ACCOUNT_ID, lb.getAccountId(),
                     LoadBalancerConstants.FIELD_LB_TARGET_PORTS, toAdd.getPorts());
+        } else {
+            List<? extends String> newPorts = toAdd.getPorts() != null ? toAdd.getPorts()
+                    : new ArrayList<String>();
+            DataUtils.getWritableFields(target).put(LoadBalancerConstants.FIELD_LB_TARGET_PORTS, newPorts);
+            objectManager.persist(target);
+            objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, target, null);
+
         }
     }
 

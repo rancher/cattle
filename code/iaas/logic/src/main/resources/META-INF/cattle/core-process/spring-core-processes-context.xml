@@ -126,7 +126,8 @@
 
     <!-- Load Balancer Target -->
     <process:process name="loadbalancertarget.create" resourceType="loadBalancerTarget" start="requested" transitioning="activating" done="active" />
-    <process:process name="loadbalancertarget.remove" resourceType="loadBalancerTarget" start="active,activating" transitioning="removing" done="removed" />
+    <process:process name="loadbalancertarget.remove" resourceType="loadBalancerTarget" start="active,activating,updating-active" transitioning="removing" done="removed" />
+    <process:process name="loadbalancertarget.update" resourceType="loadBalancerTarget" start="active,activating" transitioning="updating-active" done="active" />
 
     <!-- Load Balancer Host Map -->
     <process:process name="loadbalancerhostmap.create" resourceType="LoadBalancerHostMap" start="requested" transitioning="activating" done="active" />
@@ -163,7 +164,8 @@
     
     <!-- Service Discovery Service/Service map -->
     <process:process name="serviceconsumemap.create" resourceType="serviceConsumeMap" start="requested" transitioning="activating" done="active" />
-    <process:process name="serviceconsumemap.remove" resourceType="serviceConsumeMap" start="active,activating" transitioning="removing" done="removed" />
+    <process:process name="serviceconsumemap.remove" resourceType="serviceConsumeMap" start="active,activating,updating-active" transitioning="removing" done="removed" />
+    <process:process name="serviceconsumemap.update" resourceType="serviceConsumeMap" start="active,activating" transitioning="updating-active" done="active" />
     
       <!-- Instance healthcheck -->
     <process:process name="healthcheckinstance.create" resourceType="healthcheckInstance" start="requested" transitioning="activating" done="active" />

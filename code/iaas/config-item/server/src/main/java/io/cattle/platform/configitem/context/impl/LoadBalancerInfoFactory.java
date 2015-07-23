@@ -134,7 +134,9 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                 LoadBalancerTarget.class);
         Map<String, List<LoadBalancerTargetInfo>> uuidToTargetInfos = new HashMap<>();
         for (LoadBalancerTarget target : targets) {
-            if (!(target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVATING) || target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE))) {
+            if (!(target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVATING)
+                    || target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) || target.getState()
+                    .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE))) {
                 continue;
             }
             String ipAddress = target.getIpAddress();
