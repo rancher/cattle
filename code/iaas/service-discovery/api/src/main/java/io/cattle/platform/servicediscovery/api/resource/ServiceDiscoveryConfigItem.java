@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.resource;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.util.type.NamedUtils;
@@ -54,8 +55,7 @@ public class ServiceDiscoveryConfigItem {
             "net");
 
     public static final ServiceDiscoveryConfigItem LABELS = new ServiceDiscoveryConfigItem(
-            InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS,
-            true, true);
+            InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS);
 
     // CATTLE PARAMETERS
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale",
@@ -137,9 +137,15 @@ public class ServiceDiscoveryConfigItem {
         return null;
     }
 
-    public static ServiceDiscoveryConfigItem getServiceConfigItemByCattleName(String internalName) {
+    public static ServiceDiscoveryConfigItem getServiceConfigItemByCattleName(String internalName, Service service) {
         for (ServiceDiscoveryConfigItem serviceItem : supportedServiceConfigItems) {
             if (serviceItem.getCattleName() != null && serviceItem.getCattleName().equalsIgnoreCase(internalName)) {
+                // special handling for external service hostname
+                if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())
+                        && serviceItem.getCattleName().equalsIgnoreCase(HOSTNAME.cattleName)) {
+                    return new ServiceDiscoveryConfigItem(serviceItem.getCattleName(), serviceItem.getDockerName(),
+                            false, false);
+                }
                 return serviceItem;
             }
         }

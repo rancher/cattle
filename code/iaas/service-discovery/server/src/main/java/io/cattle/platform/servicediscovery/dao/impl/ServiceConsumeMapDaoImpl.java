@@ -5,7 +5,6 @@ import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
-
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -18,13 +17,18 @@ import io.cattle.platform.core.model.tables.records.InstanceLinkRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +41,9 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
 
     @Inject
     ObjectProcessManager objectProcessManager;
+
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public ServiceConsumeMap findMapToRemove(long serviceId, long consumedServiceId) {
@@ -156,6 +163,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
         ServiceConsumeMap map = findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
                 serviceLink.getName());
 
+        boolean update = false;
         if (map == null) {
             Map<Object,Object> properties = CollectionUtils.asMap(
                     (Object)SERVICE_CONSUME_MAP.SERVICE_ID,
@@ -170,11 +178,25 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
 
             map = objectManager.create(ServiceConsumeMap.class, objectManager.convertToPropertiesFor(ServiceConsumeMap.class,
                     properties));
+        } else {
+            if (service.getKind()
+                    .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+                LoadBalancerServiceLink newLbServiceLink = (LoadBalancerServiceLink) serviceLink;
+                List<? extends String> newPorts = newLbServiceLink.getPorts() != null ? newLbServiceLink.getPorts()
+                        : new ArrayList<String>();
+                DataUtils.getWritableFields(map).put(LoadBalancerConstants.FIELD_LB_TARGET_PORTS, newPorts);
+                objectManager.persist(map);
+                update = true;
+            }
         }
 
         if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
             objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
                     map, null);
+        }
+
+        if (update) {
+            objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, map, null);
         }
 
         return map;

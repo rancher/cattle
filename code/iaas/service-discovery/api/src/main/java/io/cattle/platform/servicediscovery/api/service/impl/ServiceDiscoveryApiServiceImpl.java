@@ -6,6 +6,7 @@ import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -121,11 +122,11 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             for (String launchConfigName : launchConfigNames) {
                 boolean isPrimaryConfig = launchConfigName
                         .equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-                Map<String, Object> rancherServiceData = ServiceDiscoveryUtil.getServiceDataAsMap(service,
+                Map<String, Object> cattleServiceData = ServiceDiscoveryUtil.getServiceDataAsMap(service,
                         launchConfigName, allocatorService);
                 Map<String, Object> composeServiceData = new HashMap<>();
-                for (String rancherService : rancherServiceData.keySet()) {
-                    translateRancherToCompose(forDockerCompose, rancherServiceData, composeServiceData, rancherService);
+                for (String cattleService : cattleServiceData.keySet()) {
+                    translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service);
                 }
 
                 if (forDockerCompose) {
@@ -134,6 +135,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     populateVolumesForService(service, launchConfigName, composeServiceData);
                     addExtraComposeParameters(service, launchConfigName, composeServiceData);
                     populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
+                    populateLoadBalancerServiceLabels(service, launchConfigName, composeServiceData);
                 }
 
                 if (!composeServiceData.isEmpty()) {
@@ -142,6 +144,36 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             }
         }
         return data;
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected void populateLoadBalancerServiceLabels(Service service,
+            String launchConfigName, Map<String, Object> composeServiceData) {
+        if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+            return;
+        }
+
+        Map<String, String> labels = new HashMap<>();
+        if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
+            labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
+        }
+        // get all consumed services maps
+        List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
+        // for each port, populate the label
+        for (ServiceConsumeMap map : consumedServiceMaps) {
+            Service consumedService = objectManager.loadResource(Service.class, map.getConsumedServiceId());
+            List<String> ports = DataAccessor.fieldStringList(map, LoadBalancerConstants.FIELD_LB_TARGET_PORTS);
+            String labelName = ServiceDiscoveryConstants.LABEL_LB_TARGET + consumedService.getName();
+            StringBuilder bldr = new StringBuilder();
+            for (String port : ports) {
+                bldr.append(port).append(",");
+            }
+            labels.put(labelName, bldr.toString().substring(0, bldr.length() - 1));
+        }
+
+        if (!labels.isEmpty()) {
+            composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -273,10 +305,10 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     protected void translateRancherToCompose(boolean forDockerCompose, Map<String, Object> rancherServiceData,
-            Map<String, Object> composeServiceData, String rancherService) {
-        ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(rancherService);
+            Map<String, Object> composeServiceData, String cattleName, Service service) {
+        ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(cattleName, service);
         if (item != null && item.isDockerComposeProperty() == forDockerCompose) {
-            Object value = rancherServiceData.get(rancherService);
+            Object value = rancherServiceData.get(cattleName);
             boolean export = false;
             if (value instanceof List) {
                 if (!((List<?>) value).isEmpty()) {

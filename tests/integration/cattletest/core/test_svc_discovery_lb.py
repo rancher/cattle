@@ -591,18 +591,16 @@ def test_set_service_links(client, context):
     service_link2 = {"serviceId": service3.id, "ports": ["a.com:101"]}
     lb_service = lb_service. \
         setservicelinks(serviceLinks=[service_link1, service_link2])
-    _validate_remove_service_link(client, lb_service, service2, 1)
-    _validate_remove_service_link(client, lb_service, service3, 1)
     _validate_add_service_link(client, lb_service, service2,
                                ports=["a.com:100"])
     _validate_add_service_link(client, lb_service, service3,
                                ports=["a.com:101"])
 
-    # set service2 links for service1
+    # remove link for service3 from the list of links
     service_link = {"serviceId": service2.id, "ports": ["a.com:100"]}
     lb_service = lb_service. \
         setservicelinks(serviceLinks=[service_link])
-    _validate_remove_service_link(client, lb_service, service3, 2)
+    _validate_remove_service_link(client, lb_service, service3, 1)
 
     # try to set duplicated service links
     with pytest.raises(ApiError) as e:
@@ -614,7 +612,7 @@ def test_set_service_links(client, context):
 
     # set empty service link set
     lb_service = lb_service.setservicelinks(serviceLinks=[])
-    _validate_remove_service_link(client, lb_service, service2, 2)
+    _validate_remove_service_link(client, lb_service, service2, 1)
 
 
 def test_modify_link(client, context):
@@ -644,7 +642,6 @@ def test_modify_link(client, context):
     service_link = {"serviceId": service.id, "ports": ["b.com:100"]}
     lb_service = lb_service. \
         setservicelinks(serviceLinks=[service_link])
-    _validate_remove_service_link(client, lb_service, service, 1)
     _validate_add_service_link(client, lb_service,
                                service, ports=["b.com:100"])
 
@@ -1056,11 +1053,11 @@ def _validate_add_service_link(client, service, consumedService, ports=None):
         list_serviceConsumeMap(serviceId=service.id,
                                consumedServiceId=consumedService.id)
 
-    assert len(service_maps) > 0
+    assert len(service_maps) == 1
 
     if ports:
         for value in service_maps:
-            if (value.ports == ports):
+            if value.ports == ports:
                 service_map = value
                 break
 

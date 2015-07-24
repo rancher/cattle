@@ -777,16 +777,10 @@ def test_link_services_from_diff_env(client, context):
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
-    # try to link
-    with pytest.raises(ApiError) as e:
-        service_link = {"serviceId": service2.id}
-        service1.addservicelink(serviceLink=service_link)
-
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidReference'
-    assert e.value.error.fieldName == 'serviceId'
-
-    env1.remove()
+    # try to link - should work
+    service_link = {"serviceId": service2.id}
+    service1.addservicelink(serviceLink=service_link)
+    _validate_add_service_link(service1, service2, client)
 
 
 def test_set_service_links(client, context):
@@ -839,7 +833,7 @@ def test_set_service_links(client, context):
     service1 = service1.setservicelinks(serviceLinks=[])
     _validate_remove_service_link(service1, service2, client, "link3")
 
-    # try to link to the service from diff environment
+    # try to link to the service from diff environment - should work
     env2 = client.create_environment(name=random_str())
     env2 = client.wait_success(env2)
 
@@ -848,13 +842,8 @@ def test_set_service_links(client, context):
                                      launchConfig=launch_config)
     service4 = client.wait_success(service4)
 
-    with pytest.raises(ApiError) as e:
-        service_link = {"serviceId": service4.id}
-        service1.setservicelinks(serviceLinks=[service_link])
-
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidReference'
-    assert e.value.error.fieldName == 'serviceId'
+    service_link = {"serviceId": service4.id}
+    service1.setservicelinks(serviceLinks=[service_link])
 
     env1.remove()
     env2.remove()
