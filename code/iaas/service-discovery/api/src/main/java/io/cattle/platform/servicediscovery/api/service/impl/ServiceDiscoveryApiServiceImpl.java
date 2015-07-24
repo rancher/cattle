@@ -7,6 +7,7 @@ import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -26,7 +27,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -205,61 +205,28 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     private void populateLinksForService(Service service, Collection<Long> servicesToExportIds,
             Map<String, Object> composeServiceData) {
         List<String> serviceLinksWithNames = new ArrayList<>();
-        List<Service> externalLinksServices = new ArrayList<>();
+        List<String> externalLinksServices = new ArrayList<>();
         List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
         for (ServiceConsumeMap consumedServiceMap : consumedServiceMaps) {
             Service consumedService = objectManager.findOne(Service.class, SERVICE.ID,
                     consumedServiceMap.getConsumedServiceId());
 
+            String linkName = consumedService.getName() + ":" + (consumedServiceMap.getName() != null ? consumedServiceMap.getName() : consumedService
+                    .getName());
             if (servicesToExportIds.contains(consumedServiceMap.getConsumedServiceId())) {
-                String linkName = consumedServiceMap.getName() != null ? consumedServiceMap.getName() : consumedService
-                        .getName();
-                serviceLinksWithNames.add(consumedService.getName() + ":" + linkName);
-            } else {
-                externalLinksServices.add(consumedService);
+                serviceLinksWithNames.add(linkName);
+            } else if (!consumedService.getEnvironmentId().equals(service.getEnvironmentId())) {
+                Environment externalEnvironment = objectManager.loadResource(Environment.class,
+                        consumedService.getEnvironmentId());
+                externalLinksServices.add(externalEnvironment.getName() + "/" + linkName);
             }
         }
         if (!serviceLinksWithNames.isEmpty()) {
             composeServiceData.put(ServiceDiscoveryConfigItem.LINKS.getDockerName(), serviceLinksWithNames);
         }
-        populateExternalLinksForService(service, composeServiceData, externalLinksServices);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void populateExternalLinksForService(Service service, Map<String, Object> composeServiceData,
-            List<Service> externalLinksServices) {
-
-        Map<String, String> instanceLinksWithNamesMaps = new LinkedHashMap<String, String>();
-        Map<String, Object> instanceLinksWithIds = (Map<String, Object>) composeServiceData
-                .get(ServiceDiscoveryConfigItem.EXTERNALLINKS
-                        .getDockerName());
-        if (instanceLinksWithIds != null) {
-            for (String linkName : instanceLinksWithIds.keySet()) {
-                Instance instance = objectManager.findOne(Instance.class, INSTANCE.ID,
-                        instanceLinksWithIds.get(linkName), INSTANCE.REMOVED,
-                        null);
-                String instanceName = ServiceDiscoveryUtil.getInstanceName(instance);
-                if (instanceName != null) {
-                    instanceLinksWithNamesMaps.put(instanceName, linkName);
-                }
-            }
-        }
 
         if (!externalLinksServices.isEmpty()) {
-            List<Instance> instances = objectManager.mappedChildren(service, Instance.class);
-            for (Instance instance : instances) {
-                String instanceName = ServiceDiscoveryUtil.getInstanceName(instance);
-                if (instanceName != null) {
-                    instanceLinksWithNamesMaps.put(instanceName, instanceName);
-                }
-            }
-        }
-        if (!instanceLinksWithNamesMaps.isEmpty()) {
-            List<String> instanceLinksWithNames = new ArrayList<>();
-            for (String instanceLinkName : instanceLinksWithNamesMaps.keySet()) {
-                instanceLinksWithNames.add(instanceLinksWithNamesMaps.get(instanceLinkName) + ":" + instanceLinkName);
-            }
-            composeServiceData.put(ServiceDiscoveryConfigItem.EXTERNALLINKS.getDockerName(), instanceLinksWithNames);
+            composeServiceData.put(ServiceDiscoveryConfigItem.EXTERNALLINKS.getDockerName(), externalLinksServices);
         }
     }
 
