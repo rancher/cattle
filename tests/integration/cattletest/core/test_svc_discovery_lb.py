@@ -1,5 +1,6 @@
 from common_fixtures import *  # NOQA
 from cattle import ApiError
+import yaml
 
 
 @pytest.fixture(scope='module')
@@ -812,6 +813,54 @@ def test_private_lb(client, context):
     assert listeners[0].sourceProtocol == 'http'
     assert listeners[0].privatePort == 9998
     assert listeners[0].targetPort == 9997
+
+
+def test_export_config(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    # create web, db lb services
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    web_service = client. \
+        create_service(name="web",
+                       environmentId=env.id,
+                       launchConfig=launch_config)
+
+    web_service = client.wait_success(web_service)
+
+    web_service1 = client. \
+        create_service(name="web1",
+                       environmentId=env.id,
+                       launchConfig=launch_config)
+
+    web_service1 = client.wait_success(web_service1)
+
+    lb_launch_config = {"imageUuid": image_uuid,
+                        "ports": [8081, '909:1001']}
+    lb_service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=lb_launch_config)
+    lb_service = client.wait_success(lb_service)
+    assert lb_service.state == "inactive"
+
+    # map web service to lb service - early binding,
+    # before services are activated
+    service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
+    service_link1 = {"serviceId": web_service1.id}
+    lb_service = lb_service.addservicelink(serviceLink=service_link)
+    lb_service = lb_service.addservicelink(serviceLink=service_link1)
+    compose_config = env.exportconfig()
+    assert compose_config is not None
+    document = yaml.load(compose_config.dockerComposeConfig)
+    assert len(document[lb_service.name]['links']) == 2
+    assert len(document[lb_service.name]['labels']) == 1
+    labels = {"io.rancher.loadbalancer.target.web": "a.com:90"}
+    links = ["web:web", "web1:web1"]
+    assert document[lb_service.name]['labels'] == labels
+    assert document[lb_service.name]['links'] == links
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
