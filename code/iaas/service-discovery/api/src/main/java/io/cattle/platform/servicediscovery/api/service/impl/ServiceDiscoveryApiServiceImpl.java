@@ -168,7 +168,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             for (String port : ports) {
                 bldr.append(port).append(",");
             }
-            labels.put(labelName, bldr.toString().substring(0, bldr.length() - 1));
+            if (bldr.length() > 0) {
+                labels.put(labelName, bldr.toString().substring(0, bldr.length() - 1));
+            }
         }
 
         if (!labels.isEmpty()) {

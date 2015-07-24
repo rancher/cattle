@@ -4,3 +4,4 @@ websocket-client==0.23.0
 flake8
 pytest==2.7.1
 pytest-xdist
+pyyaml
