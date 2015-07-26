@@ -22,7 +22,6 @@ public class ExceptionHandler implements ApiRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ExceptionHandler.class);
 
-
     Properties standardErrorCodes;
     String messageLocation;
     String messageLocationOverride;
@@ -35,7 +34,7 @@ public class ExceptionHandler implements ApiRequestHandler {
     @Override
     public boolean handleException(ApiRequest apiRequest, Throwable t) throws IOException, ServletException {
         ApiError error = getError(apiRequest, t);
-        if ( error != null ) {
+        if (error != null) {
             apiRequest.setResponseCode(error.getStatus());
             apiRequest.setResponseObject(error);
             return true;
@@ -44,7 +43,7 @@ public class ExceptionHandler implements ApiRequestHandler {
     }
 
     protected ApiError getError(ApiRequest apiRequest, Throwable t) throws IOException, ServletException {
-        if ( t instanceof ClientVisibleException ) {
+        if (t instanceof ClientVisibleException) {
             return getError(apiRequest, (ClientVisibleException)t);
         } else {
             return getUnknownError(apiRequest, t);
@@ -52,7 +51,7 @@ public class ExceptionHandler implements ApiRequestHandler {
     }
 
     protected ApiError getError(ApiRequest apiRequest, ClientVisibleException e) {
-        if ( e.getApiError() != null ) {
+        if (e.getApiError() != null) {
             return e.getApiError();
         }
 
@@ -62,7 +61,7 @@ public class ExceptionHandler implements ApiRequestHandler {
 
     protected ApiError getUnknownError(ApiRequest apiRequest, Throwable t) throws IOException, ServletException {
         log.error("Exception in API for request [{}]", apiRequest, t);
-        if ( throwUnknownErrors ) {
+        if (throwUnknownErrors) {
             ExceptionUtils.rethrowRuntime(t);
             ExceptionUtils.rethrow(t, IOException.class);
             ExceptionUtils.rethrow(t, ServletException.class);
@@ -73,16 +72,16 @@ public class ExceptionHandler implements ApiRequestHandler {
     }
 
     protected ApiError populateError(ErrorImpl error, Locale locale) {
-        if ( error.getCode() == null) {
-            if ( standardErrorCodes != null ) {
+        if (error.getCode() == null) {
+            if (standardErrorCodes != null) {
                 error.setCode(standardErrorCodes.getProperty(Integer.toString(error.getStatus())));
             }
-            if ( error.getCode() == null ) {
+            if (error.getCode() == null) {
                 error.setCode(Integer.toString(error.getStatus()));
             }
         }
 
-        if ( error.getMessage() == null ) {
+        if (error.getMessage() == null) {
             error.setMessage(error.getCode());
         }
 
@@ -93,14 +92,14 @@ public class ExceptionHandler implements ApiRequestHandler {
     }
 
     protected String getMessage(String messageCode, Locale locale) {
-        if ( messageCode == null ) {
+        if (messageCode == null) {
             return messageCode;
         }
 
         String message = null;
         message = getLocalizedMessage(messageLocationOverride, messageCode, locale);
 
-        if ( message == null ) {
+        if (message == null) {
             message = getLocalizedMessage(messageLocation, messageCode, locale);
         }
 
@@ -108,11 +107,11 @@ public class ExceptionHandler implements ApiRequestHandler {
     }
 
     protected String getLocalizedMessage(String location, String messageCode, Locale locale) {
-        if ( locale == null || location == null )
+        if (locale == null || location == null)
             return null;
 
         ResourceBundle bundle = ResourceBundle.getBundle(messageLocation, locale);
-        if ( bundle != null ) {
+        if (bundle != null) {
             try {
                 return bundle.getString(messageCode);
             } catch (MissingResourceException e) {

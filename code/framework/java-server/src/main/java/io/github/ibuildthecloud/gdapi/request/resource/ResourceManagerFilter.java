@@ -18,7 +18,7 @@ public interface ResourceManagerFilter {
 
     Object list(String type, ApiRequest request, ResourceManager next);
 
-    List<?> list(String type, Map<Object,Object> criteria, ListOptions options, ResourceManager next);
+    List<?> list(String type, Map<Object, Object> criteria, ListOptions options, ResourceManager next);
 
     Object create(String type, ApiRequest request, ResourceManager next);
 

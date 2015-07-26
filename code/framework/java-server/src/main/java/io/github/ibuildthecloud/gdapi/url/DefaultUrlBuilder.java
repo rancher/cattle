@@ -36,8 +36,7 @@ public final class DefaultUrlBuilder implements UrlBuilder {
         IdFormatter formatter = ApiContext.getContext().getIdFormatter();
 
         Schema schema = schemaFactory.getSchema(type);
-        return schema == null ? null : constructBasicUrl(schema.getPluralName(),
-                formatter.formatId(schema.getId(), id).toString());
+        return schema == null ? null : constructBasicUrl(schema.getPluralName(), formatter.formatId(schema.getId(), id).toString());
     }
 
     @Override
@@ -45,7 +44,7 @@ public final class DefaultUrlBuilder implements UrlBuilder {
         IdFormatter formatter = ApiContext.getContext().getIdFormatter();
 
         Schema schema = schemaFactory.getSchema(type);
-        if ( schema == null ) {
+        if (schema == null) {
             return constructBasicUrl(false, type, formatter.formatId(type, id).toString());
         } else {
             return constructBasicUrl(schema.getPluralName(), formatter.formatId(schema.getId(), id).toString());
@@ -61,19 +60,15 @@ public final class DefaultUrlBuilder implements UrlBuilder {
     }
 
     protected URL constructBasicUrl(boolean lowercase, String... parts) {
-        StringBuilder builder = new StringBuilder()
-            .append(apiRequest.getResponseUrlBase())
-            .append("/")
-            .append(apiRequest.getApiVersion())
-            .append(subContext);
+        StringBuilder builder = new StringBuilder().append(apiRequest.getResponseUrlBase()).append("/").append(apiRequest.getApiVersion()).append(subContext);
 
-        for ( String part : parts ) {
-            if ( part == null )
+        for (String part : parts) {
+            if (part == null)
                 return null;
             builder.append("/").append(part);
         }
 
-        if ( lowercase ) {
+        if (lowercase) {
             return toURL(builder.toString().toLowerCase());
         } else {
             return toURL(builder.toString());
@@ -98,7 +93,7 @@ public final class DefaultUrlBuilder implements UrlBuilder {
 
     @Override
     public URL resourceLink(Class<?> type, String id, String name) {
-        if ( name == null )
+        if (name == null)
             return null;
 
         IdFormatter formatter = ApiContext.getContext().getIdFormatter();
@@ -106,13 +101,12 @@ public final class DefaultUrlBuilder implements UrlBuilder {
         String typeName = schemaFactory.getSchemaName(type);
         String pluralName = schemaFactory.getPluralName(typeName);
 
-        return constructBasicUrl(pluralName, id == null ? null : formatter.formatId(typeName, id).toString(),
-                name.toLowerCase());
+        return constructBasicUrl(pluralName, id == null ? null : formatter.formatId(typeName, id).toString(), name.toLowerCase());
     }
 
     @Override
     public URL resourceLink(Resource resource, String name) {
-        if ( name == null )
+        if (name == null)
             return null;
 
         return constructBasicUrl(getPluralName(resource), resource.getId(), name.toLowerCase());
@@ -129,8 +123,7 @@ public final class DefaultUrlBuilder implements UrlBuilder {
 
     @Override
     public URL actionLink(Resource resource, String name) {
-        return constructBasicUrl(getPluralName(resource), resource.getId(),
-                "?" + Resource.ACTION + "=" + name);
+        return constructBasicUrl(getPluralName(resource), resource.getId(), "?" + Resource.ACTION + "=" + name);
     }
 
     @Override
@@ -149,7 +142,7 @@ public final class DefaultUrlBuilder implements UrlBuilder {
         StringBuilder buffer = fullUrlToAppendQueryString(Collection.MARKER);
 
         Object formatted = id;
-        if ( id != null && id.length() > 0 && id.charAt(0) != 'm' ) {
+        if (id != null && id.length() > 0 && id.charAt(0) != 'm') {
             formatted = formatter.formatId(Collection.MARKER, id);
         }
 
@@ -165,7 +158,7 @@ public final class DefaultUrlBuilder implements UrlBuilder {
         String queryString = removeParameter(apiRequest.getQueryString(), removes);
         buffer.append(queryString);
 
-        if ( queryString.length() > 0 ) {
+        if (queryString.length() > 0) {
             buffer.append("&");
         }
 
@@ -181,10 +174,10 @@ public final class DefaultUrlBuilder implements UrlBuilder {
     }
 
     protected String removeParameter(String queryString, String... names) {
-        if ( queryString == null )
+        if (queryString == null)
             return "";
 
-        for ( String name : names ) {
+        for (String name : names) {
             String pattern = String.format(REMOVE_PARAM_REGEXP, Pattern.quote(name));
             queryString = queryString.replaceAll(pattern, "");
         }
@@ -194,10 +187,7 @@ public final class DefaultUrlBuilder implements UrlBuilder {
 
     @Override
     public URL version(String version) {
-        StringBuilder builder = new StringBuilder()
-        .append(apiRequest.getResponseUrlBase())
-        .append("/")
-        .append(version);
+        StringBuilder builder = new StringBuilder().append(apiRequest.getResponseUrlBase()).append("/").append(version);
 
         return toURL(builder.toString());
     }
@@ -209,13 +199,10 @@ public final class DefaultUrlBuilder implements UrlBuilder {
 
     @Override
     public URL staticResource(String... parts) {
-        StringBuilder builder = new StringBuilder()
-            .append(apiRequest.getResponseUrlBase())
-            .append("/")
-            .append(apiRequest.getStaticResourceBase());
+        StringBuilder builder = new StringBuilder().append(apiRequest.getResponseUrlBase()).append("/").append(apiRequest.getStaticResourceBase());
 
-        for ( String part : parts ) {
-            if ( part == null )
+        for (String part : parts) {
+            if (part == null)
                 return null;
             builder.append("/").append(part);
         }

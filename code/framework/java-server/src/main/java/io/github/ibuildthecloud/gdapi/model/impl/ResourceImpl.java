@@ -19,7 +19,7 @@ public class ResourceImpl implements Resource {
     public ResourceImpl() {
     }
 
-    public ResourceImpl(String id, String type, Map<String,Object> fields) {
+    public ResourceImpl(String id, String type, Map<String, Object> fields) {
         this.id = id;
         this.type = type;
         this.fields = fields;
@@ -37,9 +37,9 @@ public class ResourceImpl implements Resource {
 
     @Override
     public Map<String, URL> getLinks() {
-        if ( ! links.containsKey(UrlBuilder.SELF) ) {
+        if (!links.containsKey(UrlBuilder.SELF)) {
             URL self = ApiContext.getUrlBuilder().resourceReferenceLink(this);
-            if ( self != null ) {
+            if (self != null) {
                 links.put(UrlBuilder.SELF, self);
             }
         }

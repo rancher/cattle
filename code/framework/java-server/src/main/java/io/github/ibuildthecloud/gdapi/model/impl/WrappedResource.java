@@ -7,7 +7,6 @@ import io.github.ibuildthecloud.gdapi.model.FieldType;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.util.TypeUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -15,7 +14,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.xml.bind.annotation.XmlTransient;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class WrappedResource extends ResourceImpl implements Resource {
 
@@ -33,8 +35,8 @@ public class WrappedResource extends ResourceImpl implements Resource {
         this(idFormatter, schema, obj, additionalFields, null, method);
     }
 
-    public WrappedResource(IdFormatter idFormatter, Schema schema, Object obj, Map<String, Object> additionalFields, Set<String> priorityFieldNames, String
-     method) {
+    public WrappedResource(IdFormatter idFormatter, Schema schema, Object obj, Map<String, Object> additionalFields, Set<String> priorityFieldNames,
+            String method) {
         super();
         this.schema = schema;
         this.resourceFields = schema.getResourceFields();
@@ -47,11 +49,11 @@ public class WrappedResource extends ResourceImpl implements Resource {
     }
 
     public WrappedResource(IdFormatter idFormatter, Schema schema, Object obj, String method) {
-        this(idFormatter, schema, obj, new HashMap<String,Object>(), method);
+        this(idFormatter, schema, obj, new HashMap<String, Object>(), method);
     }
 
     protected void addField(String key, Object value) {
-        if ( priorityFieldNames != null && priorityFieldNames.contains(key) ) {
+        if (priorityFieldNames != null && priorityFieldNames.contains(key)) {
             priorityFields.put(key, value);
         } else {
             fields.put(key, value);
@@ -59,54 +61,54 @@ public class WrappedResource extends ResourceImpl implements Resource {
     }
 
     protected void init() {
-        for ( Map.Entry<String,Field> entry : resourceFields.entrySet() ) {
+        for (Map.Entry<String, Field> entry : resourceFields.entrySet()) {
             String name = entry.getKey();
-            if ( name.equals(TypeUtils.ID_FIELD) ) {
+            if (name.equals(TypeUtils.ID_FIELD)) {
                 continue;
             }
             Field field = entry.getValue();
-            if ( ! field.isIncludeInList() || (!StringUtils.equalsIgnoreCase(method, "post") && field.isReadOnCreateOnly())) {
+            if (!field.isIncludeInList() || (!StringUtils.equalsIgnoreCase(method, "post") && field.isReadOnCreateOnly())) {
                 continue;
             }
             Object value = additionalFields.remove(name);
-            if ( value == null ) {
+            if (value == null) {
                 value = field.getValue(obj);
             }
             addField(name, IdFormatterUtils.formatReference(field, idFormatter, value));
-            if ( createTsFields && field.getTypeEnum() == FieldType.DATE && value instanceof Date ) {
+            if (createTsFields && field.getTypeEnum() == FieldType.DATE && value instanceof Date) {
                 addField(name + "TS", ((Date)value).getTime());
             }
         }
 
-        for ( Map.Entry<String, Object> entry : additionalFields.entrySet() ) {
+        for (Map.Entry<String, Object> entry : additionalFields.entrySet()) {
             Object value = entry.getValue();
             String key = entry.getKey();
             Field field = resourceFields.get(key);
-            if ( (field != null && field.isIncludeInList()) || isResource(value) ) {
+            if ((field != null && field.isIncludeInList()) || isResource(value)) {
                 addField(key, value);
             }
         }
 
         Object id = idFormatter.formatId(getType(), getIdValue());
-        if ( id != null ) {
+        if (id != null) {
             setId(id.toString());
         }
 
-        if ( priorityFields.size() > 0 ) {
-            Map<String,Object> sorted = new LinkedHashMap<String, Object>(priorityFields);
+        if (priorityFields.size() > 0) {
+            Map<String, Object> sorted = new LinkedHashMap<String, Object>(priorityFields);
             sorted.putAll(fields);
             fields = sorted;
         }
     }
 
     protected boolean isResource(Object obj) {
-        if ( obj instanceof Resource ) {
+        if (obj instanceof Resource) {
             return true;
         }
 
-        if ( obj instanceof List<?> ) {
+        if (obj instanceof List<?>) {
             List<?> list = (List<?>)obj;
-            if ( list.size() == 0 || isResource(list.get(0)) ) {
+            if (list.size() == 0 || isResource(list.get(0))) {
                 return true;
             }
         }

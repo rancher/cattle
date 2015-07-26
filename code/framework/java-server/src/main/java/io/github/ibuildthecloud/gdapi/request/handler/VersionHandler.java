@@ -22,17 +22,17 @@ public class VersionHandler extends AbstractResponseGenerator {
             SchemaFactory schemaFactory = ApiContext.getSchemaFactory();
             VersionImpl version = new VersionImpl(request.getApiVersion());
 
-            Map<String,URL> links = new TreeMap<String, URL>();
+            Map<String, URL> links = new TreeMap<String, URL>();
             version.setLinks(links);
             links.put(UrlBuilder.SELF, urlBuilder.current());
 
-            for ( Schema schema : schemaFactory.listSchemas() ) {
-                if ( ! schema.getCollectionMethods().contains(Method.GET.toString()) ) {
+            for (Schema schema : schemaFactory.listSchemas()) {
+                if (!schema.getCollectionMethods().contains(Method.GET.toString())) {
                     continue;
                 }
 
                 URL link = urlBuilder.resourceCollection(schema.getId());
-                if ( link != null ) {
+                if (link != null) {
                     links.put(schema.getPluralName(), link);
                 }
             }

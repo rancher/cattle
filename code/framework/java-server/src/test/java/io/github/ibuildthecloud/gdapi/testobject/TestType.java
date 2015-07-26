@@ -37,7 +37,7 @@ public class TestType {
     String typePassword;
     String typeString;
     String[] typeArray;
-    List<Map<String,String>> typeList;
+    List<Map<String, String>> typeList;
     Map<String, String> typeMap;
     List<TestTypeCRUD> typeListCrud;
     IdRef<TestType> typeReference;
@@ -49,7 +49,7 @@ public class TestType {
     String invalidChars;
     IdRef<TestTypeCRUD> testTypeCrudId;
     TestTypeCRUD testTypeCrud;
-    Map<String,Object> typeMapObject;
+    Map<String, Object> typeMapObject;
     List<TestEnum> testEnumList;
 
     public List<TestEnum> getTestEnumList() {

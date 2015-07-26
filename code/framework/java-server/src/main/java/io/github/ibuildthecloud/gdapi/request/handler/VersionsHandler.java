@@ -20,13 +20,13 @@ public class VersionsHandler extends AbstractResponseGenerator {
 
     @Override
     protected void generate(ApiRequest request) throws IOException {
-        if ( request.getRequestVersion() != null )
+        if (request.getRequestVersion() != null)
             return;
 
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
 
         List<Resource> apiVersions = new ArrayList<Resource>();
-        for ( String version : versions.getVersions() ) {
+        for (String version : versions.getVersions()) {
             apiVersions.add(new VersionImpl(version));
         }
 

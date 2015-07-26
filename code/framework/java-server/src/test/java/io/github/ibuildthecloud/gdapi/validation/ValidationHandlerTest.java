@@ -33,7 +33,7 @@ public class ValidationHandlerTest {
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 
-        Map<String,Object> input = new HashMap<String, Object>();
+        Map<String, Object> input = new HashMap<String, Object>();
         input.put("test", null);
         request.setRequestObject(input);
 
@@ -54,14 +54,14 @@ public class ValidationHandlerTest {
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 
-        Map<String,Object> input = new HashMap<String, Object>();
+        Map<String, Object> input = new HashMap<String, Object>();
         input.put("test", "three");
         request.setRequestObject(input);
 
         try {
             handler.validateOperationField(schema, request, true, context);
             fail();
-        } catch ( ClientVisibleException e ) {
+        } catch (ClientVisibleException e) {
             assertEquals(ValidationErrorCodes.INVALID_OPTION, e.getApiError().getCode());
         }
 
@@ -76,27 +76,26 @@ public class ValidationHandlerTest {
         factory.getTypes().add(SubType.class);
         factory.init();
 
-
         ApiRequest request = new ApiRequest(null, null, null);
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 
         context.schemaFactory = factory;
 
-        Map<String,Object> childType = new HashMap<String, Object>();
+        Map<String, Object> childType = new HashMap<String, Object>();
         childType.put("testField", "abc");
         childType.put("notWrite", "xyz");
 
-        Map<String,Object> input = new HashMap<String, Object>();
+        Map<String, Object> input = new HashMap<String, Object>();
         input.put("subType", childType);
 
         request.setRequestObject(input);
 
         handler.validateOperationField(factory.getSchema(ParentType.class), request, true, context);
 
-        Map<String,Object> result = RequestUtils.toMap(request.getRequestObject());
+        Map<String, Object> result = RequestUtils.toMap(request.getRequestObject());
         @SuppressWarnings("unchecked")
-        Map<String,Object> childData = (Map<String,Object>)result.get("subType");
+        Map<String, Object> childData = (Map<String, Object>)result.get("subType");
 
         assertTrue(childData != null);
     }
@@ -109,35 +108,33 @@ public class ValidationHandlerTest {
         factory.getTypes().add(SubType.class);
         factory.init();
 
-
         ApiRequest request = new ApiRequest(null, null, null);
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 
         context.schemaFactory = factory;
 
-        Map<String,Object> childType = new HashMap<String, Object>();
+        Map<String, Object> childType = new HashMap<String, Object>();
         childType.put("testField", "abc");
         childType.put("notWrite", "xyz");
 
-        Map<String,Object> childType2 = new HashMap<String, Object>();
+        Map<String, Object> childType2 = new HashMap<String, Object>();
         childType2.put("testField", "abc2");
         childType2.put("notWrite", "xyz");
 
-        Map<String,Object> input = new HashMap<String, Object>();
+        Map<String, Object> input = new HashMap<String, Object>();
         input.put("subTypes", Arrays.asList(childType, childType2));
 
         request.setRequestObject(input);
 
         handler.validateOperationField(factory.getSchema(ParentType.class), request, true, context);
 
-        Map<String,Object> result = RequestUtils.toMap(request.getRequestObject());
-        @SuppressWarnings("unchecked")
+        Map<String, Object> result = RequestUtils.toMap(request.getRequestObject());
         List<Object> childData = (List<Object>)result.get("subTypes");
 
         assertTrue(childData != null);
-        assertEquals("abc", ((Map<String,Object>)childData.get(0)).get("testField"));
-        assertEquals("abc2", ((Map<String,Object>)childData.get(1)).get("testField"));
+        assertEquals("abc", ((Map<String, Object>)childData.get(0)).get("testField"));
+        assertEquals("abc2", ((Map<String, Object>)childData.get(1)).get("testField"));
     }
 
 }

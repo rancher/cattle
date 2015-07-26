@@ -33,30 +33,30 @@ public class BodyParserRequestHandler extends AbstractApiRequestHandler implemen
     }
 
     protected Object getObject(ApiRequest request) throws IOException {
-        if ( ! RequestUtils.mayHaveBody(request.getMethod()) )
+        if (!RequestUtils.mayHaveBody(request.getMethod()))
             return null;
 
-        if (! shouldBeParsed(request)) {
+        if (!shouldBeParsed(request)) {
             return null;
         }
-       
+
         InputStream is = request.getInputStream();
-        if ( is == null ) {
+        if (is == null) {
             return null;
         }
 
         byte[] content = IOUtils.toByteArray(is);
 
-        if ( content.length == 0 )
+        if (content.length == 0)
             return null;
 
         try {
             Object body = jsonMarshaller.readValue(content);
 
-            if ( isAllowedType(body) ) {
+            if (isAllowedType(body)) {
                 return body;
             }
-        } catch ( IOException e ) {
+        } catch (IOException e) {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, ValidationErrorCodes.INVALID_BODY_CONTENT);
         }
 
@@ -69,8 +69,8 @@ public class BodyParserRequestHandler extends AbstractApiRequestHandler implemen
         }
 
         boolean accepted = false;
-        for ( Class<?> type : allowedTypes ) {
-            if ( type.isAssignableFrom(obj.getClass()) ) {
+        for (Class<?> type : allowedTypes) {
+            if (type.isAssignableFrom(obj.getClass())) {
                 accepted = true;
                 break;
             }
@@ -82,18 +82,18 @@ public class BodyParserRequestHandler extends AbstractApiRequestHandler implemen
     protected boolean shouldBeParsed(ApiRequest request) {
         return true;
     }
-    
+
     protected Object merge(Object body, ApiRequest request) {
-        if ( body instanceof Map ) {
+        if (body instanceof Map) {
             @SuppressWarnings("unchecked")
-            Map<String,Object> map = (Map<String, Object>)body;
+            Map<String, Object> map = (Map<String, Object>)body;
             return mergeMap(map, request);
-        } else if ( body instanceof List ){
+        } else if (body instanceof List) {
             @SuppressWarnings("unchecked")
             List<Object> list = (List<Object>)body;
             List<Object> result = new ArrayList<Object>(list.size());
-            for ( Object object : list ) {
-                if ( isAllowedType(object) ) {
+            for (Object object : list) {
+                if (isAllowedType(object)) {
                     result.add(merge(object, request));
                 }
             }
@@ -103,18 +103,19 @@ public class BodyParserRequestHandler extends AbstractApiRequestHandler implemen
         }
     }
 
-    protected Map<String,Object> mergeMap(Map<String,Object> overlay, ApiRequest request) {
-        Map<String,Object> result = new HashMap<String, Object>();
+    protected Map<String, Object> mergeMap(Map<String, Object> overlay, ApiRequest request) {
+        Map<String, Object> result = new HashMap<String, Object>();
 
-        /* Notice that this loop makes the value singular if it can.  This is because the request params
-         * are always a String[] from the HttpServletRequest.getParametersMap()
+        /*
+         * Notice that this loop makes the value singular if it can. This is because the request params are always a String[] from the
+         * HttpServletRequest.getParametersMap()
          */
-        for ( Map.Entry<String, Object> entry : request.getRequestParams().entrySet() ) {
+        for (Map.Entry<String, Object> entry : request.getRequestParams().entrySet()) {
             result.put(entry.getKey(), RequestUtils.makeSingularIfCan(entry.getValue()));
         }
 
-        if ( overlay != null ) {
-            for ( Map.Entry<String, Object> entry : overlay.entrySet() ) {
+        if (overlay != null) {
+            for (Map.Entry<String, Object> entry : overlay.entrySet()) {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
@@ -124,7 +125,7 @@ public class BodyParserRequestHandler extends AbstractApiRequestHandler implemen
 
     @PostConstruct
     public void init() {
-        if ( allowedTypes == null ) {
+        if (allowedTypes == null) {
             allowedTypes = new HashSet<Class<?>>();
             allowedTypes.add(Map.class);
             allowedTypes.add(List.class);

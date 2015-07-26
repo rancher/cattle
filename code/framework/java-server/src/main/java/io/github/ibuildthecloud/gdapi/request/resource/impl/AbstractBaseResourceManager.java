@@ -43,7 +43,7 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
 
     private static final String DEFAULT_CRITERIA = " _defaultCriteria";
 
-    Map<String,Map<String,String>> linksCache = Collections.synchronizedMap(new WeakHashMap<String,Map<String,String>>());
+    Map<String, Map<String, String>> linksCache = Collections.synchronizedMap(new WeakHashMap<String, Map<String, String>>());
     Set<Class<?>> resourcesToCreate = new HashSet<Class<?>>();
     protected ResourceManagerLocator locator;
     protected ResourceOutputFilterManager outputFilterManager;
@@ -62,7 +62,7 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
     }
 
     protected Object getByIdInternal(String type, String id, ListOptions options) {
-        Map<Object,Object> criteria = getDefaultCriteria(true, false, type);
+        Map<Object, Object> criteria = getDefaultCriteria(true, false, type);
         criteria.put(TypeUtils.ID_FIELD, id);
 
         return getFirstFromList(listInternal(ApiContext.getSchemaFactory(), type, criteria, options));
@@ -75,7 +75,7 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
 
     @Override
     public final List<?> list(String type, Map<Object, Object> criteria, ListOptions options) {
-        if ( ! isDefaultCriteria(criteria) ) {
+        if (!isDefaultCriteria(criteria)) {
             criteria = mergeCriteria(criteria, getDefaultCriteria(false, false, type));
         }
 
@@ -83,22 +83,22 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
         return RequestUtils.toList(result);
     }
 
-    protected Map<Object,Object> mergeCriteria(Map<Object,Object> criteria, Map<Object,Object> other) {
-        if ( criteria == null ) {
+    protected Map<Object, Object> mergeCriteria(Map<Object, Object> criteria, Map<Object, Object> other) {
+        if (criteria == null) {
             criteria = new LinkedHashMap<Object, Object>();
         }
 
-        for ( Map.Entry<Object, Object> entry : other.entrySet() ) {
+        for (Map.Entry<Object, Object> entry : other.entrySet()) {
             Object key = entry.getKey();
             Object value = entry.getValue();
             Object existing = criteria.get(key);
 
-            if ( existing instanceof List ) {
+            if (existing instanceof List) {
                 List<Object> newCondition = new ArrayList<Object>();
                 newCondition.add(value);
                 newCondition.addAll((List<?>)existing);
                 criteria.put(key, newCondition);
-            } else if ( existing == null ) {
+            } else if (existing == null) {
                 criteria.put(key, value);
             } else {
                 criteria.put(key, Arrays.asList(value, existing));
@@ -117,11 +117,10 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
 
     protected abstract Object createInternal(String type, ApiRequest request);
 
-
     @Override
     public final Object update(String type, String id, ApiRequest request) {
         Object object = getById(type, id, new ListOptions(request));
-        if ( object == null ) {
+        if (object == null) {
             return null;
         }
 
@@ -133,7 +132,7 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
     @Override
     public final Object delete(String type, String id, ApiRequest request) {
         Object object = getById(type, id, new ListOptions(request));
-        if ( object == null ) {
+        if (object == null) {
             return null;
         }
 
@@ -149,44 +148,43 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
 
     protected abstract Object getLinkInternal(String type, String id, String link, ApiRequest request);
 
-    protected Map<Object,Object> getDefaultCriteria(boolean byId, boolean byLink, String type) {
+    protected Map<Object, Object> getDefaultCriteria(boolean byId, boolean byLink, String type) {
         Map<Object, Object> result = new HashMap<Object, Object>();
         result.put(DEFAULT_CRITERIA, true);
         return result;
     }
 
-    protected boolean isDefaultCriteria(Map<Object,Object> criteria) {
+    protected boolean isDefaultCriteria(Map<Object, Object> criteria) {
         return criteria != null && criteria.containsKey(DEFAULT_CRITERIA);
     }
 
     protected Object getMarker(Pagination pagination) {
-        if ( pagination == null ) {
+        if (pagination == null) {
             return null;
         }
 
         String marker = pagination.getMarker();
-        if ( StringUtils.isBlank(marker) ) {
+        if (StringUtils.isBlank(marker)) {
             return null;
         }
 
-        if ( marker.charAt(0) == 'm') {
+        if (marker.charAt(0) == 'm') {
             return marker.substring(1);
         }
 
         Object obj = ApiContext.getContext().getIdFormatter().parseId(marker);
-        if ( obj instanceof Long ) {
+        if (obj instanceof Long) {
             return obj;
-        } else if ( obj != null ) {
+        } else if (obj != null) {
             try {
                 return new Long(obj.toString());
-            } catch ( NumberFormatException e ) {
+            } catch (NumberFormatException e) {
                 // ignore
             }
         }
 
         return null;
     }
-
 
     @Override
     public Collection convertResponse(List<?> list, ApiRequest request) {
@@ -198,7 +196,7 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
         Resource resource = createResource(obj, ApiContext.getContext().getIdFormatter(), request);
         ResourceOutputFilter filter = outputFilterManager.getOutputFilter(resource);
 
-        if ( filter != null ) {
+        if (filter != null) {
             resource = filter.filter(request, obj, resource);
         }
 
@@ -207,28 +205,28 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
 
     protected Collection createCollection(List<?> list, ApiRequest request) {
         CollectionImpl collection = new CollectionImpl();
-        if ( request != null ) {
+        if (request != null) {
             String collectionType = getCollectionType(list, request);
             collection.setResourceType(collectionType);
 
             Schema schema = request.getSchemaFactory().getSchema(collectionType);
-            if ( schema != null && schema.getChildren().size() > 0 ) {
+            if (schema != null && schema.getChildren().size() > 0) {
                 UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
                 Map<String, URL> createTypes = new TreeMap<String, URL>();
 
-                if ( schema.getCollectionMethods().contains(Method.POST.toString()) ) {
+                if (schema.getCollectionMethods().contains(Method.POST.toString())) {
                     createTypes.put(schema.getId(), urlBuilder.resourceCollection(collectionType));
                 }
 
-                for ( String childType : schema.getChildren() ) {
+                for (String childType : schema.getChildren()) {
                     schema = request.getSchemaFactory().getSchema(childType);
 
-                    if ( schema != null && schema.getCollectionMethods().contains(Method.POST.toString()) ) {
+                    if (schema != null && schema.getCollectionMethods().contains(Method.POST.toString())) {
                         createTypes.put(schema.getId(), urlBuilder.resourceCollection(schema.getId()));
                     }
                 }
 
-                if ( createTypes.size() > 0 ) {
+                if (createTypes.size() > 0) {
                     collection.setCreateTypes(createTypes);
                 }
             }
@@ -240,11 +238,11 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
         addPagination(list, collection, request);
         addFilters(collection, request);
 
-        for ( Object obj : list ) {
+        for (Object obj : list) {
             Resource resource = convertResponse(obj, request);
-            if ( resource != null ) {
+            if (resource != null) {
                 collection.getData().add(resource);
-                if ( collection.getResourceType() == null ) {
+                if (collection.getResourceType() == null) {
                     collection.setResourceType(resource.getType());
                 }
             }
@@ -259,9 +257,9 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
 
     protected void addFilters(CollectionImpl collection, ApiRequest request) {
         Schema schema = request.getSchemaFactory().getSchema(collection.getResourceType());
-        Map<String,List<Condition>> conditions = new TreeMap<String, List<Condition>>(request.getConditions());
-        for ( String key : schema.getCollectionFilters().keySet() ) {
-            if ( ! conditions.containsKey(key) ) {
+        Map<String, List<Condition>> conditions = new TreeMap<String, List<Condition>>(request.getConditions());
+        for (String key : schema.getCollectionFilters().keySet()) {
+            if (!conditions.containsKey(key)) {
                 conditions.put(key, null);
             }
         }
@@ -270,7 +268,7 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
 
     protected void addPagination(List<?> list, CollectionImpl collection, ApiRequest request) {
         Pagination pagination = request.getPagination();
-        if ( pagination == null ) {
+        if (pagination == null) {
             return;
         }
 
@@ -280,10 +278,10 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
     protected void addSort(CollectionImpl collection, ApiRequest request) {
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
         Set<String> sortLinks = getSortLinks(request.getSchemaFactory(), collection.getResourceType());
-        Map<String,URL> sortLinkMap = new TreeMap<String,URL>();
-        for ( String sortLink : sortLinks ) {
+        Map<String, URL> sortLinkMap = new TreeMap<String, URL>();
+        for (String sortLink : sortLinks) {
             URL sortUrl = urlBuilder.sort(sortLink);
-            if ( sortUrl != null ) {
+            if (sortUrl != null) {
                 sortLinkMap.put(sortLink, sortUrl);
             }
         }
@@ -294,17 +292,17 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
 
     protected Set<String> getSortLinks(SchemaFactory schemaFactory, String type) {
         String key = schemaFactory.getId() + ":sortlinks:" + type;
-        Map<String,String> links = linksCache.get(key);
-        if ( links != null )
+        Map<String, String> links = linksCache.get(key);
+        if (links != null)
             return links.keySet();
 
-        links = new HashMap<String,String>();
+        links = new HashMap<String, String>();
         Schema schema = schemaFactory.getSchema(type);
-        if ( schema == null ) {
+        if (schema == null) {
             return Collections.emptySet();
         }
 
-        for ( String name : schema.getCollectionFilters().keySet() ) {
+        for (String name : schema.getCollectionFilters().keySet()) {
             links.put(name, name);
         }
 
@@ -313,24 +311,24 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
     }
 
     protected Resource createResource(Object obj, IdFormatter idFormatter, ApiRequest apiRequest) {
-        if ( obj == null )
+        if (obj == null)
             return null;
 
-        if ( obj instanceof Resource )
+        if (obj instanceof Resource)
             return (Resource)obj;
 
         SchemaFactory schemaFactory = apiRequest == null ? ApiContext.getSchemaFactory() : apiRequest.getSchemaFactory();
 
-        if ( resourcesToCreate.size() > 0 && ! resourcesToCreate.contains(obj.getClass()) ) {
+        if (resourcesToCreate.size() > 0 && !resourcesToCreate.contains(obj.getClass())) {
             String type = schemaFactory.getSchemaName(obj.getClass());
             ResourceManager rm = locator.getResourceManagerByType(type);
-            if ( rm != null ) {
+            if (rm != null) {
                 return rm.convertResponse(obj, apiRequest);
             }
         }
 
         Schema schema = getSchemaForDisplay(schemaFactory, obj);
-        if ( schema == null ) {
+        if (schema == null) {
             return null;
         }
 
@@ -346,37 +344,36 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
     }
 
     protected void addActions(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
-        Map<String,Action> actions = schema.getResourceActions();
+        Map<String, Action> actions = schema.getResourceActions();
 
-        if ( actions == null || actions.size() == 0 ) {
+        if (actions == null || actions.size() == 0) {
             return;
         }
 
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
 
-        for ( String name : actions.keySet() ) {
+        for (String name : actions.keySet()) {
             resource.getActions().put(name, urlBuilder.actionLink(resource, name));
         }
     }
 
-    protected Resource constructResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj,
-            ApiRequest apiRequest) {
+    protected Resource constructResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj, ApiRequest apiRequest) {
         return new WrappedResource(idFormatter, schema, obj, apiRequest.getMethod());
     }
 
     protected void addLinks(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
-        Map<String,URL> links = resource.getLinks();
+        Map<String, URL> links = resource.getLinks();
 
-        for ( Map.Entry<String,String> entry : getLinks(schemaFactory, resource).entrySet() ) {
+        for (Map.Entry<String, String> entry : getLinks(schemaFactory, resource).entrySet()) {
             String linkName = entry.getKey();
             String propName = entry.getValue();
 
             URL link = ApiContext.getUrlBuilder().resourceLink(resource, linkName);
-            if ( link == null ) {
+            if (link == null) {
                 continue;
             }
 
-            if ( propName != null && resource.getFields().get(propName) == null ) {
+            if (propName != null && resource.getFields().get(propName) == null) {
                 continue;
             }
 
@@ -389,11 +386,11 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
     }
 
     public static Object getFirstFromList(Object obj) {
-        if ( obj instanceof Collection ) {
+        if (obj instanceof Collection) {
             return getFirstFromList(((Collection)obj).getData());
         }
 
-        if ( obj instanceof List ) {
+        if (obj instanceof List) {
             List<?> list = (List<?>)obj;
             return list.size() > 0 ? list.get(0) : null;
         }
@@ -410,7 +407,7 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
     public final Object resourceAction(String type, ApiRequest request) {
         Object resource = getById(type, request.getId(), new ListOptions());
 
-        if ( resource == null ) {
+        if (resource == null) {
             return null;
         }
 
@@ -422,7 +419,7 @@ public abstract class AbstractBaseResourceManager implements ResourceManager {
     @Override
     public final Object collectionAction(String type, ApiRequest request) {
         Object resources = list(type, request);
-        if ( resources == null ) {
+        if (resources == null) {
             return null;
         }
 

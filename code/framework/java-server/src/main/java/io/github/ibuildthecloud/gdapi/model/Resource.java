@@ -15,11 +15,11 @@ public interface Resource extends ApiStandardType {
 
     String getType();
 
-    Map<String,URL> getLinks();
+    Map<String, URL> getLinks();
 
-    Map<String,URL> getActions();
+    Map<String, URL> getActions();
 
     @Field(include = false)
-    Map<String,Object> getFields();
+    Map<String, Object> getFields();
 
 }

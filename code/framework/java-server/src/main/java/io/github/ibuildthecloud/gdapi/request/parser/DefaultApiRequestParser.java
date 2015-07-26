@@ -77,45 +77,45 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     protected String parseMethod(ApiRequest apiRequest, HttpServletRequest request) {
         String method = request.getParameter("_method");
 
-        if ( method == null )
+        if (method == null)
             method = request.getMethod();
 
         return method;
     }
 
     protected String parseAction(ApiRequest apiRequest, HttpServletRequest request) {
-        if ( "POST".equals(apiRequest.getMethod()) ) {
+        if ("POST".equals(apiRequest.getMethod())) {
             return request.getParameter(Resource.ACTION);
         }
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String,Object> parseParams(ApiRequest apiRequest, HttpServletRequest request) throws IOException {
+    protected Map<String, Object> parseParams(ApiRequest apiRequest, HttpServletRequest request) throws IOException {
         try {
-            Map<String,Object> multiPart = parseMultipart(request);
+            Map<String, Object> multiPart = parseMultipart(request);
 
             return multiPart == null ? request.getParameterMap() : multiPart;
-        } catch ( IOException e ) {
-            if ( e.getCause() instanceof FileUploadBase.SizeLimitExceededException )
+        } catch (IOException e) {
+            if (e.getCause() instanceof FileUploadBase.SizeLimitExceededException)
                 throw new ClientVisibleException(ResponseCodes.REQUEST_ENTITY_TOO_LARGE);
             throw e;
         }
     }
 
     protected Map<String, Object> parseMultipart(HttpServletRequest request) throws IOException {
-        if ( ! ServletFileUpload.isMultipartContent(request) )
+        if (!ServletFileUpload.isMultipartContent(request))
             return null;
 
-        Map<String,List<String>> params = new HashMap<String, List<String>>();
+        Map<String, List<String>> params = new HashMap<String, List<String>>();
 
         try {
             List<FileItem> items = servletFileUpload.parseRequest(request);
 
-            for ( FileItem item : items ) {
-                if ( item.isFormField() ) {
+            for (FileItem item : items) {
+                if (item.isFormField()) {
                     List<String> values = params.get(item.getFieldName());
-                    if ( values == null ) {
+                    if (values == null) {
                         values = new ArrayList<String>();
                         params.put(item.getFieldName(), values);
                     }
@@ -123,9 +123,9 @@ public class DefaultApiRequestParser implements ApiRequestParser {
                 }
             }
 
-            Map<String,Object> result = new HashMap<String, Object>();
+            Map<String, Object> result = new HashMap<String, Object>();
 
-            for ( Map.Entry<String, List<String>> entry : params.entrySet() ) {
+            for (Map.Entry<String, List<String>> entry : params.entrySet()) {
                 List<String> values = entry.getValue();
                 result.put(entry.getKey(), values.toArray(new String[values.size()]));
             }
@@ -141,7 +141,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     }
 
     protected String getOverrideHeader(HttpServletRequest request, String header, String defaultValue, boolean checkSetting) {
-        if ( checkSetting && ! isAllowClientOverrideHeaders() ) {
+        if (checkSetting && !isAllowClientOverrideHeaders()) {
             return defaultValue;
         }
 
@@ -183,17 +183,15 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         String requestUrl = apiRequest.getRequestUrl();
 
         int index = requestUrl.lastIndexOf(servletPath);
-        if ( index == -1 ) {
+        if (index == -1) {
             try {
-                /* Fallback, if we can't find servletPath in requestUrl, then
-                 * we just assume the base is the root of the web request
+                /*
+                 * Fallback, if we can't find servletPath in requestUrl, then we just assume the base is the root of the web request
                  */
                 URL url = new URL(requestUrl);
-                StringBuilder buffer = new StringBuilder(url.getProtocol())
-                    .append("://")
-                    .append(url.getHost());
+                StringBuilder buffer = new StringBuilder(url.getProtocol()).append("://").append(url.getHost());
 
-                if ( url.getPort() != -1 ) {
+                if (url.getPort() != -1) {
                     buffer.append(":").append(url.getPort());
                 }
                 return buffer.toString();
@@ -209,14 +207,14 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         String servletPath = request.getServletPath();
         servletPath = trimPrefix(servletPath.replaceAll("//+", "/"));
 
-        if ( ! servletPath.startsWith("/") || servletPath.length() < 2 )
+        if (!servletPath.startsWith("/") || servletPath.length() < 2)
             return null;
 
         return servletPath.split("/")[1];
     }
 
     protected String trimPrefix(String path) {
-        if ( trimPrefix != null && path.startsWith(trimPrefix) ) {
+        if (trimPrefix != null && path.startsWith(trimPrefix)) {
             return path.substring(trimPrefix.length());
         }
 
@@ -226,17 +224,17 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     protected String parseResponseType(ApiRequest apiRequest, HttpServletRequest request) {
         String format = request.getParameter("_format");
 
-        if ( format != null ) {
+        if (format != null) {
             format = format.toLowerCase().trim();
         }
 
         /* Format specified */
-        if ( format != null && allowedFormats.contains(format)) {
+        if (format != null && allowedFormats.contains(format)) {
             return format;
         }
 
         // User agent has Mozilla and browser accepts */*
-        if ( RequestUtils.isBrowser(request, true) ) {
+        if (RequestUtils.isBrowser(request, true)) {
             return HTML;
         } else {
             return JSON;
@@ -244,40 +242,40 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     }
 
     protected void parsePath(ApiRequest apiRequest, HttpServletRequest request) {
-        if ( apiRequest.getRequestVersion() == null )
+        if (apiRequest.getRequestVersion() == null)
             return;
 
         String servletPath = request.getServletPath();
         servletPath = trimPrefix(servletPath.replaceAll("//+", "/"));
 
         String versionPrefix = "/" + apiRequest.getRequestVersion();
-        if ( ! servletPath.startsWith(versionPrefix) ) {
+        if (!servletPath.startsWith(versionPrefix)) {
             return;
         }
 
         String[] parts = servletPath.substring(versionPrefix.length()).split("/");
 
-        if ( parts.length > 4 )
+        if (parts.length > 4)
             return;
 
         String typeName = indexValue(parts, 1);
         String id = indexValue(parts, 2);
         String link = indexValue(parts, 3);
 
-        if ( StringUtils.isBlank(typeName) ) {
+        if (StringUtils.isBlank(typeName)) {
             return;
         } else {
             String singleType = apiRequest.getSchemaFactory().getSingularName(typeName);
             apiRequest.setType(singleType == null ? typeName : singleType);
         }
 
-        if ( StringUtils.isBlank(id) ) {
+        if (StringUtils.isBlank(id)) {
             return;
         } else {
             apiRequest.setId(id);
         }
 
-        if ( StringUtils.isBlank(link) ) {
+        if (StringUtils.isBlank(link)) {
             return;
         } else {
             apiRequest.setLink(link);
@@ -285,7 +283,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     }
 
     protected String indexValue(String[] array, int index) {
-        if ( array.length <= index ) {
+        if (array.length <= index) {
             return null;
         }
         String value = array[index];
@@ -301,7 +299,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         servletFileUpload.setFileSizeMax(maxUploadSize);
         servletFileUpload.setSizeMax(maxUploadSize);
 
-        if ( allowedFormats == null ) {
+        if (allowedFormats == null) {
             allowedFormats = new HashSet<String>();
             allowedFormats.add(HTML);
             allowedFormats.add(JSON);

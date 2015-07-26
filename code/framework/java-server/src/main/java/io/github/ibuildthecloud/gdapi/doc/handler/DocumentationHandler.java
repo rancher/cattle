@@ -12,7 +12,7 @@ import java.util.TreeMap;
 
 public class DocumentationHandler extends AbstractNoOpResourceManager {
 
-    Map<String,TypeDocumentation> docs = new TreeMap<String, TypeDocumentation>();
+    Map<String, TypeDocumentation> docs = new TreeMap<String, TypeDocumentation>();
 
     @Override
     public Class<?>[] getTypeClasses() {

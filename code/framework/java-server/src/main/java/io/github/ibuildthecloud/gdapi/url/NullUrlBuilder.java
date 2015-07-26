@@ -1,9 +1,9 @@
 package io.github.ibuildthecloud.gdapi.url;
 
-import java.net.URL;
-
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Sort.SortOrder;
+
+import java.net.URL;
 
 public class NullUrlBuilder implements UrlBuilder {
 

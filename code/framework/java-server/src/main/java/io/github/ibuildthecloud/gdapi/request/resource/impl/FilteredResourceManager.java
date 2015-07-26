@@ -1,14 +1,14 @@
 package io.github.ibuildthecloud.gdapi.request.resource.impl;
 
-import java.util.List;
-import java.util.Map;
-
 import io.github.ibuildthecloud.gdapi.model.Collection;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerFilter;
+
+import java.util.List;
+import java.util.Map;
 
 public class FilteredResourceManager implements ResourceManager {
 

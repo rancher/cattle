@@ -61,7 +61,7 @@ public class SchemaImpl extends ResourceImpl implements Schema {
 
     protected Map<String, Field> copyFields(Map<String, Field> input) {
         Map<String, Field> result = new LinkedHashMap<String, Field>();
-        for ( String key : input.keySet() ) {
+        for (String key : input.keySet()) {
             result.put(key, new FieldImpl(input.get(key)));
         }
 
@@ -70,8 +70,8 @@ public class SchemaImpl extends ResourceImpl implements Schema {
 
     protected Map<String, Filter> copyFilters(Map<String, Filter> input) {
         Map<String, Filter> result = new LinkedHashMap<String, Filter>();
-        for ( String key : input.keySet() ) {
-            result.put(key,  new Filter(input.get(key)));
+        for (String key : input.keySet()) {
+            result.put(key, new Filter(input.get(key)));
         }
 
         return result;
@@ -79,7 +79,7 @@ public class SchemaImpl extends ResourceImpl implements Schema {
 
     protected Map<String, Action> copyActions(Map<String, Action> input) {
         Map<String, Action> result = new LinkedHashMap<String, Action>();
-        for ( String key : input.keySet() ) {
+        for (String key : input.keySet()) {
             result.put(key, new Action(input.get(key)));
         }
 
@@ -155,7 +155,7 @@ public class SchemaImpl extends ResourceImpl implements Schema {
     }
 
     public void setResourceMethods(List<String> resourceMethods) {
-        if ( resourceMethods == null ) {
+        if (resourceMethods == null) {
             byId = false;
             update = false;
             deletable = false;
@@ -171,15 +171,15 @@ public class SchemaImpl extends ResourceImpl implements Schema {
     public List<String> getResourceMethods() {
         List<String> methods = new ArrayList<String>();
 
-        if ( byId ) {
+        if (byId) {
             methods.add(Method.GET.toString());
         }
 
-        if ( update ) {
+        if (update) {
             methods.add(Method.PUT.toString());
         }
 
-        if ( deletable ) {
+        if (deletable) {
             methods.add(Method.DELETE.toString());
         }
 
@@ -187,7 +187,7 @@ public class SchemaImpl extends ResourceImpl implements Schema {
     }
 
     public void setCollectionMethods(List<String> collectionMethods) {
-        if ( collectionMethods == null ) {
+        if (collectionMethods == null) {
             list = false;
             create = false;
             return;
@@ -201,11 +201,11 @@ public class SchemaImpl extends ResourceImpl implements Schema {
     public List<String> getCollectionMethods() {
         List<String> methods = new ArrayList<String>();
 
-        if ( list ) {
+        if (list) {
             methods.add(Method.GET.toString());
         }
 
-        if ( create ) {
+        if (create) {
             methods.add(Method.POST.toString());
         }
 
@@ -214,13 +214,13 @@ public class SchemaImpl extends ResourceImpl implements Schema {
 
     @Override
     public Map<String, URL> getLinks() {
-        Map<String,URL> result = links;
-        if ( ! links.containsKey(UrlBuilder.SELF) ) {
+        Map<String, URL> result = links;
+        if (!links.containsKey(UrlBuilder.SELF)) {
             result = new HashMap<String, URL>(links);
             result.put(UrlBuilder.SELF, ApiContext.getUrlBuilder().resourceReferenceLink(this));
         }
 
-        if ( list && ! result.containsKey(UrlBuilder.COLLECTION) ) {
+        if (list && !result.containsKey(UrlBuilder.COLLECTION)) {
             result = result == null ? new HashMap<String, URL>(links) : result;
             result.put(UrlBuilder.COLLECTION, ApiContext.getUrlBuilder().resourceCollection(getId()));
         }
@@ -250,7 +250,7 @@ public class SchemaImpl extends ResourceImpl implements Schema {
 
     @Override
     public String getPluralName() {
-        if ( pluralName == null )
+        if (pluralName == null)
             return TypeUtils.guessPluralName(name);
         return pluralName;
     }

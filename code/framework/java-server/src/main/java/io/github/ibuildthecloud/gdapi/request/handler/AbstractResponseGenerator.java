@@ -9,7 +9,7 @@ public abstract class AbstractResponseGenerator extends AbstractApiRequestHandle
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        if ( RequestUtils.hasBeenHandled(request) )
+        if (RequestUtils.hasBeenHandled(request))
             return;
         generate(request);
     }

@@ -10,7 +10,7 @@ public class NotFoundHandler extends AbstractResponseGenerator {
 
     @Override
     protected void generate(ApiRequest request) throws IOException {
-        if ( request.getResponseCode() == ResponseCodes.OK )
+        if (request.getResponseCode() == ResponseCodes.OK)
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
     }
 

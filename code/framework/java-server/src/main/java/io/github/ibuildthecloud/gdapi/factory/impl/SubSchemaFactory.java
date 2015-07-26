@@ -19,37 +19,37 @@ import javax.inject.Inject;
 public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFactory {
     SchemaFactory schemaFactory;
     String id;
-    Map<String,Schema> schemaMap;
+    Map<String, Schema> schemaMap;
     List<SchemaImpl> schemaList = new ArrayList<SchemaImpl>();
     List<SchemaPostProcessor> postProcessors = new ArrayList<SchemaPostProcessor>();
     boolean init = false;
 
     public synchronized void init() {
-        if ( init ) {
+        if (init) {
             return;
         }
 
         schemaMap = new HashMap<String, Schema>();
 
-        if ( schemaFactory instanceof SubSchemaFactory ) {
+        if (schemaFactory instanceof SubSchemaFactory) {
             ((SubSchemaFactory)schemaFactory).init();
         }
 
         List<SchemaImpl> result = new ArrayList<SchemaImpl>();
 
-        for ( Schema schema : schemaFactory.listSchemas() ) {
-            if ( schema instanceof SchemaImpl ) {
+        for (Schema schema : schemaFactory.listSchemas()) {
+            if (schema instanceof SchemaImpl) {
                 /* Copy */
                 SchemaImpl impl = new SchemaImpl((SchemaImpl)schema);
 
-                for ( SchemaPostProcessor post : postProcessors ) {
+                for (SchemaPostProcessor post : postProcessors) {
                     impl = post.postProcessRegister(impl, this);
-                    if ( impl == null) {
+                    if (impl == null) {
                         break;
                     }
                 }
 
-                if ( impl != null ) {
+                if (impl != null) {
                     result.add(impl);
                     schemaMap.put(impl.getId(), impl);
                 }
@@ -58,13 +58,13 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
 
         schemaList = result;
 
-        for ( SchemaImpl schema : schemaList ) {
-            for ( SchemaPostProcessor post : postProcessors ) {
+        for (SchemaImpl schema : schemaList) {
+            for (SchemaPostProcessor post : postProcessors) {
                 schema = post.postProcess(schema, this);
             }
         }
 
-        for ( SchemaImpl schema : schemaList ) {
+        for (SchemaImpl schema : schemaList) {
             prune(schema);
         }
 
@@ -72,19 +72,17 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
     }
 
     protected void prune(SchemaImpl schema) {
-        Map<String,Field> fields = schema.getResourceFields();
-        Map<String,Filter> filters = schema.getCollectionFilters();
+        Map<String, Field> fields = schema.getResourceFields();
+        Map<String, Filter> filters = schema.getCollectionFilters();
 
-        for ( String name : new HashSet<String>(fields.keySet()) ) {
+        for (String name : new HashSet<String>(fields.keySet())) {
             Field field = fields.get(name);
 
             List<FieldType> subTypeEnums = field.getSubTypeEnums();
             List<String> subTypes = field.getSubTypes();
 
-            for ( int i = 0 ; i < subTypeEnums.size() ; i++ ) {
-                if ( subTypeEnums.get(i) == FieldType.TYPE && ! schemaMap.containsKey(subTypes.get(i)) &&
-                        ! "type".equals(subTypes.get(i))
-                        ) {
+            for (int i = 0; i < subTypeEnums.size(); i++) {
+                if (subTypeEnums.get(i) == FieldType.TYPE && !schemaMap.containsKey(subTypes.get(i)) && !"type".equals(subTypes.get(i))) {
                     fields.remove(name);
                     filters.remove(name);
                     break;
@@ -93,8 +91,8 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
         }
 
         Iterator<String> childrenIter = schema.getChildren().iterator();
-        while ( childrenIter.hasNext() ) {
-            if ( ! schemaMap.containsKey(childrenIter.next()) ) {
+        while (childrenIter.hasNext()) {
+            if (!schemaMap.containsKey(childrenIter.next())) {
                 childrenIter.remove();
             }
         }

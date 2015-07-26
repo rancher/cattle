@@ -40,9 +40,9 @@ public class CollectionImpl implements Collection {
 
     @Override
     public Map<String, URL> getLinks() {
-        if ( ! links.containsKey(UrlBuilder.SELF) ) {
+        if (!links.containsKey(UrlBuilder.SELF)) {
             URL self = ApiContext.getUrlBuilder().current();
-            if ( self != null ) {
+            if (self != null) {
                 links.put(UrlBuilder.SELF, self);
             }
         }

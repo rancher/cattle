@@ -14,14 +14,14 @@ public class SchemasHandler extends AbstractResponseGenerator {
     protected void generate(ApiRequest request) throws IOException {
         SchemaFactory schemaFactory = request.getSchemaFactory();
 
-        if ( ! schemaFactory.typeStringMatches(Schema.class, request.getType()) )
+        if (!schemaFactory.typeStringMatches(Schema.class, request.getType()))
             return;
 
-        if ( request.getId() == null ) {
+        if (request.getId() == null) {
             request.setResponseObject(schemaFactory.listSchemas());
         } else {
             Schema lookup = schemaFactory.getSchema(request.getId());
-            if ( lookup == null ) {
+            if (lookup == null) {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
             request.setResponseObject(lookup);

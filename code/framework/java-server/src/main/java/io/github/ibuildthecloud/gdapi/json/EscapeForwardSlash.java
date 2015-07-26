@@ -23,7 +23,7 @@ public class EscapeForwardSlash extends CharacterEscapes {
 
     @Override
     public SerializableString getEscapeSequence(int i) {
-        if ( i == '/' )
+        if (i == '/')
             return escaped;
         return null;
     }

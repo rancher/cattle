@@ -20,7 +20,7 @@ public interface ResourceManager {
 
     Object list(String type, ApiRequest request);
 
-    List<?> list(String type, Map<Object,Object> criteria, ListOptions options);
+    List<?> list(String type, Map<Object, Object> criteria, ListOptions options);
 
     Object create(String type, ApiRequest request);
 

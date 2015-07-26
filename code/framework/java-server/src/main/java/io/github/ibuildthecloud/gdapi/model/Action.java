@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlTransient;
 public class Action {
 
     String input, output;
-    Map<String,Object> attributes = new HashMap<String, Object>();
+    Map<String, Object> attributes = new HashMap<String, Object>();
 
     public Action() {
     }
@@ -18,10 +18,10 @@ public class Action {
     }
 
     public Action(String input, String output) {
-        this(input, output, new HashMap<String,Object>());
+        this(input, output, new HashMap<String, Object>());
     }
 
-    public Action(String input, String output, Map<String,Object> attributes) {
+    public Action(String input, String output, Map<String, Object> attributes) {
         super();
         this.input = input;
         this.output = output;

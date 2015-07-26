@@ -15,7 +15,7 @@ public class ReadWriteApiHandler extends AbstractApiRequestHandler implements Ap
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        if ( RequestUtils.isWriteMethod(request.getMethod()) ) {
+        if (RequestUtils.isWriteMethod(request.getMethod())) {
             delegate.write(request);
         } else {
             delegate.read(request);

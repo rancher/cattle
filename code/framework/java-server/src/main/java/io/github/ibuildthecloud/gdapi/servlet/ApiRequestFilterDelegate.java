@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ApiRequestFilterDelegate  {
+public class ApiRequestFilterDelegate {
 
     public static final String SCHEMAS_HEADER = "X-API-Schemas";
 
@@ -39,15 +39,14 @@ public class ApiRequestFilterDelegate  {
     SchemaFactory schemaFactory;
     IdFormatter idFormatter;
 
-    public ApiContext doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
+    public ApiContext doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
-        if ( ! (request instanceof HttpServletRequest) || ! (response instanceof HttpServletResponse) ) {
+        if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
             chain.doFilter(request, response);
             return null;
         }
 
-        if ( version == null ) {
+        if (version == null) {
             log.error("No version set");
             chain.doFilter(request, response);
             return null;
@@ -56,8 +55,7 @@ public class ApiRequestFilterDelegate  {
         HttpServletRequest httpRequest = (HttpServletRequest)request;
         HttpServletResponse httpResponse = (HttpServletResponse)response;
 
-        ApiRequest apiRequest = new ApiRequest(version, new ApiServletContext(httpRequest, httpResponse, chain),
-                schemaFactory);
+        ApiRequest apiRequest = new ApiRequest(version, new ApiServletContext(httpRequest, httpResponse, chain), schemaFactory);
 
         ApiContext context = null;
 
@@ -67,59 +65,59 @@ public class ApiRequestFilterDelegate  {
             context = ApiContext.newContext();
             context.setApiRequest(apiRequest);
 
-            if ( idFormatter != null ) {
+            if (idFormatter != null) {
                 context.setIdFormatter(idFormatter);
             }
 
-            if ( ! parser.parse(apiRequest) ) {
+            if (!parser.parse(apiRequest)) {
                 chain.doFilter(httpRequest, httpResponse);
                 return null;
             }
 
             URL schemaUrl = ApiContext.getUrlBuilder().resourceCollection(Schema.class);
-            if ( schemaUrl != null ) {
+            if (schemaUrl != null) {
                 httpResponse.setHeader(SCHEMAS_HEADER, schemaUrl.toExternalForm());
             }
 
             Throwable currentError = null;
-            for ( ApiRequestHandler handler : handlers ) {
+            for (ApiRequestHandler handler : handlers) {
                 try {
-                    if ( currentError == null ) {
+                    if (currentError == null) {
                         handler.handle(apiRequest);
                     } else {
-                        if ( handler.handleException(apiRequest, currentError) ) {
+                        if (handler.handleException(apiRequest, currentError)) {
                             currentError = null;
                         }
                     }
-                } catch ( EOFException e ) {
+                } catch (EOFException e) {
                     throw e;
-                } catch ( Throwable t ) {
+                } catch (Throwable t) {
                     currentError = t;
                     apiRequest.getExceptions().add(t);
                     try {
-                        if ( handler.handleException(apiRequest, currentError) ) {
+                        if (handler.handleException(apiRequest, currentError)) {
                             currentError = null;
                         }
-                    } catch ( Throwable t1 ) {
+                    } catch (Throwable t1) {
                         currentError = t1;
                     }
                 }
             }
-            if ( currentError != null ) {
+            if (currentError != null) {
                 throw currentError;
             }
-        } catch ( EOFException e ) {
+        } catch (EOFException e) {
             log.trace("Caught EOFException, ignoring", e);
             throw e;
-        } catch ( Throwable t ) {
+        } catch (Throwable t) {
             log.error("Unhandled exception in API for request [{}]", apiRequest, t);
-            if ( throwErrors ) {
+            if (throwErrors) {
                 ExceptionUtils.rethrowRuntime(t);
                 ExceptionUtils.rethrow(t, IOException.class);
                 ExceptionUtils.rethrow(t, ServletException.class);
                 throw new ServletException(t);
             } else {
-                if ( ! httpResponse.isCommitted() ) {
+                if (!httpResponse.isCommitted()) {
                     httpResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 }
             }

@@ -10,7 +10,7 @@ public class DateUtils {
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
     public static Date parse(String date) throws ParseException {
-        if ( date == null )
+        if (date == null)
             return null;
 
         SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
@@ -18,7 +18,7 @@ public class DateUtils {
     }
 
     public static String toString(Date date) {
-        if ( date == null )
+        if (date == null)
             return null;
 
         SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);

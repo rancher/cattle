@@ -19,40 +19,40 @@ public class ResourceManagerRequestHandler extends AbstractResponseGenerator {
     protected void generate(ApiRequest request) throws IOException {
         ResourceManager manager = resourceManagerLocator.getResourceManager(request);
 
-        if ( manager == null ) {
+        if (manager == null) {
             return;
         }
 
-        /* Note at this point we can assume type is not null because if type is
-         * null the manager will not be found
+        /*
+         * Note at this point we can assume type is not null because if type is null the manager will not be found
          */
         Object response = null;
         String method = request.getMethod();
 
-        if ( Method.POST.isMethod(method) ) {
-            if ( request.getAction() == null ) {
-                /* Optimistically set response code to created.  The ResourceManager impl should
-                 * set the code to ACCEPTED if a background task was created.  On error and exception
-                 * should be thrown and then the response code will be changed to an error code
+        if (Method.POST.isMethod(method)) {
+            if (request.getAction() == null) {
+                /*
+                 * Optimistically set response code to created. The ResourceManager impl should set the code to ACCEPTED if a background task was created. On
+                 * error and exception should be thrown and then the response code will be changed to an error code
                  */
                 request.setResponseCode(ResponseCodes.CREATED);
                 response = manager.create(request.getType(), request);
-            } else if ( request.getId() == null ){
+            } else if (request.getId() == null) {
                 response = manager.collectionAction(request.getType(), request);
             } else {
                 response = manager.resourceAction(request.getType(), request);
             }
-        } else if ( Method.PUT.isMethod(method) ) {
+        } else if (Method.PUT.isMethod(method)) {
             response = manager.update(request.getType(), request.getId(), request);
-        } else if ( Method.GET.isMethod(method) ){
-            if ( request.getId() != null && request.getLink() == null ) {
+        } else if (Method.GET.isMethod(method)) {
+            if (request.getId() != null && request.getLink() == null) {
                 response = manager.getById(request.getType(), request.getId(), new ListOptions(request));
-            } else if ( request.getType() != null && request.getLink() != null ) {
+            } else if (request.getType() != null && request.getLink() != null) {
                 response = manager.getLink(request.getType(), request.getId(), request.getLink(), request);
-            } else if ( request.getType() != null ) {
+            } else if (request.getType() != null) {
                 response = manager.list(request.getType(), request);
             }
-        } else if ( Method.DELETE.isMethod(method) ) {
+        } else if (Method.DELETE.isMethod(method)) {
             response = manager.delete(request.getType(), request.getId(), request);
         }
         request.setResponseObject(response);
@@ -62,7 +62,7 @@ public class ResourceManagerRequestHandler extends AbstractResponseGenerator {
     public boolean handleException(ApiRequest request, Throwable e) {
         ResourceManager manager = resourceManagerLocator.getResourceManager(request);
 
-        if ( manager == null ) {
+        if (manager == null) {
             return super.handleException(request, e);
         }
 
@@ -77,7 +77,5 @@ public class ResourceManagerRequestHandler extends AbstractResponseGenerator {
     public void setResourceManagerLocator(ResourceManagerLocator resourceManagerLocator) {
         this.resourceManagerLocator = resourceManagerLocator;
     }
-
-
 
 }

@@ -14,9 +14,8 @@ public class IdFormatterUtils {
         return formatReference(field.getTypeEnum(), field.getSubTypeEnums(), field.getSubTypes(), formatter, value);
     }
 
-    private static Object formatReference(FieldType fieldType, List<FieldType> subTypeEnums, List<String> subTypes,
-            IdFormatter formatter, Object value) {
-        if ( value == null ) {
+    private static Object formatReference(FieldType fieldType, List<FieldType> subTypeEnums, List<String> subTypes, IdFormatter formatter, Object value) {
+        if (value == null) {
             return value;
         }
 
@@ -34,11 +33,11 @@ public class IdFormatterUtils {
     }
 
     private static Object formatList(List<FieldType> subTypeEnums, List<String> subTypes, IdFormatter formatter, Object value) {
-        if ( value == null || subTypeEnums.size() == 0 ) {
+        if (value == null || subTypeEnums.size() == 0) {
             return value;
         }
 
-        if ( ! ( value instanceof List ) ) {
+        if (!(value instanceof List)) {
             return value;
         }
 
@@ -48,7 +47,7 @@ public class IdFormatterUtils {
         subTypeEnums = subTypeEnums.subList(1, subTypeEnums.size());
         subTypes = subTypes.subList(1, subTypes.size());
 
-        for ( Object input : inputs ) {
+        for (Object input : inputs) {
             result.add(formatReference(fieldType, subTypeEnums, subTypes, formatter, input));
         }
 
@@ -56,21 +55,21 @@ public class IdFormatterUtils {
     }
 
     private static Object formatMap(List<FieldType> subTypeEnums, List<String> subTypes, IdFormatter formatter, Object value) {
-        if ( value == null || subTypeEnums.size() == 0 ) {
+        if (value == null || subTypeEnums.size() == 0) {
             return value;
         }
 
-        if ( ! ( value instanceof Map ) ) {
+        if (!(value instanceof Map)) {
             return value;
         }
 
-        Map<?,?> inputs = (Map<?,?>)value;
-        Map<Object,Object> result = new LinkedHashMap<Object, Object>();
+        Map<?, ?> inputs = (Map<?, ?>)value;
+        Map<Object, Object> result = new LinkedHashMap<Object, Object>();
         FieldType fieldType = subTypeEnums.get(0);
         subTypeEnums = subTypeEnums.subList(1, subTypeEnums.size());
         subTypes = subTypes.subList(1, subTypes.size());
 
-        for ( Map.Entry<?, ?> entry : inputs.entrySet() ) {
+        for (Map.Entry<?, ?> entry : inputs.entrySet()) {
             result.put(entry.getKey(), formatReference(fieldType, subTypeEnums, subTypes, formatter, entry.getValue()));
         }
 

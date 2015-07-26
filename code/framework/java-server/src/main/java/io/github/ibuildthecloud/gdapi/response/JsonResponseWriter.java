@@ -25,16 +25,16 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        if ( request.isCommitted() )
+        if (request.isCommitted())
             return;
 
-        if ( ! getResponseFormat().equals(request.getResponseFormat()) ) {
+        if (!getResponseFormat().equals(request.getResponseFormat())) {
             return;
         }
 
         Object responseObject = getResponseObject(request);
 
-        if ( responseObject == null )
+        if (responseObject == null)
             return;
 
         request.setResponseContentType(getContentType());
@@ -43,7 +43,7 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writeJson(chunked ? os : baos, responseObject, request);
 
-        if ( ! chunked ) {
+        if (!chunked) {
             byte[] bytes = baos.toByteArray();
             request.getServletContext().getResponse().setContentLength(bytes.length);
             os.write(bytes);
@@ -62,9 +62,9 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
     protected Object getResponseObject(ApiRequest request) {
         Object object = request.getResponseObject();
 
-        if ( object instanceof List ) {
+        if (object instanceof List) {
             return createCollection((List<?>)object, request);
-        } else if ( object instanceof Collection ) {
+        } else if (object instanceof Collection) {
             return object;
         }
 
@@ -75,11 +75,11 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
         CollectionImpl collection = new CollectionImpl();
         collection.setResourceType(request.getType());
 
-        for ( Object obj : list ) {
+        for (Object obj : list) {
             Resource resource = createResource(request.getSchemaFactory(), obj);
-            if ( resource != null ) {
+            if (resource != null) {
                 collection.getData().add(resource);
-                if ( collection.getResourceType() == null ) {
+                if (collection.getResourceType() == null) {
                     collection.setResourceType(resource.getType());
                 }
             }
@@ -89,10 +89,10 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
     }
 
     protected Resource createResource(SchemaFactory schemaFactory, Object obj) {
-        if ( obj == null )
+        if (obj == null)
             return null;
 
-        if ( obj instanceof Resource )
+        if (obj instanceof Resource)
             return (Resource)obj;
 
         Schema schema = schemaFactory.getSchema(obj.getClass());

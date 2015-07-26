@@ -1,7 +1,6 @@
 package io.github.ibuildthecloud.gdapi.validation;
 
 import static io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes.*;
-
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -64,31 +63,30 @@ public class ValidationHandler extends AbstractResponseGenerator {
 
     protected void validateAction(ApiRequest request, ValidationContext context) {
         String action = request.getAction();
-        if ( action == null || ! Method.POST.isMethod(request.getMethod()) ) {
+        if (action == null || !Method.POST.isMethod(request.getMethod())) {
             return;
         }
 
-        Map<String,Action> actions = request.getId() == null ? context.schema.getCollectionActions() :
-            context.schema.getResourceActions();
+        Map<String, Action> actions = request.getId() == null ? context.schema.getCollectionActions() : context.schema.getResourceActions();
 
-        if ( actions == null || ! actions.containsKey(action) ) {
+        if (actions == null || !actions.containsKey(action)) {
             error(INVALID_ACTION, Resource.ACTION);
         }
 
-        if ( referenceValidator != null && request.getId() != null ) {
+        if (referenceValidator != null && request.getId() != null) {
             Resource resource = referenceValidator.getResourceId(request.getType(), request.getId());
-            if ( resource == null ) {
+            if (resource == null) {
                 error(ResponseCodes.NOT_FOUND);
             }
-            if ( ! resource.getActions().containsKey(action) ) {
+            if (!resource.getActions().containsKey(action)) {
                 error(ACTION_NOT_AVAILABLE, Resource.ACTION);
             }
         }
 
         String input = actions.get(action).getInput();
-        if ( input != null ) {
+        if (input != null) {
             Schema inputSchema = context.schemaFactory.getSchema(input);
-            if ( inputSchema == null ) {
+            if (inputSchema == null) {
                 log.error("Failed to find input schema [{}] for action [{}] on type [{}]", input, action, request.getType());
                 error(ResponseCodes.NOT_FOUND);
             } else {
@@ -98,13 +96,13 @@ public class ValidationHandler extends AbstractResponseGenerator {
     }
 
     protected void validateType(ApiRequest request, ValidationContext context) {
-        if ( request.getType() != null && context.schema == null ) {
+        if (request.getType() != null && context.schema == null) {
             error(ResponseCodes.NOT_FOUND);
         }
     }
 
     protected void validateField(ApiRequest request, ValidationContext context) {
-        if ( RequestUtils.isReadMethod(request.getMethod()) ) {
+        if (RequestUtils.isReadMethod(request.getMethod())) {
             validateReadField(request, context);
         } else {
             validateWriteField(request, context);
@@ -112,14 +110,14 @@ public class ValidationHandler extends AbstractResponseGenerator {
     }
 
     protected void validateReadField(ApiRequest request, ValidationContext context) {
-        request.setRequestObject(new HashMap<String,Object>());
+        request.setRequestObject(new HashMap<String, Object>());
     }
 
     protected void validateWriteField(ApiRequest request, ValidationContext context) {
-        if ( Method.PUT.isMethod(request.getMethod()) ) {
+        if (Method.PUT.isMethod(request.getMethod())) {
             validateOperationField(context.schema, request, false, context);
-        } else if ( Method.POST.isMethod(request.getMethod()) ) {
-            if ( request.getAction() == null ) {
+        } else if (Method.POST.isMethod(request.getMethod())) {
+            if (request.getAction() == null) {
                 validateOperationField(context.schema, request, true, context);
             } else {
                 validateOperationField(context.actionSchema, request, true, context);
@@ -128,43 +126,42 @@ public class ValidationHandler extends AbstractResponseGenerator {
     }
 
     protected void validateOperationField(Schema schema, ApiRequest request, boolean create, ValidationContext context) {
-        Map<String,Object> input = RequestUtils.toMap(request.getRequestObject());
+        Map<String, Object> input = RequestUtils.toMap(request.getRequestObject());
         Object obj = validateRawOperationField(schema, request.getType(), input, create, context, request.getId());
-        if ( obj != null ) {
+        if (obj != null) {
             request.setRequestObject(obj);
         }
     }
 
-    protected Object validateRawOperationField(Schema schema, String type, Map<String,Object> input, boolean create, ValidationContext context, String
-            id) {
-        if ( schema == null ) {
+    protected Object validateRawOperationField(Schema schema, String type, Map<String, Object> input, boolean create, ValidationContext context, String id) {
+        if (schema == null) {
             return null;
         }
 
-        Map<String,Object> sanitized = new LinkedHashMap<String, Object>();
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Object> sanitized = new LinkedHashMap<String, Object>();
+        Map<String, Field> fields = schema.getResourceFields();
 
-        for ( Map.Entry<String, Object> entry : input.entrySet() ) {
+        for (Map.Entry<String, Object> entry : input.entrySet()) {
             String fieldName = entry.getKey();
             Object value = entry.getValue();
 
-            if ( ! create && TypeUtils.ID_FIELD.equals(fieldName) ) {
+            if (!create && TypeUtils.ID_FIELD.equals(fieldName)) {
                 /* For right now, just never let anyone update "id" */
                 continue;
             }
 
             Field field = fields.get(fieldName);
-            if ( field == null || ! isOperation(field, create) ) {
+            if (field == null || !isOperation(field, create)) {
                 continue;
             }
 
             boolean wasNull = value == null;
             value = convert(fieldName, field, value, context);
 
-            if ( value != null || wasNull ) {
-                if ( value instanceof List ) {
-                    for ( Object individualValue : (List<?>)value ) {
-                        if ( individualValue == null ) {
+            if (value != null || wasNull) {
+                if (value instanceof List) {
+                    for (Object individualValue : (List<?>)value) {
+                        if (individualValue == null) {
                             error(NOT_NULLABLE, fieldName);
                         }
                         checkFieldCriteria(type, fieldName, field, individualValue, id);
@@ -176,22 +173,22 @@ public class ValidationHandler extends AbstractResponseGenerator {
             }
         }
 
-        for ( Map.Entry<String, Field> entry : fields.entrySet() ) {
+        for (Map.Entry<String, Field> entry : fields.entrySet()) {
             String fieldName = entry.getKey();
             Field field = entry.getValue();
 
-            if ( create && ! sanitized.containsKey(fieldName) && field.hasDefault() ) {
+            if (create && !sanitized.containsKey(fieldName) && field.hasDefault()) {
                 sanitized.put(fieldName, field.getDefault());
             }
 
-            if ( create && isOperation(field, create) && field.isRequired() ) {
-                if ( ! sanitized.containsKey(fieldName) ) {
+            if (create && isOperation(field, create) && field.isRequired()) {
+                if (!sanitized.containsKey(fieldName)) {
                     error(MISSING_REQUIRED, fieldName);
                 }
 
-                if ( field.getTypeEnum() == FieldType.ARRAY ) {
+                if (field.getTypeEnum() == FieldType.ARRAY) {
                     List<Object> list = convertArray(fieldName, null, null, sanitized.get(fieldName), context);
-                    if ( list != null && list.size() == 0 ) {
+                    if (list != null && list.size() == 0) {
                         error(MISSING_REQUIRED, fieldName);
                     }
                 }
@@ -202,29 +199,29 @@ public class ValidationHandler extends AbstractResponseGenerator {
     }
 
     protected boolean isOperation(Field field, boolean create) {
-        return ( create && field.isCreate() ) || ( ! create && field.isUpdate() );
+        return (create && field.isCreate()) || (!create && field.isUpdate());
     }
 
     protected Object convert(String fieldName, Field field, Object value, ValidationContext context) {
         return convert(fieldName, field, field.getTypeEnum(), field.getSubTypeEnums(), field.getSubTypes(), value, null, context);
     }
 
-    protected Object convert(String fieldName, Field field, FieldType type, List<FieldType> subTypes, List<String> subTypeNames,
-            Object value, String lastSubTypeName, ValidationContext context) {
+    protected Object convert(String fieldName, Field field, FieldType type, List<FieldType> subTypes, List<String> subTypeNames, Object value,
+            String lastSubTypeName, ValidationContext context) {
 
-        if ( value == null ) {
+        if (value == null) {
             return value;
         }
 
-        switch(type) {
+        switch (type) {
         case MAP:
             @SuppressWarnings("unchecked")
-            Map<String,Object> map = (Map<String,Object>)checkType(fieldName, value, Map.class);
+            Map<String, Object> map = (Map<String, Object>)checkType(fieldName, value, Map.class);
             return convertMap(fieldName, subTypes, subTypeNames, map, context);
         case DATE:
             return convertDate(fieldName, value);
         case ARRAY:
-            if ( subTypes.size() ==  0) {
+            if (subTypes.size() == 0) {
                 return error(INVALID_FORMAT, fieldName);
             }
             return convertArray(fieldName, subTypes, subTypeNames, value, context);
@@ -240,7 +237,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
         case STRING:
             return convertGenericType(fieldName, value, type);
         case REFERENCE:
-            if ( subTypeNames.size() == 0 ) {
+            if (subTypeNames.size() == 0) {
                 return error(INVALID_FORMAT, fieldName);
             }
             return convertReference(subTypeNames.get(0), fieldName, value, context);
@@ -249,9 +246,9 @@ public class ValidationHandler extends AbstractResponseGenerator {
             if (field != null) {
                 lastSubTypeName = field.getType();
             }
-            Map<String,Object> mapValue = RequestUtils.toMap(value);
+            Map<String, Object> mapValue = RequestUtils.toMap(value);
             Schema schema = context.schemaFactory.getSchema(lastSubTypeName);
-            if ( schema != null ) {
+            if (schema != null) {
                 ValidationContext validationContext = new ValidationContext();
                 validationContext.idFormatter = context.idFormatter;
                 validationContext.schema = schema;
@@ -265,13 +262,13 @@ public class ValidationHandler extends AbstractResponseGenerator {
 
     protected Object convertReference(String type, String fieldName, Object value, ValidationContext context) {
         String id = context.idFormatter.parseId(value.toString());
-        if ( id == null ) {
+        if (id == null) {
             error(INVALID_REFERENCE, fieldName);
         }
 
-        if ( referenceValidator != null ) {
+        if (referenceValidator != null) {
             Object referenced = referenceValidator.getById(type, id);
-            if ( referenced == null ) {
+            if (referenced == null) {
                 error(INVALID_REFERENCE, fieldName);
             }
         }
@@ -279,18 +276,18 @@ public class ValidationHandler extends AbstractResponseGenerator {
         try {
             /* Attempt to convert to long */
             return new Long(id);
-        } catch ( NumberFormatException nfe ) {
+        } catch (NumberFormatException nfe) {
             return id;
         }
     }
 
     protected Object convertGenericType(String fieldName, Object value, FieldType type) {
-        if ( type.getClasses().length == 0 )
+        if (type.getClasses().length == 0)
             return error(INVALID_FORMAT, fieldName);
 
         Class<?> clz = type.getClasses()[0];
         value = ConvertUtils.convert(value, clz);
-        if ( value == null || ! clz.isAssignableFrom(value.getClass()) ) {
+        if (value == null || !clz.isAssignableFrom(value.getClass())) {
             return error(INVALID_FORMAT, fieldName);
         }
 
@@ -298,53 +295,54 @@ public class ValidationHandler extends AbstractResponseGenerator {
     }
 
     protected Object checkType(String fieldName, Object value, Class<?> type) {
-        if ( type.isAssignableFrom(value.getClass()) ) {
+        if (type.isAssignableFrom(value.getClass())) {
             return value;
         }
         return error(INVALID_FORMAT, fieldName);
     }
 
-    protected Map<String,Object> convertMap(String fieldName, List<FieldType> subTypes, List<String> subTypesNames, Map<String,Object> value,
+    protected Map<String, Object> convertMap(String fieldName, List<FieldType> subTypes, List<String> subTypesNames, Map<String, Object> value,
             ValidationContext context) {
-        Map<String,Object> result = new LinkedHashMap<String,Object>();
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
 
-        if ( subTypes == null ) {
+        if (subTypes == null) {
             result.putAll(value);
             return result;
         }
 
         FieldType type = subTypes.get(0);
-        for ( Map.Entry<String, Object> entry : value.entrySet() ) {
-            Object item = convert(fieldName, null, type, subTypes.subList(1, subTypes.size()),
-                    subTypesNames.subList(1, subTypesNames.size()), entry.getValue(), subTypesNames.get(0), context);
+        for (Map.Entry<String, Object> entry : value.entrySet()) {
+            Object item =
+                    convert(fieldName, null, type, subTypes.subList(1, subTypes.size()), subTypesNames.subList(1, subTypesNames.size()), entry.getValue(),
+                            subTypesNames.get(0), context);
             result.put(entry.getKey(), item);
         }
 
         return result;
     }
 
-    protected List<Object> convertArray(String fieldName, List<FieldType> subTypes, List<String> subTypesNames, Object value,
-            ValidationContext context) {
+    protected List<Object> convertArray(String fieldName, List<FieldType> subTypes, List<String> subTypesNames, Object value, ValidationContext context) {
         List<Object> result = new ArrayList<Object>();
         List<?> items = null;
 
-        if ( value instanceof Object[] ) {
+        if (value instanceof Object[]) {
             items = Arrays.asList(value);
-        } else if ( value instanceof List ) {
+        } else if (value instanceof List) {
             items = (List<?>)value;
         } else {
             items = Arrays.asList(value);
         }
 
-        if ( subTypes == null ) {
+        if (subTypes == null) {
             result.addAll(items);
             return result;
         }
 
         FieldType type = subTypes.get(0);
-        for ( Object item : items ) {
-            item = convert(fieldName, null, type, subTypes.subList(1, subTypes.size()),
-                    subTypesNames.subList(1, subTypesNames.size()), item, subTypesNames.get(0), context);
+        for (Object item : items) {
+            item =
+                    convert(fieldName, null, type, subTypes.subList(1, subTypes.size()), subTypesNames.subList(1, subTypesNames.size()), item,
+                            subTypesNames.get(0), context);
             result.add(item);
         }
 
@@ -352,15 +350,15 @@ public class ValidationHandler extends AbstractResponseGenerator {
     }
 
     protected Object convertDate(String fieldName, Object value) {
-        if ( value instanceof Date ) {
+        if (value instanceof Date) {
             return value;
         }
         try {
-            if ( StringUtils.isBlank(value.toString()) ) {
+            if (StringUtils.isBlank(value.toString())) {
                 return null;
             }
             return DateUtils.parse(value.toString());
-        } catch ( ParseException e ) {
+        } catch (ParseException e) {
             return error(INVALID_DATE_FORMAT, fieldName);
         }
     }
@@ -378,62 +376,62 @@ public class ValidationHandler extends AbstractResponseGenerator {
         String validChars = field.getValidChars();
         String invalidChars = field.getInvalidChars();
 
-        if ( value == null && field.getDefault() != null ) {
+        if (value == null && field.getDefault() != null) {
             value = field.getDefault();
         }
 
-        if ( value instanceof Number ) {
+        if (value instanceof Number) {
             numVal = (Number)value;
         }
 
-        if ( value != null ) {
+        if (value != null) {
             stringValue = value.toString();
         }
 
-        if ( value == null && ! field.isNullable() ) {
+        if (value == null && !field.isNullable()) {
             error(NOT_NULLABLE, fieldName);
         }
 
-        if ( value != null && field.isUnique() && referenceValidator != null) {
-            if ( referenceValidator.getByField(type, fieldName, value, id) != null ) {
+        if (value != null && field.isUnique() && referenceValidator != null) {
+            if (referenceValidator.getByField(type, fieldName, value, id) != null) {
                 error(NOT_UNIQUE, fieldName);
             }
         }
 
-        if ( numVal != null ) {
-            if ( min != null && numVal.longValue() < min.longValue() ) {
+        if (numVal != null) {
+            if (min != null && numVal.longValue() < min.longValue()) {
                 error(MIN_LIMIT_EXCEEDED, fieldName);
             }
-            if ( max != null && numVal.longValue() > max.longValue() ) {
+            if (max != null && numVal.longValue() > max.longValue()) {
                 error(MAX_LIMIT_EXCEEDED, fieldName);
             }
         }
 
-        if ( stringValue != null ) {
-            if ( minLength != null && stringValue.length() < minLength.longValue() ) {
+        if (stringValue != null) {
+            if (minLength != null && stringValue.length() < minLength.longValue()) {
                 error(MIN_LENGTH_EXCEEDED, fieldName);
             }
-            if ( maxLength != null && stringValue.length() > maxLength.longValue() ) {
+            if (maxLength != null && stringValue.length() > maxLength.longValue()) {
                 error(MAX_LENGTH_EXCEEDED, fieldName);
             }
         }
 
-        if ( options != null && options.size() > 0 ) {
-            if ( stringValue != null || !field.isNullable() ) {
+        if (options != null && options.size() > 0) {
+            if (stringValue != null || !field.isNullable()) {
                 if (!options.contains(stringValue)) {
                     error(INVALID_OPTION, fieldName);
                 }
             }
         }
 
-        if ( validChars != null && stringValue != null ) {
-            if ( ! stringValue.matches("^[" + validChars + "]*$") ) {
+        if (validChars != null && stringValue != null) {
+            if (!stringValue.matches("^[" + validChars + "]*$")) {
                 error(INVALID_CHARACTERS, fieldName);
             }
         }
 
-        if ( invalidChars != null && stringValue != null ) {
-            if ( stringValue.matches("^[" + invalidChars + "]*$") ) {
+        if (invalidChars != null && stringValue != null) {
+            if (stringValue.matches("^[" + invalidChars + "]*$")) {
                 error(INVALID_CHARACTERS, fieldName);
             }
         }
@@ -441,24 +439,24 @@ public class ValidationHandler extends AbstractResponseGenerator {
 
     protected void validateVersion(ApiRequest request, ValidationContext context) {
         String version = request.getRequestVersion();
-        if ( version != null && ! request.getApiVersion().equals(version) ) {
+        if (version != null && !request.getApiVersion().equals(version)) {
             error(UNSUPPORTED_VERSION, null);
         }
     }
 
     protected void validateId(ApiRequest request, ValidationContext context) {
         String id = request.getId();
-        if ( id == null ) {
+        if (id == null) {
             return;
         }
 
-        //TODO should add some property on whether the ID should be formatted
-        if ( context.schemaFactory.typeStringMatches(Schema.class, request.getType()) ) {
+        // TODO should add some property on whether the ID should be formatted
+        if (context.schemaFactory.typeStringMatches(Schema.class, request.getType())) {
             return;
         }
 
         String formattedId = context.idFormatter.parseId(id);
-        if ( formattedId == null ) {
+        if (formattedId == null) {
             error(ResponseCodes.NOT_FOUND);
         } else {
             request.setId(formattedId);
@@ -468,23 +466,23 @@ public class ValidationHandler extends AbstractResponseGenerator {
     protected void validateMethod(ApiRequest request, ValidationContext context) {
         String method = request.getMethod();
 
-        if ( request.getAction() != null && Method.POST.isMethod(method) ) {
+        if (request.getAction() != null && Method.POST.isMethod(method)) {
             return;
         }
 
-        if ( method == null || ! supportedMethods.contains(method) ) {
+        if (method == null || !supportedMethods.contains(method)) {
             error(ResponseCodes.METHOD_NOT_ALLOWED);
         }
 
         String type = request.getType();
         String id = request.getId();
 
-        if ( type == null || context.schema == null ) {
+        if (type == null || context.schema == null) {
             return;
         }
 
         List<String> allowed = id == null ? context.schema.getCollectionMethods() : context.schema.getResourceMethods();
-        if ( ! allowed.contains(method) ) {
+        if (!allowed.contains(method)) {
             error(ResponseCodes.METHOD_NOT_ALLOWED);
         }
     }
@@ -500,9 +498,9 @@ public class ValidationHandler extends AbstractResponseGenerator {
 
     @PostConstruct
     public void init() {
-        if ( supportedMethods == null ) {
+        if (supportedMethods == null) {
             supportedMethods = new HashSet<String>();
-            for ( Method m : Method.values() ) {
+            for (Method m : Method.values()) {
                 supportedMethods.add(m.toString());
             }
         }

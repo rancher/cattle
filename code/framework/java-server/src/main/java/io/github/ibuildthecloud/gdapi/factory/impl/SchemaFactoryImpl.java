@@ -9,10 +9,10 @@ import io.github.ibuildthecloud.gdapi.model.Collection;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
 import io.github.ibuildthecloud.gdapi.model.FieldType.TypeAndName;
-import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
-import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
+import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
@@ -43,15 +43,16 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     Map<String, Class<?>> typeToClass = new HashMap<String, Class<?>>();
     List<Class<?>> types = new ArrayList<Class<?>>();
     List<String> typeNames = new ArrayList<String>();
-    Map<SchemaImpl,Class<?>> parentClasses = new HashMap<SchemaImpl, Class<?>>();
+    Map<SchemaImpl, Class<?>> parentClasses = new HashMap<SchemaImpl, Class<?>>();
 
     List<Schema> schemasList = new ArrayList<Schema>();
     List<SchemaPostProcessor> postProcessors = new ArrayList<SchemaPostProcessor>();
 
     public SchemaFactoryImpl() {
         try {
-            defaultField = PropertyUtils.getPropertyDescriptor(this, "defaultField")
-                    .getReadMethod().getAnnotation(io.github.ibuildthecloud.gdapi.annotation.Field.class);
+            defaultField =
+                    PropertyUtils.getPropertyDescriptor(this, "defaultField").getReadMethod()
+                            .getAnnotation(io.github.ibuildthecloud.gdapi.annotation.Field.class);
 
             defaultType = this.getClass().getAnnotation(io.github.ibuildthecloud.gdapi.annotation.Type.class);
         } catch (Exception e) {
@@ -74,22 +75,22 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         Class<?> clz = obj instanceof Class<?> ? (Class<?>)obj : null;
         SchemaImpl schema = schemaFromObject(obj);
 
-        for ( SchemaPostProcessor processor : postProcessors ) {
+        for (SchemaPostProcessor processor : postProcessors) {
             schema = processor.postProcessRegister(schema, this);
-            if ( schema == null ) {
+            if (schema == null) {
                 return null;
             }
         }
 
         /* Register in the multitude of maps */
-        if ( clz != null ) {
+        if (clz != null) {
             addToMap(typeToClass, schema, clz);
         }
         addToMap(schemasByName, schema, schema);
 
-        if ( clz != null ) {
+        if (clz != null) {
             schemasByClass.put(clz, schema);
-            for ( Class<?> iface : clz.getInterfaces() ) {
+            for (Class<?> iface : clz.getInterfaces()) {
                 schemasByClass.put(iface, schema);
             }
         }
@@ -99,8 +100,8 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         return schema;
     }
 
-    protected <T> void addToMap(Map<String,T> map, SchemaImpl key, T value) {
-        if ( key == null || value == null )
+    protected <T> void addToMap(Map<String, T> map, SchemaImpl key, T value) {
+        if (key == null || value == null)
             return;
 
         map.put(key.getId(), value);
@@ -123,29 +124,29 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         processParent(schema);
 
         List<Field> fields = getFields(clz);
-        for ( Map.Entry<String, Field> entry : schema.getResourceFields().entrySet() ) {
+        for (Map.Entry<String, Field> entry : schema.getResourceFields().entrySet()) {
             Field field = entry.getValue();
-            if ( field instanceof FieldImpl ) {
-                ((FieldImpl) field).setName(entry.getKey());
+            if (field instanceof FieldImpl) {
+                ((FieldImpl)field).setName(entry.getKey());
             }
             fields.add(field);
         }
 
-        Map<String,Field> resourceFields = sortFields(fields);
+        Map<String, Field> resourceFields = sortFields(fields);
 
         schema.setResourceFields(resourceFields);
         schema.getResourceActions().putAll(getResourceActions(clz));
         schema.getCollectionActions().putAll(getCollectionActions(clz));
 
-        for ( SchemaPostProcessor processor : postProcessors ) {
+        for (SchemaPostProcessor processor : postProcessors) {
             schema = processor.postProcess(schema, this);
         }
 
         addToMap(schemasByName, schema, schema);
 
-        if ( clz == null && schema.getParent() != null ) {
+        if (clz == null && schema.getParent() != null) {
             clz = typeToClass.get(schema.getParent());
-            if ( clz != null ) {
+            if (clz != null) {
                 addToMap(typeToClass, schema, clz);
             }
         }
@@ -158,21 +159,19 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         Class<?> parentClass = parentClasses.get(schema);
         String parentName = schema.getParent();
 
-        if ( parentClass == null && parentName != null ) {
+        if (parentClass == null && parentName != null) {
             parent = schemasByName.get(parentName);
-            if ( parent == null ) {
-                throw new IllegalArgumentException("Failed to find parent schema for [" + parentName
-                        + "] for type [" + schema.getId() + "]");
+            if (parent == null) {
+                throw new IllegalArgumentException("Failed to find parent schema for [" + parentName + "] for type [" + schema.getId() + "]");
             }
-        } else if ( parentClass != null ) {
+        } else if (parentClass != null) {
             parent = schemasByClass.get(parentClass);
-            if ( parent == null ) {
-                throw new IllegalArgumentException("Failed to find parent schema for class [" + parentClass
-                        + "] for type [" + schema.getId() + "]");
+            if (parent == null) {
+                throw new IllegalArgumentException("Failed to find parent schema for class [" + parentClass + "] for type [" + schema.getId() + "]");
             }
         }
 
-        if ( parent != null ) {
+        if (parent != null) {
             schema.setParent(parent.getId());
             parent.getChildren().add(schema.getId());
 
@@ -180,41 +179,41 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         }
     }
 
-    protected Map<String,Action> getCollectionActions(Class<?> clz) {
+    protected Map<String, Action> getCollectionActions(Class<?> clz) {
         return getActions(clz, true);
     }
 
-    protected Map<String,Action> getResourceActions(Class<?> clz) {
+    protected Map<String, Action> getResourceActions(Class<?> clz) {
         return getActions(clz, false);
     }
 
-    protected Map<String,Action> getActions(Class<?> clz, boolean collection) {
-        Map<String,Action> result = new LinkedHashMap<String, Action>();
+    protected Map<String, Action> getActions(Class<?> clz, boolean collection) {
+        Map<String, Action> result = new LinkedHashMap<String, Action>();
 
-        if ( clz == null ) {
+        if (clz == null) {
             return result;
         }
 
         Actions actions = clz.getAnnotation(Actions.class);
-        if ( actions == null ) {
+        if (actions == null) {
             return result;
         }
 
-        for ( io.github.ibuildthecloud.gdapi.annotation.Action action : actions.value() ) {
-            if ( action.collection() != collection ) {
+        for (io.github.ibuildthecloud.gdapi.annotation.Action action : actions.value()) {
+            if (action.collection() != collection) {
                 continue;
             }
 
             String input = null;
             String output = null;
 
-            if ( StringUtils.isBlank(action.inputType()) ) {
+            if (StringUtils.isBlank(action.inputType())) {
                 input = getSchemaName(action.input());
             } else {
                 input = action.inputType();
             }
 
-            if ( StringUtils.isBlank(action.outputType()) ) {
+            if (StringUtils.isBlank(action.outputType())) {
                 output = getSchemaName(action.output());
             } else {
                 output = action.outputType();
@@ -236,7 +235,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         schema.setPluralName(schemaType.pluralName);
         schema.setParent(schemaType.parent);
 
-        if ( schemaType.parent == null && schemaType.parentClass != null ) {
+        if (schemaType.parent == null && schemaType.parentClass != null) {
             parentClasses.put(schema, schemaType.parentClass);
         }
 
@@ -247,24 +246,24 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         SchemaType schemaType = new SchemaType();
         io.github.ibuildthecloud.gdapi.annotation.Type type = clz.getAnnotation(io.github.ibuildthecloud.gdapi.annotation.Type.class);
 
-        if ( type == null )
+        if (type == null)
             type = defaultType;
 
-        if ( ! StringUtils.isEmpty(type.name()) ) {
+        if (!StringUtils.isEmpty(type.name())) {
             schemaType.name = type.name();
         } else {
             schemaType.name = StringUtils.uncapitalize(clz.getSimpleName());
         }
 
-        if ( ! StringUtils.isBlank(type.pluralName()) ) {
+        if (!StringUtils.isBlank(type.pluralName())) {
             schemaType.pluralName = type.pluralName();
         }
 
-        if ( ! StringUtils.isBlank(type.parent()) ) {
+        if (!StringUtils.isBlank(type.parent())) {
             schemaType.parent = type.parent();
         }
 
-        if ( type.parentClass() != Void.class ) {
+        if (type.parentClass() != Void.class) {
             schemaType.parentClass = type.parentClass();
         }
 
@@ -277,18 +276,18 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         String[] parts = type.split("\\s*,\\s*");
         schemaType.name = parts[0];
 
-        for ( int i = 1 ; i < parts.length ; i++ ) {
+        for (int i = 1; i < parts.length; i++) {
             String[] kv = parts[i].split("\\s*=\\s*");
-            if ( kv.length != 2 ) {
+            if (kv.length != 2) {
                 throw new IllegalArgumentException("Illegal type format [" + type + "] must be comma separated key=value pairs");
             }
 
             String key = kv[0];
             String value = kv[1];
 
-            if ( "pluralName".equals(key) ) {
+            if ("pluralName".equals(key)) {
                 schemaType.pluralName = value;
-            } else if ( "parent".equals(key) ) {
+            } else if ("parent".equals(key)) {
                 schemaType.parent = value;
             }
         }
@@ -298,19 +297,19 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
     protected SchemaImpl readSchema(String name) {
         Class<?> clz = typeToClass.get(name);
-        if ( clz == null )
+        if (clz == null)
             clz = Object.class;
 
         SchemaImpl schema = schemasByName.get(name);
-        if ( schema == null )
+        if (schema == null)
             schema = schemaFromObject(clz);
 
         io.github.ibuildthecloud.gdapi.annotation.Type type = clz.getAnnotation(io.github.ibuildthecloud.gdapi.annotation.Type.class);
 
-        if ( type == null )
+        if (type == null)
             type = defaultType;
 
-        if ( type == defaultType ) {
+        if (type == defaultType) {
             schema.setCreate(writableByDefault);
             schema.setUpdate(writableByDefault);
             schema.setDeletable(writableByDefault);
@@ -330,21 +329,21 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         Map<String, Field> named = new TreeMap<String, Field>();
         Map<String, Field> result = new LinkedHashMap<String, Field>();
 
-        for ( Field field : fields ) {
+        for (Field field : fields) {
             Integer displayIndex = field.getDisplayIndex();
 
-            if ( displayIndex == null ) {
+            if (displayIndex == null) {
                 named.put(field.getName(), field);
             } else {
                 indexed.put(displayIndex, field);
             }
         }
 
-        for ( Field field : indexed.values() ) {
+        for (Field field : indexed.values()) {
             result.put(field.getName(), field);
         }
 
-        for ( Field field : named.values() ) {
+        for (Field field : named.values()) {
             result.put(field.getName(), field);
         }
 
@@ -354,12 +353,12 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     protected List<Field> getFields(Class<?> clz) {
         List<Field> result = new ArrayList<Field>();
 
-        if ( clz == null )
+        if (clz == null)
             return result;
 
-        for ( PropertyDescriptor prop : PropertyUtils.getPropertyDescriptors(clz) ) {
+        for (PropertyDescriptor prop : PropertyUtils.getPropertyDescriptors(clz)) {
             FieldImpl field = getField(clz, prop);
-            if ( field != null ) {
+            if (field != null) {
                 result.add(field);
             }
         }
@@ -372,30 +371,30 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
         Method readMethod = prop.getReadMethod();
         Method writeMethod = prop.getWriteMethod();
-        if ( readMethod == null && writeMethod == null )
+        if (readMethod == null && writeMethod == null)
             return null;
 
         io.github.ibuildthecloud.gdapi.annotation.Field f = getFieldAnnotation(prop);
 
-        if ( ! f.include() )
+        if (!f.include())
             return null;
 
         field.setReadMethod(readMethod);
 
-        if ( readMethod != null && readMethod.getDeclaringClass() != clz )
+        if (readMethod != null && readMethod.getDeclaringClass() != clz)
             return null;
 
-        if ( StringUtils.isEmpty(f.name()) ) {
+        if (StringUtils.isEmpty(f.name())) {
             field.setName(prop.getName());
         } else {
             field.setName(f.name());
         }
 
-        if ( f.displayIndex() > 0 ) {
+        if (f.displayIndex() > 0) {
             field.setDisplayIndex(f.displayIndex());
         }
 
-        if ( readMethod == null ) {
+        if (readMethod == null) {
             field.setIncludeInList(false);
         }
 
@@ -410,12 +409,12 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     protected void assignOptions(PropertyDescriptor prop, FieldImpl field, io.github.ibuildthecloud.gdapi.annotation.Field f) {
         Class<?> clz = prop.getPropertyType();
 
-        if ( ! clz.isEnum() ) {
+        if (!clz.isEnum()) {
             return;
         }
 
         List<String> options = new ArrayList<String>(clz.getEnumConstants().length);
-        for ( Object o : clz.getEnumConstants() ) {
+        for (Object o : clz.getEnumConstants()) {
             options.add(o.toString());
         }
 
@@ -423,19 +422,19 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     }
 
     protected void assignSimpleProps(FieldImpl field, io.github.ibuildthecloud.gdapi.annotation.Field f) {
-        if ( ! StringUtils.isEmpty(f.defaultValue()) ) {
+        if (!StringUtils.isEmpty(f.defaultValue())) {
             field.setDefault(f.defaultValue());
         }
 
-        if ( ! StringUtils.isEmpty(f.validChars()) ) {
+        if (!StringUtils.isEmpty(f.validChars())) {
             field.setValidChars(f.validChars());
         }
 
-        if ( ! StringUtils.isEmpty(f.invalidChars()) ) {
+        if (!StringUtils.isEmpty(f.invalidChars())) {
             field.setInvalidChars(f.invalidChars());
         }
 
-        if ( f == this.defaultField ) {
+        if (f == this.defaultField) {
             field.setNullable(writableByDefault);
             field.setUpdate(writableByDefault);
             field.setCreate(writableByDefault);
@@ -449,35 +448,35 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     }
 
     protected void assignLengths(FieldImpl field, io.github.ibuildthecloud.gdapi.annotation.Field f) {
-        if ( f.min() != Long.MIN_VALUE ) {
+        if (f.min() != Long.MIN_VALUE) {
             field.setMin(f.min());
         }
 
-        if ( f.max() != Long.MAX_VALUE ) {
+        if (f.max() != Long.MAX_VALUE) {
             field.setMax(f.max());
         }
 
-        if ( f.minLength() != Long.MIN_VALUE ) {
+        if (f.minLength() != Long.MIN_VALUE) {
             field.setMinLength(f.minLength());
         }
 
-        if ( f.maxLength() != Long.MAX_VALUE ) {
+        if (f.maxLength() != Long.MAX_VALUE) {
             field.setMaxLength(f.maxLength());
         }
     }
 
     protected void assignType(PropertyDescriptor prop, FieldImpl field, io.github.ibuildthecloud.gdapi.annotation.Field f) {
-        if ( f.type() != FieldType.NONE ) {
+        if (f.type() != FieldType.NONE) {
             field.setTypeEnum(f.type());
             return;
         }
 
-        if ( ! StringUtils.isEmpty(f.typeString()) ) {
+        if (!StringUtils.isEmpty(f.typeString())) {
             field.setType(f.typeString());
             return;
         }
 
-        if ( f.password() ) {
+        if (f.password()) {
             field.setTypeEnum(FieldType.PASSWORD);
             return;
         }
@@ -486,13 +485,13 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
         List<TypeAndName> types = new ArrayList<FieldType.TypeAndName>();
         Method readMethod = prop.getReadMethod();
-        if ( readMethod != null ) {
+        if (readMethod != null) {
             getTypes(readMethod.getGenericReturnType(), types);
         }
 
-        if ( types.size() == 1 ) {
+        if (types.size() == 1) {
             field.setType(types.get(0).getName());
-        } else if ( types.size() > 1 ) {
+        } else if (types.size() > 1) {
             types.remove(0);
             field.setSubTypesList(types);
         }
@@ -500,25 +499,25 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
     protected void getTypes(java.lang.reflect.Type type, List<TypeAndName> types) {
         Class<?> clz = null;
-        if ( type instanceof Class<?> ) {
+        if (type instanceof Class<?>) {
             clz = (Class<?>)type;
         }
 
-        if ( type instanceof ParameterizedType ) {
+        if (type instanceof ParameterizedType) {
             java.lang.reflect.Type rawType = ((ParameterizedType)type).getRawType();
-            if ( rawType instanceof Class<?> )
+            if (rawType instanceof Class<?>)
                 clz = (Class<?>)rawType;
         }
 
-        if ( clz == null ) {
+        if (clz == null) {
             throw new IllegalArgumentException("Failed to find class for type [" + type + "]");
         }
 
         FieldType fieldType = assignSimpleType(clz, null);
         String name = fieldType.getExternalType();
-        if ( fieldType == FieldType.TYPE ) {
+        if (fieldType == FieldType.TYPE) {
             Schema subSchema = getSchema(clz);
-            if ( subSchema == null ) {
+            if (subSchema == null) {
                 fieldType = FieldType.JSON;
                 name = fieldType.getExternalType();
             } else {
@@ -531,7 +530,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         java.lang.reflect.Type subType = null;
         switch (fieldType) {
         case ARRAY:
-            if ( clz.isArray() ) {
+            if (clz.isArray()) {
                 subType = clz.getComponentType();
             } else {
                 subType = getGenericType(type, 0);
@@ -549,14 +548,13 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
             break;
         }
 
-        if ( subType != null ) {
+        if (subType != null) {
             getTypes(subType, types);
         }
     }
 
-
     protected java.lang.reflect.Type getGenericType(java.lang.reflect.Type t, int index) {
-        if ( t instanceof ParameterizedType && ((ParameterizedType)t).getActualTypeArguments().length == index + 1) {
+        if (t instanceof ParameterizedType && ((ParameterizedType)t).getActualTypeArguments().length == index + 1) {
             return ((ParameterizedType)t).getActualTypeArguments()[index];
         }
 
@@ -566,23 +564,20 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     protected FieldType assignSimpleType(Class<?> clzType, FieldImpl field) {
         FieldType result = null;
 
-        if ( clzType.isEnum() ) {
+        if (clzType.isEnum()) {
             result = FieldType.ENUM;
         } else {
-            outer:
-            for ( FieldType type : FieldType.values() ) {
+            outer: for (FieldType type : FieldType.values()) {
                 Class<?>[] clzs = type.getClasses();
 
-                if ( clzs == null )
+                if (clzs == null)
                     continue;
 
-                for ( Class<?> clz : clzs ) {
-                    if ( clz.isAssignableFrom(clzType) ) {
+                for (Class<?> clz : clzs) {
+                    if (clz.isAssignableFrom(clzType)) {
                         result = type;
 
-                        if ( ( Number.class.isAssignableFrom(clzType) ||
-                                Boolean.class.isAssignableFrom(clzType) ) && ! clz.isPrimitive() &&
-                                field != null ) {
+                        if ((Number.class.isAssignableFrom(clzType) || Boolean.class.isAssignableFrom(clzType)) && !clz.isPrimitive() && field != null) {
                             field.setNullable(true);
                         }
 
@@ -592,7 +587,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
             }
         }
 
-        if ( field != null ) {
+        if (field != null) {
             field.setTypeEnum(result);
         }
 
@@ -605,15 +600,15 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
         io.github.ibuildthecloud.gdapi.annotation.Field f = null;
 
-        if ( readMethod != null ) {
+        if (readMethod != null) {
             f = readMethod.getAnnotation(io.github.ibuildthecloud.gdapi.annotation.Field.class);
         }
 
-        if ( f == null && writeMethod != null ) {
+        if (f == null && writeMethod != null) {
             f = writeMethod.getAnnotation(io.github.ibuildthecloud.gdapi.annotation.Field.class);
         }
 
-        if ( f == null ) {
+        if (f == null) {
             f = defaultField;
         }
 
@@ -622,7 +617,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
     @PostConstruct
     public void init() {
-        if ( includeDefaultTypes ) {
+        if (includeDefaultTypes) {
             registerSchema(Schema.class);
             registerSchema(ApiVersion.class);
             registerSchema(ApiError.class);
@@ -630,15 +625,15 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
             registerSchema(Resource.class);
         }
 
-        for ( Class<?> clz : types ) {
+        for (Class<?> clz : types) {
             registerSchema(clz);
         }
 
-        for ( String name : typeNames) {
+        for (String name : typeNames) {
             registerSchema(name);
         }
 
-        for ( Schema schema : schemasList ) {
+        for (Schema schema : schemasList) {
             parseSchema(schema.getId());
         }
     }
@@ -712,6 +707,5 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         String parent;
         Class<?> parentClass;
     }
-
 
 }

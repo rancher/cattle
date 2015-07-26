@@ -26,7 +26,7 @@ public class FieldImpl implements Field {
     Object defaultValue;
     List<String> options;
     Method readMethod;
-    Map<String,Object> attributes = new HashMap<String, Object>();
+    Map<String, Object> attributes = new HashMap<String, Object>();
 
     public FieldImpl() {
     }
@@ -50,7 +50,7 @@ public class FieldImpl implements Field {
         this.options = field.getOptions() == null ? null : new ArrayList<String>(field.getOptions());
         this.displayIndex = field.getDisplayIndex();
         this.attributes = new HashMap<String, Object>(field.getAttributes());
-        if ( field instanceof FieldImpl ) {
+        if (field instanceof FieldImpl) {
             this.readMethod = ((FieldImpl)field).getReadMethod();
             this.defaultIsNull = ((FieldImpl)field).isDefaultIsNull();
         }
@@ -60,7 +60,7 @@ public class FieldImpl implements Field {
 
     @Override
     public Object getValue(Object object) {
-        if ( readMethod == null || object == null )
+        if (readMethod == null || object == null)
             return null;
 
         try {
@@ -101,6 +101,7 @@ public class FieldImpl implements Field {
     public void setReadOnCreateOnly(boolean readOnCreateOnly) {
         this.readOnCreateOnly = readOnCreateOnly;
     }
+
     @Override
     public boolean isUpdate() {
         return update;
@@ -121,18 +122,18 @@ public class FieldImpl implements Field {
 
     @Override
     public String getType() {
-        if ( type == null && typeEnum != null ) {
+        if (type == null && typeEnum != null) {
             type = FieldType.toString(type, typeEnum, subTypes);
         }
         return type;
     }
 
     public void setType(String typeName) {
-        if ( typeName == null ) {
+        if (typeName == null) {
             type = null;
         } else {
             List<TypeAndName> parts = FieldType.parse(typeName);
-            if ( parts.size() == 0 ) {
+            if (parts.size() == 0) {
                 throw new IllegalArgumentException("Failed to parse type [" + typeName + "]");
             }
 
@@ -204,7 +205,7 @@ public class FieldImpl implements Field {
 
     @Override
     public Object getDefault() {
-        if ( defaultValue == null || this.typeEnum == null ) {
+        if (defaultValue == null || this.typeEnum == null) {
             return defaultValue;
         }
 
@@ -214,7 +215,7 @@ public class FieldImpl implements Field {
         case INT:
             try {
                 return Long.parseLong(defaultValue.toString());
-            } catch ( NumberFormatException nfe) {
+            } catch (NumberFormatException nfe) {
                 break;
             }
         default:
@@ -283,20 +284,18 @@ public class FieldImpl implements Field {
 
     @Override
     public String toString() {
-        return "FieldImpl [name=" + name + ", type=" + type + ", validChars=" + validChars + ", invalidChars="
-                + invalidChars + ", displayIndex=" + displayIndex + ", create=" + create + ", update=" + update
-                + ", includeInList=" + includeInList + ", nullable=" + nullable + ", unique=" + unique + ", required="
-                + required + ", defaultIsNull=" + defaultIsNull + ", typeEnum=" + typeEnum + ", subTypeEnums="
-                + subTypeEnums + ", subTypes=" + subTypes + ", min=" + min + ", max=" + max + ", minLength="
-                + minLength + ", maxLength=" + maxLength + ", defaultValue=" + defaultValue + ", options=" + options
-                + ", readMethod=" + readMethod + "]";
+        return "FieldImpl [name=" + name + ", type=" + type + ", validChars=" + validChars + ", invalidChars=" + invalidChars + ", displayIndex="
+                + displayIndex + ", create=" + create + ", update=" + update + ", includeInList=" + includeInList + ", nullable=" + nullable + ", unique="
+                + unique + ", required=" + required + ", defaultIsNull=" + defaultIsNull + ", typeEnum=" + typeEnum + ", subTypeEnums=" + subTypeEnums
+                + ", subTypes=" + subTypes + ", min=" + min + ", max=" + max + ", minLength=" + minLength + ", maxLength=" + maxLength + ", defaultValue="
+                + defaultValue + ", options=" + options + ", readMethod=" + readMethod + "]";
     }
 
     public void setSubTypesList(List<TypeAndName> subTypes) {
         this.subTypes = new ArrayList<String>(subTypes.size());
         this.subTypeEnums = new ArrayList<FieldType>(subTypes.size());
 
-        for ( TypeAndName typeAndName : subTypes ) {
+        for (TypeAndName typeAndName : subTypes) {
             this.subTypes.add(typeAndName.getName());
             this.subTypeEnums.add(typeAndName.getType());
         }

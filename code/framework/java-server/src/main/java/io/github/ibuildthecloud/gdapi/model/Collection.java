@@ -20,22 +20,22 @@ public interface Collection extends ApiStandardType {
 
     String getResourceType();
 
-    Map<String,URL> getLinks();
+    Map<String, URL> getLinks();
 
     List<Resource> getData();
 
-    Map<String,URL> getCreateTypes();
+    Map<String, URL> getCreateTypes();
 
-    Map<String,URL> getActions();
+    Map<String, URL> getActions();
 
-    Map<String,URL> getSortLinks();
+    Map<String, URL> getSortLinks();
 
-    Map<String,Object> getCreateDefaults();
+    Map<String, Object> getCreateDefaults();
 
     Pagination getPagination();
 
     Sort getSort();
 
-    Map<String,List<Condition>> getFilters();
+    Map<String, List<Condition>> getFilters();
 
 }

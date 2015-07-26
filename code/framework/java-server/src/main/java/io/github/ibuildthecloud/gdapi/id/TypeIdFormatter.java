@@ -12,7 +12,7 @@ import javax.inject.Inject;
 
 public class TypeIdFormatter implements IdFormatter {
 
-    private Map<String,String> typeCache = Collections.synchronizedMap(new WeakHashMap<String, String>());
+    private Map<String, String> typeCache = Collections.synchronizedMap(new WeakHashMap<String, String>());
 
     String globalPrefix = "1";
     SchemaFactory schemaFactory;
@@ -20,25 +20,25 @@ public class TypeIdFormatter implements IdFormatter {
 
     @Override
     public String formatId(String type, Object id) {
-        if ( id == null ) {
+        if (id == null) {
             return null;
         }
 
         String idString = id.toString();
-        if ( idString.length() == 0 ) {
+        if (idString.length() == 0) {
             return null;
         }
 
-        if ( plainTypes.contains(type) ) {
+        if (plainTypes.contains(type)) {
             return id.toString();
         }
 
         String shortType = typeCache.get(type);
-        if ( shortType == null ) {
+        if (shortType == null) {
             shortType = getShortType(type);
         }
 
-        if ( ! Character.isDigit(idString.charAt(0)) ) {
+        if (!Character.isDigit(idString.charAt(0))) {
             return shortType + "!" + id;
         } else {
             return shortType + id;
@@ -47,38 +47,38 @@ public class TypeIdFormatter implements IdFormatter {
 
     @Override
     public String parseId(String id) {
-        if ( id == null || id.length() == 0 )
+        if (id == null || id.length() == 0)
             return null;
 
-        if ( Character.isLetter(id.charAt(0)) && ! id.startsWith(globalPrefix) ) {
+        if (Character.isLetter(id.charAt(0)) && !id.startsWith(globalPrefix)) {
             return id;
         }
 
-        if ( ! id.startsWith(globalPrefix) ) {
+        if (!id.startsWith(globalPrefix)) {
             return null;
         }
 
         id = id.substring(globalPrefix.length());
 
-        if ( id.length() == 0 || ! Character.isLetter(id.charAt(0)) ) {
+        if (id.length() == 0 || !Character.isLetter(id.charAt(0))) {
             return null;
         }
 
         String parsedId = id.replaceAll("^[a-z]*", "");
         try {
-            if ( parsedId.startsWith("!") ) {
+            if (parsedId.startsWith("!")) {
                 return parsedId.substring(1);
             } else {
                 return parsedId;
             }
-        } catch ( NumberFormatException e ) {
+        } catch (NumberFormatException e) {
             return null;
         }
     }
 
     protected String getShortType(String type) {
         String base = schemaFactory.getBaseType(type);
-        if ( base != null ) {
+        if (base != null) {
             type = base;
         }
 

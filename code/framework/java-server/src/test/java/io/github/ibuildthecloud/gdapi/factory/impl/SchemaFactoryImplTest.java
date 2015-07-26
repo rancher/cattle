@@ -73,7 +73,7 @@ public class SchemaFactoryImplTest {
     public void testSimpleTypes() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertEquals("blob", fields.get("typeBlob").getType());
         assertEquals("date", fields.get("typeDate").getType());
@@ -128,7 +128,7 @@ public class SchemaFactoryImplTest {
         parseSchema(TestTypeRename.class);
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertEquals("reference[testTypeCRUD]", fields.get("testTypeCrudId").getType());
         assertEquals("testTypeCRUD", fields.get("testTypeCrud").getType());
@@ -140,7 +140,7 @@ public class SchemaFactoryImplTest {
         parseSchema(TestTypeRename.class);
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertEquals("array[map[string]]", fields.get("typeList").getType());
         assertEquals("array[string]", fields.get("typeArray").getType());
@@ -153,7 +153,7 @@ public class SchemaFactoryImplTest {
     public void testDefaults() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertNull(fields.get("defaultSettings").getDefault());
         assertEquals("DEFAULT", fields.get("defaultValue").getDefault());
@@ -163,7 +163,7 @@ public class SchemaFactoryImplTest {
     public void testNullable() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertTrue(!fields.get("defaultSettings").isNullable());
         assertTrue(fields.get("nullable").isNullable());
@@ -173,7 +173,7 @@ public class SchemaFactoryImplTest {
     public void testUnique() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertTrue(!fields.get("defaultSettings").isUnique());
         assertTrue(fields.get("unique").isUnique());
@@ -183,7 +183,7 @@ public class SchemaFactoryImplTest {
     public void testValidChars() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertNull(fields.get("defaultSettings").getValidChars());
         assertEquals("valid", fields.get("validChars").getValidChars());
@@ -193,7 +193,7 @@ public class SchemaFactoryImplTest {
     public void testInvalidChars() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertNull(fields.get("defaultSettings").getInvalidChars());
         assertEquals("invalid", fields.get("invalidChars").getInvalidChars());
@@ -203,7 +203,7 @@ public class SchemaFactoryImplTest {
     public void testRequired() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertTrue(!fields.get("defaultSettings").isRequired());
         assertTrue(fields.get("required").isRequired());
@@ -213,7 +213,7 @@ public class SchemaFactoryImplTest {
     public void testCreateUpdate() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertTrue(!fields.get("defaultSettings").isCreate());
         assertTrue(!fields.get("defaultSettings").isUpdate());
@@ -227,7 +227,7 @@ public class SchemaFactoryImplTest {
     public void testNameOverride() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertNull(fields.get("gonnaBeNameOverride"));
         assertNotNull(fields.get("nameOverride"));
@@ -237,7 +237,7 @@ public class SchemaFactoryImplTest {
     public void testLengths() {
         Schema schema = parseSchema(TestType.class);
 
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertNull(fields.get("defaultSettings").getMinLength());
         assertNull(fields.get("defaultSettings").getMaxLength());
@@ -253,7 +253,7 @@ public class SchemaFactoryImplTest {
     @Test
     public void testOptions() {
         Schema schema = parseSchema(TestType.class);
-        Map<String,Field> fields = schema.getResourceFields();
+        Map<String, Field> fields = schema.getResourceFields();
 
         assertNull(fields.get("defaultSettings").getOptions());
 
@@ -292,7 +292,7 @@ public class SchemaFactoryImplTest {
 
         assertEquals(parent.getId(), child.getParent());
 
-        Map<String,Field> fields = child.getResourceFields();
+        Map<String, Field> fields = child.getResourceFields();
 
         assertEquals("boolean", fields.get("typeBool").getType());
         assertTrue(!fields.get("typeBool").isNullable());
@@ -309,7 +309,7 @@ public class SchemaFactoryImplTest {
 
         assertEquals(parent.getId(), child.getParent());
 
-        Map<String,Field> fields = child.getResourceFields();
+        Map<String, Field> fields = child.getResourceFields();
 
         assertEquals("boolean", fields.get("typeBool").getType());
         assertTrue(!fields.get("typeBool").isNullable());

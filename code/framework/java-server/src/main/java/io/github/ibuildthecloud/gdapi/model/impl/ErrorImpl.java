@@ -1,13 +1,13 @@
 package io.github.ibuildthecloud.gdapi.model.impl;
 
-import java.net.URL;
-import java.util.Map;
-import java.util.UUID;
-
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.model.ApiError;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+
+import java.net.URL;
+import java.util.Map;
+import java.util.UUID;
 
 public class ErrorImpl extends ResourceImpl implements ApiError {
 
@@ -39,7 +39,6 @@ public class ErrorImpl extends ResourceImpl implements ApiError {
         this.message = message;
         this.detail = detail;
     }
-
 
     @Override
     public int getStatus() {

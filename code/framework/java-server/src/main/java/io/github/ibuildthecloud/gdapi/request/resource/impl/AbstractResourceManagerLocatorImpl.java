@@ -16,7 +16,7 @@ public abstract class AbstractResourceManagerLocatorImpl implements ResourceMana
 
     @Override
     public ResourceManager getResourceManager(ApiRequest request) {
-        if ( request.getType() == null )
+        if (request.getType() == null)
             return null;
 
         return getResourceManagerByType(request.getType());
@@ -30,27 +30,27 @@ public abstract class AbstractResourceManagerLocatorImpl implements ResourceMana
 
     @Override
     public ResourceManager getResourceManagerByType(String type) {
-        if ( type == null ) {
+        if (type == null) {
             return null;
         }
 
         ResourceManager rm = cached.get(type);
-        if ( rm != null ) {
+        if (rm != null) {
             return rm;
         }
 
         rm = getResourceManagersByTypeInternal(type);
 
-        if ( rm == null ) {
+        if (rm == null) {
             rm = getDefaultResourceManager();
         }
 
-        if ( rm == null ) {
+        if (rm == null) {
             return rm;
         }
 
         List<ResourceManagerFilter> filters = getResourceManagerFiltersByTypeInternal(type);
-        if ( filters == null ) {
+        if (filters == null) {
             return rm;
         }
 
@@ -61,11 +61,11 @@ public abstract class AbstractResourceManagerLocatorImpl implements ResourceMana
     }
 
     protected ResourceManager wrap(List<ResourceManagerFilter> filters, ResourceManager resourceManager) {
-        if ( filters.size() == 0 ) {
+        if (filters.size() == 0) {
             return resourceManager;
         }
 
-        if ( filters.size() == 1 ) {
+        if (filters.size() == 1) {
             return new FilteredResourceManager(filters.get(0), resourceManager);
         }
 
@@ -74,7 +74,7 @@ public abstract class AbstractResourceManagerLocatorImpl implements ResourceMana
 
     protected void add(Map<String, List<ResourceManagerFilter>> filters, String key, ResourceManagerFilter filter) {
         List<ResourceManagerFilter> list = filters.get(key);
-        if ( list == null ) {
+        if (list == null) {
             list = new ArrayList<ResourceManagerFilter>();
             filters.put(key, list);
         }

@@ -23,7 +23,7 @@ public class DefaultReadWriteApiDelegate implements ReadWriteApiDelegate {
     }
 
     protected void handle(ApiRequest request) throws IOException {
-        for ( ApiRequestHandler handler : handlers ) {
+        for (ApiRequestHandler handler : handlers) {
             handler.handle(request);
         }
     }

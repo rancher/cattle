@@ -19,8 +19,7 @@ public class ApiRequestFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         apiRequestFilterDelegate.doFilter(request, response, chain);
     }
 

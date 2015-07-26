@@ -47,7 +47,7 @@ public class JacksonMapper implements JsonMapper {
         mapper.getFactory().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        if ( escapeForwardSlashes ) {
+        if (escapeForwardSlashes) {
             mapper.getFactory().setCharacterEscapes(new EscapeForwardSlash());
         }
     }
@@ -74,22 +74,22 @@ public class JacksonMapper implements JsonMapper {
 
     public static interface ResourceMix {
         @JsonAnyGetter
-        Map<String,Object> getFields();
+        Map<String, Object> getFields();
     }
 
     public static interface SchemaCollectionMixin {
-        @JsonDeserialize(as=List.class, contentAs=SchemaImpl.class)
+        @JsonDeserialize(as = List.class, contentAs = SchemaImpl.class)
         List<Schema> getData();
     }
 
     public static interface SchemaImplMixin {
-        @JsonDeserialize(as=Map.class, contentAs=FieldImpl.class)
+        @JsonDeserialize(as = Map.class, contentAs = FieldImpl.class)
         Map<String, Field> getResourceFields();
     }
 
     public static interface ResourceMixin {
         @JsonAnyGetter
-        Map<String,Object> getFields();
+        Map<String, Object> getFields();
     }
 
     public boolean isEscapeForwardSlashes() {

@@ -17,11 +17,11 @@ public class ResourceOutputFilterManagerImpl implements ResourceOutputFilterMana
 
     SchemaFactory baseSchemaFactory;
     List<ResourceOutputFilter> outputFilters;
-    Map<String,ResourceOutputFilter> filtersByType;
+    Map<String, ResourceOutputFilter> filtersByType;
 
     @Override
     public ResourceOutputFilter getOutputFilter(Resource resource) {
-        if ( resource == null ) {
+        if (resource == null) {
             return null;
         }
 
@@ -29,30 +29,30 @@ public class ResourceOutputFilterManagerImpl implements ResourceOutputFilterMana
     }
 
     protected Map<String, ResourceOutputFilter> getFiltersByType() {
-        if ( filtersByType != null ) {
+        if (filtersByType != null) {
             return filtersByType;
         }
 
-        Map<String,ResourceOutputFilter> result = new HashMap<String, ResourceOutputFilter>();
+        Map<String, ResourceOutputFilter> result = new HashMap<String, ResourceOutputFilter>();
 
-        for ( ResourceOutputFilter filter : outputFilters ) {
+        for (ResourceOutputFilter filter : outputFilters) {
             Set<String> types = new HashSet<String>();
 
-            for ( String type : filter.getTypes() ) {
+            for (String type : filter.getTypes()) {
                 types.add(type);
             }
 
-            for ( Class<?> clz : filter.getTypeClasses() ) {
+            for (Class<?> clz : filter.getTypeClasses()) {
                 String type = baseSchemaFactory.getSchemaName(clz);
-                if ( type != null ) {
+                if (type != null) {
                     types.add(type);
                 }
             }
 
-            for ( String type : types ) {
+            for (String type : types) {
                 ResourceOutputFilter next = result.get(type);
 
-                if ( next == null ) {
+                if (next == null) {
                     result.put(type, filter);
                 } else {
                     result.put(type, new ResourceOutputFilterChain(filter, next));

@@ -38,7 +38,7 @@ public class ApiRequest {
     ApiServletContext apiServletContext;
     Object responseObject;
     Object requestObject;
-    Map<String,Object> requestParams;
+    Map<String, Object> requestParams;
     String requestUrl;
     String requestVersion;
     String apiVersion;
@@ -49,14 +49,14 @@ public class ApiRequest {
 
     long startTime = System.currentTimeMillis();
     UrlBuilder urlBuilder;
-    Map<String,List<Condition>> conditions = new LinkedHashMap<String, List<Condition>>();
+    Map<String, List<Condition>> conditions = new LinkedHashMap<String, List<Condition>>();
     Sort sort;
     Pagination pagination;
     Include include;
-    Map<Object,Object> attributes = new HashMap<Object, Object>();
-    Map<String,String> options = new HashMap<String, String>();
+    Map<Object, Object> attributes = new HashMap<Object, Object>();
+    Map<String, String> options = new HashMap<String, String>();
     SchemaFactory schemaFactory;
-    Map<String,Object> createDefaults = new HashMap<String, Object>();
+    Map<String, Object> createDefaults = new HashMap<String, Object>();
     List<Throwable> exceptions = new ArrayList<Throwable>();
 
     public ApiRequest(ApiRequest request) {
@@ -129,14 +129,14 @@ public class ApiRequest {
     }
 
     public InputStream getInputStream() throws IOException {
-        if ( apiServletContext == null ) {
+        if (apiServletContext == null) {
             return null;
         }
         return apiServletContext.getRequest().getInputStream();
     }
 
     public OutputStream getOutputStream() throws IOException {
-        if ( committed ) {
+        if (committed) {
             throw new IllegalStateException("Response is commited");
         }
         commit();
@@ -145,7 +145,7 @@ public class ApiRequest {
     }
 
     public <T> T proxyRequestObject(Class<T> type) {
-        Map<String,Object> map = RequestUtils.toMap(requestObject);
+        Map<String, Object> map = RequestUtils.toMap(requestObject);
         return ProxyUtils.proxy(map, type);
     }
 
@@ -294,8 +294,8 @@ public class ApiRequest {
     }
 
     public void commit() {
-        if ( ! committed ) {
-            if ( responseContentType != null ) {
+        if (!committed) {
+            if (responseContentType != null) {
                 apiServletContext.getResponse().setHeader("Content-Type", responseContentType);
             }
             apiServletContext.getResponse().setStatus(responseCode);

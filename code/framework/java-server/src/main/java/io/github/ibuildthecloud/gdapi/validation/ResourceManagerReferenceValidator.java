@@ -4,13 +4,14 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class ResourceManagerReferenceValidator implements ReferenceValidator {
 
@@ -26,11 +27,11 @@ public class ResourceManagerReferenceValidator implements ReferenceValidator {
     public Object getByField(String type, String fieldName, Object value, String id) {
         ResourceManager manager = locator.getResourceManagerByType(type);
 
-        if ( manager == null ) {
+        if (manager == null) {
             return null;
         }
 
-        Map<Object,Object> criteria = new HashMap<Object,Object>();
+        Map<Object, Object> criteria = new HashMap<Object, Object>();
         criteria.put(fieldName, value);
         Object result = manager.list(type, criteria, null);
         List<?> list = RequestUtils.toList(result);
@@ -43,16 +44,15 @@ public class ResourceManagerReferenceValidator implements ReferenceValidator {
         return list.size() == 0 ? null : list.get(0);
     }
 
-
     @Override
     public Resource getResourceId(String type, String id) {
         ResourceManager manager = locator.getResourceManagerByType(type);
-        if ( manager == null ) {
+        if (manager == null) {
             return null;
         }
 
         Object result = manager.getById(type, id, null);
-        if ( result == null ) {
+        if (result == null) {
             return null;
         }
 

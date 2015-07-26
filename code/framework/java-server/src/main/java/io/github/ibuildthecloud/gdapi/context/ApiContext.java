@@ -40,12 +40,12 @@ public class ApiContext {
 
     public static UrlBuilder getUrlBuilder() {
         ApiContext context = ApiContext.getContext();
-        if ( context != null ) {
+        if (context != null) {
             UrlBuilder writer = context.getApiRequest().getUrlBuilder();
-            if ( writer == null ) {
+            if (writer == null) {
                 DefaultUrlBuilder urlWriter = new DefaultUrlBuilder(context.getApiRequest(), ApiContext.getSchemaFactory());
                 String subContext = context.getApiRequest().getSubContext();
-                if ( subContext != null ) {
+                if (subContext != null) {
                     urlWriter.setSubContext(subContext);
                 }
 

@@ -30,57 +30,57 @@ public class ParseCollectionAttributes extends AbstractApiRequestHandler {
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        if ( ! Schema.Method.GET.isMethod(request.getMethod()) ) {
+        if (!Schema.Method.GET.isMethod(request.getMethod())) {
             return;
         }
 
         Schema schema = request.getSchemaFactory().getSchema(request.getType());
-        if ( schema == null ) {
+        if (schema == null) {
             return;
         }
 
-        Map<String,Object> params = RequestUtils.toMap(request.getRequestObject());
+        Map<String, Object> params = RequestUtils.toMap(request.getRequestObject());
         parseSort(schema, params, request);
         parsePagination(schema, params, request);
         parseFilters(schema, params, request);
         parseIncludes(schema, params, request);
     }
 
-    protected void parseIncludes(Schema schema, Map<String,Object> params, ApiRequest request) {
+    protected void parseIncludes(Schema schema, Map<String, Object> params, ApiRequest request) {
         List<String> links = new ArrayList<String>();
         List<?> inputs = RequestUtils.toList(params.get(Collection.INCLUDE));
-        for ( Object input : inputs ) {
+        for (Object input : inputs) {
             links.add(input.toString());
         }
 
-        if ( links.size() > 0 ) {
+        if (links.size() > 0) {
             request.setInclude(new Include(links));
         }
     }
 
-    protected void parseFilters(Schema schema, Map<String,Object> params, ApiRequest request) {
+    protected void parseFilters(Schema schema, Map<String, Object> params, ApiRequest request) {
         IdFormatter formatter = ApiContext.getContext().getIdFormatter();
-        Map<String,Filter> filters = schema.getCollectionFilters();
-        Map<String,Field> fields = schema.getResourceFields();
-        Map<String,List<Condition>> conditions = new TreeMap<String, List<Condition>>();
+        Map<String, Filter> filters = schema.getCollectionFilters();
+        Map<String, Field> fields = schema.getResourceFields();
+        Map<String, List<Condition>> conditions = new TreeMap<String, List<Condition>>();
 
-        for ( Map.Entry<String, Object> entry : params.entrySet() ) {
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
             NameAndOp nameAndOp = new NameAndOp(entry.getKey());
             Filter filter = filters.get(nameAndOp.getName());
             Field field = fields.get(nameAndOp.getName());
-            if ( filter == null || field == null ) {
+            if (filter == null || field == null) {
                 continue;
             }
 
-            for ( String mod : filter.getModifiers() ) {
-                if ( nameAndOp.getOp().equals(mod) ) {
+            for (String mod : filter.getModifiers()) {
+                if (nameAndOp.getOp().equals(mod)) {
                     List<Condition> conditionList = new ArrayList<Condition>();
                     ConditionType conditionType = ConditionType.valueOf(nameAndOp.getOp().toUpperCase());
 
-                    for ( Object obj : RequestUtils.toList(entry.getValue()) ) {
-                        if ( field.getTypeEnum() == FieldType.REFERENCE ) {
+                    for (Object obj : RequestUtils.toList(entry.getValue())) {
+                        if (field.getTypeEnum() == FieldType.REFERENCE) {
                             obj = formatter.parseId(obj.toString());
-                            if ( obj == null ) {
+                            if (obj == null) {
                                 obj = "-1";
                             }
                         }
@@ -95,47 +95,47 @@ public class ParseCollectionAttributes extends AbstractApiRequestHandler {
         request.setConditions(conditions);
     }
 
-    protected void parseSort(Schema schema, Map<String,Object> params, ApiRequest request) {
+    protected void parseSort(Schema schema, Map<String, Object> params, ApiRequest request) {
         SortOrder orderEnum = SortOrder.ASC;
         String sort = RequestUtils.getSingularStringValue(Collection.SORT, params);
         String order = RequestUtils.getSingularStringValue(Collection.ORDER, params);
-        if ( order != null ) {
+        if (order != null) {
             try {
                 orderEnum = SortOrder.valueOf(order.trim().toUpperCase());
-            } catch ( IllegalArgumentException e ) {
+            } catch (IllegalArgumentException e) {
                 // ignore
             }
         }
 
         Field field = schema.getResourceFields().get(sort);
-        if ( field == null || ! schema.getCollectionFilters().containsKey(sort) ) {
+        if (field == null || !schema.getCollectionFilters().containsKey(sort)) {
             return;
         }
 
         URL reverseUrl = ApiContext.getUrlBuilder().reverseSort(orderEnum);
-        if ( reverseUrl == null ) {
+        if (reverseUrl == null) {
             return;
         }
 
         request.setSort(new Sort(sort, orderEnum, reverseUrl));
     }
 
-    protected void parsePagination(Schema schema, Map<String,Object> params, ApiRequest request) {
+    protected void parsePagination(Schema schema, Map<String, Object> params, ApiRequest request) {
         String limit = RequestUtils.getSingularStringValue(Collection.LIMIT, params);
         String marker = RequestUtils.getSingularStringValue(Collection.MARKER, params);
         Pagination pagination = new Pagination(defaultLimit == null ? maxLimit : defaultLimit);
         pagination.setMarker(marker);
 
         try {
-            if ( limit != null ) {
+            if (limit != null) {
                 Integer limitInt = new Integer(limit);
-                if ( maxLimit != null && limitInt.intValue() > maxLimit.intValue() ) {
+                if (maxLimit != null && limitInt.intValue() > maxLimit.intValue()) {
                     limitInt = maxLimit;
                 }
                 pagination.setLimit(limitInt);
             }
         } catch (NumberFormatException e) {
-            //ignore
+            // ignore
         }
 
         request.setPagination(pagination);
@@ -163,11 +163,11 @@ public class ParseCollectionAttributes extends AbstractApiRequestHandler {
 
         public NameAndOp(String value) {
             int idx = value.lastIndexOf("_");
-            if ( idx == -1 ) {
+            if (idx == -1) {
                 this.name = value;
                 this.op = ConditionType.EQ.getExternalForm();
             } else {
-                this.op = value.substring(idx+1);
+                this.op = value.substring(idx + 1);
                 this.name = value.substring(0, idx);
             }
         }

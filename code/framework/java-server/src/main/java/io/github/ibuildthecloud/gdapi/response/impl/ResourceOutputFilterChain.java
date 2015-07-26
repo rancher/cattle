@@ -19,7 +19,7 @@ public class ResourceOutputFilterChain implements ResourceOutputFilter {
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         Resource result = current.filter(request, original, converted);
 
-        if ( result != null ) {
+        if (result != null) {
             result = next.filter(request, original, result);
         }
 

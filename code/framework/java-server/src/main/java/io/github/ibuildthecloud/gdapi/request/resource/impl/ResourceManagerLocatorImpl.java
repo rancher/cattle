@@ -35,18 +35,18 @@ public class ResourceManagerLocatorImpl extends AbstractResourceManagerLocatorIm
             }
             for (Class<?> clz : rm.getTypeClasses()) {
                 String type = schemaFactory.getSchemaName(clz);
-                if ( type != null )
+                if (type != null)
                     resourceManagersByType.put(type, rm);
             }
         }
 
-        for ( ResourceManagerFilter filter : resourceManagerFilters ) {
+        for (ResourceManagerFilter filter : resourceManagerFilters) {
             for (String type : filter.getTypes()) {
                 add(resourceManagerFiltersByType, type, filter);
             }
             for (Class<?> clz : filter.getTypeClasses()) {
                 String type = schemaFactory.getSchemaName(clz);
-                if ( type != null )
+                if (type != null)
                     add(resourceManagerFiltersByType, type, filter);
             }
         }
@@ -55,7 +55,7 @@ public class ResourceManagerLocatorImpl extends AbstractResourceManagerLocatorIm
     @Override
     protected void add(Map<String, List<ResourceManagerFilter>> filters, String key, ResourceManagerFilter filter) {
         List<ResourceManagerFilter> list = filters.get(key);
-        if ( list == null ) {
+        if (list == null) {
             list = new ArrayList<ResourceManagerFilter>();
             filters.put(key, list);
         }
@@ -72,7 +72,6 @@ public class ResourceManagerLocatorImpl extends AbstractResourceManagerLocatorIm
     protected List<ResourceManagerFilter> getResourceManagerFiltersByTypeInternal(String type) {
         return resourceManagerFiltersByType.get(type);
     }
-
 
     @Override
     public ResourceManager getDefaultResourceManager() {

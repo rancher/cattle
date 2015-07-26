@@ -18,15 +18,15 @@ public class RequestOptionsParser extends AbstractApiRequestHandler {
 
     @Override
     public void handle(ApiRequest request) throws IOException {
-        Map<String,String> requestOptions = request.getOptions();
-        Map<String,Object> input = RequestUtils.toMap(request.getRequestObject());
+        Map<String, String> requestOptions = request.getOptions();
+        Map<String, Object> input = RequestUtils.toMap(request.getRequestObject());
 
-        for ( String option : getOptions() ) {
-            if ( input.containsKey(option) ) {
+        for (String option : getOptions()) {
+            if (input.containsKey(option)) {
                 Object value = RequestUtils.makeSingular(input.get(option));
                 String stringValue = DEFAULT_VALUE;
 
-                if ( value != null && ! StringUtils.isBlank(value.toString()) ) {
+                if (value != null && !StringUtils.isBlank(value.toString())) {
                     stringValue = value.toString();
                 }
 

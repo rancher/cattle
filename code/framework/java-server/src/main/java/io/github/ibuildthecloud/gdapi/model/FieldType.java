@@ -14,26 +14,14 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-
 public enum FieldType {
     /*
-     * This order is important, refer to
-     * SchemaFactoryImpl.assignSimpleType()
+     * This order is important, refer to SchemaFactoryImpl.assignSimpleType()
      */
-    STRING(STRING_MODS, String.class),
-    PASSWORD(String.class),
-    FLOAT(NUMBER_MODS, Float.class, Float.TYPE, Double.class, Double.TYPE),
-    INT(NUMBER_MODS, Long.class, Long.TYPE, Integer.class, Integer.TYPE),
-    DATE(NUMBER_MODS, Date.class),
-    BLOB(InputStream.class),
-    BOOLEAN(VALUE_MODS, Boolean.class, Boolean.TYPE),
-    ENUM(VALUE_MODS, String.class),
-    REFERENCE(VALUE_MODS, IdRef.class),
-    ARRAY(List.class, Object[].class),
-    MAP(Map.class),
-    TYPE(Object.class),
-    JSON(Object.class),
-    NONE;
+    STRING(STRING_MODS, String.class), PASSWORD(String.class), FLOAT(NUMBER_MODS, Float.class, Float.TYPE, Double.class, Double.TYPE), INT(NUMBER_MODS,
+            Long.class, Long.TYPE, Integer.class, Integer.TYPE), DATE(NUMBER_MODS, Date.class), BLOB(InputStream.class), BOOLEAN(VALUE_MODS, Boolean.class,
+            Boolean.TYPE), ENUM(VALUE_MODS, String.class), REFERENCE(VALUE_MODS, IdRef.class), ARRAY(List.class, Object[].class), MAP(Map.class), TYPE(
+            Object.class), JSON(Object.class), NONE;
 
     Class<?>[] clzs;
     Set<ConditionType> modifiers = new TreeSet<ConditionType>();
@@ -59,8 +47,8 @@ public enum FieldType {
 
     public static String toString(String name, FieldType fieldType, List<String> list) {
         StringBuilder buffer = new StringBuilder();
-        if ( name == null ) {
-            if ( fieldType != null ) {
+        if (name == null) {
+            if (fieldType != null) {
                 buffer.append(fieldType.getExternalType());
             }
         } else {
@@ -68,15 +56,15 @@ public enum FieldType {
         }
 
         int count = 0;
-        for ( String item : list ) {
-            if ( buffer.length() > 0 ) {
+        for (String item : list) {
+            if (buffer.length() > 0) {
                 count++;
                 buffer.append("[");
             }
             buffer.append(item);
         }
 
-        for ( int i = 0 ; i < count ; i++ ) {
+        for (int i = 0; i < count; i++) {
             buffer.append("]");
         }
 
@@ -87,14 +75,14 @@ public enum FieldType {
         List<TypeAndName> result = new ArrayList<TypeAndName>();
         String[] parts = typeName.split("\\[");
 
-        for ( int i = 0 ; i < parts.length ; i++ ) {
+        for (int i = 0; i < parts.length; i++) {
             String part = StringUtils.stripEnd(parts[i], "]").trim();
             TypeAndName typeAndName = new TypeAndName();
             typeAndName.name = part;
             try {
                 typeAndName.type = FieldType.valueOf(part.toUpperCase());
-            } catch ( IllegalArgumentException e ) {
-                if ( i != parts.length-1 ) {
+            } catch (IllegalArgumentException e) {
+                if (i != parts.length - 1) {
                     throw new IllegalArgumentException("Invalid type [" + typeName + "]", e);
                 }
                 typeAndName.type = FieldType.TYPE;

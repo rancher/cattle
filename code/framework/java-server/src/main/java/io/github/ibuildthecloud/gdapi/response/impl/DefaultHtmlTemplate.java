@@ -38,20 +38,20 @@ public class DefaultHtmlTemplate implements HtmlTemplate {
         String result = header;
 
         URL schemaUrl = ApiContext.getUrlBuilder().resourceCollection(Schema.class);
-        if ( schemaUrl == null ) {
-            result = result.replace("%SCHEMAS%","");
+        if (schemaUrl == null) {
+            result = result.replace("%SCHEMAS%", "");
         } else {
             result = result.replace("%SCHEMAS%", schemaUrl.toExternalForm());
         }
 
-        if ( "true".equals(SettingsUtil.getSetting(settings, "api.dev", "")) ) {
+        if ("true".equals(SettingsUtil.getSetting(settings, "api.dev", ""))) {
             Cookie[] cookies = request.getServletContext().getRequest().getCookies();
-            if ( cookies != null ) {
-                for ( Cookie cookie : cookies ) {
-                    if ( "js.url".equals(cookie.getName()) && ! StringUtils.isEmpty(cookie.getValue()) ) {
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("js.url".equals(cookie.getName()) && !StringUtils.isEmpty(cookie.getValue())) {
                         result = result.replace("%JS%", cookie.getValue());
                     }
-                    if ( "css.url".equals(cookie.getName()) && ! StringUtils.isEmpty(cookie.getValue()) ) {
+                    if ("css.url".equals(cookie.getName()) && !StringUtils.isEmpty(cookie.getValue())) {
                         result = result.replace("%CSS%", cookie.getValue());
                     }
                 }
@@ -62,7 +62,7 @@ public class DefaultHtmlTemplate implements HtmlTemplate {
         result = result.replace("%CSS%", SettingsUtil.getSetting(settings, "api.css.url", getCssUrl()));
 
         String user = getUser(request, response);
-        if ( user == null ) {
+        if (user == null) {
             user = "";
         }
 
@@ -86,7 +86,7 @@ public class DefaultHtmlTemplate implements HtmlTemplate {
 
         try {
             is = this.getClass().getResourceAsStream("header.txt");
-            if ( is == null ) {
+            if (is == null) {
                 is = DefaultHtmlTemplate.class.getResourceAsStream("header.txt");
             }
             header = IOUtils.toString(is);
@@ -96,7 +96,7 @@ public class DefaultHtmlTemplate implements HtmlTemplate {
 
         try {
             is = this.getClass().getResourceAsStream("footer.txt");
-            if ( is == null ) {
+            if (is == null) {
                 is = DefaultHtmlTemplate.class.getResourceAsStream("footer.txt");
             }
             footer = IOUtils.toByteArray(is);
