@@ -2104,7 +2104,7 @@ def test_service_link_emu_docker_link(super_client, client, context):
     service_link3 = {"serviceId": server2.id, "name": "server2"}
     service_link4 = {"serviceId": server3.id}
     service_link5 = {"serviceId": server4.id, "name": ""}
-    service.\
+    service. \
         setservicelinks(serviceLinks=[service_link1,
                                       service_link2, service_link3,
                                       service_link4, service_link5])
@@ -2157,22 +2157,19 @@ def test_service_link_emu_docker_link(super_client, client, context):
         assert map.consumedServiceId in {server.id, server2.id,
                                          server3.id, server4.id}
         assert link.instanceId is not None
+        expose_map = link.targetInstance().serviceExposeMaps()[0]
         if map.consumedServiceId == server.id:
             assert link.linkName == 'other'
-            expose_map = link.targetInstance().serviceExposeMaps()[0]
             assert expose_map.serviceId == server.id
         elif map.consumedServiceId == server2.id:
             assert link.linkName == 'server2'
-            assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
-                server2.id
+            assert expose_map.serviceId == server2.id
         elif map.consumedServiceId == server3.id:
             assert link.linkName == 'server3'
-            assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
-                server3.id
+            assert expose_map.serviceId == server3.id
         elif map.consumedServiceId == server4.id:
             assert link.linkName == 'server4'
-            assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
-                server4.id
+            assert expose_map.serviceId == server4.id
 
 
 def test_export_config(client, context):
@@ -2194,6 +2191,42 @@ def test_export_config(client, context):
     assert compose_config is not None
     document = yaml.load(compose_config.dockerComposeConfig)
     assert document[service.name]['cpuset'] == "0,1"
+
+
+def test_validate_image(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    # 1. invalide image in primary config
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": "ubuntu:14:04"}
+
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config,
+                              secondaryLaunchConfigs=[secondary_lc])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidReference'
+    assert e.value.error.fieldName == 'imageUuid'
+
+    # 2. invalide image in secondary config
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    secondary_lc = {"imageUuid": "ubuntu:14:04", "name": "secondary"}
+
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config,
+                              secondaryLaunchConfigs=[secondary_lc])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidReference'
+    assert e.value.error.fieldName == 'imageUuid'
 
 
 def _get_instance_for_service(super_client, serviceId):
