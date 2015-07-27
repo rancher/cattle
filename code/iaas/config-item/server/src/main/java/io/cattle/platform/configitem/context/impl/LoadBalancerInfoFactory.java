@@ -107,22 +107,35 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             }
         });
         List<LoadBalancerTargetsInfo> notNullDomainAndPath = new ArrayList<>();
-        List<LoadBalancerTargetsInfo> nullDomainOrPath = new ArrayList<>();
+        List<LoadBalancerTargetsInfo> notNullDomain = new ArrayList<>();
+        List<LoadBalancerTargetsInfo> notNullPath = new ArrayList<>();
         List<LoadBalancerTargetsInfo> defaultDomainAndPath = new ArrayList<>();
+        /*
+         * The order on haproxy should be as follows (from top to bottom):
+         * 1) acls with domain/url
+         * 2) acls with domain
+         * 3) acls with /url
+         * 4) default rules
+         */
         for (LoadBalancerTargetsInfo targetInfo : targetsInfo) {
-            boolean pathNull = targetInfo.getPortSpec().getPath().equalsIgnoreCase(LoadBalancerTargetPortSpec.DEFAULT);
-            boolean domainNull = targetInfo.getPortSpec().getDomain().equalsIgnoreCase(LoadBalancerTargetPortSpec.DEFAULT);
+            boolean pathNotNull = !targetInfo.getPortSpec().getPath()
+                    .equalsIgnoreCase(LoadBalancerTargetPortSpec.DEFAULT);
+            boolean domainNotNull = !targetInfo.getPortSpec().getDomain()
+                    .equalsIgnoreCase(LoadBalancerTargetPortSpec.DEFAULT);
             
-            if (pathNull && domainNull) {
-                defaultDomainAndPath.add(targetInfo);
-            } else if (!pathNull && !domainNull) {
+            if (pathNotNull && domainNotNull) {
                 notNullDomainAndPath.add(targetInfo);
+            } else if (domainNotNull) {
+                notNullDomain.add(targetInfo);
+            } else if (pathNotNull) {
+                notNullPath.add(targetInfo);
             } else {
-                nullDomainOrPath.add(targetInfo);
+                defaultDomainAndPath.add(targetInfo);
             }
         }
         toReturn.addAll(notNullDomainAndPath);
-        toReturn.addAll(nullDomainOrPath);
+        toReturn.addAll(notNullDomain);
+        toReturn.addAll(notNullPath);
         toReturn.addAll(defaultDomainAndPath);
 
         return toReturn;
