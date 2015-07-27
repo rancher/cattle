@@ -1,5 +1,6 @@
 from common_fixtures import *  # NOQA
 from cattle import ApiError
+import yaml
 
 
 def create_env_and_svc(client, context):
@@ -2172,6 +2173,27 @@ def test_service_link_emu_docker_link(super_client, client, context):
             assert link.linkName == 'server4'
             assert link.targetInstance().serviceExposeMaps()[0].serviceId == \
                 server4.id
+
+
+def test_export_config(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    # create service with cpuset
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "cpuSet": "0,1"}
+    service = client. \
+        create_service(name="web",
+                       environmentId=env.id,
+                       launchConfig=launch_config)
+
+    service = client.wait_success(service)
+
+    compose_config = env.exportconfig()
+    assert compose_config is not None
+    document = yaml.load(compose_config.dockerComposeConfig)
+    assert document[service.name]['cpuset'] == "0,1"
 
 
 def _get_instance_for_service(super_client, serviceId):
