@@ -9,8 +9,9 @@
     </parent>
     <dependencies>
         <dependency>
-            <groupId>io.github.ibuildthecloud</groupId>
-            <artifactId>gdapi-java-server</artifactId>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-java-server</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>

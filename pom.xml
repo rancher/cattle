@@ -22,6 +22,7 @@
         <module>code/framework/events</module>
         <module>code/framework/extension</module>
         <module>code/framework/extension-spring</module>
+        <module>code/framework/java-server</module>
         <module>code/framework/jmx</module>
         <module>code/framework/jooq</module>
         <module>code/framework/json</module>
