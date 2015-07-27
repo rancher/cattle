@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceExposeMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord> {
 
-	private static final long serialVersionUID = -1228776039;
+	private static final long serialVersionUID = -2039587769;
 
 	/**
 	 * The singleton instance of <code>cattle.service_expose_map</code>

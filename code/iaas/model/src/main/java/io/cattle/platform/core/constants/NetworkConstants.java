@@ -10,5 +10,6 @@ public class NetworkConstants {
 
     public static final String KIND_HOSTONLY = "hostOnlyNetwork";
     public static final String KIND_NETWORK = "network";
+    public static final String KIND_VIP_NETWORK = "vipNetwork";
 
 }

@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -18,6 +19,9 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
     @Inject
     ServiceDiscoveryService sdService;
 
+    @Inject
+    NetworkDao ntwkDao;
+
     @Override
     public String[] getProcessNames() {
         return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE };
@@ -29,7 +33,8 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
         if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
             sdService.createLoadBalancerService(service);
         }
-
+        
+        sdService.setVIP(service);
         return null;
     }
 }

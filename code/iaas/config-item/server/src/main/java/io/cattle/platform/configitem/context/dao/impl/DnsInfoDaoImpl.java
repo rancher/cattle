@@ -124,19 +124,25 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
     }
 
     @Override
-    public List<DnsEntryData> getServiceHostDnsData(final Instance instance) {
-        final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap();
+    public List<DnsEntryData> getServiceHostDnsData(final Instance instance, final boolean isVIPProvider) {
+    final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap();
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
+                Service service = (Service) input.get(0);
                 Map<String, List<String>> resolve = new HashMap<>();
                 List<String> ips = new ArrayList<>();
                 IpAddress sourceIp = getIpAddress((IpAddress) input.get(2), (Nic) input.get(7), true, instanceIdToHostIpMap);
-                IpAddress targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(6), false, instanceIdToHostIpMap);
+                if (isVIPProvider) {
+                    ips.add(service.getVip());
+                } else {
+                    IpAddress targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(6), false,
+                            instanceIdToHostIpMap);
+                    ips.add(targetIp.getAddress());
+                }
+                String dnsName = getDnsName(service, input.get(4), input.get(5), false);
                 data.setSourceIpAddress(sourceIp);
-                ips.add(targetIp.getAddress());
-                String dnsName = getDnsName(input.get(0), input.get(4), input.get(5), false);
                 resolve.put(dnsName, ips);
                 data.setResolve(resolve);
                 data.setInstance((Instance) input.get(3));
@@ -206,18 +212,26 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
     }
 
     @Override
-    public List<DnsEntryData> getSelfServiceLinks(Instance instance) {
-        final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap();
+    public List<DnsEntryData> getSelfServiceLinks(Instance instance, final boolean isVIPProvider) {
+    final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap();
+
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
                 Map<String, List<String>> resolve = new HashMap<>();
                 IpAddress sourceIp = getIpAddress((IpAddress) input.get(2), (Nic) input.get(6), true, instanceIdToHostIpMap);
-                IpAddress targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(5), false, instanceIdToHostIpMap);
+                Service service = (Service) input.get(0);
+                String dnsName = getDnsName(service, null, input.get(4), true);
                 List<String> ips = new ArrayList<>();
-                ips.add(targetIp.getAddress());
-                resolve.put(getDnsName(input.get(0), null, input.get(4), true), ips);
+                if (isVIPProvider) {
+                    ips.add(service.getVip());
+                } else {
+                    IpAddress targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(5), false,
+                            instanceIdToHostIpMap);
+                    ips.add(targetIp.getAddress());
+                }
+                resolve.put(dnsName, ips);
                 data.setSourceIpAddress(sourceIp);
                 data.setResolve(resolve);
                 data.setInstance((Instance) input.get(3));
@@ -352,14 +366,19 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
 
     @Override
-    public List<DnsEntryData> getDnsServiceLinks(Instance instance) {
+    public List<DnsEntryData> getDnsServiceLinks(Instance instance, final boolean isVIPProvider) {
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
                 Map<String, List<String>> resolve = new HashMap<>();
                 List<String> ips = new ArrayList<>();
-                ips.add(((IpAddress) input.get(1)).getAddress());
+                if (isVIPProvider) {
+                    Service targetService = (Service) input.get(6);
+                    ips.add(targetService.getVip());
+                } else {
+                    ips.add(((IpAddress) input.get(1)).getAddress());
+                }
                 resolve.put(getDnsName(input.get(0), input.get(4), input.get(5), false), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
@@ -374,6 +393,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         InstanceTable clientInstance = mapper.add(INSTANCE);
         ServiceConsumeMapTable dnsConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
         ServiceExposeMapTable targetServiceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
+        ServiceTable consumedService = mapper.add(SERVICE);
 
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
@@ -412,6 +432,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(clientNicIpTable.IP_ADDRESS_ID.eq(clientIpAddress.ID))
                 .join(clientInstance)
                 .on(clientNic.INSTANCE_ID.eq(clientInstance.ID))
+                .join(consumedService)
+                .on(consumedService.ID.eq(serviceConsumeMap.CONSUMED_SERVICE_ID))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
                         .and(NIC.VNET_ID.isNotNull())
                         .and(NIC.REMOVED.isNull())

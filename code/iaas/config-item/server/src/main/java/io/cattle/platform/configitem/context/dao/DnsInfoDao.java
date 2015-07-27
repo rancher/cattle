@@ -8,11 +8,11 @@ import java.util.List;
 public interface DnsInfoDao {
     List<DnsEntryData> getInstanceLinksHostDnsData(Instance instance);
 
-    List<DnsEntryData> getServiceHostDnsData(Instance instance);
+    List<DnsEntryData> getServiceHostDnsData(Instance instance, boolean isVIPProvider);
 
-    List<DnsEntryData> getSelfServiceLinks(Instance instance);
+    List<DnsEntryData> getSelfServiceLinks(Instance instance, boolean isVIPProvider);
 
     List<DnsEntryData> getExternalServiceDnsData(Instance instance);
 
-    List<DnsEntryData> getDnsServiceLinks(Instance instance);
+    List<DnsEntryData> getDnsServiceLinks(Instance instance, boolean isVIPProvider);
 }

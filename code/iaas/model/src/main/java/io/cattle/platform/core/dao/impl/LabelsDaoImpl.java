@@ -36,7 +36,7 @@ public class LabelsDaoImpl extends AbstractJooqDao implements LabelsDao {
                     .and(HOST_LABEL_MAP.REMOVED.isNull())
                 .fetchInto(Label.class);
     }
-
+    
     @Override
     public Label getLabelForInstance(long instanceId, String labelKey) {
         List<Label> labels = create()
@@ -49,7 +49,6 @@ public class LabelsDaoImpl extends AbstractJooqDao implements LabelsDao {
                 .and(LABEL.KEY.eq(labelKey))
                 .and(INSTANCE_LABEL_MAP.REMOVED.isNull())
                 .fetchInto(Label.class);
-
         if (labels.isEmpty()) {
             return null;
         }

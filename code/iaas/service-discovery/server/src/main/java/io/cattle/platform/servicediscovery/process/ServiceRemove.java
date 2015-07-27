@@ -38,6 +38,8 @@ public class ServiceRemove extends AbstractObjectProcessHandler {
             sdService.cleanupLoadBalancerService(service);
         }
 
+        sdService.releaseVip(service);
+
         return null;
     }
 }
