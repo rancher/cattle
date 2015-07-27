@@ -1,11 +1,8 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
@@ -111,19 +108,6 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
     public void waitForNotTransitioning() {
         if (this.instance != null) {
             this.instance = context.resourceMonitor.waitForNotTransitioning(this.instance);
-        }
-    }
-
-    @Override
-    public void waitForAllocate() {
-        if (this.instance != null) {
-            instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
-                @Override
-                public boolean evaluate(Instance obj) {
-                    return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
-                            instance.getId()).size() > 0;
-                }
-            });
         }
     }
 }

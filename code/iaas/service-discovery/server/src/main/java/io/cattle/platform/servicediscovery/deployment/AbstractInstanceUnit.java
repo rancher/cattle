@@ -1,9 +1,12 @@
 package io.cattle.platform.servicediscovery.deployment;
 
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl;
 
 public abstract class AbstractInstanceUnit extends DeploymentUnitInstance implements InstanceUnit {
@@ -40,5 +43,18 @@ public abstract class AbstractInstanceUnit extends DeploymentUnitInstance implem
     @Override
     public boolean isHealthCheckInitializing() {
         return instance != null && HealthcheckConstants.HEALTH_STATE_INITIALIZING.equals(instance.getHealthState());
+    }
+
+    @Override
+    public void waitForAllocate() {
+        if (this.instance != null) {
+            instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
+                @Override
+                public boolean evaluate(Instance obj) {
+                    return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
+                            instance.getId()).size() > 0;
+                }
+            });
+        }
     }
 }
