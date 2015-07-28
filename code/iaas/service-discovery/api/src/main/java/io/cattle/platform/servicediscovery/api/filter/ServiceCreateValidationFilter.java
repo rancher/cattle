@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
@@ -7,9 +8,11 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
@@ -33,6 +36,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @Inject
     ObjectManager objectManager;
 
+    @Inject
+    StorageService storageService;
+
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[] { Service.class };
@@ -53,7 +59,22 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateIpsHostName(request);
 
+        validateImage(request, service);
+
         return super.create(type, request, next);
+    }
+
+    protected void validateImage(ApiRequest request, Service service) {
+        List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
+        for (Map<String, Object> launchConfig : launchConfigs) {
+            Object imageUuid = launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
+            if (imageUuid != null) {
+                if (!storageService.isValidUUID(imageUuid.toString())) {
+                    throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE,
+                            InstanceConstants.FIELD_IMAGE_UUID);
+                }
+            }
+        }
     }
 
     protected void validateIpsHostName(ApiRequest request) {

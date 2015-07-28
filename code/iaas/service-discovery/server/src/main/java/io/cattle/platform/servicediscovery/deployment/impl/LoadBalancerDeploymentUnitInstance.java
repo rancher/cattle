@@ -1,13 +1,10 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.LoadBalancerTable.*;
-
+import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.Service;
@@ -104,19 +101,6 @@ public class LoadBalancerDeploymentUnitInstance extends AbstractInstanceUnit {
     public void waitForNotTransitioning() {
         if (this.hostMap != null) {
             this.hostMap = context.resourceMonitor.waitForNotTransitioning(this.hostMap);
-        }
-    }
-
-    @Override
-    public void waitForAllocate() {
-        if (this.instance != null) {
-            instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
-                @Override
-                public boolean evaluate(Instance obj) {
-                    return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
-                            instance.getId()).size() > 0;
-                }
-            });
         }
     }
 }
