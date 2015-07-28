@@ -7,10 +7,8 @@ import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,7 +31,11 @@ public class DefaultApiRequestParser implements ApiRequestParser {
 
     public static final String DEFAULT_OVERRIDE_URL_HEADER = "X-API-request-url";
     public static final String DEFAULT_OVERRIDE_CLIENT_IP_HEADER = "X-API-client-ip";
-    public static final String FORWARDED_HEADER = "X-Forwarded-For";
+    public static final String FORWARDED_FOR_HEADER = "X-Forwarded-For";
+    public static final String FORWARDED_HOST_HEADER = "X-Forwarded-Host";
+    public static final String FORWARDED_PROTO_HEADER = "X-Forwarded-Proto";
+    public static final String FORWARDED_PORT_HEADER = "X-Forwarded-Port";
+    public static final String HOST_HEADER = "Host";
 
     public static final String HTML = "html";
     public static final String JSON = "json";
@@ -160,22 +162,76 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         String clientIp = request.getRemoteAddr();
 
         clientIp = getOverrideHeader(request, overrideClientIpHeader, clientIp);
-        clientIp = getOverrideHeader(request, FORWARDED_HEADER, clientIp, false);
+        clientIp = getOverrideHeader(request, FORWARDED_FOR_HEADER, clientIp, false);
 
         return clientIp;
     }
 
+    /**
+     * Constructs the request URL based off of standard headers in the request, falling back to the HttpServletRequest.getRequestURL() 
+     * if the headers aren't available. Here is the ordered list of how we'll attempt to construct the URL: 
+     *  - x-api-request-url
+     *  - x-forwarded-proto://x-forwarded-host:x-forwarded-port/HttpServletRequest.getRequestURI()
+     *  - x-forwarded-proto://x-forwarded-host/HttpServletRequest.getRequestURI() 
+     *  - x-forwarded-proto://host:x-forwarded-port/HttpServletRequest.getRequestURI()
+     *  - x-forwarded-proto://host/HttpServletRequest.getRequestURI() request.getRequestURL()
+     * 
+     * Additional notes: 
+     *  - With x-api-request-url, the query string is passed, it will be dropped to match the other formats. 
+     *  - If the x-forwarded-host/host header has a port and x-forwarded-port has been passed, x-forwarded-port will be used.
+     */
     protected String parseRequestUrl(ApiRequest apiRequest, HttpServletRequest request) {
-        String requestUrl = null;
-        try {
-            requestUrl = URLDecoder.decode(request.getRequestURL().toString(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
+        // Get url from custom x-api-request-url header
+        String requestUrl = getOverrideHeader(request, overrideUrlHeader, null);
+        if (requestUrl != null) {
+            String[] parts = requestUrl.split("\\?", 2);
+            return parts[0];
         }
 
-        requestUrl = getOverrideHeader(request, overrideUrlHeader, requestUrl);
+        // Get url from standard headers
+        requestUrl = getUrlFromStandardHeaders(request);
+        if (requestUrl != null) {
+            return requestUrl;
+        }
 
-        return requestUrl;
+        // Use incoming url
+        return request.getRequestURL().toString();
+    }
+
+    private String getUrlFromStandardHeaders(HttpServletRequest request) {
+        String xForwardedProto = getOverrideHeader(request, FORWARDED_PROTO_HEADER, null, false);
+        if (xForwardedProto == null) {
+            return null;
+        }
+
+        String host = getOverrideHeader(request, FORWARDED_HOST_HEADER, null, false);
+        if (host == null) {
+            host = getOverrideHeader(request, HOST_HEADER, null, false);
+        }
+
+        if (host == null) {
+            return null;
+        }
+
+        String port = getOverrideHeader(request, FORWARDED_PORT_HEADER, null, false);
+        if (StringUtils.equals(port, "443") || StringUtils.equals(port, "80")) {
+            port = null; // Don't include default ports in url
+        }
+
+        if (port != null && host.contains(":")) {
+            // Have to strip the port that is in the host. Handle IPv6, which has this format: [::1]:8080
+            if ((host.startsWith("[") && host.contains("]:")) || !host.startsWith("[")) {
+                host = host.substring(0, host.lastIndexOf(":"));
+            }
+        }
+
+        StringBuilder builder = new StringBuilder(xForwardedProto).append("://").append(host);
+        if (port != null) {
+            builder.append(":").append(port);
+        }
+        builder.append(request.getRequestURI());
+
+        return builder.toString();
     }
 
     protected String parseResponseUrlBase(ApiRequest apiRequest, HttpServletRequest request) {
