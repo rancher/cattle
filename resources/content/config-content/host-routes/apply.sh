@@ -7,6 +7,7 @@ OUTPUT=content-home/etc/cattle/subnet-bridge-gateway
 subnet_bridge_gateway()
 {
     if [ ! -e $OUTPUT ]; then
+        DNS_ROUTE=false
         while read UUID SUBNET GATEWAY URI; do
             BRIDGE=$(docker inspect --format '{{.NetworkSettings.Bridge}}' $UUID || true)
 
@@ -19,6 +20,11 @@ subnet_bridge_gateway()
 
             if [ -n "$BRIDGE" ]; then
                 echo $SUBNET $BRIDGE $GATEWAY
+                if [ "$DNS_ROUTE" = "false" ]; then
+                    # First bridge wins.  Really need to think about multibridge for 1.9
+                    DNS_ROUTE=true
+                    echo 169.254.169.250/32 $BRIDGE $GATEWAY
+                fi
             fi
         done < content-home/etc/cattle/host-routes.in | sort -u > $OUTPUT
     fi

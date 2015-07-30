@@ -10,4 +10,6 @@ public interface LabelsDao {
 
     List<Label> getLabelsForHost(Long hostId);
 
+    Label getLabelForInstance(long instanceId, String labelKey);
+
 }

@@ -1,11 +1,11 @@
 package io.cattle.platform.core.dao.impl;
 
 
-import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.*;
-import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
-import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
-import static io.cattle.platform.core.model.tables.NetworkTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.NETWORK_SERVICE_PROVIDER_INSTANCE_MAP;
+import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER;
+import static io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
+import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
+import static io.cattle.platform.core.model.tables.NicTable.NIC;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -18,12 +18,13 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
-import org.jooq.Condition;
-import org.jooq.impl.DSL;
 
 import java.util.List;
 
 import javax.inject.Inject;
+
+import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 

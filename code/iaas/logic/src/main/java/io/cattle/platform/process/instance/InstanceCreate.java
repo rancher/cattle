@@ -1,28 +1,33 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.CREDENTIAL_INSTANCE_MAP;
+import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
+import static io.cattle.platform.core.model.tables.NicTable.NIC;
+import static io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.util.SystemLabels;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,15 +48,20 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     @Inject
     GenericResourceDao resourceDao;
-
+    @Inject
     JsonMapper jsonMapper;
+    @Inject
     ObjectProcessManager processManager;
+
+    @Inject
+    LabelsDao labelsDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         setCreateStart(state);
 
         Instance instance = (Instance) state.getResource();
+
         List<Volume> volumes = objectManager.children(instance, Volume.class);
         List<Nic> nics = objectManager.children(instance, Nic.class);
 
@@ -153,11 +163,39 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     }
 
     protected Set<Long> createNics(Instance instance, List<Nic> nics, Map<String, Object> data) {
-        List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_NETWORK_IDS, Long.class);
+        List<Long> networkIds = populateNetworks(instance);
         List<Long> subnetIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_SUBNET_IDS, Long.class);
         List<Long> vnetIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_VNET_IDS, Long.class);
-
         return createNicsFromIds(instance, nics, data, networkIds, subnetIds, vnetIds);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected List<Long> populateNetworks(Instance instance) {
+        List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_NETWORK_IDS,
+                Long.class);
+        Map<String, String> instanceLabels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)
+                .withDefault(Collections.EMPTY_MAP).as(Map.class);
+
+        String dnsLabel = instanceLabels.get(SystemLabels.LABEL_USE_RANCHER_DNS);
+        if (networkIds == null || dnsLabel == null || !dnsLabel.equals("true")) {
+            return networkIds;
+        }
+        Network hostNetwork = null;
+        Network managedNetwork = null;
+        for (Long networkId : networkIds) {
+            Network network = objectManager.loadResource(Network.class, networkId);
+            if (network.getKind().equalsIgnoreCase(DockerNetworkConstants.KIND_DOCKER_HOST)) {
+                hostNetwork = network;
+            } else if (network.getKind().equalsIgnoreCase(NetworkConstants.KIND_HOSTONLY)) {
+                managedNetwork = network;
+            }
+        }
+        if (hostNetwork != null && managedNetwork == null) {
+            managedNetwork = objectManager.findOne(Network.class, NETWORK.ACCOUNT_ID, instance.getAccountId(),
+                    NETWORK.KIND, NetworkConstants.KIND_HOSTONLY, NETWORK.REMOVED, null);
+            networkIds.add(managedNetwork.getId());
+        }
+        return networkIds;
     }
 
     protected Set<Long> createNicsFromIds(Instance instance, List<Nic> nics, Map<String, Object> data, List<Long> networkIds, List<Long> subnetIds,
@@ -299,25 +337,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     protected void setCreateStart(ProcessState state) {
         DataAccessor.fromMap(state.getData()).withScope(InstanceCreate.class).withKey(InstanceConstants.FIELD_START_ON_CREATE).set(true);
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Override
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public ObjectProcessManager getProcessManager() {
-        return processManager;
-    }
-
-    @Inject
-    public void setProcessManager(ObjectProcessManager processManager) {
-        this.processManager = processManager;
     }
 
 }

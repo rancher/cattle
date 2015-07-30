@@ -18,6 +18,10 @@
                     </#if>
                 </#list>
         ],
+        	<#else>
+        "recurse": [
+            PARENT_DNS
+        ],
         	</#if>
             <#if dnsEntry.resolve?has_content>
         "a": {
