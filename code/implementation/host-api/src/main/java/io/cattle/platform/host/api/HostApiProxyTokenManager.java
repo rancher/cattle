@@ -62,7 +62,7 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
             break;
 
         case HOST_API_PROXY_MODE_HA:
-            String scheme = StringUtils.equalsIgnoreCase("https", request.getServletContext().getRequest().getScheme()) ? "wss://" : "ws://";
+            String scheme = StringUtils.startsWithIgnoreCase(request.getResponseUrlBase(), "https") ? "wss://" : "ws://";
             buffer.append(scheme).append(HostApiUtils.HOST_API_PROXY_HOST.get());
             break;
 

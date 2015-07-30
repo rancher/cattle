@@ -69,7 +69,7 @@ public class HostApiServiceImpl implements HostApiService {
             // TODO Implement HA-aware proxy lookup
             String proxyHost = HostApiUtils.HOST_API_PROXY_HOST.get();
             if (StringUtils.isNotBlank(proxyHost)) {
-                String scheme = StringUtils.equalsIgnoreCase("https", request.getServletContext().getRequest().getScheme()) ? "wss://" : "ws://";
+                String scheme = StringUtils.startsWithIgnoreCase(request.getResponseUrlBase(), "https") ? "wss://" : "ws://";
                 buffer.append(scheme).append(proxyHost);
             }
             break;
