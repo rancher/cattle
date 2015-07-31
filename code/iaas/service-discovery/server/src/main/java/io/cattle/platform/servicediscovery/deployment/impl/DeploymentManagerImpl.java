@@ -12,6 +12,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
@@ -36,6 +37,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 public class DeploymentManagerImpl implements DeploymentManager {
@@ -68,6 +70,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     ConfigItemStatusManager itemManager;
     @Inject
     EventService eventService;
+    @Inject
+    JsonMapper mapper;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -311,5 +315,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public LoadBalancerService lbService = lbSvc;
         final public DeploymentUnitInstanceFactory deploymentUnitInstanceFactory = unitInstanceFactory;
         final public AllocatorService allocatorService = allocatorSvc;
+        final public JsonMapper jsonMapper = mapper;
     }
 }

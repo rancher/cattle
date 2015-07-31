@@ -61,7 +61,7 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     }
 
     @Override
-    public DeploymentUnitInstance start(Map<String, Object> deployParams) {
+    public DeploymentUnitInstance create(Map<String, Object> deployParams) {
         if (createNew()) {
             if (this.ipAddress != null) {
                 this.exposeMap = context.exposeMapDao.createIpToServiceMap(this.service, this.ipAddress);
@@ -85,7 +85,7 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     }
 
     @Override
-    public DeploymentUnitInstance waitForStart() {
+    public DeploymentUnitInstance waitForStartImpl() {
         this.exposeMap = context.resourceMonitor.waitFor(this.exposeMap, new ResourcePredicate<ServiceExposeMap>() {
             @Override
             public boolean evaluate(ServiceExposeMap obj) {
@@ -96,7 +96,7 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     }
 
     @Override
-    public boolean isStarted() {
+    protected boolean isStartedImpl() {
         return this.exposeMap != null && this.exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE);
     }
 
@@ -119,5 +119,10 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
 
     public boolean isHealthCheckInitializing() {
         return false;
+    }
+
+    @Override
+    protected DeploymentUnitInstance startImpl() {
+        return this;
     }
 }

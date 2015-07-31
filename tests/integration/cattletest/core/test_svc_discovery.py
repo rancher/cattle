@@ -2229,6 +2229,46 @@ def test_validate_image(client, context):
     assert e.value.error.fieldName == 'imageUuid'
 
 
+def test_validate_restart_policy(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    restart_policy = {"maximumRetryCount": 0, "name": "no"}
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "restartPolicy": restart_policy}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=3)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    # activate services
+    env.activateservices()
+    service = client.wait_success(service, 120)
+    assert service.state == "active"
+
+    instance1 = _validate_compose_instance_start(client, service, env, "1")
+    _validate_compose_instance_start(client, service, env, "2")
+    instance3 = _validate_compose_instance_start(client, service, env, "3")
+    # stop instance1 and destroy instance 3
+    client.wait_success(instance1.stop())
+    _instance_remove(instance3, client)
+
+    # wait for reconcile
+    _wait_until_active_map_count(service, 3, client, timeout=30)
+    service = client.wait_success(service)
+    assert service.state == "active"
+
+    # validate that instance1 remains in stopped state,
+    # and instance 3 was recreated
+    instance1 = client.reload(instance1)
+    assert instance1.state == 'stopped'
+    _validate_compose_instance_start(client, service, env, "3")
+
+
 def _get_instance_for_service(super_client, serviceId):
     instances = []
     instance_service_maps = super_client. \

@@ -186,7 +186,7 @@ public class DeploymentUnit {
         Integer networkContainerId = getNetworkContainerId(launchConfigName, service);
         getDeploymentUnitInstance(service, launchConfigName).waitForNotTransitioning();
         getDeploymentUnitInstance(service, launchConfigName)
-                .start(
+                .createAndStart(
                         populateDeployParams(getDeploymentUnitInstance(service, launchConfigName),
                                 volumesFromInstanceIds,
                                 networkContainerId));
@@ -219,7 +219,7 @@ public class DeploymentUnit {
                         volumesFromUnitInstance = createInstance(volumesFromUnitInstance.getLaunchConfigName(), service);
                     }
                     // wait for start
-                    volumesFromUnitInstance.start(new HashMap<String, Object>());
+                    volumesFromUnitInstance.createAndStart(new HashMap<String, Object>());
                     volumesFromUnitInstance.waitForStart();
                     volumesFromInstanceIds.add(((InstanceUnit) volumesFromUnitInstance).getInstance().getId()
                             .intValue());
@@ -256,7 +256,7 @@ public class DeploymentUnit {
                     networkFromUnitInstance = createInstance(networkFromUnitInstance.getLaunchConfigName(), service);
                 }
                 // wait for start
-                networkFromUnitInstance.start(new HashMap<String, Object>());
+                networkFromUnitInstance.createAndStart(new HashMap<String, Object>());
                 networkFromUnitInstance.waitForStart();
                 networkContainerId = ((InstanceUnit) networkFromUnitInstance).getInstance().getId().intValue();
             }

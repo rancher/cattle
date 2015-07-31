@@ -62,7 +62,7 @@ public abstract class ServiceDeploymentPlanner {
         return false;
     }
 
-    public abstract boolean needToReconcileDeploymentImpl();
+    protected abstract boolean needToReconcileDeploymentImpl();
 
     public void addUnits(List<DeploymentUnit> units) {
         this.healthyUnits.addAll(units);
