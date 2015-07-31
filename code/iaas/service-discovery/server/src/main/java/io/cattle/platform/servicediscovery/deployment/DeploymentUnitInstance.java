@@ -12,6 +12,8 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * TODO: Since the majority of the system references DeploymentUnitInstance and not InstanceUnit
  * and majority of the functions in DeploymentUnitInstance are abstract, we should really just combine
@@ -57,7 +59,9 @@ public abstract class DeploymentUnitInstance {
         Object policy = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
                 DockerInstanceConstants.FIELD_RESTART_POLICY);
 
-        if (policy != null && ((Map<String, String>) policy).get("name").equalsIgnoreCase(RestartPolicy.RESTART_NEVER)) {
+        if (policy != null
+                && StringUtils
+                        .equalsIgnoreCase(RestartPolicy.RESTART_NEVER, ((Map<String, String>) policy).get("name"))) {
             autoRestart = false;
         }
     }

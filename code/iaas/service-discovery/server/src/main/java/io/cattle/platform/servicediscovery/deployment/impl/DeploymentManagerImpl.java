@@ -179,6 +179,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
         deleteBadUnits(planner);
 
         /*
+         * Cleanup incomplete units
+         */
+        cleanupIncompleteUnits(planner);
+
+        /*
          * Activate all the units
          */
         startUnits(planner);
@@ -233,6 +238,14 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
         for (DeploymentUnit badUnit : badUnits) {
             badUnit.remove();
+        }
+    }
+
+    protected void cleanupIncompleteUnits(ServiceDeploymentPlanner planner) {
+        List<DeploymentUnit> incompleteUnits = planner.getIncompleteUnits();
+
+        for (DeploymentUnit incompleteUnit : incompleteUnits) {
+            incompleteUnit.cleanupUnit();
         }
     }
 

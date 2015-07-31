@@ -24,6 +24,24 @@ import java.util.Map;
 import java.util.UUID;
 
 public class DeploymentUnit {
+    
+    public static class SidekickType {
+        public static List<SidekickType> supportedTypes = new ArrayList<>();
+        public static final SidekickType DATA = new SidekickType(DockerInstanceConstants.FIELD_VOLUMES_FROM,
+                ServiceDiscoveryConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG, true);
+        public static final SidekickType NETWORK = new SidekickType(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
+                ServiceDiscoveryConstants.FIELD_NETWORK_LAUNCH_CONFIG, false);
+        public String launchConfigFieldName;
+        public String launchConfigType;
+        public boolean isList;
+        
+        public SidekickType(String launchConfigFieldName, String launchConfigType, boolean isList) {
+            this.launchConfigFieldName = launchConfigFieldName;
+            this.launchConfigType = launchConfigType;
+            this.isList = isList;
+            supportedTypes.add(this);
+        }
+    }
 
     String uuid;
     DeploymentServiceContext context;
@@ -86,9 +104,6 @@ public class DeploymentUnit {
     }
 
     public boolean isError() {
-        if (!this.isComplete()) {
-            return true;
-        }
         /*
          * This should check for instances with an error transitioning state
          */
@@ -137,6 +152,16 @@ public class DeploymentUnit {
         }
     }
 
+    public void cleanupUnit() {
+        /*
+         * Delete all the units having missing dependencies
+         */
+        for (Long serviceId : svc.keySet()) {
+            DeploymentUnitService duService = svc.get(serviceId);
+            duService.cleanupInstancesWithMissingDependencies();
+        }
+    }
+
     public void stop() {
         /*
          * stops all instances. This should be non-blocking (don't wait)
@@ -182,8 +207,9 @@ public class DeploymentUnit {
     }
 
     protected DeploymentUnitInstance createInstance(String launchConfigName, Service service) {
-        List<Integer> volumesFromInstanceIds = getVolumesFromInstancesIds(service, launchConfigName);
-        Integer networkContainerId = getNetworkContainerId(launchConfigName, service);
+        List<Integer> volumesFromInstanceIds = getSidekickContainersId(service, launchConfigName, SidekickType.DATA);
+        List<Integer> networkContainerIds = getSidekickContainersId(service, launchConfigName, SidekickType.NETWORK);
+        Integer networkContainerId = networkContainerIds.isEmpty() ? null : networkContainerIds.get(0);
         getDeploymentUnitInstance(service, launchConfigName).waitForNotTransitioning();
         getDeploymentUnitInstance(service, launchConfigName)
                 .createAndStart(
@@ -195,75 +221,51 @@ public class DeploymentUnit {
     }
 
     @SuppressWarnings("unchecked")
-    protected List<Integer> getVolumesFromInstancesIds(Service service, String launchConfigName) {
-        List<Integer> volumesFromInstanceIds = new ArrayList<>();
-        Object volumesFromLaunchConfigs = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
-                ServiceDiscoveryConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
-        Object volumesFromInstance = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
-                DockerInstanceConstants.FIELD_VOLUMES_FROM);
-        if (volumesFromInstance != null) {
-            volumesFromInstanceIds.addAll((List<Integer>) volumesFromInstance);
+    protected List<Integer> getSidekickContainersId(Service service, String launchConfigName, SidekickType sidekickType) {
+        List<Integer> sidekickInstanceIds = new ArrayList<>();
+        Object sidekickInstances = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                sidekickType.launchConfigFieldName);
+        if (sidekickInstances != null) {
+            if (sidekickType.isList) {
+                sidekickInstanceIds.addAll((List<Integer>)sidekickInstances);
+            } else {
+                sidekickInstanceIds.add((Integer) sidekickInstances);
+            }
         }
-        
-        if (volumesFromLaunchConfigs != null) {
-            for (String volumesFromLaunchConfig : (List<String>) volumesFromLaunchConfigs) {
+
+        Object sidekicksLaunchConfigObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                sidekickType.launchConfigType);
+        if (sidekicksLaunchConfigObj != null) {
+            List<String> sidekicksLaunchConfigNames = new ArrayList<>();
+            if (sidekickType.isList) {
+                sidekicksLaunchConfigNames.addAll((List<String>) sidekicksLaunchConfigObj);
+            } else {
+                sidekicksLaunchConfigNames.add(sidekicksLaunchConfigObj.toString());
+            }
+            for (String sidekickLaunchConfigName : sidekicksLaunchConfigNames) {
                 // check if the service is present in the service map (it can be referenced, but removed already)
-                if (volumesFromLaunchConfig.toString().equalsIgnoreCase(service.getName())) {
-                    volumesFromLaunchConfig = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
+                if (sidekickLaunchConfigName.toString().equalsIgnoreCase(service.getName())) {
+                    sidekickLaunchConfigName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
                 }
-                DeploymentUnitInstance volumesFromUnitInstance = getDeploymentUnitInstance(service,
-                        volumesFromLaunchConfig.toString());
-                if (volumesFromUnitInstance != null && volumesFromUnitInstance instanceof InstanceUnit) {
-                    if (((InstanceUnit) volumesFromUnitInstance).getInstance() == null) {
+                DeploymentUnitInstance sidekickUnitInstance = getDeploymentUnitInstance(service,
+                        sidekickLaunchConfigName.toString());
+                if (sidekickUnitInstance != null && sidekickUnitInstance instanceof InstanceUnit) {
+                    if (((InstanceUnit) sidekickUnitInstance).getInstance() == null) {
                         // request new instance creation
-                        volumesFromUnitInstance = createInstance(volumesFromUnitInstance.getLaunchConfigName(), service);
+                        sidekickUnitInstance = createInstance(sidekickUnitInstance.getLaunchConfigName(), service);
                     }
                     // wait for start
-                    volumesFromUnitInstance.createAndStart(new HashMap<String, Object>());
-                    volumesFromUnitInstance.waitForStart();
-                    volumesFromInstanceIds.add(((InstanceUnit) volumesFromUnitInstance).getInstance().getId()
+                    sidekickUnitInstance.createAndStart(new HashMap<String, Object>());
+                    sidekickUnitInstance.waitForStart();
+                    sidekickInstanceIds.add(((InstanceUnit) sidekickUnitInstance).getInstance().getId()
                             .intValue());
                 }
             }
         }
 
-        return volumesFromInstanceIds;
+        return sidekickInstanceIds;
     }
 
-    protected Integer getNetworkContainerId(String launchConfigName, Service service) {
-        Integer networkContainerId = null;
-
-        Object networkFromInstance = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
-                DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
-        if (networkFromInstance != null) {
-            return (Integer) networkFromInstance;
-        }
-
-        Object networkFromLaunchConfig = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
-                ServiceDiscoveryConstants.FIELD_NETWORK_LAUNCH_CONFIG);
-
-        if (networkFromLaunchConfig != null) {
-            // check if the service is present in the service map (it can be referenced, but removed already)
-            if (networkFromLaunchConfig.toString().equalsIgnoreCase(service.getName())) {
-                networkFromLaunchConfig = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
-            }
-            DeploymentUnitInstance networkFromUnitInstance = getDeploymentUnitInstance(service,
-                    networkFromLaunchConfig.toString());
-
-            if (networkFromUnitInstance != null && networkFromUnitInstance instanceof InstanceUnit) {
-                if (((InstanceUnit) networkFromUnitInstance).getInstance() == null) {
-                    // request new instance creation
-                    networkFromUnitInstance = createInstance(networkFromUnitInstance.getLaunchConfigName(), service);
-                }
-                // wait for start
-                networkFromUnitInstance.createAndStart(new HashMap<String, Object>());
-                networkFromUnitInstance.waitForStart();
-                networkContainerId = ((InstanceUnit) networkFromUnitInstance).getInstance().getId().intValue();
-            }
-        }
-
-        return networkContainerId;
-    }
 
     public boolean isStarted() {
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
@@ -297,7 +299,7 @@ public class DeploymentUnit {
         return false;
     }
 
-    protected boolean isComplete() {
+    public boolean isComplete() {
         for (DeploymentUnitService duService : svc.values()) {
             if (!duService.isComplete()) {
                 return false;
