@@ -137,7 +137,9 @@ def test_activate_single_service(client, context):
     assert container.imageUuid == image_uuid
     assert container.command == ['sleep', '42']
     assert len(container.instanceLinks()) == 1
-    assert len(container.environment) == 1
+    assert len(container.environment) == 2
+    env_vars = {'TEST_FILE': "", "RANCHER_CONTAINER_NAME": ""}
+    assert all(item in container.environment for item in env_vars) is True
     assert len(container.ports) == 2
     assert len(container.dataVolumes) == 1
     assert set(container.dataVolumesFrom) == set([container1.id])
@@ -1091,6 +1093,9 @@ def test_validate_labels(client, context):
                            env.name + '/' + service_name1}
     instance1 = _validate_compose_instance_start(client, service1, env, "1")
     assert all(item in instance1.labels for item in result_labels_1) is True
+    assert len(instance1.environment) == 1
+    env_vars = {"RANCHER_CONTAINER_NAME": ""}
+    assert all(item in instance1.environment for item in env_vars) is True
 
     # check that only one internal label is set
     result_labels_2 = {'io.rancher.stack.name': env.name,

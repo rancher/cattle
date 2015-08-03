@@ -73,4 +73,7 @@ public class ServiceDiscoveryConstants {
     public static final String LABEL_LB_TARGET = "io.rancher.loadbalancer.target.";
 
     public static final String STATE_UPGRADING = "upgrading";
+
+    public static final String ENV_CONTAINER_NAME = "RANCHER_CONTAINER_NAME";
+
 }
