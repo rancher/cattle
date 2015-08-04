@@ -9,6 +9,7 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.AbstractInstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -55,6 +56,9 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
     @Override
     public DeploymentUnitInstance start(Map<String, Object> deployParams) {
         if (createNew()) {
+            Map<String, String> envVars = new HashMap<>();
+            envVars.put(ServiceDiscoveryConstants.ENV_CONTAINER_NAME, this.instanceName);
+            deployParams.put(InstanceConstants.FIELD_ENVIRONMENT, envVars);
             Map<String, Object> launchConfigData = ServiceDiscoveryUtil.buildServiceInstanceLaunchData(service,
                     deployParams, launchConfigName, context.allocatorService);
             launchConfigData.put("name", this.instanceName);
@@ -63,7 +67,6 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
             this.instance = instanceMapPair.getLeft();
             this.exposeMap = instanceMapPair.getRight();
         }
-
         if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
             context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
                     null);
