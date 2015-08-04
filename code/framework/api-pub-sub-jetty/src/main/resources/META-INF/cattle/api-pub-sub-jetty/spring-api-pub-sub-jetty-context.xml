@@ -13,7 +13,7 @@
 
     <bean id="JettyWebSocketSubcriptionHandler" class="io.cattle.platform.api.pubsub.manager.impl.ClassAvailableSubscriptionHandler" >
         <property name="executorService" ref="CoreExecutorService" />
-        <property name="testClass" value="org.eclipse.jetty.websocket.WebSocketFactory" />
+        <property name="testClass" value="org.eclipse.jetty.websocket.server.WebSocketServerFactory" />
         <property name="className" value="io.cattle.platform.api.pubsub.subscribe.jetty.JettyWebSocketSubcriptionHandler" />
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.SPECIFIC" />
