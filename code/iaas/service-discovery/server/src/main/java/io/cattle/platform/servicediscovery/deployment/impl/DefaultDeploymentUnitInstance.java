@@ -9,6 +9,7 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.AbstractInstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -17,6 +18,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
@@ -55,9 +57,7 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
     @Override
     public DeploymentUnitInstance create(Map<String, Object> deployParams) {
         if (createNew()) {
-            Map<String, Object> launchConfigData = ServiceDiscoveryUtil.buildServiceInstanceLaunchData(service,
-                    deployParams, launchConfigName, context.allocatorService);
-            launchConfigData.put("name", this.instanceName);
+            Map<String, Object> launchConfigData = populateLaunchConfigData(deployParams);
             Pair<Instance, ServiceExposeMap> instanceMapPair = context.exposeMapDao.createServiceInstance(launchConfigData,
                     service, this.instanceName);
             this.instance = instanceMapPair.getLeft();
@@ -76,6 +76,22 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
 
         this.instance = context.objectManager.reload(this.instance);
         return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected Map<String, Object> populateLaunchConfigData(Map<String, Object> deployParams) {
+        Map<String, Object> launchConfigData = ServiceDiscoveryUtil.buildServiceInstanceLaunchData(service,
+                deployParams, launchConfigName, context.allocatorService);
+        launchConfigData.put("name", this.instanceName);
+        Object labels = launchConfigData.get(InstanceConstants.FIELD_LABELS);
+        if (labels != null) {
+            String overrideHostName = ((Map<String, String>) labels)
+                    .get(ServiceDiscoveryConstants.LABEL_OVERRIDE_HOSTNAME);
+            if (StringUtils.equalsIgnoreCase(overrideHostName, "container_name")) {
+                launchConfigData.put(InstanceConstants.FIELD_HOSTNAME, this.instanceName);
+            }
+        }
+        return launchConfigData;
     }
 
     @Override

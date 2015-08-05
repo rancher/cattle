@@ -37,6 +37,7 @@ public class InstanceConstants {
     public static final String FIELD_LABELS = "labels";
     public static final String FIELD_HEALTH_CHECK = "healthCheck";
     public static final String FIELD_EXPOSE = "expose";
+    public static final String FIELD_HOSTNAME = "hostname";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 
@@ -65,4 +66,5 @@ public class InstanceConstants {
     public static final String ON_STOP_REMOVE = "remove";
 
     public static final String EVENT_INSTANCE_FORCE_STOP = "compute.instance.force.stop";
+
 }
