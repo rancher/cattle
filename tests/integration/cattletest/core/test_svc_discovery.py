@@ -1129,18 +1129,21 @@ def test_sidekick_destroy_instance(client, context):
         list_serviceExposeMap(serviceId=service.id, state="active")
     assert len(instance_service_map1) == 2
 
-    # destroy secondary instance and wait for the service to reconcile
+    # destroy primary instance and wait for the service to reconcile
     _instance_remove(instance11, client)
     service = client.wait_success(service)
 
-    _validate_compose_instance_start(client, service, env, "1")
+    instance11 = _validate_compose_instance_start(client, service, env, "1")
     _validate_compose_instance_start(client, service, env, "1", "secondary")
 
     instance_service_map1 = client. \
         list_serviceExposeMap(serviceId=service.id, state="active")
     assert len(instance_service_map1) == 2
+    # validate that the secondary instance is still up and running
+    instance12 = client.reload(instance12)
+    assert instance12.state == 'running'
 
-    # destroy primary instance and wait for the service to reconcile
+    # destroy secondary instance and wait for the service to reconcile
     _instance_remove(instance12, client)
     service = client.wait_success(service)
 
@@ -1150,6 +1153,9 @@ def test_sidekick_destroy_instance(client, context):
     instance_service_map1 = client. \
         list_serviceExposeMap(serviceId=service.id, state="active")
     assert len(instance_service_map1) == 2
+    # validate that the primary instance was recreated
+    instance11 = client.reload(instance11)
+    assert instance11.state == 'removed'
 
 
 def test_sidekick_restart_instances(client, context):
@@ -2227,6 +2233,100 @@ def test_validate_image(client, context):
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidReference'
     assert e.value.error.fieldName == 'imageUuid'
+
+
+def test_validate_restart_policy(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    restart_policy = {"maximumRetryCount": 0, "name": "no"}
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "restartPolicy": restart_policy}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=3)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    # activate services
+    env.activateservices()
+    service = client.wait_success(service, 120)
+    assert service.state == "active"
+
+    instance1 = _validate_compose_instance_start(client, service, env, "1")
+    _validate_compose_instance_start(client, service, env, "2")
+    instance3 = _validate_compose_instance_start(client, service, env, "3")
+    # stop instance1 and destroy instance 3
+    client.wait_success(instance1.stop())
+    _instance_remove(instance3, client)
+
+    # wait for reconcile
+    _wait_until_active_map_count(service, 3, client, timeout=30)
+    service = client.wait_success(service)
+    assert service.state == "active"
+
+    # validate that instance1 remains in stopped state,
+    # and instance 3 was recreated
+    instance1 = client.reload(instance1)
+    assert instance1.state == 'stopped'
+    _validate_compose_instance_start(client, service, env, "3")
+
+
+def test_sidekick_destroy_instance_indirect_ref(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "dataVolumesFromLaunchConfigs": ['secondary']}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "dataVolumesFromLaunchConfigs": ['secondary1']}
+    secondary_lc1 = {"imageUuid": image_uuid, "name": "secondary1"}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    secondaryLaunchConfigs=[secondary_lc,
+                                                            secondary_lc1])
+    service = client.wait_success(service)
+
+    # activate service
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    instance11 = _validate_compose_instance_start(client, service, env, "1")
+    instance12 = _validate_compose_instance_start(client,
+                                                  service,
+                                                  env, "1", "secondary")
+
+    instance13 = _validate_compose_instance_start(client,
+                                                  service,
+                                                  env, "1", "secondary1")
+
+    instance_service_map1 = client. \
+        list_serviceExposeMap(serviceId=service.id, state="active")
+    assert len(instance_service_map1) == 3
+
+    # destroy secondary1 instance and wait for the service to reconcile
+    _instance_remove(instance13, client)
+    service = client.wait_success(service)
+
+    _validate_compose_instance_start(client, service, env, "1")
+    _validate_compose_instance_start(client, service, env, "1", "secondary")
+    _validate_compose_instance_start(client, service, env, "1", "secondary1")
+
+    instance_service_map1 = client. \
+        list_serviceExposeMap(serviceId=service.id, state="active")
+    assert len(instance_service_map1) == 3
+    # validate that the primary and secondary instances got recreated
+    instance11 = client.reload(instance11)
+    assert instance11.state == 'removed'
+    instance12 = client.reload(instance12)
+    assert instance12.state == 'removed'
 
 
 def _get_instance_for_service(super_client, serviceId):

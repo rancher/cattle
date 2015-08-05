@@ -53,7 +53,7 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
     }
 
     @Override
-    public DeploymentUnitInstance start(Map<String, Object> deployParams) {
+    public DeploymentUnitInstance create(Map<String, Object> deployParams) {
         if (createNew()) {
             Map<String, Object> launchConfigData = ServiceDiscoveryUtil.buildServiceInstanceLaunchData(service,
                     deployParams, launchConfigName, context.allocatorService);
@@ -74,10 +74,6 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
                     null);
         }
 
-        if (InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
-            context.objectProcessManager.scheduleProcessInstanceAsync(
-                            InstanceConstants.PROCESS_START, instance, null);
-        }
         this.instance = context.objectManager.reload(this.instance);
         return this;
     }
@@ -88,7 +84,7 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
     }
 
     @Override
-    public DeploymentUnitInstance waitForStart() {
+    public DeploymentUnitInstance waitForStartImpl() {
         this.instance = context.resourceMonitor.waitFor(this.instance,
                 new ResourcePredicate<Instance>() {
             @Override
@@ -100,7 +96,7 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
     }
 
     @Override
-    public boolean isStarted() {
+    protected boolean isStartedImpl() {
         return context.objectManager.reload(this.instance).getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING);
     }
 

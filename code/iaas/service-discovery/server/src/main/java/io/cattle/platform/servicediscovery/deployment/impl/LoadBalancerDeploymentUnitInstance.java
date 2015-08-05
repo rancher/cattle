@@ -51,7 +51,7 @@ public class LoadBalancerDeploymentUnitInstance extends AbstractInstanceUnit {
     }
 
     @Override
-    public DeploymentUnitInstance start(Map<String, Object> deployParams) {
+    public DeploymentUnitInstance create(Map<String, Object> deployParams) {
         if (createNew()) {
             LoadBalancer lb = context.objectManager.findAny(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
                     service.getId(),
@@ -62,11 +62,6 @@ public class LoadBalancerDeploymentUnitInstance extends AbstractInstanceUnit {
             this.hostMap = context.lbService.addHostWLaunchConfigToLoadBalancer(lb, launchConfig);
             this.instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
             this.exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);
-        } else if (this.instance != null) {
-            if (InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
-                context.objectProcessManager.scheduleProcessInstanceAsync(
-                        InstanceConstants.PROCESS_START, instance, null);
-            }
         }
         return this;
     }
@@ -77,7 +72,7 @@ public class LoadBalancerDeploymentUnitInstance extends AbstractInstanceUnit {
     }
 
     @Override
-    public DeploymentUnitInstance waitForStart() {
+    public DeploymentUnitInstance waitForStartImpl() {
         this.hostMap = context.resourceMonitor.waitFor(this.hostMap, new ResourcePredicate<LoadBalancerHostMap>() {
             @Override
             public boolean evaluate(LoadBalancerHostMap obj) {
@@ -89,7 +84,7 @@ public class LoadBalancerDeploymentUnitInstance extends AbstractInstanceUnit {
     }
     
     @Override
-    public boolean isStarted() {
+    protected boolean isStartedImpl() {
         boolean mapActive = this.hostMap.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE);
         boolean instanceRunning = this.instance != null
                 && this.instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING);

@@ -20,6 +20,7 @@ public abstract class ServiceDeploymentPlanner {
     protected List<DeploymentUnit> healthyUnits = new ArrayList<>();
     private List<DeploymentUnit> unhealthyUnits = new ArrayList<>();
     private List<DeploymentUnit> badUnits = new ArrayList<>();
+    private List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
 
     public ServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
@@ -37,6 +38,9 @@ public abstract class ServiceDeploymentPlanner {
                     } else {
                         healthyUnits.add(unit);
                     }
+                    if (!unit.isComplete()) {
+                        incompleteUnits.add(unit);
+                    }
                 }
             }
         }
@@ -49,7 +53,8 @@ public abstract class ServiceDeploymentPlanner {
     protected abstract List<DeploymentUnit> deployHealthyUnits();
 
     public boolean needToReconcileDeployment() {
-        return unhealthyUnits.size() > 0 || badUnits.size() > 0 || needToReconcileDeploymentImpl()
+        return unhealthyUnits.size() > 0 || badUnits.size() > 0 || incompleteUnits.size() > 0
+                || needToReconcileDeploymentImpl()
                 || ifHealthyUnitsNeedReconcile();
     }
     
@@ -62,7 +67,7 @@ public abstract class ServiceDeploymentPlanner {
         return false;
     }
 
-    public abstract boolean needToReconcileDeploymentImpl();
+    protected abstract boolean needToReconcileDeploymentImpl();
 
     public void addUnits(List<DeploymentUnit> units) {
         this.healthyUnits.addAll(units);
@@ -78,5 +83,9 @@ public abstract class ServiceDeploymentPlanner {
 
     public List<Service> getServices() {
         return services;
+    }
+
+    public List<DeploymentUnit> getIncompleteUnits() {
+        return incompleteUnits;
     }
 }
