@@ -647,8 +647,12 @@ def test_modify_link(client, context):
                                service, ports=["b.com:100"])
 
 
-def _create_service(client, env, launch_config):
-    service1 = client.create_service(name=random_str(),
+def _create_service(client, env, launch_config, name=None):
+    if name:
+        svc_name = name
+    else:
+        svc_name = random_str()
+    service1 = client.create_service(name=svc_name,
                                      environmentId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
@@ -816,51 +820,53 @@ def test_private_lb(client, context):
 
 
 def test_export_config(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env1 = client.create_environment(name="env1")
+    env1 = client.wait_success(env1)
+    assert env1.state == "active"
 
-    # create web, db lb services
+    env2 = client.create_environment(name="env2")
+    env2 = client.wait_success(env2)
+    assert env2.state == "active"
+
+    # create services
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
-    web_service = client. \
-        create_service(name="web",
-                       environmentId=env.id,
-                       launchConfig=launch_config)
+    web_service = _create_service(client, env1, launch_config, "web")
 
-    web_service = client.wait_success(web_service)
+    web_service1 = _create_service(client, env1, launch_config, "web1")
 
-    web_service1 = client. \
-        create_service(name="web1",
-                       environmentId=env.id,
-                       launchConfig=launch_config)
-
-    web_service1 = client.wait_success(web_service1)
+    web_external = _create_service(client, env2, launch_config, "web2")
 
     lb_launch_config = {"imageUuid": image_uuid,
                         "ports": [8081, '909:1001']}
     lb_service = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   environmentId=env1.id,
                                    launchConfig=lb_launch_config)
     lb_service = client.wait_success(lb_service)
     assert lb_service.state == "inactive"
 
-    # map web service to lb service - early binding,
-    # before services are activated
-    service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
+    # map web services
+    service_link = {"serviceId": web_service.id,
+                    "ports": ["a.com:90"], "name": "test"}
     service_link1 = {"serviceId": web_service1.id}
+    service_link_ext = {"serviceId": web_external.id, "ports": ["a.com:90"]}
     lb_service = lb_service.addservicelink(serviceLink=service_link)
     lb_service = lb_service.addservicelink(serviceLink=service_link1)
-    compose_config = env.exportconfig()
+    lb_service = lb_service.addservicelink(serviceLink=service_link_ext)
+    compose_config = env1.exportconfig()
     assert compose_config is not None
     document = yaml.load(compose_config.dockerComposeConfig)
     assert len(document[lb_service.name]['links']) == 2
-    assert len(document[lb_service.name]['labels']) == 1
-    labels = {"io.rancher.loadbalancer.target.web": "a.com:90"}
+    assert len(document[lb_service.name]['external_links']) == 1
+    assert len(document[lb_service.name]['labels']) == 2
+    labels = {"io.rancher.loadbalancer.target.web": "a.com:90",
+              "io.rancher.loadbalancer.target.env2/web2": "a.com:90"}
     links = ["web:web", "web1:web1"]
+    external_links = ["env2/web2:web2"]
     assert document[lb_service.name]['labels'] == labels
     assert document[lb_service.name]['links'] == links
+    assert document[lb_service.name]['external_links'] == external_links
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
