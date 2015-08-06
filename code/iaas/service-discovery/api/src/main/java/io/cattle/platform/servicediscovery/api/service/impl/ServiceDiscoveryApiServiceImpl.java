@@ -163,7 +163,13 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         for (ServiceConsumeMap map : consumedServiceMaps) {
             Service consumedService = objectManager.loadResource(Service.class, map.getConsumedServiceId());
             List<String> ports = DataAccessor.fieldStringList(map, LoadBalancerConstants.FIELD_LB_TARGET_PORTS);
-            String labelName = ServiceDiscoveryConstants.LABEL_LB_TARGET + consumedService.getName();
+            String consumedServiceName = consumedService.getName();
+            if (!service.getEnvironmentId().equals(consumedService.getEnvironmentId())) {
+                Environment env = objectManager.loadResource(Environment.class,
+                        consumedService.getEnvironmentId());
+                consumedServiceName = env.getName() + "/" + consumedServiceName;
+            }
+            String labelName = ServiceDiscoveryConstants.LABEL_LB_TARGET + consumedServiceName;
             StringBuilder bldr = new StringBuilder();
             for (String port : ports) {
                 bldr.append(port).append(",");
