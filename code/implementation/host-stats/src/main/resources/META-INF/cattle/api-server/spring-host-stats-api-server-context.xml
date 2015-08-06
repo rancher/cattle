@@ -14,6 +14,9 @@
 
     <!-- This really shouldn't be here, it's because LinkHandler and ActionHandler are
          not properly managed and rely on Spring auto wiring and not the ExtensionManager -->
+    <bean class="io.cattle.platform.host.stats.api.StatsLinkHandler" />
     <bean class="io.cattle.platform.host.stats.api.HostStatsLinkHandler" />
+    <bean class="io.cattle.platform.host.stats.api.ContainerStatsLinkHandler" />
+    <bean class="io.cattle.platform.host.stats.api.ServiceContainerStatsLinkHandler" />
 
 </beans>
