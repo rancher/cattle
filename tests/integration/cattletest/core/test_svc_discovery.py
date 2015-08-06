@@ -2329,6 +2329,53 @@ def test_sidekick_destroy_instance_indirect_ref(client, context):
     assert instance12.state == 'removed'
 
 
+def test_validate_hostname_override(client, context):
+    # create environment and services
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    image_uuid = context.image_uuid
+    launch_config1 = {
+        "imageUuid": image_uuid,
+        "labels": {
+            'io.rancher.container.hostname_override': 'container_name'
+        }
+    }
+    service1 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config1)
+    service1 = client.wait_success(service1)
+    assert service1.state == "inactive"
+
+    service1 = client.wait_success(service1.activate())
+    assert service1.state == "active"
+    instance1 = _validate_compose_instance_start(client, service1, env, "1")
+
+    # validate the host was overriden with instancename
+    assert instance1.hostname == instance1.name
+
+    # use case 2 - validate that even passed hostname gets overriden
+    launch_config2 = {
+        "imageUuid": image_uuid,
+        "labels": {
+            'io.rancher.container.hostname_override': 'container_name',
+            "hostname": "test"
+        }
+    }
+    service2 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config2)
+    service2 = client.wait_success(service2)
+    assert service2.state == "inactive"
+
+    service2 = client.wait_success(service2.activate())
+    assert service2.state == "active"
+    instance2 = _validate_compose_instance_start(client, service2, env, "1")
+
+    # validate the host was overriden with instancename
+    assert instance2.hostname == instance2.name
+
+
 def _get_instance_for_service(super_client, serviceId):
     instances = []
     instance_service_maps = super_client. \
