@@ -2274,6 +2274,13 @@ def test_validate_restart_policy(client, context):
     assert instance1.state == 'stopped'
     _validate_compose_instance_start(client, service, env, "3")
 
+    # destroy instance from stopped state, and validate it was recreated
+    _instance_remove(instance1, client)
+    _wait_until_active_map_count(service, 3, client, timeout=30)
+    service = client.wait_success(service)
+    assert service.state == "active"
+    _validate_compose_instance_start(client, service, env, "1")
+
 
 def test_sidekick_destroy_instance_indirect_ref(client, context):
     env = client.create_environment(name=random_str())

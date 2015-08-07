@@ -25,7 +25,8 @@ public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instance.updatehealthy", "instance.updateunhealthy", InstanceConstants.PROCESS_STOP };
+        return new String[] { "instance.updatehealthy", "instance.updateunhealthy", InstanceConstants.PROCESS_STOP,
+                InstanceConstants.PROCESS_REMOVE };
     }
 
     @Override
