@@ -60,7 +60,7 @@ public abstract class AbstractInstanceUnit extends DeploymentUnitInstance implem
 
     @Override
     public DeploymentUnitInstance startImpl() {
-        if (InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
+        if (instance != null && InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
             context.objectProcessManager.scheduleProcessInstanceAsync(
                     InstanceConstants.PROCESS_START, instance, null);
         }
