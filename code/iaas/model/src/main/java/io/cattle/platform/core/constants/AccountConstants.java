@@ -10,6 +10,7 @@ public class AccountConstants {
     public static final String SERVICE_KIND = "service";
     public static final String USER_KIND = "user";
     public static final String ADMIN_KIND = "admin";
+    public static final String PROJECT_KIND = "project";
 
     public static final String ACCOUNT_ID = ConstantsUtils.property(Account.class, "accountId");
     public static final String SYSTEM_UUID = "system";
