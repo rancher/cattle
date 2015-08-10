@@ -171,6 +171,9 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             Service service) {
         LoadBalancer lb = objectMgr.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
                 LOAD_BALANCER.REMOVED, null);
+        if (lb == null) {
+            return;
+        }
 
         List<? extends LoadBalancerHostMap> hostMaps = mapDao.findNonRemoved(LoadBalancerHostMap.class,
                 LoadBalancer.class, lb.getId());
