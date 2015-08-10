@@ -37,5 +37,4 @@ public interface NetworkDao {
     NetworkServiceProvider createNsp(Network network, List<String> servicesKinds, String providerKind);
 
     String getVIPSubnetCidr();
-
 }

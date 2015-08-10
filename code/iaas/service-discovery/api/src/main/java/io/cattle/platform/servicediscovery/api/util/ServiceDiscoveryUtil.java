@@ -5,6 +5,8 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceConsumeMap;
+import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -96,6 +98,19 @@ public class ServiceDiscoveryUtil {
         launchConfigData.put(InstanceConstants.FIELD_LABELS, getServiceLabels(service, allocatorService));
 
         return launchConfigData;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, String> getLaunchConfigLabels(Service service, String launchConfigName) {
+        if (launchConfigName == null) {
+            launchConfigName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
+        }
+        Map<String, Object> data = getLaunchConfigDataAsMap(service, launchConfigName);
+        Object labels = data.get(InstanceConstants.FIELD_LABELS);
+        if (labels == null) {
+            return new HashMap<String, String>();
+        }
+        return (Map<String, String>) labels;
     }
 
     @SuppressWarnings("unchecked")
@@ -194,6 +209,31 @@ public class ServiceDiscoveryUtil {
         launchConfigItems.put("kind", InstanceConstants.KIND_CONTAINER);
 
         return launchConfigItems;
+    }
+
+    public static String getDnsName(Service service, ServiceConsumeMap serviceConsumeMap,
+            ServiceExposeMap serviceExposeMap, boolean self) {
+
+        String dnsPrefix = null;
+        if (serviceExposeMap != null) {
+            dnsPrefix = serviceExposeMap.getDnsPrefix();
+        }
+
+        String consumeMapName = null;
+        if (serviceConsumeMap != null) {
+            consumeMapName = serviceConsumeMap.getName();
+        }
+
+        String primaryDnsName = (consumeMapName != null && !consumeMapName.isEmpty()) ? consumeMapName
+                : service.getName();
+        String dnsName = primaryDnsName;
+        if (self) {
+            dnsName = dnsPrefix == null ? dnsName : dnsPrefix;
+        } else {
+            dnsName = dnsPrefix == null ? dnsName : dnsPrefix + "." + dnsName;
+        }
+
+        return dnsName;
     }
 
 }

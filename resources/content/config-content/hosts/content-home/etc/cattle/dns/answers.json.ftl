@@ -25,6 +25,8 @@
         	</#if>
             <#if dnsEntry.resolve?has_content>
         "a": {
+        	"rancher-metadata.": {"answer": ["169.254.169.250"]},
+		"rancher-metadata.rancher.internal.": {"answer": ["169.254.169.250"]},
                 <#list dnsEntry.resolve?keys as dnsName>
                   <#if dnsEntry.resolve[dnsName]?? && dnsEntry.resolve[dnsName]?has_content>
 		"${dnsName?lower_case}.": {"answer": [<#list dnsEntry.resolve[dnsName] as address><#if address??>"${address}"<#if address_has_next>, </#if></#if></#list>]},
