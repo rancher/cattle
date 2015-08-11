@@ -51,7 +51,7 @@
 
     <tx:advice id="AgentInstanceDaoAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="createInstanceForProvider" isolation="READ_COMMITTED" />
+            <tx:method name="createInstanceForProvider" />
         </tx:attributes>
     </tx:advice>
 

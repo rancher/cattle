@@ -131,7 +131,7 @@
                 entire web request, which is not good for /publish and /subscribe
                 <tx:method name="read" isolation="READ_COMMITTED" read-only="true" /> 
             -->
-            <tx:method name="write" isolation="READ_COMMITTED" />
+            <tx:method name="write" />
         </tx:attributes>
     </tx:advice>
 

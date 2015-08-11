@@ -20,7 +20,7 @@
 
     <tx:advice id="RegisterAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="createAgentForRegistration" isolation="READ_COMMITTED" />
+            <tx:method name="createAgentForRegistration" />
         </tx:attributes>
     </tx:advice>
 

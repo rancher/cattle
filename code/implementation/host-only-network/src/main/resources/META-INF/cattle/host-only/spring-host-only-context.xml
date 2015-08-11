@@ -17,7 +17,7 @@
 
     <tx:advice id="HostOnlyAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="createVnetForHost" isolation="READ_COMMITTED" />
+            <tx:method name="createVnetForHost" />
         </tx:attributes>
     </tx:advice>
 
