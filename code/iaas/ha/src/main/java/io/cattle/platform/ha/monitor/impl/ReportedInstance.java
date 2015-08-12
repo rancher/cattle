@@ -14,6 +14,7 @@ class ReportedInstance {
     String externalId;
     String state;
     String image;
+    String systemContainer;
     Long created;
     Map<String, String> labels;
     KnownInstance instance;
@@ -29,6 +30,7 @@ class ReportedInstance {
         externalId = DataAccessor.fromMap(resource).withKey("dockerId").as(String.class);
         state = DataAccessor.fromMap(resource).withKey(ObjectMetaDataManager.STATE_FIELD).as(String.class);
         image = DataAccessor.fromMap(resource).withKey("image").as(String.class);
+        systemContainer = DataAccessor.fromMap(resource).withKey("systemContainer").as(String.class);
         created = DataAccessor.fromMap(resource).withKey("created").as(Long.class);
         labels = CollectionUtils.toMap(DataAccessor.fromMap(resource).withKey("labels").get());
     }
@@ -63,6 +65,14 @@ class ReportedInstance {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getSystemContainer() {
+        return systemContainer;
+    }
+
+    public void setSystemContainer(String systemContainer) {
+        this.systemContainer = systemContainer;
     }
 
     public Long getCreated() {
