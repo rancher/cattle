@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.data;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class LoadBalancerTargetsInfo {
@@ -13,8 +14,12 @@ public class LoadBalancerTargetsInfo {
 
     public LoadBalancerTargetsInfo(List<LoadBalancerTargetInfo> lbTargetInfo, InstanceHealthCheck lbHealthCheck,
             int uuid) {
-        super();
+        this(lbTargetInfo, lbHealthCheck, lbTargetInfo.isEmpty() ? null : lbTargetInfo.get(0).getPortSpec());
         this.uuid = uuid;
+    }
+
+    public LoadBalancerTargetsInfo(List<LoadBalancerTargetInfo> lbTargetInfo, InstanceHealthCheck lbHealthCheck,
+            LoadBalancerTargetPortSpec portSpec) {
         this.targets = lbTargetInfo;
         for (LoadBalancerTargetInfo target : this.targets) {
             if (target.getHealthCheck() != null) {
@@ -28,10 +33,14 @@ public class LoadBalancerTargetsInfo {
         if (this.healthCheck == null && lbHealthCheck != null) {
             this.healthCheck = lbHealthCheck;
         }
+        this.portSpec = portSpec;
+    }
 
-        if (!lbTargetInfo.isEmpty()) {
-            this.portSpec = lbTargetInfo.get(0).getPortSpec();
-        }
+    public LoadBalancerTargetsInfo(LoadBalancerTargetsInfo that) {
+        this.uuid = that.getUuid();
+        this.portSpec = that.getPortSpec();
+        this.targets = that.getTargets();
+        this.healthCheck = that.healthCheck;
     }
 
     public List<LoadBalancerTargetInfo> getTargets() {
@@ -64,5 +73,12 @@ public class LoadBalancerTargetsInfo {
 
     public void setHealthCheck(InstanceHealthCheck healthCheck) {
         this.healthCheck = healthCheck;
+    }
+
+    public void addTargets(List<LoadBalancerTargetInfo> targets) {
+        if (this.targets == null) {
+            this.targets = new ArrayList<>();
+        }
+        this.targets.addAll(targets);
     }
 }
