@@ -433,6 +433,7 @@
         "externalService.secondaryLaunchConfigs" : "",
         "externalService.hostname" : "cru",
         "externalService.vip" : "",
+        "externalService.healthCheck" : "cr",
 
         "dnsService" : "r",
         "dnsService.launchConfig" : "",

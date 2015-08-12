@@ -21,11 +21,13 @@ import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.LoadBalancerTarget;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +60,8 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
     @Inject
     LoadBalancerTargetDao lbTargetDao;
 
+    @Inject
+    ServiceExposeMapDao exposeMapDao;
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
@@ -172,6 +176,12 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                             break;
                         }
                     }
+                }
+            } else {
+                Service service = exposeMapDao.getIpAddressService(ipAddress, target.getAccountId());
+                if (service != null) {
+                    healthCheck = DataAccessor.field(service,
+                            InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
                 }
             }
 

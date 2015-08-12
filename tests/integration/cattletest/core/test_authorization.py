@@ -1617,7 +1617,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'externalIpAddresses': 'r',
         'accountId': 'r',
         'data': 'r',
-        'upgrade': 'r'
+        'upgrade': 'r',
+        'healthCheck': 'r'
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -1626,7 +1627,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'hostname': 'r',
         'externalIpAddresses': 'r',
         'accountId': 'r',
-        'upgrade': 'r'
+        'upgrade': 'r',
+        'healthCheck': 'r'
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -1635,7 +1637,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'hostname': 'cru',
         'externalIpAddresses': 'cru',
         'accountId': 'r',
-        'upgrade': 'r'
+        'upgrade': 'r',
+        'healthCheck': 'cr'
     })
 
 
