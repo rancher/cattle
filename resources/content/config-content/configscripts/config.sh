@@ -118,7 +118,13 @@ download()
     info Downloading $DOWNLOAD_URL "current=$current"
 
     get $get_opts "$DOWNLOAD_URL?current=$current" > $DOWNLOAD_TEMP/download
-    tar xzf $DOWNLOAD_TEMP/download -C $DOWNLOAD_TEMP
+    HEADER=$(cat $DOWNLOAD_TEMP/download | head -n1)
+    if [[ "$HEADER" =~ version:* ]]; then
+        archive_version=$(echo $HEADER | cut -f2 -d:)
+        cat $DOWNLOAD_TEMP/download | sed 1d | tar xzf - -C $DOWNLOAD_TEMP
+    else
+        tar xzf $DOWNLOAD_TEMP/download -C $DOWNLOAD_TEMP
+    fi
     rm $DOWNLOAD_TEMP/download
 
     local dir=$(basename $(ls -1 $DOWNLOAD_TEMP))
