@@ -51,7 +51,7 @@
 
     <tx:advice id="TransactionDelegateAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="doInTransaction" isolation="READ_COMMITTED" />
+            <tx:method name="doInTransaction" />
         </tx:attributes>
     </tx:advice>
 

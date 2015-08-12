@@ -34,8 +34,8 @@
 
     <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="recordCandidate" isolation="READ_COMMITTED" />
-            <tx:method name="releaseAllocation" isolation="READ_COMMITTED" />
+            <tx:method name="recordCandidate" />
+            <tx:method name="releaseAllocation" />
         </tx:attributes>
     </tx:advice>
 

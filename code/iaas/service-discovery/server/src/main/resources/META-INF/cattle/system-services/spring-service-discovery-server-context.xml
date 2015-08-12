@@ -57,9 +57,9 @@
 
     <tx:advice id="ServiceMapDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="createServiceInstance" isolation="READ_COMMITTED" />
-            <tx:method name="createServiceLink" isolation="READ_COMMITTED" />
-            <tx:method name="createServiceLinks" isolation="READ_COMMITTED" />
+            <tx:method name="createServiceInstance" />
+            <tx:method name="createServiceLink" />
+            <tx:method name="createServiceLinks" />
         </tx:attributes>
     </tx:advice>
 

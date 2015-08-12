@@ -21,7 +21,7 @@
 
     <tx:advice id="DockerStorageAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="createExternalStoragePool" isolation="READ_COMMITTED" />
+            <tx:method name="createExternalStoragePool" />
         </tx:attributes>
     </tx:advice>
 

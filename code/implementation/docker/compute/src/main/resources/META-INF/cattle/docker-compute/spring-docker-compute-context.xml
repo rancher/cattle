@@ -20,7 +20,7 @@
 
     <tx:advice id="DockerComputeDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="createDockerVolumeInPool" isolation="READ_COMMITTED" />
+            <tx:method name="createDockerVolumeInPool" />
         </tx:attributes>
     </tx:advice>
 

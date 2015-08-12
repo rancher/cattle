@@ -20,7 +20,7 @@
 
     <tx:advice id="ImageDaoAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="persistAndAssociateImage" isolation="READ_COMMITTED" propagation="REQUIRES_NEW" />
+            <tx:method name="persistAndAssociateImage" propagation="REQUIRES_NEW" />
         </tx:attributes>
     </tx:advice>
 

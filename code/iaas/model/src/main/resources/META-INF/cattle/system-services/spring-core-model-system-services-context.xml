@@ -26,21 +26,21 @@
 
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="createAndSchedule" isolation="READ_COMMITTED" />
+            <tx:method name="createAndSchedule" />
         </tx:attributes>
     </tx:advice>
 
     <tx:advice id="IpAddressDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="mapNewIpAddress" isolation="READ_COMMITTED" />
-            <tx:method name="assignNewAddress" isolation="READ_COMMITTED" />
-            <tx:method name="assignAndActivateNewAddress" isolation="READ_COMMITTED" />
+            <tx:method name="mapNewIpAddress" />
+            <tx:method name="assignNewAddress" />
+            <tx:method name="assignAndActivateNewAddress" />
         </tx:attributes>
     </tx:advice>
 
     <tx:advice id="StoragePoolDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
-            <tx:method name="mapNewPool" isolation="READ_COMMITTED" />
+            <tx:method name="mapNewPool" />
         </tx:attributes>
     </tx:advice>
 
