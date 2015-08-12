@@ -310,11 +310,29 @@ def test_container_event_image_and_reg_cred(client, host, agent_cli, user_id,
     assert image.registryCredentialId == registry_credential.id
 
 
-def sim_agent_and_host(user_sim_context):
-    agent_account = user_sim_context['agent'].account()
-    user_agent_cli = _client_for_agent(agent_account.credentials()[0])
-    host = user_sim_context['host']
-    return host, user_agent_cli
+def test_system_container(client, host, agent_cli, user_id):
+    # System containers are ignored by rancher
+
+    external_id = random_str()
+
+    con_inspect = new_inspect(external_id)
+
+    create_event(host, external_id, agent_cli, client, user_id,
+                 'start', con_inspect, image='sim:rancher/agent:latset')
+    create_event(host, external_id, agent_cli, client, user_id,
+                 'start', con_inspect, image='rancher/agent:latset')
+    create_event(host, external_id, agent_cli, client, user_id,
+                 'start', con_inspect, image='rancher/agent')
+    con_inspect['Config']['Labels'] = {
+        'io.rancher.container.system': 'rancher-agent'}
+    create_event(host, external_id, agent_cli, client, user_id,
+                 'start', con_inspect, image='sim:foo/bar:latest')
+
+    # Create this container as a way to wait for an instance to be successfully
+    # created, so that we know that we can check for the previous containers
+    create_native_container(client, host, random_str(), agent_cli, user_id)
+    containers = client.list_container(externalId=external_id)
+    assert len(containers) == 0
 
 
 def create_native_container(client, host, external_id, user_agent_cli,

@@ -195,7 +195,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         // Anything left in onHost is on the host, but not in rancher.
         for (Map.Entry<String, ReportedInstance> create : onHost.entrySet()) {
             ReportedInstance ri = create.getValue();
-            if (StringUtils.isNotEmpty(ri.getLabels().get(LABEL_RANCHER_SYSTEM_CONTAINER))) {
+            if (StringUtils.isNotEmpty(ri.getSystemContainer())) {
                 // Unknown system container. Force stop.
                 if (!STATE_STOPPED.equals(ri.getState())) {
                     addSyncAction(needsSynced, syncActions, ri, EVENT_INSTANCE_FORCE_STOP, checkOnly);
@@ -244,7 +244,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         if (objectMetaDataManager.isTransitioningState(Instance.class, ki.getState()) || StringUtils.equals(ki.getState(), ri.getState()))
             return;
 
-        boolean sysCon = StringUtils.isNotEmpty(ki.getSystemContainer()) || StringUtils.isNotEmpty(ri.getLabels().get(LABEL_RANCHER_SYSTEM_CONTAINER));
+        boolean sysCon = StringUtils.isNotEmpty(ki.getSystemContainer()) || StringUtils.isNotEmpty(ri.getSystemContainer());
 
         if (STATE_RUNNING.equals(ri.getState())) {
             // Container is running on host but not in Rancher. Take action
@@ -340,7 +340,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                 continue;
 
             ReportedInstance ri = new ReportedInstance(resource);
-            if (!StringUtils.equals("rancher-agent", ri.getLabels().get(LABEL_RANCHER_SYSTEM_CONTAINER))) {
+            if (!StringUtils.equals("rancher-agent", ri.getSystemContainer())) {
                 reportedInstances.byUuid.put(ri.getUuid(), ri);
                 reportedInstances.byExternalId.put(ri.getExternalId(), ri);
             }

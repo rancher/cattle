@@ -237,7 +237,7 @@ public class PingInstancesMonitorImplTest {
         ri.setUuid(uuid);
         ri.setState(state);
         if (sysCon)
-            ri.getLabels().put(LABEL_RANCHER_SYSTEM_CONTAINER, "imASysCon");
+            ri.setSystemContainer("imASysCon");
         reportedInstances.byExternalId.put(externalId, ri);
         reportedInstances.byUuid.put(uuid, ri);
         return ri;

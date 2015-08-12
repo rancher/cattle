@@ -53,6 +53,7 @@ import com.netflix.config.DynamicBooleanProperty;
 @Named
 public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
+    private static final String RANCHER_AGENT_IMAGE = "rancher/agent";
     public static final String AGENT_ID = "agentId";
     public static final String INSTANCE_INSPECT_EVENT_NAME = "compute.instance.inspect";
     private static final String INSTANCE_INSPECT_DATA_NAME = "instanceInspect";
@@ -112,7 +113,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                 String rancherUuid = getRancherUuidLabel(inspect, data);
                 Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getAccountId(), rancherUuid, event.getExternalId());
                 if ((instance != null && StringUtils.isNotEmpty(instance.getSystemContainer()))
-                        || StringUtils.isNotEmpty(getLabel(LABEL_RANCHER_SYSTEM_CONTAINER, inspect, data))) {
+                        || StringUtils.isNotEmpty(getLabel(LABEL_RANCHER_SYSTEM_CONTAINER, inspect, data)) || checkImageForRancherAgent(event)) {
                     // System containers are not managed by container events
                     return null;
                 }
@@ -170,6 +171,21 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         });
 
         return result;
+    }
+
+    boolean checkImageForRancherAgent(ContainerEvent event) {
+        if (StringUtils.isEmpty(event.getExternalFrom())) {
+            return false;
+        }
+        String[] imageParts = event.getExternalFrom().split(":");
+        String imageName = null;
+        // Testing hack: images look like: sim:rancher/agent:latest
+        if (imageParts.length <= 2) {
+            imageName = imageParts[0];
+        } else if (imageParts.length == 3) {
+            imageName = imageParts[1];
+        }
+        return StringUtils.equals(imageName, RANCHER_AGENT_IMAGE);
     }
 
     void scheduleInstance(ContainerEvent event, Instance instance, Map<String, Object> inspect, Map<String, Object> data) {
