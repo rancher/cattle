@@ -4,6 +4,7 @@ import io.cattle.platform.configitem.context.ConfigItemContextFactory;
 import io.cattle.platform.configitem.server.agentinclude.AgentIncludeMap;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.ConfigItemFactory;
+import io.cattle.platform.configitem.server.model.impl.LocalArchiveConfigItem;
 import io.cattle.platform.configitem.server.model.util.ConfigItemResourceUtil;
 import io.cattle.platform.configitem.server.resource.FileBasedResourceRoot;
 import io.cattle.platform.configitem.server.resource.ResourceRoot;
@@ -22,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
@@ -51,13 +51,20 @@ public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
 
                 if (value != null && !itemSet.contains(value)) {
                     if (AgentPackagesConfigItem.isDevVersion(value)) {
-                        FileBasedResourceRoot itemResource = new FileBasedResourceRoot(new File(value));
-                        itemResource.scan();
+                        File file = new File(value);
+                        if (file.exists() && ! file.isDirectory()) {
+                            LocalArchiveConfigItem item = new LocalArchiveConfigItem(file, key, versionManager);
+                            item.setDynamicallyApplied(true);
+                            itemList.add(item);
+                        } else{
+                            FileBasedResourceRoot itemResource = new FileBasedResourceRoot(new File(value));
+                            itemResource.scan();
 
-                        TemplatesBasedArchiveItem archiveItem = new TemplatesBasedArchiveItem(key, versionManager, itemResource, templateFactory,
-                                getFactories(key));
-                        archiveItem.setDynamicallyApplied(true);
-                        itemList.add(archiveItem);
+                            TemplatesBasedArchiveItem archiveItem = new TemplatesBasedArchiveItem(key, versionManager, itemResource, templateFactory,
+                                    getFactories(key));
+                            archiveItem.setDynamicallyApplied(true);
+                            itemList.add(archiveItem);
+                        }
                     }
 
                     itemSet.add(value);
