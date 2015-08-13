@@ -345,7 +345,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
      * the requestedIp field on the instance, if it is appropriate to do so.
      */
     private String checkBridgeOrManagedNetwork(String inspectNetMode, Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
-        if (!NETWORK_MODE_BRIDGE.equals(inspectNetMode) && StringUtils.isNotEmpty(inspectNetMode))
+        if (!NETWORK_MODE_BRIDGE.equals(inspectNetMode) && StringUtils.isNotEmpty(inspectNetMode) && !NETWORK_MODE_DEFAULT.equals(inspectNetMode))
             return null;
 
         String ip = getDockerIp(inspect);

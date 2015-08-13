@@ -172,7 +172,7 @@ public class DockerTransformerImpl implements DockerTransformer {
                     NETWORK_MODE_HOST.equals(inspectNetMode) ||
                     NETWORK_MODE_NONE.equals(inspectNetMode)) {
                 netMode = inspectNetMode;
-            } else if (StringUtils.isBlank(inspectNetMode)) {
+            } else if (NETWORK_MODE_DEFAULT.equals(inspectNetMode) || StringUtils.isBlank(inspectNetMode)) {
                 netMode = NETWORK_MODE_BRIDGE;
             } else if (StringUtils.startsWith(inspectNetMode, NETWORK_MODE_CONTAINER)) {
                 throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_OPTION,
