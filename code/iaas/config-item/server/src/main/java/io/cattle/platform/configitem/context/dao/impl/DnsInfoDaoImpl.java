@@ -1,9 +1,13 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
+import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP;
+import static io.cattle.platform.core.model.tables.HostTable.HOST;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
 import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
+import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
 import static io.cattle.platform.core.model.tables.NicTable.NIC;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
@@ -13,9 +17,11 @@ import io.cattle.platform.configitem.context.data.DnsEntryData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -36,7 +42,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
+
+    @Inject
+    NetworkDao networkDao;
 
     @Override
     public List<DnsEntryData> getInstanceLinksHostDnsData(final Instance instance) {
@@ -114,18 +125,21 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
     @Override
     public List<DnsEntryData> getServiceHostDnsData(final Instance instance) {
+        final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap();
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
                 Map<String, List<String>> resolve = new HashMap<>();
                 List<String> ips = new ArrayList<>();
-                ips.add(((IpAddress) input.get(1)).getAddress());
+                IpAddress sourceIp = getIpAddress((IpAddress) input.get(2), (Nic) input.get(7), true, instanceIdToHostIpMap);
+                IpAddress targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(6), false, instanceIdToHostIpMap);
+                data.setSourceIpAddress(sourceIp);
+                ips.add(targetIp.getAddress());
                 String dnsName = getDnsName(input.get(0), input.get(4), input.get(5), false);
                 resolve.put(dnsName, ips);
-                data.setSourceIpAddress((IpAddress) input.get(2));
                 data.setResolve(resolve);
-                data.setInstance((Instance)input.get(3));
+                data.setInstance((Instance) input.get(3));
                 return data;
             }
         };
@@ -136,8 +150,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         InstanceTable clientInstance = mapper.add(INSTANCE);
         ServiceConsumeMapTable serviceConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
         ServiceExposeMapTable targetServiceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
-        NicTable clientNic = NIC.as("client_nic");
-        NicTable targetNic = NIC.as("target_nic");
+        NicTable targetNic = mapper.add(NIC);
+        NicTable clientNic = mapper.add(NIC);
         InstanceTable targetInstance = INSTANCE.as("instance");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
@@ -193,17 +207,20 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
     @Override
     public List<DnsEntryData> getSelfServiceLinks(Instance instance) {
+        final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap();
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
                 Map<String, List<String>> resolve = new HashMap<>();
+                IpAddress sourceIp = getIpAddress((IpAddress) input.get(2), (Nic) input.get(6), true, instanceIdToHostIpMap);
+                IpAddress targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(5), false, instanceIdToHostIpMap);
                 List<String> ips = new ArrayList<>();
-                ips.add(((IpAddress) input.get(1)).getAddress());
+                ips.add(targetIp.getAddress());
                 resolve.put(getDnsName(input.get(0), null, input.get(4), true), ips);
-                data.setSourceIpAddress((IpAddress) input.get(2));
+                data.setSourceIpAddress(sourceIp);
                 data.setResolve(resolve);
-                data.setInstance((Instance)input.get(3));
+                data.setInstance((Instance) input.get(3));
                 return data;
             }
         };
@@ -213,8 +230,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
         InstanceTable clientInstance = mapper.add(INSTANCE);
         ServiceExposeMapTable targetServiceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
-        NicTable clientNic = NIC.as("client_nic");
-        NicTable targetNic = NIC.as("target_nic");
+        NicTable targetNic = mapper.add(NIC);
+        NicTable clientNic = mapper.add(NIC);
         InstanceTable targetInstance = INSTANCE.as("instance");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
@@ -445,4 +462,62 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         return dnsName;
     }
 
+    protected IpAddress getIpAddress(IpAddress ip, Nic nic, boolean isSource, Map<Long, IpAddress> instanceIdToHostIpMap) {
+        if (nic.getDeviceNumber().equals(0)) {
+            return ip;
+        } else {
+            IpAddress hostIp = instanceIdToHostIpMap.get(nic.getInstanceId());
+            if (hostIp != null) {
+                if (isSource) {
+                    ip.setAddress("default");
+                    return ip;
+                }
+                return hostIp;
+            }
+        }
+        return null;
+    }
+
+    protected Map<Long, IpAddress> getInstanceWithHostNetworkingToIpMap() {
+        List<HostInstanceIpData> data = getHostContainerIpData();
+        Map<Long, IpAddress> instanceIdToHostIpMap = new HashMap<>();
+        for (HostInstanceIpData entry : data) {
+            instanceIdToHostIpMap.put(entry.getInstance().getId(), entry.getIpAddress());
+        }
+
+        return instanceIdToHostIpMap;
+    }
+
+    protected List<HostInstanceIpData> getHostContainerIpData() {
+        MultiRecordMapper<HostInstanceIpData> mapper = new MultiRecordMapper<HostInstanceIpData>() {
+            @Override
+            protected HostInstanceIpData map(List<Object> input) {
+                HostInstanceIpData data = new HostInstanceIpData();
+                data.setIpAddress((IpAddress) input.get(0));
+                data.setInstance((Instance)input.get(1));
+                return data;
+            }
+        };
+        
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
+        InstanceTable instance = mapper.add(INSTANCE);
+        return create()
+                .select(mapper.fields())
+                .from(ipAddress)
+                .join(HOST_IP_ADDRESS_MAP)
+                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(ipAddress.ID))
+                .join(HOST)
+                .on(HOST.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
+                .join(INSTANCE_HOST_MAP)
+                .on(HOST.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .join(NIC)
+                .on(NIC.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(NETWORK)
+                .on(NETWORK.ID.eq(NIC.NETWORK_ID))
+                .join(instance)
+                .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .where(NETWORK.KIND.eq("dockerHost"))
+                .and(HOST.REMOVED.isNull())
+                .fetch().map(mapper);
+    }
 }

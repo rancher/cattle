@@ -735,3 +735,14 @@ def test_container_resource_actions_json_state(context):
     context.client.delete(c)
     c = context.client.wait_success(c)
     assert 'logs' not in c
+
+
+def test_container_network_host_mode_w_dsn(context, super_client):
+    labels = {'io.rancher.container.dns': "true"}
+    c = context.create_container(networkMode='host', labels=labels)
+    c = super_client.wait_success(c)
+    assert c.state == 'running'
+    assert len(c.nics()) == 2
+
+    assert c.nics()[0].network().kind == "dockerHost"
+    assert c.nics()[1].network().kind == "hostOnlyNetwork"

@@ -66,5 +66,4 @@ public class InstanceConstants {
     public static final String ON_STOP_REMOVE = "remove";
 
     public static final String EVENT_INSTANCE_FORCE_STOP = "compute.instance.force.stop";
-
 }
