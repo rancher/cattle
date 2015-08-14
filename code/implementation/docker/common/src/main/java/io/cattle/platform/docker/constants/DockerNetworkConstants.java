@@ -14,6 +14,7 @@ public class DockerNetworkConstants {
 
     public static final String NETWORK_MODE_HOST = "host";
     public static final String NETWORK_MODE_NONE = "none";
+    public static final String NETWORK_MODE_DEFAULT = "default";
     public static final String NETWORK_MODE_BRIDGE = "bridge";
     public static final String NETWORK_MODE_CONTAINER = "container";
     public static final String NETWORK_MODE_MANAGED = "managed";
