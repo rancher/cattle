@@ -10,6 +10,7 @@ import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOL
 import static io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
@@ -103,5 +104,27 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
                 .where(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instance.getId()))
                 .fetchInto(ServiceRecord.class);
+    }
+
+    @Override
+    public List<? extends Instance> listNonRemovedInstances(Account account, boolean forService) {
+        List<? extends Instance> serviceInstances = create().select(INSTANCE.fields())
+                    .from(INSTANCE)
+                    .join(SERVICE_EXPOSE_MAP)
+                    .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(INSTANCE.ACCOUNT_ID.eq(account.getId()))
+                .and(INSTANCE.REMOVED.isNull())
+                    .fetchInto(InstanceRecord.class);
+        if (forService) {
+            return serviceInstances;
+        }
+        List<? extends Instance> allInstances = create().select(INSTANCE.fields())
+                .from(INSTANCE)
+                .where(INSTANCE.ACCOUNT_ID.eq(account.getId()))
+                .and(INSTANCE.REMOVED.isNull())
+                .fetchInto(InstanceRecord.class);
+
+        allInstances.removeAll(serviceInstances);
+        return allInstances;
     }
 }
