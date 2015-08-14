@@ -9,7 +9,7 @@ public interface ServiceDiscoveryService {
 
     void cleanupLoadBalancerService(Service service);
 
-    void createLoadBalancerService(Service service);
+    void createLoadBalancerService(Service service, List<? extends Long> certIds, Long defaultCertId);
 
     void removeServiceMaps(Service service);
 
@@ -24,5 +24,7 @@ public interface ServiceDiscoveryService {
     void setVIP(Service service);
 
     void releaseVip(Service service);
+
+    void updateLoadBalancerService(Service service, List<? extends Long> certIds, Long defaultCertId);
 
 }

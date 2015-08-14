@@ -16,7 +16,10 @@
     <bean class="io.cattle.iaas.lb.process.LoadBalancerConfigRemove" />
     <bean class="io.cattle.iaas.lb.process.LoadBalancerListenerRemove" />
     <bean class="io.cattle.iaas.lb.process.LoadBalancerRemove" />
+    <bean class="io.cattle.iaas.lb.process.LoadBalancerCreateUpdate" />
     <bean class="io.cattle.iaas.lb.process.GlobalLoadBalancerAddRemoveLoadBalancer" />
+    <bean class="io.cattle.iaas.lb.process.LoadBalancerCertificateRemovePostHandler" />  
+    
     <bean class="io.cattle.iaas.lb.api.action.LoadBalancerSetTargetsActionHandler" />
     <bean class="io.cattle.iaas.lb.api.action.LoadBalancerSetHostsActionHandler" />
     <bean class="io.cattle.iaas.lb.api.action.LoadBalancerConfigSetListenersActionHandler" />

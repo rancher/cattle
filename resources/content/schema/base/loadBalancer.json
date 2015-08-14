@@ -13,6 +13,22 @@
         },
         "networkId":{
             "type": "reference[network]"
+        },
+        "certificateIds":{
+            "type": "array[reference[certificate]]",
+            "required": false,
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "defaultCertificateId":{
+            "type": "reference[certificate]",
+            "required": false,
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions": {

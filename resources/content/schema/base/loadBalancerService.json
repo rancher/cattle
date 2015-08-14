@@ -6,6 +6,22 @@
         "loadBalancerConfig": {
             "type" : "loadBalancerConfig",
             "nullable": true
+        },
+        "certificateIds":{
+            "type": "array[reference[certificate]]",
+            "required": false,
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "defaultCertificateId":{
+            "type": "reference[certificate]",
+            "required": false,
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions" : {

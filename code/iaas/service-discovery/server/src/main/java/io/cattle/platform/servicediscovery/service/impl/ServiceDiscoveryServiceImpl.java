@@ -29,9 +29,11 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
@@ -148,7 +150,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void createLoadBalancerService(Service service) {
+    public void createLoadBalancerService(Service service, List<? extends Long> certIds, Long defaultCertId) {
         String lbName = getLoadBalancerName(service);
         // 1. create load balancer config
         Map<String, Object> lbConfigData = (Map<String, Object>) DataAccessor.field(service,
@@ -168,32 +170,47 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         createListeners(service, lbConfig, launchConfigData);
 
         // 3. create a load balancer
-        createLoadBalancer(service, lbName, lbConfig);
-    }
+        createLoadBalancer(service, lbName, lbConfig, launchConfigData, certIds, defaultCertId);
 
-    private void createLoadBalancer(Service service, String lbName, LoadBalancerConfig lbConfig) {
+    }
+    
+    private void createLoadBalancer(Service service, String lbName, LoadBalancerConfig lbConfig,
+            Map<String, Object> launchConfigData, List<? extends Long> certIds, Long defaultCertId) {
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
                 LOAD_BALANCER.REMOVED, null, LOAD_BALANCER.ACCOUNT_ID, service.getAccountId());
+        Map<String, Object> data = populateLBData(service, lbName, lbConfig, launchConfigData, certIds, defaultCertId);
         if (lb == null) {
-            Map<String, Object> launchConfigData = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(service, null);
-            Map<String, Object> data = new HashMap<>();
-            data.put("name", lbName);
-            data.put(LoadBalancerConstants.FIELD_LB_CONFIG_ID, lbConfig.getId());
-            data.put(LoadBalancerConstants.FIELD_LB_SERVICE_ID, service.getId());
-            data.put(LoadBalancerConstants.FIELD_LB_NETWORK_ID, getServiceNetworkId(service));
-            data.put(
-                    LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID,
-                    launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID));
-            data.put(
-                    LoadBalancerConstants.FIELD_LB_INSTANCE_URI_PREDICATE,
-                    DataAccessor.fields(service).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_URI_PREDICATE)
-                            .withDefault("delegate:///").as(
-                                    String.class));
-            data.put("accountId", service.getAccountId());
             lb = objectManager.create(LoadBalancer.class, data);
         }
 
-        objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_CREATE, lb, null);
+        objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_CREATE, lb, data);
+    }
+
+
+    protected Map<String, Object> populateLBData(Service service, String lbName, LoadBalancerConfig lbConfig,
+            Map<String, Object> launchConfigData, List<? extends Long> certIds, Long defaultCertId) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", lbName);
+        data.put(LoadBalancerConstants.FIELD_LB_CONFIG_ID, lbConfig.getId());
+        data.put(LoadBalancerConstants.FIELD_LB_SERVICE_ID, service.getId());
+        data.put(LoadBalancerConstants.FIELD_LB_NETWORK_ID, getServiceNetworkId(service));
+        data.put(
+                LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID,
+                launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID));
+        data.put(
+                LoadBalancerConstants.FIELD_LB_INSTANCE_URI_PREDICATE,
+                DataAccessor.fields(service).withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_URI_PREDICATE)
+                        .withDefault("delegate:///").as(
+                                String.class));
+        data.put("accountId", service.getAccountId());
+        if (defaultCertId != null) {
+            data.put(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID, defaultCertId);
+        }
+
+        if (certIds != null) {
+            data.put(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS, certIds);
+        }
+        return data;
     }
 
     private LoadBalancerConfig createDefaultLoadBalancerConfig(String defaultName,
@@ -233,6 +250,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 portDefs.put(port, false);
             }
         }
+        
+        List<String> sslPorts = getSslPorts(launchConfigData);
 
         for (String port : portDefs.keySet()) {
             PortSpec spec = new PortSpec(port);
@@ -268,8 +287,17 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 }
             }
             
+            String sourceProtocol = protocol;
+            if (sslPorts.contains(privatePort.toString())) {
+                if (protocol.equals("tcp")) {
+                    sourceProtocol = "ssl";
+                } else {
+                    sourceProtocol = "https";
+                }
+            }
+            
             createListener(service, listeners, new LoadBalancerListenerPort(privatePort, sourcePort,
-                    protocol, targetPort));
+                    sourceProtocol, targetPort));
         }
 
         for (LoadBalancerListener listener : listeners.values()) {
@@ -335,6 +363,23 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         objectProcessManager.executeProcess(LoadBalancerConstants.PROCESS_LB_LISTENER_CREATE, listenerObj, null);
 
         listeners.put(listenerObj.getPrivatePort(), listenerObj);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    protected List<String> getSslPorts(Map<String, Object> launchConfigData) {
+        List<String> sslPorts = new ArrayList<>();
+        Map<String, String> labels = (Map<String, String>) launchConfigData.get(InstanceConstants.FIELD_LABELS);
+        if (labels != null) {
+            Object sslPortsObj = labels.get(ServiceDiscoveryConstants.LABEL_LB_SSL_PORTS);
+            if (sslPortsObj != null) {
+                for (String sslPort : sslPortsObj.toString().split(",")) {
+                    sslPorts.add(sslPort.trim());
+                }
+            }
+        }
+
+        return sslPorts;
     }
 
     @Override
@@ -445,4 +490,17 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         poolManager.releaseResource(subnet, service);
     }
 
+    @Override
+    public void updateLoadBalancerService(Service service, List<? extends Long> certIds, Long defaultCertId) {
+        LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
+                LOAD_BALANCER.REMOVED, null);
+        if (lb != null) {
+            Map<String, Object> data = new HashMap<>();
+            data.put(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS, certIds);
+            data.put(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID, defaultCertId);
+            DataUtils.getWritableFields(lb).putAll(data);
+            objectManager.persist(lb);
+            objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, lb, data);
+        }
+    }
 }

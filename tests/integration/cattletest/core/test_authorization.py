@@ -316,7 +316,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'serviceLink',
         'loadBalancerServiceLink',
         'addRemoveLoadBalancerServiceLinkInput',
-        'setLoadBalancerServiceLinksInput'
+        'setLoadBalancerServiceLinksInput',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1493,7 +1493,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'data': 'r',
         'upgrade': 'r',
         'loadBalancerConfig': 'r',
-        'vip': 'r'
+        'vip': 'r',
+        'defaultCertificateId': 'r',
+        'certificateIds': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1504,7 +1506,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'accountId': 'r',
         'upgrade': 'r',
         'loadBalancerConfig': 'r',
-        'vip': 'r'
+        'vip': 'r',
+        'defaultCertificateId': 'r',
+        'certificateIds': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1515,7 +1519,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'accountId': 'r',
         'upgrade': 'r',
         'loadBalancerConfig': 'cr',
-        'vip': 'cr'
+        'vip': 'cr',
+        'defaultCertificateId': 'cru',
+        'certificateIds': 'cru'
     })
 
 

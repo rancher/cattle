@@ -2,13 +2,13 @@
     "resourceFields": {
         "sourceProtocol": {
             "type": "enum",
-            "options": [ "tcp", "http" ],
+            "options": [ "tcp", "http", "ssl", "https" ],
             "required": true,
             "nullable": false
         },
         "targetProtocol": {
             "type": "enum",
-            "options" : [ "tcp", "http" ]
+            "options" : [ "tcp", "http", "ssl", "https" ]
         },
         "sourcePort": {
             "type": "int",

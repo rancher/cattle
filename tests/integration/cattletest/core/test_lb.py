@@ -2,6 +2,10 @@ from common_fixtures import *  # NOQA
 from cattle import ApiError
 
 
+RESOURCE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            'resources/certs')
+
+
 @pytest.fixture(scope='module')
 def config_id(client):
     default_lb_config = client. \
@@ -298,6 +302,91 @@ def test_destroy_container(client, context, config_id):
     assert container.state == 'removed'
 
     _validate_remove_target(container, lb, client)
+
+
+def test_lb_create_w_certificate(client, config_id):
+    cert1 = _create_cert(client)
+    cert2 = _create_cert(client)
+
+    # create lb with certs
+    lb = client. \
+        create_loadBalancer(name=random_str(),
+                            loadBalancerConfigId=config_id,
+                            defaultCertificateId=cert1.id)
+
+    lb = client.wait_success(lb)
+
+    assert lb.state == 'active'
+    assert lb.certificateIds is None
+    assert lb.defaultCertificateId == cert1.id
+
+    # update lb with new certs
+    lb = client. \
+        update(lb, name=random_str(),
+               loadBalancerConfigId=config_id,
+               certificateIds=[cert1.id, cert2.id],
+               defaultCertificateId=cert1.id)
+
+    lb = client.wait_success(lb)
+
+    assert lb.state == 'active'
+    assert len(lb.certificateIds) == 2
+    assert lb.defaultCertificateId == cert1.id
+
+    # update lb with empty certs
+    lb = client. \
+        update(lb, name=random_str(),
+               loadBalancerConfigId=config_id,
+               certificateIds=[])
+    lb = client.wait_success(lb)
+
+    assert lb.state == 'active'
+    assert len(lb.certificateIds) == 0
+
+
+def test_remove_cert_when_in_use(client, config_id):
+    cert1 = _create_cert(client)
+    cert2 = _create_cert(client)
+
+    # create lb with certs
+    lb = client. \
+        create_loadBalancer(name=random_str(),
+                            loadBalancerConfigId=config_id,
+                            certificateIds=[cert1.id, cert2.id],
+                            defaultCertificateId=cert1.id)
+
+    lb = client.wait_success(lb)
+
+    assert lb.state == 'active'
+    assert len(lb.certificateIds) == 2
+    assert lb.defaultCertificateId == cert1.id
+
+    # remove cert1
+    cert1 = client.wait_success(client.delete(cert1))
+    assert cert1.state == 'removed'
+
+    lb = client.wait_success(lb)
+    assert lb.state == 'active'
+    assert len(lb.certificateIds) == 1
+    assert lb.defaultCertificateId is None
+
+
+def _create_cert(client):
+    cert = _read_cert("cert.pem")
+    key = _read_cert("key.pem")
+    cert1 = client. \
+        create_certificate(name=random_str(),
+                           cert=cert,
+                           key=key)
+    cert1 = client.wait_success(cert1)
+    assert cert1.state == 'active'
+    assert cert1.cert == cert
+    return cert1
+
+
+def _read_cert(name):
+    with open(os.path.join(RESOURCE_DIR, name)) as f:
+        return f.read()
 
 
 def _resource_is_active(resource):
