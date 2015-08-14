@@ -146,6 +146,17 @@ public interface Service extends java.io.Serializable {
 	@javax.persistence.Column(name = "environment_id", precision = 19)
 	public java.lang.Long getEnvironmentId();
 
+	/**
+	 * Setter for <code>cattle.service.vip</code>.
+	 */
+	public void setVip(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service.vip</code>.
+	 */
+	@javax.persistence.Column(name = "vip", length = 255)
+	public java.lang.String getVip();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

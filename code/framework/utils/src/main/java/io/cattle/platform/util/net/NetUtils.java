@@ -1,5 +1,7 @@
 package io.cattle.platform.util.net;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public class NetUtils {
 
     public static long ip2Long(String ipAddress) {
@@ -44,6 +46,24 @@ public class NetUtils {
         long end = (ip & ~mask) + (long) Math.pow(2, 32 - cidrSize) - 6;
 
         return long2Ip(end);
+    }
+
+    public static boolean isIpInSubnet(String cidr, String ipAddress) {
+        Pair<String, Integer> cidrPair = getCidrAndSize(cidr);
+        String startIp = NetUtils.getDefaultStartAddress(cidrPair.getLeft(), cidrPair.getRight());
+        long start = NetUtils.ip2Long(startIp);
+        String endIp = NetUtils.getDefaultEndAddress(cidrPair.getLeft(), cidrPair.getRight());
+        long end = NetUtils.ip2Long(endIp);
+        long ip = NetUtils.ip2Long(ipAddress);
+        if (start <= ip && ip <= end)
+            return true;
+
+        return false;
+    }
+
+    public static Pair<String, Integer> getCidrAndSize(String cidrInput) {
+        String[] cidrAndSize = cidrInput.split("/");
+        return Pair.of(cidrAndSize[0], Integer.valueOf(cidrAndSize[1]));
     }
 
 }

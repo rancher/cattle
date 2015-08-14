@@ -21,4 +21,8 @@ public interface ServiceDiscoveryService {
 
     void cloneConsumingServices(Service fromService, Service toService);
 
+    void setVIP(Service service);
+
+    void releaseVip(Service service);
+
 }

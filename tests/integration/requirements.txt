@@ -6,3 +6,4 @@ flake8
 pytest==2.7.1
 pytest-xdist
 pyyaml
+netaddr

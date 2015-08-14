@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> {
 
-	private static final long serialVersionUID = -2109411108;
+	private static final long serialVersionUID = 1432198915;
 
 	/**
 	 * The singleton instance of <code>cattle.service</code>
@@ -85,6 +85,11 @@ public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 * The column <code>cattle.service.environment_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Long> ENVIRONMENT_ID = createField("environment_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.service.vip</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.String> VIP = createField("vip", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>cattle.service</code> table reference

@@ -10,8 +10,11 @@ public class NetworkServiceConstants {
     public static final String KIND_PORT_SERVICE = "portService";
     public static final String KIND_HOST_NAT_GATEWAY = "hostNatGatewayService";
     public static final String KIND_HEALTH_CHECK = "healthCheckService";
+    public static final String KIND_VIP = "vipService";
 
     public static final String FIELD_PRIVATE_LINK = "privateLinks";
     public static final String FIELD_CONFIG_DRIVE = "configDrive";
+
+    public static final String LABEL_PROVIDED_SERVICES = "io.rancher.network.services";
 
 }

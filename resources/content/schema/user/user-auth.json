@@ -371,6 +371,7 @@
         "service.launchConfig" : "cr",
         "service.upgrade" : "r",
         "service.secondaryLaunchConfigs" : "cr",
+        "service.vip" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -426,11 +427,13 @@
         "externalService.scale" : "",
         "externalService.secondaryLaunchConfigs" : "",
         "externalService.hostname" : "cru",
+        "externalService.vip" : "",
 
         "dnsService" : "r",
         "dnsService.launchConfig" : "",
         "dnsService.scale" : "",
         "dnsService.secondaryLaunchConfigs" : "",
+        "dnsService.vip" : "",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",

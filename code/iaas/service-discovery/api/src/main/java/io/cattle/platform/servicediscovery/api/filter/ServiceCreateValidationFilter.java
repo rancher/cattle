@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
@@ -9,6 +10,7 @@ import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.storage.service.StorageService;
+import io.cattle.platform.util.net.NetUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
@@ -39,6 +41,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @Inject
     StorageService storageService;
 
+    @Inject
+    NetworkDao ntwkDao;
+
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[] { Service.class };
@@ -61,6 +66,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateImage(request, service);
 
+        validateRequestedVip(request);
+
         return super.create(type, request, next);
     }
 
@@ -74,6 +81,20 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                             InstanceConstants.FIELD_IMAGE_UUID);
                 }
             }
+        }
+    }
+
+    protected void validateRequestedVip(ApiRequest request) {
+        String requestedVip = DataUtils.getFieldFromRequest(request, ServiceDiscoveryConstants.FIELD_VIP,
+                String.class);
+        if (requestedVip == null) {
+            return;
+        }
+        String vipCidr = ntwkDao.getVIPSubnetCidr();
+        if (!NetUtils.isIpInSubnet(vipCidr, requestedVip)) {
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                            "Requested VIP " + ServiceDiscoveryConstants.FIELD_VIP
+                                    + " is outside of configured vip cidr range");
         }
     }
 

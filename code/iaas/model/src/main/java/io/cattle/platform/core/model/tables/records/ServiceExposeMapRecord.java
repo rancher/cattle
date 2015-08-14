@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "service_expose_map", schema = "cattle")
 public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.ServiceExposeMap {
 
-	private static final long serialVersionUID = -231406703;
+	private static final long serialVersionUID = 1661673531;
 
 	/**
 	 * Setter for <code>cattle.service_expose_map.id</code>.

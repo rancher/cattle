@@ -1,9 +1,5 @@
 package io.cattle.platform.docker.process.account;
 
-import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
-import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
-import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -13,9 +9,6 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Network;
-import io.cattle.platform.core.model.NetworkService;
-import io.cattle.platform.core.model.NetworkServiceProvider;
-import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -25,18 +18,20 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
 
-import org.apache.commons.lang3.ArrayUtils;
+import javax.inject.Inject;
 
 import com.netflix.config.DynamicStringListProperty;
 
 public class DockerAccountCreate extends AbstractObjectProcessLogic implements ProcessPostListener {
-
     DynamicStringListProperty KINDS = ArchaiusUtil.getList("docker.network.create.account.types");
+    DynamicStringListProperty DOCKER_NETWORK_SUBNET_CIDR = ArchaiusUtil.getList("docker.network.subnet.cidr");
+    DynamicStringListProperty DOCKER_VIP_SUBNET_CIDR = ArchaiusUtil.getList("docker.vip.subnet.cidr");
+
 
     @Inject
     NetworkDao networkDao;
@@ -58,53 +53,35 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
 
         Map<String, Network> networksByKind = getNetworksByUuid(account);
 
-        Network network = createNetwork(NetworkConstants.KIND_HOSTONLY, account, networksByKind, "Rancher Managed Network",
-                NetworkConstants.FIELD_HOST_VNET_URI, "bridge://docker0",
-                NetworkConstants.FIELD_DYNAMIC_CREATE_VNET, true);
-
-        addSubnet(network);
-        NetworkServiceProvider nsp = addNsp(network);
-
-        Map<String, NetworkService> services = collectionNetworkServices(network);
-        addService(services, nsp, NetworkServiceConstants.KIND_DNS);
-        addService(services, nsp, NetworkServiceConstants.KIND_LINK);
-        addService(services, nsp, NetworkServiceConstants.KIND_IPSEC_TUNNEL);
-        addService(services, nsp, NetworkServiceConstants.KIND_PORT_SERVICE);
-        addService(services, nsp, NetworkServiceConstants.KIND_HOST_NAT_GATEWAY);
-        addService(services, nsp, NetworkServiceConstants.KIND_HEALTH_CHECK);
-
         createNetwork(DockerNetworkConstants.KIND_DOCKER_HOST, account, networksByKind, "Docker Host Network Mode", null);
         createNetwork(DockerNetworkConstants.KIND_DOCKER_NONE, account, networksByKind, "Docker None Network Mode", null);
         createNetwork(DockerNetworkConstants.KIND_DOCKER_CONTAINER, account, networksByKind, "Docker Container Network Mode", null);
         createNetwork(DockerNetworkConstants.KIND_DOCKER_BRIDGE, account, networksByKind, "Docker Bridge Network Mode", null);
 
-        return new HandlerResult(AccountConstants.FIELD_DEFAULT_NETWORK_ID, network.getId()).withShouldContinue(true);
+        Network managedNetwork = createManagedNetwork(account, networksByKind);
+        return new HandlerResult(AccountConstants.FIELD_DEFAULT_NETWORK_ID, managedNetwork.getId()).withShouldContinue(true);
     }
 
-    protected void addSubnet(Network network) {
-        List<Subnet> subnets = objectManager.children(network, Subnet.class);
-        if (subnets.size() > 0) {
-            return;
-        }
+    protected Network createManagedNetwork(Account account, Map<String, Network> networksByKind) {
+        Network network = createNetwork(NetworkConstants.KIND_HOSTONLY, account, networksByKind,
+                "Rancher Managed Network",
+                NetworkConstants.FIELD_HOST_VNET_URI, "bridge://docker0",
+                NetworkConstants.FIELD_DYNAMIC_CREATE_VNET, true);
 
-        resourceDao.createAndSchedule(Subnet.class,
-                SUBNET.ACCOUNT_ID, network.getAccountId(),
-                SUBNET.CIDR_SIZE, 16,
-                SUBNET.NETWORK_ADDRESS, "10.42.0.0",
-                SUBNET.NETWORK_ID, network.getId());
+        networkDao.addManagedNetworkSubnet(network);
+        createAgentInstanceProvider(network);
+        return network;
     }
 
-    protected NetworkServiceProvider addNsp(Network network) {
-        List<NetworkServiceProvider> nsp = objectManager.children(network, NetworkServiceProvider.class);
-
-        if (nsp.size() > 0) {
-            return nsp.get(0);
-        }
-
-        return resourceDao.createAndSchedule(NetworkServiceProvider.class,
-                NETWORK_SERVICE_PROVIDER.ACCOUNT_ID, network.getAccountId(),
-                NETWORK_SERVICE_PROVIDER.KIND, NetworkServiceProviderConstants.KIND_AGENT_INSTANCE,
-                NETWORK_SERVICE_PROVIDER.NETWORK_ID, network.getId());
+    protected void createAgentInstanceProvider(Network network) {
+        List<String> servicesKinds = new ArrayList<String>();
+        servicesKinds.add(NetworkServiceConstants.KIND_DNS);
+        servicesKinds.add(NetworkServiceConstants.KIND_LINK);
+        servicesKinds.add(NetworkServiceConstants.KIND_IPSEC_TUNNEL);
+        servicesKinds.add(NetworkServiceConstants.KIND_PORT_SERVICE);
+        servicesKinds.add(NetworkServiceConstants.KIND_HOST_NAT_GATEWAY);
+        servicesKinds.add(NetworkServiceConstants.KIND_HEALTH_CHECK);
+        networkDao.createNsp(network, servicesKinds, NetworkServiceProviderConstants.KIND_AGENT_INSTANCE);
     }
 
     protected Network createNetwork(String kind, Account account, Map<String, Network> networksByKind,
@@ -123,35 +100,6 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
         return resourceDao.createAndSchedule(Network.class, data);
     }
 
-    protected Map<String, NetworkService> collectionNetworkServices(Network network) {
-        Map<String, NetworkService> services = new HashMap<>();
-
-        for (NetworkService service : objectManager.children(network, NetworkService.class)) {
-            services.put(service.getKind(), service);
-        }
-
-        return services;
-    }
-
-    protected void addService(Map<String, NetworkService> services, NetworkServiceProvider nsp, String kind,
-                              Object... keyValue) {
-        if (services.containsKey(kind)) {
-            return;
-        }
-
-        Map<Object, Object> data = new HashMap<>();
-        if (keyValue != null && keyValue.length > 1) {
-            data = CollectionUtils.asMap(keyValue[0], ArrayUtils.subarray(keyValue, 1, keyValue.length));
-        }
-
-        data.put(NETWORK_SERVICE.KIND, kind);
-        data.put(NETWORK_SERVICE.ACCOUNT_ID, nsp.getAccountId());
-        data.put(NETWORK_SERVICE.NETWORK_ID, nsp.getNetworkId());
-        data.put(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID, nsp.getId());
-
-        resourceDao.createAndSchedule(NetworkService.class,
-                objectManager.convertToPropertiesFor(NetworkService.class, data));
-    }
 
     protected Map<String, Network> getNetworksByUuid(Account account) {
         Map<String, Network> result = new HashMap<>();

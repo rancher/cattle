@@ -1,10 +1,10 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
-import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.*;
-import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.*;
-import static io.cattle.platform.core.model.tables.LoadBalancerTable.*;
-
+import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+import static io.cattle.platform.core.model.tables.LoadBalancerConfigTable.LOAD_BALANCER_CONFIG;
+import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOAD_BALANCER_LISTENER;
+import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
+import static io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
 import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
@@ -13,6 +13,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
+import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
@@ -23,12 +24,19 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.resource.pool.PooledResource;
+import io.cattle.platform.resource.pool.PooledResourceOptions;
+import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -39,6 +47,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
@@ -63,6 +72,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     JsonMapper jsonMapper;
+
+    @Inject
+    ResourcePoolManager poolManager;
+
+    @Inject
+    ResourceMonitor resourceMonitor;
 
     protected long getServiceNetworkId(Service service) {
         Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
@@ -373,6 +388,61 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         consumeMapDao.createServiceLinks(linksToCreate);
+    }
+
+    protected String getServiceVIP(Service service, String requestedVip) {
+        if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())
+                || service.getKind().equalsIgnoreCase(KIND.SERVICE.name())
+                || service.getKind().equalsIgnoreCase(KIND.DNSSERVICE.name())) {
+            Subnet vipSubnet = getServiceVipSubnet(service);
+            PooledResourceOptions options = new PooledResourceOptions();
+            if (requestedVip != null) {
+                options.setRequestedItem(requestedVip);
+            }
+            PooledResource resource = poolManager.allocateOneResource(vipSubnet, service, options);
+            if (resource != null) {
+                return resource.getName();
+            }
+        }
+        return null;
+    }
+
+    protected Subnet getServiceVipSubnet(Service service) {
+        Subnet vipSubnet = ntwkDao.addVIPSubnet(service.getAccountId());
+        // wait for subnet to become active so the ip range is populated
+        vipSubnet = resourceMonitor.waitFor(vipSubnet,
+                new ResourcePredicate<Subnet>() {
+                    @Override
+                    public boolean evaluate(Subnet obj) {
+                        return CommonStatesConstants.ACTIVE.equals(obj.getState());
+                    }
+                });
+        return vipSubnet;
+    }
+
+    @Override
+    public void setVIP(Service service) {
+        String requestedVip = service.getVip();
+        String vip = getServiceVIP(service, requestedVip);
+        if (vip != null || requestedVip != null) {
+            service.setVip(vip);
+            objectManager.persist(service);
+        }
+    }
+
+    @Override
+    public void releaseVip(Service service) {
+        String vip = service.getVip();
+        if (vip == null) {
+            return;
+        }
+        List<Subnet> subnets = objectManager.find(Subnet.class, SUBNET.ACCOUNT_ID, service.getAccountId(), SUBNET.KIND,
+                SubnetConstants.KIND_VIP_SUBNET);
+        if (subnets.isEmpty()) {
+            return;
+        }
+        Subnet subnet = subnets.get(0);
+        poolManager.releaseResource(subnet, service);
     }
 
 }

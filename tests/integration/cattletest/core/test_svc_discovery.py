@@ -1,6 +1,7 @@
 from common_fixtures import *  # NOQA
 from cattle import ApiError
 import yaml
+from netaddr import IPNetwork, IPAddress
 
 
 def create_env_and_svc(client, context):
@@ -2381,6 +2382,76 @@ def test_validate_hostname_override(client, context):
 
     # validate the host was overriden with instancename
     assert instance2.hostname == instance2.name
+
+
+def test_vip_service(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    image_uuid = context.image_uuid
+    init_labels = {'io.rancher.network.services': "vipService"}
+    launch_config = {"imageUuid": image_uuid, "labels": init_labels}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    assert service.vip is not None
+    assert IPAddress(service.vip) in IPNetwork("169.254.64.0/18")
+
+    service = client.wait_success(service.activate())
+    assert service.state == "active"
+    instance = _validate_compose_instance_start(client, service, env, "1")
+    assert all(item in instance.labels for item in init_labels) is True
+
+    # verify that instance was registered as a provider
+    account_id = context.project.id
+    networks = client.list_network(kind="hostOnlyNetwork",
+                                   accountId=account_id)
+    assert len(networks) == 1
+    nsps = super_client(None).reload(networks[0]).networkServiceProviders()
+    assert len(nsps) == 2
+    for nsp in nsps:
+        if nsp.kind == "externalProvider":
+            vip_nsp = nsp
+    assert vip_nsp is not None
+
+    vip_nsp_maps = vip_nsp.networkServiceProviderInstanceMaps()
+    assert len(vip_nsp_maps) == 1
+    assert vip_nsp_maps[0].instanceId == instance.id
+
+    # delete the service and verify that the instance is no longer a provider
+    service = client.wait_success(service.remove())
+    _validate_compose_instance_removed(client, service, env)
+    vip_nsp_maps = vip_nsp.networkServiceProviderInstanceMaps()
+    assert len(vip_nsp_maps) == 1
+    assert vip_nsp_maps[0].state in ('removing', 'removed', 'purged')
+
+
+def test_vip_requested_ip(client, context):
+    env = client.create_environment(name=random_str())
+    client.wait_success(env)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    vip = "169.254.65.30"
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    vip=vip)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    assert service.vip is not None
+    assert service.vip == vip
+    # vip out of the range
+    with pytest.raises(ApiError) as e:
+        vip = "169.255.65.30"
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config,
+                              vip=vip)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
 
 
 def _get_instance_for_service(super_client, serviceId):
