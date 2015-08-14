@@ -367,20 +367,25 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
     @Override
     public List<DnsEntryData> getDnsServiceLinks(Instance instance, final boolean isVIPProvider) {
+        final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap();
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
                 Map<String, List<String>> resolve = new HashMap<>();
+                IpAddress sourceIp = getIpAddress((IpAddress) input.get(2), (Nic) input.get(7), true,
+                        instanceIdToHostIpMap);
                 List<String> ips = new ArrayList<>();
                 if (isVIPProvider) {
                     Service targetService = (Service) input.get(6);
                     ips.add(targetService.getVip());
                 } else {
-                    ips.add(((IpAddress) input.get(1)).getAddress());
+                    IpAddress targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(8), false,
+                            instanceIdToHostIpMap);
+                    ips.add(targetIp.getAddress());
                 }
                 resolve.put(getDnsName(input.get(0), input.get(4), input.get(5), false), ips);
-                data.setSourceIpAddress((IpAddress) input.get(2));
+                data.setSourceIpAddress(sourceIp);
                 data.setResolve(resolve);
                 data.setInstance((Instance) input.get(3));
                 return data;
@@ -394,9 +399,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         ServiceConsumeMapTable dnsConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
         ServiceExposeMapTable targetServiceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
         ServiceTable consumedService = mapper.add(SERVICE);
-
-        NicTable clientNic = NIC.as("client_nic");
-        NicTable targetNic = NIC.as("target_nic");
+        NicTable clientNic = mapper.add(NIC);
+        NicTable targetNic = mapper.add(NIC);
         InstanceTable targetInstance = INSTANCE.as("instance");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
