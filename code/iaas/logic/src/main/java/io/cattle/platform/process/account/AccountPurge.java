@@ -1,6 +1,7 @@
 package io.cattle.platform.process.account;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
@@ -17,10 +18,14 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
 public class AccountPurge extends AbstractDefaultProcessHandler {
+
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -57,12 +62,8 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, env, null);
         }
 
-        for (Instance instance : getObjectManager().children(account, Instance.class)) {
+        for (Instance instance : instanceDao.listNonRemovedInstances(account, false)) {
             deleteAgentAccount(instance.getAgentId(), state.getData());
-
-            if (instance.getRemoved() != null) {
-                continue;
-            }
 
             try {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
