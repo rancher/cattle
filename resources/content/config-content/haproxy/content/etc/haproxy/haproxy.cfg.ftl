@@ -39,8 +39,7 @@ frontend ${listener.uuid}_frontend
         bind ${publicIp}:${sourcePort}<#if (listener.sourceProtocol == "https" || listener.sourceProtocol == "ssl") && certs?has_content> ssl crt /etc/haproxy/certs/<#if !defaultCert??> strict-sni</#if></#if>
         mode ${protocol}
 
-        <#list backends as backend >
-        <#if backend.portSpec.sourcePort == sourcePort>
+        <#list backends[listener.uuid] as backend >
         <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>
         <#if backend.portSpec.domain != "default">
         acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}
@@ -53,11 +52,9 @@ frontend ${listener.uuid}_frontend
         <#elseif backend.portSpec.domain == "default" && backend.portSpec.path == "default">
     	default_backend ${listener.uuid}_${backend.uuid}_backend
         </#if>
-        </#if>
         </#list>
 
-<#list backends as backend >
-<#if backend.portSpec.sourcePort == sourcePort>
+<#list backends[listener.uuid]  as backend >
 backend ${listener.uuid}_${backend.uuid}_backend
         mode ${protocol}
         balance ${listener.data.fields.algorithm}
@@ -79,7 +76,7 @@ backend ${listener.uuid}_${backend.uuid}_backend
          <#if listener.sourceProtocol == "https">
         http-request add-header X-Forwarded-Proto https if { ssl_fc }
         </#if>
-</#if>
+        
 </#list>
 </#list>
 <#else>

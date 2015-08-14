@@ -93,14 +93,54 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                 return;
             }
         }
+        Map<String, List<LoadBalancerTargetsInfo>> listenerToTargetMap = assignTargetsToListeners(listeners,
+                targetsInfo, lbHealthCheck);
         context.getData().put("listeners", listeners);
         context.getData().put("publicIp", lbMgr.getLoadBalancerInstanceIp(instance).getAddress());
-        context.getData().put("backends", sortTargets(targetsInfo));
+        context.getData().put("backends", listenerToTargetMap);
         context.getData().put("appPolicy", appPolicy);
         context.getData().put("lbPolicy", lbPolicy);
 
         context.getData().put("certs", lbDao.getLoadBalancerCertificates(lb));
         context.getData().put("defaultCert", lbDao.getLoadBalancerDefaultCertificate(lb));
+    }
+
+
+    protected Map<String, List<LoadBalancerTargetsInfo>> assignTargetsToListeners(
+            List<? extends LoadBalancerListener> listeners, List<LoadBalancerTargetsInfo> targetsInfo,
+            InstanceHealthCheck lbHealthCheck) {
+        Map<String, List<LoadBalancerTargetsInfo>> listenerToTargetMap = new HashMap<>();
+        for (LoadBalancerListener listener : listeners) {
+            List<LoadBalancerTargetsInfo> listenerTargets = new ArrayList<>();
+            for (LoadBalancerTargetsInfo info : targetsInfo) {
+                Integer listnerPort = listener.getPrivatePort() == null ? listener.getSourcePort() : listener
+                        .getPrivatePort();
+                if (info.getPortSpec().getSourcePort().equals(listnerPort)) {
+                    if (listener.getSourceProtocol().equalsIgnoreCase("http")) {
+                        listenerTargets.add(new LoadBalancerTargetsInfo(info));
+                    } else if (listener.getSourceProtocol().equalsIgnoreCase("tcp")) {
+                        // special handling for tcp ports - hostname routing rules should be ignored (by resetting the
+                        // rule to Default)
+                        // and all backends should be merged into one
+                        LoadBalancerTargetsInfo tcpTargetsInfo = null;
+                        if (listenerTargets.isEmpty()) {
+                            LoadBalancerTargetPortSpec portSpec = info.getPortSpec();
+                            portSpec.setDomain(LoadBalancerTargetPortSpec.DEFAULT);
+                            portSpec.setPath(LoadBalancerTargetPortSpec.DEFAULT);
+                            tcpTargetsInfo = new LoadBalancerTargetsInfo(info.getTargets(), lbHealthCheck,
+                                    info.getPortSpec());
+                        } else {
+                            tcpTargetsInfo = listenerTargets.get(0);
+                            tcpTargetsInfo.addTargets(info.getTargets());
+                        }
+                        listenerTargets.clear();
+                        listenerTargets.add(tcpTargetsInfo);
+                    }
+                }
+            }
+            listenerToTargetMap.put(listener.getUuid(), sortTargets(listenerTargets));
+        }
+        return listenerToTargetMap;
     }
 
 
