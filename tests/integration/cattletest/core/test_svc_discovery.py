@@ -2454,6 +2454,37 @@ def test_vip_requested_ip(client, context):
     assert e.value.error.code == 'InvalidOption'
 
 
+def test_external_svc_healthcheck(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    # test that external service was set with healtcheck
+    health_check = {"name": "check1", "responseTimeout": 3,
+                    "interval": 4, "healthyThreshold": 5,
+                    "unhealthyThreshold": 6, "requestLine": "index.html",
+                    "port": 200}
+    ips = ["72.22.16.5", '192.168.0.10']
+    service = client.create_externalService(name=random_str(),
+                                            environmentId=env.id,
+                                            externalIpAddresses=ips,
+                                            healthCheck=health_check)
+    service = client.wait_success(service)
+    assert service.healthCheck.name == "check1"
+    assert service.healthCheck.responseTimeout == 3
+    assert service.healthCheck.interval == 4
+    assert service.healthCheck.healthyThreshold == 5
+    assert service.healthCheck.unhealthyThreshold == 6
+    assert service.healthCheck.requestLine == "index.html"
+    assert service.healthCheck.port == 200
+
+    # test rancher-compose export
+    compose_config = env.exportconfig()
+    assert compose_config is not None
+    document = yaml.load(compose_config.rancherComposeConfig)
+    assert document[service.name]['health_check'] is not None
+
+
 def _get_instance_for_service(super_client, serviceId):
     instances = []
     instance_service_maps = super_client. \
