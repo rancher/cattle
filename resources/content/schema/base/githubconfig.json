@@ -8,6 +8,10 @@
         "restricted",
         "unrestricted"
       ]
+    },
+    "allowedIdentities": {
+      "type" : "array[identity]",
+      "required": false
     }
   }
 }

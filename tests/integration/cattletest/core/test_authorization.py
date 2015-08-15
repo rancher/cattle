@@ -74,6 +74,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'globalLoadBalancerPolicy',
         'host',
         'hostAccess',
+        'identity',
         'image',
         'instance',
         'instanceConsole',
@@ -241,6 +242,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'host',
         'hostAccess',
         'hostApiProxyToken',
+        'identity',
         'image',
         'instance',
         'instanceConsole',
@@ -251,6 +253,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'ipAddress',
         'ipAddressAssociateInput',
         'label',
+        'ldapconfig',
         'loadBalancer',
         'loadBalancerAppCookieStickinessPolicy',
         'loadBalancerConfig',
@@ -359,7 +362,10 @@ def test_token_auth(token_client):
         'teams': 'r',
         'userType': 'r',
         'accountId': 'r',
-        'hostname': 'r'
+        'hostname': 'r',
+        'userIdentity': 'r',
+        'authProvider': 'r',
+        'enabled': 'r'
     })
 
 
@@ -369,8 +375,7 @@ def test_github_auth(admin_user_client, user_client, project_client):
 
     auth_check(admin_user_client.schema, 'githubconfig', 'cru', {
         'enabled': 'cr',
-        'allowedOrganizations': 'cr',
-        'allowedUsers': 'cr',
+        'allowedIdentities': 'cr',
         'clientId': 'cr',
         'clientSecret': 'cr',
         'accessMode': 'cr',

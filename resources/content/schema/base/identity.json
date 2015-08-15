@@ -1,0 +1,19 @@
+{
+  "resourceFields" : {
+    "projectId": {
+      "type" : "reference[project]"
+    }
+  },
+  "collectionFilters": {
+    "name": {
+      "modifiers": [
+        "eq"
+      ]
+    },
+    "all": {
+      "modifiers": [
+        "eq"
+      ]
+    }
+  }
+}

@@ -1,8 +1,8 @@
 package io.cattle.platform.register.api;
 
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.AccountLookup;
-import io.cattle.platform.iaas.api.auth.impl.BasicAuthImpl;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
+import io.cattle.platform.iaas.api.auth.integration.internal.rancher.BasicAuthImpl;
 import io.cattle.platform.iaas.api.auth.impl.DefaultAuthorizationProvider;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
 import io.cattle.platform.register.util.RegisterConstants;
@@ -54,4 +54,13 @@ public class RegistrationTokenAccountLookup implements AccountLookup {
         this.tokenManager = tokenManager;
     }
 
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return "RegistrationTokenAccountLookup";
+    }
 }

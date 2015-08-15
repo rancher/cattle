@@ -1,6 +1,6 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
-import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -56,14 +55,14 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     }
 
     @Override
-    public Policy getPolicy(Account account, Account authenticatedAsAccount, Set<ExternalId> externalIds, ApiRequest request) {
+    public Policy getPolicy(Account account, Account authenticatedAsAccount, Set<Identity> identities, ApiRequest request) {
         PolicyOptionsWrapper options = new PolicyOptionsWrapper(optionsFactory.getOptions(account));
-        AccountPolicy policy = new AccountPolicy(account, authenticatedAsAccount, externalIds, options);
+        AccountPolicy policy = new AccountPolicy(account, authenticatedAsAccount, identities, options);
 
         String kind = getRole(policy, request);
         if (kind != null) {
             options = new PolicyOptionsWrapper(optionsFactory.getOptions(kind));
-            policy = new AccountPolicy(account, authenticatedAsAccount, externalIds, options);
+            policy = new AccountPolicy(account, authenticatedAsAccount, identities, options);
         }
 
         if (SubscriptionUtils.getSubscriptionStyle(policy) == SubscriptionStyle.QUALIFIED) {

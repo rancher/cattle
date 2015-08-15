@@ -1,6 +1,6 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
-import io.cattle.platform.api.auth.ExternalId;
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.impl.DefaultPolicy;
 import io.cattle.platform.api.auth.impl.PolicyOptions;
 import io.cattle.platform.core.model.Account;
@@ -18,8 +18,8 @@ public class AccountPolicy extends DefaultPolicy {
 
     private static final Logger log = LoggerFactory.getLogger(AccountPolicy.class);
 
-    public AccountPolicy(Account account, Account authenticatedAsAccount, Set<ExternalId> externalIds, PolicyOptions options) {
-        super(account.getId(), authenticatedAsAccount.getId(), account.getName(), externalIds, options);
+    public AccountPolicy(Account account, Account authenticatedAsAccount, Set<Identity> identities, PolicyOptions options) {
+        super(account.getId(), authenticatedAsAccount.getId(), account.getName(), identities, options);
     }
 
     @Override

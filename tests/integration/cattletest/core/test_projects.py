@@ -372,6 +372,16 @@ def test_project_deactivate(user_clients, project, members):
     assert project.state == 'inactive'
 
 
+def test_make_project_with_identity(admin_user_client):
+    client = create_context(admin_user_client).user_client
+    identity = client.list_identity()
+    assert len(identity) == 1
+    identity = identity[0]
+    identity['role'] = 'owner'
+    members = [identity]
+    _create_project_with_members(admin_user_client, client, members)
+
+
 def _create_resources(client):
     for x in range(0, 4):
         uuid = "sim:{}".format(random_num())
@@ -390,9 +400,7 @@ def _create_resources(client):
 def _set_members(admin_user_client, client, id, members, status):
     project = client.by_id('project', id)
     if status is None:
-        got_members = project.setmembers(members=members)
-        for member in got_members.data:
-            admin_user_client.wait_success(member)
+        project.setmembers(members=members)
         got_members = get_plain_members(project.projectMembers())
         assert len(got_members) == len(members)
         diff_members(members, got_members)
