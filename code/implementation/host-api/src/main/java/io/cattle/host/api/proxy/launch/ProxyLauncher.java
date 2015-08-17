@@ -105,6 +105,8 @@ public class ProxyLauncher extends NoExceptionRunnable implements Initialization
         String cattleProxyAddress = "localhost:" + getProxiedPort();
         env.put("PROXY_CATTLE_ADDRESS", cattleProxyAddress);
 
+        env.put("PROXY_HTTPS_PROXY_PROTOCOL_PORTS", getProxyProtocolHttpsPorts());
+
         String processName = ManagementFactory.getRuntimeMXBean().getName();
         if (processName != null) {
             String[] parts = processName.split("@");
@@ -135,6 +137,11 @@ public class ProxyLauncher extends NoExceptionRunnable implements Initialization
         // to using ArchaiusUtils
         String port = System.getenv("CATTLE_HTTP_PORT");
         return port == null ? System.getProperty("cattle.http.port", "8080") : port;
+    }
+
+    private String getProxyProtocolHttpsPorts() {
+        String ports = System.getenv("PROXY_PROTOCOL_HTTPS_PORTS");
+        return ports == null ? System.getProperty("proxy.protocol.https.ports", "443") : ports;
     }
 
     public String getPublicKey() {
