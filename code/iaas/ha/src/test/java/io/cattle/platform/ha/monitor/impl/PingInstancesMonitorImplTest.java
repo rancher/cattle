@@ -179,7 +179,7 @@ public class PingInstancesMonitorImplTest {
         
         assertTrue(needsHaRestart.contains(uuidD));
         assertTrue(!needsSynced.containsKey(externalIdD));
-        assertSyncAction(externalIdE, EVENT_STOP);
+        assertSyncAction(externalIdE, EVENT_DESTROY);
         assertTrue(needsHaRestart.contains(uuidF));
         assertTrue(!needsSynced.containsKey(externalIdF));
         assertTrue(needsHaRestart.contains(uuidG));

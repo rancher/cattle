@@ -24,7 +24,7 @@ def test_container_ha_default(super_client, new_context):
     processes = wait_for(callback)
 
     c = wait_for_condition(client, c,
-                           lambda x: x.state == 'stopped',
+                           lambda x: x.state == 'removed',
                            lambda x: 'State is: ' + x.state)
 
     # TODO Remove this debugging block once we've seen this test not fail for
@@ -36,7 +36,8 @@ def test_container_ha_default(super_client, new_context):
             for pe in process_executions(super_client, p.id):
                 logging.warn('ProcessExecution: %s' % pe)
 
-    assert _process_names(processes) == {'instance.create', 'instance.stop'}
+    assert _process_names(processes) == {'instance.create', 'instance.stop',
+                                         'instance.remove'}
 
 
 def test_container_ha_stop(super_client, new_context):
