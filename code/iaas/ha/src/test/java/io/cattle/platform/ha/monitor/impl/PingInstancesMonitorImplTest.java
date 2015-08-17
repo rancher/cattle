@@ -118,13 +118,12 @@ public class PingInstancesMonitorImplTest {
         String externalIdJ = setupSync("rancher-stopped-host-running", false, true, STATE_STOPPED, STATE_RUNNING);
         String externalIdJ1 = setupSync("rancher-stopped-host-running", true, true, STATE_STOPPED, STATE_RUNNING);
 
-        // Container stopped in rancher, destroyed on host, by uuid
+        // Container stopped in rancher, destroyed on host
         String externalIdK = setupSync("rancher-stopped-host-destroyed", false, false, STATE_STOPPED, null);
         String externalIdL = setupSync("rancher-stopped-host-destroyed", true, false, STATE_STOPPED, null);
         String externalIdM = setupSync("rancher-stopped-host-destroyed", false, true, STATE_STOPPED, null);
         String externalIdN = setupSync("rancher-stopped-host-destroyed", true, true, STATE_STOPPED, null);
         String uuidK = uuid("rancher-stopped-host-destroyed", false, false);
-        String uuidL = uuid("rancher-stopped-host-destroyed", true, false);
         String uuidM = uuid("rancher-stopped-host-destroyed", false, true);
         String uuidN = uuid("rancher-stopped-host-destroyed", true, true);
         
@@ -191,7 +190,7 @@ public class PingInstancesMonitorImplTest {
         assertSyncAction(externalIdJ1, EVENT_INSTANCE_FORCE_STOP);
         
         assertDoNothing(externalIdK, uuidK);
-        assertDoNothing(externalIdL, uuidL);
+        assertSyncAction(externalIdL, EVENT_DESTROY);
         assertDoNothing(externalIdM, uuidM);
         assertDoNothing(externalIdN, uuidN);
         
@@ -241,10 +240,6 @@ public class PingInstancesMonitorImplTest {
         reportedInstances.byExternalId.put(externalId, ri);
         reportedInstances.byUuid.put(uuid, ri);
         return ri;
-    }
-
-    KnownInstance addKnownInstance(String uuid, String externalId, String state) {
-        return addKnownInstance(uuid, externalId, state, null, null, null);
     }
 
     KnownInstance addKnownInstance(String uuid, String externalId, String state, String systemContainer, Date removed, String instanceTriggeredStop) {
