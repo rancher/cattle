@@ -184,14 +184,22 @@ public class DeploymentUnit {
          */
         createMissingUnitInstances(svcInstanceIdGenerator);
 
+        boolean hasSidekicks = false;
         for (Long serviceId : svc.keySet()) {
             DeploymentUnitService duService = svc.get(serviceId);
-            for (String launchConfigName : duService.getLaunchConfigNames()) {
+            List<String> launchConfigNames = duService.getLaunchConfigNames();
+            if (launchConfigNames.size() > 1) {
+                hasSidekicks = true;
+            }
+            for (String launchConfigName : launchConfigNames) {
                 createInstance(launchConfigName, duService.getService());
             }
         }
 
-        this.waitForAllocate();
+        // don't wait for instance allocate unless sidekicks are present
+        if (hasSidekicks) {
+            this.waitForAllocate();
+        }
     }
     
     protected void waitForAllocate() {
