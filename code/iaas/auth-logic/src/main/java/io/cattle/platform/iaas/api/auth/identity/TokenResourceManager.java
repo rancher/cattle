@@ -50,7 +50,10 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     private Token createToken(ApiRequest request) {
         Token token = null;
-
+        if (SecurityConstants.AUTH_PROVIDER.get().equals(SecurityConstants.NO_PROVIDER)) {
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
+                    "NoAuthProvider", "No Auth provider is configured.", null);
+        }
         for (TokenCreator tokenCreator : tokenCreators) {
             if (tokenCreator.isConfigured() && tokenCreator.providerType().equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
                 token = tokenCreator.createToken(request);
@@ -58,8 +61,8 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
             }
         }
         if (token == null){
-            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE,
-                    "codeTypeInvalid", "Code type provided invalid.", null);
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
+                    "codeInvalid", "Code provided is invalid.", null);
         }
         return token;
     }
