@@ -6,6 +6,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceLookup;
 
@@ -26,16 +27,20 @@ public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
     @Override
     public String[] getProcessNames() {
         return new String[] { "instance.updatehealthy", "instance.updateunhealthy", InstanceConstants.PROCESS_STOP,
-                InstanceConstants.PROCESS_REMOVE };
+                InstanceConstants.PROCESS_REMOVE, ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         List<Service> services = new ArrayList<>();
-        for (ServiceLookup lookup : serviceLookups) {
-            Collection<? extends Service> lookupSvs = lookup.getServices(state.getResource());
-            if (lookupSvs != null) {
-                services.addAll(lookupSvs);
+        if (state.getResource() instanceof Service) {
+            services.add((Service) state.getResource());
+        } else {
+            for (ServiceLookup lookup : serviceLookups) {
+                Collection<? extends Service> lookupSvs = lookup.getServices(state.getResource());
+                if (lookupSvs != null) {
+                    services.addAll(lookupSvs);
+                }
             }
         }
 

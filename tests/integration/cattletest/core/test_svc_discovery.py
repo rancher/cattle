@@ -2485,6 +2485,35 @@ def test_external_svc_healthcheck(client, context):
     assert document[service.name]['health_check'] is not None
 
 
+def test_validate_scaledown_updating(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=3)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    # activate service
+    env.activateservices()
+    service = client.wait_success(service)
+    assert service.state == "active"
+
+    # change scale two times in a row
+    service = client.update(service, scale=10, name=service.name)
+    service = client.update(service, scale=1, name=service.name)
+    service = client.wait_success(service, 120)
+    assert service.state == "active"
+    assert service.scale == 1
+    _wait_until_active_map_count(service, 1, client, timeout=30)
+
+
 def _get_instance_for_service(super_client, serviceId):
     instances = []
     instance_service_maps = super_client. \
