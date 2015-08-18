@@ -15,6 +15,7 @@ import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
+import static io.cattle.platform.core.constants.NetworkServiceConstants.*;
 
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
 import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
@@ -340,12 +341,18 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 .on(port.PRIVATE_IP_ADDRESS_ID.eq(privateIpAddress.ID))
             .join(publicIpAddress)
                 .on(port.PUBLIC_IP_ADDRESS_ID.eq(publicIpAddress.ID))
+            .join(NIC)
+                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(NIC.INSTANCE_ID))
+            .join(NETWORK_SERVICE)
+                .on(NIC.NETWORK_ID.eq(NETWORK_SERVICE.NETWORK_ID).and(NETWORK_SERVICE.KIND.eq(KIND_PORT_SERVICE)))
             .where(HOST.AGENT_ID.eq(agent.getId())
                     .and(INSTANCE_HOST_MAP.REMOVED.isNull())
                     .and(port.REMOVED.isNull())
                     .and(port.PUBLIC_PORT.isNotNull())
                     .and(port.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
                     .and(HOST.REMOVED.isNull()))
+                    .and(NIC.REMOVED.isNull())
+                    .and(NETWORK_SERVICE.REMOVED.isNull())
             .orderBy(port.CREATED.asc())
             .fetch().map(mapper);
     }

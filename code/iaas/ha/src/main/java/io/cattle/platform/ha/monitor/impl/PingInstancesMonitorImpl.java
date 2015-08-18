@@ -221,7 +221,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                 ReportedInstance ri = new ReportedInstance();
                 ri.setExternalId(ki.getExternalId());
                 ri.setUuid(ki.getUuid());
-                addSyncAction(needsSynced, syncActions, ri, EVENT_STOP, checkOnly);
+                addSyncAction(needsSynced, syncActions, ri, EVENT_DESTROY, checkOnly);
             }
         }
     }
