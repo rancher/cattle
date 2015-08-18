@@ -123,7 +123,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         }
         for (Map<String, String> newMember : members) {
             Identity givenIdentity = new Identity(newMember.get("externalIdType"), newMember.get("externalId"));
-            givenIdentity = identityManager.transform(givenIdentity);
+            givenIdentity = identityManager.getIdentity(givenIdentity);
             membersTransformed.add(new Member(givenIdentity, newMember.get("role")));
         }
 

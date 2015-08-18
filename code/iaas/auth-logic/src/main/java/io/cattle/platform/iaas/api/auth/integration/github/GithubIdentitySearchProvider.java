@@ -1,20 +1,27 @@
 package io.cattle.platform.iaas.api.auth.integration.github;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.AuthToken;
+import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClientEndpoints;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +43,10 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
     private JsonMapper jsonMapper;
     @Inject
     private GithubUtils githubUtils;
+    @Inject
+    private AuthTokenDao authTokenDao;
+    @Inject
+    GithubTokenCreator githubTokenCreator;
 
     private static final Log logger = LogFactory.getLog(GithubIdentitySearchProvider.class);
 
@@ -65,6 +76,42 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
             default:
                 return new ArrayList<>();
         }
+    }
+
+    @Override
+    public Set<Identity> getIdentities(Account account) {
+        if (!isConfigured()) {
+            return new HashSet<>();
+        }
+        githubUtils.findAndSetJWT();
+        String jwt = githubUtils.getJWT();
+        String accessToken = (String) DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get();
+        if (StringUtils.isBlank(jwt) && !StringUtils.isBlank(accessToken)) {
+            AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
+            if (authToken == null) {
+                try {
+                    jwt = ProjectConstants.AUTH_TYPE + githubTokenCreator.getGithubToken(accessToken).getJwt();
+                    authToken = authTokenDao.createToken(jwt, GithubConstants.CONFIG, account.getId());
+                    jwt = authToken.getKey();
+                } catch (ClientVisibleException e) {
+                    if (e.getCode().equalsIgnoreCase(GithubConstants.GITHUB_ERROR) &&
+                            !e.getDetail().contains("401")) {
+                        throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
+                                GithubConstants.JWT_CREATION_FAILED, "", null);
+                    }
+                }
+            } else {
+                jwt = authToken.getKey();
+            }
+
+        }
+        if (jwt != null && !jwt.isEmpty()) {
+            ApiRequest request = ApiContext.getContext().getApiRequest();
+            request.setAttribute(GithubConstants.GITHUB_JWT, jwt);
+            request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
+            return githubUtils.getIdentities();
+        }
+        return new HashSet<>();
     }
 
     private List<Identity> searchGroups(String groupName, boolean exactMatch) {

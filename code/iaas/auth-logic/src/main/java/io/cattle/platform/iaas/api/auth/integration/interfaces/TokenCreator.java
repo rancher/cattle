@@ -5,6 +5,5 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 public interface TokenCreator extends Configurable, Provider{
 
-    Token createToken(ApiRequest request);
-
+    Token getToken(ApiRequest request);
 }

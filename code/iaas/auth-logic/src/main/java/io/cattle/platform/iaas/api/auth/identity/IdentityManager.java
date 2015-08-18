@@ -71,7 +71,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         return identitiesToReturn;
     }
 
-    private Identity getIdentity(String id) {
+    public Identity getIdentity(String id) {
         String[] split = id.split(":", 2);
         if (split.length != 2) {
             return null;
@@ -133,7 +133,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         this.identityTransformationHandlers = identityTransformationHandlers;
     }
 
-    public Identity transform(Identity identity) {
+    public Identity getIdentity(Identity identity) {
         Identity newIdentity = null;
         for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
             if (identityTransformationHandler.scopes().contains(identity.getExternalIdType()) && identityTransformationHandler.isConfigured()) {

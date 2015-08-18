@@ -108,7 +108,7 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
     }
 
     @Override
-    public Token createToken(ApiRequest request) {
+    public Token getToken(ApiRequest request) {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
         String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
         String accessToken = githubClient.getAccessToken(code);

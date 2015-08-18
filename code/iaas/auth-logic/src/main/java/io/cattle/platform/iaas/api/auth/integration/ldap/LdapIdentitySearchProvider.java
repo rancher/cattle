@@ -3,8 +3,14 @@ package io.cattle.platform.iaas.api.auth.integration.ldap;
 import static javax.naming.directory.SearchControls.*;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.AuthToken;
+import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
+import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
@@ -32,6 +38,10 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
     private static final Log logger = LogFactory.getLog(LdapIdentitySearchProvider.class);
     @Inject
     LdapUtils ldapUtils;
+    @Inject
+    LdapTokenCreator ldapTokenCreator;
+    @Inject
+    AuthTokenDao authTokenDao;
 
     public List<Identity> searchIdentities(String name, boolean exactMatch) {
         if (!isConfigured()){
@@ -63,6 +73,41 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "invalidScope", "Identity type is not valid for Ldap", null);
         }
+    }
+
+    @Override
+    public Set<Identity> getIdentities(Account account) {
+        if (!isConfigured()) {
+            return new HashSet<>();
+        }
+        if (account.getExternalIdType() != null && !account.getExternalIdType().equalsIgnoreCase(LdapConstants.USER_SCOPE)){
+            return new HashSet<>();
+        }
+        if(!ldapUtils.findAndSetJWT()) {
+            AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
+            if (authToken == null){
+                LdapContext ldapContext;
+                ldapContext = getServiceContext();
+                String query = "(" + LdapConstants.DN + '=' + account.getExternalId() + ")";
+                Attributes userAttributes = userRecord(ldapContext, LdapConstants.LDAP_DOMAIN.get(), query);
+                if (userAttributes == null){
+                    return new HashSet<>();
+                }
+                Set<Identity> identities = getIdentities(userAttributes);
+                Token token = ldapTokenCreator.getTokenByIdentities(identities);
+                authToken = authTokenDao.createToken(token.getJwt(), LdapConstants.CONFIG, account.getId());
+                try {
+                    ldapContext.close();
+                } catch (NamingException e) {
+                    logger.error("Failed to close userContext.", e);
+                }
+            }
+            if (authToken != null && authToken.getKey() != null) {
+                ApiRequest request = ApiContext.getContext().getApiRequest();
+                request.setAttribute(LdapConstants.LDAP_JWT, authToken.getKey());
+            }
+        }
+        return ldapUtils.getIdentities();
     }
 
     @Override
@@ -106,19 +151,16 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             userContext = new InitialLdapContext(props, null);
             return userContext;
         } catch (NamingException e) {
-            logger.error("Failed to login to ldap user:" + username + " password: " + password, e);
+            logger.error("Failed to login to ldap user:" + username, e);
             throw new RuntimeException(e);
         }
     }
 
-    private Attributes userRecord(LdapContext context, String scope, String name) {
+    private Attributes userRecord(LdapContext context, String scope, String query) {
         SearchControls controls = new SearchControls();
-        name = getSamName(name);
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> results;
-        String query = null;
         try {
-            query = "(" + LdapConstants.USER_LOGIN_FIELD.get() + '=' + name + ")";
             results = context.search(scope, query, controls);
         } catch (NamingException e) {
             logger.error("Failed to search: " + query + "with DN=" + scope + " as the scope.", e);
@@ -127,11 +169,11 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         }
         try {
             if (!results.hasMore()) {
-                logger.error("Cannot locate user information for " + name);
+                logger.error("Cannot locate user information for " + query);
                 return null;
             }
         } catch (NamingException e) {
-            logger.error("Common name: " + name + " is not valid.", e);
+            logger.error(query + " is not found.", e);
             return null;
         }
         SearchResult result;
@@ -145,7 +187,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                 return null;
             }
         } catch (NamingException e) {
-            logger.error("No results. when searching. " + name);
+            logger.error("No results. when searching. " + query);
             return null;
         }
         return result.getAttributes();
@@ -182,7 +224,9 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         } catch (RuntimeException e) {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
-        Attributes userAttributes = userRecord(userContext, LdapConstants.LDAP_DOMAIN.get(), username);
+        String name = getSamName(username);
+        String query = "(" + LdapConstants.USER_LOGIN_FIELD.get() + '=' + name + ")";
+        Attributes userAttributes = userRecord(userContext, LdapConstants.LDAP_DOMAIN.get(), query);
         if (userAttributes == null){
             return new HashSet<>();
         }
