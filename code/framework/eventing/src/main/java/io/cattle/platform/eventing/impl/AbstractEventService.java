@@ -425,6 +425,10 @@ public abstract class AbstractEventService implements EventService {
         return "event." + prefix + "." + StringUtils.substringBefore(name, EVENT_SEP).replace('.', '_');
     }
 
+    boolean isSubscribed(String eventName) {
+        return eventToListeners.containsKey(eventName);
+    }
+
     protected abstract void disconnect();
 
     public JsonMapper getJsonMapper() {
