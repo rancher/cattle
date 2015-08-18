@@ -297,13 +297,14 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             if (context == null) {
                 return null;
             }
-            Attributes search = context.getAttributes(new LdapName(distinguishedName));
+            Attributes search;
+            search = context.getAttributes(new LdapName(distinguishedName));
             if (!isType(search, scope) && !hasPermission(search)){
                 return null;
             }
             return attributesToIdentity(search);
         } catch (NamingException e) {
-            logger.error("Failed to get object: " + distinguishedName, e);
+            logger.info("Failed to get object: " + distinguishedName, e);
             return null;
         }
     }
