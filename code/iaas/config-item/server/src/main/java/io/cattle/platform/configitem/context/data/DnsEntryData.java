@@ -12,6 +12,7 @@ public class DnsEntryData {
     Map<String, List<String>> resolve = new HashMap<>();
     Map<String, String> resolveCname = new HashMap<>();
     Instance instance;
+    Long clientServiceId;
 
     public DnsEntryData() {
     }
@@ -47,5 +48,13 @@ public class DnsEntryData {
 
     public void setResolveCname(Map<String, String> resolveCname) {
         this.resolveCname = resolveCname;
+    }
+
+    public Long getClientServiceId() {
+        return clientServiceId;
+    }
+
+    public void setClientServiceId(Long clientServiceId) {
+        this.clientServiceId = clientServiceId;
     }
 }
