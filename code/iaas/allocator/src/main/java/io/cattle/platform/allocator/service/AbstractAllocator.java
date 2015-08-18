@@ -46,6 +46,7 @@ public abstract class AbstractAllocator implements Allocator {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractAllocator.class);
 
+    Timer allocateLockTimer = MetricsUtil.getRegistry().timer("allocator.allocate.with.lock");
     Timer allocateTimer = MetricsUtil.getRegistry().timer("allocator.allocate");
     Timer deallocateTimer = MetricsUtil.getRegistry().timer("allocator.deallocate");
 
@@ -213,7 +214,7 @@ public abstract class AbstractAllocator implements Allocator {
         AllocationLog log = getLog(request);
         populateConstraints(attempt, log);
 
-        Context c = allocateTimer.time();
+        Context c = allocateLockTimer.time();
         try {
             return acquireLockAndAllocate(request, attempt, deallocate);
         } finally {
@@ -225,25 +226,30 @@ public abstract class AbstractAllocator implements Allocator {
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                do {
-                    Set<Constraint> failedConstraints = runAllocation(request, attempt);
-                    if (attempt.getMatchedCandidate() == null) {
-                        boolean removed = false;
-                        // iterate over failed constraints and remove first soft constraint if any
-                        Iterator<Constraint> failedIter = failedConstraints.iterator();
-                        while (failedIter.hasNext() && !removed) {
-                            Constraint failedConstraint = failedIter.next();
-                            if (failedConstraint.isHardConstraint()) {
-                                continue;
+                Context c = allocateTimer.time();
+                try {
+                    do {
+                        Set<Constraint> failedConstraints = runAllocation(request, attempt);
+                        if (attempt.getMatchedCandidate() == null) {
+                            boolean removed = false;
+                            // iterate over failed constraints and remove first soft constraint if any
+                            Iterator<Constraint> failedIter = failedConstraints.iterator();
+                            while (failedIter.hasNext() && !removed) {
+                                Constraint failedConstraint = failedIter.next();
+                                if (failedConstraint.isHardConstraint()) {
+                                    continue;
+                                }
+                                attempt.getConstraints().remove(failedConstraint);
+                                removed = true;
                             }
-                            attempt.getConstraints().remove(failedConstraint);
-                            removed = true;
+                            if (!removed) {
+                                break;
+                            }
                         }
-                        if (!removed) {
-                            break;
-                        }
-                    }
-                } while (attempt.getMatchedCandidate() == null);
+                    } while (attempt.getMatchedCandidate() == null);
+                } finally {
+                    c.stop();
+                }
             }
         });
 
