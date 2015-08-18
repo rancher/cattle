@@ -4,7 +4,7 @@ import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.ssh.common.SslCertificateValidationUtils;
+import io.cattle.platform.ssh.common.SslCertificateUtils;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -31,11 +31,30 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
 
         validateCertificate(cert, key, certChain);
 
-        // set fingerprint
+        // set extra fields
         Certificate certificate = request.proxyRequestObject(Certificate.class);
+
         try {
             DataUtils.getWritableFields(certificate).put("certFingerprint",
-                    SslCertificateValidationUtils.getCertificateFingerprint(cert));
+                    SslCertificateUtils.getCertificateFingerprint(cert));
+            DataUtils.getWritableFields(certificate).put("expiresAt",
+                    SslCertificateUtils.getExpirationDate(cert));
+            DataUtils.getWritableFields(certificate).put("CN",
+                    SslCertificateUtils.getCN(cert));
+            DataUtils.getWritableFields(certificate).put("issuer",
+                    SslCertificateUtils.getIssuer(cert));
+            DataUtils.getWritableFields(certificate).put("issuedAt",
+                    SslCertificateUtils.getIssuedDate(cert));
+            DataUtils.getWritableFields(certificate).put("version",
+                    SslCertificateUtils.getVersion(cert));
+            DataUtils.getWritableFields(certificate).put("algorithm",
+                    SslCertificateUtils.getAlgorithm(cert));
+            DataUtils.getWritableFields(certificate).put("serialNumber",
+                    SslCertificateUtils.getSerialNumber(cert));
+            DataUtils.getWritableFields(certificate).put("keySize",
+                    SslCertificateUtils.getKeySize(cert));
+            DataUtils.getWritableFields(certificate).put("subjectAlternativeNames",
+                    SslCertificateUtils.getSubjectAlternativeNames(cert));
         } catch (Exception e) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_FORMAT, "cert");
         }
@@ -46,7 +65,7 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
     protected void validateCertificate(String cert, String key, String certChain) {
         try {
             if (StringUtils.isEmpty(certChain)) {
-                SslCertificateValidationUtils.verifySelfSignedCertificate(cert, key);
+                SslCertificateUtils.verifySelfSignedCertificate(cert, key);
             }
         } catch (Exception e) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_FORMAT, "cert");
@@ -54,7 +73,7 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
 
         try {
             if (!StringUtils.isEmpty(certChain)) {
-                SslCertificateValidationUtils.verifyCertificateChain(cert, certChain, key);
+                SslCertificateUtils.verifyCertificateChain(cert, certChain, key);
             }
         } catch (Exception e) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_FORMAT, "certChain");
