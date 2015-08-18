@@ -162,6 +162,16 @@ public class DeploymentUnit {
         }
     }
 
+    public void cleanupPartiallyStoppedUnit() {
+        /*
+         * Delete all the units having missing dependencies
+         */
+        for (Long serviceId : svc.keySet()) {
+            DeploymentUnitService duService = svc.get(serviceId);
+            duService.stopInstancesWithStoppedDependencies();
+        }
+    }
+
     public void stop() {
         /*
          * stops all instances. This should be non-blocking (don't wait)

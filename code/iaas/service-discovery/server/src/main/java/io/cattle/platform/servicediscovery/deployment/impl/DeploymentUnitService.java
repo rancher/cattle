@@ -85,6 +85,30 @@ public class DeploymentUnitService {
         }
     }
 
+    public void stopInstancesWithStoppedDependencies() {
+        for (String launchConfigName : launchConfigNames) {
+            DeploymentUnitInstance instance = launchConfigToInstance.get(launchConfigName);
+            if (instance != null && !instance.isStarted()) {
+                stopInstancesWithStoppedDeps(launchConfigName);
+            }
+        }
+    }
+
+    protected void stopInstancesWithStoppedDeps(String launchConfigName) {
+        List<String> usedInLaunchConfigs = sidekickUsedByMap.get(launchConfigName);
+        if (usedInLaunchConfigs == null) {
+            return;
+        }
+        for (String usedInLaunchConfig : usedInLaunchConfigs) {
+            DeploymentUnitInstance usedByInstance = launchConfigToInstance.get(usedInLaunchConfig);
+            if (usedByInstance == null) {
+                continue;
+            }
+            usedByInstance.stop();
+            stopInstancesWithStoppedDeps(usedInLaunchConfig);
+        }
+    }
+
     protected void cleanupInstanceWithMissingDep(String launchConfigName) {
         List<String> usedInLaunchConfigs = sidekickUsedByMap.get(launchConfigName);
         if (usedInLaunchConfigs == null) {
