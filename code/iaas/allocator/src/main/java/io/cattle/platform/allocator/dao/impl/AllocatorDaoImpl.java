@@ -410,4 +410,27 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
                 .fetchInto(Host.class);
     }
+
+    @Override
+    public boolean hostHasContainerLabel(long hostId, String labelKey,
+            String labelValue) {
+        return create()
+                .select(LABEL.ID)
+                    .from(LABEL)
+                    .join(INSTANCE_LABEL_MAP)
+                        .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID))
+                    .join(INSTANCE_HOST_MAP)
+                        .on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                    .join(INSTANCE)
+                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                    .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId))
+                        .and(LABEL.REMOVED.isNull())
+                        .and(INSTANCE_LABEL_MAP.REMOVED.isNull())
+                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(LABEL.KEY.equalIgnoreCase(labelKey))
+                        .and(LABEL.VALUE.equalIgnoreCase(labelValue))
+                .fetchInto(Long.class).size() > 0;
+
+    }
 }
