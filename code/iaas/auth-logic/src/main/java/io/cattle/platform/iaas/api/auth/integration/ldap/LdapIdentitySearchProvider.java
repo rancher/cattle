@@ -5,6 +5,7 @@ import static javax.naming.directory.SearchControls.*;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
@@ -80,10 +81,12 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         if (!isConfigured()) {
             return new HashSet<>();
         }
-        if (account.getExternalIdType() != null && !account.getExternalIdType().equalsIgnoreCase(LdapConstants.USER_SCOPE)){
+        if (account.getExternalIdType() == null || !account.getExternalIdType().equalsIgnoreCase(LdapConstants.USER_SCOPE)){
             return new HashSet<>();
         }
-        if(!ldapUtils.findAndSetJWT()) {
+        if(!ldapUtils.findAndSetJWT() &&
+                SecurityConstants.SECURITY.get() &&
+                LdapConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
             AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
             if (authToken == null){
                 LdapContext ldapContext;
@@ -151,7 +154,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             userContext = new InitialLdapContext(props, null);
             return userContext;
         } catch (NamingException e) {
-            logger.error("Failed to login to ldap user:" + username, e);
+            logger.info("Failed to login to ldap user:" + username, e);
             throw new RuntimeException(e);
         }
     }
@@ -163,7 +166,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         try {
             results = context.search(scope, query, controls);
         } catch (NamingException e) {
-            logger.error("Failed to search: " + query + "with DN=" + scope + " as the scope.", e);
+            logger.info("Failed to search: " + query + "with DN=" + scope + " as the scope.", e);
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapConfig",
                     "Organizational Unit not found.", null);
         }
@@ -352,7 +355,8 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                 identities.add(attributesToIdentity(results.next().getAttributes()));
             }
         } catch (NamingException e) {
-            logger.error("While iterating results while searching: " + name, e);
+            //Ldap Referrals are causing this.
+            logger.debug("While iterating results while searching: " + name, e);
             return identities;
         }
         return identities;

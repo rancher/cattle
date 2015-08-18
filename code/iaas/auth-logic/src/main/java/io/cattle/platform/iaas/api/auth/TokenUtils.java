@@ -65,10 +65,6 @@ public abstract class TokenUtils  {
     protected abstract String tokenType();
 
     private Map<String, Object> getJsonData(String jwtKey, String tokenType) {
-        String dbJwt = retrieveJwt(jwtKey);
-        if (dbJwt != null){
-            jwtKey = dbJwt;
-        }
         if (StringUtils.isEmpty(jwtKey)) {
             return null;
         }
@@ -83,6 +79,10 @@ public abstract class TokenUtils  {
             toParse = tokenArr[0];
         } else {
             toParse = jwtKey;
+        }
+        String dbJwt = retrieveJwt(toParse);
+        if (dbJwt != null){
+            toParse = dbJwt;
         }
         Map<String, Object> jsonData;
         try {

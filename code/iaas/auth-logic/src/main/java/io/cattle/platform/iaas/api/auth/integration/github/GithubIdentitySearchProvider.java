@@ -4,6 +4,7 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
@@ -80,13 +81,13 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
 
     @Override
     public Set<Identity> getIdentities(Account account) {
-        if (!isConfigured()) {
+        if (!isConfigured() && !GithubConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
             return new HashSet<>();
         }
         githubUtils.findAndSetJWT();
         String jwt = githubUtils.getJWT();
         String accessToken = (String) DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get();
-        if (StringUtils.isBlank(jwt) && !StringUtils.isBlank(accessToken)) {
+        if (StringUtils.isBlank(jwt) && !StringUtils.isBlank(accessToken) && SecurityConstants.SECURITY.get()) {
             AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
             if (authToken == null) {
                 try {
@@ -109,9 +110,8 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
             ApiRequest request = ApiContext.getContext().getApiRequest();
             request.setAttribute(GithubConstants.GITHUB_JWT, jwt);
             request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
-            return githubUtils.getIdentities();
         }
-        return new HashSet<>();
+        return githubUtils.getIdentities();
     }
 
     private List<Identity> searchGroups(String groupName, boolean exactMatch) {

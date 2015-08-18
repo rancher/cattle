@@ -37,7 +37,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
     public Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
 
         if (criteria.get("id") != null) {
-            return Collections.singletonList(getIdentity((String) criteria.get("id")));
+            return Collections.singletonList(transform((String) criteria.get("id")));
         }
         if (criteria.containsKey("name")) {
             Condition search = ((List<Condition>) criteria.get("name")).get(0);
@@ -64,14 +64,14 @@ public class IdentityManager extends AbstractNoOpResourceManager {
     private List<Identity> refreshIdentities(Set<Identity> identities) {
         List<Identity> identitiesToReturn = new ArrayList<>();
         for (Identity identity : identities) {
-            Identity newIdentity = getIdentity(identity.getId());
+            Identity newIdentity = transform(identity.getId());
             authorize(newIdentity);
             identitiesToReturn.add(newIdentity);
         }
         return identitiesToReturn;
     }
 
-    public Identity getIdentity(String id) {
+    public Identity transform(String id) {
         String[] split = id.split(":", 2);
         if (split.length != 2) {
             return null;
@@ -96,11 +96,11 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         return new ArrayList<>(identities);
     }
 
-    public Identity getIdentity(ProjectMember member){
+    public Identity transform(ProjectMember member){
         if (member == null){
             return null;
         }
-        return untransform(new Identity(getIdentity(member.getExternalIdType() + ':' + member.getExternalId()),
+        return untransform(new Identity(transform(member.getExternalIdType() + ':' + member.getExternalId()),
                 member.getRole(), String.valueOf(member.getProjectId())));
     }
 
@@ -133,7 +133,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         this.identityTransformationHandlers = identityTransformationHandlers;
     }
 
-    public Identity getIdentity(Identity identity) {
+    public Identity transform(Identity identity) {
         Identity newIdentity = null;
         for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
             if (identityTransformationHandler.scopes().contains(identity.getExternalIdType()) && identityTransformationHandler.isConfigured()) {
