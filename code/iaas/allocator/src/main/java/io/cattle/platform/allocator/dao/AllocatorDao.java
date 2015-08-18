@@ -42,6 +42,8 @@ public interface AllocatorDao {
     // key -> [value,mapping.state]
     Map<String, String[]> getLabelsForHost(long hostId);
 
+    boolean hostHasContainerLabel(long hostId, String labelKey, String labelValue);
+
     Multimap<String, String> getLabelsForContainersForHost(long hostId);
 
     List<? extends Host> getActiveHosts(long accountId);

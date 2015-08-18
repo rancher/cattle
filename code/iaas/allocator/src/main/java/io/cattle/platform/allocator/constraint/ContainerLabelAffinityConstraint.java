@@ -7,8 +7,6 @@ import io.cattle.platform.allocator.service.AllocationCandidate;
 
 import java.util.Set;
 
-import com.google.common.collect.Multimap;
-
 public class ContainerLabelAffinityConstraint implements Constraint {
     public static final String ENV_HEADER_AFFINITY_CONTAINER_LABEL = "affinity:container_label:";
     public static final String LABEL_HEADER_AFFINITY_CONTAINER_LABEL = "io.rancher.scheduler.affinity:container_label";
@@ -27,22 +25,22 @@ public class ContainerLabelAffinityConstraint implements Constraint {
         this.allocatorDao = allocatorDao;
     }
 
+    // If necessary we can do additional optimizations to allow multiple container label or host label
+    // affinity constraints to share results from DB queries
     @Override
     public boolean matches(AllocationAttempt attempt,
             AllocationCandidate candidate) {
         Set<Long> hostIds = candidate.getHosts();
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
             for (Long hostId : hostIds) {
-                Multimap<String, String> labelsForContainerForHost = allocatorDao.getLabelsForContainersForHost(hostId);
-                if (!labelsForContainerForHost.get(labelKey).contains(labelValue)) {
+                if (!allocatorDao.hostHasContainerLabel(hostId, labelKey, labelValue)) {
                     return false;
                 }
             }
             return true;
         } else {
             for (Long hostId : hostIds) {
-                Multimap<String, String> labelsForContainerForHost = allocatorDao.getLabelsForContainersForHost(hostId);
-                if (labelsForContainerForHost.get(labelKey).contains(labelValue)) {
+                if (allocatorDao.hostHasContainerLabel(hostId, labelKey, labelValue)) {
                     return false;
                 }
             }
