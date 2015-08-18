@@ -19,9 +19,6 @@
 # ICMP
 -A INPUT -i ${primaryNic} -p icmp -j ACCEPT
 
-# Metadata
--A INPUT -i ${primaryNic} -p tcp --dport 80 -j ACCEPT
-
 # loopback
 -A INPUT -i lo -j ACCEPT
 
