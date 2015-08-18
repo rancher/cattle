@@ -146,4 +146,8 @@ public class Token {
     public String getAuthProvider() {
         return authProvider;
     }
+
+    public void setJwt(String jwt) {
+        this.jwt = jwt;
+    }
 }

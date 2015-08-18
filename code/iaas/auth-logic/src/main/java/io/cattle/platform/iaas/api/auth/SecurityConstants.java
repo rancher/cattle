@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 
 import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicLongProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class SecurityConstants {
@@ -15,4 +16,6 @@ public class SecurityConstants {
 
     public static final String NO_PROVIDER = "none";
     public static final String CODE = "code";
+    public static final String TOKEN_VERSION = "v1";
+    public static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
 }

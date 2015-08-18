@@ -1,7 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.github;
 
 import io.cattle.platform.api.auth.Identity;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
@@ -34,11 +33,8 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.netflix.config.DynamicLongProperty;
-
 public class GithubTokenCreator extends GithubConfigurable implements TokenCreator {
 
-    private static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
     @Inject
     ProjectResourceManager projectResourceManager;
     @Inject
@@ -103,7 +99,7 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
         objectManager.persist(account);
         account = objectManager.reload(account);
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
-        Date expiry = new Date(System.currentTimeMillis() + TOKEN_EXPIRY_MILLIS.get());
+        Date expiry = new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
         //LEGACY: Used for old Implementation of projects/ Identities. Remove when vincent changes to new api.
         return new Token(jwt, user.getName(), null, teamsAccountInfo, SecurityConstants.SECURITY.get(),

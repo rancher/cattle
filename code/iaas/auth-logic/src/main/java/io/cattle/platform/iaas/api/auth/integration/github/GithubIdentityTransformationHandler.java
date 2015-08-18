@@ -4,6 +4,8 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.AuthToken;
+import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler;
 import io.cattle.platform.object.util.DataAccessor;
@@ -29,6 +31,8 @@ public class GithubIdentityTransformationHandler extends GithubConfigurable impl
     GithubTokenCreator githubTokenCreator;
     @Inject
     GithubClient githubClient;
+    @Inject
+    AuthTokenDao authTokenDao;
 
     @Override
     public Identity transform(Identity identity) {
@@ -66,15 +70,23 @@ public class GithubIdentityTransformationHandler extends GithubConfigurable impl
         String jwt = githubUtils.getJWT();
         String accessToken = (String) DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get();
         if (StringUtils.isBlank(jwt) && !StringUtils.isBlank(accessToken)) {
-            try {
-                jwt = ProjectConstants.AUTH_TYPE + githubTokenCreator.getGithubToken(accessToken).getJwt();
-            } catch (ClientVisibleException e) {
-                if (e.getCode().equalsIgnoreCase(GithubConstants.GITHUB_ERROR) &&
-                        !e.getDetail().contains("401")) {
-                    throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
-                            GithubConstants.JWT_CREATION_FAILED, "", null);
+            AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
+            if (authToken == null) {
+                try {
+                    jwt = ProjectConstants.AUTH_TYPE + githubTokenCreator.getGithubToken(accessToken).getJwt();
+                    authToken = authTokenDao.createToken(jwt, GithubConstants.CONFIG, account.getId());
+                    jwt = authToken.getKey();
+                } catch (ClientVisibleException e) {
+                    if (e.getCode().equalsIgnoreCase(GithubConstants.GITHUB_ERROR) &&
+                            !e.getDetail().contains("401")) {
+                        throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
+                                GithubConstants.JWT_CREATION_FAILED, "", null);
+                    }
                 }
+            } else {
+                jwt = authToken.getKey();
             }
+
         }
         if (jwt != null && !jwt.isEmpty()) {
             request.setAttribute(GithubConstants.GITHUB_JWT, jwt);

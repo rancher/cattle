@@ -32,7 +32,7 @@
         <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="auth_token" constraintName="fk_auth_token__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
     </changeSet>
     <changeSet author="wizardofmath (generated)" id="dump3">
-        <createIndex indexName="idx_auth_token_key" tableName="auth_token" unique="false">
+        <createIndex indexName="idx_auth_token_key" tableName="auth_token" unique="true">
             <column name="key"/>
         </createIndex>
     </changeSet>
