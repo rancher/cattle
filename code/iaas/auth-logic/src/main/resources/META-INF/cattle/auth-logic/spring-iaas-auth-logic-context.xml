@@ -68,6 +68,8 @@
         <property name="identityTransformationHandlers" value="#{extensionManager.list('identity.transformation.handler')}" />
     </bean>
 
+    <bean class="io.cattle.platform.iaas.api.auth.identity.EnsureSettingForProvider"/>
+
     <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator"/>
