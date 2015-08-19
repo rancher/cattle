@@ -71,11 +71,19 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         InstanceHealthCheck lbHealthCheck = null;
         LoadBalancerAppCookieStickinessPolicy appPolicy = null;
         LoadBalancerCookieStickinessPolicy lbPolicy = null;
+        boolean sslProto = false;
         if (lb != null) {
             // populate targets and listeners
             listeners = lbDao.listActiveListenersForConfig(lb.getLoadBalancerConfigId());
             if (listeners.isEmpty()) {
                 return;
+            }
+            for (LoadBalancerListener listener : listeners) {
+                if (listener.getSourceProtocol().equals("https")
+                        || listener.getSourceProtocol().equalsIgnoreCase("ssl")) {
+                    sslProto = true;
+                    break;
+                }
             }
 
             LoadBalancerConfig config = objectManager.loadResource(LoadBalancerConfig.class, lb.getLoadBalancerConfigId());
@@ -100,6 +108,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         context.getData().put("backends", listenerToTargetMap);
         context.getData().put("appPolicy", appPolicy);
         context.getData().put("lbPolicy", lbPolicy);
+        context.getData().put("sslProto", sslProto);
 
         context.getData().put("certs", lbDao.getLoadBalancerCertificates(lb));
         context.getData().put("defaultCert", lbDao.getLoadBalancerDefaultCertificate(lb));
