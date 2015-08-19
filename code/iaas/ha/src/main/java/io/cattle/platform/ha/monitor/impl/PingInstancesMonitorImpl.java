@@ -207,16 +207,19 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
         // Anything left in inRancher is in rancher, but not on the host.
         for (KnownInstance ki : inRancher.values()) {
-            if (objectMetaDataManager.isTransitioningState(Instance.class, ki.getState()) || STATE_STOPPED.equals(ki.getState()) || ki.getRemoved() != null)
+            if (objectMetaDataManager.isTransitioningState(Instance.class, ki.getState()) || ki.getRemoved() != null
+                    || (STATE_STOPPED.equals(ki.getState()) && StringUtils.isEmpty(ki.getExternalId())))
                 continue;
 
             if (StringUtils.isNotEmpty(ki.getSystemContainer()) || StringUtils.isEmpty(ki.getExternalId()) || hasInstanceTriggeredStopConfigured(ki)) {
                 // System container, not enough info to perform no-op action, or has an instance triggered stop policy. Schedule potential restart.
                 // This is the one place we can't use addSyncAction, since we don't have (and can't construct) a ReportedInstance.
-                if (checkOnly) {
-                    throw new ContainersOutOfSync();
+                if (!STATE_STOPPED.equals(ki.getState())) {
+                    if (checkOnly) {
+                        throw new ContainersOutOfSync();
+                    }
+                    needsHaRestart.add(ki.getUuid());
                 }
-                needsHaRestart.add(ki.getUuid());
             } else {
                 ReportedInstance ri = new ReportedInstance();
                 ri.setExternalId(ki.getExternalId());
