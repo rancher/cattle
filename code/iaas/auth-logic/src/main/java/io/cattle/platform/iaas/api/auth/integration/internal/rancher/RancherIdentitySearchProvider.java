@@ -12,6 +12,7 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
@@ -45,6 +46,14 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
                 identities.add(new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(), null, null, null));
             }
         }
+        return identities;
+    }
+
+    @Override
+    public Set<Identity> getIdentities(Account account) {
+        Set<Identity> identities = new HashSet<>();
+        identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName(),
+                null, null, null));
         return identities;
     }
 

@@ -69,6 +69,7 @@
     </bean>
 
     <bean class="io.cattle.platform.iaas.api.auth.identity.EnsureSettingForProvider"/>
+    <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthTokenDaoImpl" />
 
     <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup"/>

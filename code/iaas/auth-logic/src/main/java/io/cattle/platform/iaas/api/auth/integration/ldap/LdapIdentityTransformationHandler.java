@@ -46,7 +46,7 @@ public class LdapIdentityTransformationHandler extends LdapConfigurable implemen
 
     @Override
     public Set<Identity> getIdentities(Account account) {
-        return ldapUtils.getIdentities();
+        return ldapIdentitySearchProvider.getIdentities(account);
     }
 
     @Override

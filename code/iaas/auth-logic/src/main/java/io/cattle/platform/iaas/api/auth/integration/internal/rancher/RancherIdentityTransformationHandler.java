@@ -11,7 +11,6 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import java.util.HashSet;
 import java.util.Set;
 import javax.inject.Inject;
 
@@ -21,6 +20,8 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
     AuthDao authDao;
     @Inject
     ObjectManager objectManager;
+    @Inject
+    RancherIdentitySearchProvider rancherIdentitySearchProvider;
 
     @Override
     public Identity transform(Identity identity) {
@@ -69,10 +70,7 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
 
     @Override
     public Set<Identity> getIdentities(Account account) {
-        Set<Identity> identities = new HashSet<>();
-        identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName(),
-                null, null, null));
-        return identities;
+        return rancherIdentitySearchProvider.getIdentities(account);
     }
 
     @Override

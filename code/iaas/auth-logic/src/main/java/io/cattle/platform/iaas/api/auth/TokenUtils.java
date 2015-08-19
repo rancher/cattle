@@ -3,7 +3,9 @@ package io.cattle.platform.iaas.api.auth;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
@@ -39,6 +41,9 @@ public abstract class TokenUtils  {
     @Inject
     TokenService tokenService;
 
+    @Inject
+    AuthTokenDao authTokenDao;
+
     public Account getAccountFromJWT() {
         Map<String, Object> jsonData = getJsonData();
         if (jsonData == null) {
@@ -59,12 +64,12 @@ public abstract class TokenUtils  {
 
     protected abstract String tokenType();
 
-    private Map<String, Object> getJsonData(String jwt, String tokenType) {
-        if (StringUtils.isEmpty(jwt)) {
+    private Map<String, Object> getJsonData(String jwtKey, String tokenType) {
+        if (StringUtils.isEmpty(jwtKey)) {
             return null;
         }
         String toParse;
-        String[] tokenArr = jwt.split("\\s+");
+        String[] tokenArr = jwtKey.split("\\s+");
         if (tokenArr.length == 2) {
             if (!StringUtils.equalsIgnoreCase("bearer", StringUtils.trim(tokenArr[0]))) {
                 return null;
@@ -73,7 +78,11 @@ public abstract class TokenUtils  {
         } else if (tokenArr.length == 1) {
             toParse = tokenArr[0];
         } else {
-            toParse = jwt;
+            toParse = jwtKey;
+        }
+        String dbJwt = retrieveJwt(toParse);
+        if (dbJwt != null){
+            toParse = dbJwt;
         }
         Map<String, Object> jsonData;
         try {
@@ -93,6 +102,18 @@ public abstract class TokenUtils  {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
         return jsonData;
+    }
+
+    private String retrieveJwt(String jwtKey) {
+        AuthToken authToken= authTokenDao.getTokenByKey(jwtKey);
+        if (authToken == null) {
+            return null;
+        }
+        if (!authToken.getProvider().equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())){
+            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED, "AuthProviderChanged",
+                    "Access control has changed since token was created.", null);
+        }
+        return authToken.getValue();
     }
 
     public String getJWT() {

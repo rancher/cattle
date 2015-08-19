@@ -60,7 +60,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
                     policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
-            Identity identity  = identityManager.getIdentity(projectMember);
+            Identity identity  = identityManager.transform(projectMember);
             policy.grantObjectAccess(identity);
             return Arrays.asList(identity);
         }
@@ -73,7 +73,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         }
         List<Identity> identities = new ArrayList<>();
         for (ProjectMember member:members){
-            Identity identity = identityManager.getIdentity(member);
+            Identity identity = identityManager.transform(member);
             identities.add(identity);
             policy.grantObjectAccess(identity);
         }
@@ -141,7 +141,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed));
 
         for (ProjectMember member : membersCreated) {
-            identityManager.untransform(identityManager.getIdentity(member));
+            identityManager.untransform(identityManager.transform(member));
         }
         return membersCreated;
     }

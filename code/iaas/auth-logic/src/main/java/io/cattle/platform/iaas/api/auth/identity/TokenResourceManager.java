@@ -1,9 +1,12 @@
 package io.cattle.platform.iaas.api.auth.identity;
 
+import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
+import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -21,6 +24,9 @@ import org.apache.commons.logging.LogFactory;
 
 
 public class TokenResourceManager extends AbstractNoOpResourceManager {
+
+    @Inject
+    AuthTokenDao authTokenDao;
 
     private List<TokenCreator> tokenCreators;
 
@@ -56,7 +62,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
         }
         for (TokenCreator tokenCreator : tokenCreators) {
             if (tokenCreator.isConfigured() && tokenCreator.providerType().equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
-                token = tokenCreator.createToken(request);
+                token = tokenCreator.getToken(request);
                 break;
             }
         }
@@ -64,6 +70,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
                     "codeInvalid", "Code provided is invalid.", null);
         }
+        token.setJwt(authTokenDao.createToken(token.getJwt(), token.getAuthProvider(), ((Policy) ApiContext.getContext().getPolicy()).getAccountId()).getKey());
         return token;
     }
 
