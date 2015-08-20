@@ -50,9 +50,9 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
     protected void addInstances(AgentConnectionSimulator simulator, Ping pong, Agent agent) {
         List<Map<String, Object>> resources = pong.getData().getResources();
 
-        for (String instance : simulator.getInstances()) {
+        for (Map.Entry<String, String> kv : simulator.getInstances().entrySet()) {
             Map<String, Object> instanceMap = CollectionUtils.asMap(ObjectMetaDataManager.TYPE_FIELD, InstanceConstants.TYPE, ObjectMetaDataManager.UUID_FIELD,
-                    instance, ObjectMetaDataManager.STATE_FIELD, InstanceConstants.STATE_RUNNING);
+                    kv.getKey(), ObjectMetaDataManager.STATE_FIELD, kv.getValue());
             resources.add(instanceMap);
         }
 

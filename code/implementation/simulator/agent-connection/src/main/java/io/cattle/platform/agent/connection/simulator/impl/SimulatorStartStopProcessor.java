@@ -2,6 +2,7 @@ package io.cattle.platform.agent.connection.simulator.impl;
 
 import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
@@ -43,8 +44,12 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
 
         final Object uuid = CollectionUtils.getNestedValue(event.getData(), "instanceHostMap", "instance", "uuid");
         if (uuid != null) {
-            if (add && !FORGET.matcher(eventString).matches()) {
-                simulator.getInstances().add(uuid.toString());
+            boolean found = simulator.getInstances().containsKey(uuid.toString());
+            boolean forget = FORGET.matcher(eventString).matches();
+            if (add && !forget) {
+                simulator.getInstances().put(uuid.toString(), InstanceConstants.STATE_RUNNING);
+            } else if (!add && found && !forget) {
+                simulator.getInstances().put(uuid.toString(), InstanceConstants.STATE_STOPPED);
             } else {
                 simulator.getInstances().remove(uuid.toString());
             }
