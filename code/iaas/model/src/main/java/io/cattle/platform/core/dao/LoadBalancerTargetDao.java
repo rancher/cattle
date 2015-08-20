@@ -3,6 +3,7 @@ package io.cattle.platform.core.dao;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
+import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerTarget;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 
@@ -27,7 +28,7 @@ public interface LoadBalancerTargetDao {
      * 1) ports set on the target
      * 2) if ports are not set, get information from the load balancer listener
      */
-    List<LoadBalancerTargetPortSpec> getLoadBalancerTargetPorts(LoadBalancerTarget target);
+    List<LoadBalancerTargetPortSpec> getLoadBalancerTargetPorts(LoadBalancerTarget target, LoadBalancerConfig config);
 
     void createLoadBalancerTarget(LoadBalancer lb, LoadBalancerTargetInput toAdd);
 

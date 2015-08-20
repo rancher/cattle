@@ -11,6 +11,7 @@ import io.cattle.platform.core.dao.LoadBalancerDao;
 import io.cattle.platform.core.dao.LoadBalancerTargetDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.LoadBalancer;
+import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerListener;
 import io.cattle.platform.core.model.LoadBalancerTarget;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
@@ -126,10 +127,9 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<LoadBalancerTargetPortSpec> getLoadBalancerTargetPorts(LoadBalancerTarget target) {
+    public List<LoadBalancerTargetPortSpec> getLoadBalancerTargetPorts(LoadBalancerTarget target, LoadBalancerConfig config) {
         List<LoadBalancerTargetPortSpec> portSpecsInitial = new ArrayList<>();
-        List<? extends LoadBalancerListener> listeners = lbDao.listActiveListenersForConfig(target
-                .getLoadBalancerId());
+        List<? extends LoadBalancerListener> listeners = lbDao.listActiveListenersForConfig(config.getId());
         Map<Integer, LoadBalancerListener> lbSourcePorts = new HashMap<>();
         for (LoadBalancerListener listener : listeners) {
             lbSourcePorts.put(getSourcePort(listener), listener);
