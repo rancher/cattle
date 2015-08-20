@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler;
@@ -107,10 +108,10 @@ public class IdentityManager extends AbstractNoOpResourceManager {
                     null, null, '(' + member.getExternalIdType().split("_")[1].toUpperCase() +  "  not found) " + member.getName());
         }
         return untransform(new Identity(gotIdentity,
-                member.getRole(), String.valueOf(member.getProjectId())));
+                member.getRole(), String.valueOf(member.getProjectId())), false);
     }
 
-    public Identity untransform(Identity identity) {
+    public Identity untransform(Identity identity, boolean error) {
         Identity newIdentity = null;
         for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
             if (identityTransformationHandler.scopes().contains(identity.getExternalIdType()) && identityTransformationHandler.isConfigured()) {
@@ -118,10 +119,13 @@ public class IdentityManager extends AbstractNoOpResourceManager {
                 break;
             }
         }
-        if (newIdentity == null){
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidIdentityType", "Identity externalIdType is invalid", null);
+        if (error && newIdentity == null) {
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, IdentityConstants.INVALID_TYPE, "Identity externalIdType is invalid", null);
+        } else if (newIdentity == null){
+            return identity;
+        } else {
+            return newIdentity;
         }
-        return newIdentity;
     }
 
     @Inject
@@ -148,7 +152,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
             }
         }
         if (newIdentity == null){
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidIdentityType", "Identity externalIdType is invalid", null);
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, IdentityConstants.INVALID_TYPE, "Identity externalIdType is invalid", null);
         }
         return newIdentity;
     }

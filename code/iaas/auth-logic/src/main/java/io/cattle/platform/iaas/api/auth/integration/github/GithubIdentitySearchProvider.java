@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.github;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
@@ -191,7 +192,7 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
                 return getTeamById(id);
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
-                        "invalidIdentityType", "Invalid scope for GithubSearchProvider", null);
+                        IdentityConstants.INVALID_TYPE, "Invalid scope for GithubSearchProvider", null);
         }
     }
 
