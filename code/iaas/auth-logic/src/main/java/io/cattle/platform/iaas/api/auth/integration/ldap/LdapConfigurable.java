@@ -24,11 +24,7 @@ public abstract class LdapConfigurable implements Configurable {
                 StringUtils.isNotBlank(LdapConstants.GROUP_OBJECT_CLASS.get()) &&
                 StringUtils.isNotBlank(LdapConstants.GROUP_NAME_FIELD.get()) &&
                 StringUtils.isNotBlank(LdapConstants.LDAP_DOMAIN.get());
-        if (SecurityConstants.SECURITY.get()){
-            return         StringUtils.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get(), LdapConstants.CONFIG) &&
-                    allProps;
-        } else {
-            return allProps;
-        }
+        return StringUtils.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get(), LdapConstants.CONFIG) &&
+                allProps;
     }
 }

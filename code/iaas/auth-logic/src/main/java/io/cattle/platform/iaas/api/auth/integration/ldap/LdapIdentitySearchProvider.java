@@ -78,10 +78,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
 
     @Override
     public Set<Identity> getIdentities(Account account) {
-        if (!isConfigured()) {
-            return new HashSet<>();
-        }
-        if (account.getExternalIdType() == null || !account.getExternalIdType().equalsIgnoreCase(LdapConstants.USER_SCOPE)){
+        if (!isConfigured() || !LdapConstants.USER_SCOPE.equalsIgnoreCase(account.getExternalIdType())) {
             return new HashSet<>();
         }
         if(!ldapUtils.findAndSetJWT() &&

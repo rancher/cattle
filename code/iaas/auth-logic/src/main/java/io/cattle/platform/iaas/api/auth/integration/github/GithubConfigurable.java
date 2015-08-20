@@ -10,13 +10,8 @@ public abstract class GithubConfigurable implements Configurable{
 
     @Override
     public boolean isConfigured() {
-        if (SecurityConstants.SECURITY.get()) {
-            return StringUtils.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get(), GithubConstants.CONFIG) &&
-                    StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_ID.get()) &&
-                    StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_SECRET.get());
-        } else {
-            return StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_ID.get()) &&
-                    StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_SECRET.get());
-        }
+        return StringUtils.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get(), GithubConstants.CONFIG) &&
+                StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_ID.get()) &&
+                StringUtils.isNotBlank(GithubConstants.GITHUB_CLIENT_SECRET.get());
     }
 }

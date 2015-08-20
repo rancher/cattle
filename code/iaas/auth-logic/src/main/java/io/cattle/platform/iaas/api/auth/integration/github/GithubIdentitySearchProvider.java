@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,13 +83,18 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
 
     @Override
     public Set<Identity> getIdentities(Account account) {
-        if (!isConfigured() && !GithubConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
+        if (!isConfigured() || !GithubConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get()) ||
+                !GithubConstants.USER_SCOPE.equalsIgnoreCase(account.getExternalIdType())) {
             return new HashSet<>();
         }
-        githubUtils.findAndSetJWT();
-        String jwt = githubUtils.getJWT();
         String accessToken = (String) DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get();
-        if (StringUtils.isBlank(jwt) && !StringUtils.isBlank(accessToken) && SecurityConstants.SECURITY.get()) {
+        if (githubUtils.findAndSetJWT()){
+            ApiRequest request = ApiContext.getContext().getApiRequest();
+            request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
+            return githubUtils.getIdentities();
+        }
+        String jwt = null;
+        if (!StringUtils.isBlank(accessToken) && SecurityConstants.SECURITY.get()) {
             AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
             if (authToken == null) {
                 try {
@@ -107,11 +113,12 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
             }
 
         }
-        if (jwt != null && !jwt.isEmpty()) {
-            ApiRequest request = ApiContext.getContext().getApiRequest();
-            request.setAttribute(GithubConstants.GITHUB_JWT, jwt);
-            request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
+        if (StringUtils.isBlank(jwt)){
+            return Collections.emptySet();
         }
+        ApiRequest request = ApiContext.getContext().getApiRequest();
+        request.setAttribute(GithubConstants.GITHUB_JWT, jwt);
+        request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
         return githubUtils.getIdentities();
     }
 

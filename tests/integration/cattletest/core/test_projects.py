@@ -200,12 +200,12 @@ def test_delete_project(admin_user_client, new_context,
     assert len(new_context.client.list_projectMember()) == 1
     project = super_client.wait_success(project.deactivate())
     project = super_client.wait_success(project.remove())
-    check_state(new_context.client, proj_id,
+    check_state(new_context.user_client, proj_id,
                 ['removed'], ['account', 'project', 'host', 'subscribe'])
     super_client.wait_success(project.purge())
-    project = new_context.client.by_id('project', id=proj_id)
+    project = new_context.user_client.by_id('project', id=proj_id)
     assert project.state == 'purged'
-    check_state(new_context.client, proj_id,
+    check_state(new_context.user_client, proj_id,
                 ['purged', 'removed'], ['account', 'project', 'subscribe'])
     project_members = admin_user_client\
         .list('projectMember')

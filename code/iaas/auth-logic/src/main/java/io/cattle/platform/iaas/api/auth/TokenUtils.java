@@ -65,24 +65,21 @@ public abstract class TokenUtils  {
     protected abstract String tokenType();
 
     private Map<String, Object> getJsonData(String jwtKey, String tokenType) {
-        if (StringUtils.isEmpty(jwtKey)) {
+        if (StringUtils.isEmpty(jwtKey)){
             return null;
         }
         String toParse;
-        String[] tokenArr = jwtKey.split("\\s+");
-        if (tokenArr.length == 2) {
-            if (!StringUtils.equalsIgnoreCase("bearer", StringUtils.trim(tokenArr[0]))) {
-                return null;
-            }
-            toParse = tokenArr[1];
-        } else if (tokenArr.length == 1) {
-            toParse = tokenArr[0];
-        } else {
-            toParse = jwtKey;
+        toParse = removeBearer(jwtKey);
+        if (StringUtils.isBlank(toParse)) {
+            return null;
         }
         String dbJwt = retrieveJwt(toParse);
-        if (dbJwt != null){
+        if (StringUtils.isNotBlank(dbJwt)){
             toParse = dbJwt;
+        }
+        toParse = removeBearer(toParse);
+        if (StringUtils.isEmpty(toParse)) {
+            return null;
         }
         Map<String, Object> jsonData;
         try {
@@ -102,6 +99,22 @@ public abstract class TokenUtils  {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
         return jsonData;
+    }
+
+    private String removeBearer(String jwtKey) {
+        String toParse;
+        String[] tokenArr = jwtKey.split("\\s+");
+        if (tokenArr.length == 2) {
+            if (!StringUtils.equalsIgnoreCase("bearer", StringUtils.trim(tokenArr[0]))) {
+                return null;
+            }
+            toParse = tokenArr[1];
+        } else if (tokenArr.length == 1) {
+            toParse = tokenArr[0];
+        } else {
+            toParse = jwtKey;
+        }
+        return toParse;
     }
 
     private String retrieveJwt(String jwtKey) {
