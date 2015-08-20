@@ -88,7 +88,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
 
             lbPolicy = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_COOKIE_POLICY, jsonMapper, LoadBalancerCookieStickinessPolicy.class);
 
-            targetsInfo = populateTargetsInfo(lb, lbHealthCheck);
+            targetsInfo = populateTargetsInfo(lb, lbHealthCheck, config);
             if (targetsInfo.isEmpty()) {
                 return;
             }
@@ -189,7 +189,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
     }
 
 
-    private List<LoadBalancerTargetsInfo> populateTargetsInfo(LoadBalancer lb, InstanceHealthCheck lbHealthCheck) {
+    private List<LoadBalancerTargetsInfo> populateTargetsInfo(LoadBalancer lb, InstanceHealthCheck lbHealthCheck, LoadBalancerConfig config) {
         List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(objectManager.loadResource(LoadBalancer.class, lb.getId()),
                 LoadBalancerTarget.class);
         Map<String, List<LoadBalancerTargetInfo>> uuidToTargetInfos = new HashMap<>();
@@ -227,7 +227,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
 
             if (ipAddress != null) {
                 String targetName = (target.getName() == null ? target.getUuid() : target.getName());
-                List<LoadBalancerTargetPortSpec> portSpecs = lbTargetDao.getLoadBalancerTargetPorts(target);
+                List<LoadBalancerTargetPortSpec> portSpecs = lbTargetDao.getLoadBalancerTargetPorts(target, config);
                 for (LoadBalancerTargetPortSpec portSpec : portSpecs) {
                     LoadBalancerTargetInfo targetInfo = new LoadBalancerTargetInfo(ipAddress, targetName,
                             target.getUuid(), portSpec, healthCheck);
