@@ -7,6 +7,12 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
+        },
+        "dockerCompose":{
+            "type": "string"
+        },
+        "rancherCompose":{
+            "type": "string"
         }
     },
     "resourceActions" : {

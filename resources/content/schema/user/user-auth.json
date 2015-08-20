@@ -381,6 +381,8 @@
         "composeConfigInput.serviceIds" : "cr",
 
         "environment" : "r",
+        "environment.dockerCompose": "cr",
+        "environment.rancherCompose": "cr",
 
         "service" : "r",
         "service.environmentId" : "cr",
