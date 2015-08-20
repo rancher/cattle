@@ -3,7 +3,9 @@ global
     	log 127.0.0.1 local1 notice
         maxconn 4096
         maxpipes 1024
-        tune.ssl.default-dh-param 2048
+<#if sslProto?? && sslProto == true>
+	tune.ssl.default-dh-param 2048
+</#if>
 	chroot /var/lib/haproxy
 	user haproxy
 	group haproxy
