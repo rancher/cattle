@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.auth.integration.internal.rancher;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
 import io.cattle.platform.object.ObjectManager;
@@ -94,7 +93,7 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
 
     @Override
     public boolean isConfigured() {
-        return !SecurityConstants.SECURITY.get();
+        return true;
     }
 
     @Override
