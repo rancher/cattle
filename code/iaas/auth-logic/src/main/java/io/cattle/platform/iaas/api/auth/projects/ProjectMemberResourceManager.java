@@ -141,7 +141,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed));
 
         for (ProjectMember member : membersCreated) {
-            identityManager.untransform(identityManager.projectMemberToIdentity(member));
+            identityManager.untransform(identityManager.projectMemberToIdentity(member), true);
         }
         return membersCreated;
     }
