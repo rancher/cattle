@@ -65,7 +65,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         }
     }
 
-    protected void writeHashes(final ArchiveContext context) throws IOException {
+    protected static void writeHashes(final ArchiveContext context) throws IOException {
         StringBuilder stringContent = new StringBuilder();
         Map<String, String> hashes = context.getHashes();
         for (Map.Entry<String, String> entry : hashes.entrySet()) {
@@ -96,6 +96,10 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
     }
 
     protected void writeContent(final ArchiveContext context) throws IOException {
+        writeVersion(context);
+    }
+
+    protected static void writeVersion(final ArchiveContext context) throws IOException {
         final byte[] content = (context.getVersion() + "\n").getBytes("UTF-8");
         withEntry(context, "version", content.length, new WithEntry() {
             @Override
@@ -105,7 +109,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         });
     }
 
-    protected void writeUpToDate(final ArchiveContext context) throws IOException {
+    protected static void writeUpToDate(final ArchiveContext context) throws IOException {
         final byte[] content = (context.getVersion() + "\n").getBytes("UTF-8");
         withEntry(context, "uptodate", content.length, new WithEntry() {
             @Override
@@ -115,7 +119,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         });
     }
 
-    protected void withEntry(ArchiveContext context, String entryName, long size, WithEntry with) throws IOException {
+    protected static void withEntry(ArchiveContext context, String entryName, long size, WithEntry with) throws IOException {
         if (size < 0) {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             with.with(baos);
@@ -131,7 +135,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         withEntry(context, getDefaultEntry(context, entryName, size), with);
     };
 
-    protected void withEntry(ArchiveContext context, TarArchiveEntry entry, WithEntry with) throws IOException {
+    protected static void withEntry(ArchiveContext context, TarArchiveEntry entry, WithEntry with) throws IOException {
         try {
             TarArchiveOutputStream taos = context.getOutputStream();
             DigestOutputStream dos = new DigestOutputStream(taos, MessageDigest.getInstance("SHA1"));
@@ -147,7 +151,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         }
     };
 
-    protected TarArchiveEntry getDefaultEntry(ArchiveContext context, String name, long size) {
+    protected static TarArchiveEntry getDefaultEntry(ArchiveContext context, String name, long size) {
         StringBuilder entryName = new StringBuilder(context.getRequest().getItemName());
         entryName.append("-").append(context.getVersion());
         if (!name.startsWith(File.separator)) {

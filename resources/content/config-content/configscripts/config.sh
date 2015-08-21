@@ -155,13 +155,16 @@ download()
 
     content_root=${DOWNLOAD}/$name/${dir}
 
+    if [ -e ${DOWNLOAD_TEMP}/${dir}/uptodate ] && [ -e ${DOWNLOAD_TEMP}/${dir}/version ] && [ ! -e ${content_root}/version ]; then
+        cp ${DOWNLOAD_TEMP}/${dir}/version ${content_root}/version
+    fi
+
     if [ -e ${DOWNLOAD_TEMP}/${dir}/uptodate ] && [ -e ${content_root}/version ]; then
         UPTODATE=true
         VERSION=$(<${content_root}/version)
         info "Already up to date"
         return 0
     fi
-
 
     if [ -e ${content_root} ]; then
         rm -rf ${content_root}
