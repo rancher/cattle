@@ -7,9 +7,9 @@ import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -18,7 +18,7 @@ public class AgentConnectionSimulator implements AgentConnection {
     Agent agent;
     boolean open = true;
     List<AgentSimulatorEventProcessor> processors;
-    Set<String> instances = new HashSet<String>();
+    Map<String, String> instances = new HashMap<String, String>();
 
     public AgentConnectionSimulator(Agent agent, List<AgentSimulatorEventProcessor> processors) {
         super();
@@ -66,7 +66,7 @@ public class AgentConnectionSimulator implements AgentConnection {
         return agent;
     }
 
-    public Set<String> getInstances() {
+    public Map<String, String> getInstances() {
         return instances;
     }
 
