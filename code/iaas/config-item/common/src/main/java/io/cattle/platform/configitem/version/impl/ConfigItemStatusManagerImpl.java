@@ -46,12 +46,14 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicLongProperty;
+import com.netflix.config.DynamicStringListProperty;
 
 public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
     private static final DynamicBooleanProperty BLOCK = ArchaiusUtil.getBoolean("item.migration.block.on.failure");
     private static final DynamicIntProperty RETRY = ArchaiusUtil.getInt("item.wait.for.event.tries");
     private static final DynamicLongProperty TIMEOUT = ArchaiusUtil.getLong("item.wait.for.event.timeout.millis");
+    private static final DynamicStringListProperty PRIORITY_ITEMS = ArchaiusUtil.getList("item.priority");
 
     private static final Logger log = LoggerFactory.getLogger(ConfigItemStatusManagerImpl.class);
 
@@ -229,18 +231,26 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
                         log.info("Waiting on [{}] on [{}], not in sync requested [{}] != applied [{}]", client, name, status.getRequestedVersion(), status
                                 .getAppliedVersion());
                     }
-                    toTrigger.add(item);
+                    addToList(toTrigger, item);
                 }
             } else if (item.getRequestedVersion() != null) {
                 Long applied = status.getAppliedVersion();
                 if (applied == null || item.getRequestedVersion() > applied) {
                     log.info("Waiting on [{}] on [{}], not applied requested [{}] > applied [{}]", client, name, item.getRequestedVersion(), applied);
-                    toTrigger.add(item);
+                    addToList(toTrigger, item);
                 }
             }
         }
 
         return toTrigger;
+    }
+
+    protected void addToList(List<ConfigUpdateItem> list, ConfigUpdateItem item) {
+        if (PRIORITY_ITEMS.get().contains(item.getName())) {
+            list.add(0, item);
+        } else {
+            list.add(item);
+        }
     }
 
     @Override
