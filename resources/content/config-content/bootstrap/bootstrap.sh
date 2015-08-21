@@ -104,6 +104,11 @@ upgrade()
     fi
 }
 
+get_running_image()
+{
+    echo $(docker inspect -f '{{.Config.Image}}' rancher-agent)
+}
+
 cd $(dirname $0)
 
 for conf_file in "${CONF[@]}"; do
@@ -137,6 +142,7 @@ while [ $# != 0 ]; do
 done
 
 check_debug
+export RANCHER_AGENT_IMAGE="$(get_running_image)"
 print_config
 
 upgrade
