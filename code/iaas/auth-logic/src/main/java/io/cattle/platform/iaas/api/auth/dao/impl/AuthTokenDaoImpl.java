@@ -69,7 +69,7 @@ public class AuthTokenDaoImpl extends AbstractJooqDao implements AuthTokenDao{
                 .where(AUTH_TOKEN.ACCOUNT_ID.eq(accountId))
                         .and(AUTH_TOKEN.VERSION.eq(SecurityConstants.TOKEN_VERSION))
                         .and(AUTH_TOKEN.PROVIDER.eq(SecurityConstants.AUTH_PROVIDER.get()))
-                        .and(AUTH_TOKEN.EXPIRES.lessThan(new Date()))
+                        .and(AUTH_TOKEN.EXPIRES.greaterThan(new Date()))
                 .orderBy(AUTH_TOKEN.EXPIRES.desc()).fetchAny();
     }
 
