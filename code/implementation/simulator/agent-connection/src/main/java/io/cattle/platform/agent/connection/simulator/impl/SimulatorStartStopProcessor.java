@@ -1,8 +1,8 @@
 package io.cattle.platform.agent.connection.simulator.impl;
 
+import static io.cattle.platform.core.constants.InstanceConstants.*;
 import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
@@ -28,28 +28,40 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
     @SuppressWarnings("unchecked")
     @Override
     public Event handle(final AgentConnectionSimulator simulator, Event event) throws Exception {
-        Boolean add = null;
+        String action = null;
 
         if ("compute.instance.activate".equals(event.getName())) {
-            add = true;
+            action = "add";
         } else if ("compute.instance.deactivate".equals(event.getName())) {
-            add = false;
+            action = "stop";
+        } else if ("compute.instance.remove".equals(event.getName())) {
+            action = "remove";
         }
 
-        if (add == null) {
+        if (action == null) {
             return null;
         }
 
         String eventString = jsonMapper.writeValueAsString(event);
 
-        final Object uuid = CollectionUtils.getNestedValue(event.getData(), "instanceHostMap", "instance", "uuid");
+        Map<String, Object> instance = (Map<String, Object>)CollectionUtils.getNestedValue(event.getData(), "instanceHostMap", "instance");
+        Map<String, Object> update = null;
+        String externalId = (String)instance.get("externalId");
+        if (externalId == null) {
+            externalId = UUID.randomUUID().toString();
+            update = CollectionUtils.asMap("instanceHostMap", CollectionUtils.asMap("instance", CollectionUtils.asMap("externalId", externalId)));
+        }
+
+        final Object uuid = instance.get("uuid");
         if (uuid != null) {
             boolean found = simulator.getInstances().containsKey(uuid.toString());
             boolean forget = FORGET.matcher(eventString).matches();
-            if (add && !forget) {
-                simulator.getInstances().put(uuid.toString(), InstanceConstants.STATE_RUNNING);
-            } else if (!add && found && !forget) {
-                simulator.getInstances().put(uuid.toString(), InstanceConstants.STATE_STOPPED);
+            if (forget) {
+                simulator.getInstances().remove(uuid.toString());
+            } else if ("add".equals(action)) {
+                simulator.getInstances().put(uuid.toString(), new String[] { STATE_RUNNING, externalId });
+            } else if ("stop".equals(action) && found) {
+                simulator.getInstances().put(uuid.toString(), new String[] { STATE_STOPPED, externalId });
             } else {
                 simulator.getInstances().remove(uuid.toString());
             }
@@ -63,14 +75,6 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
                     simulator.getInstances().remove(uuid.toString());
                 }
             }, Long.parseLong(m.group(1)), TimeUnit.SECONDS);
-        }
-
-        Map<String, Object> instance = (Map<String, Object>)CollectionUtils.getNestedValue(event.getData(), "instanceHostMap", "instance");
-        Map<String, Object> update = null;
-        if (instance.get("externalId") == null) {
-            update =
-                    CollectionUtils.asMap("instanceHostMap",
-                            CollectionUtils.asMap("instance", CollectionUtils.asMap("externalId", UUID.randomUUID().toString())));
         }
 
         return EventVO.reply(event).withData(update);

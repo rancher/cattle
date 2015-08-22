@@ -130,6 +130,10 @@ def test_allocation_failed_on_start(super_client, new_context):
     assert c1.transitioning == 'no'
     assert c1.transitioningMessage is None
 
+    c2 = client.wait_success(c2.remove())
+    c2 = client.wait_success(c2.purge())
+    assert c2.state == 'purged'
+
 
 def test_host_vnet_association(super_client, new_context):
     account = new_context.project
