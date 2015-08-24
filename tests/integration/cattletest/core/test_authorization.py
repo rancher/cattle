@@ -144,7 +144,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'loadBalancerServiceLink',
         'addRemoveLoadBalancerServiceLinkInput',
         'setLoadBalancerServiceLinksInput',
-        'serviceUpgrade',
+        'serviceUpgrade'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -625,7 +625,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'volumeDriver': 'r',
         'extraHosts': 'r',
         'readOnly': 'r',
-        'expose': 'r'
+        'expose': 'r',
+        'createIndex': 'r'
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -682,7 +683,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'extraHosts': 'r',
         'volumeDriver': 'r',
         'readOnly': 'r',
-        'expose': 'r'
+        'expose': 'r',
+        'createIndex': 'r'
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -739,7 +741,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'extraHosts': 'cr',
         'volumeDriver': 'cr',
         'readOnly': 'cr',
-        'expose': 'cr'
+        'expose': 'cr',
+        'createIndex': 'r'
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -1442,7 +1445,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'data': 'r',
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'r',
-        'vip': 'r'
+        'vip': 'r',
+        'createIndex': 'r'
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1453,7 +1457,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'r',
-        'vip': 'r'
+        'vip': 'r',
+        'createIndex': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1464,7 +1469,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'cr',
-        'vip': 'cr'
+        'vip': 'cr',
+        'createIndex': 'r'
     })
 
 

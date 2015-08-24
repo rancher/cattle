@@ -59,7 +59,7 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
         if (createNew()) {
             Map<String, Object> launchConfigData = populateLaunchConfigData(deployParams);
             Pair<Instance, ServiceExposeMap> instanceMapPair = context.exposeMapDao.createServiceInstance(launchConfigData,
-                    service, this.instanceName);
+                    service);
             this.instance = instanceMapPair.getLeft();
             this.exposeMap = instanceMapPair.getRight();
         }

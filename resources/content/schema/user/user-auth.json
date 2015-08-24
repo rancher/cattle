@@ -84,6 +84,7 @@
         "container.volumeDriver" : "cr",
         "container.workingDir" : "cr",
         "container.expose" : "cr",
+        "container.createIndex" : "r",
 
         "containerExec" : "r",
         "containerExec.attachStdin" : "cr",
@@ -401,6 +402,7 @@
         "service.upgrade" : "r",
         "service.secondaryLaunchConfigs" : "cr",
         "service.vip" : "cr",
+        "service.createIndex" : "r",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -421,6 +423,7 @@
         "loadBalancerService.secondaryLaunchConfigs" : "",
         "loadBalancerService.certificateIds" : "cru",
         "loadBalancerService.defaultCertificateId" : "cru",
+        "loadBalancerService.createIndex" : "",
 
         "snapshot" : "r",
         "snapshot.volumeId" : "cr",
@@ -460,12 +463,14 @@
         "externalService.hostname" : "cru",
         "externalService.vip" : "",
         "externalService.healthCheck" : "cr",
+        "externalService.createIndex" : "",
 
         "dnsService" : "r",
         "dnsService.launchConfig" : "",
         "dnsService.scale" : "",
         "dnsService.secondaryLaunchConfigs" : "",
         "dnsService.vip" : "",
+        "dnsService.createIndex" : "",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",

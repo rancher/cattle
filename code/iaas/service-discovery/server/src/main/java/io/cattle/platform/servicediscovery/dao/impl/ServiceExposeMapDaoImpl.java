@@ -18,6 +18,7 @@ import io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -32,6 +33,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.Configuration;
 
 public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceExposeMapDao {
 
@@ -47,12 +49,20 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     @Inject
     GenericMapDao mapDao;
 
+    Configuration lockingConfiguration;
+
 
     @Override
-    public Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Service service,
-            String instanceName) {
+    public Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Service service) {
+        final ServiceRecord record = JooqUtils.getRecordObject(objectManager.loadResource(Service.class,
+                service.getId()));
+        record.attach(lockingConfiguration);
+        record.setCreateIndex((record.getCreateIndex() == null ? 0 : record.getCreateIndex()) + 1);
+        record.update();
+        properties.put(InstanceConstants.FIELD_CREATE_INDEX, record.getCreateIndex());
         final Instance instance = objectManager.create(Instance.class, properties);
         ServiceExposeMap exposeMap = createServiceInstanceMap(service, instance);
+
         return Pair.of(instance, exposeMap);
     }
 
@@ -237,5 +247,13 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
             return null;
         }
         return services.get(0);
+    }
+
+    public Configuration getLockingConfiguration() {
+        return lockingConfiguration;
+    }
+
+    public void setLockingConfiguration(Configuration lockingConfiguration) {
+        this.lockingConfiguration = lockingConfiguration;
     }
 }

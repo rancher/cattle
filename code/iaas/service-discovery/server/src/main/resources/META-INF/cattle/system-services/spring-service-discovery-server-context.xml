@@ -39,7 +39,10 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkPreInstanceStateHandler" />
 
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl" />
-    <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl" />
+    <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl">
+    	<property name="lockingConfiguration" ref="LockingJooqConfiguration" />
+    </bean>
+
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceDaoImpl" />
 
     <bean class="io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl" />
