@@ -1474,16 +1474,22 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'name': 'r',
         'accountId': 'r',
         'data': 'r',
+        'dockerCompose': 'r',
+        'rancherCompose': 'r',
     })
 
     auth_check(user_client.schema, 'environment', 'r', {
         'name': 'r',
         'accountId': 'r',
+        'dockerCompose': 'r',
+        'rancherCompose': 'r',
     })
 
     auth_check(project_client.schema, 'environment', 'crud', {
         'name': 'cru',
         'accountId': 'r',
+        'dockerCompose': 'cr',
+        'rancherCompose': 'cr',
     })
 
 
