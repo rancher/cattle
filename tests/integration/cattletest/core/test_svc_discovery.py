@@ -4,10 +4,15 @@ import yaml
 from netaddr import IPNetwork, IPAddress
 
 
-def create_env_and_svc(client, context):
+def _create_stack(client):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
+    return env
+
+
+def create_env_and_svc(client, context):
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -21,9 +26,7 @@ def create_env_and_svc(client, context):
 
 
 def test_activate_single_service(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     host = context.host
@@ -164,9 +167,7 @@ def test_activate_single_service(client, context):
 
 
 def test_activate_services(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -221,9 +222,7 @@ def _validate_instance_removed(client, name):
 
 
 def test_deactivate_remove_service(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -256,9 +255,7 @@ def test_deactivate_remove_service(client, context):
 
 
 def test_env_deactivate_services(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -293,9 +290,7 @@ def test_env_deactivate_services(client, context):
 
 
 def test_remove_inactive_service(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -339,9 +334,7 @@ def test_remove_inactive_service(client, context):
 
 
 def test_remove_environment(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -380,9 +373,7 @@ def test_remove_environment(client, context):
 
 
 def test_create_duplicated_services(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -402,9 +393,7 @@ def test_create_duplicated_services(client, context):
 
 
 def test_service_add_remove_service_link(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -438,9 +427,7 @@ def test_service_add_remove_service_link(client, context):
 
 
 def test_link_service_twice(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -470,9 +457,7 @@ def test_link_service_twice(client, context):
 
 
 def test_links_after_service_remove(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -505,9 +490,7 @@ def test_links_after_service_remove(client, context):
 
 
 def test_link_volumes(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
@@ -530,9 +513,7 @@ def test_link_volumes(client, context):
 
 
 def test_volumes_service_links_scale_one(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -568,9 +549,7 @@ def test_volumes_service_links_scale_one(client, context):
 
 
 def test_volumes_service_links_scale_two(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
@@ -600,9 +579,7 @@ def test_volumes_service_links_scale_two(client, context):
 
 
 def test_remove_active_service(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -649,9 +626,7 @@ def _wait_until_active_map_count(service, count, client, timeout=30):
 
 
 def test_remove_environment_w_active_svcs(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -702,9 +677,7 @@ def _validate_instance_start(service, client, name):
 
 
 def test_validate_service_scaleup_scaledown(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -776,8 +749,7 @@ def test_validate_service_scaleup_scaledown(client, context):
 
 
 def test_link_services_from_diff_env(client, context):
-    env1 = client.create_environment(name=random_str())
-    env1 = client.wait_success(env1)
+    env1 = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -787,8 +759,7 @@ def test_link_services_from_diff_env(client, context):
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
-    env2 = client.create_environment(name=random_str())
-    env2 = client.wait_success(env2)
+    env2 = _create_stack(client)
     service2 = client.create_service(name=random_str(),
                                      environmentId=env2.id,
                                      launchConfig=launch_config)
@@ -801,8 +772,7 @@ def test_link_services_from_diff_env(client, context):
 
 
 def test_set_service_links(client, context):
-    env1 = client.create_environment(name=random_str())
-    env1 = client.wait_success(env1)
+    env1 = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -851,8 +821,7 @@ def test_set_service_links(client, context):
     _validate_remove_service_link(service1, service2, client, "link3")
 
     # try to link to the service from diff environment - should work
-    env2 = client.create_environment(name=random_str())
-    env2 = client.wait_success(env2)
+    env2 = _create_stack(client)
 
     service4 = client.create_service(name=random_str(),
                                      environmentId=env2.id,
@@ -874,9 +843,7 @@ def _instance_remove(instance, client):
 
 
 def test_destroy_service_instance(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -944,9 +911,7 @@ def test_destroy_service_instance(client, context):
 
 
 def test_service_rename(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -978,9 +943,7 @@ def test_service_rename(client, context):
 
 
 def test_env_rename(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -1020,9 +983,7 @@ def test_env_rename(client, context):
 
 
 def test_validate_scale_down_restore_state(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -1064,9 +1025,7 @@ def test_validate_scale_down_restore_state(client, context):
 
 
 def test_validate_labels(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     # create service1 with labels defined
     service_name1 = random_str()
@@ -1117,9 +1076,7 @@ def test_validate_labels(client, context):
 
 
 def test_sidekick_destroy_instance(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
@@ -1175,9 +1132,7 @@ def test_sidekick_destroy_instance(client, context):
 
 
 def test_sidekick_restart_instances(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -1223,9 +1178,7 @@ def test_sidekick_restart_instances(client, context):
 
 
 def test_sidekick_scaleup(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -1290,9 +1243,7 @@ def _validate_service_hostname_map(client, service,
 
 
 def test_external_service_w_ips(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     # create service1 as a regular service
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -1358,9 +1309,7 @@ def test_external_service_w_ips(client, context):
 
 
 def test_external_service_w_hostname(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     # create service1 as a regular service
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -1428,9 +1377,7 @@ def test_service_spread_deployment(super_client, new_context):
     super_client.update(host1, {'computeFree': 1000000})
     super_client.update(host2, {'computeFree': 1000000})
 
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid}
 
@@ -1467,9 +1414,7 @@ def test_global_service(new_context):
     host2 = client.update(host2, labels=labels)
 
     # create environment and services
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {
         "imageUuid": image_uuid,
@@ -1510,9 +1455,7 @@ def test_global_service_update_label(new_context):
     host1 = client.update(host1, labels=labels)
 
     # create environment and services
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {
         "imageUuid": image_uuid,
@@ -1577,9 +1520,7 @@ def test_global_add_host(new_context):
     host1 = new_context.host
 
     # create environment and services
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {
         "imageUuid": image_uuid,
@@ -1622,9 +1563,7 @@ def test_global_add_host(new_context):
 
 
 def test_dns_service(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     # create 1 app service, 1 dns service and 2 web services
     # app service would link to dns, and dns to the web services
     image_uuid = context.image_uuid
@@ -1685,9 +1624,7 @@ def test_svc_container_reg_cred_and_image(super_client, client):
     registry_credential = client.wait_success(reg_cred)
     name = server + '/rancher/authorized:latest'
     image_uuid = 'docker:' + name
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
@@ -1709,9 +1646,7 @@ def test_svc_container_reg_cred_and_image(super_client, client):
 
 
 def test_network_from_service(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid, "networkMode": 'container',
@@ -1753,9 +1688,7 @@ def test_network_from_service(client, context):
 
 
 def test_circular_refs(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     # test direct circular ref
     image_uuid = context.image_uuid
@@ -1813,9 +1746,7 @@ def test_service_affinity_rules(super_client, new_context):
 
     client = new_context.client
 
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = new_context.image_uuid
     name = random_str()
@@ -1886,9 +1817,7 @@ def test_affinity_auto_prepend_stack(super_client, new_context):
 
     client = new_context.client
 
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = new_context.image_uuid
     name = random_str()
@@ -1930,9 +1859,7 @@ def test_affinity_auto_prepend_stack_other_service(super_client, new_context):
 
     client = new_context.client
 
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = new_context.image_uuid
     service_name1 = "service" + random_str()
@@ -1986,9 +1913,7 @@ def test_anti_affinity_sidekick(new_context):
 
     client = new_context.client
 
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = new_context.image_uuid
     name = random_str()
@@ -2038,9 +1963,7 @@ def test_host_delete_reconcile_service(super_client, new_context):
 
     client = new_context.client
 
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = new_context.image_uuid
     name = random_str()
@@ -2095,9 +2018,7 @@ def test_host_delete_reconcile_service(super_client, new_context):
 
 
 def test_service_link_emu_docker_link(super_client, client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     dns = client.create_dns_service(name='dns', environmentId=env.id)
 
@@ -2195,9 +2116,7 @@ def test_service_link_emu_docker_link(super_client, client, context):
 
 
 def test_export_config(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     # create service with cpuset
     image_uuid = context.image_uuid
@@ -2216,9 +2135,7 @@ def test_export_config(client, context):
 
 
 def test_validate_image(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     # 1. invalide image in primary config
     image_uuid = context.image_uuid
@@ -2252,9 +2169,7 @@ def test_validate_image(client, context):
 
 
 def test_validate_restart_policy(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     restart_policy = {"maximumRetryCount": 0, "name": "no"}
     image_uuid = context.image_uuid
@@ -2299,9 +2214,7 @@ def test_validate_restart_policy(client, context):
 
 
 def test_sidekick_destroy_instance_indirect_ref(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
@@ -2354,9 +2267,7 @@ def test_sidekick_destroy_instance_indirect_ref(client, context):
 
 def test_validate_hostname_override(client, context):
     # create environment and services
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     image_uuid = context.image_uuid
     launch_config1 = {
         "imageUuid": image_uuid,
@@ -2400,9 +2311,7 @@ def test_validate_hostname_override(client, context):
 
 
 def test_vip_service(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     image_uuid = context.image_uuid
     init_labels = {'io.rancher.network.services': "vipService"}
     launch_config = {"imageUuid": image_uuid, "labels": init_labels}
@@ -2445,8 +2354,7 @@ def test_vip_service(client, context):
 
 
 def test_vip_requested_ip(client, context):
-    env = client.create_environment(name=random_str())
-    client.wait_success(env)
+    env = _create_stack(client)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     vip = "169.254.65.30"
@@ -2470,9 +2378,7 @@ def test_vip_requested_ip(client, context):
 
 
 def test_external_svc_healthcheck(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     # test that external service was set with healtcheck
     health_check = {"name": "check1", "responseTimeout": 3,
@@ -2501,9 +2407,7 @@ def test_external_svc_healthcheck(client, context):
 
 
 def test_validate_scaledown_updating(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -2530,9 +2434,7 @@ def test_validate_scaledown_updating(client, context):
 
 
 def test_stop_network_from_container(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid, "networkMode": 'container',

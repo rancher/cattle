@@ -12,10 +12,15 @@ def image_uuid(context):
     return context.image_uuid
 
 
-def test_create_env_and_svc(client, image_uuid):
+def _create_stack(client):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
+    return env
+
+
+def test_create_env_and_svc(client, image_uuid):
+    env = _create_stack(client)
 
     launch_config = {"imageUuid": image_uuid}
 
@@ -36,9 +41,7 @@ def test_create_env_and_svc(client, image_uuid):
 
 def test_activate_lb_svc(super_client, context, client, image_uuid):
     host = context.host
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     launch_config = {"imageUuid": image_uuid,
                      "ports": [8082, '910:1001']}
@@ -146,9 +149,7 @@ def test_remove_active_lb_svc(new_context):
 
 def test_targets(client, context):
     host = context.host
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     # create web, db lb services
     image_uuid = context.image_uuid
@@ -223,10 +224,7 @@ def test_targets(client, context):
 def test_target_ips(client, context):
     host = context.host
     user_account_id = host.accountId
-    env = client.create_environment(name=random_str(),
-                                    accountId=user_account_id)
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     # create web, db lb services
     image_uuid = context.image_uuid
@@ -298,9 +296,7 @@ def test_target_ips(client, context):
 
 def test_create_svc_with_lb_config(context, client):
     name = random_str()
-    env = client.create_environment(name=name)
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -375,9 +371,7 @@ def test_scale(new_context):
     client = new_context.client
     host1 = new_context.host
     host2 = register_simulated_host(new_context)
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid,
                      "ports": [8081, '909:1001']}
@@ -418,9 +412,7 @@ def test_scale(new_context):
 
 def test_labels(super_client, client, context):
     host = context.host
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     # create service with labels, and validate all of them
     # plus service label were set
@@ -472,9 +464,7 @@ def test_labels(super_client, client, context):
 
 
 def test_inactive_lb(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     # create and activate web service
     image_uuid = context.image_uuid
@@ -532,9 +522,7 @@ def test_inactive_lb(client, context):
 
 def test_destroy_svc_instance(super_client, context, client, image_uuid):
     host = context.host
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     launch_config = {"imageUuid": image_uuid,
                      "ports": [95, '94:94']}
@@ -560,8 +548,7 @@ def test_destroy_svc_instance(super_client, context, client, image_uuid):
 
 
 def test_set_service_links(client, context):
-    env1 = client.create_environment(name=random_str())
-    env1 = client.wait_success(env1)
+    env1 = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -621,8 +608,7 @@ def test_set_service_links(client, context):
 
 
 def test_modify_link(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -664,8 +650,7 @@ def _create_service(client, env, launch_config, name=None):
 
 
 def test_create_links(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -769,9 +754,7 @@ def test_create_links(client, context):
 
 
 def test_private_lb(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
                      "ports": [567, '568:569'],
@@ -824,13 +807,9 @@ def test_private_lb(client, context):
 
 
 def test_export_config(client, context):
-    env1 = client.create_environment(name="env1")
-    env1 = client.wait_success(env1)
-    assert env1.state == "active"
+    env1 = _create_stack(client)
 
-    env2 = client.create_environment(name="env2")
-    env2 = client.wait_success(env2)
-    assert env2.state == "active"
+    env2 = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -873,9 +852,7 @@ def test_export_config(client, context):
 
 
 def test_lb_service_w_certificate(client, context, image_uuid):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
     host = context.host
@@ -908,9 +885,7 @@ def test_lb_service_update_certificate(client, context, image_uuid):
     host = context.host
     labels = {'io.rancher.loadbalancer.ssl.ports': "1769,1771"}
 
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     launch_config = {"imageUuid": image_uuid,
                      "ports": ['1769:1770', '1771:1772'],
@@ -1158,9 +1133,7 @@ def _activate_svc_w_scale_two(new_context, random_str):
     client = new_context.client
     host1 = new_context.host
     host2 = register_simulated_host(new_context)
-    env = client.create_environment(name=random_str)
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
     launch_config = {"imageUuid": new_context.image_uuid,
                      "ports": [8081, '909:1001']}
     service = client. \
