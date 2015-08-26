@@ -2,20 +2,21 @@
 
 . ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
-reload_dns()
+reload_service()
 {
-    if [ ! -e /etc/init.d/rancher-dns ]; then
-        # rancher-dns is not yet installed
+    local service=$1
+    if [ ! -e /etc/init.d/rancher-${service} ]; then
+        # rancher-${service} is not yet installed
         return
     fi
 
-    PID=$(pidof rancher-dns || true)
+    PID=$(pidof rancher-${service} || true)
 
     if [ -z "$PID" ]; then
-        /etc/init.d/rancher-dns start
+        /etc/init.d/rancher-${service} start
+    else
+        kill -HUP $PID
     fi
-
-    killall -HUP rancher-dns
 }
 
 DNS=
@@ -41,4 +42,5 @@ if ! ip route show | grep -q 169.254.169.254; then
     ip route add 169.254.169.254/32 dev eth0 via $(ip route get 8.8.8.8 | grep via | awk '{print $3}')
 fi
 
-reload_dns
+reload_service dns
+reload_service metadata
