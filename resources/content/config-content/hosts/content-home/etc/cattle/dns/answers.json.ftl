@@ -2,7 +2,11 @@
     "default": {
         "recurse": [
             PARENT_DNS
-        ]
+        ],
+        "a": {
+        	"rancher-metadata.": {"answer": ["169.254.169.250"]},
+		"rancher-metadata.rancher.internal.": {"answer": ["169.254.169.250"]}
+		}
     },
 <#if dnsEntries?? >
     <#list dnsEntries as dnsEntry>
