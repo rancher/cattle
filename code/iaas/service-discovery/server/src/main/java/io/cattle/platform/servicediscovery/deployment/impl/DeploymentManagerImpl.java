@@ -208,7 +208,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
             for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
                 List<Integer> usedIds = sdSvc.getServiceInstanceUsedOrderIds(service, launchConfigName);
                 launchConfigUsedIds.put(launchConfigName, usedIds);
-
             }
             generator.put(service.getId(),
                     new DeploymentUnitInstanceIdGeneratorImpl(launchConfigUsedIds));

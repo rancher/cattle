@@ -727,16 +727,19 @@ def test_validate_service_scaleup_scaledown(client, context):
     service = client.wait_success(service, 120)
     assert service.state == "active"
 
-    _validate_compose_instance_start(client, service, env, "1")
-    instance2 = _validate_compose_instance_start(client, service, env, "2")
-    instance3 = _validate_compose_instance_start(client, service, env, "3")
+    instance11 = _validate_compose_instance_start(client, service, env, "1")
+    instance21 = _validate_compose_instance_start(client, service, env, "2")
+    instance31 = _validate_compose_instance_start(client, service, env, "3")
+
+    assert instance31.createIndex > instance21.createIndex
+    assert instance21.createIndex > instance11.createIndex
 
     # stop the instance2
-    client.wait_success(instance2.stop())
+    client.wait_success(instance21.stop())
     service = client.wait_success(service)
 
     # rename the instance 3
-    instance3 = client.update(instance3, name='newName')
+    instance32 = client.update(instance31, name='newName')
 
     # scale up the service
     # instance 2 should get started; env_service_3 name should be utilized
@@ -745,19 +748,31 @@ def test_validate_service_scaleup_scaledown(client, context):
     assert service.state == "active"
     assert service.scale == 4
 
-    _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "2")
-    _validate_compose_instance_start(client, service, env, "3")
-    _validate_instance_start(service, client, instance3.name)
+    instance12 = _validate_compose_instance_start(client, service, env, "1")
+    instance22 = _validate_compose_instance_start(client, service, env, "2")
+    instance32 = _validate_instance_start(service, client, instance32.name)
+    instance41 = _validate_compose_instance_start(client, service, env, "3")
+
+    assert instance41.createIndex > instance32.createIndex
+    assert instance32.createIndex > instance22.createIndex
+    assert instance22.createIndex > instance12.createIndex
 
     # scale down the service
-    service = client.update(service, scale=2, name=service.name)
+    service = client.update(service, scale=0, name=service.name)
     service = client.wait_success(service, 120)
     assert service.state == "active"
     # validate that only 2 service instance mappings exist
     instance_service_map = client. \
         list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map) == 2
+    assert len(instance_service_map) == 0
+
+    # scale up service again, and validate
+    # that the new instance got unique index
+    service = client.update(service, scale=4, name=service.name)
+    service = client.wait_success(service, 120)
+    instance42 = _validate_compose_instance_start(client, service, env, "4")
+    assert instance42.createIndex > instance41.createIndex
+    assert service.createIndex == instance42.createIndex
 
 
 def test_link_services_from_diff_env(client, context):

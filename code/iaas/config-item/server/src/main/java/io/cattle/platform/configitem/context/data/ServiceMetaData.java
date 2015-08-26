@@ -23,6 +23,7 @@ public class ServiceMetaData {
     String kind;
     String hostname;
     String vip;
+    Long create_index;
     List<String> external_ips = new ArrayList<>();
     List<String> sidekicks;
     List<String> containers = new ArrayList<>();
@@ -45,6 +46,7 @@ public class ServiceMetaData {
         this.labels = ServiceDiscoveryUtil.getLaunchConfigLabels(service, launchConfigName);
         populateExternalServiceInfo(service);
         populatePortsInfo(service, serviceName);
+        this.create_index = service.getCreateIndex();
     }
 
     @SuppressWarnings("unchecked")
@@ -123,5 +125,9 @@ public class ServiceMetaData {
     @JsonIgnore
     public boolean isPrimaryConfig() {
         return isPrimaryConfig;
+    }
+
+    public Long getCreate_index() {
+        return create_index;
     }
 }

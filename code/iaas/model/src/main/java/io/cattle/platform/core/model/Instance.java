@@ -355,6 +355,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "start_count", precision = 19)
 	public java.lang.Long getStartCount();
 
+	/**
+	 * Setter for <code>cattle.instance.create_index</code>.
+	 */
+	public void setCreateIndex(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.create_index</code>.
+	 */
+	@javax.persistence.Column(name = "create_index", precision = 19)
+	public java.lang.Long getCreateIndex();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

@@ -157,6 +157,17 @@ public interface Service extends java.io.Serializable {
 	@javax.persistence.Column(name = "vip", length = 255)
 	public java.lang.String getVip();
 
+	/**
+	 * Setter for <code>cattle.service.create_index</code>.
+	 */
+	public void setCreateIndex(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.service.create_index</code>.
+	 */
+	@javax.persistence.Column(name = "create_index", precision = 19)
+	public java.lang.Long getCreateIndex();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

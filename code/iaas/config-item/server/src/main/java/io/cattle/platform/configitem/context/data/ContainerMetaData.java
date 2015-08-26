@@ -27,6 +27,7 @@ public class ContainerMetaData {
     String service_name;
     String stack_name;
     Map<String, String> labels = new HashMap<>();
+    Long create_index;
 
     public ContainerMetaData() {
     }
@@ -83,6 +84,7 @@ public class ContainerMetaData {
                 }
             }
         }
+        this.create_index = instance.getCreateIndex();
     }
 
     public void setService_name(String service_name) {
@@ -119,4 +121,7 @@ public class ContainerMetaData {
         return dnsPrefix;
     }
 
+    public Long getCreate_index() {
+        return create_index;
+    }
 }
