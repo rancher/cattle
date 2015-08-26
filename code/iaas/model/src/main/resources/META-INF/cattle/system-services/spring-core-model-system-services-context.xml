@@ -53,4 +53,7 @@
             pointcut="execution(* io.cattle.platform.core.dao.StoragePoolDao.*(..))" />
     </aop:config>
 
+    <bean class="io.cattle.platform.core.cleanup.TableCleanUp"/>
+    <bean class="io.cattle.platform.core.cleanup.TableCleanUpCaller"/>
+
 </beans>
