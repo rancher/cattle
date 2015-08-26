@@ -55,8 +55,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
-        List<ContainerMetaData> containersMetaData = metaDataInfoDao.getServicesContainersData(account.getId());
-        containersMetaData.addAll(metaDataInfoDao.getStandaloneContainersData(account.getId()));
+        List<ContainerMetaData> containersMetaData = metaDataInfoDao.getContainersData(account.getId());
 
         Map<String, StackMetaData> stacks = new HashMap<>();
         Map<Long, Map<String, ServiceMetaData>> services = new HashMap<>();
@@ -64,6 +63,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         populateStacksServicesInfo(account, stacks, services);
         for (ContainerMetaData containerMetaData : containersMetaData) {
             ServiceMetaData svcData = null;
+            StackMetaData stackData = null;
             if (containerMetaData.getServiceId() != null) {
                 String configName = containerMetaData.getDnsPrefix();
                 if (configName == null) {
@@ -74,14 +74,12 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                     svcData = svcsData.get(configName);
                     containerMetaData.setStack_name(svcData.getName());
                     containerMetaData.setService_name(svcData.getStack_name());
-                    addContainerToSelf(self, containerMetaData, svcData, stacks.get(svcData.getStack_name()), getInstanceHostId(instance));
                     svcData.addToContainer(containerMetaData.getName());
+                    stackData = stacks.get(svcData.getStack_name());
                 }
             }
 
-            if (svcData == null) {
-                addContainerToSelf(self, containerMetaData, null, null, getInstanceHostId(instance));
-            }
+            addContainerToSelf(self, containerMetaData, svcData, stackData, getInstanceHostId(instance));
         }
         
         List<ServiceMetaData> servicesMD = new ArrayList<>();
