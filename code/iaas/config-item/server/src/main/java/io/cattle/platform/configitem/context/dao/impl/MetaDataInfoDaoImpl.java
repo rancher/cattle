@@ -39,8 +39,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
             @Override
             protected ContainerMetaData map(List<Object> input) {
                 ContainerMetaData data = new ContainerMetaData();
-                data.setInstance((Instance) input.get(1));
                 data.setIp((IpAddress) input.get(3));
+                HostMetaData hostMetaData = null;
                 if (input.get(2) != null) {
                     Host host = (Host) input.get(2);
                     IpAddress hostIpAddress = (IpAddress) input.get(0);
@@ -48,11 +48,12 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                         Map<String, String> hostLabels = DataAccessor.fields(host)
                                 .withKey(InstanceConstants.FIELD_LABELS)
                                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
-                        HostMetaData hostMetaData = new HostMetaData(hostIpAddress.getAddress(), host.getName(),
+                        hostMetaData = new HostMetaData(hostIpAddress.getAddress(), host.getName(),
                                 hostLabels, host.getId());
-                        data.setHostMetaData(hostMetaData);
                     }
                 }
+                data.setInstanceAndHostMetadata((Instance) input.get(1), hostMetaData);
+
                 if (input.get(4) != null) {
                     data.setExposeMap((ServiceExposeMap) input.get(4));
                 }

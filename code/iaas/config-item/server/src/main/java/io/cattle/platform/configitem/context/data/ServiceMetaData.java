@@ -45,7 +45,7 @@ public class ServiceMetaData {
                 : serviceName;
         this.labels = ServiceDiscoveryUtil.getLaunchConfigLabels(service, launchConfigName);
         populateExternalServiceInfo(service);
-        populatePortsInfo(service, serviceName);
+        populatePortsInfo(service, launchConfigName);
         this.create_index = service.getCreateIndex();
     }
 
