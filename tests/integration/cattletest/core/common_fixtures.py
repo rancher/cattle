@@ -200,6 +200,7 @@ def create_context(admin_user_client, create_project=False, add_host=False,
 def cleanup_context(admin_user_client, context):
     purge_account(admin_user_client, context.project)
     purge_account(admin_user_client, context.account)
+    purge_containers(context)
 
 
 def purge_account(admin_user_client, account):
@@ -214,6 +215,20 @@ def purge_account(admin_user_client, account):
                 admin_user_client.wait_success(account)
         except:
             pass
+
+
+def purge_containers(context):
+    client = context.client
+    for container in client.list_container():
+        for action in ['stop', 'remove', 'purge']:
+            if action not in container:
+                continue
+            try:
+                container = container[action]()
+                if action != 'purge':
+                    client.wait_success(container)
+            except:
+                pass
 
 
 def register_simulated_host(client_or_context, return_agent=False):
