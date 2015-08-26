@@ -88,4 +88,8 @@ public abstract class ServiceDeploymentPlanner {
     public List<DeploymentUnit> getIncompleteUnits() {
         return incompleteUnits;
     }
+
+    public List<DeploymentUnit> getHealthyUnits() {
+        return healthyUnits;
+    }
 }

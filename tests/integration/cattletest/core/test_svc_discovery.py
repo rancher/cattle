@@ -2514,6 +2514,49 @@ def test_validate_scaledown_updating(client, context):
     _wait_until_active_map_count(service, 1, client, timeout=30)
 
 
+def test_stop_network_from_container(client, context):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "networkMode": 'container',
+                     "networkLaunchConfig": "secondary"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=1,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+    assert len(service.secondaryLaunchConfigs) == 1
+    assert service.launchConfig.networkMode == 'container'
+    assert service.secondaryLaunchConfigs[0].networkMode == 'managed'
+
+    service = client.wait_success(service.activate(), 120)
+
+    assert service.state == "active"
+
+    s11_container = _validate_compose_instance_start(client, service, env, "1")
+    s21_container = _validate_compose_instance_start(client, service,
+                                                     env, "1", "secondary")
+
+    assert s11_container.networkContainerId is not None
+    assert s11_container.networkContainerId == s21_container.id
+
+    # stop s21 container, and validate s11 is stopped as well
+    s21_container.stop()
+    wait_for_condition(
+        client, s11_container, _resource_is_stopped,
+        lambda x: 'State is: ' + x.state)
+
+    service = client.wait_success(service)
+    assert service.state == 'active'
+    _validate_compose_instance_start(client, service, env, "1")
+    _validate_compose_instance_start(client, service, env, "1", "secondary")
+
+
 def _get_instance_for_service(super_client, serviceId):
     instances = []
     instance_service_maps = super_client. \
