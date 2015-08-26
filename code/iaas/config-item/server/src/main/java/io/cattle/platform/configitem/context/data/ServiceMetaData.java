@@ -127,6 +127,7 @@ public class ServiceMetaData {
         return isPrimaryConfig;
     }
 
+    @JsonIgnore
     public Long getCreate_index() {
         return create_index;
     }
