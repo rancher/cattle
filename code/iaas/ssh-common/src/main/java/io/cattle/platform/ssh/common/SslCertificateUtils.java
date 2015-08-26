@@ -21,21 +21,98 @@ import java.security.cert.PKIXCertPathBuilderResult;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.bouncycastle.openssl.PEMReader;
 
-public class SslCertificateValidationUtils {
+public class SslCertificateUtils {
+
+    public static Integer getKeySize(String certInput) throws Exception {
+        X509CertificateObject cert = getCertificateFromPem(certInput);
+        PublicKey key = cert.getPublicKey();
+        if (key instanceof RSAPublicKey) {
+            RSAPublicKey keySpec = (RSAPublicKey) key;
+            return keySpec.getModulus().bitLength();
+        }
+        return null;
+    }
+
+    public static List<?> getSubjectAlternativeNames(String certInput) throws Exception {
+        X509CertificateObject cert = getCertificateFromPem(certInput);
+        Collection<List<?>> names = cert.getSubjectAlternativeNames();
+        if (names == null) {
+            return null;
+        }
+
+        List<String> altNames = new ArrayList<>();
+        Iterator<List<?>> it = names.iterator();
+        while (it.hasNext()) {
+            List<?> obj = it.next();
+            // first value is type identifier (IP, DNS, etc), so adding second only
+            altNames.add(obj.get(1).toString());
+        }
+        return altNames;
+    }
+
+    public static String getExpirationDate(String certInput) throws Exception {
+        X509CertificateObject cert = getCertificateFromPem(certInput);
+        return cert.getNotAfter().toString();
+    }
+
+    public static String getSerialNumber(String certInput) throws Exception {
+        X509CertificateObject cert = getCertificateFromPem(certInput);
+        return cert.getSerialNumber().toString();
+    }
+
+    public static String getAlgorithm(String certInput) throws Exception {
+        X509CertificateObject cert = getCertificateFromPem(certInput);
+        return cert.getSigAlgName();
+    }
+
+    public static String getVersion(String certInput) throws Exception {
+        X509CertificateObject cert = getCertificateFromPem(certInput);
+        return String.valueOf(cert.getVersion());
+    }
+
+    public static String getIssuedDate(String certInput) throws Exception {
+        X509CertificateObject cert = getCertificateFromPem(certInput);
+        return cert.getNotBefore().toString();
+    }
+
+    public static String getIssuer(String certInput) throws Exception {
+        X509CertificateObject cert = getCertificateFromPem(certInput);
+        return cert.getIssuerX500Principal().getName();
+    }
+
+    public static String getCN(String certInput) throws Exception {
+        X509CertificateObject cert = getCertificateFromPem(certInput);
+        String dn = cert.getSubjectX500Principal().getName();
+        LdapName ln = new LdapName(dn);
+
+        for (Rdn rdn : ln.getRdns()) {
+            if (rdn.getType().equalsIgnoreCase("CN")) {
+                return rdn.getValue().toString();
+            }
+        }
+        return null;
+    }
 
     public static void verifySelfSignedCertificate(String certInput, String keyInput) throws Exception {
         X509CertificateObject cert = getCertificateFromPem(certInput);
         PublicKey publicKey = getPublicKey(keyInput);
         cert.verify(publicKey);
+        cert.checkValidity();
     }
 
     public static void verifyCertificateChain(String certInput, String certChainInput, String keyInput)
