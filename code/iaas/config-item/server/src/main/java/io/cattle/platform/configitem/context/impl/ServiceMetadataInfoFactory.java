@@ -72,8 +72,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 Map<String, ServiceMetaData> svcsData = services.get(containerMetaData.getServiceId());
                 if (svcsData != null) {
                     svcData = svcsData.get(configName);
-                    containerMetaData.setStack_name(svcData.getName());
-                    containerMetaData.setService_name(svcData.getStack_name());
+                    containerMetaData.setStack_name(svcData.getStack_name());
+                    containerMetaData.setService_name(svcData.getName());
                     svcData.addToContainer(containerMetaData.getName());
                     stackData = stacks.get(svcData.getStack_name());
                 }
@@ -219,10 +219,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             Service service = objectManager.loadResource(Service.class, consumedMap.getConsumedServiceId());
             ServiceMetaData consumedServiceData = services.get(service.getId()).get(
                     serviceMD.getLaunchConfigName());
+            String linkAlias = ServiceDiscoveryUtil.getDnsName(service, consumedMap, null, false);
             links.put(
-                    consumedServiceData.getStack_name() + "/"
-                            + ServiceDiscoveryUtil.getDnsName(service, consumedMap, null, false),
-                    consumedMap.getName());
+                    consumedServiceData.getStack_name() + "/" + consumedServiceData.getName(), linkAlias);
         }
         serviceMD.setLinks(links);
     }
