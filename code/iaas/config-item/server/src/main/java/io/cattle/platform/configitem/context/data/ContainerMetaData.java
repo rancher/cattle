@@ -66,7 +66,8 @@ public class ContainerMetaData {
     }
 
     @SuppressWarnings("unchecked")
-    public void setInstance(Instance instance) {
+    public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData) {
+        this.hostMetaData = hostMetaData;
         this.name = instance.getName();
         Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
@@ -93,10 +94,6 @@ public class ContainerMetaData {
 
     public void setStack_name(String stack_name) {
         this.stack_name = stack_name;
-    }
-
-    public void setHostMetaData(HostMetaData hostMetaData) {
-        this.hostMetaData = hostMetaData;
     }
 
     public void setExposeMap(ServiceExposeMap exposeMap) {

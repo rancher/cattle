@@ -6,8 +6,6 @@ import java.util.List;
 
 public interface MetaDataInfoDao {
 
-    List<ContainerMetaData> getServicesContainersData(long accountId);
-
-    List<ContainerMetaData> getStandaloneContainersData(long accountId);
+    List<ContainerMetaData> getContainersData(long accountId);
 
 }
