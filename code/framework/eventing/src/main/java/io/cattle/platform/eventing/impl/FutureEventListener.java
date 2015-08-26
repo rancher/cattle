@@ -3,7 +3,6 @@ package io.cattle.platform.eventing.impl;
 import io.cattle.platform.async.retry.Retry;
 import io.cattle.platform.eventing.EventListener;
 import io.cattle.platform.eventing.EventProgress;
-import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.PoolSpecificListener;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
@@ -13,7 +12,7 @@ import com.google.common.util.concurrent.SettableFuture;
 
 public class FutureEventListener implements EventListener, PoolSpecificListener {
 
-    EventService eventService;
+    AbstractEventService eventService;
     String replyTo;
     SettableFuture<Event> future;
     EventProgress progress;
@@ -21,7 +20,7 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
     boolean failed;
     Retry retry;
 
-    public FutureEventListener(EventService eventService, String replyTo) {
+    public FutureEventListener(AbstractEventService eventService, String replyTo) {
         super();
         this.replyTo = replyTo;
         this.eventService = eventService;
@@ -36,7 +35,9 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
                 EventVO<Object> replyWithName = new EventVO<Object>(reply);
                 replyWithName.setName(appendReply(event.getName()));
 
-                eventService.publish(replyWithName);
+                if (eventService.isSubscribed(replyWithName.getName())) {
+                    eventService.publish(replyWithName);
+                }
 
                 String transitioning = replyWithName.getTransitioning();
 

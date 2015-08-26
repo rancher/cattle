@@ -1,6 +1,5 @@
 package io.cattle.platform.eventing.impl;
 
-import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 
 import java.util.Random;
@@ -15,13 +14,13 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 public class ListenerPoolObjectFactory implements PooledObjectFactory<FutureEventListener> {
 
     String prefix = Event.REPLY_PREFIX;
-    EventService eventService;
+    AbstractEventService eventService;
     Random random = new Random();
 
     public ListenerPoolObjectFactory() {
     }
 
-    public ListenerPoolObjectFactory(EventService eventService) {
+    public ListenerPoolObjectFactory(AbstractEventService eventService) {
         super();
         this.eventService = eventService;
     }
@@ -63,12 +62,12 @@ public class ListenerPoolObjectFactory implements PooledObjectFactory<FutureEven
         this.prefix = prefix;
     }
 
-    public EventService getEventService() {
+    public AbstractEventService getEventService() {
         return eventService;
     }
 
     @Inject
-    public void setEventService(EventService eventService) {
+    public void setEventService(AbstractEventService eventService) {
         this.eventService = eventService;
     }
 
