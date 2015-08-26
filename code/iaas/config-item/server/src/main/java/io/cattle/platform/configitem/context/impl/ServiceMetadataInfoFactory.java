@@ -72,8 +72,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 Map<String, ServiceMetaData> svcsData = services.get(containerMetaData.getServiceId());
                 if (svcsData != null) {
                     svcData = svcsData.get(configName);
-                    containerMetaData.setStack_name(svcData.getName());
-                    containerMetaData.setService_name(svcData.getStack_name());
+                    containerMetaData.setStack_name(svcData.getStack_name());
+                    containerMetaData.setService_name(svcData.getName());
                     svcData.addToContainer(containerMetaData.getName());
                     stackData = stacks.get(svcData.getStack_name());
                 }
@@ -84,7 +84,10 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         
         List<ServiceMetaData> servicesMD = new ArrayList<>();
         for (Map<String, ServiceMetaData> service : services.values()) {
-            servicesMD.addAll(service.values());
+            for (ServiceMetaData svcData : service.values()) {
+                setLinksInfo(services, svcData);
+                servicesMD.add(svcData);
+            }
         }
 
         List<StackMetaData> stacksMD = new ArrayList<>();
@@ -191,14 +194,12 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         String serviceName = isPrimaryConfig ? service.getName()
                 : launchConfigName;
         List<String> sidekicks = new ArrayList<>();
-        Map<String, String> links = new HashMap<>();
         
         if (isPrimaryConfig) {
-            getLinksInfo(idToService, service, links);
             getSidekicksInfo(service, sidekicks, launchConfigNames);
         }
 
-        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, links, sidekicks);
+        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks);
         stackServices.add(svcMetaData);
     }
 
@@ -210,16 +211,19 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
     }
 
-    protected void getLinksInfo(Map<Long, Service> idToService, Service service, Map<String, String> links) {
-        List<? extends ServiceConsumeMap> consumedMaps = consumeMapDao.findConsumedServices(service.getId());
+    protected void setLinksInfo(Map<Long, Map<String, ServiceMetaData>> services,
+            ServiceMetaData serviceMD) {
+        Map<String, String> links = new HashMap<>();
+        List<? extends ServiceConsumeMap> consumedMaps = consumeMapDao.findConsumedServices(serviceMD.getServiceId());
         for (ServiceConsumeMap consumedMap : consumedMaps) {
-            Service consumedService = idToService.get(consumedMap.getConsumedServiceId());
-            if (consumedService == null) {
-                consumedService = objectManager.loadResource(Service.class, consumedMap.getConsumedServiceId());
-                idToService.put(consumedService.getId(), consumedService);
-            }
-            links.put(ServiceDiscoveryUtil.getDnsName(service, consumedMap, null, false), consumedService.getName());
+            Service service = objectManager.loadResource(Service.class, consumedMap.getConsumedServiceId());
+            ServiceMetaData consumedServiceData = services.get(service.getId()).get(
+                    serviceMD.getLaunchConfigName());
+            String linkAlias = ServiceDiscoveryUtil.getDnsName(service, consumedMap, null, false);
+            links.put(
+                    consumedServiceData.getStack_name() + "/" + consumedServiceData.getName(), linkAlias);
         }
+        serviceMD.setLinks(links);
     }
 
     protected long getInstanceHostId(Instance instance) {

@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class ServiceMetaData {
     private Long serviceId;
     private boolean isPrimaryConfig;
+    String launchConfigName;
     
     String name;
     String stack_name;
@@ -31,18 +32,17 @@ public class ServiceMetaData {
     List<String> ports = new ArrayList<>();
     Map<String, String> labels;
 
-    public ServiceMetaData(Service service, String serviceName, Environment env, Map<String, String> links,
-            List<String> sidekicks) {
+    public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks) {
         this.serviceId = service.getId();
         this.name = serviceName;
         this.stack_name = env.getName();
         this.kind = service.getKind();
         this.sidekicks = sidekicks;
-        this.links = links;
         this.vip = service.getVip();
         this.isPrimaryConfig = service.getName().equalsIgnoreCase(serviceName);
         String launchConfigName = this.isPrimaryConfig ? ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME
                 : serviceName;
+        this.launchConfigName = launchConfigName;
         this.labels = ServiceDiscoveryUtil.getLaunchConfigLabels(service, launchConfigName);
         populateExternalServiceInfo(service);
         populatePortsInfo(service, launchConfigName);
@@ -127,7 +127,17 @@ public class ServiceMetaData {
         return isPrimaryConfig;
     }
 
+    @JsonIgnore
     public Long getCreate_index() {
         return create_index;
+    }
+
+    public void setLinks(Map<String, String> links) {
+        this.links = links;
+    }
+
+    @JsonIgnore
+    public String getLaunchConfigName() {
+        return launchConfigName;
     }
 }
