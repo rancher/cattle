@@ -364,7 +364,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             .fetchInto(new RecordHandler<Record3<String, String, String>>() {
                 @Override
                 public void next(Record3<String, String, String> record) {
-                    labelKeyValueStatusMap.put(record.value1(),
+                    labelKeyValueStatusMap.put(StringUtils.lowerCase(record.value1()),
                             new String[] {
                                 StringUtils.lowerCase(record.value2()),
                                 record.value3()
