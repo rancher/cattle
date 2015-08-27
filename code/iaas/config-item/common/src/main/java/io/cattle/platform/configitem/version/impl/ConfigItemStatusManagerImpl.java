@@ -1,7 +1,6 @@
 package io.cattle.platform.configitem.version.impl;
 
 import io.cattle.platform.agent.AgentLocator;
-import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
@@ -13,15 +12,9 @@ import io.cattle.platform.configitem.request.ConfigUpdateItem;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
-import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItemStatus;
 import io.cattle.platform.deferred.util.DeferredUtils;
-import io.cattle.platform.eventing.EventCallOptions;
-import io.cattle.platform.eventing.EventProgress;
-import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.eventing.RetryCallback;
 import io.cattle.platform.eventing.model.Event;
-import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
@@ -32,7 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -44,15 +36,11 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicLongProperty;
 import com.netflix.config.DynamicStringListProperty;
 
 public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
     private static final DynamicBooleanProperty BLOCK = ArchaiusUtil.getBoolean("item.migration.block.on.failure");
-    private static final DynamicIntProperty RETRY = ArchaiusUtil.getInt("item.wait.for.event.tries");
-    private static final DynamicLongProperty TIMEOUT = ArchaiusUtil.getLong("item.wait.for.event.timeout.millis");
     private static final DynamicStringListProperty PRIORITY_ITEMS = ArchaiusUtil.getList("item.priority");
 
     private static final Logger log = LoggerFactory.getLogger(ConfigItemStatusManagerImpl.class);
@@ -67,7 +55,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     AgentLocator agentLocator;
 
     @Inject
-    EventService eventService;
+    ConfigUpdatePublisher publisher;
 
     protected Map<String, ConfigItemStatus> getStatus(ConfigUpdateRequest request) {
         Map<String, ConfigItemStatus> statuses = new HashMap<String, ConfigItemStatus>();
@@ -122,7 +110,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     }
 
     protected void triggerUpdate(final ConfigUpdateRequest request, final List<ConfigUpdateItem> items) {
-        final Event event = getEvent(request, items);
+        final ConfigUpdate event = getEvent(request, items);
         if (event == null) {
             return;
         }
@@ -130,7 +118,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                request.setUpdateFuture(call(request.getClient(), event, defaultOptions(request)));
+                request.setUpdateFuture(call(request.getClient(), event));
             }
         };
 
@@ -141,25 +129,8 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         }
     }
 
-    protected EventCallOptions defaultOptions(final ConfigUpdateRequest request) {
-        EventCallOptions options = new EventCallOptions(RETRY.get(), TIMEOUT.get()).withProgress(new EventProgress() {
-            @Override
-            public void progress(Event event) {
-                logResponse(request, event);
-            }
-        });
-
-        options.withRetryCallback(new RetryCallback() {
-            @Override
-            public Event beforeRetry(Event event) {
-                Event updatedEvent = getEvent(request);
-                EventVO<Object> newEvent = new EventVO<Object>(event);
-                newEvent.setData(updatedEvent.getData());
-                return newEvent;
-            }
-        });
-
-        return options;
+    private ListenableFuture<? extends Event> call(Client client, ConfigUpdate event) {
+        return publisher.publish(client, event);
     }
 
     protected ConfigUpdate getEvent(ConfigUpdateRequest request, List<ConfigUpdateItem> items) {
@@ -192,7 +163,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
         ListenableFuture<? extends Event> future = request.getUpdateFuture();
         if (future == null) {
-            future = call(request.getClient(), event, defaultOptions(request));
+            future = call(request.getClient(), event);
         }
 
         return Futures.transform(future, new Function<Event, Object>() {
@@ -258,14 +229,6 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         AsyncUtils.get(whenReady(request));
     }
 
-    protected ListenableFuture<? extends Event> call(Client client, Event event, EventCallOptions options) {
-        if (client.getResourceType() == Agent.class) {
-            RemoteAgent agent = agentLocator.lookupAgent(client.getResourceId());
-            return agent.call(event, options);
-        }
-
-        return eventService.call(event, options);
-    }
 
     @Override
     public void sync(final boolean migration) {
@@ -285,8 +248,8 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             if (first && migration && BLOCK.get()) {
                 waitFor(request);
             } else {
-                Event event = getEvent(request);
-                ListenableFuture<? extends Event> future = call(client, event, defaultOptions(request).withRetry(0));
+                ConfigUpdate event = getEvent(request);
+                ListenableFuture<? extends Event> future = call(client, event);
                 Futures.addCallback(future, new FutureCallback<Event>() {
                     @Override
                     public void onSuccess(Event result) {
@@ -308,7 +271,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         }
     }
 
-    protected void logResponse(ConfigUpdateRequest request, Event event) {
+    protected static void logResponse(ConfigUpdateRequest request, Event event) {
         Map<String, Object> data = CollectionUtils.toMap(event.getData());
 
         Object exitCode = data.get("exitCode");

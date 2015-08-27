@@ -185,6 +185,11 @@
         <level value="TRACE" />
         <appender-ref ref="FILE" />
     </logger>
+
+    <logger name="io.cattle.platform.configitem.version.impl.ConfigUpdatePublisher" additivity="false">
+        <level value="TRACE" />
+        <appender-ref ref="FILE" />
+    </logger>
 -->
 
 <!--

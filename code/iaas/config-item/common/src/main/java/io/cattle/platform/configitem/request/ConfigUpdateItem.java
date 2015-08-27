@@ -80,4 +80,10 @@ public class ConfigUpdateItem {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "ConfigUpdateItem [name=" + name + ", requestedVersion=" + requestedVersion + ", apply=" + apply + ", increment=" + increment
+                + ", checkInSyncOnly=" + checkInSyncOnly + "]";
+    }
+
 }
