@@ -496,7 +496,7 @@ def test_container_label_affinity(new_context):
         containers.append(c1)
 
         c2 = new_context.create_container(
-            environment={'affinity:container_label:foo==' + c1_label: ''})
+            environment={'affinity:foo==' + c1_label: ''})
         containers.append(c2)
 
         # check c2 is on same host as c1
@@ -515,7 +515,7 @@ def test_container_label_affinity(new_context):
         c4_label = random_str()
 
         c4 = new_context.create_container(
-            environment={'affinity:container_label:foo!=' + c1_label: ''},
+            environment={'affinity:foo!=' + c1_label: ''},
             labels={'foo': c4_label}
         )
         containers.append(c4)
@@ -525,8 +525,8 @@ def test_container_label_affinity(new_context):
 
         c5 = new_context.create_container(
             environment={
-                'affinity:container_label:foo!=' + c1_label: '',
-                'affinity:container_label:foo!=~' + c4_label: ''
+                'affinity:foo!=' + c1_label: '',
+                'affinity:foo!=~' + c4_label: ''
             })
         containers.append(c5)
 
@@ -536,7 +536,7 @@ def test_container_label_affinity(new_context):
 
         c6 = new_context.create_container(
             environment={
-                'affinity:container_label:foo!=' + c1_label: '',
+                'affinity:foo!=' + c1_label: '',
             },
             labels={
                 'io.rancher.scheduler.affinity:container_label_soft_ne':

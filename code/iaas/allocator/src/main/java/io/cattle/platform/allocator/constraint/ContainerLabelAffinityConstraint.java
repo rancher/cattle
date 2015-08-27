@@ -8,7 +8,7 @@ import io.cattle.platform.allocator.service.AllocationCandidate;
 import java.util.Set;
 
 public class ContainerLabelAffinityConstraint implements Constraint {
-    public static final String ENV_HEADER_AFFINITY_CONTAINER_LABEL = "affinity:container_label:";
+    public static final String ENV_HEADER_AFFINITY_CONTAINER_LABEL = "affinity:";
     public static final String LABEL_HEADER_AFFINITY_CONTAINER_LABEL = "io.rancher.scheduler.affinity:container_label";
 
     AllocatorDao allocatorDao;
