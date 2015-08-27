@@ -99,7 +99,6 @@
         "instanceStop.deallocateFromHost" : "cr",
 
         "ldapconfig" : "cru",
-        "ldapconfig.*" : "cr",
         "ldapconfig.server" : "cr",
         "ldapconfig.port" : "cr",
         "ldapconfig.enabled" : "cr",
@@ -111,6 +110,16 @@
         "ldapconfig.serviceAccountUsername" : "cr",
         "ldapconfig.serviceAccountPassword" : "cr",
         "ldapconfig.tls" : "cr",
+
+        "localAuthConfig" : "cr",
+        "localAuthConfig.accessMode" : "cr",
+        "localAuthConfig.name" : "cr",
+        "localAuthConfig.username" : "cr",
+        "localAuthConfig.password" : "cro",
+        "localAuthConfig.enabled" : "cr",
+
+
+        "password.accountId" : "cr",
 
         "processDefinition" : "r",
         "processDefinition.extensionBased" : "r",

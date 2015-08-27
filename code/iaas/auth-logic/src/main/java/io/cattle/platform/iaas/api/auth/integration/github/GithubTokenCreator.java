@@ -1,7 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.github;
 
 import io.cattle.platform.api.auth.Identity;
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
@@ -72,23 +71,9 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
             identities.add(team);
         }
         List<String> idList = githubUtils.identitiesToIdList(identities);
-        Account account = null;
-        boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
-        if (SecurityConstants.SECURITY.get()) {
-            if (githubUtils.isAllowed(idList, identities)) {
-                account = authDao.getAccountByExternalId(userAccountInfo.getAccountId(), GithubConstants.USER_SCOPE);
-                if (null == account) {
-                    account = authDao.createAccount(userAccountInfo.getAccountName(), AccountConstants.USER_KIND, userAccountInfo.getAccountId(),
-                            GithubConstants.USER_SCOPE);
-                    if (!hasAccessToAProject) {
-                        projectResourceManager.createProjectForUser(account);
-                    }
-                }
-            }
-        } else {
-            account = authDao.getAdminAccount();
-            authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, userAccountInfo.getAccountId(), GithubConstants.USER_SCOPE);
-            authDao.ensureAllProjectsHaveNonRancherIdMembers(userAccountInfo.toIdentity(GithubConstants.USER_SCOPE));
+        Account account = githubUtils.getOrCreateAccount(user, identities, null, true);
+        if (account == null){
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "FailedToGetAccount");
         }
         Map<String, Object> jsonData = new HashMap<>();
         jsonData.put(TokenUtils.TOKEN, GithubConstants.GITHUB_JWT);

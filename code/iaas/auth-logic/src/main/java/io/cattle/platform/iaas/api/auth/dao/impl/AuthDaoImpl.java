@@ -8,6 +8,7 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
@@ -17,7 +18,6 @@ import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.iaas.api.auth.projects.ProjectLock;
-import io.github.ibuildthecloud.gdapi.util.TransformationService;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.projects.Member;
 import io.cattle.platform.lock.LockCallback;
@@ -71,27 +71,60 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public List<Account> searchAccounts(String name) {
-        List<Account> accounts = new ArrayList<>();
-        accounts.addAll(create()
-                .selectFrom(ACCOUNT)
+    public List<Account> searchUsers(String username) {
+        return create()
+                .select(ACCOUNT.fields())
+                .from(ACCOUNT)
+                .join(CREDENTIAL)
+                .on(CREDENTIAL.ACCOUNT_ID.eq(ACCOUNT.ID))
                 .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
-                        .and(ACCOUNT.NAME.contains(name))
-                        .and(ACCOUNT.KIND.eq(AccountConstants.USER_KIND)
-                                .or(ACCOUNT.KIND.eq(AccountConstants.ADMIN_KIND))))
-                .orderBy(ACCOUNT.ID.asc()).fetch());
-        return accounts;
+                        .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
+                        .and(CREDENTIAL.PUBLIC_VALUE.contains(username))
+                        .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_PASSWORD)))
+                .orderBy(ACCOUNT.ID.asc()).fetchInto(Account.class);
     }
 
     @Override
-    public Account getByName(String name) {
-        return create()
-                .selectFrom(ACCOUNT)
-                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
-                        .and(ACCOUNT.NAME.eq(name))
-                        .and(ACCOUNT.KIND.eq(AccountConstants.USER_KIND)
-                                .or(ACCOUNT.KIND.eq(AccountConstants.ADMIN_KIND))))
-                .orderBy(ACCOUNT.ID.asc()).fetchOneInto(Account.class);
+    public Account getByUsername(String username) {
+        try {
+            return create()
+                    .select(ACCOUNT.fields())
+                    .from(ACCOUNT)
+                    .join(CREDENTIAL)
+                    .on(CREDENTIAL.ACCOUNT_ID.eq(ACCOUNT.ID))
+                    .where(
+                            ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                                    .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
+                                    .and(CREDENTIAL.PUBLIC_VALUE.eq(username)))
+                    .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_PASSWORD))
+                    .fetchOneInto(AccountRecord.class);
+        } catch (InvalidResultException e) {
+            throw new ClientVisibleException(ResponseCodes.CONFLICT, "MultipleOfUsername");
+        }
+    }
+
+    @Override
+    public Account getAccountByLogin(String publicValue, String secretValue) {
+        Credential credential = create()
+                .selectFrom(CREDENTIAL)
+                .where(
+                        CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
+                .and(CREDENTIAL.PUBLIC_VALUE.eq(publicValue)
+                .and(CREDENTIAL.KIND.equalIgnoreCase(CredentialConstants.KIND_PASSWORD)))
+                .fetchOne();
+        if (credential == null) {
+            return null;
+        }
+        boolean secretIsCorrect = ApiContext.getContext().getTransformationService().compare(secretValue, credential.getSecretValue());
+        if (secretIsCorrect) {
+            return create()
+                    .selectFrom(ACCOUNT).where(ACCOUNT.ID.eq(credential.getAccountId())
+                    .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
+                    .fetchOneInto(AccountRecord.class);
+        }
+        else {
+            return null;
+        }
     }
 
 
@@ -122,7 +155,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
             boolean secretIsCorrect = ApiContext.getContext().getTransformationService().compare(secretKey, credential.getSecretValue());
             if (secretIsCorrect) {
                 return create()
-                        .selectFrom(ACCOUNT).where(ACCOUNT.ID.eq(credential.getAccountId()))
+                        .selectFrom(ACCOUNT).where(ACCOUNT.ID.eq(credential.getAccountId())
+                                .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
                         .fetchOneInto(AccountRecord.class);
             }
             else {
@@ -159,7 +193,24 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         if (StringUtils.isNotEmpty(externalType)) {
             properties.put(ACCOUNT.EXTERNAL_ID_TYPE, externalType);
         }
-        return resourceDao.createAndSchedule(Account.class, objectManager.convertToPropertiesFor(Account.class, properties));
+        return resourceDao.createAndSchedule(Account.class, objectManager.convertToPropertiesFor(Account.class,
+                properties));
+    }
+
+    @Override
+    public Identity getIdentity(Long id) {
+        Account account = getAccountById(id);
+        if (account == null || account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
+            return null;
+        }
+        Credential credential = create()
+                .selectFrom(CREDENTIAL)
+                .where(CREDENTIAL.KIND.equalIgnoreCase(CredentialConstants.KIND_PASSWORD)
+                        .and(CREDENTIAL.ACCOUNT_ID.eq(id))
+                .and(CREDENTIAL.STATE.equalIgnoreCase(CommonStatesConstants.ACTIVE))).fetchAny();
+        String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
+        return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(),
+                null, null, credential == null ? null : credential.getPublicValue());
     }
 
     @Override
@@ -172,7 +223,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
             properties.put(ACCOUNT.DESCRIPTION, description);
         }
         properties.put(ACCOUNT.KIND, ProjectConstants.TYPE);
-        return resourceDao.createAndSchedule(Account.class, objectManager.convertToPropertiesFor(Account.class, properties));
+        return resourceDao.createAndSchedule(Account.class, objectManager.convertToPropertiesFor(Account.class,
+                properties));
     }
 
     @Override

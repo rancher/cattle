@@ -22,6 +22,8 @@ public interface AuthDao {
 
     Account createAccount(String name, String kind, String externalId, String externalType);
 
+    Identity getIdentity(Long id);
+
     Account createProject(String name, String description);
 
     void updateAccount(Account account, String name, String kind, String externalId, String externalType);
@@ -46,7 +48,9 @@ public interface AuthDao {
 
     void ensureAllProjectsHaveNonRancherIdMembers(Identity identity);
 
-    List<Account> searchAccounts(String name);
+    List<Account> searchUsers(String name);
 
-    Account getByName(String name);
+    Account getByUsername(String username);
+
+    Account getAccountByLogin(String publicValue, String secretValue);
 }
