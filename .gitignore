@@ -12,7 +12,7 @@
 dist
 docs/build
 resources/content/db/mysql/cattle_dump*.sql
-resources/content/db/mysql/cattle_dump*.sql.qz
+resources/content/db/mysql/cattle_dump*.sql.gz
 resources/content/db/dump-*.xml
 resources/local
 runtime
