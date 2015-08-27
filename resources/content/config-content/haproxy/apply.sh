@@ -2,6 +2,7 @@
 
 . ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
+rm -rf /etc/haproxy/certs/*
 stage_files
 
 awk '/BEGIN RSA PRIVATE KEY/{i++}{print > "/etc/haproxy/certs/server"i".pem"}' /etc/haproxy/certs/certs.pem
