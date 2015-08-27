@@ -37,16 +37,15 @@ public class LoadBalancerServiceUpdate extends AbstractObjectProcessHandler impl
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
         if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-            DataAccessor certIdsObj = DataAccessor.fromMap(state.getData())
-                    .withKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS);
-            DataAccessor defaultCertIdObj = DataAccessor.fromMap(state.getData())
-                    .withKey(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
-            if (certIdsObj == null && defaultCertIdObj == null) {
+            if (!state.getData().containsKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS)
+                    && !state.getData().containsKey(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID)) {
                 return null;
             }
 
-            List<? extends Long> certIds = certIdsObj.asList(jsonMapper, Long.class);
-            Long defaultCertId = defaultCertIdObj.as(Long.class);
+            List<? extends Long> certIds = DataAccessor.fromMap(state.getData())
+                    .withKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS).asList(jsonMapper, Long.class);
+            Long defaultCertId = DataAccessor.fromMap(state.getData())
+                    .withKey(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID).as(Long.class);
 
             sdService.updateLoadBalancerService(service, certIds, defaultCertId);
 
