@@ -14,7 +14,6 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -38,12 +37,19 @@ public class LoadBalancerServiceUpdate extends AbstractObjectProcessHandler impl
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
         if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-            List<? extends Long> certIds = DataAccessor.fromMap(state.getData())
-                    .withKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS).withDefault(Collections.EMPTY_LIST)
-                    .asList(jsonMapper, Long.class);
-            Long defaultCertId = DataAccessor.fromMap(state.getData())
-                    .withKey(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID).as(Long.class);
+            DataAccessor certIdsObj = DataAccessor.fromMap(state.getData())
+                    .withKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS);
+            DataAccessor defaultCertIdObj = DataAccessor.fromMap(state.getData())
+                    .withKey(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
+            if (certIdsObj == null && defaultCertIdObj == null) {
+                return null;
+            }
+
+            List<? extends Long> certIds = certIdsObj.asList(jsonMapper, Long.class);
+            Long defaultCertId = defaultCertIdObj.as(Long.class);
+
             sdService.updateLoadBalancerService(service, certIds, defaultCertId);
+
         }
         return null;
     }

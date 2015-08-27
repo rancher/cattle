@@ -6,7 +6,6 @@ import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerF
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.ssh.common.SslCertificateUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
-import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;

@@ -906,8 +906,8 @@ def test_lb_service_w_certificate(client, context, image_uuid):
     assert service.state == 'removed'
 
     wait_for_condition(
-            client, lb, _resource_is_removed,
-            lambda x: 'State is: ' + x.state)
+        client, lb, _resource_is_removed,
+        lambda x: 'State is: ' + x.state)
 
     # remove the cert
     cert1 = client.wait_success(cert1.remove())
@@ -957,6 +957,46 @@ def test_lb_service_update_certificate(client, context, image_uuid):
     lb = client.reload(lb)
     assert lb.defaultCertificateId == cert3.id
     assert lb.certificateIds == [cert1.id]
+
+
+def test_lb_with_certs_service_update(client, context, image_uuid):
+    cert1 = _create_cert(client)
+    cert2 = _create_cert(client)
+    host = context.host
+    labels = {'io.rancher.loadbalancer.ssl.ports': "1769,1771"}
+
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": ['1769:1770', '1771:1772'],
+                     "labels": labels}
+
+    service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config,
+                                   certificateIds=[cert1.id, cert2.id],
+                                   defaultCertificateId=cert1.id)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    service = client.wait_success(service.activate(), 120)
+    # perform validation
+    lb, service = _validate_lb_service_activate(env, host,
+                                                service, client,
+                                                ['1769:1770', '1771:1772'],
+                                                "https")
+    assert lb.defaultCertificateId == cert1.id
+    assert lb.certificateIds == [cert1.id, cert2.id]
+
+    # scale up the service and validate that the certs are still the same
+    register_simulated_host(context)
+    service = client.update(service, scale=2)
+    client.wait_success(service, 120)
+    lb = client.reload(lb)
+    assert lb.defaultCertificateId == cert1.id
+    assert lb.certificateIds == [cert1.id, cert2.id]
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
