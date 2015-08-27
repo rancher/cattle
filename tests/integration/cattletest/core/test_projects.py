@@ -372,6 +372,28 @@ def test_project_deactivate(user_clients, project, members):
     assert project.state == 'inactive'
 
 
+def test_project_member_invalid(project, admin_user_client, members):
+    client = client_for_project(project, admin_user_client)
+    project.setmembers(members=members)
+    diff_members(members, get_plain_members(project.projectMembers()))
+    members_got = get_plain_members(project.projectMembers())
+    new_members = []
+    old_members = []
+    for member in members_got:
+        if (member['role'] == 'owner'):
+            new_members.append(member)
+        else:
+            old_members.append(member)
+    project.setmembers(members=new_members)
+    diff_members(new_members, get_plain_members(project.projectMembers()))
+    with pytest.raises(ApiError) as e:
+        client.by_id('projectMember', 'garbageId')
+    assert e.value.error.status == 404
+    with pytest.raises(ApiError) as e:
+        client.by_id('projectMember', old_members[0]['externalId'])
+    assert e.value.error.status == 404
+
+
 def test_make_project_with_identity(admin_user_client):
     client = create_context(admin_user_client).user_client
     identity = client.list_identity()

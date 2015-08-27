@@ -55,14 +55,23 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         String id = RequestUtils.makeSingularStringIfCan(criteria.get("id"));
         if (StringUtils.isNotEmpty(id)) {
-            ProjectMember projectMember = authDao.getProjectMember(Long.valueOf(id));
+            ProjectMember projectMember;
+            try {
+                 projectMember = authDao.getProjectMember(Long.valueOf(id));
+            } catch (NumberFormatException e) {
+                throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
+            }
+            if (projectMember == null) {
+                throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
+            }
             if (!authDao.hasAccessToProject(projectMember.getProjectId(), policy.getAccountId(),
                     policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
-            Identity identity  = identityManager.projectMemberToIdentity(projectMember);
+            Identity identity = identityManager.projectMemberToIdentity(projectMember);
             policy.grantObjectAccess(identity);
             return Arrays.asList(identity);
+
         }
         String projectId = RequestUtils.makeSingularStringIfCan(criteria.get("projectId"));
         List<? extends ProjectMember> members;
