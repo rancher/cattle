@@ -125,9 +125,10 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                 Integer listnerPort = listener.getPrivatePort() == null ? listener.getSourcePort() : listener
                         .getPrivatePort();
                 if (info.getPortSpec().getSourcePort().equals(listnerPort)) {
-                    if (listener.getSourceProtocol().equalsIgnoreCase("http")) {
+                    if (listener.getSourceProtocol().equalsIgnoreCase("http")
+                            || listener.getSourceProtocol().equalsIgnoreCase("https")) {
                         listenerTargets.add(new LoadBalancerTargetsInfo(info));
-                    } else if (listener.getSourceProtocol().equalsIgnoreCase("tcp")) {
+                    } else {
                         // special handling for tcp ports - hostname routing rules should be ignored (by resetting the
                         // rule to Default)
                         // and all backends should be merged into one
