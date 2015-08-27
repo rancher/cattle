@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
 
@@ -58,6 +61,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Service service = request.proxyRequestObject(Service.class);
         
+        validateEnvironment(service);
+        
         validateName(type, service);
 
         validateLaunchConfigs(service, request);
@@ -71,6 +76,14 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         return super.create(type, request, next);
     }
 
+    protected void validateEnvironment(Service service) {
+        Environment env = objectManager.loadResource(Environment.class, service.getEnvironmentId());
+        if (StringUtils.equals(env.getState(), "error")) {
+            throw new ValidationErrorException(ValidationErrorCodes.ACTION_NOT_AVAILABLE, 
+                    InstanceConstants.FIELD_ENVIRONMENT);
+        }
+    }
+    
     protected void validateImage(ApiRequest request, Service service) {
         List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
         for (Map<String, Object> launchConfig : launchConfigs) {
