@@ -963,14 +963,14 @@ def test_lb_with_certs_service_update(client, context, image_uuid):
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
     host = context.host
-    labels = {'io.rancher.loadbalancer.ssl.ports': "1769,1771"}
+    labels = {'io.rancher.loadbalancer.ssl.ports': "1772,1773"}
 
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
 
     launch_config = {"imageUuid": image_uuid,
-                     "ports": ['1769:1770', '1771:1772'],
+                     "ports": ['1772', '1773'],
                      "labels": labels}
 
     service = client. \
@@ -985,7 +985,7 @@ def test_lb_with_certs_service_update(client, context, image_uuid):
     # perform validation
     lb, service = _validate_lb_service_activate(env, host,
                                                 service, client,
-                                                ['1769:1770', '1771:1772'],
+                                                ['1772:1772', '1773:1773'],
                                                 "https")
     assert lb.defaultCertificateId == cert1.id
     assert lb.certificateIds == [cert1.id, cert2.id]
@@ -997,6 +997,42 @@ def test_lb_with_certs_service_update(client, context, image_uuid):
     lb = client.reload(lb)
     assert lb.defaultCertificateId == cert1.id
     assert lb.certificateIds == [cert1.id, cert2.id]
+
+
+def test_cert_in_use(client, context, image_uuid):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    cert1 = _create_cert(client)
+    cert2 = _create_cert(client)
+    host = context.host
+    labels = {'io.rancher.loadbalancer.ssl.ports': "1765,1767"}
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": ['1765:1766', '1767:1768'],
+                     "labels": labels}
+
+    service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config,
+                                   certificateIds=[cert1.id, cert2.id],
+                                   defaultCertificateId=cert1.id)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    service = client.wait_success(service.activate(), 120)
+    # perform validation
+    lb, service = _validate_lb_service_activate(env, host,
+                                                service, client,
+                                                ['1765:1766', '1767:1768'],
+                                                "https")
+    assert lb.defaultCertificateId == cert1.id
+    assert lb.certificateIds == [cert1.id, cert2.id]
+
+    # try to remove the cert
+    with pytest.raises(ApiError) as e:
+        client.delete(cert1)
+    assert e.value.error.status == 405
+    assert e.value.error.code == 'InvalidAction'
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
