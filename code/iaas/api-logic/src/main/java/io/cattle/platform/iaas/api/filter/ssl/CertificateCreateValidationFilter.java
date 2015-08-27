@@ -5,9 +5,11 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.ssh.common.SslCertificateUtils;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +58,8 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
             DataUtils.getWritableFields(certificate).put("subjectAlternativeNames",
                     SslCertificateUtils.getSubjectAlternativeNames(cert));
         } catch (Exception e) {
-            throw new ValidationErrorException(ValidationErrorCodes.INVALID_FORMAT, "cert");
+            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
+                    e.getMessage(), null);
         }
 
         return super.create(type, request, next);
@@ -68,7 +71,8 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
                 SslCertificateUtils.verifySelfSignedCertificate(cert, key);
             }
         } catch (Exception e) {
-            throw new ValidationErrorException(ValidationErrorCodes.INVALID_FORMAT, "cert");
+            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
+                    e.getMessage(), null);
         }
 
         try {
@@ -76,7 +80,8 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
                 SslCertificateUtils.verifyCertificateChain(cert, certChain, key);
             }
         } catch (Exception e) {
-            throw new ValidationErrorException(ValidationErrorCodes.INVALID_FORMAT, "certChain");
+            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
+                    e.getMessage(), null);
         }
     }
 }

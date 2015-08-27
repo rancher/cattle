@@ -40,7 +40,6 @@ def test_create_cert_invalid_key(client):
                                key=key)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidFormat'
-    assert e.value.error.fieldName == 'cert'
 
 
 def test_create_cert_invalid_cert(client):
@@ -53,7 +52,6 @@ def test_create_cert_invalid_cert(client):
                                key=key)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidFormat'
-    assert e.value.error.fieldName == 'cert'
 
 
 def test_create_cert_chain(client):
@@ -83,7 +81,6 @@ def test_invalid_key_cert_in_cert_chain(client):
                                certChain=chain)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidFormat'
-    assert e.value.error.fieldName == 'certChain'
 
 
 def _read_cert(name):
