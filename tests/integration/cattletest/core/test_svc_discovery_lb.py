@@ -901,6 +901,20 @@ def test_lb_service_w_certificate(client, context, image_uuid):
     assert lb.defaultCertificateId == cert1.id
     assert lb.certificateIds == [cert1.id, cert2.id]
 
+    # remove the service
+    service = client.wait_success(service.remove())
+    assert service.state == 'removed'
+
+    wait_for_condition(
+            client, lb, _resource_is_removed,
+            lambda x: 'State is: ' + x.state)
+
+    # remove the cert
+    cert1 = client.wait_success(cert1.remove())
+    assert cert1.state == 'removed'
+    cert2 = client.wait_success(cert2.remove())
+    assert cert2.state == 'removed'
+
 
 def test_lb_service_update_certificate(client, context, image_uuid):
     cert1 = _create_cert(client)

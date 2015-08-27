@@ -217,7 +217,11 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         List<? extends ServiceConsumeMap> consumedMaps = consumeMapDao.findConsumedServices(serviceMD.getServiceId());
         for (ServiceConsumeMap consumedMap : consumedMaps) {
             Service service = objectManager.loadResource(Service.class, consumedMap.getConsumedServiceId());
-            ServiceMetaData consumedServiceData = services.get(service.getId()).get(
+            Map<String, ServiceMetaData> consumedService = services.get(service.getId());
+            if (consumedService == null) {
+                continue;
+            }
+            ServiceMetaData consumedServiceData = consumedService.get(
                     serviceMD.getLaunchConfigName());
             String linkAlias = ServiceDiscoveryUtil.getDnsName(service, consumedMap, null, false);
             links.put(
