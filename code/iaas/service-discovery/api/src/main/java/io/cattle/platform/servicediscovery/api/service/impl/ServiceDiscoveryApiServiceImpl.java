@@ -137,6 +137,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     addExtraComposeParameters(service, launchConfigName, composeServiceData);
                     populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
                     populateLoadBalancerServiceLabels(service, launchConfigName, composeServiceData);
+                    populateSelectorServiceLabels(service, launchConfigName, composeServiceData);
                 }
                 if (!composeServiceData.isEmpty()) {
                     data.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
@@ -188,6 +189,31 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             if (bldr.length() > 0) {
                 labels.put(labelName, bldr.toString().substring(0, bldr.length() - 1));
             }
+        }
+
+        if (!labels.isEmpty()) {
+            composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void populateSelectorServiceLabels(Service service,
+            String launchConfigName, Map<String, Object> composeServiceData) {
+        String selectorContainer = service.getSelectorContainer();
+        String selectorLink = service.getSelectorLink();
+        if (selectorContainer == null && selectorLink == null) {
+            return;
+        }
+
+        Map<String, String> labels = new HashMap<>();
+        if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
+            labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
+        }
+        if (selectorLink != null) {
+            labels.put(ServiceDiscoveryConstants.LABEL_SELECTOR_LINK, selectorLink);
+        }
+        if (selectorContainer != null) {
+            labels.put(ServiceDiscoveryConstants.LABEL_SELECTOR_CONTAINER, selectorContainer);
         }
 
         if (!labels.isEmpty()) {

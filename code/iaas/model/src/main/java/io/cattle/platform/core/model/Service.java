@@ -168,6 +168,28 @@ public interface Service extends java.io.Serializable {
 	@javax.persistence.Column(name = "create_index", precision = 19)
 	public java.lang.Long getCreateIndex();
 
+	/**
+	 * Setter for <code>cattle.service.selector_link</code>.
+	 */
+	public void setSelectorLink(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service.selector_link</code>.
+	 */
+	@javax.persistence.Column(name = "selector_link", length = 4096)
+	public java.lang.String getSelectorLink();
+
+	/**
+	 * Setter for <code>cattle.service.selector_container</code>.
+	 */
+	public void setSelectorContainer(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service.selector_container</code>.
+	 */
+	@javax.persistence.Column(name = "selector_container", length = 4096)
+	public java.lang.String getSelectorContainer();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

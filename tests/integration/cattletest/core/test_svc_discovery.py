@@ -2116,6 +2116,7 @@ def test_service_link_emu_docker_link(super_client, client, context):
         if map.consumedServiceId == server.id:
             assert link.linkName == 'other'
             assert expose_map.serviceId == server.id
+            assert expose_map.managed == 1
         elif map.consumedServiceId == server2.id:
             assert link.linkName == 'server2'
             assert expose_map.serviceId == server2.id
@@ -2667,17 +2668,15 @@ def test_healtcheck(client, context, super_client):
         for host_map in host_maps:
             assert host_map.hostId != c_host_id
 
-    host_maps = super_client.\
-        list_healthcheckInstanceHostMap(accountId=service.accountId)
-    assert len(host_maps) < 3
+    host_maps = _wait_health_host_count(super_client, service, 3)
     validate_container_host(host_maps)
 
-    # reactivate the service and verify that its still one healthchecker
+    # reactivate the service and
+    # verify that its still has less than 3 healthchecks
     service = client.wait_success(service.deactivate(), 120)
     service = client.wait_success(service.activate(), 120)
-    host_maps = super_client.\
-        list_healthcheckInstanceHostMap(accountId=service.accountId)
-    assert len(host_maps) < 3
+
+    host_maps = _wait_health_host_count(super_client, service, 3)
     validate_container_host(host_maps)
 
     # reactivate the service, add 3 more hosts and verify
@@ -2687,12 +2686,21 @@ def test_healtcheck(client, context, super_client):
     register_simulated_host(context)
     register_simulated_host(context)
     register_simulated_host(context)
-    service = client.wait_success(service.activate(), 120)
+    client.wait_success(service.activate(), 120)
 
-    host_maps = super_client. \
-        list_healthcheckInstanceHostMap(accountId=service.accountId)
-    assert len(host_maps) == 3
+    host_maps = _wait_health_host_count(super_client, service, 3)
     validate_container_host(host_maps)
+
+
+def _wait_health_host_count(super_client, service, count):
+    def active_len():
+        match = super_client.\
+            list_healthcheckInstanceHostMap(accountId=service.accountId,
+                                            state='active')
+        if len(match) <= count:
+            return match
+
+    return wait_for(active_len)
 
 
 def _get_instance_for_service(super_client, serviceId):

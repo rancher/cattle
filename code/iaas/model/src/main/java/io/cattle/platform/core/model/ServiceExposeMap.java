@@ -190,6 +190,17 @@ public interface ServiceExposeMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "host_name", length = 255)
 	public java.lang.String getHostName();
 
+	/**
+	 * Setter for <code>cattle.service_expose_map.managed</code>.
+	 */
+	public void setManaged(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.managed</code>.
+	 */
+	@javax.persistence.Column(name = "managed", nullable = false, precision = 1)
+	public java.lang.Boolean getManaged();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

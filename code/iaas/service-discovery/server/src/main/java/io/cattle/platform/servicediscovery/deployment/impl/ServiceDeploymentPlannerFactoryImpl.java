@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -21,17 +22,34 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
         }
 
         Service service = services.get(0);
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService);
-        String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
-
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())
+        boolean isGlobalDeploymentStrategy = isGlobalDeploymentStrategy(context, service);
+        boolean isSelectorOnlyStrategy = isSelectorOnlyStrategy(context, service);
+        if (isSelectorOnlyStrategy
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())
                 || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
-            return new ExternalServiceDeploymentPlanner(services, units, context);
-        } else if (globalService != null) {
+            return new NoOpServiceDeploymentPlanner(services, units, context);
+        } else if (isGlobalDeploymentStrategy) {
             return new GlobalServiceDeploymentPlanner(services, units, context);
         } else {
             return new DefaultServiceDeploymentPlanner(services, units, context);
         }
     }
 
+    protected boolean isGlobalDeploymentStrategy(DeploymentServiceContext context, Service service) {
+        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService);
+        String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
+        return globalService != null;
+    }
+
+    protected boolean isSelectorOnlyStrategy(DeploymentServiceContext context, Service service) {
+        boolean selectorOnly = false;
+        Object imageUUID = ServiceDiscoveryUtil.getServiceDataAsMap(service,
+                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME,
+                context.allocatorService).get(InstanceConstants.FIELD_IMAGE_UUID);
+        if (service.getSelectorContainer() != null
+                && (imageUUID == null || imageUUID.toString().equalsIgnoreCase(ServiceDiscoveryConstants.IMAGE_NONE))) {
+            selectorOnly = true;
+        }
+        return selectorOnly;
+    }
 }

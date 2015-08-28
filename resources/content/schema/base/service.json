@@ -28,7 +28,7 @@
         "launchConfig": {
             "type": "launchConfig",
             "create": true,
-            "required": true
+            "required": false
         },
         "upgrade": {
             "type": "serviceUpgrade",

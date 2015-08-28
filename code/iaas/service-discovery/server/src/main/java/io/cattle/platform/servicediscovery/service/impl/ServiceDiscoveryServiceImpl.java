@@ -14,9 +14,11 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
+import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Label;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerListener;
@@ -43,6 +45,7 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.servicediscovery.selector.SelectorUtils;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
@@ -83,6 +86,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Inject
     ResourceMonitor resourceMonitor;
 
+    @Inject
+    LabelsDao labelsDao;
+
     protected long getServiceNetworkId(Service service) {
         Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
         if (network == null) {
@@ -100,11 +106,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         // get all existing instances to check if the name is in use by the instance of the same service
         List<Integer> usedIds = new ArrayList<>();
         // list all the instances
-        List<? extends ServiceExposeMap> instanceServiceMaps = exposeMapDao.getNonRemovedServiceInstanceMap(service
-                .getId());
+        List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service.getId());
         
-        for (ServiceExposeMap instanceServiceMap : instanceServiceMaps) {
-            Instance instance = objectManager.loadResource(Instance.class, instanceServiceMap.getInstanceId());
+        for (Instance instance : serviceInstances) {
             if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance)) {
                 
                 String configName = launchConfigName == null
@@ -525,5 +529,55 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             objectManager.persist(lb);
             objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, lb, data);
         }
+    }
+
+    @Override
+    public void addServiceLink(final Service service, final ServiceLink serviceLink) {
+        DeferredUtils.nest(new Runnable() {
+            @Override
+            public void run() {
+                consumeMapDao.createServiceLink(service, serviceLink);
+            }
+        });
+    }
+
+    @Override
+    public boolean isSelectorLinkMatch(Service sourceService, Service targetService) {
+        String selector = sourceService.getSelectorLink();
+        if (selector == null) {
+            return false;
+        }
+        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getLaunchConfigLabels(targetService, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        if (serviceLabels.isEmpty()) {
+            return false;
+        }
+        return SelectorUtils.isSelectorMatch(selector, serviceLabels);
+
+    }
+
+    @Override
+    public boolean isSelectorContainerMatch(Service sourceService, long instanceId) {
+        if (!sourceService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.SERVICE.name())) {
+            return false;
+        }
+        String selector = sourceService.getSelectorContainer();
+        if (selector == null) {
+            return false;
+        }
+        List<? extends Label> labels = labelsDao.getLabelsForInstance(instanceId);
+        if (labels.isEmpty()) {
+            return false;
+        }
+        Map<String, String> instanceLabels = new HashMap<>();
+        for (Label label : labels) {
+            instanceLabels.put(label.getKey(), label.getValue());
+        }
+        
+        return SelectorUtils.isSelectorMatch(selector, instanceLabels);
+    }
+
+    @Override
+    public boolean isServiceInstance(Service service, Instance instance) {
+        return exposeMapDao.getServiceInstanceMap(service, instance) != null;
     }
 }

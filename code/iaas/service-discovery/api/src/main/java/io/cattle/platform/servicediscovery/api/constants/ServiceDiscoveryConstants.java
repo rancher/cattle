@@ -77,4 +77,9 @@ public class ServiceDiscoveryConstants {
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
     public static final String LABEL_LB_SSL_PORTS = "io.rancher.loadbalancer.ssl.ports";
     public static final String STATE_UPGRADING = "upgrading";
+
+    public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
+    public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";
+
+    public static final String IMAGE_NONE = "rancher/none";
 }

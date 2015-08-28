@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <changeSet author="alena (generated)" id="dump1">
+        <addColumn tableName="service_expose_map">
+            <column defaultValueNumeric="1" name="managed" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump2">
+        <addColumn tableName="service">
+            <column name="selector_link" type="VARCHAR(4096)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump3">
+        <addColumn tableName="service">
+            <column name="selector_container" type="VARCHAR(4096)"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>
