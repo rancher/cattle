@@ -4,9 +4,14 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
+import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.Priority;
@@ -34,6 +39,9 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     int priority = Priority.DEFAULT;
     AchaiusPolicyOptionsFactory optionsFactory;
 
+    @Inject
+    AuthDao authDao;
+
     @Override
     public SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
         Object name = request.getAttribute(ACCOUNT_SCHEMA_FACTORY_NAME);
@@ -50,8 +58,32 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
                 return schemaFactory;
             }
         }
+        List<? extends ProjectMember> projectMembers = null;
+        if (account != null && account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)){
+            projectMembers = authDao.getProjectMembersByIdentity(account.getId(), policy.getIdentities());
+        }
+        if (projectMembers == null){
+            return schemaFactories.get(account.getKind());
+        } else {
+            String role = null;
+            for (ProjectMember projectMember: projectMembers){
 
-        return schemaFactories.get(account.getKind());
+                if (role == null){
+                    role = projectMember.getRole();
+                } else {
+                    String newRole = projectMember.getRole();
+
+                    if (getRolePriority(newRole) < getRolePriority(role)){
+                        role = newRole;
+                    }
+                }
+            }
+            return role != null ? schemaFactories.get(role) : null;
+        }
+    }
+
+    private int getRolePriority(String role) {
+        return ArchaiusUtil.getInt(SecurityConstants.ROLE_SETTING_BASE + role).get();
     }
 
     @Override

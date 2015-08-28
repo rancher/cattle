@@ -13,6 +13,8 @@ public class SecurityConstants {
     public static final DynamicBooleanProperty SECURITY = ArchaiusUtil.getBoolean(SECURITY_SETTING);
     public static final String AUTH_PROVIDER_SETTING = "api.auth.provider.configured";
     public static final DynamicStringProperty AUTH_PROVIDER = ArchaiusUtil.getString(AUTH_PROVIDER_SETTING);
+    public static final String ROLE_SETTING_BASE = "api.security.role.priority.";
+
 
     public static final String NO_PROVIDER = "none";
     public static final String CODE = "code";

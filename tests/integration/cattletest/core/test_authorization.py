@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from gdapi import ApiError
 
 
 @pytest.fixture(scope='module')
@@ -151,6 +152,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
     types.update(adds)
     types.difference_update(removes)
     assert set(user_client.schema.types.keys()) == types
+    return types
 
 
 def test_project_types(project_client):
@@ -158,6 +160,23 @@ def test_project_types(project_client):
     test_user_types(project_client, adds={'subscribe'},
                     removes={'userPreference'})
 
+def test_readonly_types(admin_user_client):
+    context = create_context(admin_user_client, kind="readonly")
+    client = context.user_client
+    types = test_user_types(client, adds={'subscribe'},
+                            removes={'userPreference'})
+    for type in types:
+        try:
+            with pytest.raises(ApiError) as e:
+                client.create(type)
+                if (type != "schema"):
+                    assert type == False
+                else:
+                    raise ApiError({'code':405})
+            assert e.value.error.status == 405
+        except AttributeError as e:
+            if e.__class__ == AttributeError.__class__:
+                assert e.message == '\'dict\' object has no attribute \'collection\''
 
 def test_agent_register_types(agent_register_client):
     assert set(agent_register_client.schema.types.keys()) == {

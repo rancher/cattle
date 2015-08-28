@@ -25,4 +25,5 @@ public class ProjectConstants {
     public static final Set<String> SCOPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             RANCHER_ID
     )));
+    public static final String READONLY = "readonly";
 }

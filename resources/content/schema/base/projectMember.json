@@ -10,7 +10,8 @@
       "default" : "member",
       "options" : [
         "member",
-        "owner"
+        "owner",
+        "readonly"
       ]
     },
     "externalIdType": {

@@ -62,7 +62,6 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         Set<Identity> identities = getIdentities(authenticatedAsAccount);
 
         Account account = getAccountRequested(authenticatedAsAccount, identities, request);
-
         Policy policy = getPolicy(account, authenticatedAsAccount, identities, request);
         if (policy == null) {
             log.error("Failed to find policy for [{}]", account.getId());
