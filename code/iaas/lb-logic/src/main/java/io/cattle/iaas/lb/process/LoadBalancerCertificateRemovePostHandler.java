@@ -1,6 +1,7 @@
 package io.cattle.iaas.lb.process;
 
 import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Certificate;
@@ -14,6 +15,7 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
+import static io.cattle.platform.core.model.tables.LoadBalancerTable.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +44,11 @@ public class LoadBalancerCertificateRemovePostHandler extends AbstractObjectProc
                 LoadBalancerCertificateMap.class,
                 Certificate.class, cert.getId());
         for (LoadBalancerCertificateMap mapToRemove : mapsToRemove) {
-            LoadBalancer lb = objectManager.loadResource(LoadBalancer.class, mapToRemove.getLoadBalancerId());
+            LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.ID,
+                    mapToRemove.getLoadBalancerId(), LOAD_BALANCER.REMOVED, null);
+            if (lb == null) {
+                continue;
+            }
             List<? extends LoadBalancerCertificateMap> lbCerts = mapDao.findNonRemoved(
                     LoadBalancerCertificateMap.class,
                     LoadBalancer.class, lb.getId());
@@ -61,7 +67,10 @@ public class LoadBalancerCertificateRemovePostHandler extends AbstractObjectProc
             data.put(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID, defaultCertId);
             DataUtils.getWritableFields(lb).putAll(data);
             objectManager.persist(lb);
-            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, lb, data);
+            if (lb.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)
+                    || lb.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE)) {
+                objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, lb, data);
+            }
         }
         return null;
     }

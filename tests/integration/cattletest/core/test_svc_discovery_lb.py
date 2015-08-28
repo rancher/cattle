@@ -901,6 +901,20 @@ def test_lb_service_w_certificate(client, context, image_uuid):
     assert lb.defaultCertificateId == cert1.id
     assert lb.certificateIds == [cert1.id, cert2.id]
 
+    # remove the service
+    service = client.wait_success(service.remove())
+    assert service.state == 'removed'
+
+    wait_for_condition(
+        client, lb, _resource_is_removed,
+        lambda x: 'State is: ' + x.state)
+
+    # remove the cert
+    cert1 = client.wait_success(cert1.remove())
+    assert cert1.state == 'removed'
+    cert2 = client.wait_success(cert2.remove())
+    assert cert2.state == 'removed'
+
 
 def test_lb_service_update_certificate(client, context, image_uuid):
     cert1 = _create_cert(client)
@@ -943,6 +957,88 @@ def test_lb_service_update_certificate(client, context, image_uuid):
     lb = client.reload(lb)
     assert lb.defaultCertificateId == cert3.id
     assert lb.certificateIds == [cert1.id]
+
+
+def test_lb_with_certs_service_update(new_context, image_uuid):
+    client = new_context.client
+    new_context.host
+    register_simulated_host(new_context)
+    cert1 = _create_cert(client)
+    cert2 = _create_cert(client)
+    labels = {'io.rancher.loadbalancer.ssl.ports': "1772,1773"}
+
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": ['1792', '1793'],
+                     "labels": labels}
+
+    service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config,
+                                   certificateIds=[cert1.id, cert2.id],
+                                   defaultCertificateId=cert1.id,
+                                   scale=2)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    # 1. verify that the service was activated
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+    # 2. verify that lb got created
+    lbs = client.list_loadBalancer(serviceId=service.id)
+    assert len(lbs) == 1
+    lb = client.wait_success(lbs[0])
+    assert lb.state == 'active'
+    assert lb.defaultCertificateId == cert1.id
+    assert lb.certificateIds == [cert1.id, cert2.id]
+
+    # scale down service and validate the certificates are still the same
+    service = client.update(service, scale=1)
+    service = client.wait_success(service)
+    assert service.state == 'active'
+
+    lb = client.reload(lb)
+    assert lb.defaultCertificateId == cert1.id
+    assert lb.certificateIds == [cert1.id, cert2.id]
+
+
+def test_cert_in_use(client, context, image_uuid):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    cert1 = _create_cert(client)
+    cert2 = _create_cert(client)
+    host = context.host
+    labels = {'io.rancher.loadbalancer.ssl.ports': "1765,1767"}
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": ['1765:1766', '1767:1768'],
+                     "labels": labels}
+
+    service = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config,
+                                   certificateIds=[cert1.id, cert2.id],
+                                   defaultCertificateId=cert1.id)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    service = client.wait_success(service.activate(), 120)
+    # perform validation
+    lb, service = _validate_lb_service_activate(env, host,
+                                                service, client,
+                                                ['1765:1766', '1767:1768'],
+                                                "https")
+    assert lb.defaultCertificateId == cert1.id
+    assert lb.certificateIds == [cert1.id, cert2.id]
+
+    # try to remove the cert
+    with pytest.raises(ApiError) as e:
+        client.delete(cert1)
+    assert e.value.error.status == 405
+    assert e.value.error.code == 'InvalidAction'
 
 
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):

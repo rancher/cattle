@@ -29,7 +29,7 @@
     <bean class="io.cattle.iaas.lb.api.action.LoadBalancerRemoveTargetActionHandler" />
     <bean class="io.cattle.iaas.lb.api.action.LoadBalancerAddHostActionHandler" />
     <bean class="io.cattle.iaas.lb.api.action.LoadBalancerRemoveHostActionHandler" />
-    
+        
     <bean class="io.cattle.iaas.lb.api.service.impl.LoadBalancerApiServiceImpl" />
     
 
