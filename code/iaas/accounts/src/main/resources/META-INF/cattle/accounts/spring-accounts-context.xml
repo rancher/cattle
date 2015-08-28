@@ -112,7 +112,31 @@
             </list>
         </property>
     </bean>
-    
+
+    <bean id="ReadOnlySchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
+        <property name="id" value="readonly" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/token" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/super-read/read-all.json</value>
+                                    <value>classpath*:schema/super-read/read-all.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
     <bean id="ReadAdminSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="readAdmin" />
         <property name="schemaFactory" ref="AdminSchema" />
