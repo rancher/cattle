@@ -49,6 +49,16 @@
             "type": "array[string]",
             "required": false,
             "nullable": false
+        },
+        "cert":{
+            "type": "string",
+            "required": true,
+            "nullable": false
+        },
+         "key":{
+            "type": "string",
+            "required": true,
+            "nullable": false
         }
     }
 }
