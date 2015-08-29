@@ -28,4 +28,6 @@ public interface ConfigItemStatusDao {
 
     Map<Client, List<String>> findOutOfSync(boolean migration);
 
+    Map<String, ItemVersion> getApplied(Client client);
+
 }

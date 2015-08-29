@@ -103,7 +103,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         try {
-            log.info("Attempting to run process [{}:{}] on resource [{}]", getName(), getId(), instanceContext.state.getResourceId());
+            log.debug("Attempting to run process [{}:{}] on resource [{}]", getName(), getId(), instanceContext.state.getResourceId());
             return context.getLockManager().lock(new ProcessLock(this), new LockCallback<ExitReason>() {
                 @Override
                 public ExitReason doWithLock() {
@@ -114,7 +114,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             exit(PROCESS_ALREADY_IN_PROGRESS);
             throw new ProcessInstanceException(this, new ProcessExecutionExitException(PROCESS_ALREADY_IN_PROGRESS));
         } finally {
-            log.info("Exiting [{}] process [{}:{}] on resource [{}]", finalReason, getName(), getId(), instanceContext.state.getResourceId());
+            log.debug("Exiting [{}] process [{}:{}] on resource [{}]", finalReason, getName(), getId(), instanceContext.state.getResourceId());
             if (finalReason == null) {
                 log.error("final ExitReason is null, should not be");
             }
@@ -203,12 +203,12 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                     if (e.getExitReason().isError()) {
                         log.error("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(), e.getCause().getMessage());
                     } else {
-                        log.info("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(), e.getCause().getMessage());
+                        log.debug("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(), e.getCause().getMessage());
                     }
                 } else if (e.getExitReason().isError()) {
                     log.error("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
                 } else {
-                    log.info("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
+                    log.debug("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
                 }
 
                 throw e;
@@ -451,9 +451,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         try {
             processExecution.setResourceValueBefore(state.convertData(state.getResource()));
 
-            log.info("Running {}[{}]", logicTypeString(handler), handler.getName());
+            log.debug("Running {}[{}]", logicTypeString(handler), handler.getName());
             HandlerResult handlerResult = handler.handle(state, DefaultProcessInstanceImpl.this);
-            log.info("Finished {}[{}]", logicTypeString(handler), handler.getName());
+            log.debug("Finished {}[{}]", logicTypeString(handler), handler.getName());
 
             if (handlerResult == null) {
                 return handlerResult;
@@ -584,7 +584,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             @Override
             public void run() {
                 DefaultProcessInstanceImpl.this.context.getProcessManager().scheduleProcessInstance(config);
-                log.info("Chained [{}] to [{}]", record.getProcessName(), chainProcess);
+                log.debug("Chained [{}] to [{}]", record.getProcessName(), chainProcess);
                 state.reload();
             }
         };

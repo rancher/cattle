@@ -264,6 +264,25 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
         return result;
     }
 
+    @Override
+    public Map<String, ItemVersion> getApplied(Client client) {
+        Map<String, ItemVersion> versions = new HashMap<>();
+        List<ConfigItemStatusRecord> records = create()
+                .selectFrom(CONFIG_ITEM_STATUS)
+                .where(targetObjectCondition(client))
+                .fetch();
+
+        for (ConfigItemStatusRecord record : records) {
+            Long applied = record.getAppliedVersion();
+            if (applied == null) {
+                continue;
+            }
+            versions.put(record.getName(), new DefaultItemVersion(record.getAppliedVersion(), ""));
+        }
+
+        return versions;
+    }
+
     protected List<? extends ConfigItemStatus> serviceOutOfSyncItems() {
         return create()
                 .select(CONFIG_ITEM_STATUS.fields())
