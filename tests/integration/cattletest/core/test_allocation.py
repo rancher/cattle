@@ -109,30 +109,25 @@ def test_allocation_failed_on_start(super_client, new_context):
     _set_one(super_client, new_context)
     client = new_context.client
 
-    c1 = new_context.create_container(networkMode='bridge')
-    c1 = client.wait_success(super_client.reload(c1)
-                             .stop(deallocateFromHost=True))
-    assert c1.state == 'stopped'
-
     c2 = new_context.create_container(networkMode='bridge')
+    c1 = new_context.create_container(startOnCreate=False,
+                                      networkMode='bridge')
 
     c1 = client.wait_transitioning(c1.start())
     assert c1.state == 'stopped'
     assert c1.transitioning == 'error'
     assert c1.transitioningMessage == 'Failed to find a placement'
 
-    c2 = client.wait_transitioning(super_client.reload(c2)
-                                   .stop(deallocateFromHost=True))
-    assert c2.state == 'stopped'
+    c2 = client.wait_success(client.delete(c2))
+    assert c2.state == 'removed'
+
+    c2 = client.wait_success(c2.purge())
+    assert c2.state == 'purged'
 
     c1 = client.wait_success(c1.start())
     assert c1.state == 'running'
     assert c1.transitioning == 'no'
     assert c1.transitioningMessage is None
-
-    c2 = client.wait_success(c2.remove())
-    c2 = client.wait_success(c2.purge())
-    assert c2.state == 'purged'
 
 
 def test_host_vnet_association(super_client, new_context):
