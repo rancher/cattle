@@ -1,26 +1,26 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
-import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.IpAddress;
 
 public class HostInstanceIpData {
-    Instance instance;
+    InstanceHostMap instanceHostMap;
     IpAddress ipAddress;
-
-    public Instance getInstance() {
-        return instance;
-    }
 
     public IpAddress getIpAddress() {
         return ipAddress;
     }
 
-    public void setInstance(Instance instance) {
-        this.instance = instance;
-    }
-
     public void setIpAddress(IpAddress ipAddress) {
         this.ipAddress = ipAddress;
+    }
+
+    public InstanceHostMap getInstanceHostMap() {
+        return instanceHostMap;
+    }
+
+    public void setInstanceHostMap(InstanceHostMap instanceHostMap) {
+        this.instanceHostMap = instanceHostMap;
     }
 
 }
