@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.Tables.INSTANCE_LABEL_MAP;
 import static io.cattle.platform.core.model.Tables.LABEL;
 
 import io.cattle.iaas.labels.service.LabelsService;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.LabelConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.HostLabelMap;
@@ -36,12 +37,13 @@ public class LabelsServiceImpl implements LabelsService {
                 LABEL.REMOVED, null);
         if (label == null) {
             Map<Object, Object> labelData = new HashMap<>();
+            labelData.put(LABEL.STATE, CommonStatesConstants.CREATED);
             labelData.put(LABEL.KEY, key);
             labelData.put(LABEL.VALUE, value);
             labelData.put(LABEL.ACCOUNT_ID, accountId);
 
             labelData.put(LABEL.TYPE, type);
-            label = resourceDao.createAndSchedule(Label.class, objectManager.convertToPropertiesFor(Label.class, labelData));
+            label = objectManager.create(Label.class, objectManager.convertToPropertiesFor(Label.class, labelData));
         }
         return label;
     }
@@ -59,12 +61,13 @@ public class LabelsServiceImpl implements LabelsService {
                 INSTANCE_LABEL_MAP.REMOVED, null);
         if (mapping == null) {
             Map<Object, Object> mappingData = new HashMap<>();
+            mappingData.put(INSTANCE_LABEL_MAP.STATE, CommonStatesConstants.CREATED);
             mappingData.put(INSTANCE_LABEL_MAP.LABEL_ID, label.getId());
             mappingData.put(INSTANCE_LABEL_MAP.INSTANCE_ID, instanceId);
             mappingData.put(INSTANCE_LABEL_MAP.ACCOUNT_ID, accountId);
-            resourceDao.createAndSchedule(
-                    InstanceLabelMap.class,
-                    objectManager.convertToPropertiesFor(InstanceLabelMap.class, mappingData));
+            objectManager.create(
+                        InstanceLabelMap.class,
+                        objectManager.convertToPropertiesFor(InstanceLabelMap.class, mappingData));
         }
     }
 
