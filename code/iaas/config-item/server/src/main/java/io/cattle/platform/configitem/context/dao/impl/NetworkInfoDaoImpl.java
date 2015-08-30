@@ -171,6 +171,8 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 .from(NETWORK_SERVICE)
                 .join(NIC)
                     .on(NIC.NETWORK_ID.eq(NETWORK_SERVICE.NETWORK_ID))
+                .join(INSTANCE)
+                    .on(INSTANCE.ID.eq(NIC.INSTANCE_ID))
                 .join(NETWORK_SERVICE_PROVIDER)
                     .on(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID.eq(NETWORK_SERVICE_PROVIDER.ID))
                 .join(INSTANCE_HOST_MAP)
@@ -178,7 +180,9 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 .join(HOST)
                     .on(HOST.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
                 .where(HOST.AGENT_ID.eq(agent.getId())
-                        .and(NETWORK_SERVICE_PROVIDER.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE)))
+                        .and(NETWORK_SERVICE_PROVIDER.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE))
+                        .and(INSTANCE.AGENT_ID.isNotNull())
+                        .and(INSTANCE.REMOVED.isNull()))
                 .fetchInto(NetworkServiceRecord.class);
     }
 
