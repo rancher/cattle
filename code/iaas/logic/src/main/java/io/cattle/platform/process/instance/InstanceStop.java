@@ -14,8 +14,8 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -91,7 +91,17 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
     protected void compute(Instance instance, ProcessState state) {
         for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
             if (map.getRemoved() == null) {
-                deactivate(map, state.getData());
+                try {
+                    deactivate(map, state.getData());
+                } catch (ProcessCancelException e) {
+                    /* We ignore requested ihm because that means we allocated the instance but for
+                     * whatever reason we never activated it (server crash, message lost, etc).  In this
+                     * situation we just ignore it.
+                     */
+                    if (!CommonStatesConstants.REQUESTED.equals(map.getState())) {
+                        throw e;
+                    }
+                }
             }
         }
     }
