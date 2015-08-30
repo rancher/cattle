@@ -33,6 +33,8 @@ public class ValidationErrorCodes implements ErrorCodes {
 
     public static final String ACTION_NOT_AVAILABLE = "ActionNotAvailable";
 
+    public static final String INVALID_STATE = "InvalidState";
+
     public static final void throwValidationError(String code, String fieldName) {
         throw new ClientVisibleException(new ValidationErrorImpl(code, fieldName));
     }
