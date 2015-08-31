@@ -65,7 +65,7 @@ def super_client(request):
 
 @pytest.fixture
 def random_str():
-    return 'random-{0}'.format(random_num())
+    return 'random-{0}-{1}'.format(random_num(), int(time.time()))
 
 
 class Context(object):
