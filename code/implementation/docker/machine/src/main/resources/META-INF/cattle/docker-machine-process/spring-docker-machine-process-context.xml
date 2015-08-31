@@ -10,5 +10,6 @@
 
     <bean class="io.cattle.platform.docker.machine.process.MachinePreCreate" />
     <bean class="io.cattle.platform.docker.machine.launch.MachineLauncher" />
-
+    <bean class="io.cattle.platform.docker.machine.launch.ComposeExecutorLauncher" />
+    
 </beans>

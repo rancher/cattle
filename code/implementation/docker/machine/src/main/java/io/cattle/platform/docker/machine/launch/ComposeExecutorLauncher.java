@@ -12,19 +12,20 @@ import java.util.Map;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
-public class MachineLauncher extends GenericServiceLauncher implements InitializationTask {
 
-    private static final DynamicStringProperty MACHINE_BINARY = ArchaiusUtil.getString("machine.service.executable");
-    private static final DynamicBooleanProperty LAUNCH_MACHINE = ArchaiusUtil.getBoolean("machine.execute");
+public class ComposeExecutorLauncher extends GenericServiceLauncher implements InitializationTask {
+
+    private static final DynamicStringProperty COMPOSE_EXECUTOR_BINARY = ArchaiusUtil.getString("compose.executor.service.executable");
+    private static final DynamicBooleanProperty LAUNCH_COMPOSE_EXECUTOR = ArchaiusUtil.getBoolean("compose.executor.execute");
 
     @Override
     protected boolean shouldRun() {
-        return LAUNCH_MACHINE.get();
+        return LAUNCH_COMPOSE_EXECUTOR.get();
     }
 
     @Override
     protected String binaryPath() {
-        return MACHINE_BINARY.get();
+        return COMPOSE_EXECUTOR_BINARY.get();
     }
 
     @Override
@@ -37,7 +38,7 @@ public class MachineLauncher extends GenericServiceLauncher implements Initializ
 
     @Override
     protected LockDefinition getLock() {
-        return LauncherLockDefinitions.MachineLauncherLock();
+        return LauncherLockDefinitions.ComposeExecutorLauncherLock();
     }
 
 }
