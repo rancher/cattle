@@ -6,6 +6,8 @@ chmod 600 content/etc/monit/monitrc
 
 stage_files
 
+mkdir -p /var/lib/monit
+
 if ! grep -q monit /etc/inittab; then
     echo '::respawn:/usr/bin/monit -Ic /etc/monit/monitrc' >> /etc/inittab
     kill -HUP 1

@@ -106,7 +106,7 @@ def test_registration_token_list(service_client, client):
 
     token = service_client.by_id_registration_token(t.id)
     assert token is not None
-    assert token.image.startswith('rancher/agent:')
+    assert token.image.startswith('dx9err/rancher-agent:')
     assert token.command.startswith('sudo docker run')
 
     parts = token.command.split()
