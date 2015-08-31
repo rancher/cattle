@@ -41,7 +41,8 @@ public class AgentInstanceApplyItems extends AbstractApplyItems implements Proce
         List<? extends Nic> nics = getNics(state, process);
 
         if (nics == null) {
-            log.error("Failed to find nic for [{}:{}]", objectManager.getType(state.getResource()), state.getResourceId());
+            log.debug("Failed to find nic for [{}:{}]", objectManager.getType(state.getResource()),
+                    state.getResourceId());
             return null;
         }
 

@@ -11,6 +11,7 @@ import io.cattle.platform.core.model.tables.records.NicRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -28,7 +29,7 @@ public class HostIpAddressMapNicLookup extends AbstractJooqDao implements Instan
         HostIpAddressMap map = (HostIpAddressMap) obj;
         Host host = objectManager.loadResource(Host.class, map.getHostId());
         if (host == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         if (host.getPhysicalHostId() == null) {
