@@ -2168,12 +2168,12 @@ def test_validate_image(client, context):
     assert e.value.error.fieldName == 'imageUuid'
 
 
-def test_validate_restart_policy(client, context):
+def test_validate_create_only_containers(client, context):
     env = _create_stack(client)
 
-    restart_policy = {"maximumRetryCount": 0, "name": "no"}
+    labels = {"io.rancher.container.start_once": "true"}
     image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid, "restartPolicy": restart_policy}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -2187,9 +2187,9 @@ def test_validate_restart_policy(client, context):
     service = client.wait_success(service, 120)
     assert service.state == "active"
 
-    instance1 = _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "2")
-    instance3 = _validate_compose_instance_start(client, service, env, "3")
+    instance1 = _wait_for_compose_instance_start(client, service, env, "1")
+    _wait_for_compose_instance_start(client, service, env, "2")
+    instance3 = _wait_for_compose_instance_start(client, service, env, "3")
     # stop instance1 and destroy instance 3
     client.wait_success(instance1.stop())
     _instance_remove(instance3, client)
@@ -2203,14 +2203,24 @@ def test_validate_restart_policy(client, context):
     # and instance 3 was recreated
     instance1 = client.reload(instance1)
     assert instance1.state == 'stopped'
-    _validate_compose_instance_start(client, service, env, "3")
+    _wait_for_compose_instance_start(client, service, env, "3")
+    # check that the service never went to a updating state, and remains active
+    updated = True
+    try:
+        wait_for_condition(
+            client, service, service.state == 'updating-active',
+            lambda x: 'State is: ' + x.state, 5)
+    except:
+        updated = False
+
+    assert updated is False
 
     # destroy instance from stopped state, and validate it was recreated
     _instance_remove(instance1, client)
     _wait_until_active_map_count(service, 3, client, timeout=30)
     service = client.wait_success(service)
     assert service.state == "active"
-    _validate_compose_instance_start(client, service, env, "1")
+    _wait_for_compose_instance_start(client, service, env, "1")
 
 
 def test_sidekick_destroy_instance_indirect_ref(client, context):
@@ -2539,3 +2549,15 @@ def _resource_is_active(resource):
 
 def _resource_is_removed(resource):
     return resource.state == 'removed'
+
+
+def _wait_for_compose_instance_start(client, service, env,
+                                     number, launch_config_name=None):
+    cn = launch_config_name + "_" if \
+        launch_config_name is not None else ""
+    name = env.name + "_" + service.name + "_" + cn + number
+
+    wait_for(
+        lambda: len(client.list_container(name=name, state='running')) > 0
+    )
+    return client.list_container(name=name, state='running')[0]
