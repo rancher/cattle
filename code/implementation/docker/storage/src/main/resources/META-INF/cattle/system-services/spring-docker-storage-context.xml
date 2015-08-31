@@ -17,11 +17,14 @@
     <bean class="io.cattle.platform.docker.storage.DockerImageCredentialLookup" />
     <bean class="io.cattle.platform.docker.storage.DockerStoragePoolDriver" />
     <bean class="io.cattle.platform.docker.storage.process.DockerStoragePoolCreate" />
-    <bean class="io.cattle.platform.docker.storage.dao.impl.DockerStorageDaoImpl" />
+    <bean class="io.cattle.platform.docker.storage.dao.impl.DockerStorageDaoImpl" >
+        <property name="imageCredentialLookups" value="#{extensionManager.list('image.credential.lookup')}" />
+    </bean>
 
     <tx:advice id="DockerStorageAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="createExternalStoragePool" />
+            <tx:method name="createImageForInstance" />
         </tx:attributes>
     </tx:advice>
 

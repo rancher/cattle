@@ -92,7 +92,8 @@ def test_container_create_only(super_client, client, context):
     nics = container.nics()
     assert len(nics) == 1
 
-    image = super_client.wait_success(super_client.list_image(name=uuid)[0])
+    image = super_client.wait_success(find_one(super_client.list_image,
+                                               name=uuid))
     assert_fields(image, {
         "state": "active",
         "name": uuid,
