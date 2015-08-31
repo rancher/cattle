@@ -726,8 +726,8 @@ def test_docker_labels(docker_client):
         actual_labels[l.key] = l.value
 
     expected_labels = {
-        #'io.rancher.testlabel': 'value1',
-        #'io.rancher.testlabel.space': 'value 1',
+        # 'io.rancher.testlabel': 'value1',
+        # 'io.rancher.testlabel.space': 'value 1',
         'io.rancher.testlabel.fromapi': 'yes',
         'io.rancher.container.uuid': c.uuid,
         'io.rancher.container.ip': c.primaryIpAddress + '/16',
