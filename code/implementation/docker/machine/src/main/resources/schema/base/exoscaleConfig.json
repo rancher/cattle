@@ -25,7 +25,7 @@
             "nullable": true
         },
         "securityGroup": {
-            "type": "string",
+            "type": "array[string]",
             "nullable": true
         },
         "url": {

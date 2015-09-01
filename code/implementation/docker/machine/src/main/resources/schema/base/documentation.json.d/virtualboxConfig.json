@@ -19,6 +19,9 @@
             },
             "memory": {
                 "description": "Size of memory for host in MB"
+            },
+            "noShare": {
+                "description": "Disable the mount of your home directory"
             }
         }
     }

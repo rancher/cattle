@@ -23,6 +23,10 @@
         "memory": {
             "type": "string",
             "nullable": true
+        },
+        "noShare": {
+            "type": "boolean",
+            "nullable": true
         }
     }
 }

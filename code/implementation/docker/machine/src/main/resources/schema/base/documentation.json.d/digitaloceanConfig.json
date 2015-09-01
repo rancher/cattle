@@ -22,6 +22,9 @@
             },
             "size": {
                 "description": "Digital Ocean size"
+            },
+            "sshUser": {
+                "description": "Digital Ocean SSH username"
             }
         }
     }

@@ -27,6 +27,10 @@
         "size": {
             "type": "string",
             "nullable": true
+        },
+        "sshUser": {
+            "type": "string",
+            "nullable": true
         }
     }
 }
