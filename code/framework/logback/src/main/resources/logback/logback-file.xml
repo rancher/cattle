@@ -1,5 +1,5 @@
 <included>
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="SYNC_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${logDir}cattle-debug.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${logDir}cattle-debug${fileNamePattern}</fileNamePattern>
@@ -11,6 +11,9 @@
         <encoder>
             <pattern>${pattern}</pattern>
         </encoder>
+    </appender>
+    <appender name="FILE" class="ch.qos.logback.classic.AsyncAppender" >
+        <appender-ref ref="SYNC_FILE" />
     </appender>
 
     <root>

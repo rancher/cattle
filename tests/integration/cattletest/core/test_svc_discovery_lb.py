@@ -76,13 +76,13 @@ def test_deactivate_then_activate_lb_svc(super_client, new_context):
     validate_add_host(host1, lb, client)
     validate_add_host(host2, lb, client)
 
-    lb = super_client.reload(lb)
+    lb = super_client.wait_success(lb)
     assert lb.state == "inactive"
 
     # 3. activate service again
     service = client.wait_success(service.activate())
     assert service.state == 'active'
-    lb = super_client.reload(lb)
+    lb = super_client.wait_success(lb)
     assert lb.state == "active"
     _validate_lb_instance(host1, lb, super_client, service)
     _validate_lb_instance(host2, lb, super_client, service)

@@ -92,7 +92,7 @@ def test_account_new_data(admin_user_client, super_client):
 
     assert network.id == super_client.reload(account).defaultNetworkId
 
-    subnet = find_one(network.subnets)
+    subnet = super_client.wait_success(find_one(network.subnets))
 
     assert subnet.state == 'active'
     assert subnet.networkAddress == '10.42.0.0'

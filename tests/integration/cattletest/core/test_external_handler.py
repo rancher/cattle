@@ -32,6 +32,9 @@ def _disable_test_handlers(client):
         client.wait_success(h.deactivate())
 
 
+# These test all don't work when things are run in parallel because they
+# can interfere with other instance.start operations
+@pytest.mark.nonparallel
 def test_external_handler(admin_user_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
     configs = [{'name': 'instance.start', 'onError': 'instance.stop'}]
@@ -61,6 +64,7 @@ def test_external_handler(admin_user_client):
     assert ep is not None
 
 
+@pytest.mark.nonparallel
 def test_defaults(admin_user_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
     configs = [{'name': 'instance.start'}]
@@ -80,6 +84,7 @@ def test_defaults(admin_user_client):
     assert ep.properties.eventName == 'instance.start;handler={}'.format(name)
 
 
+@pytest.mark.nonparallel
 def test_properties(admin_user_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
     configs = [{'name': 'instance.start'}]
@@ -102,6 +107,7 @@ def test_properties(admin_user_client):
     assert ep.properties.eventName == 'instance.start;handler={}'.format(name)
 
 
+@pytest.mark.nonparallel
 def test_pre_handler(admin_user_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
     configs = [{'name': 'pre.instance.start'}]
@@ -121,6 +127,7 @@ def test_pre_handler(admin_user_client):
         'pre.instance.start;handler={}'.format(name)
 
 
+@pytest.mark.nonparallel
 def test_post_handler(admin_user_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
     configs = [{'name': 'post.instance.start'}]
@@ -140,6 +147,7 @@ def test_post_handler(admin_user_client):
         'post.instance.start;handler={}'.format(name)
 
 
+@pytest.mark.nonparallel
 def test_enabled_disable(admin_user_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
     configs = [{'name': 'instance.start'}]
@@ -185,6 +193,7 @@ def test_enabled_disable(admin_user_client):
     assert ep is not None
 
 
+@pytest.mark.nonparallel
 def test_event_name_comma(admin_user_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
     configs = [{'name': 'pre.instance.start,instance.start'}]

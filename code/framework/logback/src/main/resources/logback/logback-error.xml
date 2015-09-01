@@ -1,5 +1,5 @@
 <included>
-    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="SYNC_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>WARN</level>
         </filter>
@@ -14,6 +14,9 @@
         <encoder>
             <pattern>${pattern}</pattern>
         </encoder>
+    </appender>
+    <appender name="ERROR" class="ch.qos.logback.classic.AsyncAppender" >
+        <appender-ref ref="SYNC_ERROR" />
     </appender>
 
     <root>

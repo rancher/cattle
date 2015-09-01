@@ -1,5 +1,5 @@
 <included>
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="SYNC_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${consoleLevel}</level>
         </filter>
@@ -7,14 +7,20 @@
             <pattern>${pattern}</pattern>
         </encoder>
     </appender>
+    <appender name="CONSOLE" class="ch.qos.logback.classic.AsyncAppender" >
+        <appender-ref ref="SYNC_CONSOLE" />
+    </appender>
 
-    <appender name="CONSOLE_STATUS" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="SYNC_CONSOLE_STATUS" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${consoleStatusLevel}</level>
         </filter>
         <encoder>
             <pattern>${consolePattern}</pattern>
         </encoder>
+    </appender>
+    <appender name="CONSOLE_STATUS" class="ch.qos.logback.classic.AsyncAppender" >
+        <appender-ref ref="SYNC_CONSOLE_STATUS" />
     </appender>
 
     <logger name="ConsoleStatus" additivity="false" >
