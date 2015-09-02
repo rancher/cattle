@@ -935,6 +935,15 @@ def test_lb_service_update_certificate(client, context, image_uuid):
     assert lb.defaultCertificateId == cert3.id
     assert lb.certificateIds == [cert1.id]
 
+    compose_config = env.exportconfig()
+    assert compose_config is not None
+    docker_compose = yaml.load(compose_config.dockerComposeConfig)
+    rancher_compose = yaml.load(compose_config.rancherComposeConfig)
+
+    assert docker_compose[service.name]['labels'] == labels
+    assert rancher_compose[service.name]['default_cert'] == cert3.name
+    assert rancher_compose[service.name]['certs'][0] == cert1.name
+
 
 def test_lb_with_certs_service_update(new_context, image_uuid):
     client = new_context.client

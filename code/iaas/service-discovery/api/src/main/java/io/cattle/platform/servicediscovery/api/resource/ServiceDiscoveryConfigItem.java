@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.resource;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -74,6 +75,14 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem EXTERNAL_IPS = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_EXTERNALIPS,
             "external_ips", false, false);
+
+    public static final ServiceDiscoveryConfigItem DEFAULT_CERTIFICATE = new ServiceDiscoveryConfigItem(
+            LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID,
+            "default_cert", false, false);
+
+    public static final ServiceDiscoveryConfigItem CERTIFICATES = new ServiceDiscoveryConfigItem(
+            LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS,
+            "certs", false, false);
 
     /**
      * Name as it appears in docker-compose file
