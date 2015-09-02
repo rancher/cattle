@@ -129,8 +129,12 @@ public class SslCertificateUtils {
                 intermediateCerts.add(certFromChain);
             }
         }
-        if (certChain.size() > 1 && rootCerts.size() != 1) {
-            throw new RuntimeException("There should be only one root certificate");
+        if (certChain.size() > 0) {
+            if (rootCerts.size() > 1) {
+                throw new RuntimeException("There should be only one root certificate");
+            } else if (rootCerts.size() == 0) {
+                throw new RuntimeException("Root certificate is missing in the chain");
+            }
         }
         verifyCertificateChain(cert, rootCerts, intermediateCerts);
     }

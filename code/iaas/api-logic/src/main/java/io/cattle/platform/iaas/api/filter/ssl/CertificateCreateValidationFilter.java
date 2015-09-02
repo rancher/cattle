@@ -12,8 +12,12 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class CertificateCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
+    private static final Log logger = LogFactory.getLog(CertificateCreateValidationFilter.class);
+
     @Override
     public String[] getTypes() {
         return new String[] { "certificate" };
@@ -57,6 +61,7 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
             DataUtils.getWritableFields(certificate).put("subjectAlternativeNames",
                     SslCertificateUtils.getSubjectAlternativeNames(cert));
         } catch (Exception e) {
+            logger.error(e);
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
                     e.getMessage(), null);
         }
@@ -70,6 +75,7 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
                 SslCertificateUtils.verifySelfSignedCertificate(cert, key);
             }
         } catch (Exception e) {
+            logger.error(e);
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
                     e.getMessage(), null);
         }
@@ -79,6 +85,7 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
                 SslCertificateUtils.verifyCertificateChain(cert, certChain, key);
             }
         } catch (Exception e) {
+            logger.error(e);
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
                     e.getMessage(), null);
         }
