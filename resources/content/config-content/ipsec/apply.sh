@@ -18,7 +18,7 @@ create_dummy()
 proxyarp()
 {
     for i in $ARPDEV $NETDEV; do
-        echo 1 > /proc/sys/net/ipv4/conf/$i/proxy_arp
+        echo -n 1 > /proc/sys/net/ipv4/conf/$i/proxy_arp
     done
 }
 
@@ -29,7 +29,7 @@ route_tables()
     fi
 }
 
-chmod 600 content/etc/racoon/psk.txt
+chmod 400 content/etc/racoon/psk.txt
 
 create_dummy
 proxyarp

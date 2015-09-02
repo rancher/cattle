@@ -4,7 +4,7 @@
 
 if [ -e /etc/init.d/dnsmasq ]; then
     /etc/init.d/dnsmasq stop || true
-    killall -9 dnsmasq || true
+    killall -s 9 dnsmasq || true
 fi
 
 if [ -e /etc/monit/conf.d/dnsmasq ]; then

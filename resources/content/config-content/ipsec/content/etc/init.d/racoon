@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+
+RACOON_OPTS="-l /var/log/racoon.log"
+RACOON_CONF="/etc/racoon/racoon.conf"
+
+start() {
+	ebegin "Starting racoon"
+	start-stop-daemon -S -x /usr/sbin/racoon -- -f ${RACOON_CONF} ${RACOON_OPTS}
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping racoon"
+	start-stop-daemon -K -p /var/run/racoon.pid
+	eend $?
+}
