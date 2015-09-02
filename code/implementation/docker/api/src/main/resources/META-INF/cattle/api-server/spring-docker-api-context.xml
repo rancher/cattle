@@ -17,5 +17,17 @@
     <bean class="io.cattle.platform.docker.api.ExecActionHandler" />
     <bean class="io.cattle.platform.docker.api.ContainerLogsActionHandler" />
 
+    <bean id="DockerApiTypes" class="io.cattle.platform.object.meta.TypeSet" >
+        <property name="typeClasses">
+            <list>
+                <value>io.cattle.platform.docker.api.model.ContainerExec</value>
+                <value>io.cattle.platform.docker.api.model.ContainerLogs</value>
+                <value>io.cattle.platform.docker.api.model.HostAccess</value>
+                <value>io.cattle.platform.docker.api.model.DockerBuild</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.docker.api.transform.TransformInspect" />
 
 </beans>
