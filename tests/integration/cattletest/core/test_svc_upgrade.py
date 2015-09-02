@@ -42,7 +42,7 @@ def run_upgrade(context, client, from_scale, to_scale, **kw):
         if s.upgrade is not None:
             return s
 
-    service = wait_for(upgrade_not_null, timeout=2)
+    service = wait_for(upgrade_not_null)
 
     service = client.wait_success(service, timeout=120)
     assert service.state == 'active'
