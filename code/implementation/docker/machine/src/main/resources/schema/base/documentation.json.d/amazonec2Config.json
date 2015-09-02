@@ -47,6 +47,9 @@
             "subnetId": {
                 "description": "AWS VPC subnet id"
             },
+            "usePrivateAddress": {
+                "description": "Force the usage of private IP address"
+            },
             "vpcId": {
                 "description": "AWS VPC id"
             },

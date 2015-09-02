@@ -146,17 +146,23 @@ def test_machine_driver_config(admin_client):
     name = "test-%s" % random_str()
     ec2_config = {
         "accessKey": "accesskey1",
-        "secretKey": "secretkey1",
-        "vpcId": "1234",
-        "subnetId": "5678",
-        "sessionToken": "sessiontoken1",
         "ami": "ami1",
-        "region": "us-east-1",
-        "zone": "us-east-1a",
-        "securityGroup": "docker-machine",
-        "instanceType": "type1",
-        "rootSize": "60GB",
         "iamInstanceProfile": "profile1",
+        "instanceType": "type1",
+        "monitoring": False,
+        "privateAddressOnly": False,
+        "region": "us-east-1",
+        "requestSpotInstance": False,
+        "rootSize": "60GB",
+        "secretKey": "secretkey1",
+        "securityGroup": "docker-machine",
+        "sessionToken": "sessiontoken1",
+        "spotPrice": "spotPrice1",
+        "sshUser": "sshUser1",
+        "subnetId": "5678",
+        "usePrivateAddress": False,
+        "vpcId": "1234",
+        "zone": "us-east-1a",
     }
     host = admin_client.create_machine(name=name,
                                        amazonec2Config=ec2_config)
@@ -168,11 +174,11 @@ def test_machine_driver_config(admin_client):
     name = "test-%s" % random_str()
     packet_config = {
         "apiKey": "apikey1",
-        "projectId": "projectId",
-        "os": "centos_7",
-        "facilityCode": "ewr1",
-        "plan": "baremetal_1",
         "billingCycle": "hourly",
+        "facilityCode": "ewr1",
+        "os": "centos_7",
+        "plan": "baremetal_1",
+        "projectId": "projectId",
     }
     host = admin_client.create_machine(name=name,
                                        packetConfig=packet_config)
@@ -184,13 +190,15 @@ def test_machine_driver_config(admin_client):
     name = "test-%s" % random_str()
     azure_config = {
         "dockerPort": "dockerPort",
+        "dockerSwarmMasterPort": "dockerSwarmMasterPort1",
         "image": "image",
         "location": "location",
         "password": "password",
         "publishSettingsFile": "publishSettingsFile",
         "size": "size",
-        "subscriptionId": "subscriptionId",
+        "sshPort": "sshPort1",
         "subscriptionCert": "subscriptionCert",
+        "subscriptionId": "subscriptionId",
         "username": "username",
     }
     host = admin_client.create_machine(name=name,
@@ -202,15 +210,15 @@ def test_machine_driver_config(admin_client):
 
     name = "test-%s" % random_str()
     rackspace_config = {
-        "username": "username",
         "apiKey": "apiKey",
-        "region": "region",
-        "endpointType": "endpointType",
-        "imageId": "imageId",
-        "flavorId": "flavorId",
-        "sshUser": "sshUser",
-        "sshPort": "sshPort",
         "dockerInstall": "dockerInstall",
+        "endpointType": "endpointType",
+        "flavorId": "flavorId",
+        "imageId": "imageId",
+        "region": "region",
+        "sshPort": "sshPort",
+        "sshUser": "sshUser",
+        "username": "username",
     }
     host = admin_client.create_machine(name=name,
                                        rackspaceConfig=rackspace_config)

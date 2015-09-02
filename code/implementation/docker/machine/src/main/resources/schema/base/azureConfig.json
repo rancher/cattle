@@ -4,6 +4,10 @@
             "type": "string",
             "nullable": true
         },
+        "dockerSwarmMasterPort": {
+            "type": "string",
+            "nullable": true
+        },
         "image": {
             "type": "string",
             "nullable": true
