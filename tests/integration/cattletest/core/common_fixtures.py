@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 NOT_NONE = object()
 DEFAULT_TIMEOUT = 90
+cattle.DEFAULT_TIMEOUT = 90
 _SUPER_CLIENT = None
 
 
@@ -55,12 +56,24 @@ def admin_user_client(super_client):
     else:
         key = keys[0]
 
-    return api_client(key.publicValue, key.secretValue)
+    client = api_client(key.publicValue, key.secretValue)
+    init(client)
+    return client
 
 
 @pytest.fixture(scope='session')
 def super_client(request):
     return _get_super_client(request)
+
+
+def init(admin_user_client):
+    kv = {
+        'task.process.replay.schedule': '2',
+        'task.config.item.migration.schedule': '5',
+        'task.config.item.source.version.sync.schedule': '5',
+    }
+    for k, v in kv.items():
+        admin_user_client.create_setting(name=k, value=v)
 
 
 @pytest.fixture

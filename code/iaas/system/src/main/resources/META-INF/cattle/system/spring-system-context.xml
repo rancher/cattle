@@ -26,13 +26,13 @@
         id="ProcessExecutorService"
         keep-alive="120"
         pool-size="25-150"
-        queue-capacity="25"
+        queue-capacity="1000"
         />
 
     <management:executor-service 
         id="CoreExecutorService"
         keep-alive="120"
-        pool-size="0-1000000"
+        pool-size="0-100"
         queue-capacity="0"
         />
 

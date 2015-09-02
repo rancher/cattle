@@ -47,7 +47,4 @@ if [ -e .tox ] && [ ! -e .tox/py27/include/python2.7 ]; then
     rm -rf .tox
 fi
 
-# Hack to get the appropriate fixtures to run to initialize the server
-tox -e py27 -- -k test_account_create
-
 tox "$@"

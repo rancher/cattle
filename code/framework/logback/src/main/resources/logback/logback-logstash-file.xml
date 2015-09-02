@@ -1,5 +1,5 @@
 <included>
-    <appender name="LOGSTASH_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="SYNC_LOGSTASH_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${aggregationLevel}</level>
         </filter>
@@ -13,6 +13,9 @@
         </rollingPolicy>
 
         <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+    </appender>
+    <appender name="LOGSTASH_FILE" class="ch.qos.logback.classic.AsyncAppender" >
+        <appender-ref ref="SYNC_LOGSTASH_FILE" />
     </appender>
 
     <root>
