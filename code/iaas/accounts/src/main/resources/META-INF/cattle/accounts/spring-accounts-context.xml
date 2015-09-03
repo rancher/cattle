@@ -119,6 +119,18 @@
         <property name="postProcessors">
             <list>
                 <bean class="io.cattle.platform.schema.processor.NotWritablePostProcessor" />
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/read-user/read-user.json</value>
+                                    <value>classpath*:schema/read-user/read-user.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
             </list>
         </property>
     </bean>

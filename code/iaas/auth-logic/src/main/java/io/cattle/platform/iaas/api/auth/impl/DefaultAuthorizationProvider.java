@@ -62,7 +62,7 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
         if (account != null && account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)){
             projectMembers = authDao.getProjectMembersByIdentity(account.getId(), policy.getIdentities());
         }
-        if (projectMembers == null){
+        if (projectMembers == null || projectMembers.size() == 0){
             return schemaFactories.get(account.getKind());
         } else {
             String role = null;

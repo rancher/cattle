@@ -380,16 +380,11 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         if ((usingAccount != null && usingAccount.equals(projectId)) || isAdmin) {
             return true;
         }
-        Set<String> roles = new HashSet<>();
-        roles.add(ProjectConstants.OWNER);
-        roles.add(ProjectConstants.MEMBER);
-        roles.add(ProjectConstants.READONLY);
         Set<ProjectMemberRecord> projectMembers = new HashSet<>();
         Condition allMembers = DSL.falseCondition();
         for (Identity id : identities) {
             allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getExternalId())
                     .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getExternalIdType()))
-                    .and(PROJECT_MEMBER.ROLE.in(roles))
                     .and(PROJECT_MEMBER.PROJECT_ID.eq(projectId))
                     .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE))
                     .and(PROJECT_MEMBER.REMOVED.isNull()));

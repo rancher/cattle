@@ -14,7 +14,6 @@ public class ProjectConstants {
     public static final String NAME = "rancher";
 
     public static final String OWNER = "owner";
-    public static final String MEMBER = "member";
 
 
     public static final String AUTH_HEADER = "Authorization";
@@ -25,5 +24,4 @@ public class ProjectConstants {
     public static final Set<String> SCOPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             RANCHER_ID
     )));
-    public static final String READONLY = "readonly";
 }
