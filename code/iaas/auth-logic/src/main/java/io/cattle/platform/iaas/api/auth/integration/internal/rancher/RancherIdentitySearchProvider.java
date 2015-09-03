@@ -5,7 +5,6 @@ import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
-import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
@@ -14,15 +13,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 public class RancherIdentitySearchProvider implements IdentitySearchProvider {
 
     @Inject
     AuthDao authDao;
-
-    @Inject
-    private ObjectManager objectManager;
 
     @Override
     public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
@@ -54,6 +51,7 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
         return identities;
     }
 
+    @Override
     public List<Identity> searchIdentities(String name, boolean exactMatch) {
         if (!isConfigured()){
             notConfigured();

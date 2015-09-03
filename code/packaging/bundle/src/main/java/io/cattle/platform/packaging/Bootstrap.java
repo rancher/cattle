@@ -420,8 +420,8 @@ public class Bootstrap implements Closeable {
     }
 
     public static final void main(String... args) {
-        try {
-            new Bootstrap().run(args);
+        try (Bootstrap b = new Bootstrap()) {
+            b.run(args);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
