@@ -50,9 +50,17 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
     protected void addInstances(AgentConnectionSimulator simulator, Ping pong, Agent agent) {
         List<Map<String, Object>> resources = pong.getData().getResources();
 
-        for (Map.Entry<String, String[]> kv : simulator.getInstances().entrySet()) {
-            Map<String, Object> instanceMap = CollectionUtils.asMap(ObjectMetaDataManager.TYPE_FIELD, InstanceConstants.TYPE, ObjectMetaDataManager.UUID_FIELD,
-                    kv.getKey(), ObjectMetaDataManager.STATE_FIELD, kv.getValue()[0], "dockerId", kv.getValue()[1]);
+        for (Map.Entry<String, Object[]> kv : simulator.getInstances().entrySet()) {
+            // This matches the data structure returned by the ping logic in the real ping agent.
+            Map<String, Object> instanceMap = CollectionUtils.asMap(
+                    ObjectMetaDataManager.TYPE_FIELD, InstanceConstants.TYPE,
+                    ObjectMetaDataManager.UUID_FIELD, kv.getKey(),
+                    ObjectMetaDataManager.STATE_FIELD, kv.getValue()[0],
+                    "systemContainer", null,
+                    "dockerId", kv.getValue()[1],
+                    "image", kv.getValue()[2],
+                    "labels", new String[0],
+                    "created", kv.getValue()[3]);
             resources.add(instanceMap);
         }
 

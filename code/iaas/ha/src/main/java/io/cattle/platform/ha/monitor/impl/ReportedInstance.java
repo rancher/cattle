@@ -8,6 +8,8 @@ import io.cattle.platform.util.type.CollectionUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 class ReportedInstance {
 
     String uuid;
@@ -97,5 +99,9 @@ class ReportedInstance {
 
     public void setInstance(KnownInstance instance) {
         this.instance = instance;
+    }
+
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

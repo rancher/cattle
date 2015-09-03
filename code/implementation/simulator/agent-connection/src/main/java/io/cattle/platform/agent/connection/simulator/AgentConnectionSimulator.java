@@ -18,7 +18,7 @@ public class AgentConnectionSimulator implements AgentConnection {
     Agent agent;
     boolean open = true;
     List<AgentSimulatorEventProcessor> processors;
-    Map<String, String[]> instances = new HashMap<String, String[]>();
+    Map<String, Object[]> instances = new HashMap<String, Object[]>();
 
     public AgentConnectionSimulator(Agent agent, List<AgentSimulatorEventProcessor> processors) {
         super();
@@ -66,7 +66,7 @@ public class AgentConnectionSimulator implements AgentConnection {
         return agent;
     }
 
-    public Map<String, String[]> getInstances() {
+    public Map<String, Object[]> getInstances() {
         return instances;
     }
 

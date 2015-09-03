@@ -8,7 +8,9 @@ def _process_names(processes):
 
 def test_container_ha_default(super_client, new_context):
     client = new_context.client
-    c = new_context.create_container_no_success(name='simForgetImmediately')
+    c = new_context.\
+        create_container_no_success(name='simForgetImmediately',
+                                    imageUuid=new_context.image_uuid)
 
     def do_ping():
         ping = one(super_client.list_task, name='agent.ping')
@@ -40,9 +42,40 @@ def test_container_ha_default(super_client, new_context):
                                          'instance.remove'}
 
 
+def test_container_discovery(super_client, new_context):
+    client = new_context.client
+    container_id = random_str()
+    new_context.create_container_no_success(
+        name='simCreateAnother_' + container_id,
+        imageUuid=new_context.image_uuid)
+
+    def do_ping():
+        ping = one(super_client.list_task, name='agent.ping')
+        ping.execute()
+
+    def callback():
+        cons = client.list_container(externalId=container_id)
+        if len(cons) == 0:
+            do_ping()
+            return None
+        return cons
+
+    containers = wait_for(callback)
+    assert len(containers) == 1
+    container = containers[0]
+
+    def running_callback():
+        c = client.by_id_container(container.id)
+        if c.state == 'running':
+            return c
+
+    wait_for(running_callback)
+
+
 def test_container_ha_stop(super_client, new_context):
     c = new_context.super_create_container(instanceTriggeredStop='stop',
                                            systemContainer='NetworkAgent',
+                                           imageUuid=new_context.image_uuid,
                                            data={'simForgetImmediately': True})
 
     def do_ping():
@@ -70,6 +103,7 @@ def test_container_ha_stop(super_client, new_context):
 def test_container_ha_restart(super_client, new_context):
     c = new_context.super_create_container(instanceTriggeredStop='restart',
                                            systemContainer='NetworkAgent',
+                                           imageUuid=new_context.image_uuid,
                                            data={'simForgetImmediately': True})
     c = super_client.wait_success(c)
 
@@ -101,6 +135,7 @@ def test_container_ha_restart(super_client, new_context):
 def test_container_ha_remove(super_client, new_context):
     c = new_context.super_create_container(instanceTriggeredStop='remove',
                                            systemContainer='NetworkAgent',
+                                           imageUuid=new_context.image_uuid,
                                            data={'simForgetImmediately': True})
     c = super_client.wait_success(c)
 

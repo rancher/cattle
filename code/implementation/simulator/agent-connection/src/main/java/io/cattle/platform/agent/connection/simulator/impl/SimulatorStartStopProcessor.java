@@ -8,6 +8,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,10 +18,14 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor {
 
     private static final Pattern SHUTDOWN = Pattern.compile(".*simShutdownAfter\",\"([0-9]+)");
     private static final Pattern FORGET = Pattern.compile(".*simForgetImmediately.*");
+    private static final String SIM_CREATE_ANOTHER = "simCreateAnother_";
+    private static final Pattern CREATE_ANOTHER = Pattern.compile(".*simCreateAnother_.*");
 
     JsonMapper jsonMapper;
     ScheduledExecutorService scheduleExecutorService;
@@ -53,15 +58,17 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
         }
 
         final Object uuid = instance.get("uuid");
+        Object image = CollectionUtils.getNestedValue(instance, "data", "fields", "imageUuid");
+        String imageUuid = image != null ? image.toString() : "sim:foo";
         if (uuid != null) {
             boolean found = simulator.getInstances().containsKey(uuid.toString());
             boolean forget = FORGET.matcher(eventString).matches();
             if (forget) {
                 simulator.getInstances().remove(uuid.toString());
             } else if ("add".equals(action)) {
-                simulator.getInstances().put(uuid.toString(), new String[] { STATE_RUNNING, externalId });
+                simulator.getInstances().put(uuid.toString(), new Object[] { STATE_RUNNING, externalId, imageUuid, new Date().getTime() });
             } else if ("stop".equals(action) && found) {
-                simulator.getInstances().put(uuid.toString(), new String[] { STATE_STOPPED, externalId });
+                simulator.getInstances().put(uuid.toString(), new Object[] { STATE_STOPPED, externalId, imageUuid, new Date().getTime() });
             } else {
                 simulator.getInstances().remove(uuid.toString());
             }
@@ -75,6 +82,13 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
                     simulator.getInstances().remove(uuid.toString());
                 }
             }, Long.parseLong(m.group(1)), TimeUnit.SECONDS);
+        }
+
+        if (CREATE_ANOTHER.matcher(eventString).matches()) {
+            String name = (String)instance.get("name");
+            String anotherExternalId = StringUtils.substringAfter(name, SIM_CREATE_ANOTHER);
+            simulator.getInstances().put("name-" + anotherExternalId, new Object[] { STATE_RUNNING, anotherExternalId, imageUuid,
+                    new Date().getTime() });
         }
 
         return EventVO.reply(event).withData(update);

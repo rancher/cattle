@@ -30,7 +30,9 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.instance.InstanceProcessOptions;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -224,6 +226,9 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                 ReportedInstance ri = new ReportedInstance();
                 ri.setExternalId(ki.getExternalId());
                 ri.setUuid(ki.getUuid());
+                Object imageUuid = CollectionUtils.getNestedValue(ki.getData(), DataUtils.FIELDS, FIELD_IMAGE_UUID);
+                String image = imageUuid != null ? imageUuid.toString() : null;
+                ri.setImage(image);
                 addSyncAction(needsSynced, syncActions, ri, EVENT_DESTROY, checkOnly);
             }
         }
@@ -283,6 +288,10 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     }
 
     void scheduleContainerEvent(Long agentId, Long hostId, ReportedInstance ri, String event) {
+        if (StringUtils.isEmpty(ri.getImage()) || StringUtils.isEmpty(ri.getExternalId()) || StringUtils.isEmpty(ri.getUuid())) {
+            log.error("Not enough information to schedule container event: [" + ri.toString() + "].");
+            return;
+        }
         ContainerEvent ce = objectManager.newRecord(ContainerEvent.class);
         ce.setAccountId(agentId);
         ce.setExternalFrom(ri.getImage());
