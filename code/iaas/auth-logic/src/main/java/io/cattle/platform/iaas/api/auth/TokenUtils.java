@@ -7,7 +7,6 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
-import io.cattle.platform.iaas.api.auth.integration.ldap.LdapConstants;
 import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenException;
@@ -254,16 +253,21 @@ public abstract class TokenUtils  {
             account = authDao.getAccountByExternalId(gotIdentity.getExternalId(), gotIdentity.getExternalIdType());
             }
             if (account == null && createAccount) {
-                account = authDao.createAccount(gotIdentity.getName(), AccountConstants.USER_KIND, gotIdentity.getExternalId(),
+                account = authDao.createAccount(gotIdentity.getName(), AccountConstants.USER_KIND, gotIdentity
+                                .getExternalId(),
                         gotIdentity.getExternalIdType());
-                if (!hasAccessToAProject) {
-                    projectResourceManager.createProjectForUser(account);
-                }
+            }
+            Object hasLoggedIn = DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).get();
+            if (!hasAccessToAProject && hasLoggedIn != null && !((Boolean) hasLoggedIn)) {
+                projectResourceManager.createProjectForUser(account);
             }
         } else {
             account = authDao.getAdminAccount();
-            authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, gotIdentity.getExternalId(), LdapConstants.USER_SCOPE);
+            authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, gotIdentity.getExternalId(), gotIdentity.getExternalIdType());
             authDao.ensureAllProjectsHaveNonRancherIdMembers(gotIdentity);
+        }
+        if (account != null) {
+            DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).set(true);
         }
         return account;
     }

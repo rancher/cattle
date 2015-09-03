@@ -18,21 +18,40 @@ class LocalAuth(AuthBase):
         return r
 
 
-def turn_on_off_local_auth(admin_client, request):
+@pytest.fixture(scope='session', autouse=True)
+def turn_on_off_local_auth(request, admin_user_client):
     username = os.environ.get('CATTLE_ACCESS_KEY', 'admin')
     password = os.environ.get('CATTLE_SECRET_KEY', 'adminpass')
-    admin_client.create_localAuthConfig(enabled=True,
-                                        username=username,
-                                        password=password)
+    admin_user_client.create_localAuthConfig(enabled=True,
+                                             username=username,
+                                             password=password)
 
     def fin():
-        admin_client.create_localAuthConfig(username=username,
-                                            password=password)
+        admin_user_client.create_localAuthConfig(enabled=False,
+                                                 username=username,
+                                                 password=password)
 
     request.addfinalizer(fin)
 
 
-def local_client(username, password, start_client):
+def make_user_and_client(admin_user_client, name_base='user '):
+    account = admin_user_client.create_account(name=name_base + random_str(),
+                                               kind="user")
+    admin_user_client.wait_success(account)
+
+    username = name_base + random_str()
+    password = 'password ' + random_str()
+    login = admin_user_client.create_password(publicValue=username,
+                                              secretValue=password,
+                                              accountId=account.id)
+    admin_user_client.wait_success(login)
+
+    key = admin_user_client.create_apiKey()
+    admin_user_client.wait_success(key)
+    start_client = from_env(url=cattle_url(),
+                            access_key=key.publicValue,
+                            secret_key=key.secretValue)
+
     token = requests.post(base_url() + 'token', {
         'code': username + ':' + password
     })
@@ -46,53 +65,26 @@ def local_client(username, password, start_client):
     start_client.valid()
     identities = start_client.list_identity()
 
-    assert len(identities) > 0
+    assert len(identities) == 1
+    assert identities[0].externalId == account.id
 
-    local = False
-    for identity in identities:
-        if (identity.externalIdType == 'rancher_id'):
-            local = True
-
-    assert local
-
-    return start_client
+    return start_client, account, username, password
 
 
-def make_user(admin_user_client, name_base='user '):
-    account = admin_user_client.create_account(name=name_base + random_str(),
-                                               kind="user")
-    admin_user_client.wait_success(account)
-    username = name_base + random_str()
-    password = 'password' + random_str()
-    login = admin_user_client.create_password(publicValue=username,
-                                              secretValue=password,
-                                              accountId=account.id)
-    admin_user_client.wait_success(login)
-    return username, password, account
-
-
-def test_local_login(admin_user_client, cattle_url, request):
-    start_client = from_env(url=cattle_url)
-    turn_on_off_local_auth(admin_user_client, request)
-    username, password, account = make_user(admin_user_client)
-    client = local_client(username, password, start_client)
+@pytest.mark.nonparallel
+def test_local_login(admin_user_client, request):
+    client, account, username, password =\
+        make_user_and_client(admin_user_client)
     identities = client.list_identity()
 
     assert len(identities) == 1
     assert identities[0].externalId == account.id
 
 
-def test_local_login_change_password(admin_user_client, cattle_url, request):
-    start_client = from_env(url=cattle_url)
-    start_client2 = from_env(url=cattle_url)
-
-    turn_on_off_local_auth(admin_user_client, request)
-    username, password, account = make_user(admin_user_client)
-    client = local_client(username, password, start_client)
-    identities = client.list_identity()
-
-    assert len(identities) == 1
-    assert identities[0].externalId == account.id
+@pytest.mark.nonparallel
+def test_local_login_change_password(admin_user_client, request):
+    client, account, username, password =\
+        make_user_and_client(admin_user_client)
 
     credential = client.list_password()
 
@@ -101,15 +93,16 @@ def test_local_login_change_password(admin_user_client, cattle_url, request):
 
     newPass = random_str()
     credential[0].changesecret(oldSecret=password, newSecret=newPass)
-    client = local_client(username, newPass, start_client2)
+    client, account, username, password =\
+        make_user_and_client(admin_user_client)
     identities = client.list_identity()
 
     assert len(identities) == 1
     assert identities[0].externalId == account.id
 
 
+@pytest.mark.nonparallel
 def test_local_incorrect_login(admin_user_client, request):
-    turn_on_off_local_auth(admin_user_client, request)
     token = requests.post(base_url() + 'token',
                           {
                               'code': random_str() + ':' + random_str()
@@ -123,12 +116,10 @@ def test_local_incorrect_login(admin_user_client, request):
     assert token['status'] == 401
 
 
+@pytest.mark.nonparallel
 def test_local_project_members(admin_user_client, request):
-    start_client = from_env(url=cattle_url())
-    start_client2 = from_env(url=cattle_url())
-    turn_on_off_local_auth(admin_user_client, request)
-    username, password, account = make_user(admin_user_client)
-    user1_client = local_client(username, password, start_client)
+    user1_client, account, username, password =\
+        make_user_and_client(admin_user_client)
 
     user1_identity = None
     for obj in user1_client.list_identity():
@@ -136,9 +127,8 @@ def test_local_project_members(admin_user_client, request):
             user1_identity = obj
             break
 
-    username, password, account = make_user(admin_user_client)
-
-    user2_client = local_client(username, password, start_client2)
+    user2_client, account, username, password =\
+        make_user_and_client(admin_user_client)
 
     user2_identity = None
     for obj in user2_client.list_identity():
@@ -163,12 +153,10 @@ def idToMember(identity, role):
     }
 
 
+@pytest.mark.nonparallel
 def test_local_project_create(admin_user_client, request):
-    start_client = from_env(url=cattle_url())
-    turn_on_off_local_auth(admin_user_client, request)
-    username, password, account = make_user(admin_user_client)
-
-    user1_client = local_client(username, password, start_client)
+    user1_client, account, username, password =\
+        make_user_and_client(admin_user_client)
 
     identity = None
     for obj in user1_client.list_identity():
@@ -185,6 +173,7 @@ def test_local_project_create(admin_user_client, request):
     user1_client.delete(project)
 
 
+@pytest.mark.nonparallel
 def test_get_correct_identity(admin_user_client):
     name = "Identity User"
     context = create_context(admin_user_client, name=name)
@@ -194,14 +183,13 @@ def test_get_correct_identity(admin_user_client):
     assert identities[0].name == name
 
 
+@pytest.mark.nonparallel
 def test_search_identity_name(admin_user_client, request):
-    start_client = from_env(url=cattle_url())
-    turn_on_off_local_auth(admin_user_client, request)
     usernames = []
 
     for x in range(0, 5):
-        username, password, account = make_user(admin_user_client)
-        local_client(username, password, start_client)
+        client, account, username, password =\
+            make_user_and_client(admin_user_client)
         usernames.append(username)
 
     user_client = create_context(admin_user_client).user_client
@@ -220,16 +208,15 @@ def test_search_identity_name(admin_user_client, request):
         assert identity.externalIdType == ids[0].externalIdType
 
 
+@pytest.mark.nonparallel
 def test_search_identity_name_like(admin_user_client, request):
-    start_client = from_env(url=cattle_url())
-    turn_on_off_local_auth(admin_user_client, request)
     name_base = random_str()
     usernames = []
 
     for x in range(0, 5):
-        username, password, account = make_user(admin_user_client,
-                                                name_base=name_base)
-        local_client(username, password, start_client)
+        client, account, username, password =\
+            make_user_and_client(admin_user_client,
+                                 name_base=name_base)
         usernames.append(username)
 
     identities = admin_user_client.list_identity(all=name_base)
