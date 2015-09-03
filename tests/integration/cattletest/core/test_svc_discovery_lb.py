@@ -1037,9 +1037,15 @@ def test_cert_in_use(client, context, image_uuid):
     assert lb.defaultCertificateId == cert1.id
     assert lb.certificateIds == [cert1.id, cert2.id]
 
-    # try to remove the cert
+    # try to remove the cert - delete action (used by UI)
     with pytest.raises(ApiError) as e:
         client.delete(cert1)
+    assert e.value.error.status == 405
+    assert e.value.error.code == 'InvalidAction'
+
+    # try to remove the cert - remove action
+    with pytest.raises(ApiError) as e:
+        cert1.remove()
     assert e.value.error.status == 405
     assert e.value.error.code == 'InvalidAction'
 

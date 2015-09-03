@@ -34,7 +34,13 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
 
     @Override
     public Object delete(String type, String id, ApiRequest request, ResourceManager next) {
-        Certificate cert = objectManager.loadResource(Certificate.class, id);
+        validateIfCertificateInUse(id);
+
+        return super.delete(type, id, request, next);
+    }
+
+    protected void validateIfCertificateInUse(String certificateId) {
+        Certificate cert = objectManager.loadResource(Certificate.class, certificateId);
         List<String> serviceNames = new ArrayList<>();
         List<? extends LoadBalancerCertificateMap> mapsToRemove = mapDao.findNonRemoved(
                 LoadBalancerCertificateMap.class,
@@ -55,7 +61,14 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
             throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED, ValidationErrorCodes.INVALID_ACTION,
                     "Certificate is in use by load balancer services: " + serviceNameStr, null);
         }
+    }
 
-        return super.delete(type, id, request, next);
+    @Override
+    public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
+        if (request.getAction().equalsIgnoreCase("remove")) {
+            validateIfCertificateInUse(request.getId());
+        }
+
+        return super.resourceAction(type, request, next);
     }
 }
