@@ -407,8 +407,16 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
                 lbSvc.getId(), LOAD_BALANCER.REMOVED, null);
+        if (lb == null) {
+            return;
+        }
+
         ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(lbSvc.getId(), instanceToRegister.getServiceId(),
                 null);
+        if (map == null) {
+            return;
+        }
+
         LoadBalancerTargetInput target = new LoadBalancerTargetInput(instanceToRegister,
                 map, jsonMapper);
         lbService.addTargetToLoadBalancer(lb, target);
