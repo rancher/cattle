@@ -25,6 +25,10 @@
         "addRemoveClusterHostInput" : "cr",
         "addRemoveClusterHostInput.hostId" : "cr",
 
+        "changeSecretInput" : "cr",
+        "changeSecretInput.oldSecret" : "cr",
+        "changeSecretInput.newSecret" : "cr",
+
         "cluster" : "r",
         "cluster.discoverySpec" : "r",
         "cluster.port" : "cru",
@@ -188,6 +192,10 @@
         "mount.volumeId" : "r",
 
         "network" : "r",
+
+        "password" : "crud",
+        "password.secretValue" : "cro",
+        "password.publicValue" : "cr",
 
         "physicalHost": "r",
 

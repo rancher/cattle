@@ -442,6 +442,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
             field.setNullable(f.nullable());
             field.setUpdate(f.update());
             field.setCreate(f.create());
+            field.setTransform(f.transform());
         }
         field.setUnique(f.unique());
         field.setRequired(f.required());

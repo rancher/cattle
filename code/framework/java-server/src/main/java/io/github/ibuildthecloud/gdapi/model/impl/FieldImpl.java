@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 public class FieldImpl implements Field {
 
-    String name, type, validChars, invalidChars;
+    String name, type, validChars, invalidChars, transform;
     Integer displayIndex;
     boolean create, update, includeInList = true, nullable, unique, required, defaultIsNull, readOnCreateOnly = false;
     FieldType typeEnum;
@@ -37,6 +37,7 @@ public class FieldImpl implements Field {
         this.invalidChars = field.getInvalidChars();
         this.create = field.isCreate();
         this.readOnCreateOnly = field.isReadOnCreateOnly();
+        this.transform = field.getTransform();
         this.update = field.isUpdate();
         this.includeInList = field.isIncludeInList();
         this.nullable = field.isNullable();
@@ -345,6 +346,14 @@ public class FieldImpl implements Field {
     @XmlTransient
     public void setAttributes(Map<String, Object> attributes) {
         this.attributes = attributes;
+    }
+
+    public void setTransform(String transform) {
+        this.transform = transform;
+    }
+
+    public String getTransform() {
+        return transform;
     }
 
 }

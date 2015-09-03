@@ -24,7 +24,8 @@
 
     <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubTokenCreator" />
 
-    <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
+        <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
+    <bean class="io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl" />
 
     <bean id="BasicAuth" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.BasicAuthImpl" />
     <bean id="AdminAuth" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.AdminAuthLookUp" />
@@ -70,6 +71,11 @@
 
     <bean class="io.cattle.platform.iaas.api.auth.identity.EnsureSettingForProvider"/>
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthTokenDaoImpl" />
+
+    <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfigManager" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenCreator" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthUtils" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthImpl" />
 
     <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup"/>

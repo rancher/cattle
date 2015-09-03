@@ -14,13 +14,10 @@ if_docker = pytest.mark.skipif("os.environ.get('DOCKER_TEST') == 'false'",
 def docker_client(super_client):
     for host in super_client.list_host(state='active', remove_null=True,
                                        kind='docker'):
-        keys = super_client.list_api_key(accountId=host.accountId)
-        if len(keys) == 0:
-            key = super_client.create_api_key(accountId=host.accountId)
-            key = super_client.wait_success(key)
-            keys = [key]
+        key = super_client.create_api_key(accountId=host.accountId)
+        super_client.wait_success(key)
 
-        return api_client(keys[0].publicValue, keys[0].secretValue)
+        return api_client(key.publicValue, key.secretValue)
 
     raise Exception('Failed to find docker host, please register one')
 

@@ -35,14 +35,13 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
         }
         List<Account> accounts = new ArrayList<>();
         if (exactMatch){
-            accounts.add(authDao.getByName(name));
+            accounts.add(authDao.getByUsername(name));
         } else {
-            accounts.addAll(authDao.searchAccounts(name));
+            accounts.addAll(authDao.searchUsers(name));
         }
         for(Account account: accounts){
             if (account != null) {
-                String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
-                identities.add(new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(), null, null, null));
+                identities.add(authDao.getIdentity(account.getId()));
             }
         }
         return identities;
@@ -51,8 +50,7 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
     @Override
     public Set<Identity> getIdentities(Account account) {
         Set<Identity> identities = new HashSet<>();
-        identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName(),
-                null, null, null));
+        identities.add(new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId())));
         return identities;
     }
 
@@ -78,12 +76,7 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
             notConfigured();
         }
         String accountId = ApiContext.getContext().getIdFormatter().parseId(id);
-        Account account = authDao.getAccountById(Long.valueOf(accountId == null ? id : accountId));
-        if (account == null || account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
-            return null;
-        }
-        accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
-        return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(), null, null, null);
+        return authDao.getIdentity(Long.valueOf(accountId == null ? id : accountId));
     }
 
     @Override

@@ -1,7 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 import io.cattle.platform.api.auth.Identity;
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
@@ -84,21 +83,9 @@ public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
         if (gotIdentity == null) {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
-        boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
-        if (SecurityConstants.SECURITY.get()) {
-            ldapUtils.isAllowed(ldapUtils.identitiesToIdList(identities), identities);
-            account = authDao.getAccountByExternalId(gotIdentity.getExternalId(), LdapConstants.USER_SCOPE);
-            if (null == account) {
-                account = authDao.createAccount(gotIdentity.getLogin(), AccountConstants.USER_KIND, gotIdentity.getExternalId(),
-                        LdapConstants.USER_SCOPE);
-                if (!hasAccessToAProject) {
-                    projectResourceManager.createProjectForUser(account);
-                }
-            }
-        } else {
-            account = authDao.getAdminAccount();
-            authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, gotIdentity.getExternalId(), LdapConstants.USER_SCOPE);
-            authDao.ensureAllProjectsHaveNonRancherIdMembers(gotIdentity);
+        account = ldapUtils.getOrCreateAccount(gotIdentity, identities, null, true);
+        if (account == null){
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "FailedToGetAccount");
         }
         Map<String, Object> jsonData = new HashMap<>();
         jsonData.put(TokenUtils.TOKEN, LdapConstants.LDAP_JWT);

@@ -44,6 +44,7 @@
                 <value>addRemoveLoadBalancerListenerInput</value>
                 <value>addRemoveLoadBalancerTargetInput</value>
                 <value>addRemoveServiceLinkInput</value>
+                <value>changeSecretInput</value>
                 <value>setLabelsInput</value>
                 <value>apiKey,parent=credential</value>
                 <value>cluster,parent=host</value>
@@ -55,6 +56,7 @@
                 <value>ipAddressAssociateInput</value>
                 <value>loadBalancerUpdateAllInput</value>
                 <value>project,parent=account</value>
+                <value>password,parent=credential</value>
                 <value>registry,parent=storagePool</value>
                 <value>registryCredential,parent=credential</value>
                 <value>removeLoadBalancerInput</value>

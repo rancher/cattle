@@ -10,4 +10,8 @@ public class RegisterTokenCreate extends ApiKeyCreate {
         return RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN;
     }
 
+    @Override
+    protected boolean getsHashed() {
+        return false;
+    }
 }

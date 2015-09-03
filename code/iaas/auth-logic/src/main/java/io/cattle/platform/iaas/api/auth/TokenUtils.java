@@ -1,11 +1,14 @@
 package io.cattle.platform.iaas.api.auth;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
+import io.cattle.platform.iaas.api.auth.integration.ldap.LdapConstants;
+import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
@@ -40,6 +43,9 @@ public abstract class TokenUtils  {
 
     @Inject
     TokenService tokenService;
+
+    @Inject
+    ProjectResourceManager projectResourceManager;
 
     @Inject
     AuthTokenDao authTokenDao;
@@ -239,4 +245,26 @@ public abstract class TokenUtils  {
     }
 
     protected abstract String accessToken();
+
+    public Account getOrCreateAccount(Identity gotIdentity, Set<Identity> identities, Account account, boolean createAccount) {
+        boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
+        if (SecurityConstants.SECURITY.get()) {
+            isAllowed(identitiesToIdList(identities), identities);
+            if (account == null) {
+            account = authDao.getAccountByExternalId(gotIdentity.getExternalId(), gotIdentity.getExternalIdType());
+            }
+            if (account == null && createAccount) {
+                account = authDao.createAccount(gotIdentity.getName(), AccountConstants.USER_KIND, gotIdentity.getExternalId(),
+                        gotIdentity.getExternalIdType());
+                if (!hasAccessToAProject) {
+                    projectResourceManager.createProjectForUser(account);
+                }
+            }
+        } else {
+            account = authDao.getAdminAccount();
+            authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, gotIdentity.getExternalId(), LdapConstants.USER_SCOPE);
+            authDao.ensureAllProjectsHaveNonRancherIdMembers(gotIdentity);
+        }
+        return account;
+    }
 }

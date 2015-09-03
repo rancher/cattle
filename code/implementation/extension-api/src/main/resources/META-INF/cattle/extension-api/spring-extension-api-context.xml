@@ -21,6 +21,7 @@
                 <value>io.cattle.platform.iaas.api.auth.projects.Member</value>
                 <value>io.cattle.platform.api.auth.Identity</value>
                 <value>io.cattle.platform.iaas.api.auth.integration.ldap.LdapConfig</value>
+                <value>io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfig</value>
             </list>
         </property>
     </bean>

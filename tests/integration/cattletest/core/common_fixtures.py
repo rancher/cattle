@@ -14,7 +14,7 @@ _SUPER_CLIENT = None
 
 @pytest.fixture(scope='session')
 def cattle_url():
-    default_url = 'http://localhost:8080/v1/schemas'
+    default_url = 'http://cattle.jhrb.us/v1/schemas'
     return os.environ.get('CATTLE_URL', default_url)
 
 
@@ -49,12 +49,8 @@ def super_account(super_client):
 @pytest.fixture(scope='session')
 def admin_user_client(super_client):
     admin_account = super_client.list_account(kind='admin', uuid='admin')[0]
-    keys = super_client.list_api_key(accountId=admin_account.id)
-    if len(keys) == 0:
-        key = super_client.create_api_key(accountId=admin_account.id)
-        key = super_client.wait_success(key)
-    else:
-        key = keys[0]
+    key = super_client.create_api_key(accountId=admin_account.id)
+    super_client.wait_success(key)
 
     client = api_client(key.publicValue, key.secretValue)
     init(client)
@@ -651,3 +647,12 @@ def api_client(access_key, secret_key):
                            cache=False,
                            access_key=access_key,
                            secret_key=secret_key)
+
+
+def base_url():
+    base_url = cattle_url()
+    if (base_url.endswith('/v1/schemas')):
+        base_url = base_url[:-7]
+    elif (not base_url.endswith('/v1/')):
+        base_url = base_url + '/v1/'
+    return base_url

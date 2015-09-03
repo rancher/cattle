@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.model.impl;
 
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.id.IdFormatterUtils;
 import io.github.ibuildthecloud.gdapi.model.Field;
@@ -74,6 +75,17 @@ public class WrappedResource extends ResourceImpl implements Resource {
             if (value == null) {
                 value = field.getValue(obj);
             }
+            if (StringUtils.isNotBlank(field.getTransform()) && StringUtils.isNotBlank((String) value)){
+                String decrypted;
+                try {
+                        decrypted = ApiContext.getContext().getTransformationService().untransform((String) value);
+                } catch (UnsupportedOperationException e) {
+                    decrypted = "";
+                }
+                if (decrypted != null) {
+                    value = decrypted;
+                }
+            }
             addField(name, IdFormatterUtils.formatReference(field, idFormatter, value));
             if (createTsFields && field.getTypeEnum() == FieldType.DATE && value instanceof Date) {
                 addField(name + "TS", ((Date)value).getTime());
@@ -99,6 +111,7 @@ public class WrappedResource extends ResourceImpl implements Resource {
             sorted.putAll(fields);
             fields = sorted;
         }
+
     }
 
     protected boolean isResource(Object obj) {
