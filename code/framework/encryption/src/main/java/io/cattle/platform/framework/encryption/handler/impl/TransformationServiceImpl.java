@@ -15,7 +15,6 @@ public class TransformationServiceImpl implements TransformationService {
 
     Map<String, Transformer> transformers;
 
-    @SuppressWarnings("unchecked")
     @Override
     public String transform(String value, String method) {
         String transformer;

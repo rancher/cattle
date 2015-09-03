@@ -19,8 +19,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 public class TokenResourceManager extends AbstractNoOpResourceManager {
@@ -29,17 +27,6 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
     AuthTokenDao authTokenDao;
 
     private List<TokenCreator> tokenCreators;
-
-    public List<TokenCreator> getTokenCreators() {
-        return tokenCreators;
-    }
-
-    private static final Log logger = LogFactory.getLog(TokenResourceManager.class);
-
-    @Inject
-    public void setTokenCreators(List<TokenCreator> tokenCreators) {
-        this.tokenCreators = tokenCreators;
-    }
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -80,4 +67,14 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
         return new Token(SecurityConstants.SECURITY.get(), GithubConstants.GITHUB_CLIENT_ID.get(),
                 GithubConstants.GITHUB_HOSTNAME.get(), SecurityConstants.AUTH_PROVIDER.get());
     }
+
+    public List<TokenCreator> getTokenCreators() {
+        return tokenCreators;
+    }
+
+    @Inject
+    public void setTokenCreators(List<TokenCreator> tokenCreators) {
+        this.tokenCreators = tokenCreators;
+    }
+
 }

@@ -28,7 +28,6 @@ public class LocalAuthConfigManager extends AbstractNoOpResourceManager {
         return new Class<?>[] {LocalAuthConfig.class};
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Object createInternal(String type, ApiRequest request) {
         if (!StringUtils.equalsIgnoreCase(LocalAuthConstants.CONFIG, request.getType())) {

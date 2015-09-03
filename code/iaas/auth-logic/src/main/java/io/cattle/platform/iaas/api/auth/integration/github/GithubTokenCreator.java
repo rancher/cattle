@@ -4,11 +4,10 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
-import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.TeamAccountInfo;
-import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.object.ObjectManager;
@@ -27,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -44,8 +44,6 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
     GithubClient githubClient;
     @Inject
     private TokenService tokenService;
-    @Inject
-    private AuthDao authDao;
 
     public Token getGithubToken(String accessToken) {
         if (!isConfigured()) {

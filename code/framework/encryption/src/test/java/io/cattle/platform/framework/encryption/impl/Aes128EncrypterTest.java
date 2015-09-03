@@ -1,10 +1,9 @@
 package io.cattle.platform.framework.encryption.impl;
 
+import java.security.SecureRandom;
+
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
-import org.junit.Before;
-
-import java.security.SecureRandom;
 
 public class Aes128EncrypterTest {
 

@@ -9,8 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public class GithubUtils extends TokenUtils {
 
-    @SuppressWarnings("unchecked")
-
     @Override
     protected String accessMode() {
         return GithubConstants.ACCESS_MODE.get();

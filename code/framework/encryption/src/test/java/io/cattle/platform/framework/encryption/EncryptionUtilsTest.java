@@ -1,11 +1,10 @@
 package io.cattle.platform.framework.encryption;
 
-import org.apache.commons.codec.binary.Hex;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.math.BigInteger;
 import java.security.SecureRandom;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 
 public class EncryptionUtilsTest {

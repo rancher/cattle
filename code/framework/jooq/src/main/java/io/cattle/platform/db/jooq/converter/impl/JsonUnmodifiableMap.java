@@ -21,7 +21,6 @@ public class JsonUnmodifiableMap<K, V> implements UnmodifiableMap<K, V> {
     JsonMapper jsonMapper;
     String text;
 
-    @SuppressWarnings("unchecked")
     public JsonUnmodifiableMap(JsonMapper mapper, String text) throws IOException {
         this.jsonMapper = mapper;
         this.text = text;
@@ -102,6 +101,7 @@ public class JsonUnmodifiableMap<K, V> implements UnmodifiableMap<K, V> {
         return getMap().toString();
     }
 
+    @SuppressWarnings("unchecked")
     protected  Map<K, V> getMap() {
         if (this.map == null) {
             try {

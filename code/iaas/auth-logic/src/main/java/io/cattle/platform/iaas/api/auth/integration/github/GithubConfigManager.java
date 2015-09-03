@@ -57,7 +57,6 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         return new Class<?>[]{GithubConfig.class};
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Object createInternal(String type, ApiRequest request) {
         if (!StringUtils.equalsIgnoreCase(GithubConstants.CONFIG, request.getType())) {
