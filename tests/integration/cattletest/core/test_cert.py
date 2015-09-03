@@ -30,18 +30,6 @@ def test_create_cert_basic(client):
     return cert1
 
 
-def test_create_cert_invalid_key(client):
-    cert = _read_cert("cert.pem")
-    key = _read_cert("key_invalid.pem")
-    with pytest.raises(ApiError) as e:
-        client. \
-            create_certificate(name=random_str(),
-                               cert=cert,
-                               key=key)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidFormat'
-
-
 def test_create_cert_invalid_cert(client):
     cert = _read_cert("cert_invalid.pem")
     key = _read_cert("key.pem")
@@ -67,20 +55,6 @@ def test_create_cert_chain(client):
     assert cert1.state == 'active'
     assert cert1.cert == cert
     return cert1
-
-
-def test_invalid_key_cert_in_cert_chain(client):
-    cert = _read_cert("cert.pem")
-    key = _read_cert("key.pem")
-    chain = _read_cert("enduser-example.com.chain")
-    with pytest.raises(ApiError) as e:
-        client. \
-            create_certificate(name=random_str(),
-                               cert=cert,
-                               key=key,
-                               certChain=chain)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidFormat'
 
 
 def _read_cert(name):
