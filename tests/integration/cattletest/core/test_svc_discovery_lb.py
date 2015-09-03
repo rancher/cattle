@@ -944,6 +944,23 @@ def test_lb_service_update_certificate(client, context, image_uuid):
     assert rancher_compose[service.name]['default_cert'] == cert3.name
     assert rancher_compose[service.name]['certs'][0] == cert1.name
 
+    # don't pass certificate ids and validate that they are still set
+    service = client.update(service, name='newName')
+    client.wait_success(service, 120)
+
+    lb = client.reload(lb)
+    assert lb.defaultCertificateId == cert3.id
+    assert lb.certificateIds == [cert1.id]
+
+    # update with none certificates
+    service = client.update(service, certificateIds=None,
+                            defaultCertificateId=None)
+    client.wait_success(service, 120)
+
+    lb = client.reload(lb)
+    assert lb.defaultCertificateId is None
+    assert lb.certificateIds is None
+
 
 def test_lb_with_certs_service_update(new_context, image_uuid):
     client = new_context.client
