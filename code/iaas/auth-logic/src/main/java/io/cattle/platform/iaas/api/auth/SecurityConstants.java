@@ -18,4 +18,5 @@ public class SecurityConstants {
     public static final String CODE = "code";
     public static final String TOKEN_VERSION = "v1";
     public static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
+    public static final String HAS_LOGGED_IN = "hasLoggedIn";
 }
