@@ -46,6 +46,12 @@ def make_user_and_client(admin_user_client, name_base='user '):
                                               accountId=account.id)
     admin_user_client.wait_success(login)
 
+    start_client = make_client(admin_user_client, account, username, password)
+
+    return start_client, account, username, password
+
+
+def make_client(admin_user_client, account, username, password):
     key = admin_user_client.create_apiKey()
     admin_user_client.wait_success(key)
     start_client = from_env(url=cattle_url(),
@@ -67,8 +73,7 @@ def make_user_and_client(admin_user_client, name_base='user '):
 
     assert len(identities) == 1
     assert identities[0].externalId == account.id
-
-    return start_client, account, username, password
+    return start_client
 
 
 @pytest.mark.nonparallel
@@ -76,6 +81,30 @@ def test_local_login(admin_user_client, request):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
     identities = client.list_identity()
+    projects = client.list_project()
+    assert len(projects) != 0
+
+    assert len(identities) == 1
+    assert identities[0].externalId == account.id
+
+
+@pytest.mark.nonparallel
+def test_local_login_only_create1_project(admin_user_client, request):
+    client, account, username, password =\
+        make_user_and_client(admin_user_client)
+    identities = client.list_identity()
+    projects = client.list_project()
+    original_projects = len(projects)
+
+    assert original_projects != 0
+    assert len(identities) == 1
+    assert identities[0].externalId == account.id
+
+    client = make_client(admin_user_client, account, username, password)
+
+    identities = client.list_identity()
+    projects = client.list_project()
+    assert len(projects) == original_projects
 
     assert len(identities) == 1
     assert identities[0].externalId == account.id
