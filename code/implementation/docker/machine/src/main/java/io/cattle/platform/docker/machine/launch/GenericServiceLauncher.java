@@ -9,7 +9,10 @@ import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockDelegator;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.server.context.ServerContext;
@@ -18,6 +21,7 @@ import io.cattle.platform.util.type.InitializationTask;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +35,8 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
     private static final String SERVICE_USER_UUID = "machineServiceAccount";
     private static final int WAIT = 2000;
 
+    @Inject
+    LockManager lockManager;
     @Inject
     LockDelegator lockDelegator;
     @Inject
@@ -77,30 +83,52 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
     }
 
     protected Credential getCredential() {
+        return lockManager.lock(new ServiceCredLock(SERVICE_USER_UUID), new LockCallback<Credential>() {
+            @Override
+            public Credential doWithLock() {
+                return getCredentialLock();
+            }
+        });
+    }
+
+    protected Credential getCredentialLock() {
         Account account = accountDao.findByUuid(SERVICE_USER_UUID);
         if (account == null) {
-            account = resourceDao.createAndSchedule(Account.class, ACCOUNT.UUID, getAccountUuid(), ACCOUNT.NAME, getAccountUuid(), ACCOUNT.KIND,
-                    AccountConstants.SERVICE_KIND);
+            account = DeferredUtils.nest(new Callable<Account>() {
+                @Override
+                public Account call() throws Exception {
+                    return resourceDao.createAndSchedule(Account.class, ACCOUNT.UUID, getAccountUuid(), ACCOUNT.NAME, getAccountUuid(), ACCOUNT.KIND,
+                            AccountConstants.SERVICE_KIND);
+                }
+            });
         }
 
+        final Long accountId = account.getId();
         account = resourceMonitor.waitForState(account, CommonStatesConstants.ACTIVE);
         Credential cred = accountDao.getApiKey(account, false);
 
         if (cred == null) {
-            cred = resourceDao.createAndSchedule(Credential.class, CREDENTIAL.KIND, CredentialConstants.KIND_API_KEY, CREDENTIAL.ACCOUNT_ID, account.getId());
+            cred = DeferredUtils.nest(new Callable<Credential>() {
+                @Override
+                public Credential call() throws Exception {
+                    return resourceDao.createAndSchedule(Credential.class, CREDENTIAL.KIND, CredentialConstants.KIND_AGENT_API_KEY, CREDENTIAL.ACCOUNT_ID,
+                            accountId);
+                }
+            });
         }
 
         return resourceMonitor.waitForState(cred, CommonStatesConstants.ACTIVE);
     }
 
     protected abstract boolean shouldRun();
+    protected abstract boolean isReady();
     protected abstract String binaryPath();
     protected abstract void setEnvironment(Map<String, String> env);
     protected abstract LockDefinition getLock();
-    
+
     @Override
     protected synchronized void doRun() throws Exception {
-        if (!shouldRun() || !ServerContext.isCustomApiHost()) {
+        if (!shouldRun() || !isReady()) {
             return;
         }
 
