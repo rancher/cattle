@@ -11,6 +11,14 @@ def _create_stack(client):
     return env
 
 
+def _create_stack_long_name(client):
+    lname = "MyLongerStackNameCausingIssue"
+    env = client.create_environment(name=lname)
+    env = client.wait_success(env)
+    assert env.state == "active"
+    return env
+
+
 def create_env_and_svc(client, context):
     env = _create_stack(client)
 
@@ -2318,6 +2326,59 @@ def test_validate_hostname_override(client, context):
 
     # validate the host was overriden with instancename
     assert instance2.hostname == instance2.name
+
+
+def test_validate_long_hostname_override(client, context):
+    # create environment and services
+    env = _create_stack_long_name(client)
+    image_uuid = context.image_uuid
+    launch_config1 = {
+        "imageUuid": image_uuid,
+        "labels": {
+            'io.rancher.container.hostname_override': 'container_name'
+        }
+    }
+    first_service_name = "MyServiceNameLongerThanDNSPrefixLengthAllowed"
+    service1 = client.create_service(name=first_service_name,
+                                     environmentId=env.id,
+                                     launchConfig=launch_config1)
+    service1 = client.wait_success(service1)
+    assert service1.state == "inactive"
+
+    service1 = client.wait_success(service1.activate())
+    assert service1.state == "active"
+    instance1 = _validate_compose_instance_start(client, service1, env, "1")
+
+    # validate the host was overriden with truncated
+    # instancename - length should be 64
+    trunc_name = "MyLongerStackNameCausingIssue_" \
+                 "MyServiceNameLongerThanDNSPrefix_1"
+    assert instance1.hostname == trunc_name
+
+    # use case 2 - validate that even passed hostname
+    # gets overriden by the truncated instancename
+    launch_config2 = {
+        "imageUuid": image_uuid,
+        "labels": {
+            'io.rancher.container.hostname_override': 'container_name',
+            "hostname": "test"
+        }
+    }
+    second_service_name = "SecondServiceNameLongerThanDNSPrefixLengthAllowed"
+    service2 = client.create_service(name=second_service_name,
+                                     environmentId=env.id,
+                                     launchConfig=launch_config2)
+    service2 = client.wait_success(service2)
+    assert service2.state == "inactive"
+
+    service2 = client.wait_success(service2.activate())
+    assert service2.state == "active"
+    instance2 = _validate_compose_instance_start(client, service2, env, "1")
+
+    # validate the host was overriden with instancename
+    trunc_name2 = "MyLongerStackNameCausingIssue_" \
+                  "SecondServiceNameLongerThanDNSPr_1"
+    assert instance2.hostname == trunc_name2
 
 
 def test_vip_service(client, context):
