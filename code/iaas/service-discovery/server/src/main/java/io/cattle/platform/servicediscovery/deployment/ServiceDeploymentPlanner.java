@@ -5,6 +5,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnit;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -73,23 +74,38 @@ public abstract class ServiceDeploymentPlanner {
         this.healthyUnits.addAll(units);
     }
 
-    public List<DeploymentUnit> getBadUnits() {
-        return badUnits;
-    }
-
-    public List<DeploymentUnit> getUnhealthyUnits() {
-        return unhealthyUnits;
-    }
-
     public List<Service> getServices() {
         return services;
     }
 
-    public List<DeploymentUnit> getIncompleteUnits() {
-        return incompleteUnits;
-    }
-
     public List<DeploymentUnit> getHealthyUnits() {
         return healthyUnits;
+    }
+
+    public void cleanupUnhealthyUnits() {
+        Iterator<DeploymentUnit> it = this.unhealthyUnits.iterator();
+        while (it.hasNext()) {
+            DeploymentUnit next = it.next();
+            next.remove();
+            it.remove();
+        }
+    }
+
+    public void cleanupBadUnits() {
+        Iterator<DeploymentUnit> it = this.badUnits.iterator();
+        while (it.hasNext()) {
+            DeploymentUnit next = it.next();
+            next.remove();
+            it.remove();
+        }
+    }
+
+    public void cleanupIncompleteUnits() {
+        Iterator<DeploymentUnit> it = this.incompleteUnits.iterator();
+        while (it.hasNext()) {
+            DeploymentUnit next = it.next();
+            next.cleanupUnit();
+            it.remove();
+        }
     }
 }

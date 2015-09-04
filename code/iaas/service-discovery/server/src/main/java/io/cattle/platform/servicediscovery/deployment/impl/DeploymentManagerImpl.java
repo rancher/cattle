@@ -123,6 +123,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 activateServices(service, services);
                 activateDeploymentUnits(planner);
 
+                if (needToReconcile(services, units, planner)) {
+                    throw new IllegalStateException(
+                            "Failed to do service reconcile for service [" + service.getId() + "]");
+                }
+
                 return false;
             }
         });
@@ -176,12 +181,12 @@ public class DeploymentManagerImpl implements DeploymentManager {
         /*
          * Delete invalid units
          */
-        deleteBadUnits(planner);
+        planner.cleanupBadUnits();
 
         /*
          * Cleanup incomplete units
          */
-        cleanupIncompleteUnits(planner);
+        planner.cleanupIncompleteUnits();
 
         /*
          * For instances having networkFrom deps, if A used network of B, and B is restarted, A has to be restarted as
@@ -197,7 +202,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         /*
          * Delete the units that have a bad health
          */
-        cleanupUnhealthyUnits(planner);
+        planner.cleanupUnhealthyUnits();
     }
 
     private Map<Long, DeploymentUnitInstanceIdGenerator> populateUsedNames(
@@ -215,13 +220,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return generator;
     }
 
-    protected void cleanupUnhealthyUnits(ServiceDeploymentPlanner planner) {
-        List<DeploymentUnit> unhealthyUnits = planner.getUnhealthyUnits();
-        for (DeploymentUnit unhealthyUnit : unhealthyUnits) {
-            unhealthyUnit.remove();
-        }
-    }
-
     protected void startUnits(ServiceDeploymentPlanner planner) {
         Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = populateUsedNames(planner.getServices());
         /*
@@ -235,22 +233,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
         for (DeploymentUnit unit : units) {
             unit.waitForStart();
-        }
-    }
-
-    protected void deleteBadUnits(ServiceDeploymentPlanner planner) {
-        List<DeploymentUnit> badUnits = planner.getBadUnits();
-
-        for (DeploymentUnit badUnit : badUnits) {
-            badUnit.remove();
-        }
-    }
-
-    protected void cleanupIncompleteUnits(ServiceDeploymentPlanner planner) {
-        List<DeploymentUnit> incompleteUnits = planner.getIncompleteUnits();
-
-        for (DeploymentUnit incompleteUnit : incompleteUnits) {
-            incompleteUnit.cleanupUnit();
         }
     }
 

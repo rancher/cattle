@@ -1,12 +1,12 @@
 package io.cattle.platform.servicediscovery.deployment;
 
-import io.cattle.platform.core.addon.RestartPolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
@@ -26,8 +26,7 @@ public abstract class DeploymentUnitInstance {
     protected ServiceExposeMap exposeMap;
     protected String launchConfigName;
     protected Service service;
-    protected boolean autoRestart = true;
-    protected boolean firstStart = true;
+    protected boolean startOnce = false;
 
     public abstract boolean isError();
 
@@ -56,20 +55,18 @@ public abstract class DeploymentUnitInstance {
         this.uuid = uuid;
         this.launchConfigName = launchConfigName;
         this.service = service;
-        Object policy = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
-                DockerInstanceConstants.FIELD_RESTART_POLICY);
-
-        if (policy != null
-                && StringUtils
-                        .equalsIgnoreCase(RestartPolicy.RESTART_NEVER, ((Map<String, String>) policy).get("name"))) {
-            autoRestart = false;
+        Object labels = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                InstanceConstants.FIELD_LABELS);
+        if (labels != null) {
+            String createOnlyLabel = ((Map<String, String>) labels)
+                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_CREATE_ONLY);
+            if (StringUtils.equalsIgnoreCase(createOnlyLabel, "true")) {
+                startOnce = true;
+            }
         }
     }
 
     public DeploymentUnitInstance createAndStart(Map<String, Object> deployParams) {
-        if (!this.createNew()) {
-            firstStart = false;
-        }
         this.create(deployParams);
         this.start();
         return this;
@@ -98,7 +95,7 @@ public abstract class DeploymentUnitInstance {
     protected abstract DeploymentUnitInstance waitForStartImpl();
 
     public boolean isStarted() {
-        if (!firstStart && !autoRestart) {
+        if (startOnce && !this.createNew()) {
             return true;
         }
         return isStartedImpl();
