@@ -11,7 +11,6 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -31,10 +30,6 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         String cert = DataUtils.getFieldFromRequest(request, "cert", String.class);
-        String key = DataUtils.getFieldFromRequest(request, "key", String.class);
-        String certChain = DataUtils.getFieldFromRequest(request, "certChain", String.class);
-
-        validateCertificate(cert, key, certChain);
 
         // set extra fields
         Certificate certificate = request.proxyRequestObject(Certificate.class);
@@ -61,33 +56,11 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
             DataUtils.getWritableFields(certificate).put("subjectAlternativeNames",
                     SslCertificateUtils.getSubjectAlternativeNames(cert));
         } catch (Exception e) {
-            logger.error(e);
+            logger.error("Exception parsing certificate fields ", e);
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
                     e.getMessage(), null);
         }
 
         return super.create(type, request, next);
-    }
-
-    protected void validateCertificate(String cert, String key, String certChain) {
-        try {
-            if (StringUtils.isEmpty(certChain)) {
-                SslCertificateUtils.verifySelfSignedCertificate(cert, key);
-            }
-        } catch (Exception e) {
-            logger.error(e);
-            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
-                    e.getMessage(), null);
-        }
-
-        try {
-            if (!StringUtils.isEmpty(certChain)) {
-                SslCertificateUtils.verifyCertificateChain(cert, certChain, key);
-            }
-        } catch (Exception e) {
-            logger.error(e);
-            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
-                    e.getMessage(), null);
-        }
     }
 }

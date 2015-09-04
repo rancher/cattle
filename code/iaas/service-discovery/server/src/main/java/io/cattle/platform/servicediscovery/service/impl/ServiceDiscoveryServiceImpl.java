@@ -407,8 +407,16 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
                 lbSvc.getId(), LOAD_BALANCER.REMOVED, null);
+        if (lb == null) {
+            return;
+        }
+
         ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(lbSvc.getId(), instanceToRegister.getServiceId(),
                 null);
+        if (map == null) {
+            return;
+        }
+
         LoadBalancerTargetInput target = new LoadBalancerTargetInput(instanceToRegister,
                 map, jsonMapper);
         lbService.addTargetToLoadBalancer(lb, target);
@@ -496,6 +504,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 LOAD_BALANCER.REMOVED, null);
         if (lb != null) {
             Map<String, Object> data = new HashMap<>();
+            if (certIds == null) {
+                certIds = DataAccessor.fields(service)
+                        .withKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS).asList(jsonMapper, Long.class);
+            }
+            if (defaultCertId == null) {
+                defaultCertId = DataAccessor.fieldLong(service, LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
+            }
             data.put(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS, certIds);
             data.put(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID, defaultCertId);
             DataUtils.getWritableFields(lb).putAll(data);
