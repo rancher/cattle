@@ -151,12 +151,29 @@ def test_user_types(user_client, adds=set(), removes=set()):
     types.update(adds)
     types.difference_update(removes)
     assert set(user_client.schema.types.keys()) == types
+    return types
 
 
 def test_project_types(project_client):
     # Almost the same as user
     test_user_types(project_client, adds={'subscribe'},
                     removes={'userPreference'})
+
+
+def test_readonly_types(admin_user_client):
+    context = create_context(admin_user_client, kind="readonly")
+    client = context.user_client
+    test_user_types(client, adds={'subscribe'},
+                    removes={'userPreference'})
+    for type in client.schema.types:
+        type = client.schema.types[type]
+        assert len(type['actions']) == 0
+        assert len(type['resourceActions']) == 0
+        assert len(type['collectionActions']) == 0
+        if type.resourceFields is not None:
+            for k, field in type.resourceFields.items():
+                assert field.create is False
+                assert field.update is False
 
 
 def test_agent_register_types(agent_register_client):

@@ -302,7 +302,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         query.addConditions(allMembers);
         query.setDistinct(true);
         projects.addAll(query.fetchInto(ACCOUNT));
-        Map<Long, Account> returnProjects = new HashMap<Long, Account>();
+        Map<Long, Account> returnProjects = new HashMap<>();
         for (Account project : projects) {
             returnProjects.put(project.getId(), project);
         }
@@ -318,6 +318,22 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE))
                 .and(PROJECT_MEMBER.REMOVED.isNull())
                 .orderBy(PROJECT_MEMBER.ID.asc()).fetch();
+    }
+
+    public List<? extends ProjectMember> getProjectMembersByIdentity(long projectId, Set<Identity> identities) {
+        Condition allMembers = DSL.falseCondition();
+        for (Identity identity : identities) {
+            allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(identity.getExternalId())
+                    .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(identity.getExternalIdType()))
+                    .and(PROJECT_MEMBER.REMOVED.isNull())
+                    .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE))
+                    .and(PROJECT_MEMBER.PROJECT_ID.eq(projectId)));
+        }
+        SelectQuery<Record> query = create().selectQuery();
+        query.addFrom(PROJECT_MEMBER);
+        query.addConditions(allMembers);
+        query.setDistinct(true);
+        return query.fetchInto(PROJECT_MEMBER);
     }
 
     @Override
@@ -364,15 +380,11 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         if ((usingAccount != null && usingAccount.equals(projectId)) || isAdmin) {
             return true;
         }
-        Set<String> roles = new HashSet<>();
-        roles.add(ProjectConstants.OWNER);
-        roles.add(ProjectConstants.MEMBER);
         Set<ProjectMemberRecord> projectMembers = new HashSet<>();
         Condition allMembers = DSL.falseCondition();
         for (Identity id : identities) {
             allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getExternalId())
                     .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getExternalIdType()))
-                    .and(PROJECT_MEMBER.ROLE.in(roles))
                     .and(PROJECT_MEMBER.PROJECT_ID.eq(projectId))
                     .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE))
                     .and(PROJECT_MEMBER.REMOVED.isNull()));

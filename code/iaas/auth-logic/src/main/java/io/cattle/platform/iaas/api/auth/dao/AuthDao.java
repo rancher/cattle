@@ -38,6 +38,8 @@ public interface AuthDao {
 
     List<? extends ProjectMember> getActiveProjectMembers(long projectId);
 
+    List<? extends ProjectMember> getProjectMembersByIdentity(long projectId, Set<Identity> identities);
+
     ProjectMember getProjectMember(long id);
 
     boolean hasAccessToAnyProject(Set<Identity> identities, boolean isAdmin, Long usingAccount);

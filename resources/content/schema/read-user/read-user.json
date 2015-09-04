@@ -1,0 +1,8 @@
+{
+    "authorize": {
+        ".*\\.resourceActions\\..*": "",
+        ".*\\.uuid": "r",
+
+        "end" : ""
+    }
+}

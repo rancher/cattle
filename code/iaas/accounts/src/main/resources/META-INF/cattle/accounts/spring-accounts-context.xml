@@ -112,7 +112,37 @@
             </list>
         </property>
     </bean>
-    
+
+    <bean id="ReadOnlySchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
+        <property name="id" value="readonly" />
+        <property name="schemaFactory" ref="Project" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.NotWritablePostProcessor" />
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/read-user/read-user.json</value>
+                                    <value>classpath*:schema/read-user/read-user.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+    <bean id="OwnerSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
+        <property name="id" value="owner" />
+        <property name="schemaFactory" ref="Project" />
+    </bean>
+    <bean id="MemberSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
+        <property name="id" value="member" />
+        <property name="schemaFactory" ref="Project" />
+    </bean>
+
     <bean id="ReadAdminSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="readAdmin" />
         <property name="schemaFactory" ref="AdminSchema" />
