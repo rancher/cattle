@@ -1,6 +1,7 @@
 package io.cattle.platform.ha.monitor.model;
 
 import java.util.Date;
+import java.util.Map;
 
 public class KnownInstance {
     String uuid;
@@ -9,6 +10,7 @@ public class KnownInstance {
     String systemContainer;
     String instanceTriggeredStop;
     Date removed;
+    Map<String, Object>data;
     
     public String getUuid() {
         return uuid;
@@ -46,5 +48,10 @@ public class KnownInstance {
     public void setRemoved(Date removed) {
         this.removed = removed;
     }
-    
+    public Map<String, Object> getData() {
+        return data;
+    }
+    public void setData(Map<String, Object> data) {
+        this.data = data;
+    }
 }
