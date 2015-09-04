@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <changeSet author="wizardofmath (generated)" id="dump1">
+        <modifyDataType columnName="public_value" newDataType="varchar(255)" tableName="credential"/>
+    </changeSet>
+    <changeSet author="wizardofmath (generated)" id="dump2">
+        <addUniqueConstraint columnNames="public_value" constraintName="idx_credential_public_value" deferrable="false" disabled="false" initiallyDeferred="false" tableName="credential"/>
+    </changeSet>
+</databaseChangeLog>
