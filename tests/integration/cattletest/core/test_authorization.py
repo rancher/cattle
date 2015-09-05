@@ -161,7 +161,7 @@ def test_project_types(project_client):
 
 
 def test_readonly_types(admin_user_client):
-    context = create_context(admin_user_client, kind="readonly")
+    context = create_context(admin_user_client, kind='readonly')
     client = context.user_client
     test_user_types(client, adds={'subscribe'},
                     removes={'userPreference'})
@@ -399,10 +399,50 @@ def test_github_auth(admin_user_client, user_client, project_client):
         'enabled': 'cr',
         'allowedIdentities': 'cr',
         'clientId': 'cr',
-        'clientSecret': 'cr',
+        'clientSecret': 'cro',
         'accessMode': 'cr',
         'hostname': 'cr',
         'scheme': 'cr'
+    })
+
+
+def test_ldap_auth(admin_user_client, user_client, project_client):
+    assert 'ldapconfig' not in user_client.schema.types
+    assert 'ldapconfig' not in project_client.schema.types
+
+    auth_check(admin_user_client.schema, 'ldapconfig', 'cru', {
+        'accessMode': 'cr',
+        'domain': 'cr',
+        'enabled': 'cr',
+        'groupNameField': 'cr',
+        'groupObjectClass': 'cr',
+        'groupSearchField': 'cr',
+        'loginDomain': 'cr',
+        'name': 'r',
+        'port': 'cr',
+        'server': 'cr',
+        'serviceAccountPassword': 'cro',
+        'serviceAccountUsername': 'cr',
+        'tls': 'cr',
+        'userDisabledBitMask': 'cr',
+        'userEnabledAttribute': 'cr',
+        'userLoginField': 'cr',
+        'userNameField': 'cr',
+        'userObjectClass': 'cr',
+        'userSearchField': 'cr'
+    })
+
+
+def test_local_auth(admin_user_client, user_client, project_client):
+    assert 'localauthconfig' not in user_client.schema.types
+    assert 'localauthconfig' not in project_client.schema.types
+
+    auth_check(admin_user_client.schema, 'localAuthConfig', 'cr', {
+        'accessMode': 'cr',
+        'name': 'cr',
+        'username': 'cr',
+        'password': 'cro',
+        'enabled': 'cr',
     })
 
 
@@ -435,28 +475,28 @@ def test_project_auth(admin_user_client, user_client, project_client):
 
 def test_project_member_auth(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'projectMember', 'cr', {
-        "name": "r",
-        "role": "cr",
-        "externalId": "cr",
-        "externalIdType": "cr",
-        "projectId": "r",
-        "data": 'r'
+        'name': 'r',
+        'role': 'cr',
+        'externalId': 'cr',
+        'externalIdType': 'cr',
+        'projectId': 'r',
+        'data': 'r'
     })
 
     auth_check(user_client.schema, 'projectMember', 'cr', {
-        "name": "r",
-        "role": "cr",
-        "externalId": "cr",
-        "externalIdType": "cr",
-        "projectId": "r",
+        'name': 'r',
+        'role': 'cr',
+        'externalId': 'cr',
+        'externalIdType': 'cr',
+        'projectId': 'r',
     })
 
     auth_check(project_client.schema, 'projectMember', 'r', {
-        "name": "r",
-        "role": "r",
-        "externalId": "r",
-        "externalIdType": "r",
-        "projectId": "r",
+        'name': 'r',
+        'role': 'r',
+        'externalId': 'r',
+        'externalIdType': 'r',
+        'projectId': 'r',
     })
 
 
@@ -1060,7 +1100,7 @@ def test_extension_point_auth(admin_user_client, user_client, project_client):
 def test_api_key_auth(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'apiKey', 'crud', {
         'publicValue': 'cr',
-        'secretValue': 'cr',
+        'secretValue': 'cro',
         'removeTime': 'r',
         'data': 'r',
         'accountId': 'cr',
@@ -1069,13 +1109,13 @@ def test_api_key_auth(admin_user_client, user_client, project_client):
     auth_check(user_client.schema, 'apiKey', 'r', {
         'publicValue': 'r',
         'accountId': 'r',
-        'secretValue': 'r',
+        'secretValue': 'ro',
     })
 
     auth_check(project_client.schema, 'apiKey', 'crud', {
         'publicValue': 'r',
         'accountId': 'r',
-        'secretValue': 'r',
+        'secretValue': 'ro',
     })
 
 

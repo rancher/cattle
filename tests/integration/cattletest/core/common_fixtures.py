@@ -570,6 +570,8 @@ def auth_check(schema, id, access, props=None):
             prop_actual.add('c')
         if field.update and 'u' in access_actual:
             prop_actual.add('u')
+        if field.readOnCreateOnly:
+            prop_actual.add('o')
 
         assert prop_actual == prop
 
