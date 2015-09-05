@@ -26,5 +26,8 @@ public class Sha256HasherTest {
             Assert.assertTrue(hasher.compare(password, hasher.transform(password)));
             Assert.assertFalse(hasher.compare("notPassword", hasher.transform(password)));
         }
+        password = "lkfdjsafd:fldksaalsd";
+        Assert.assertTrue(hasher.compare(password, hasher.transform(password)));
+        Assert.assertFalse(hasher.compare("notPassword", hasher.transform(password)));
     }
 }

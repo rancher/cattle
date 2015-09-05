@@ -50,7 +50,7 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
         }
 
         String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
-        String[] split = code.split(":");
+        String[] split = code.split(":", 2);
 
         if (split.length != 2) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);

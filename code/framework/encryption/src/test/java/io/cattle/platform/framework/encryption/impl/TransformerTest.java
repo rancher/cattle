@@ -18,6 +18,10 @@ public class TransformerTest {
 
     private TransformationService transformationService;
 
+    static final char[] specialChars = new char[]{
+            '\'', '\"', '\\', '/', '[', ']', '*', ':', ';', '%', '$', ',',
+            '(', '-', ')', '#', '@', '!', '+'};
+
     @Before
     public void setUp() throws Exception {
         transformationService = new TransformationServiceImpl();
@@ -51,5 +55,27 @@ public class TransformerTest {
                 Assert.assertFalse(transformer.compare("Garbage", encrypted));
             }
         }
+
+        for (Transformer transformer : transformationService.getTransformers().values()) {
+            for (int i = 0; i < 100; i++) {
+                String password = randomPass(rn);
+                String encrypted = transformer.transform(password);
+                Assert.assertFalse(StringUtils.equals(encrypted, password));
+                Assert.assertTrue(transformer.compare(password, encrypted));
+                Assert.assertFalse(transformer.compare("Garbage", encrypted));
+            }
+        }
+    }
+
+    private String randomPass(SecureRandom rn) {
+        byte[] bytes = new byte[10];
+        rn.nextBytes(bytes);
+        char[] rand = String.valueOf(Hex.encodeHex(bytes)).toCharArray();
+        StringBuilder password = new StringBuilder();
+        for (int i = 0; i <rand.length; i++){
+            password.append(specialChars[rn.nextInt(specialChars.length)]);
+            password.append(rand[i]);
+        }
+        return password.toString();
     }
 }
