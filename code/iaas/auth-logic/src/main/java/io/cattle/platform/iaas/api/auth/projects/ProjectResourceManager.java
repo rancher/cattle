@@ -150,9 +150,8 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         return newProject;
     }
 
-    public Account createProjectForUser(Account account) {
-        Account project = authDao.createProject(account.getName() + ProjectConstants.PROJECT_DEFAULT_NAME, null);
-        Identity identity = new Identity(account.getExternalIdType(), account.getExternalId());
+    public Account createProjectForUser(Identity identity) {
+        Account project = authDao.createProject(identity.getName() + ProjectConstants.PROJECT_DEFAULT_NAME, null);
         authDao.createProjectMember(project, new Member(identity, ProjectConstants.OWNER));
         return project;
     }

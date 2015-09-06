@@ -16,7 +16,7 @@ public interface AuthDao {
 
     Account getAccountByKeys(String access, String secretKey);
 
-    Account getAccountByExternalId(String externalId, String exteralType);
+    Account getAccountByExternalId(String externalId, String externalType);
 
     Account getAccountByUuid(String uuid);
 

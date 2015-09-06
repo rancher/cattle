@@ -9,6 +9,7 @@ import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentitySearchProvider;
+import io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentityTransformationHandler;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -40,6 +41,8 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
     ObjectManager objectManager;
     @Inject
     RancherIdentitySearchProvider rancherIdentitySearchProvider;
+    @Inject
+    RancherIdentityTransformationHandler rancherIdentityTransformationHandler;
 
     @Override
     public Token getToken(ApiRequest request) {
@@ -63,6 +66,7 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
         }
 
         Identity user = rancherIdentitySearchProvider.getIdentity(String.valueOf(account.getId()), ProjectConstants.RANCHER_ID);
+        user = rancherIdentityTransformationHandler.transform(user);
         Set<Identity> identities = new HashSet<>();
         identities.add(user);
         account = localAuthUtils.getOrCreateAccount(user, identities, account, false);
@@ -83,6 +87,7 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
+        user = rancherIdentityTransformationHandler.untransform(user);
 
         return new Token(jwt, SecurityConstants.AUTH_PROVIDER.get(), accountId, user,
                 new ArrayList<>(identities), SecurityConstants.SECURITY.get(), account.getKind());

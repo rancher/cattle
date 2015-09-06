@@ -12,10 +12,12 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.framework.encryption.EncryptionConstants;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.PasswordDao;
 import io.cattle.platform.iaas.api.auth.integration.local.ChangePassword;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConstants;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
@@ -84,6 +86,10 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
         properties.put(CREDENTIAL.SECRET_VALUE, transformationService.transform(password, EncryptionConstants.HASH));
         properties.put(CREDENTIAL.KIND, LocalAuthConstants.PASSWORD);
         properties.put(CREDENTIAL.ACCOUNT_ID, admin.getId());
+
+        DataAccessor.fields(admin).withKey(SecurityConstants.HAS_LOGGED_IN).set(true);
+        admin.setName(name);
+        objectManager.persist(admin);
 
         return resourceDao.createAndSchedule(Credential.class, objectManager.convertToPropertiesFor(Credential.class,
                 properties));

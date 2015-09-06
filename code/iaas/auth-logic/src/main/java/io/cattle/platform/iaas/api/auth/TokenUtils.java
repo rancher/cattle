@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
@@ -48,6 +49,9 @@ public abstract class TokenUtils  {
 
     @Inject
     AuthTokenDao authTokenDao;
+
+    @Inject
+    ObjectManager objectManager;
 
     public Account getAccountFromJWT() {
         Map<String, Object> jsonData = getJsonData();
@@ -258,8 +262,8 @@ public abstract class TokenUtils  {
                         gotIdentity.getExternalIdType());
             }
             Object hasLoggedIn = DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).get();
-            if (!hasAccessToAProject && hasLoggedIn != null && !((Boolean) hasLoggedIn)) {
-                projectResourceManager.createProjectForUser(account);
+            if (!hasAccessToAProject && (hasLoggedIn == null || !((Boolean) hasLoggedIn))) {
+                projectResourceManager.createProjectForUser(gotIdentity);
             }
         } else {
             account = authDao.getAdminAccount();
@@ -268,6 +272,7 @@ public abstract class TokenUtils  {
         }
         if (account != null) {
             DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).set(true);
+            objectManager.persist(account);
         }
         return account;
     }
