@@ -149,7 +149,8 @@ def test_host_create_container_requested_inactive(new_context):
 
 def test_host_agent_state(super_client, new_context):
     agent = super_client.reload(new_context.host).agent()
-    assert new_context.host.agentState is None
+    agent = super_client.wait_success(agent)
+    assert agent.state == 'active'
 
     agent = super_client.wait_success(agent.deactivate())
     host = new_context.client.reload(new_context.host)
