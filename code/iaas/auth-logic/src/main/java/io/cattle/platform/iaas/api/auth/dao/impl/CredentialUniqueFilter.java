@@ -1,0 +1,55 @@
+package io.cattle.platform.iaas.api.auth.dao.impl;
+
+import io.cattle.platform.core.constants.CredentialConstants;
+import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.iaas.api.auth.dao.PasswordDao;
+import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractResourceManagerFilter;
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+
+import java.util.List;
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+
+public class CredentialUniqueFilter extends AbstractResourceManagerFilter {
+
+    SchemaFactory schemaFactory;
+    @Inject
+    PasswordDao passwordDao;
+
+    @Override
+    public Object create(String type, ApiRequest request, ResourceManager next) {
+        Credential credential = request.proxyRequestObject(Credential.class);
+        if (StringUtils.isBlank(credential.getKind())) {
+            credential.setKind(request.getType());
+        }
+        boolean isUnique = passwordDao.isUnique(credential);
+        if (!isUnique) {
+            throw new ValidationErrorException(ValidationErrorCodes.NOT_UNIQUE, CredentialConstants.PUBLIC_VALUE);
+        }
+
+        return super.create(type, request, next);
+    }
+
+    @Override
+    public String[] getTypes() {
+        List<String> types = schemaFactory.getSchemaNames(Credential.class);
+        return types.toArray(new String[types.size()]);
+    }
+
+
+    public SchemaFactory getSchemaFactory() {
+        return schemaFactory;
+    }
+
+    @Inject
+    public void setSchemaFactory(SchemaFactory schemaFactory) {
+        this.schemaFactory = schemaFactory;
+    }
+
+
+}

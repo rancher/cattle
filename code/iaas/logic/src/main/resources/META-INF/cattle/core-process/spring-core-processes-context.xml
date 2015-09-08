@@ -32,7 +32,6 @@
 
     <process:defaultProcesses resourceType="account" />
     <process:defaultProcesses resourceType="agentgroup" />
-    <process:defaultProcesses resourceType="credential" />
     <process:defaultProcesses resourceType="credentialInstanceMap" />
     <process:defaultProcesses resourceType="genericObject" />
     <process:defaultProcesses resourceType="host" />
@@ -71,6 +70,10 @@
     <process:process name="agent.deactivate" resourceType="agent" start="active,activating,reconnecting,updating-active,updating-inactive" 
                                             transitioning="deactivating" done="inactive" />
     <process:process name="agent.reconnect" resourceType="agent" start="active,activating" transitioning="reconnecting" done="active" />
+
+
+    <!-- Credential -->
+    <process:defaultProcesses resourceType="credential" exclude="credential.restore" />
 
     <!-- Instance -->
     <process:defaultProcesses resourceType="instance"

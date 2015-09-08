@@ -14,5 +14,8 @@
 
        <bean class="io.cattle.platform.iaas.api.auth.integration.local.ChangeSecretActionHandler" />
        <bean class="io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl" />
+       <bean class="io.cattle.platform.iaas.api.auth.dao.impl.CredentialUniqueFilter" >
+              <property name="schemaFactory" ref="CoreSchemaFactory" />
+       </bean>
 
 </beans>
