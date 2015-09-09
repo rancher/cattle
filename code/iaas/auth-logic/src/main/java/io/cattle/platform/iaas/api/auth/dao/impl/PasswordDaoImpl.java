@@ -23,11 +23,11 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
-
 
 public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
 
@@ -93,6 +93,21 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
 
         return resourceDao.createAndSchedule(Credential.class, objectManager.convertToPropertiesFor(Credential.class,
                 properties));
+    }
+
+    @Override
+    public boolean isUnique(final Credential credential) {
+
+        if (StringUtils.isNotBlank(credential.getPublicValue())
+                && CredentialConstants.CREDENTIAL_TYPES_TO_FILTER.contains(credential.getKind())) {
+                    List<Credential> credentials = create().selectFrom(CREDENTIAL)
+                            .where(CREDENTIAL.REMOVED.isNull()
+                                    .and(CREDENTIAL.PUBLIC_VALUE.equalIgnoreCase(credential.getPublicValue())
+                                            .and(CREDENTIAL.KIND.equalIgnoreCase(credential.getKind())))).fetchInto
+                                    (Credential.class);
+                    return credentials.isEmpty();
+        }
+        return true;
     }
 
 }

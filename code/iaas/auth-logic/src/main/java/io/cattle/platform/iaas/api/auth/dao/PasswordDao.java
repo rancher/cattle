@@ -8,4 +8,6 @@ public interface PasswordDao {
     Credential changePassword(Credential password, ChangePassword changePassword, Policy policy);
 
     Credential updateAdminAndCredentials(String username, String password, String name);
+
+    boolean isUnique(Credential credential);
 }
