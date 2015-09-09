@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -46,6 +47,14 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
                 // ignore
             }
             purge(host, null);
+        }
+
+        for (PhysicalHost host : getObjectManager().children(account, PhysicalHost.class)) {
+            try {
+                getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, host, null);
+            } catch (ProcessCancelException e) {
+                // ignore
+            }
         }
 
         for (Agent agent : getObjectManager().children(account, Agent.class)) {
