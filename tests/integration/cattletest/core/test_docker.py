@@ -815,6 +815,11 @@ def test_service_link_emu_docker_link(super_client, docker_client):
     docker_client.delete(env)
 
 
+# This is really subideal to run this test not parallel but it is hard to
+# not cause timeout issues with parallel tests.  Containers currently waiting
+# on a config item change on the existing network agent have to timeout before
+# they will try to update a different network agent.
+@pytest.mark.nonparallel
 @if_docker
 def test_delete_network_agent(super_client, docker_client):
     # Create a container so we know the network agent is in use
@@ -838,7 +843,7 @@ def test_delete_network_agent(super_client, docker_client):
     assert networkAgent.state == 'removed'
 
     c2 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID)
-    c2 = docker_client.wait_success(c2)
+    c2 = docker_client.wait_success(c2, timeout=120)
     assert c2.state == 'running'
 
 
