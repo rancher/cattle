@@ -68,12 +68,15 @@ public class WrappedResource extends ResourceImpl implements Resource {
                 continue;
             }
             Field field = entry.getValue();
-            if (!field.isIncludeInList() || (!StringUtils.equalsIgnoreCase(method, "post") && field.isReadOnCreateOnly())) {
+            if (!field.isIncludeInList()) {
                 continue;
             }
             Object value = additionalFields.remove(name);
             if (value == null) {
                 value = field.getValue(obj);
+            }
+            if (!Schema.Method.POST.isMethod(method) && field.isReadOnCreateOnly()){
+                value = null;
             }
             if (StringUtils.isNotBlank(field.getTransform()) && StringUtils.isNotBlank((String) value)){
                 String decrypted;
