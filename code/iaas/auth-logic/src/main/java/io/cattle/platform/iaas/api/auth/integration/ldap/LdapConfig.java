@@ -96,7 +96,7 @@ public class LdapConfig implements Configurable {
         return serviceAccountUsername;
     }
 
-    @Field(nullable = false, required = true, minLength = 1)
+    @Field(nullable = true, required = true, minLength = 1)
     public String getServiceAccountPassword() {
         return serviceAccountPassword;
     }

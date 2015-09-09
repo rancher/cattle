@@ -28,7 +28,7 @@ def test_account_create(kind, admin_user_client, random_str):
     assert creds[0].kind == "apiKey"
     assert re.match("[A-Z]*", creds[0].publicValue)
     assert len(creds[0].publicValue) == 20
-    assert 'secretValue' not in creds[0]
+    assert creds[0].secretValue is None
 
 
 def test_account_external(admin_user_client):

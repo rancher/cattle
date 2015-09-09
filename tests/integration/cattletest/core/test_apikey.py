@@ -13,7 +13,7 @@ def test_api_key_create(client):
     key = client.wait_transitioning(key)
     assert key.state == 'active'
     assert key.publicValue is not None
-    assert 'secretValue' not in key
+    assert key.secretValue is None
 
 
 def test_api_key_create_admin(super_client):
